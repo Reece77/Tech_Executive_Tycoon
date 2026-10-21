@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 from pathlib import Path
 
 from alembic import command
@@ -26,6 +27,7 @@ def _config() -> Config:
     return cfg
 
 
+@lru_cache(maxsize=1)
 def head_revision() -> str:
     head = ScriptDirectory.from_config(_config()).get_current_head()
     if head is None:

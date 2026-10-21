@@ -14,3 +14,12 @@ FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 @pytest.fixture(scope="session")
 def loaded() -> LoadedData:
     return load_all(DATA_DIR)
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--update-golden",
+        action="store_true",
+        default=False,
+        help="Regenerate tests/golden/snapshots/*.json (record the reason in CHANGELOG.md)",
+    )
