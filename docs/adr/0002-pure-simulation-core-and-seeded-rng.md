@@ -21,7 +21,7 @@ Balance testing, bug reproduction, and golden-seed regression tests all require 
    ) -> TurnResult:  # new_state, ledger_entries, log_items, event_requests
    ```
 
-   An import-linter style test (`tests/unit/test_sim_purity.py`) fails if any module in `tst/sim` imports `random`, `time`, `tst.db`, `tst.api`, `tst.llm`, `sqlalchemy`, `fastapi`, or `anthropic`, or calls `datetime.now`/`date.today`.
+   An import-linter style test (`tests/unit/test_sim_purity.py`) fails if any module in `tst/sim` imports `random`, `time`, `os`, `io`, `pathlib`, `yaml`, `tst.db`, `tst.api`, `tst.llm`, `tst.loader`, `sqlalchemy`, `fastapi`, or `anthropic`, or calls `open`, `datetime.now`, or `date.today`.
 
 2. **Derived streams.** Each save stores one 64-bit `master_seed`. Generators are derived, never stored:
 

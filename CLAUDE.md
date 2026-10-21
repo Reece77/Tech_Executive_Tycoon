@@ -48,6 +48,7 @@ backend/
     llm/                   adapter interface + anthropic, mock, template adapters
     db/                    SQLAlchemy models, repositories, sim<->db mappers, session/backup helpers
     api/                   FastAPI app, routers, request/response schemas
+    loader.py              reads and validates backend/data YAML (outside sim; ADR-0008)
     cli.py                 headless commands (new-game, advance, inspect)
     config.py              settings (paths, env vars)
   data/                    seed YAML: balance.yaml, names, roles, skills, tags, interests, regions, rivals
