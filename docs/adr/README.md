@@ -5,7 +5,7 @@ Each ADR records one decision that coding agents must not re-decide. Status is A
 | ADR | Decision | Status |
 | --- | --- | --- |
 | [0001](0001-technology-stack.md) | Python/FastAPI/SQLite backend, React/TypeScript/Vite front end, fixed dependency list | Accepted |
-| [0002](0002-pure-simulation-core-and-seeded-rng.md) | Pure simulation core; derived, seeded random streams | Accepted |
+| [0002](0002-pure-simulation-core-and-seeded-rng.md) | Pure simulation core; derived, seeded random streams | Accepted (signature amended by 0012) |
 | [0003](0003-money-and-double-entry-ledger.md) | Money as integer cents; double-entry ledger | Accepted |
 | [0004](0004-persistence-and-transactional-turns.md) | One SQLite file per save; one transaction per turn; backups; history tables | Accepted |
 | [0005](0005-llm-proposes-engine-disposes.md) | LLM output is untrusted, validated, clamped; optional at runtime | Accepted |
@@ -15,5 +15,6 @@ Each ADR records one decision that coding agents must not re-decide. Status is A
 | [0009](0009-api-contract-and-codegen.md) | OpenAPI is the contract; TypeScript client generated | Accepted |
 | [0010](0010-rivals-as-full-entities.md) | Rivals use the same engine rules; utility AI, no LLM | Accepted |
 | [0011](0011-game-setting-decisions.md) | Settled game-design choices from spec section 20 | Accepted |
+| [0012](0012-turn-function-signature.md) | `advance_turn` inputs and `TurnResult` fields (amends ADR-0002) | Accepted |
 
 Template: [0000-template.md](0000-template.md).

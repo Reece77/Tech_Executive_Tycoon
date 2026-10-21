@@ -9,7 +9,7 @@ Pre-build documents for a Football Manager-style tech-industry management sim. D
 | `CLAUDE.md` | The rules every coding session follows (Claude Code reads it automatically) |
 | `AGENTS.md` | Pointer for ChatGPT/Codex, plus a reviewer checklist |
 | `.cursor/rules/*.mdc` | The same rules for Cursor, scoped by folder |
-| `docs/adr/` | 11 architecture decision records |
+| `docs/adr/` | 12 architecture decision records |
 | `docs/tasks/` | Task briefs for M0, M1a, M1b and how to run them |
 | `docs/spec/` | Where the exported game design spec goes |
 

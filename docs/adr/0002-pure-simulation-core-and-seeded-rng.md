@@ -1,6 +1,6 @@
 # ADR-0002: Pure simulation core and derived, seeded random streams
 
-- Status: Accepted
+- Status: Accepted. Signature in §1 amended by [ADR-0012](0012-turn-function-signature.md).
 - Date: 2026-10-20
 - Spec sections: §1 (pillar 4), §14, §16
 
@@ -10,7 +10,7 @@ Balance testing, bug reproduction, and golden-seed regression tests all require 
 
 ## Decision
 
-1. **Purity.** `tst/sim/` has no I/O. Its entry point is:
+1. **Purity.** `tst/sim/` has no I/O. Its entry point is shown below; the current signature, with `ledger_balances` and `snapshot`, is in ADR-0012:
 
    ```python
    def advance_turn(

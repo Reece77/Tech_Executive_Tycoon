@@ -2,7 +2,7 @@
 
 **Goal:** an empty company can be created, advanced through 24 monthly turns from the CLI and from the browser, and persisted deterministically, with all tooling and guardrails in place.
 
-**Spec sections:** §1, §4, §14, §15 · **ADRs:** 0001, 0002, 0003, 0004, 0006, 0008, 0009, 0011
+**Spec sections:** §1, §4, §14, §15 · **ADRs:** 0001, 0002, 0003, 0004, 0006, 0008, 0009, 0011, 0012
 
 ## Context
 
@@ -31,7 +31,7 @@ People attributes, hiring, products, revenue, rivals' behavior, events, LLM call
 - `errors.py`: base `SimError` and the errors above.
 - `state.py`: frozen dataclasses `GameState(save_meta, turn, companies: tuple[CompanyState, ...])`, `CompanyState(id, name, is_player, stage, founded_turn)`. Cash is not a field (ADR-0003); a helper computes it from ledger balances passed in.
 - `decisions.py`: `Decisions` (empty dataclass for now, versioned for later).
-- `turn.py`: `advance_turn(state, decisions, rng, balance, ledger_balances) -> TurnResult` with the 12 phases from ADR-0006 as named no-op functions in a fixed list, except phase 6 (payroll and operating costs) which posts the monthly `company.base_monthly_cost_cents` from balance as one ledger entry (debit `6900_general_admin`, credit `1000_cash`) for each company. `TurnResult(new_state, ledger_entries, log_items, snapshot)`.
+- `turn.py`: `advance_turn(state, decisions, rng, balance, ledger_balances) -> TurnResult`, exactly as defined in ADR-0012, with the 12 phases from ADR-0006 as named no-op functions in a fixed list, except phase 6 (payroll and operating costs) which posts the monthly `company.base_monthly_cost_cents` from balance as one ledger entry (debit `6900_general_admin`, credit `1000_cash`) for each company. `TurnResult(new_state, ledger_entries, log_items, snapshot, event_requests)` per ADR-0012; `event_requests` is always empty in M0.
 - `snapshot.py`: per-company KPI dict `{cash_cents, monthly_burn_cents, headcount}`.
 - `tests/unit/test_sim_purity.py` per ADR-0002 (scan imports and banned calls in `tst/sim/**`).
 - `tests/unit/test_turn_order.py` asserting the phase list.
