@@ -229,6 +229,28 @@ All are credited to 1000_cash.
 
 **Worked example.** A senior engineer at $115,000: salary 958,333 cents + benefits 191,667 cents + office 60,000 cents = **$12,100.00 per month**.
 
+## 8a. Starting cash (game start)
+
+```latex
+starting\_cash = scenario.starting\_cash\_cents \times \frac{difficulty.starting\_cash\_mult\_bp}{10000}
+```
+
+rounded half-to-even to whole cents and posted as one ledger entry on turn 0 (debit 1000_cash, credit 3000_common_equity for founder money, or 3100_preferred_equity for the funded spinout). Values are 2010 US dollars.
+
+| Scenario id | Starting cash | Available | Rationale |
+| --- | --- | --- | --- |
+| `garage_bootstrap` | $50,000 | v1 | Founder savings; about 25 months of M0 overhead, but only a few months once two hires are on payroll |
+| `ex_big_tech_founders` | $400,000 | v1 | Savings plus angel money from former colleagues |
+| `funded_spinout` | $1,500,000 | v1 | A seed round already closed; equity structure arrives with M4 |
+| `mineral_first_prospector` | $5,000,000 | v3 | Exploration capital; not selectable until v3 |
+
+| Difficulty | Multiplier (bp) |
+| --- | --- |
+| easy | 15000 |
+| standard | 10000 |
+| hard | 6000 |
+| ironman | 10000 (difficulty comes from no reloads) |
+
 ## 9. Morale (phase 8, stream `morale`)
 
 ```latex
@@ -341,6 +363,8 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `payroll.benefits_bp` | 2000 | bp of salary | §8 |
 | `payroll.office_cost_per_head_cents` | 60000 | cents per month | §8 |
 | `company.base_monthly_cost_cents` | 200000 (M0), 50000 (M1b) | cents per month | §8 |
+| `scenario.<id>.starting_cash_cents` | see §8a | cents | §8a |
+| `difficulty.<level>.starting_cash_mult_bp` | see §8a | bp | §8a |
 | `payroll.severance_months` | 1 | months | §8 |
 | `morale.pay_slope` / `.pay_min` / `.pay_max` | 60 / −20 / 15 | morale points | §9 |
 | `morale.fit_per_interest` / `.work_style_mismatch` | 5 / −5 | morale points | §9 |

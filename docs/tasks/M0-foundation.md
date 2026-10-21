@@ -37,8 +37,8 @@ People attributes, hiring, products, revenue, rivals' behavior, events, LLM call
 - `tests/unit/test_turn_order.py` asserting the phase list.
 
 ### 3. Data loading (`backend/data/`, `tst/sim/data.py`)
-- `balance.yaml` with `company.base_monthly_cost_cents` (comment: placeholder overhead until payroll exists), `company.starting_cash_cents` per scenario, `backup.every_n_turns: 12`, `backup.keep_periodic: 10`.
-- `scenarios.yaml` with the four scenarios from ADR-0011 (name, description, starting cash, `available_in: v1|v3`). Only v1 scenarios selectable now.
+- `balance.yaml` with `company.base_monthly_cost_cents` (comment: placeholder overhead until payroll exists), `scenario.<id>.starting_cash_cents` (values in `docs/formulas.md` §8a; balance.yaml is the only place the number lives), `difficulty.<level>.starting_cash_mult_bp`, `backup.every_n_turns: 12`, `backup.keep_periodic: 10`.
+- `scenarios.yaml` with the four scenarios from ADR-0011 (id, name, description, `available_in: v1|v3`). No numbers here; the loader fails if a scenario id has no matching `scenario.<id>` block in `balance.yaml`. Only v1 scenarios selectable now.
 - `accounts.yaml` with the chart of accounts from ADR-0003.
 - Pydantic models and `load_all()` that fails clearly on bad data. Test with a deliberately broken fixture file.
 - Record SHA-256 of data files in save metadata (ADR-0008).
