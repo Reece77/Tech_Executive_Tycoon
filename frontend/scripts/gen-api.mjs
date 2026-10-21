@@ -25,7 +25,8 @@ execFileSync('uv', ['run', 'python', 'scripts/export_openapi.py', specPath], {
 });
 
 const spec = JSON.parse(readFileSync(specPath, 'utf8'));
-const ast = await openapiTS(spec);
+// Fields with server-side defaults stay optional in request bodies.
+const ast = await openapiTS(spec, { defaultNonNullable: false });
 writeFileSync(join(apiDir, 'schema.d.ts'), HEADER + astToString(ast));
 
 writeFileSync(
