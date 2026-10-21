@@ -36,6 +36,7 @@ from tst.db.models import (
 )
 from tst.db.session import make_engine, make_sessionmaker
 from tst.loader import LoadedData
+from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.decisions import Decisions
 from tst.sim.errors import (
@@ -49,8 +50,8 @@ from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
 from tst.sim.rng import RngFactory
 from tst.sim.setup import new_game
-from tst.sim.snapshot import CompanySnapshot
-from tst.sim.state import GameState
+from tst.sim.snapshot import CompanySnapshot, runway_months
+from tst.sim.state import GameState, company_cash
 from tst.sim.turn import TurnResult, advance_turn
 
 log = logging.getLogger(__name__)
@@ -221,6 +222,40 @@ def recent_snapshots(
 def latest_snapshot(session: Session, company_id: int) -> CompanySnapshot | None:
     found = recent_snapshots(session, company_id, 1)
     return found[0][1] if found else None
+
+
+@dataclass(frozen=True, slots=True)
+class Overview:
+    slug: str
+    company_name: str
+    scenario_id: str
+    turn: int  # next turn to play
+    date_label: str
+    cash_cents: Cents
+    monthly_burn_cents: Cents  # from the last month-end snapshot; 0 before the first turn
+    runway_months: int | None
+    history: list[tuple[int, CompanySnapshot]]  # last N snapshots, oldest first
+
+
+def player_overview(session: Session, history: int) -> Overview:
+    """What the player sees on the Overview screen and in `tst inspect`."""
+    meta = read_meta(session)
+    state = load_state(session)
+    player = state.player
+    cash = company_cash(ledger_balances(session), player.id)
+    snaps = recent_snapshots(session, player.id, history)
+    burn = snaps[-1][1].monthly_burn_cents if snaps else 0
+    return Overview(
+        slug=meta.name,
+        company_name=player.name,
+        scenario_id=meta.scenario_id,
+        turn=state.turn,
+        date_label=format_turn(state.turn),
+        cash_cents=cash,
+        monthly_burn_cents=burn,
+        runway_months=runway_months(cash, burn),
+        history=snaps,
+    )
 
 
 # --- Turns ----------------------------------------------------------------------------------
