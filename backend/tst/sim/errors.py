@@ -57,3 +57,7 @@ class SaveNotFoundError(SimError):
 
 class SaveExistsError(SimError):
     code = "save_exists"
+
+
+class InvalidCompanyNameError(SimError):
+    code = "invalid_company_name"

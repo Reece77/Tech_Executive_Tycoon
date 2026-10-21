@@ -1,0 +1,36 @@
+# Scenario starts (ADR-0011). Descriptive data only; numbers live in balance.yaml under
+# scenario.<id>. The loader fails if a scenario here has no balance block.
+# starting_equity_account: the equity account credited when starting cash is posted on
+# turn 0 (formulas.md section 8a).
+
+scenarios:
+  - id: garage_bootstrap
+    name: Garage Bootstrap
+    description: >-
+      A solo founder with personal savings and an idea. Every dollar is your own, and
+      the runway is short.
+    available_in: v1
+    starting_equity_account: 3000_common_equity
+
+  - id: ex_big_tech_founders
+    name: Ex-Big-Tech Founders
+    description: >-
+      You left a large tech company with savings and a few angel cheques from former
+      colleagues. More runway, higher expectations.
+    available_in: v1
+    starting_equity_account: 3000_common_equity
+
+  - id: funded_spinout
+    name: Funded Spinout
+    description: >-
+      A seed round has already closed. Investors are watching and the clock is running.
+    available_in: v1
+    starting_equity_account: 3100_preferred_equity
+
+  - id: mineral_first_prospector
+    name: Mineral-First Prospector
+    description: >-
+      Start with exploration capital and mineral rights, and build upward toward chips
+      and software.
+    available_in: v3
+    starting_equity_account: 3000_common_equity

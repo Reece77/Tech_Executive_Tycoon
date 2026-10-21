@@ -37,11 +37,24 @@ class BackupBalance(_Frozen):
     keep_periodic: int = Field(gt=0)
 
 
+DIFFICULTY_LEVELS = ("easy", "standard", "hard", "ironman")  # ADR-0011
+DEFAULT_DIFFICULTY = "standard"
+
+
 class Balance(_Frozen):
     company: CompanyBalance
     scenario: dict[str, ScenarioBalance]
     difficulty: dict[str, DifficultyBalance]
     backup: BackupBalance
+
+    @model_validator(mode="after")
+    def _check_difficulties(self) -> Balance:
+        if sorted(self.difficulty) != sorted(DIFFICULTY_LEVELS):
+            raise ValueError(
+                f"difficulty must define exactly {list(DIFFICULTY_LEVELS)}, "
+                f"got {sorted(self.difficulty)}"
+            )
+        return self
 
 
 # ---------------------------------------------------------------------------

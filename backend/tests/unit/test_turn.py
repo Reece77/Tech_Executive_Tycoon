@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from tst.sim.data_models import (
+    DIFFICULTY_LEVELS,
     BackupBalance,
     Balance,
     CompanyBalance,
@@ -23,7 +24,9 @@ def make_balance(overhead: int = OVERHEAD) -> Balance:
     return Balance(
         company=CompanyBalance(base_monthly_cost_cents=overhead),
         scenario={"garage_bootstrap": ScenarioBalance(starting_cash_cents=5_000_000)},
-        difficulty={"standard": DifficultyBalance(starting_cash_mult_bp=10_000)},
+        difficulty={
+            level: DifficultyBalance(starting_cash_mult_bp=10_000) for level in DIFFICULTY_LEVELS
+        },
         backup=BackupBalance(every_n_turns=12, keep_periodic=10),
     )
 
