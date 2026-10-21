@@ -1,0 +1,15 @@
+---
+description: Testing standards and workflow for any change.
+globs: "**/tests/**,**/*.test.ts,**/*.test.tsx"
+alwaysApply: false
+---
+
+# Testing and workflow
+
+- Write engine tests before or alongside engine code. A change to `tst/sim` without a test is incomplete.
+- Determinism: any test that involves randomness uses a fixed seed and asserts exact values.
+- Property tests (Hypothesis) for invariants: ledger debits equal credits; attributes stay in [1, 20]; cash never changes without a ledger entry; headcount equals active employments.
+- Golden snapshots (`backend/tests/golden/`): 10 fixed seeds run headless; KPI snapshot per turn stored as JSON. Never edit by hand. Regenerate only with `--update-golden` and note why in `CHANGELOG.md`.
+- Front-end: Vitest for components and formatters; Playwright smoke test that a new game loads, Continue advances one month, and the date changes.
+- Never weaken an assertion to make a test pass. If the test is wrong, explain why in the summary.
+- Finish every change with `make check` green.

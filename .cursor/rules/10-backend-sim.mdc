@@ -1,0 +1,29 @@
+---
+description: Rules for the pure simulation engine and backend Python code.
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Backend and simulation rules
+
+Simulation core (`backend/tst/sim/**`)
+- Allowed imports: standard library (no `random`, no `time`, no `datetime.now`), `numpy`, `pydantic`, and other `tst.sim` modules. Nothing from `tst.db`, `tst.api`, `tst.llm`.
+- Models are `@dataclass(frozen=True, slots=True)`; update with `dataclasses.replace`. Never mutate inputs.
+- Every function that needs randomness takes a `numpy.random.Generator` argument obtained from `RngFactory.stream(turn, "<subsystem>")`. Stream names are fixed strings listed in `tst/sim/rng.py`.
+- Attributes are floats clamped to [1.0, 20.0] via `clamp_attr()`.
+- Money is `int` cents. Use `tst.sim.money` helpers; never `float` arithmetic on money.
+- Constants come from the `Balance` object (loaded from `backend/data/balance.yaml`), never literals in logic (0, 1, and obvious identities are fine).
+- Turn pipeline order is fixed in `tst/sim/turn.py`. Adding a phase means updating the ordered list and its test.
+
+Persistence (`backend/tst/db/**`)
+- SQLAlchemy 2.x typed ORM (`Mapped[...]`). One SQLite file per save; WAL mode on.
+- Mappers convert ORM rows ⇄ sim dataclasses. The sim never sees ORM objects.
+- Every schema change ships with an Alembic migration and a `docs/data-dictionary.md` update.
+
+API (`backend/tst/api/**`)
+- Thin routers: load state, call sim, persist in one transaction, return schemas.
+- Response schemas never include hidden fields (`true_*`, `potential*`, hidden traits). Person attributes are returned as `{min, max}` ranges for the viewing company.
+
+Tests (`backend/tests/**`)
+- Seeded tests for anything random; Hypothesis for invariants; golden snapshots for multi-turn runs.
+- Never call the real Anthropic API; use `MockLLMAdapter`.

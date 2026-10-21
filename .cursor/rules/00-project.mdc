@@ -1,0 +1,23 @@
+---
+description: Core project rules for Tech Startup Tycoon. Always applied.
+globs:
+alwaysApply: true
+---
+
+# Tech Startup Tycoon — core rules
+
+The full contract is `CLAUDE.md` at the repo root. These rules summarize it for Cursor; if they ever differ, `CLAUDE.md` wins.
+
+- Single-player, turn-based business sim. Turn 0 = January 2010. Monthly turns, 360-turn standard campaign.
+- Design truth: `docs/spec/game-design-spec.md`. Technical decisions: `docs/adr/`. Current work: the brief in `docs/tasks/`.
+- Build only what the current brief asks. List extra ideas as follow-ups; do not implement them.
+- Do not add dependencies outside ADR-0001 without asking.
+
+Five non-negotiables:
+1. `backend/tst/sim/` is pure: no db, api, llm, clock, network, filesystem, or global randomness.
+2. Randomness only from `RngFactory.stream(turn, name)`.
+3. Money is integer cents in balanced double-entry ledger entries. No floats for money.
+4. One turn = one database transaction.
+5. LLM output is untrusted JSON; the engine validates, clamps, and applies it. Hidden true values never reach the API or the LLM.
+
+Before finishing any change: `make check` must pass, tests added for new logic, tunables in `backend/data/balance.yaml`.

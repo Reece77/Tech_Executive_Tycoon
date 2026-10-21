@@ -1,0 +1,139 @@
+# CLAUDE.md — Tech Startup Tycoon
+
+Read this file fully before every task. It is the contract between the owner (Reece) and any coding agent working in this repository.
+
+## 1. What this project is
+
+A single-player, turn-based business management game for personal use. The player founds a tech startup in **January 2010** and grows it, over a **360-turn (30-year)** standard campaign, into a vertically integrated conglomerate spanning software, cloud, hardware, chips, and minerals. Interface and people depth follow Football Manager; economic depth and supply chains follow Capitalism Lab.
+
+- Design source of truth: `docs/spec/game-design-spec.md` (export of the Claude Doc "Tech Startup Tycoon: Game Design and Technical Specification v1.0").
+- Technical decisions: `docs/adr/` (start with `docs/adr/README.md`).
+- Current task: the brief in `docs/tasks/` named in your instructions.
+
+Precedence: on technical matters (stack, schema shape, RNG, persistence) ADRs override the spec, and ADR-0011 records Reece's answers to the spec's open questions. Any other conflict: stop and ask. Never resolve a conflict by guessing.
+
+## 2. The five rules that matter most
+
+1. **The simulation core is pure.** Code in `backend/tst/sim/` never imports `tst.db`, `tst.api`, or `tst.llm`; never reads the clock; never touches the network or filesystem; never uses the global `random` module or `numpy.random` module-level functions. It takes state + decisions + an RNG factory + balance config and returns new state + ledger entries + log. (ADR-0002)
+2. **Randomness is seeded and derived.** Get a generator only from `RngFactory.stream(turn, name)`. Never call `random.Random()` or `np.random.default_rng()` directly. Same seed + same decisions must give identical results. (ADR-0002)
+3. **Money is integer cents.** Never use `float` for money. All cash movement is a balanced double-entry `LedgerEntry`. (ADR-0003)
+4. **One turn = one database transaction.** A crash mid-turn must leave the save exactly as it was before the turn. (ADR-0004)
+5. **The LLM proposes, the engine disposes.** LLM output is untrusted JSON: validated, clamped, and applied by engine code. The LLM never receives hidden true values and never writes state. (ADR-0005)
+
+## 3. Scope discipline
+
+- Build only what the current task brief lists. Put better ideas or missing systems under "Follow-ups" in your final summary; do not build them.
+- Do not add systems from a later milestone or phase (v2: divisions, IPO, hardware, R&D tree; v3: mining, fabs, holding companies), not even as stubs, unless the brief says so.
+- Do not add dependencies outside ADR-0001 without asking. If one is genuinely needed, propose it with a one-line reason.
+- Do not reformat or refactor files unrelated to the task.
+
+## 4. Repository map
+
+```text
+CLAUDE.md                  this file
+AGENTS.md                  pointer for ChatGPT/Codex and other agents
+.cursor/rules/             Cursor rules (same rules, scoped by path)
+Makefile                   make check / make dev
+docs/
+  spec/                    game design spec (exported)
+  adr/                     architecture decision records
+  tasks/                   milestone task briefs
+  data-dictionary.md       column-level schema reference (kept current with migrations)
+  formulas.md              formula reference (added during M1)
+backend/
+  pyproject.toml
+  tst/                     python package ("tst" = Tech Startup Tycoon)
+    sim/                   PURE engine: models, calendar, rng, turn pipeline, people, org, products, market, finance
+    events/                director, context builder, validator, template library
+    llm/                   adapter interface + anthropic, mock, template adapters
+    db/                    SQLAlchemy models, repositories, sim<->db mappers, session/backup helpers
+    api/                   FastAPI app, routers, request/response schemas
+    cli.py                 headless commands (new-game, advance, inspect)
+    config.py              settings (paths, env vars)
+  data/                    seed YAML: balance.yaml, names, roles, skills, tags, interests, regions, rivals
+  migrations/              Alembic
+  tests/                   unit/ property/ golden/ integration/
+frontend/
+  src/
+    api/                   GENERATED client — never hand-edit
+    screens/ components/ hooks/ lib/
+tools/                     balance runner, save inspector, seed tools
+saves/                     local save files (git-ignored)
+```
+
+## 5. Commands
+
+Backend (from `backend/`):
+
+```bash
+uv sync                                       # install
+uv run pytest -q                              # all tests
+uv run pytest tests/golden -q                 # determinism and golden seeds
+uv run ruff check . && uv run ruff format --check .
+uv run mypy tst
+uv run tst new-game --seed 42 --name dev      # create a save (runs migrations on the new file)
+uv run tst advance --save dev --turns 12      # advance headless
+uv run tst inspect --save dev                 # print company summary
+uv run uvicorn tst.api.app:app --reload       # API on :8000
+```
+
+Frontend (from `frontend/`):
+
+```bash
+pnpm install
+pnpm dev                                      # Vite on :5173, proxies /api to :8000
+pnpm gen:api                                  # regenerate src/api from backend OpenAPI
+pnpm lint && pnpm typecheck && pnpm test
+```
+
+Root:
+
+```bash
+make check     # backend lint + types + tests, frontend lint + types + tests. Must pass before you finish.
+make dev       # run API and front end together
+```
+
+## 6. Definition of done (every task)
+
+- [ ] Every acceptance criterion in the brief is met, and you state how each was verified.
+- [ ] `make check` passes.
+- [ ] New engine logic has unit tests; randomness has a seeded test; invariants (ledger balances, attributes in 1–20) have Hypothesis property tests.
+- [ ] Golden snapshots unchanged, or intentionally regenerated with `uv run pytest tests/golden --update-golden` and the reason recorded in `CHANGELOG.md`.
+- [ ] Schema changes have an Alembic migration, and `docs/data-dictionary.md` is updated.
+- [ ] New tunable numbers live in `backend/data/balance.yaml` with a comment (unit + intent), not in code.
+- [ ] Any design decision the spec and ADRs did not cover is written down (a new ADR, or the brief's "Decisions made" section).
+- [ ] Final message: summary, files touched, how each criterion was verified, follow-ups.
+
+## 7. Conventions
+
+Python
+- Python 3.12, full type hints, `mypy --strict` for `tst/sim` and `tst/events`.
+- Sim models: `@dataclass(frozen=True, slots=True)`. Return new objects; never mutate inputs. Use `dataclasses.replace`.
+- IDs are `int`. Turn 0 = January 2010. Convert with `tst.sim.calendar` only.
+- Attributes are `float` in [1.0, 20.0] internally, shown as rounded `int`. Clamp on every write with `clamp_attr()`.
+- No `print` in library code; use `logging.getLogger(__name__)`.
+- Domain errors live in `tst.sim.errors`; the API maps them to HTTP status codes.
+
+TypeScript / React
+- Strict TypeScript, function components, hooks. TanStack Query for server state; TanStack Table for every table.
+- Never hand-edit `frontend/src/api/`; regenerate it.
+- No business logic in the front end. Format numbers; never compute game values.
+- Money arrives as integer cents; display with `formatMoney()` from `src/lib/format.ts`.
+- Dark theme by default; information density over decoration.
+
+Data
+- Seed and balance data are YAML in `backend/data/`, validated by Pydantic at load. Invalid data fails at startup.
+- Real company and commodity names are allowed (personal use). Real companies start at approximate 2010 values and diverge after turn 0.
+
+## 8. Never
+
+- Never expose hidden true values (potential, hidden traits, true deposit grade) through the API or in an LLM prompt. The API returns only revealed ranges for the viewing company.
+- Never call the Anthropic API in tests; use `MockLLMAdapter`.
+- Never commit secrets. `ANTHROPIC_API_KEY` comes from `.env` (git-ignored).
+- Never edit an applied migration or delete golden snapshots to make tests pass.
+- Never weaken a test to make it pass. If a test is wrong, say so and explain why.
+- Never use floats for money, wall-clock time in the sim, or unseeded randomness.
+
+## 9. When unsure
+
+Ask one short, specific question with your proposed default. Pause rather than invent game design. Engineering details (naming, internal structure) you may decide and note in your summary.

@@ -1,0 +1,6 @@
+saves/
+.env
+.venv/
+node_modules/
+__pycache__/
+dist/
