@@ -6,7 +6,7 @@
 
 ## Context
 
-The people system is the game's core pillar. This brief builds the model and its monthly evolution, headless and fully tested. Hiring, payroll, morale, and screens follow in M1b. The formulas below are **provisional**: implement them exactly, keep every number in `balance.yaml`, and copy this section into `docs/formulas.md` as the first sub-task so tuning has one home.
+The people system is the game's core pillar. This brief builds the model and its monthly evolution, headless and fully tested. Hiring, payroll, morale, and screens follow in M1b. The formulas below summarize `docs/formulas.md` §1–§5, which is authoritative: implement them exactly as written there, with worked examples as test cases, and keep every number in `balance.yaml`.
 
 ## Out of scope
 
@@ -29,7 +29,7 @@ All attributes are floats in [1.0, 20.0] internally, displayed as integers.
 
 **Behavior tags (hidden until revealed):** `mentor`, `quiet_genius`, `credit_taker`, `politician`, `maverick`, `perfectionist`, `job_hopper`, `culture_carrier`, `toxic_high_performer`. In M1a they are assigned at generation and stored with `revealed_turn = null`.
 
-## Provisional formulas
+## Formulas (summary of `docs/formulas.md`)
 
 1. **Current ability:** `CA = 10 × weighted mean of the role's primary and secondary skill values`, with weight 3 for each primary skill and 1 for each secondary skill as listed in `roles.yaml`. Skills outside the role do not count. People without a role (the founder, pooled candidates) use the role that gives them the highest CA.
 2. **Generation by level:** level target CA ~ Normal(mean, sd) from `balance.people.level_ca` (starting values: junior 70±12, mid 95±12, senior 120±12, staff 140±10, principal 155±10, exec 150±15), clipped to [30, 190].
@@ -42,8 +42,8 @@ All attributes are floats in [1.0, 20.0] internally, displayed as integers.
    - Names from `names.yaml` by region. Region weights from `balance.people.region_weights`.
    - Salary expectation (2010 USD, cents): `band(role, level).mid × (1 + (CA − level_mean)/100) × region_multiplier`, rounded to $500.
 3. **Monthly growth** (phase 8), for each primary and secondary skill of the person's current role:
-   `Δ = rate × age_factor(age) × max(0, PA − CA)/PA × professionalism/10 + Normal(0, 0.05)`
-   with `rate = 0.12`, `age_factor`: < 25: 1.3, 25–29: 1.0, 30–34: 0.7, 35–44: 0.4, 45–54: 0.1, 55+: −0.15. Skills not used by the role decay by `0.01/month` after age 35. Clamp after every update; recompute CA.
+   `Δ = rate × a(age) × max(0, PA − CA)/PA × professionalism/10 − d(age) + Normal(0, 0.05)`
+   with `rate = 0.12`; growth factor `a(age)`: < 25: 1.3, 25–29: 1.0, 30–34: 0.7, 35–44: 0.4, 45–54: 0.1, 55+: 0; monthly decline `d(age)`: 0 below 50, 0.005 at 50–54, 0.015 at 55+. Skills outside the role change only by `−d(age)` plus noise. Clamp after every update; recompute CA.
 4. **Reveal (ADR-0007):** each `(observer_company, person, attribute)` has a half-width `hw` and a fixed center offset `o ~ Uniform(−0.5, 0.5)` drawn once from stream `"people_gen"` and stored.
    - Displayed range: `min = floor(clamp(true − hw × (1 + o)))`, `max = ceil(clamp(true + hw × (1 − o)))`; if `hw < 0.5`, `min = max = round(true)`. The true value is always inside.
    - Initial `hw` for a stranger: `balance.reveal.initial_hw` (skills 5.0, personality 7.0).
@@ -55,7 +55,7 @@ All attributes are floats in [1.0, 20.0] internally, displayed as integers.
 
 ## Sub-tasks (commit after each)
 
-1. **Formula reference:** create `docs/formulas.md` from the section above, with a table of every balance key used.
+1. **Formula tests first:** turn every worked example in `docs/formulas.md` §1–§5 into a unit test (noise disabled), and add each §12 balance key used by M1a to `balance.yaml`.
 2. **Seed data:** `skills.yaml`, `personality.yaml`, `interests.yaml`, `tags.yaml`, `backgrounds.yaml`, `names.yaml` (7 regions: North America, Europe, East Asia, South Asia, Latin America, Africa, Oceania; at least 60 first names and 60 surnames each, culturally plausible, no real public figures), `roles.yaml` for v1 roles (software engineer, data scientist, devops engineer, security engineer, product manager, designer, sales representative, account executive, marketer, finance manager, recruiter, operations manager) with skill weights, interest weights, work-style weights, and 2010 US salary bands (approximate; for example software engineer junior $65k, mid $90k, senior $115k, staff $140k, principal $165k). Pydantic models and load tests.
 3. **Sim models:** `tst/sim/people/` with `Person`, `Skills`, `Personality`, `HiddenTraits`, `RevealState`, `clamp_attr`, `current_ability`. All frozen.
 4. **Generator:** `generate_person(rng, data, balance, turn, role, level, region) -> Person` and `generate_pool(...)`. Seeded tests; distribution tests over 5,000 generated people (mean CA per level within ±3 of target; all attributes in range; PA ≥ CA).
@@ -67,7 +67,7 @@ All attributes are floats in [1.0, 20.0] internally, displayed as integers.
 
 ## Acceptance criteria
 
-- [ ] `docs/formulas.md` exists and every number in it maps to a `balance.yaml` key.
+- [ ] Every worked example in `docs/formulas.md` §1–§5 passes as a unit test, and every M1a key from §12 exists in `balance.yaml`.
 - [ ] Generating 5,000 people per level gives mean CA within ±3 of the configured target, with all attributes in [1, 20] and PA ≥ CA (test).
 - [ ] The same seed generates byte-identical people (test).
 - [ ] Revealed ranges always contain the true value, and never widen (Hypothesis).

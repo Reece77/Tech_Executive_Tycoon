@@ -299,7 +299,7 @@ Only validated effects reach the save file; the LLM never writes state directly.
 | Persistence | SQLite via SQLAlchemy 2.x, Alembic migrations | One file per save; WAL mode; automatic backup every 12 turns |
 | API | FastAPI | Thin; loads state, calls core, writes results in one transaction |
 | LLM adapter | Anthropic Python SDK behind an interface | Mock adapter for tests; template adapter for offline play |
-| Front end | React, TypeScript, Vite, TanStack Table and Query, a component library (shadcn/ui or Mantine), Recharts | Table-heavy UI |
+| Front end | React, TypeScript, Vite, TanStack Table and Query, Mantine components, Recharts | Table-heavy UI |
 | Tooling | uv, Ruff, mypy, pytest, Hypothesis; pnpm, ESLint, Vitest, Playwright | Pre-commit hooks enforce lint and types |
 | Packaging (later) | Tauri or a single launcher script | Optional desktop feel |
 
@@ -331,7 +331,7 @@ The schema separates static seed data, current state, and an append-only history
 
 | Domain | Tables | Phase |
 | --- | --- | --- |
-| Save and time | save, turn, rng_state, settings | v1 |
+| Save and time | save_meta (master seed, current turn, data file hashes), settings; no stored RNG state, since streams are derived from the seed (ADR-0002) | v1 |
 | Entities | company (player and rivals), legal_entity, org_unit, unit_policy | v1 |
 | People | person, person_skill, person_personality, person_interest, person_hidden, person_reveal (min, max per attribute per observer company), person_tag, person_state, employment (company, unit, role, salary, equity, start, end), relationship | v1 |
 | Hiring | candidate_pool, scouting_assignment, offer | v1 |
@@ -409,18 +409,25 @@ The largest risk is scope: this design describes three games' worth of systems, 
 | Save corruption | Low | Transactional turns, WAL, automatic backups, migration tests |
 | Real-company names cause discomfort if shared | Low | Personal use only; a toggle to swap in fictional names |
 
-## 20. Open Questions for Reece
+## 20. Settled Decisions
 
-These decisions change the build and should be answered before M1 starts; a proposed default is given for each. Reece's answers are marked "RD" and are recorded in ADR-0011.
+All design questions but one are settled, and each answer is recorded in an ADR in the repository so coding agents do not re-ask. The LLM budget remains open, with a configurable cap as the default.
 
-- [ ] **Start year:** historical (2010, before the AI boom) or present day (2026)? Default: present day, with a 2010 scenario later. RD: 2010 with a 2026 scenario later
-- [ ] **Founder control:** is the founder a playable person with stats who can be fired, or an untouchable avatar? Default: playable and fireable outside Sandbox. RD: agree playable and fireable
-- [ ] **Delegation depth:** how much should staff auto-run (pricing, hiring, R&D) when the player does not micromanage? Default: everything delegable, with quality based on the delegate's attributes. RD: Delegate everything, quality based on stats
-- [ ] **Geography:** abstract regions only, or named cities with offices (Pittsburgh, San Francisco, Austin, Taipei)? Default: regions in v1, cities in v2. RD: agree
-- [ ] **Player-facing stock trading:** can the player trade rival stock personally? Default: no in v1. RD: yes in v2/v3 depending on scope adjustments
-- [ ] **Event tone:** grounded business realism, or occasional satire and absurdity? Default: grounded, with rare light moments/satire
-- [ ] **LLM budget:** monthly spend ceiling for the Anthropic API? Default: a configurable cap with an on-screen meter.
-- [ ] **Game length:** target length of a full campaign in turns? RD: 360 turns (30 years) for a standard run.
+| Topic | Decision | Recorded in |
+| --- | --- | --- |
+| World and names | Real-world company and commodity names; personal use only; fictional-name toggle later | ADR-0011 |
+| Start year | January 2010; a 2026 scenario later as a separate seed pack | ADR-0006, ADR-0011 |
+| Campaign length | 360 turns (30 years) for a standard run; Sandbox unlimited | ADR-0006 |
+| Turn granularity | Monthly turns, with weekly crisis sub-turns triggered by severity | ADR-0006 |
+| Founder | Playable person with stats; can be fired by the board outside Sandbox | ADR-0011 |
+| Delegation | Everything delegable; outcome quality depends on the delegate's attributes | ADR-0011 |
+| Geography | Abstract regions in v1; named cities with offices in v2 | ADR-0011 |
+| Personal stock trading | Allowed in v2 or v3 if scope permits; not in v1 | ADR-0011 |
+| Event tone | Grounded realism with occasional light or satirical moments | ADR-0011 |
+| Rivals | Agent-based full entities; utility AI, no LLM; reduced-fidelity staff beyond each rival's top 20 | ADR-0010 |
+| Stack | Python, FastAPI, SQLite, React with Mantine | ADR-0001 |
+| Scenarios and difficulty | Four starts and four difficulties; mineral-first start unlocks in v3 | ADR-0011 |
+| LLM budget | Open: configurable monthly token cap with an on-screen meter until Reece sets a number | ADR-0005 |
 
 ## 21. Pre-Build Artifacts to Generate
 
@@ -442,3 +449,5 @@ Twelve artifacts should exist before the first line of game code; the first five
 | 12 | Test and playtest plan | Golden seeds, scripted strategies, playtest checklist | M3 | Markdown |
 
 **Recommended order:** 1, 2, 5 in one sitting (so Claude Code can start M0), then 3 and 4, then 8 and 9 in parallel with M0.
+
+**Status:** items 1, 2, 4, and 5 are in the GitHub repository (`Reece77/Tech_Executive_Tycoon`): rules files, 11 ADRs, `docs/formulas.md`, and briefs for M0, M1a, and M1b. Item 3 (data dictionary) is produced during M0, which must keep it current with each migration.

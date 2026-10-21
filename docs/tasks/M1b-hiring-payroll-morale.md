@@ -6,13 +6,13 @@
 
 ## Context
 
-M1a built people. This brief makes them hireable and alive. All formulas below are provisional: add them to `docs/formulas.md` and keep every number in `balance.yaml`. Everything the player does here must also be callable by a delegate (ADR-0011), so put each action in `tst/sim/actions/` as a pure function that takes an `actor` person; the UI passes the founder for now.
+M1a built people. This brief makes them hireable and alive. The rules below summarize `docs/formulas.md` §6–§10, which is authoritative; keep every number in `balance.yaml`. Everything the player does here must also be callable by a delegate (ADR-0011), so put each action in `tst/sim/actions/` as a pure function that takes an `actor` person; the UI passes the founder for now.
 
 ## Out of scope
 
 Departments, managers, span of control, relationships beyond storage (M2). Products, revenue (M3). Cap table math (M4; store `equity_bp` only). Poaching and acqui-hires (M5). LLM or template events (M6). Interest-driven assignments beyond the company mission (M3).
 
-## Provisional rules and formulas
+## Rules and formulas (summary of `docs/formulas.md`)
 
 1. **Company mission:** at game start the player picks 2 interest tags as the company mission (for example `ai`, `enterprise`). Stored on `company`. Used for interest fit until products exist.
 2. **Founder energy:** 100 points per month, reset in phase 1. Costs from `balance.founder.energy_cost`: interview 6, reference check 3, network intro search 10, job post 4. Actions fail with `InsufficientEnergyError` when out of energy. (Delegation to a recruiter arrives in M2; leave the `actor` parameter ready.)
@@ -41,7 +41,7 @@ Departments, managers, span of control, relationships beyond storage (M2). Produ
 
 ## Sub-tasks (commit after each)
 
-1. **Formulas and data:** extend `docs/formulas.md` and `balance.yaml` with every key above; mission picker data.
+1. **Formula tests and data:** turn every worked example in `docs/formulas.md` §6–§10 into a unit test (noise disabled); add the M1b keys from §12 to `balance.yaml`; mission picker data.
 2. **Actions:** `tst/sim/actions/hiring.py` (`open_search`, `interview`, `reference_check`, `make_offer`, `withdraw_offer`, `fire`) as pure functions returning new state + ledger entries + log. Each validates energy, cash, and target ids. Decisions now carry a list of these actions; phase 1 applies them in submission order.
 3. **Turn phases:** candidate pool generation (phase 12), offer resolution (phase 1), payroll (phase 6), morale, resignation, tag reveal, retirement (phase 8). Update `test_turn_order.py` only if order changes (it should not).
 4. **Inbox:** `inbox_item` table (turn, company, kind, title, body, link_kind, link_id, read). Log items from the sim become inbox items for the player company. Template wording in `backend/data/inbox_templates.yaml`; light-tone variants allowed per ADR-0011.
