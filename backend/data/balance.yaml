@@ -27,3 +27,88 @@ difficulty:
 backup:
   every_n_turns: 12 # turns; periodic save backup after every Nth committed turn (ADR-0004)
   keep_periodic: 10 # count; periodic backups kept per save, oldest deleted first (ADR-0004)
+
+# --- People (formulas.md sections 2-3) ------------------------------------------------
+people:
+  level_ca: # target current ability by level: Normal(mean, sd) in CA points (formulas.md 2.1)
+    junior: { mean: 70, sd: 12 }
+    mid: { mean: 95, sd: 12 }
+    senior: { mean: 120, sd: 12 }
+    staff: { mean: 140, sd: 10 }
+    principal: { mean: 155, sd: 10 }
+    exec: { mean: 150, sd: 15 }
+  level_age: # years [min, max], uniform integer age for a generated person by level (2.3)
+    junior: [21, 28]
+    mid: [25, 35]
+    senior: [29, 45]
+    staff: [32, 50]
+    principal: [35, 58]
+    exec: [38, 62]
+  ca_clip: [30, 190] # CA points; target CA is clipped to this range (2.1)
+  skill_noise_sd: # attribute points; noise around the target for role skills (2.2)
+    primary: 1.5
+    secondary: 2.0
+  secondary_offset: 3.0 # attribute points; secondaries centre this far below target/10 (2.2)
+  other_skill_range: [1, 8] # attribute points; non-role skills are Uniform(min, max) (2.2)
+  ca_tolerance: 2 # CA points; primaries are rescaled until derived CA is this close to target (2.2)
+  pa_gap_mean: # CA points; mean of PA - CA by age band, applies from from_age to the next band (2.4)
+    - { from_age: 0, value: 45 }
+    - { from_age: 25, value: 30 }
+    - { from_age: 30, value: 18 }
+    - { from_age: 35, value: 8 }
+    - { from_age: 45, value: 2 }
+  pa_gap_sd: 15 # CA points; sd of the PA gap before it is floored at 0 (2.4)
+  personality_mean: 10.5 # attribute points; mean of each personality and hidden trait (2.5)
+  personality_sd: 3.5 # attribute points; sd of each personality and hidden trait (2.5)
+  max_tags: 2 # count; behavior tags assigned per person at most (2.7)
+  region_weights: # relative weight; region of a generated candidate (2)
+    north_america: 55
+    europe: 15
+    east_asia: 8
+    south_southeast_asia: 10
+    latin_america: 6
+    africa: 3
+    oceania: 3
+  retire_bp_per_year_over_60: 600 # bp per month per year of age over 59; retirement roll from M1b (3)
+
+payroll:
+  salary_round_to_cents: 50000 # cents; salary expectations round to the nearest $500 (2.8)
+
+growth: # monthly skill growth and decline (formulas.md section 3)
+  rate: 0.12 # attribute points per month; r in the growth formula
+  age_factor: # multiplier a(age) on growth, applies from from_age to the next band
+    - { from_age: 0, value: 1.3 }
+    - { from_age: 25, value: 1.0 }
+    - { from_age: 30, value: 0.7 }
+    - { from_age: 35, value: 0.4 }
+    - { from_age: 45, value: 0.1 }
+    - { from_age: 55, value: 0.0 }
+  decline: # attribute points per month d(age), subtracted from every skill
+    - { from_age: 0, value: 0.0 }
+    - { from_age: 50, value: 0.005 }
+    - { from_age: 55, value: 0.015 }
+  noise_sd: 0.05 # attribute points; sd of the per-skill monthly noise
+
+reveal: # revealed ranges (formulas.md section 4, ADR-0007)
+  initial_hw: # half-width of a stranger's range
+    skill: 5.0 # attribute points
+    personality: 7.0 # attribute points
+    pa: 40.0 # CA points
+  strength: # fraction of hw removed per action, before the scout factor
+    job_post_screen: 0.20
+    network_intro: 0.30
+    interview: 0.35
+    reference_check: 0.30
+    scouting_month: 0.25
+    employed_month: 0.08
+  scout_base: 0.5 # scout_factor = scout_base + judgment_of_talent / scout_divisor
+  scout_divisor: 40 # attribute points
+  pa_phrase_bounds: [70, 100, 130, 160] # CA points; limited/decent/good/excellent/outstanding (M1b)
+
+founder: # founder build (formulas.md section 5)
+  skill_base: 5 # attribute points; every skill starts here
+  skill_points: 70 # attribute points the player distributes
+  skill_cap: 18 # attribute points; no skill may exceed this after background bonuses
+  default_age: 28 # years
+  age_range: [22, 60] # years; allowed founder ages
+  default_region: north_america # regions.yaml key; founder region when none is chosen (name pool)

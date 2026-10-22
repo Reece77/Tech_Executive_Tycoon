@@ -2,14 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from tst.sim.data_models import (
-    DIFFICULTY_LEVELS,
-    BackupBalance,
-    Balance,
-    CompanyBalance,
-    DifficultyBalance,
-    ScenarioBalance,
-)
+from tests.conftest import DATA_DIR
+from tst.loader import load_all
+from tst.sim.data_models import Balance, CompanyBalance
 from tst.sim.decisions import Decisions
 from tst.sim.ledger import CASH, GENERAL_ADMIN, apply_entries
 from tst.sim.rng import RngFactory
@@ -20,15 +15,12 @@ from tst.sim.turn import advance_turn
 OVERHEAD = 200_000
 
 
+_BASE = load_all(DATA_DIR).balance
+
+
 def make_balance(overhead: int = OVERHEAD) -> Balance:
-    return Balance(
-        company=CompanyBalance(base_monthly_cost_cents=overhead),
-        scenario={"garage_bootstrap": ScenarioBalance(starting_cash_cents=5_000_000)},
-        difficulty={
-            level: DifficultyBalance(starting_cash_mult_bp=10_000) for level in DIFFICULTY_LEVELS
-        },
-        backup=BackupBalance(every_n_turns=12, keep_periodic=10),
-    )
+    """The real balance with the M0 overhead overridden."""
+    return _BASE.model_copy(update={"company": CompanyBalance(base_monthly_cost_cents=overhead)})
 
 
 def make_state(n_companies: int = 2) -> GameState:

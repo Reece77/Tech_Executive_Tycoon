@@ -43,3 +43,8 @@ def format_turn(turn: int) -> str:
     """Return a label such as "Jan 2010"."""
     year, month = turn_to_ym(turn)
     return f"{MONTH_ABBR[month - 1]} {year}"
+
+
+def age_at(turn: int, birth_turn: int) -> int:
+    """Age in whole years at `turn` (formulas.md section 0)."""
+    return (turn - birth_turn) // MONTHS_PER_YEAR

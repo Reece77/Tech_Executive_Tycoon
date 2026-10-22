@@ -361,6 +361,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `founder.energy_per_month` | 100 | energy | §6 |
 | `founder.energy_cost.<action>` | see §6 | energy | §6 |
 | `founder.age_range` | [22, 60] | years | §5 |
+| `founder.default_region` | north_america | `regions.yaml` key | §5 |
 | `hiring.hint_bands` | [−0.3, 0.3] | score | §7 |
 | `hiring.channel.<channel>.size` / `.level_mix` | see §7 | count / percent | §7 |
 | `hiring.job_post_cost_cents` | 50000 | cents per month | §7 |
