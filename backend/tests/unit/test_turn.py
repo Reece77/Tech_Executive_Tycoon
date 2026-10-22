@@ -15,7 +15,9 @@ from tst.sim.turn import advance_turn
 OVERHEAD = 200_000
 
 
-_BASE = load_all(DATA_DIR).balance
+_LOADED = load_all(DATA_DIR)
+_BASE = _LOADED.balance
+_BASE_DATA = _LOADED.game_data
 
 
 def make_balance(overhead: int = OVERHEAD) -> Balance:
@@ -39,7 +41,7 @@ def make_state(n_companies: int = 2) -> GameState:
 def test_phase_6_posts_overhead_for_each_company() -> None:
     state = make_state(2)
     balances = {(1, CASH): 5_000_000, (2, CASH): 1_000_000}
-    result = advance_turn(state, Decisions(), RngFactory(1), make_balance(), balances)
+    result = advance_turn(state, Decisions(), RngFactory(1), make_balance(), _BASE_DATA, balances)
 
     assert [e.company_id for e in result.ledger_entries] == [1, 2]
     for entry in result.ledger_entries:
@@ -53,7 +55,7 @@ def test_phase_6_posts_overhead_for_each_company() -> None:
 def test_snapshot_cash_and_burn() -> None:
     state = make_state(1)
     balances = {(1, CASH): 5_000_000}
-    result = advance_turn(state, Decisions(), RngFactory(1), make_balance(), balances)
+    result = advance_turn(state, Decisions(), RngFactory(1), make_balance(), _BASE_DATA, balances)
     snap = result.snapshot.for_company(1)
     assert result.snapshot.turn == 0
     assert snap.cash_cents == 4_800_000
@@ -65,7 +67,7 @@ def test_snapshot_cash_and_burn() -> None:
 def test_turn_increments_and_inputs_not_mutated() -> None:
     state = make_state(1)
     balances = {(1, CASH): 5_000_000}
-    result = advance_turn(state, Decisions(), RngFactory(1), make_balance(), balances)
+    result = advance_turn(state, Decisions(), RngFactory(1), make_balance(), _BASE_DATA, balances)
     assert result.new_state.turn == 1
     assert state.turn == 0
     assert balances == {(1, CASH): 5_000_000}
@@ -74,13 +76,15 @@ def test_turn_increments_and_inputs_not_mutated() -> None:
 
 
 def test_zero_overhead_posts_nothing() -> None:
-    result = advance_turn(make_state(1), Decisions(), RngFactory(1), make_balance(0), {})
+    result = advance_turn(
+        make_state(1), Decisions(), RngFactory(1), make_balance(0), _BASE_DATA, {}
+    )
     assert result.ledger_entries == ()
     assert result.snapshot.for_company(1).monthly_burn_cents == 0
 
 
 def test_month_end_log() -> None:
-    result = advance_turn(make_state(1), Decisions(), RngFactory(1), make_balance(), {})
+    result = advance_turn(make_state(1), Decisions(), RngFactory(1), make_balance(), _BASE_DATA, {})
     assert [(i.kind, i.message) for i in result.log_items] == [
         ("month_end", "Jan 2010 closed for Co 1")
     ]

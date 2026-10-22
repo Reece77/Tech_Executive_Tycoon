@@ -300,7 +300,12 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
         state = load_state(session)
         balances = ledger_balances(session, state.turn)
         result = advance_turn(
-            state, decisions, RngFactory(state.save_meta.master_seed), data.balance, balances
+            state,
+            decisions,
+            RngFactory(state.save_meta.master_seed),
+            data.balance,
+            data.game_data,
+            balances,
         )
         apply_turn_result(session, result, decisions)
 
