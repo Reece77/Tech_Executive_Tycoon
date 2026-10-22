@@ -65,3 +65,7 @@ class InvalidCompanyNameError(SimError):
 
 class InvalidFounderError(SimError):
     code = "invalid_founder"
+
+
+class UnknownKnowledgeActionError(SimError):
+    code = "unknown_knowledge_action"

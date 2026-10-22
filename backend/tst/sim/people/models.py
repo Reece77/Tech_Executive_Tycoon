@@ -45,6 +45,9 @@ class AttrSet:
                 return v
         raise KeyError(key)
 
+    def __contains__(self, key: object) -> bool:
+        return any(k == key for k, _ in self.items)
+
     def keys(self) -> tuple[str, ...]:
         return tuple(k for k, _ in self.items)
 

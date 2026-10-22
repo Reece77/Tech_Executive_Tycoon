@@ -6,6 +6,7 @@ from tst.loader import LoadedData
 from tst.sim.errors import InvalidFounderError
 from tst.sim.people.founder import FounderSpec, build_founder, founder_skills
 from tst.sim.people.models import PA_KEY, best_fit_role
+from tst.sim.people.reveal import revealed_range
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, PLAYER_COMPANY_ID, new_game
 
@@ -157,3 +158,27 @@ def test_new_game_creates_founder_employment_and_knowledge(loaded: LoadedData) -
     offsets = [rec.offset for _, rec in reveal.attributes]
     assert all(-0.5 <= o <= 0.5 for o in offsets)
     assert len(set(offsets)) == len(offsets)
+
+
+def test_founding_company_sees_founder_exactly(loaded: LoadedData) -> None:
+    scenario = loaded.game_data.scenario("garage_bootstrap")
+    assert scenario is not None
+    state, _ = new_game(
+        save_name="dev",
+        master_seed=3,
+        scenario=scenario,
+        difficulty="standard",
+        company_name="Test Co",
+        founder=DEFAULT_FOUNDER,
+        balance=loaded.balance,
+        data=loaded.game_data,
+    )
+    person = state.people[0]
+    reveal = state.reveal(PLAYER_COMPANY_ID, person.id)
+    assert reveal is not None
+    assert revealed_range(person, reveal, "software_engineering") == (16, 16)
+    ambition = round(person.personality["ambition"])
+    assert revealed_range(person, reveal, "ambition") == (ambition, ambition)
+    lo, hi = revealed_range(person, reveal, PA_KEY)
+    assert lo <= person.potential_ability <= hi
+    assert hi - lo >= 40  # PA keeps its initial half-width of 40
