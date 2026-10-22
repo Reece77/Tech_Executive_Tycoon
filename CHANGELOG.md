@@ -8,3 +8,5 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 - M1 prep: drafted seed data for M1a (skills, personality, interests, regions, roles, tags, backgrounds), checked against formulas.md; mentor tag boost now uses personality; GitHub Actions runs `make check` on every push; M1a brief adds the hard-coded number check as sub-task 0.
 - Docs (M1 sweep): ADR-0013 (one RNG stream name per call site, entity keys), ADR-0014 (immediate player actions, pending offers, energy timing); ADR-0007 clarified (per-observer tag reveals, exact forbidden field names); formulas.md and the M1a/M1b briefs fixed for 16 inconsistencies found before M1a.
 - Golden snapshots: first generation for seeds 1..10 (24 turns, garage bootstrap). In M0 no subsystem draws random numbers yet, so all ten files are identical; they diverge once M1a adds people generation.
+- M1a people model: founder, person generator, reveal engine, monthly growth, people tables (migration `0002_people`).
+- Golden snapshots regenerated (M1a.8): `headcount` is now 1 on every turn because the founder has an employment row from turn 0 (formulas.md section 5). Cash and burn are unchanged.

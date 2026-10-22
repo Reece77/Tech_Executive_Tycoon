@@ -10,7 +10,14 @@ from sqlalchemy import func, select, text
 
 from tst.db import migrate, repository
 from tst.db.backup import periodic_backups
-from tst.db.models import Base, DecisionLogRow, LedgerEntryRow, TurnLogRow, TurnSnapshotRow
+from tst.db.models import (
+    SCHEMA_VERSION,
+    Base,
+    DecisionLogRow,
+    LedgerEntryRow,
+    TurnLogRow,
+    TurnSnapshotRow,
+)
 from tst.db.repository import (
     create_save,
     latest_snapshot,
@@ -71,7 +78,7 @@ def test_create_save(save: Path, loaded: LoadedData) -> None:
         assert state.player.name == "Test Co"
         assert meta.master_seed == 42
         assert meta.data_hashes == loaded.hashes
-        assert meta.schema_version == 1
+        assert meta.schema_version == SCHEMA_VERSION == 2
         assert company_cash(ledger_balances(session), state.player.id) == GARAGE_CASH
 
 

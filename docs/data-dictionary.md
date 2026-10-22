@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 1 (migration `0001_initial`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 2 (migrations `0001_initial`, `0002_people`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -20,7 +20,7 @@ One row describing the save. Current-state table (updated in place each turn).
 | `created_turn` | INTEGER | no | Turn the save was created at (0). |
 | `current_turn` | INTEGER | no | Next turn to be played. Incremented once per committed turn. |
 | `data_hashes` | JSON | no | `{file name: SHA-256}` of the data files used to create the save (line endings normalized), so later data changes can be detected (ADR-0008). |
-| `schema_version` | INTEGER | no | Schema version at creation; migrations that change the schema bump it. |
+| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (2 after `0002_people`). |
 
 ## company
 
@@ -81,7 +81,7 @@ Month-end KPIs per company per turn, written by phase 11. Append-only history.
 | `id` | INTEGER PK | no | Row id. |
 | `turn` | INTEGER | no | Turn the snapshot closes. |
 | `company_id` | INTEGER FK → company.id | no | Company. |
-| `kpis` | JSON | no | `{cash_cents, monthly_burn_cents, headcount}` in M0. `cash_cents` equals the `1000_cash` balance through this turn; `monthly_burn_cents` is the net cash decrease this month (0 if cash did not fall); `headcount` is active employees (0 until M1a). |
+| `kpis` | JSON | no | `{cash_cents, monthly_burn_cents, headcount}`. `cash_cents` equals the `1000_cash` balance through this turn; `monthly_burn_cents` is the net cash decrease this month (0 if cash did not fall); `headcount` counts the company's `active` and `notice` employments (1 for the founder from turn 0). |
 
 Unique index `ux_turn_snapshot_turn_company (turn, company_id)`.
 
@@ -112,6 +112,121 @@ Engine log items produced during a turn (month-end report lines, later events). 
 | `message` | TEXT | no | Human-readable text. |
 
 Index `ix_turn_log_turn (turn)`.
+
+## People (migration `0002_people`, M1a)
+
+Current-state tables, updated in place each turn (ADR-0004 §7). They hold **true values** used by the sim; the API never returns them (ADR-0007). Every attribute table keeps a `position` so the data-file order, which fixes the order of random draws (ADR-0013), round-trips exactly.
+
+### person
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Person id. The founder is 1. |
+| `first_name` | VARCHAR(40) | no | Given name (from `names.yaml` unless the player chose one). |
+| `last_name` | VARCHAR(40) | no | Family name. |
+| `region` | VARCHAR(32) | no | `regions.yaml` key. |
+| `birth_turn` | INTEGER | no | Turn of birth (negative before 2010); age = `(turn − birth_turn) // 12`. |
+| `role` | VARCHAR(64) | yes | `roles.yaml` role the person was generated for; null for the founder, who uses the best-fit role. |
+| `level` | VARCHAR(16) | yes | Level the person was generated at (`junior` … `exec`); null for the founder. |
+| `work_style` | VARCHAR(16) | no | `builder`, `operator`, `researcher` or `seller`. |
+| `salary_expectation_cents` | BIGINT | yes | Expected annual salary in 2010 cents (formulas.md §2.8); null for the founder. |
+| `is_founder` | BOOLEAN | no | True for the player character. |
+
+### person_skill / person_personality / person_hidden
+
+One row per attribute. Primary key `(person_id, skill)` or `(person_id, trait)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER FK → person.id | no | Person. |
+| `skill` / `trait` | VARCHAR(64) | no | `skills.yaml` key; `personality.yaml` trait; for `person_hidden`, a hidden trait or `potential_ability`. |
+| `position` | INTEGER | no | Order within the data file (`potential_ability` comes last). |
+| `value` | FLOAT | no | True value: 1–20 for skills and traits; 10–200 for `potential_ability`. |
+
+### person_interest / person_tag
+
+Primary key `(person_id, interest)` or `(person_id, tag)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER FK → person.id | no | Person. |
+| `interest` / `tag` | VARCHAR(64) | no | `interests.yaml` key, or the person's **true** behavior tag from `tags.yaml`. |
+| `position` | INTEGER | no | Order the interest or tag was drawn in. |
+
+### person_reveal
+
+What one observer company knows about one attribute of a person (ADR-0007 as amended in M1a). Primary key `(person_id, observer_company_id, attribute)`. Displayed min/max are derived on read from the current true value, `hw` and `center_offset` (formulas.md §4); they are never stored.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER FK → person.id | no | Person observed. |
+| `observer_company_id` | INTEGER FK → company.id | no | Company whose knowledge this is. |
+| `attribute` | VARCHAR(64) | no | A skill, a personality trait, or `potential_ability`. |
+| `position` | INTEGER | no | Skills, then personality, then PA (the order offsets were drawn in). |
+| `hw` | FLOAT | no | Half-width of the range; only ever shrinks. 0 for the founding company's view of its founder's skills and personality. |
+| `center_offset` | FLOAT | no | Fixed offset in [−0.5, 0.5] drawn when the record was created (stream `reveal`). |
+| `last_updated_turn` | INTEGER | no | Turn of the last narrowing. |
+
+### person_profile_reveal
+
+When an observer learned a person's interests and work style (shown exactly from then on). Primary key `(person_id, observer_company_id)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER FK → person.id | no | Person. |
+| `observer_company_id` | INTEGER FK → company.id | no | Observer. |
+| `revealed_turn` | INTEGER | no | First interview or network intro; 0 for the founding company and its founder. |
+
+### person_tag_reveal
+
+Behavior tags an observer has learned (ADR-0007). Primary key `(person_id, observer_company_id, tag)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER FK → person.id | no | Person. |
+| `observer_company_id` | INTEGER FK → company.id | no | Observer. |
+| `tag` | VARCHAR(64) | no | Revealed tag. |
+| `revealed_turn` | INTEGER | no | Turn it was revealed; 0 for the founder's own company. |
+
+### person_state
+
+Energy, stress and morale. Created in M1a and **empty**; M1b fills it (founder energy, morale).
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER PK, FK → person.id | no | Person. |
+| `energy` | FLOAT | yes | Founder energy for the month (formulas.md §6, M1b). |
+| `stress` | FLOAT | yes | 0–100 (M1b+). |
+| `morale` | FLOAT | yes | 0–100 (M1b). |
+
+### employment
+
+A person's job at a company. Rows are closed (`status = ended`, `end_turn`, `end_reason`), never deleted (ADR-0004 §6). Index `ix_employment_company_status (company_id, status)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Employment id. The founder's is 1. |
+| `person_id` | INTEGER FK → person.id | no | Employee. |
+| `company_id` | INTEGER FK → company.id | no | Employer. |
+| `role` | VARCHAR(64) | no | `roles.yaml` key, or `founder`. |
+| `level` | VARCHAR(16) | no | `junior` … `exec` (the founder is `exec`). |
+| `salary_cents` | BIGINT | no | Annual salary in cents (0 for the founder). |
+| `equity_bp` | INTEGER | no | Equity grant in basis points (0 for the founder in M1). |
+| `start_turn` | INTEGER | no | First turn employed. |
+| `end_turn` | INTEGER | yes | Last turn employed, once known. |
+| `status` | VARCHAR(16) | no | `active`, `notice` or `ended`; headcount counts `active` and `notice`. |
+| `end_reason` | VARCHAR(16) | yes | `resigned`, `fired`, `retired`, or null while employed. |
+
+### relationship
+
+Created in M1a and **empty**; affinity defaults to 0 (neutral). Primary key `(person_id, other_person_id)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER FK → person.id | no | One person. |
+| `other_person_id` | INTEGER FK → person.id | no | The other person. |
+| `affinity` | FLOAT | no | Relationship strength; 0 is neutral. |
+| `updated_turn` | INTEGER | no | Turn of the last change. |
 
 ## Files next to the saves
 
