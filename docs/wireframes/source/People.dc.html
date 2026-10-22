@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>People</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+th{font-size:11px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:10px 12px;border-bottom:1px solid #2A3442;white-space:nowrap}
+td{font-size:14px;padding:9px 12px;border-bottom:1px solid #222B37;white-space:nowrap}
+tbody tr:hover{background:#1B232E}
+.t1{color:#9BA7B6}.t2{color:#D5DBE3}.t3{color:#6FCF8E}.t4{color:#F5C451;font-weight:600}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 1 · Garage startup</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Jun 2010</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$251,400</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; color: #F5A25D">4 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">62 / 100</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 62%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Main.dc.html"><span class="key">1</span>Inbox<span class="num" style="margin-left: auto; font-size: 12px; background: #5AA2FF; color: #0E1217; border-radius: 9px; padding: 0 7px">3</span></a>
+      <a class="navlink" href="#"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">3</span>People</a>
+      <a class="navlink" href="Recruitment.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">5</span>Org<span class="soon">M2</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">6</span>Products<span class="soon">M3</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">7</span>Finance<span class="soon">M4</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">8</span>Competitors<span class="soon">M5</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">People</h1>
+        <div role="group" aria-label="Column view" style="display: flex; border: 1px solid #2A3442; border-radius: 6px; overflow: hidden">
+          <button type="button" aria-pressed="true" style="font-family: inherit; font-size: 13px; color: #E8ECF1; background: #1F2A38; border: 0; padding: 8px 14px; min-height: 36px">Overview</button>
+          <button type="button" aria-pressed="false" style="font-family: inherit; font-size: 13px; color: #C9D1DB; background: transparent; border: 0; border-left: 1px solid #2A3442; padding: 8px 14px; min-height: 36px">Skills</button>
+        </div>
+        <button type="button" style="font-family: inherit; font-size: 13px; color: #C9D1DB; background: transparent; border: 1px solid #2A3442; border-radius: 6px; padding: 8px 12px; min-height: 36px">Columns</button>
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #9BA7B6; margin-left: auto">Filter
+          <input type="search" placeholder="Name or role" style="font-family: inherit; font-size: 13px; color: #E8ECF1; background: #151B23; border: 1px solid #2A3442; border-radius: 6px; padding: 8px 10px; min-height: 20px; width: 180px">
+        </label>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+        <div style="flex: 1 1 150px; background: #151B23; border: 1px solid #2A3442; border-radius: 10px; padding: 12px 16px"><div style="font-size: 12px; color: #9BA7B6">Headcount</div><div class="num" style="font-size: 22px; font-weight: 600">7</div><div style="font-size: 12px; color: #9BA7B6">1 on notice</div></div>
+        <div style="flex: 1 1 150px; background: #151B23; border: 1px solid #2A3442; border-radius: 10px; padding: 12px 16px"><div style="font-size: 12px; color: #9BA7B6">Monthly people cost</div><div class="num" style="font-size: 22px; font-weight: 600">$57,500</div><div style="font-size: 12px; color: #9BA7B6">Salaries, benefits, office</div></div>
+        <div style="flex: 1 1 150px; background: #151B23; border: 1px solid #2A3442; border-radius: 10px; padding: 12px 16px"><div style="font-size: 12px; color: #9BA7B6">Average morale</div><div class="num" style="font-size: 22px; font-weight: 600">58</div><div style="font-size: 12px; color: #9BA7B6">Employees only</div></div>
+        <div style="flex: 1 1 150px; background: #151B23; border: 1px solid #2A3442; border-radius: 10px; padding: 12px 16px"><div style="font-size: 12px; color: #9BA7B6">Company mission</div><div style="font-size: 15px; font-weight: 600; padding-top: 4px">AI · Enterprise</div><div style="font-size: 12px; color: #9BA7B6">Shared interests lift morale</div></div>
+      </div>
+      <div style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow-x: auto">
+        <table style="width: 100%; border-collapse: collapse">
+          <thead>
+            <tr><th>Name</th><th>Role</th><th>Level</th><th>Age</th><th>Salary</th><th>Morale</th><th>Form</th><th>Top skills</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{people}}" as="p" hint-placeholder-count="7">
+              <tr>
+                <td><a href="Profile.dc.html" style="font-weight: 600; text-decoration: none">{{p.name}}</a></td>
+                <td>{{p.role}}</td>
+                <td style="color: #C9D1DB">{{p.level}}</td>
+                <td class="num">{{p.age}}</td>
+                <td class="num">{{p.salary}}</td>
+                <td>
+                  <sc-if value="{{p.hasMorale}}" hint-placeholder-val="{{true}}">
+                    <span style="display: flex; align-items: center; gap: 8px"><span class="num" style="width: 22px">{{p.morale}}</span><span style="width: 64px; height: 6px; background: #263040; border-radius: 3px"><span style="{{p.moraleBar}}"></span></span></span>
+                  </sc-if>
+                  <sc-if value="{{p.noMorale}}" hint-placeholder-val="{{false}}"><span style="color: #9BA7B6">n/a</span></sc-if>
+                </td>
+                <td style="color: #9BA7B6">From M3</td>
+                <td>
+                  <span style="display: flex; gap: 14px">
+                    <sc-for list="{{p.skills}}" as="s" hint-placeholder-count="3">
+                      <span style="display: flex; gap: 6px; align-items: baseline"><span style="font-size: 12px; color: #9BA7B6">{{s.label}}</span><span class="num {{s.tier}}">{{s.value}}</span></span>
+                    </sc-for>
+                  </span>
+                </td>
+                <td><span style="{{p.statusStyle}}">{{p.status}}</span></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin: 0; font-size: 12px; color: #9BA7B6">Skill values are ranges until you know someone well; colors follow the range midpoint: grey 1–5, white 6–10, green 11–15, gold 16–20.</p>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tier = (v) => {
+      const parts = String(v).split('–').map(Number);
+      const mid = parts.length > 1 ? (parts[0] + parts[1]) / 2 : parts[0];
+      return mid >= 16 ? 't4' : mid >= 11 ? 't3' : mid >= 6 ? 't2' : 't1';
+    };
+    const sk = (pairs) => pairs.map(([label, value]) => ({ label, value, tier: tier(value) }));
+    const moraleBar = (m) => {
+      const color = m < 40 ? '#F5A25D' : m < 60 ? '#D5DBE3' : '#5AA2FF';
+      return 'display: block; height: 6px; border-radius: 3px; width: ' + m + '%; background: ' + color;
+    };
+    const statuses = {
+      Founder: 'font-size: 12px; font-weight: 600; color: #C9D1DB; background: #2A2F38; border-radius: 4px; padding: 2px 8px',
+      Active: 'font-size: 12px; font-weight: 600; color: #6FCF8E; background: #16301F; border-radius: 4px; padding: 2px 8px',
+      Notice: 'font-size: 12px; font-weight: 600; color: #F5A25D; background: #3A2A1C; border-radius: 4px; padding: 2px 8px'
+    };
+    const raw = [
+      { name: 'Jordan Hale', role: 'Founder', level: 'Exec', age: 34, salary: '—', morale: null, status: 'Founder', skills: sk([['Software eng', '16'], ['Product', '13'], ['Leadership', '12']]) },
+      { name: 'Priya Raman', role: 'Software engineer', level: 'Senior', age: 31, salary: '$118,000', morale: 72, status: 'Active', skills: sk([['Software eng', '14–17'], ['Infrastructure', '12–15'], ['Mentoring', '11–15']]) },
+      { name: 'Lena Fischer', role: 'Product manager', level: 'Senior', age: 36, salary: '$112,000', morale: 58, status: 'Active', skills: sk([['Product', '13–17'], ['Communication', '12–16'], ['Strategy', '10–14']]) },
+      { name: 'Marcus Ode', role: 'DevOps engineer', level: 'Mid', age: 27, salary: '$88,500', morale: 64, status: 'Active', skills: sk([['Infrastructure', '12–16'], ['Software eng', '10–14'], ['Security', '8–12']]) },
+      { name: 'Aiko Tanaka', role: 'Designer', level: 'Mid', age: 29, salary: '$82,000', morale: 65, status: 'Active', skills: sk([['Design', '11–17'], ['Product', '8–13'], ['Communication', '9–14']]) },
+      { name: 'Daniel Osei', role: 'Sales representative', level: 'Mid', age: 30, salary: '$70,500', morale: 55, status: 'Active', skills: sk([['Sales', '11–15'], ['Negotiation', '9–14'], ['Communication', '10–14']]) },
+      { name: 'Tomás Rivera', role: 'Software engineer', level: 'Junior', age: 23, salary: '$62,000', morale: 31, status: 'Notice', skills: sk([['Software eng', '7–12'], ['Data', '5–10'], ['Infrastructure', '4–9']]) }
+    ];
+    const people = raw.map((p) => ({
+      ...p,
+      hasMorale: p.morale !== null,
+      noMorale: p.morale === null,
+      moraleBar: p.morale !== null ? moraleBar(p.morale) : '',
+      statusStyle: statuses[p.status]
+    }));
+    return { people };
+  }
+}
+</script>
+</body>
+</html>
