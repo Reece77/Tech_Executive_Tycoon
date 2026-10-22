@@ -104,8 +104,33 @@ People attributes, hiring, products, revenue, rivals' behavior, events, LLM call
 
 ## Decisions made
 
-_(Agent fills in.)_
+Settled with Reece during the build: the `advance_turn` signature (ADR-0012), starting cash only in `balance.yaml` (formulas.md §8a), and the loader outside the sim (`tst/loader.py`). Engineering decisions made by the agent:
+
+- **Turn semantics.** `GameState.turn` and `save_meta.current_turn` are the next turn to play. Starting cash is a turn-0 ledger entry posted at creation. `ledger_balances(session, through_turn=T)` is both the opening balance of turn T and its closing balance once played.
+- **KPIs.** `monthly_burn_cents` is the net cash decrease in the month (0 if cash rose). Runway is whole months, `cash // burn`, and is null when not burning. `headcount` is 0 until people exist (M1a).
+- **Equity account per scenario.** `scenarios.yaml` carries `starting_equity_account` (an account code, not a number), because §8a credits common equity for founder money and preferred equity for the funded spinout. The loader checks that it is an equity account.
+- **Seeds.** `RngFactory` accepts 0..2⁶⁴−1, but saves store 0..2⁶³−1 because SQLite integers are signed 64-bit. The API generates `secrets.randbits(63)`.
+- **Extra `save_meta` columns.** `scenario_id` and `difficulty` are stored so the state can be rebuilt. Difficulty defaults to `standard`; `--difficulty` (CLI) and `difficulty` (API) are optional.
+- **Balance validation.** `balance.yaml` must define exactly the four ADR-0011 difficulties. The dotted-path difficulty overlay from ADR-0008 is not built (nothing needs it yet).
+- **Chart of accounts.** Codes not named in the docs were chosen to fit ADR-0003's list (for example `1100_receivables`, `4000_revenue_subscriptions`, `7000_interest`).
+- **Purity scanner.** Besides the ADR-0002 list, it bans `socket`, `subprocess`, `shutil`, `urllib`, `http`, `importlib`, `tst.config`, and calls to `eval`/`exec`/`__import__`. `numpy.random` may appear outside `rng.py` only as the `Generator` type.
+- **Transactions.** pysqlite's implicit transactions are disabled and SQLAlchemy emits `BEGIN` (the documented recipe), so `session.begin()` is one real SQLite transaction. Engines use `NullPool`, so no file handle outlives a request.
+- **Data hashes** normalize CRLF to LF, so a Windows checkout hashes the same as Linux.
+- **Save index.** `saves/index.json` is rebuilt from the save files after each create and turn; the files are the source of truth, and a missing or corrupt index is rebuilt.
+- **Backups.** Pre-migration backups are named `<slug>.turn-<NNN>.pre-migration-<rev>.sqlite` and are never pruned.
+- **API.** Errors map to 404 (not found), 409 (exists), 400 (other domain errors), and 422 (request validation), all as `{code, message}`. Every route has an `operationId`. The master seed is not returned, so it cannot reveal hidden values later.
+- **Generated client.** `openapi.json` is committed in `frontend/src/api/` next to `schema.d.ts` and `client.ts`. openapi-typescript runs with `defaultNonNullable: false`, so request fields with server defaults stay optional.
+- **Front end.** The save slug is derived from the company name ("Garage Test" → `garage-test`). Overview is the landing screen until Inbox arrives in M1b. Besides Space/Enter for Continue, keys 1–9 jump to nav screens (from `.cursor/rules/20-frontend.mdc`). Keys are ignored on focused buttons and links so one press never advances twice.
+- **Playwright** is `make e2e`, not part of `make check`, because it starts servers and needs a browser. It runs its own API and Vite on ports 8765/5175 with a temporary save folder. `PLAYWRIGHT_CHANNEL=msedge` uses an installed browser instead of downloading Chromium.
+- **Line endings.** `.gitattributes` pins LF for text files. A fresh Windows clone (autocrlf) otherwise failed Prettier and the API-sync check. The sync check compares content with `git diff` rather than `git status`.
+- **ESLint.** The current Vite template ships oxlint instead of ESLint, so ESLint was configured by hand with the plugins the classic template used (see Follow-ups).
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Needs approval (dependencies outside ADR-0001).** The ESLint setup uses `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, and `globals`; the Vite template also brings `@vitejs/plugin-react` and `@types/node`. FastAPI's `TestClient` needs `httpx2`, which currently arrives only through `anthropic`. Pinning it as an explicit dev dependency would stop a future `anthropic` release from breaking the tests.
+- ADR-0008's heuristic test for numeric literals in `tst/sim` is not built (not in this brief).
+- ADR-0003's "assets = liabilities + equity" property needs closing entries or retained earnings; today the test checks that each company's ledger sums to zero. It belongs with statements in M4.
+- The difficulty overlay mechanism (`difficulty.<level>` overriding by dotted path) is unbuilt; only `starting_cash_mult_bp` is read.
+- All ten golden seeds are identical until a subsystem draws from an RNG stream (M1a).
+- Run `uv run --project backend pre-commit install` once per clone to enable the hooks.
+- On this machine, `uv python install 3.12` reported a harmless error creating its minor-version link; the interpreter works.

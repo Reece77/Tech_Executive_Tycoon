@@ -4,3 +4,9 @@ saves/
 node_modules/
 __pycache__/
 dist/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+frontend/test-results/
+frontend/playwright-report/

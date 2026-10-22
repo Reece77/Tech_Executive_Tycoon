@@ -1,0 +1,42 @@
+/* Design tokens. Dark theme by default; information density over decoration. */
+:root {
+  color-scheme: dark;
+
+  --tst-bg: #0f1216;
+  --tst-surface: #161b22;
+  --tst-surface-raised: #1d232c;
+  --tst-border: #2a313c;
+  --tst-text: #e6e9ee;
+  --tst-text-muted: #8b95a3;
+  --tst-accent: #3b82f6;
+  --tst-positive: #22c55e;
+  --tst-negative: #ef4444;
+  --tst-warning: #f59e0b;
+
+  --tst-topbar-height: 56px;
+  --tst-nav-width: 200px;
+  --tst-radius: 4px;
+
+  --tst-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tst-font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--tst-bg);
+  color: var(--tst-text);
+  font-family: var(--tst-font);
+  /* Numbers line up in tables, tiles, and the top bar. */
+  font-variant-numeric: tabular-nums;
+}
+
+.tst-num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

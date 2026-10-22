@@ -1,0 +1,5 @@
+# Check out text files with LF everywhere. Prettier, the golden snapshots, and the
+# generated API client all expect LF, and Windows autocrlf would otherwise convert them.
+* text=auto eol=lf
+*.png binary
+*.sqlite binary

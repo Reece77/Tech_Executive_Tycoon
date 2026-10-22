@@ -1,0 +1,13 @@
+# Deliberately broken balance file used by tests/unit/test_loader.py.
+# Problems: negative overhead, an unknown key, and no difficulty section.
+company:
+  base_monthly_cost_cents: -5
+  surprise_key: 1
+
+scenario:
+  garage_bootstrap:
+    starting_cash_cents: 5000000
+
+backup:
+  every_n_turns: 12
+  keep_periodic: 10

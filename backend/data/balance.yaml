@@ -1,0 +1,29 @@
+# Every tunable number in the game (ADR-0008). Each key: unit and intent.
+# Formulas and rationale: docs/formulas.md.
+
+company:
+  base_monthly_cost_cents: 200000 # cents per month; placeholder overhead until payroll exists (M0 $2,000; formulas.md section 8)
+
+scenario:
+  garage_bootstrap:
+    starting_cash_cents: 5000000 # cents; founder savings, $50,000 (formulas.md section 8a)
+  ex_big_tech_founders:
+    starting_cash_cents: 40000000 # cents; savings plus angel money, $400,000
+  funded_spinout:
+    starting_cash_cents: 150000000 # cents; seed round already closed, $1,500,000
+  mineral_first_prospector:
+    starting_cash_cents: 500000000 # cents; exploration capital, $5,000,000 (v3 only)
+
+difficulty:
+  easy:
+    starting_cash_mult_bp: 15000 # basis points applied to scenario starting cash; 1.5x
+  standard:
+    starting_cash_mult_bp: 10000 # basis points; 1.0x
+  hard:
+    starting_cash_mult_bp: 6000 # basis points; 0.6x
+  ironman:
+    starting_cash_mult_bp: 10000 # basis points; 1.0x, difficulty comes from no reloads
+
+backup:
+  every_n_turns: 12 # turns; periodic save backup after every Nth committed turn (ADR-0004)
+  keep_periodic: 10 # count; periodic backups kept per save, oldest deleted first (ADR-0004)

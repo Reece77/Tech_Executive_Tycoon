@@ -1,0 +1,2 @@
+# Root ruff config for tools/ and other top-level Python; backend/pyproject.toml is the source.
+extend = "backend/pyproject.toml"

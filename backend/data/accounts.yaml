@@ -1,0 +1,33 @@
+# Chart of accounts (ADR-0003). Codes are stable identifiers; never renumber.
+# Debits are positive and credits negative in ledger lines.
+
+accounts:
+  # Assets
+  - { code: 1000_cash, name: Cash, type: asset }
+  - { code: 1100_receivables, name: Accounts receivable, type: asset }
+  - { code: 1200_prepaid, name: Prepaid expenses, type: asset }
+  - { code: 1500_ppe, name: "Property, plant and equipment", type: asset }
+  # Liabilities
+  - { code: 2000_payables, name: Accounts payable, type: liability }
+  - { code: 2100_accrued_payroll, name: Accrued payroll, type: liability }
+  - { code: 2500_debt, name: Debt, type: liability }
+  - { code: 2600_safes, name: SAFEs and convertible notes, type: liability }
+  # Equity
+  - { code: 3000_common_equity, name: Common equity, type: equity }
+  - { code: 3100_preferred_equity, name: Preferred equity, type: equity }
+  # Revenue
+  - { code: 4000_revenue_subscriptions, name: Subscription revenue, type: revenue }
+  - { code: 4100_revenue_licenses, name: License revenue, type: revenue }
+  - { code: 4200_revenue_services, name: Services revenue, type: revenue }
+  # Expenses
+  - { code: 5000_cogs, name: Cost of goods sold, type: expense }
+  - { code: 6000_salaries, name: Salaries, type: expense }
+  - { code: 6010_benefits, name: Benefits, type: expense }
+  - { code: 6100_rent, name: Rent and office, type: expense }
+  - { code: 6200_recruiting, name: Recruiting, type: expense }
+  - { code: 6300_compute, name: Compute and hosting, type: expense }
+  - { code: 6400_marketing, name: Marketing, type: expense }
+  - { code: 6500_research_development, name: Research and development, type: expense }
+  - { code: 6900_general_admin, name: General and administrative, type: expense }
+  - { code: 7000_interest, name: Interest expense, type: expense }
+  - { code: 8000_income_tax, name: Income tax, type: expense }

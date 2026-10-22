@@ -1,0 +1,23 @@
+# Install once with: uv run --project backend pre-commit install
+# Hooks use the project's own tool versions (language: system) rather than separate pins.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: uv run --project backend ruff check --fix
+        language: system
+        types: [python]
+        files: ^(backend|tools)/
+      - id: ruff-format
+        name: ruff-format
+        entry: uv run --project backend ruff format
+        language: system
+        types: [python]
+        files: ^(backend|tools)/
+      - id: api-client-in-sync
+        name: frontend/src/api matches regeneration
+        entry: uv run --project backend python tools/check_generated.py
+        language: system
+        pass_filenames: false
+        files: ^(backend/tst/api/|frontend/src/api/|frontend/scripts/gen-api\.mjs)
