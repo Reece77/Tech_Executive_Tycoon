@@ -10,3 +10,4 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 - Golden snapshots: first generation for seeds 1..10 (24 turns, garage bootstrap). In M0 no subsystem draws random numbers yet, so all ten files are identical; they diverge once M1a adds people generation.
 - M1a people model: founder, person generator, reveal engine, monthly growth, people tables (migration `0002_people`).
 - Golden snapshots regenerated (M1a.8): `headcount` is now 1 on every turn because the founder has an employment row from turn 0 (formulas.md section 5). Cash and burn are unchanged.
+- Golden fixtures added (M1a.9): `seed_NN.founder_ca.json` records the founder's current ability after each of the 24 turns. CA is hidden (ADR-0007), so it lives in its own fixture rather than in `turn_snapshot`, which the API returns.
