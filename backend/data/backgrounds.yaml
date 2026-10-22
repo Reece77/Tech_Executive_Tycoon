@@ -1,0 +1,55 @@
+# Founder backgrounds and personality presets (docs/formulas.md section 5).
+# Every skill starts at founder.skill_base (5). The player spends founder.skill_points (70);
+# no skill may exceed founder.skill_cap (18) after the background bonus.
+# default_allocation is used when none is supplied (CLI, quick start); it spends exactly 70.
+# Drafted for M1a; M1a adds the schema and loads this file. Values are design defaults.
+backgrounds:
+  - key: engineer
+    label: Engineer
+    available_in: v1
+    description: Built software at a startup or lab; strongest at shipping product.
+    bonuses: { software_engineering: 3, infrastructure: 2 }
+    default_allocation: { software_engineering: 8, infrastructure: 7, data: 5, security: 4, product: 8, design: 2, sales: 3, marketing: 2, finance: 3, operations: 4, recruiting: 2, leadership: 6, strategy: 5, communication: 5, judgment_of_talent: 3, negotiation: 3 }
+
+  - key: salesperson
+    label: Salesperson
+    available_in: v1
+    description: Closed enterprise deals; strongest at finding customers and money.
+    bonuses: { sales: 3, negotiation: 2 }
+    default_allocation: { sales: 8, negotiation: 7, communication: 8, marketing: 7, product: 6, finance: 4, strategy: 5, leadership: 6, recruiting: 4, judgment_of_talent: 5, software_engineering: 3, operations: 4, legal: 3 }
+
+  - key: academic
+    label: Academic
+    available_in: v1
+    description: Left a research lab with an idea; strongest at deep technical work.
+    bonuses: { ml_research: 3, data: 2 }
+    default_allocation: { ml_research: 9, data: 8, software_engineering: 7, communication: 5, strategy: 5, mentoring: 6, product: 4, judgment_of_talent: 4, leadership: 3, security: 2, hardware_design: 3, chip_design: 2, finance: 2, recruiting: 3, design: 2, legal: 1, marketing: 4 }
+
+  - key: ex_big_tech
+    label: Ex-big-tech
+    available_in: v1
+    description: Senior at a large tech company; balanced, with a strong network.
+    bonuses: { software_engineering: 2, product: 2, leadership: 1 }
+    default_allocation: { software_engineering: 6, product: 7, leadership: 6, strategy: 6, communication: 6, infrastructure: 5, data: 4, recruiting: 5, judgment_of_talent: 5, finance: 3, operations: 4, negotiation: 4, marketing: 3, design: 2, security: 2, mentoring: 2 }
+
+  - key: geologist
+    label: Geologist
+    available_in: v3
+    description: Field geologist turned founder; for the mineral-first start.
+    bonuses: { geology: 3, mining_engineering: 2 }
+    default_allocation: { geology: 9, mining_engineering: 8, operations: 6, procurement: 5, finance: 5, negotiation: 5, leadership: 5, strategy: 5, communication: 5, legal: 4, data: 4, judgment_of_talent: 4, manufacturing: 5 }
+
+# Founder personality presets (true values, 1-20). The founding company sees them exactly.
+personality_presets:
+  - key: visionary
+    label: Visionary
+    values: { ambition: 17, loyalty: 11, professionalism: 12, temperament: 10, adaptability: 15, risk_appetite: 17, ego: 14, integrity: 12, sociability: 14 }
+  - key: operator
+    label: Operator
+    values: { ambition: 12, loyalty: 14, professionalism: 17, temperament: 15, adaptability: 11, risk_appetite: 8, ego: 8, integrity: 15, sociability: 11 }
+  - key: hustler
+    label: Hustler
+    values: { ambition: 16, loyalty: 9, professionalism: 10, temperament: 11, adaptability: 16, risk_appetite: 15, ego: 13, integrity: 10, sociability: 17 }
+  - key: scientist
+    label: Scientist
+    values: { ambition: 11, loyalty: 13, professionalism: 15, temperament: 13, adaptability: 12, risk_appetite: 9, ego: 10, integrity: 16, sociability: 8 }

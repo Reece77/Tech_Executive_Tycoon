@@ -1,0 +1,117 @@
+# Hireable roles for v1 (docs/formulas.md sections 1, 2, 9).
+# - primary skills weigh 3 and secondary skills weigh 1 in current ability (CA).
+# - work_style is the role's natural style; a person whose style differs gets the
+#   morale mismatch penalty (formulas.md section 9).
+# - work_style_weights and interest_weights are relative weights for generation.
+# - salary_band_mid_cents: 2010 US mid-point by level, in cents (North America = 1.0x).
+# The founder is not a hireable role: the founder's employment uses the fixed role
+# "founder" and CA uses the best-fit role below (formulas.md section 1).
+# Drafted for M1a; M1a adds the schema and loads this file. Values are design defaults.
+roles:
+  - key: software_engineer
+    label: Software engineer
+    primary: [software_engineering, infrastructure]
+    secondary: [data, security, communication, product]
+    work_style: builder
+    work_style_weights: { builder: 6, operator: 2, researcher: 2, seller: 0 }
+    interest_weights: { ai: 3, hardware: 1, crypto: 1, climate: 1, security: 2, gaming: 2, mining: 0, policy: 0, design: 1, fintech: 1, consumer: 2, enterprise: 2, open_source: 3 }
+    salary_band_mid_cents: { junior: 6500000, mid: 9000000, senior: 11500000, staff: 14000000, principal: 16500000, exec: 19000000 }
+
+  - key: data_scientist
+    label: Data scientist
+    primary: [data, ml_research]
+    secondary: [software_engineering, communication, product, strategy]
+    work_style: researcher
+    work_style_weights: { builder: 2, operator: 1, researcher: 6, seller: 1 }
+    interest_weights: { ai: 4, hardware: 1, crypto: 1, climate: 2, security: 1, gaming: 1, mining: 0, policy: 1, design: 1, fintech: 2, consumer: 1, enterprise: 2, open_source: 2 }
+    salary_band_mid_cents: { junior: 7000000, mid: 9500000, senior: 12000000, staff: 14500000, principal: 17000000, exec: 19500000 }
+
+  - key: devops_engineer
+    label: DevOps engineer
+    primary: [infrastructure, security]
+    secondary: [software_engineering, operations, data, communication]
+    work_style: operator
+    work_style_weights: { builder: 3, operator: 6, researcher: 1, seller: 0 }
+    interest_weights: { ai: 1, hardware: 2, crypto: 1, climate: 1, security: 3, gaming: 1, mining: 0, policy: 0, design: 0, fintech: 1, consumer: 1, enterprise: 3, open_source: 3 }
+    salary_band_mid_cents: { junior: 6200000, mid: 8500000, senior: 10800000, staff: 13000000, principal: 15200000, exec: 17500000 }
+
+  - key: security_engineer
+    label: Security engineer
+    primary: [security, infrastructure]
+    secondary: [software_engineering, legal, communication, data]
+    work_style: builder
+    work_style_weights: { builder: 5, operator: 3, researcher: 2, seller: 0 }
+    interest_weights: { ai: 1, hardware: 2, crypto: 2, climate: 0, security: 4, gaming: 1, mining: 0, policy: 2, design: 0, fintech: 2, consumer: 1, enterprise: 2, open_source: 2 }
+    salary_band_mid_cents: { junior: 6800000, mid: 9200000, senior: 11800000, staff: 14200000, principal: 16500000, exec: 19000000 }
+
+  - key: product_manager
+    label: Product manager
+    primary: [product, strategy]
+    secondary: [communication, design, data, leadership]
+    work_style: operator
+    work_style_weights: { builder: 3, operator: 5, researcher: 1, seller: 1 }
+    interest_weights: { ai: 2, hardware: 1, crypto: 1, climate: 1, security: 1, gaming: 2, mining: 0, policy: 1, design: 3, fintech: 2, consumer: 3, enterprise: 3, open_source: 1 }
+    salary_band_mid_cents: { junior: 7000000, mid: 9500000, senior: 12000000, staff: 14500000, principal: 16500000, exec: 19000000 }
+
+  - key: designer
+    label: Designer
+    primary: [design, product]
+    secondary: [communication, marketing, software_engineering]
+    work_style: builder
+    work_style_weights: { builder: 6, operator: 1, researcher: 2, seller: 1 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 0, climate: 2, security: 0, gaming: 3, mining: 0, policy: 0, design: 5, fintech: 1, consumer: 4, enterprise: 1, open_source: 1 }
+    salary_band_mid_cents: { junior: 5500000, mid: 7500000, senior: 9500000, staff: 11500000, principal: 13500000, exec: 15500000 }
+
+  - key: sales_representative
+    label: Sales representative
+    primary: [sales, negotiation]
+    secondary: [communication, product, marketing]
+    work_style: seller
+    work_style_weights: { builder: 0, operator: 2, researcher: 0, seller: 8 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 1, climate: 1, security: 1, gaming: 1, mining: 0, policy: 1, design: 0, fintech: 2, consumer: 3, enterprise: 3, open_source: 0 }
+    salary_band_mid_cents: { junior: 4500000, mid: 6000000, senior: 7500000, staff: 9000000, principal: 10500000, exec: 12500000 }
+
+  - key: account_executive
+    label: Account executive
+    primary: [sales, negotiation]
+    secondary: [communication, strategy, product, finance]
+    work_style: seller
+    work_style_weights: { builder: 0, operator: 2, researcher: 0, seller: 8 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 0, climate: 1, security: 2, gaming: 0, mining: 0, policy: 1, design: 0, fintech: 2, consumer: 1, enterprise: 5, open_source: 0 }
+    salary_band_mid_cents: { junior: 6000000, mid: 8000000, senior: 10000000, staff: 12000000, principal: 14000000, exec: 16500000 }
+
+  - key: marketer
+    label: Marketer
+    primary: [marketing, communication]
+    secondary: [design, data, product, sales]
+    work_style: seller
+    work_style_weights: { builder: 2, operator: 2, researcher: 1, seller: 5 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 1, climate: 2, security: 0, gaming: 3, mining: 0, policy: 1, design: 3, fintech: 1, consumer: 5, enterprise: 2, open_source: 1 }
+    salary_band_mid_cents: { junior: 5000000, mid: 6800000, senior: 8800000, staff: 10800000, principal: 12800000, exec: 15000000 }
+
+  - key: finance_manager
+    label: Finance manager
+    primary: [finance, strategy]
+    secondary: [legal, operations, data, negotiation]
+    work_style: operator
+    work_style_weights: { builder: 1, operator: 6, researcher: 2, seller: 1 }
+    interest_weights: { ai: 1, hardware: 0, crypto: 2, climate: 1, security: 0, gaming: 0, mining: 1, policy: 2, design: 0, fintech: 5, consumer: 1, enterprise: 3, open_source: 0 }
+    salary_band_mid_cents: { junior: 6000000, mid: 8000000, senior: 10000000, staff: 12500000, principal: 14500000, exec: 17000000 }
+
+  - key: recruiter
+    label: Recruiter
+    primary: [recruiting, judgment_of_talent]
+    secondary: [communication, negotiation, sales]
+    work_style: seller
+    work_style_weights: { builder: 0, operator: 3, researcher: 1, seller: 6 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 0, climate: 1, security: 1, gaming: 1, mining: 0, policy: 1, design: 1, fintech: 1, consumer: 2, enterprise: 3, open_source: 1 }
+    salary_band_mid_cents: { junior: 4500000, mid: 6000000, senior: 7800000, staff: 9500000, principal: 11200000, exec: 13500000 }
+
+  - key: operations_manager
+    label: Operations manager
+    primary: [operations, leadership]
+    secondary: [finance, procurement, communication, strategy]
+    work_style: operator
+    work_style_weights: { builder: 1, operator: 7, researcher: 0, seller: 2 }
+    interest_weights: { ai: 1, hardware: 2, crypto: 0, climate: 2, security: 1, gaming: 0, mining: 1, policy: 2, design: 0, fintech: 1, consumer: 1, enterprise: 3, open_source: 0 }
+    salary_band_mid_cents: { junior: 5500000, mid: 7200000, senior: 9200000, staff: 11200000, principal: 13200000, exec: 15500000 }

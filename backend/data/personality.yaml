@@ -1,0 +1,23 @@
+# Personality traits (1-20) and hidden traits (1-20). Order is significant for random
+# draws (ADR-0013). Hidden traits never get reveal records or API fields (ADR-0007).
+# Drafted for M1a; M1a adds the schema and loads this file.
+personality:
+  - { key: ambition, label: Ambition }
+  - { key: loyalty, label: Loyalty }
+  - { key: professionalism, label: Professionalism }
+  - { key: temperament, label: Temperament }
+  - { key: adaptability, label: Adaptability }
+  - { key: risk_appetite, label: Risk appetite }
+  - { key: ego, label: Ego }
+  - { key: integrity, label: Integrity }
+  - { key: sociability, label: Sociability }
+hidden:
+  - { key: consistency }
+  - { key: burnout_risk }
+  - { key: big_moments }
+  - { key: poachability }
+work_styles:
+  - { key: builder, label: Builder }
+  - { key: operator, label: Operator }
+  - { key: researcher, label: Researcher }
+  - { key: seller, label: Seller }

@@ -1,0 +1,29 @@
+# Skills (spec section 5.1). Order is significant: random draws per skill follow this
+# order (ADR-0013), so append new skills at the end of their group and never reorder.
+# Drafted for M1a; M1a adds the schema and loads this file.
+skills:
+  - { key: software_engineering, label: Software engineering, group: technical }
+  - { key: ml_research, label: ML research, group: technical }
+  - { key: data, label: Data, group: technical }
+  - { key: infrastructure, label: Infrastructure, group: technical }
+  - { key: hardware_design, label: Hardware design, group: technical }
+  - { key: chip_design, label: Chip design, group: technical }
+  - { key: manufacturing, label: Manufacturing, group: technical }
+  - { key: geology, label: Geology, group: technical }
+  - { key: mining_engineering, label: Mining engineering, group: technical }
+  - { key: security, label: Security, group: technical }
+  - { key: product, label: Product, group: business }
+  - { key: design, label: Design, group: business }
+  - { key: sales, label: Sales, group: business }
+  - { key: marketing, label: Marketing, group: business }
+  - { key: finance, label: Finance, group: business }
+  - { key: legal, label: Legal, group: business }
+  - { key: operations, label: Operations, group: business }
+  - { key: procurement, label: Procurement, group: business }
+  - { key: recruiting, label: Recruiting, group: business }
+  - { key: leadership, label: Leadership, group: leadership }
+  - { key: mentoring, label: Mentoring, group: leadership }
+  - { key: strategy, label: Strategy, group: leadership }
+  - { key: negotiation, label: Negotiation, group: leadership }
+  - { key: communication, label: Communication, group: leadership }
+  - { key: judgment_of_talent, label: Judgment of talent, group: leadership }

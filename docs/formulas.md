@@ -59,14 +59,14 @@ Inputs: role, level, region, turn.
 
 5. **Personality and hidden 1–20 traits:** each `Normal(10.5, 3.5)`, clamped.
 6. **Interests:** count uniform in {2, 3, 4}; tags drawn without replacement using the role's interest weights. **Work style:** one draw using the role's work-style weights. The interest list (13 tags in `interests.yaml`) extends the 9 examples in spec §5.1.
-7. **Behavior tags:** for each tag in `tags.yaml`, chance = `base_bp × multiplier` where the multiplier applies if the tag's attribute condition holds (for example `mentor`: base 400 bp, ×3 if mentoring ≥ 15 and sociability ≥ 12). Process tags in file order; stop after 2 tags.
+7. **Behavior tags:** for each tag in `tags.yaml`, chance = `base_bp × multiplier` where the multiplier applies if the tag's attribute condition holds (for example `mentor`: base 400 bp, ×3 if sociability ≥ 13 and temperament ≥ 13). Process tags in file order; skip a tag that an already-assigned tag excludes; stop after 2 tags. Conditions use personality traits, not skills, because a new hire's non-role skills are drawn from 1–8 and would rarely meet a skill threshold. With the `tags.yaml` defaults, about 25% of generated people carry at least one tag.
 8. **Salary expectation (2010 USD):**
 
    ```latex
    E = band_{mid}(role, level) \times \left(1 + \frac{CA - level\_ca.mean}{100}\right) \times region\_multiplier
    ```
 
-   rounded to the nearest $500, then converted to cents.
+   where `region_multiplier` is the region's `salary_multiplier_bp` ÷ 10,000 from `regions.yaml`, rounded to the nearest $500, then converted to cents.
 
 **Worked example.** A senior software engineer (band mid $115,000) generated with CA 126 in North America (multiplier 1.0): E = 115,000 × (1 + 6/100) = $121,900 → **$122,000**.
 
@@ -345,7 +345,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `people.pa_gap_mean.<age_band>` / `people.pa_gap_sd` | see §2 / 15 | CA points | §2 |
 | `people.personality_mean` / `_sd` | 10.5 / 3.5 | attribute points | §2 |
 | `people.max_tags` | 2 | count | §2 |
-| `people.region_weights` | per region | weight | §2 |
+| `people.region_weights` | north_america 55, europe 15, east_asia 8, south_southeast_asia 10, latin_america 6, africa 3, oceania 3 | relative weight | §2 |
 | `payroll.salary_round_to_cents` | 50000 | cents | §2 |
 | `growth.rate` | 0.12 | attribute points per month | §3 |
 | `growth.age_factor.<band>` | see §3 | multiplier | §3 |

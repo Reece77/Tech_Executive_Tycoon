@@ -1,0 +1,16 @@
+# Interest tags (spec section 5.1, extended). A company mission is 2 of these (M1b).
+# Drafted for M1a; M1a adds the schema and loads this file.
+interests:
+  - { key: ai, label: AI }
+  - { key: hardware, label: Hardware }
+  - { key: crypto, label: Crypto }
+  - { key: climate, label: Climate }
+  - { key: security, label: Security }
+  - { key: gaming, label: Gaming }
+  - { key: mining, label: Mining }
+  - { key: policy, label: Policy }
+  - { key: design, label: Design }
+  - { key: fintech, label: Fintech }
+  - { key: consumer, label: Consumer }
+  - { key: enterprise, label: Enterprise }
+  - { key: open_source, label: Open source }

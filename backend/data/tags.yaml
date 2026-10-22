@@ -1,0 +1,79 @@
+# Behavior tags (spec section 5.1; docs/formulas.md section 2, step 7).
+# Generation: process tags in this order. A tag is skipped if it is excluded by a tag
+# already assigned. Chance = base_bp, multiplied by boost.multiplier when every boost
+# condition holds on the person's TRUE values. Stop after people.max_tags (2).
+# effect_note records what the tag does and when that effect is built; M1 implements
+# only job_hopper (resignation x2) and culture_carrier (firing morale penalty).
+# Drafted for M1a; M1a adds the schema and loads this file. Values are design defaults.
+tags:
+  - key: mentor
+    label: Mentor
+    base_bp: 400
+    boost: { multiplier: 3.0, when: [{ attr: sociability, op: ">=", value: 13 }, { attr: temperament, op: ">=", value: 13 }] }
+    excludes: [toxic_high_performer, credit_taker]
+    reveal_text: "is a natural mentor"
+    effect_note: "M2: raises growth of direct reports and teammates."
+
+  - key: quiet_genius
+    label: Quiet genius
+    base_bp: 250
+    boost: { multiplier: 3.0, when: [{ attr: sociability, op: "<=", value: 7 }, { attr: professionalism, op: ">=", value: 14 }] }
+    excludes: [politician]
+    reveal_text: "does exceptional work without seeking attention"
+    effect_note: "M3: bonus to project quality; reveals more slowly than other tags."
+
+  - key: credit_taker
+    label: Credit-taker
+    base_bp: 300
+    boost: { multiplier: 2.5, when: [{ attr: ego, op: ">=", value: 15 }, { attr: integrity, op: "<=", value: 8 }] }
+    excludes: [culture_carrier, mentor]
+    reveal_text: "tends to take credit for the team's work"
+    effect_note: "M2: lowers teammates' morale and relationships."
+
+  - key: politician
+    label: Politician
+    base_bp: 300
+    boost: { multiplier: 2.5, when: [{ attr: ambition, op: ">=", value: 15 }, { attr: sociability, op: ">=", value: 14 }] }
+    excludes: [quiet_genius]
+    reveal_text: "is skilled at office politics"
+    effect_note: "M2: faster promotion; can trigger conflict events (M6)."
+
+  - key: maverick
+    label: Maverick
+    base_bp: 300
+    boost: { multiplier: 2.5, when: [{ attr: risk_appetite, op: ">=", value: 15 }, { attr: adaptability, op: ">=", value: 13 }] }
+    excludes: []
+    reveal_text: "likes to go their own way"
+    effect_note: "M3: higher variance on project outcomes; breakthrough chance in R&D (v2)."
+
+  - key: perfectionist
+    label: Perfectionist
+    base_bp: 350
+    boost: { multiplier: 2.5, when: [{ attr: professionalism, op: ">=", value: 16 }] }
+    excludes: []
+    reveal_text: "will not ship until it is right"
+    effect_note: "M3: higher quality, slower delivery, more stress."
+
+  - key: job_hopper
+    label: Job-hopper
+    base_bp: 400
+    boost: { multiplier: 2.5, when: [{ attr: loyalty, op: "<=", value: 6 }] }
+    excludes: [culture_carrier]
+    reveal_text: "has moved jobs often"
+    effect_note: "M1b: doubles monthly resignation chance."
+
+  - key: culture_carrier
+    label: Culture carrier
+    base_bp: 300
+    boost: { multiplier: 3.0, when: [{ attr: loyalty, op: ">=", value: 15 }, { attr: sociability, op: ">=", value: 13 }, { attr: integrity, op: ">=", value: 13 }] }
+    excludes: [job_hopper, credit_taker, toxic_high_performer]
+    reveal_text: "holds the team together"
+    effect_note: "M1b: firing them costs everyone 6 morale instead of 3. M2: lifts team morale."
+
+  - key: toxic_high_performer
+    label: Toxic high performer
+    base_bp: 150
+    boost: { multiplier: 4.0, when: [{ attr: ego, op: ">=", value: 16 }, { attr: temperament, op: "<=", value: 6 }] }
+    excludes: [mentor, culture_carrier]
+    reveal_text: "gets results but wears people down"
+    effect_note: "M2: bonus to own output, morale drain on teammates."

@@ -1,0 +1,13 @@
+# Regions (spec section 9). v1 uses regions only; named cities arrive in v2 (ADR-0011).
+# salary_multiplier_bp scales salary bands and expectations (10000 = 1.0x, North America).
+# Values approximate 2010 tech pay relative to the US, softened for gameplay.
+# Candidate region weights are a tunable and live in balance.yaml (people.region_weights).
+# Drafted for M1a; M1a adds the schema and loads this file.
+regions:
+  - { key: north_america, label: North America, salary_multiplier_bp: 10000 }
+  - { key: europe, label: Europe, salary_multiplier_bp: 8500 }
+  - { key: east_asia, label: East Asia, salary_multiplier_bp: 8000 }
+  - { key: south_southeast_asia, label: South and Southeast Asia, salary_multiplier_bp: 5500 }
+  - { key: latin_america, label: Latin America, salary_multiplier_bp: 6000 }
+  - { key: africa, label: Africa, salary_multiplier_bp: 5500 }
+  - { key: oceania, label: Oceania, salary_multiplier_bp: 9000 }
