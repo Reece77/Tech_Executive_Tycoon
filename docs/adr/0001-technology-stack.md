@@ -23,7 +23,7 @@ Backend (Python 3.12, managed with `uv`):
 | Seed data | `pyyaml` |
 | CLI | `typer` |
 | LLM | `anthropic` (used only inside `tst/llm/`) |
-| Dev | `pytest`, `hypothesis`, `ruff`, `mypy`, `pre-commit` |
+| Dev | `pytest`, `hypothesis`, `ruff`, `mypy`, `pre-commit`, `httpx2` (FastAPI test client; pinned so tests do not depend on `anthropic`'s dependencies) |
 
 Front end (Node 22 LTS, managed with `pnpm`):
 
@@ -36,9 +36,12 @@ Front end (Node 22 LTS, managed with `pnpm`):
 | Charts | `recharts` |
 | Components | `@mantine/core`, `@mantine/hooks` |
 | API client generation | `openapi-typescript`, `openapi-fetch` |
-| Dev | `eslint`, `prettier`, `vitest`, `@testing-library/react`, `@playwright/test` |
+| Dev | `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `globals`, `prettier`, `vitest`, `@testing-library/react`, `@playwright/test` |
+| Build support | `@vitejs/plugin-react`, `@types/node` |
 
 Root tooling: a `Makefile` with `check`, `dev`, `gen-api`, `golden` targets.
+
+Approved additions, 2026-10-21 (M0 review): the ESLint packages, `@vitejs/plugin-react`, `@types/node`, and `httpx2` above. The current Vite template ships oxlint, so ESLint is configured by hand.
 
 Adding any package not listed requires a short note in the task summary and Reece's approval.
 
