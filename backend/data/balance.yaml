@@ -60,6 +60,7 @@ people:
   pa_gap_sd: 15 # CA points; sd of the PA gap before it is floored at 0 (2.4)
   personality_mean: 10.5 # attribute points; mean of each personality and hidden trait (2.5)
   personality_sd: 3.5 # attribute points; sd of each personality and hidden trait (2.5)
+  interest_count: [2, 4] # count; interests per person, uniform integer in [min, max] (2.6)
   max_tags: 2 # count; behavior tags assigned per person at most (2.7)
   region_weights: # relative weight; region of a generated candidate (2)
     north_america: 55

@@ -344,6 +344,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `people.ca_tolerance` | 2 | CA points | §2 |
 | `people.pa_gap_mean.<age_band>` / `people.pa_gap_sd` | see §2 / 15 | CA points | §2 |
 | `people.personality_mean` / `_sd` | 10.5 / 3.5 | attribute points | §2 |
+| `people.interest_count` | [2, 4] | count [min, max] | §2 |
 | `people.max_tags` | 2 | count | §2 |
 | `people.region_weights` | north_america 55, europe 15, east_asia 8, south_southeast_asia 10, latin_america 6, africa 3, oceania 3 | relative weight | §2 |
 | `payroll.salary_round_to_cents` | 50000 | cents | §2 |

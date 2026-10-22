@@ -109,6 +109,7 @@ class PeopleBalance(_Frozen):
     pa_gap_sd: float = Field(ge=0)
     personality_mean: float
     personality_sd: float = Field(ge=0)
+    interest_count: Span
     max_tags: int = Field(ge=0)
     region_weights: dict[str, float]
     retire_bp_per_year_over_60: int = Field(ge=0)
