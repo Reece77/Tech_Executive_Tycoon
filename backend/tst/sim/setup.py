@@ -18,7 +18,7 @@ from tst.sim.state import CompanyState, GameState, SaveMeta
 PLAYER_COMPANY_ID: Final = 1
 START_TURN: Final = 0
 START_STAGE: Final = 0  # solo founder (spec section 3)
-MAX_COMPANY_NAME: Final = 80
+MAX_COMPANY_NAME: Final = 80  # tunable-exempt: column width of company.name
 
 
 def starting_cash_cents(balance: Balance, scenario_id: str, difficulty: str) -> Cents:
