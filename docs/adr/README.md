@@ -16,5 +16,7 @@ Each ADR records one decision that coding agents must not re-decide. Status is A
 | [0010](0010-rivals-as-full-entities.md) | Rivals use the same engine rules; utility AI, no LLM | Accepted |
 | [0011](0011-game-setting-decisions.md) | Settled game-design choices from spec section 20 | Accepted |
 | [0012](0012-turn-function-signature.md) | `advance_turn` inputs and `TurnResult` fields (amends ADR-0002) | Accepted |
+| [0013](0013-rng-stream-per-use-and-entity-keys.md) | One RNG stream name per call site, keyed by entity id (extends ADR-0002) | Accepted |
+| [0014](0014-immediate-actions-and-pending-items.md) | Player actions apply at once; offers and candidate pools resolve at turn end | Accepted |
 
 Template: [0000-template.md](0000-template.md).

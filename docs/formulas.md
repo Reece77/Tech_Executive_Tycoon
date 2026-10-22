@@ -14,7 +14,7 @@ Status: §1–§10 are final for M1. §11 is a draft for M3 and will be confirme
 | Money | Integer cents (ADR-0003); rounding is round-half-to-even |
 | Probabilities | Basis points (bp), 10,000 bp = 100%; a roll succeeds when `rng.integers(0, 10000) < p_bp` |
 | Time | Monthly turns; age in years = `(turn − birth_turn) // 12` |
-| Randomness | Each formula names its RNG stream (ADR-0002). Worked examples show values **before noise** |
+| Randomness | Each formula names its RNG stream and key (ADR-0013). Worked examples show values **before noise** |
 | Iteration order | People are processed in ascending `id` order inside every phase |
 
 ## 1. Current ability (CA)
@@ -25,12 +25,12 @@ Each role in `roles.yaml` lists primary skills (weight 3) and secondary skills (
 CA = 10 \times \frac{3\sum_{p \in primary} s_p + \sum_{q \in secondary} s_q}{3\,n_{primary} + n_{secondary}}
 ```
 
-People without a role (the founder, pooled candidates) are scored against every role; their CA is the highest result, and that role is their "best fit".
+The founder has no hiring role; the founder is scored against every role, and the founder's CA is the highest result. That role is the founder's "best fit", recomputed each month and used for growth (§3). Ties go to the role listed first in `roles.yaml`. Every other person has a role: candidates take the role of the search that found them.
 
 **Worked example.** A software engineer (primaries: software engineering, infrastructure; secondaries: data, security, communication, product) with skills 14, 11 and 9, 8, 12, 10:
 numerator = 3 × (14 + 11) + (9 + 8 + 12 + 10) = 75 + 39 = 114; denominator = 3 × 2 + 4 = 10; CA = 10 × 114 / 10 = **114**.
 
-## 2. Person generation (stream `people_gen`)
+## 2. Person generation (stream `people_gen`, key `search_id`; the founder uses stream `founder`)
 
 Inputs: role, level, region, turn.
 
@@ -58,7 +58,7 @@ Inputs: role, level, region, turn.
    | 45+ | 2 |
 
 5. **Personality and hidden 1–20 traits:** each `Normal(10.5, 3.5)`, clamped.
-6. **Interests:** count uniform in {2, 3, 4}; tags drawn without replacement using the role's interest weights. **Work style:** one draw using the role's work-style weights.
+6. **Interests:** count uniform in {2, 3, 4}; tags drawn without replacement using the role's interest weights. **Work style:** one draw using the role's work-style weights. The interest list (13 tags in `interests.yaml`) extends the 9 examples in spec §5.1.
 7. **Behavior tags:** for each tag in `tags.yaml`, chance = `base_bp × multiplier` where the multiplier applies if the tag's attribute condition holds (for example `mentor`: base 400 bp, ×3 if mentoring ≥ 15 and sociability ≥ 12). Process tags in file order; stop after 2 tags.
 8. **Salary expectation (2010 USD):**
 
@@ -70,9 +70,9 @@ Inputs: role, level, region, turn.
 
 **Worked example.** A senior software engineer (band mid $115,000) generated with CA 126 in North America (multiplier 1.0): E = 115,000 × (1 + 6/100) = $121,900 → **$122,000**.
 
-## 3. Monthly skill growth and aging (phase 8, stream `people_gen`)
+## 3. Monthly skill growth and aging (phase 8, stream `growth`, key `person_id`)
 
-For each primary and secondary skill of the person's current role:
+Applies to every person with an active or notice employment, including the founder. For each primary and secondary skill of the person's current role (the founder's best-fit role):
 
 ```latex
 \Delta s = r \cdot a(age) \cdot \frac{\max(0,\,PA - CA)}{PA} \cdot \frac{professionalism}{10} \;-\; d(age) \;+\; Normal(0,\,0.05)
@@ -100,17 +100,19 @@ Default r = 0.12. Mentoring and project difficulty multipliers arrive in M2 and 
 | Age 38 | 120 → 128 | 10 | +0.0030 | +0.04 |
 | Age 58 | 130 → 132 | 12 | −0.0150 | −0.18 |
 
-**Retirement (from M1b):** from age 60, monthly chance `retire_bp_per_year_over_60 × (age − 59) / 12`; default 600 bp, so a 62-year-old retires with 150 bp (1.5%) chance per month.
+One noise value is drawn per skill, in `skills.yaml` order, for every skill (role skills and others).
 
-## 4. Revealed ranges (ADR-0007, stream `people_gen`)
+**Retirement (from M1b, stream `retire`, key `person_id`):** from age 60, monthly chance `retire_bp_per_year_over_60 × (age − 59) / 12`; default 600 bp, so a 62-year-old retires with 150 bp (1.5%) chance per month. The founder never retires in M1.
 
-Each `(observer company, person, attribute)` stores a half-width `hw` and a center offset `o ~ Uniform(−0.5, 0.5)`, drawn once when the record is created.
+## 4. Revealed ranges (ADR-0007, stream `reveal`, key `(observer_company_id, person_id)`)
+
+Each `(observer company, person, attribute)` stores a half-width `hw` and a center offset `o ~ Uniform(−0.5, 0.5)`, drawn once when the record is created. The attributes with records are the 25 skills, the 9 personality traits, and PA. Offsets are drawn in that order (skills in `skills.yaml` order, then personality, then PA).
 
 ```latex
 min = \lfloor clamp(t - hw\,(1 + o)) \rfloor \qquad max = \lceil clamp(t + hw\,(1 - o)) \rceil
 ```
 
-where `t` is the true value. If `hw < 0.5`, then `min = max = round(t)`. The true value is always inside the range.
+where `t` is the true value and `clamp` limits to [1, 20] for skills and personality, or [10, 200] for PA. If `hw < 0.5`, then `min = max = round(t)`. The true value is always inside the range.
 
 **Narrowing** after a knowledge action:
 
@@ -120,14 +122,16 @@ hw \leftarrow hw \times (1 - strength \times scout\_factor), \qquad scout\_facto
 
 | Action | Strength | Applies to | Founder energy |
 | --- | --- | --- | --- |
-| job_post_screen | 0.20 | skills | 0 (automatic) |
-| network_intro | 0.30 | all | 0 (automatic) |
-| interview | 0.35 | skills and personality | 6 |
-| reference_check | 0.30 | personality | 3 |
+| job_post_screen | 0.20 | skills, PA | 0 (automatic) |
+| network_intro | 0.30 | all (skills, personality, PA) | 0 (automatic) |
+| interview | 0.35 | all | 6 |
+| reference_check | 0.30 | personality, PA | 3 |
 | scouting_month | 0.25 | all | — (M2, delegated) |
 | employed_month | 0.08 | all | 0 (automatic, each month) |
 
-Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The scout is the actor; for `employed_month` it is the company's best `judgment_of_talent`, or the founder.
+Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The scout is the actor; for `employed_month` it is the highest true `judgment_of_talent` among the company's active employees, including the founder.
+
+**Interests and work style** are not ranges: they are hidden until the first interview or network intro, then shown exactly.
 
 **Worked example.** True skill 14, offset +0.2, scout judgment 12 (scout_factor 0.8):
 
@@ -150,27 +154,31 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The 
 
 ## 5. Founder build
 
-- Every skill starts at 5. The player distributes 70 points; no skill may exceed 18 after background bonuses.
+- Every skill starts at 5. The player distributes 70 points; no skill may exceed 18 after background bonuses. Each background in `backgrounds.yaml` carries a default allocation, used when the player (or the CLI) does not supply one.
 - Background bonuses (`backgrounds.yaml`): engineer +3 software engineering, +2 infrastructure; salesperson +3 sales, +2 negotiation; academic +3 ML research, +2 data; ex-big-tech +2 software engineering, +2 product, +1 leadership; geologist +3 geology, +2 mining engineering (available in v3).
 - Personality: one of four presets (visionary, operator, hustler, scientist) or `Normal(10.5, 3.5)` per trait.
-- Hidden traits and PA are generated as in §2, using age 28 unless the player sets age (22–55).
-- The founding company knows the founder exactly (`hw = 0` for all visible attributes); PA stays hidden.
+- Hidden traits and PA are generated as in §2 (stream `founder`), using age 28 unless the player sets age (22–60).
+- The founding company knows the founder exactly (`hw = 0` for skills and personality; interests and work style shown). PA keeps its normal initial `hw` and is shown only as a phrase.
+- The founder has an employment row (role `founder`, level `exec`, salary 0, equity 0) so headcount counts them. In M1 the founder is excluded from payroll, morale, resignation, retirement, and firing; board removal arrives in M4.
 
 ## 6. Founder energy
 
-100 points per month, reset in phase 1. Unused energy does not carry over.
+100 points per month, stored on the founder's `person_state.energy`. Actions spend it at once (ADR-0014); `advance_turn` resets it after phase 12. Unused energy does not carry over.
 
 | Action | Cost |
 | --- | --- |
 | Interview | 6 |
 | Reference check | 3 |
 | Open a job post | 4 |
+| Engage a recruiter | 4 |
 | Network search | 10 |
 | Make an offer | 0 |
 
 ## 7. Hiring (stream `hiring`)
 
-**Candidate pools** (generated in phase 12 for the next turn, for each open search):
+**Searches.** A network search and a recruiter search each produce one batch, then close. A job post stays open and produces a new batch every month until the player closes it. Each search is for one role.
+
+**Candidate pools** (generated in phase 12 for the next turn, stream `people_gen`, key `search_id`):
 
 | Channel | Cost | Candidates | Level mix (junior/mid/senior/staff) | Starting knowledge |
 | --- | --- | --- | --- | --- |
@@ -178,9 +186,9 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The 
 | Job post | $500 per month open | 6–10 | 45/40/13/2 | job_post_screen applied |
 | Recruiter | 20% of first-year salary, charged on hire | 4–6 | 10/35/40/15 | job_post_screen applied twice |
 
-Candidates stay for 3 turns unless hired or withdrawn.
+Candidates stay for 3 turns unless hired or withdrawn. Each candidate's salary expectation is shown exactly from the start.
 
-**Offer acceptance** (resolved in phase 1 of the next turn):
+**Offer acceptance** (resolved in phase 1 of the next turn, stream `hiring`, key `offer_id`; one offer per candidate at a time):
 
 ```latex
 score = 4.0\,(R - 1) + w_{eq}\cdot B \cdot 0.002 \cdot m_{stage} + 0.5\,F + A_{stage} - \frac{10 - risk\_appetite}{10}
@@ -200,8 +208,11 @@ p = \frac{1}{1 + e^{-3\,(score - 0)}}
 | 2 Venture-backed | +0.5 | 0.5 |
 | 3 Scale-up | +1.0 | 0.3 |
 
-- If `R < 0.85`, the candidate always declines, and their expectation becomes known exactly.
+- If `R < 0.85`, the candidate always declines.
+- An accepted offer moves the company from stage 0 to stage 1 ("first hire", spec §3) in phase 10.
 - New hires start with morale 65.
+
+**Acceptance hint** shown in the offer dialog: the same score computed from what the player knows (R and equity exactly, F from revealed interests only, the midpoints of displayed ranges for risk appetite and ambition). Score ≥ +0.3 → "likely"; −0.3 to +0.3 → "uncertain"; below −0.3 → "unlikely". The true probability is never shown.
 
 **Worked example.** Stage 0 company, 50 bp equity, one matching interest, risk appetite 10, ambition 10:
 
@@ -251,7 +262,7 @@ rounded half-to-even to whole cents and posted as one ledger entry on turn 0 (de
 | hard | 6000 |
 | ironman | 10000 (difficulty comes from no reloads) |
 
-## 9. Morale (phase 8, stream `morale`)
+## 9. Morale (phase 8, stream `morale`, key `person_id`)
 
 ```latex
 target = 50 + P + F + W_{runway} + W_{load}
@@ -261,7 +272,7 @@ target = 50 + P + F + W_{runway} + W_{load}
 | --- | --- |
 | P (pay) | `clamp(60 × (salary / market_mid − 1), −20, +15)`, where market_mid = band mid for the role and level × region multiplier |
 | F (fit) | `+5 × matching mission interests`, `−5` if work style mismatches the role's primary work style |
-| W_runway | `−10` if runway < 6 months; `−20` if < 3 months |
+| W_runway | `−10` if runway < 6 months; `−20` if < 3 months. Runway here = current cash ÷ (opening cash − current cash) at phase 8; no penalty when cash has not fallen this month |
 | W_load | 0 in M1 (placeholder; project workload drives it from M3) |
 
 Monthly update, clamped to [0, 100]:
@@ -276,7 +287,7 @@ morale \leftarrow morale + 0.3\,(target - morale) + Normal\!\left(0,\; 2 \cdot \
 
 ## 10. Resignations and tag reveals (phase 8)
 
-**Resignation chance per month** (stream `morale`), capped at 2,000 bp:
+**Resignation chance per month** (stream `resign`, key `person_id`), capped at 2,000 bp:
 
 ```latex
 p_{bp} = 50 \times \left(1 + \frac{\max(0,\,40 - morale)}{20}\right) \times \frac{21 - loyalty}{10} \times (2 \text{ if job\_hopper})
@@ -288,9 +299,9 @@ p_{bp} = 50 \times \left(1 + \frac{\max(0,\,40 - morale)}{20}\right) \times \fra
 | Morale 25, loyalty 6 | 131 bp (1.3%) |
 | Morale 25, loyalty 6, job hopper | 263 bp (2.6%) |
 
-A resignation sets employment status to `notice` with `end_turn = turn + 1`.
+A resignation sets employment status to `notice` with `end_turn = turn + 1`. A notice employment is still paid that month; in phase 1 of `end_turn` it becomes `ended` (`end_reason` = `resigned`). Firing ends it at once (`end_reason` = `fired`); retirement works like a resignation (`end_reason` = `retired`).
 
-**Tag reveal** (stream `people_gen`): each hidden tag of an employee reveals with 500 bp per month. An interview or reference check also rolls each hidden tag once at 1,500 bp. A reveal writes an inbox item.
+**Tag reveal:** each hidden tag of an employee reveals with 500 bp per month (stream `tags`, key `person_id`). An interview or reference check also rolls each still-hidden tag once at 1,500 bp (stream `actions`, key `action_seq`). Reveals are recorded per observer company (ADR-0007). A reveal writes an inbox item.
 
 ## 11. Market formulas (draft for M3)
 
@@ -349,6 +360,8 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `founder.default_age` | 28 | years | §5 |
 | `founder.energy_per_month` | 100 | energy | §6 |
 | `founder.energy_cost.<action>` | see §6 | energy | §6 |
+| `founder.age_range` | [22, 60] | years | §5 |
+| `hiring.hint_bands` | [−0.3, 0.3] | score | §7 |
 | `hiring.channel.<channel>.size` / `.level_mix` | see §7 | count / percent | §7 |
 | `hiring.job_post_cost_cents` | 50000 | cents per month | §7 |
 | `hiring.recruiter_fee_bp` | 2000 | bp of annual salary | §7 |
