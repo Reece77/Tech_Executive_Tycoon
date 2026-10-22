@@ -88,8 +88,28 @@ All attributes are floats in [1.0, 20.0] internally, displayed as integers.
 
 ## Decisions made
 
-_(Agent fills in.)_
+Settled with Reece during the build:
+
+- **`person_reveal` stores `hw` and `center_offset`**; displayed min/max are derived on read, so ranges follow skill growth. ADR-0007 is amended to match. The "never widen" property asserts that `hw` never increases, and that for a fixed true value the displayed width never grows.
+- **Founder gaps:** interests and work style are drawn with the best-fit role's weights (computed after the allocation is applied), and tags are rolled per §2. The founding company sees them from turn 0. Region comes from `founder.default_region`, and the name from that region's pool, unless supplied. `FounderSpec` may override interests and work style. All of this is recorded in `docs/formulas.md` §5, with the new key in §12.
+- **Sub-task 1** landed as pure functions in `tst/sim/people/formulas.py` (numbers from `Balance`, no randomness), with one test per worked example.
+
+Engineering decisions made by the agent:
+
+- **New balance key `people.interest_count: [2, 4]`** (added to §12). §2.6's "2–4 interests" otherwise needed a literal the sub-task 0 check forbids.
+- **Scale definitions** (attribute 1–20, ability 10–200, the CA weights 3/1, the professionalism and salary divisors) live in `tst/sim/scale.py`, marked `# tunable-exempt`. The same comment exempts the reveal offset bounds (±0.5), the hw < 0.5 exact-display threshold, the basis-point denominator, and name/company column widths.
+- **Generator signatures:** `generate_person(...)` takes a keyword-only `person_id`. `generate_pool(gen, data, balance, turn, role, levels, *, first_person_id)` draws each person's region by `people.region_weights`. Channel sizes and level mixes are M1b.
+- **Primary rescaling** happens only when the drawn CA misses the target by more than `people.ca_tolerance`. The common factor is then solved exactly on the clamped, piecewise-linear primary sum. A target outside what clamped primaries can reach gets the nearest reachable CA.
+- **Draw order is fixed and documented** in `generator.py` and `founder.py`. Tag rolls draw one number per tag even after the cap or an exclusion, so the draw count never varies. The interest count is capped at the number of interests with non-zero weight.
+- **Founder allocation** must spend exactly `founder.skill_points`; underspending is rejected as well as overspending.
+- **`apply_knowledge_action`** takes keyword `turn` (for `last_updated_turn`) and `skill_keys` (to group attributes), beyond the brief's four arguments. Interviews and network intros also reveal interests and work style.
+- **"Range contains the true value":** once `hw < 0.5` the range collapses to `round(true)`, so the property checks the rounded value there and the exact value otherwise.
+- **Extra table `person_profile_reveal`** (observer, person, `revealed_turn`) records when a company learned interests and work style (§4). `person_hidden` stores `potential_ability` as one more row. Attribute tables carry `position` so file order round-trips. `person_state` and `relationship` are created empty.
+- **Golden snapshots** were regenerated in sub-task 8 (headcount becomes 1 once the founder is persisted) so every commit stays green. Sub-task 9 adds the founder-CA fixtures.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- The API hidden-field test still matches substrings (`potential`, `hidden`). ADR-0007 now asks for exact names, so it will block `potential_phrase` in M1b; align it then.
+- Monthly growth noise (sd 0.05 per skill) moves CA by about ±1.1 over two years. That is comparable to the growth of someone near their potential, and non-role skills random-walk. Worth a look in the balance pass.
+- Cash can go negative with no insolvency handling (M0 behaviour; loss conditions come later).
+- `people.retire_bp_per_year_over_60` and `reveal.pa_phrase_bounds` are loaded but unused until M1b.
