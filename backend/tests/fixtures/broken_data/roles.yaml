@@ -1,0 +1,10 @@
+# Deliberately broken: salary bands miss the exec level.
+roles:
+  - key: software_engineer
+    label: Software engineer
+    primary: [software_engineering]
+    secondary: []
+    work_style: builder
+    work_style_weights: { builder: 1 }
+    interest_weights: { ai: 1 }
+    salary_band_mid_cents: { junior: 1, mid: 1, senior: 1, staff: 1, principal: 1 }

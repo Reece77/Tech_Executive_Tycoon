@@ -6,6 +6,7 @@ validates it with these models. Unknown keys and out-of-range values fail valida
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -240,26 +241,266 @@ class Scenario(_Frozen):
         return self.available_in == "v1"
 
 
+# --- People seed files (M1a) ----------------------------------------------------------------
+
+_KEY = r"^[a-z][a-z0-9_]*$"
+type Version = Literal["v1", "v3"]
+
+
+class SkillDef(_Frozen):
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+    group: Literal["technical", "business", "leadership"]
+
+
+class SkillsFile(_Frozen):
+    skills: tuple[SkillDef, ...] = Field(min_length=1)
+
+
+class TraitDef(_Frozen):
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+
+
+class HiddenTraitDef(_Frozen):
+    key: str = Field(pattern=_KEY)
+
+
+class PersonalityFile(_Frozen):
+    personality: tuple[TraitDef, ...] = Field(min_length=1)
+    hidden: tuple[HiddenTraitDef, ...] = Field(min_length=1)
+    work_styles: tuple[TraitDef, ...] = Field(min_length=1)
+
+
+class InterestsFile(_Frozen):
+    interests: tuple[TraitDef, ...] = Field(min_length=1)
+
+
+class Region(_Frozen):
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+    salary_multiplier_bp: int = Field(gt=0)
+
+
+class RegionsFile(_Frozen):
+    regions: tuple[Region, ...] = Field(min_length=1)
+
+
+class Role(_Frozen):
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+    primary: tuple[str, ...] = Field(min_length=1)
+    secondary: tuple[str, ...]
+    work_style: str
+    work_style_weights: dict[str, float]
+    interest_weights: dict[str, float]
+    salary_band_mid_cents: dict[str, int]
+
+    @model_validator(mode="after")
+    def _check(self) -> Role:
+        skills = self.primary + self.secondary
+        if len(set(skills)) != len(skills):
+            raise ValueError(f"role {self.key!r}: a skill is listed twice")
+        for name, weights in (
+            ("work_style_weights", self.work_style_weights),
+            ("interest_weights", self.interest_weights),
+        ):
+            if any(w < 0 for w in weights.values()) or not any(w > 0 for w in weights.values()):
+                raise ValueError(f"role {self.key!r}: {name} need a positive weight")
+        if sorted(self.salary_band_mid_cents) != sorted(LEVELS):
+            raise ValueError(f"role {self.key!r}: salary_band_mid_cents must cover {list(LEVELS)}")
+        if any(v <= 0 for v in self.salary_band_mid_cents.values()):
+            raise ValueError(f"role {self.key!r}: salary bands must be positive")
+        return self
+
+
+class RolesFile(_Frozen):
+    roles: tuple[Role, ...] = Field(min_length=1)
+
+
+class TagCondition(_Frozen):
+    attr: str
+    op: Literal[">=", "<="]
+    value: float
+
+    def holds(self, value: float) -> bool:
+        return value >= self.value if self.op == ">=" else value <= self.value
+
+
+class TagBoost(_Frozen):
+    multiplier: float = Field(ge=0)
+    when: tuple[TagCondition, ...] = Field(min_length=1)
+
+
+class Tag(_Frozen):
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+    base_bp: int = Field(ge=0)
+    boost: TagBoost
+    excludes: tuple[str, ...]
+    reveal_text: str = Field(min_length=1)
+    effect_note: str
+
+
+class TagsFile(_Frozen):
+    tags: tuple[Tag, ...] = Field(min_length=1)
+
+
+class Background(_Frozen):
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+    available_in: Version
+    description: str = Field(min_length=1)
+    bonuses: dict[str, float]
+    default_allocation: dict[str, int]
+
+    @property
+    def selectable(self) -> bool:
+        return self.available_in == "v1"
+
+
+class PersonalityPreset(_Frozen):
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+    values: dict[str, float]
+
+
+class BackgroundsFile(_Frozen):
+    backgrounds: tuple[Background, ...] = Field(min_length=1)
+    personality_presets: tuple[PersonalityPreset, ...] = Field(min_length=1)
+
+
+class NamePool(_Frozen):
+    first: tuple[str, ...] = Field(min_length=1)
+    last: tuple[str, ...] = Field(min_length=1)
+
+
+class NamesFile(_Frozen):
+    names: dict[str, NamePool]
+
+
+def _dupes(keys: list[str]) -> list[str]:
+    return sorted({k for k in keys if keys.count(k) > 1})
+
+
 class GameData(_Frozen):
     accounts: tuple[Account, ...]
     scenarios: tuple[Scenario, ...]
+    skills: tuple[SkillDef, ...]
+    personality: tuple[TraitDef, ...]
+    hidden: tuple[HiddenTraitDef, ...]
+    work_styles: tuple[TraitDef, ...]
+    interests: tuple[TraitDef, ...]
+    regions: tuple[Region, ...]
+    roles: tuple[Role, ...]
+    tags: tuple[Tag, ...]
+    backgrounds: tuple[Background, ...]
+    personality_presets: tuple[PersonalityPreset, ...]
+    names: dict[str, NamePool]
 
     @model_validator(mode="after")
     def _check_references(self) -> GameData:
-        codes = [a.code for a in self.accounts]
-        if len(set(codes)) != len(codes):
-            raise ValueError("accounts.yaml has duplicate account codes")
-        ids = [s.id for s in self.scenarios]
-        if len(set(ids)) != len(ids):
-            raise ValueError("scenarios.yaml has duplicate scenario ids")
+        problems: list[str] = []
+
+        for label, keys in (
+            ("accounts.yaml codes", [a.code for a in self.accounts]),
+            ("scenarios.yaml ids", [s.id for s in self.scenarios]),
+            ("skills.yaml keys", self.skill_keys),
+            ("personality.yaml keys", self.personality_keys + self.hidden_keys),
+            ("work style keys", self.work_style_keys),
+            ("interests.yaml keys", self.interest_keys),
+            ("regions.yaml keys", self.region_keys),
+            ("roles.yaml keys", [r.key for r in self.roles]),
+            ("tags.yaml keys", [t.key for t in self.tags]),
+            ("backgrounds.yaml keys", [b.key for b in self.backgrounds]),
+            ("personality preset keys", [p.key for p in self.personality_presets]),
+        ):
+            if dupes := _dupes(keys):
+                problems.append(f"duplicate {label}: {dupes}")
+
         equity = {a.code for a in self.accounts if a.type == "equity"}
         for scenario in self.scenarios:
             if scenario.starting_equity_account not in equity:
-                raise ValueError(
+                problems.append(
                     f"scenario {scenario.id!r}: starting_equity_account "
                     f"{scenario.starting_equity_account!r} is not an equity account"
                 )
+
+        skills = set(self.skill_keys)
+        traits = set(self.personality_keys)
+        styles = set(self.work_style_keys)
+        interests = set(self.interest_keys)
+
+        def unknown(where: str, keys: Iterable[str], known: set[str], kind: str) -> None:
+            missing = sorted(set(keys) - known)
+            if missing:
+                problems.append(f"{where}: unknown {kind} {missing}")
+
+        for role in self.roles:
+            where = f"roles.yaml {role.key!r}"
+            unknown(where, role.primary + role.secondary, skills, "skills")
+            unknown(where, [role.work_style], styles, "work style")
+            if set(role.work_style_weights) != styles:
+                problems.append(f"{where}: work_style_weights must cover {sorted(styles)}")
+            if set(role.interest_weights) != interests:
+                problems.append(f"{where}: interest_weights must cover {sorted(interests)}")
+
+        tag_keys = {t.key for t in self.tags}
+        excludes = {t.key: set(t.excludes) for t in self.tags}
+        for tag in self.tags:
+            where = f"tags.yaml {tag.key!r}"
+            unknown(where, [c.attr for c in tag.boost.when], traits, "personality traits")
+            unknown(where, tag.excludes, tag_keys, "tags")
+            if tag.key in tag.excludes:
+                problems.append(f"{where}: excludes itself")
+            for other in tag.excludes:
+                if other in excludes and tag.key not in excludes[other]:
+                    problems.append(
+                        f"tags.yaml: {tag.key!r} excludes {other!r} but not the other way round"
+                    )
+
+        for bg in self.backgrounds:
+            where = f"backgrounds.yaml {bg.key!r}"
+            unknown(where, bg.bonuses, skills, "skills")
+            unknown(where, bg.default_allocation, skills, "skills")
+        for preset in self.personality_presets:
+            if set(preset.values) != traits:
+                problems.append(
+                    f"backgrounds.yaml preset {preset.key!r}: values must cover {sorted(traits)}"
+                )
+
+        if set(self.names) != set(self.region_keys):
+            problems.append(f"names.yaml: regions must be exactly {sorted(self.region_keys)}")
+
+        if problems:
+            raise ValueError("; ".join(problems))
         return self
+
+    # --- Lookups -------------------------------------------------------------------------
+
+    @property
+    def skill_keys(self) -> list[str]:
+        return [s.key for s in self.skills]
+
+    @property
+    def personality_keys(self) -> list[str]:
+        return [t.key for t in self.personality]
+
+    @property
+    def hidden_keys(self) -> list[str]:
+        return [t.key for t in self.hidden]
+
+    @property
+    def work_style_keys(self) -> list[str]:
+        return [t.key for t in self.work_styles]
+
+    @property
+    def interest_keys(self) -> list[str]:
+        return [t.key for t in self.interests]
+
+    @property
+    def region_keys(self) -> list[str]:
+        return [r.key for r in self.regions]
 
     def scenario(self, scenario_id: str) -> Scenario | None:
         for scenario in self.scenarios:
@@ -269,3 +510,27 @@ class GameData(_Frozen):
 
     def account_codes(self) -> frozenset[str]:
         return frozenset(a.code for a in self.accounts)
+
+    def role(self, key: str) -> Role:
+        for role in self.roles:
+            if role.key == key:
+                return role
+        raise KeyError(key)
+
+    def region(self, key: str) -> Region:
+        for region in self.regions:
+            if region.key == key:
+                return region
+        raise KeyError(key)
+
+    def background(self, key: str) -> Background | None:
+        for bg in self.backgrounds:
+            if bg.key == key:
+                return bg
+        return None
+
+    def preset(self, key: str) -> PersonalityPreset | None:
+        for preset in self.personality_presets:
+            if preset.key == key:
+                return preset
+        return None

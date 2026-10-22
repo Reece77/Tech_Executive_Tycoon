@@ -1,0 +1,3 @@
+# Deliberately broken: unknown skill group.
+skills:
+  - { key: software_engineering, label: Software engineering, group: wizardry }

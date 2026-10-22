@@ -1,0 +1,9 @@
+# Deliberately broken: unsupported comparison operator.
+tags:
+  - key: mentor
+    label: Mentor
+    base_bp: 400
+    boost: { multiplier: 3.0, when: [{ attr: sociability, op: "==", value: 13 }] }
+    excludes: []
+    reveal_text: "is a natural mentor"
+    effect_note: ""

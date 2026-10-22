@@ -1,0 +1,3 @@
+# Deliberately broken: interest key with a capital letter.
+interests:
+  - { key: AI, label: AI }

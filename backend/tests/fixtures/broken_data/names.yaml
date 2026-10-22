@@ -1,0 +1,5 @@
+# Deliberately broken: a region with no surnames.
+names:
+  north_america:
+    first: ["Sam"]
+    last: []

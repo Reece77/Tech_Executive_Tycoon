@@ -1,0 +1,5 @@
+# Deliberately broken: no hidden traits section.
+personality:
+  - { key: ambition, label: Ambition }
+work_styles:
+  - { key: builder, label: Builder }

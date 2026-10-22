@@ -1,0 +1,10 @@
+# Deliberately broken: background available in an unknown version.
+backgrounds:
+  - key: engineer
+    label: Engineer
+    available_in: v9
+    description: x
+    bonuses: {}
+    default_allocation: {}
+personality_presets:
+  - { key: visionary, label: Visionary, values: {} }

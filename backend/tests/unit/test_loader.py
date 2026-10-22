@@ -107,3 +107,140 @@ def test_missing_file_fails(data_copy: Path) -> None:
     (data_copy / "accounts.yaml").unlink()
     with pytest.raises(DataLoadError, match=r"accounts.yaml: file not found"):
         load_all(data_copy)
+
+
+# --- M1a seed files -------------------------------------------------------------------------
+
+
+def test_people_seed_data_loads(loaded: LoadedData) -> None:
+    data = loaded.game_data
+    assert len(data.skills) == 25
+    assert data.personality_keys == [
+        "ambition",
+        "loyalty",
+        "professionalism",
+        "temperament",
+        "adaptability",
+        "risk_appetite",
+        "ego",
+        "integrity",
+        "sociability",
+    ]
+    assert data.hidden_keys == ["consistency", "burnout_risk", "big_moments", "poachability"]
+    assert data.work_style_keys == ["builder", "operator", "researcher", "seller"]
+    assert len(data.interests) == 13
+    assert len(data.regions) == 7
+    assert len(data.roles) == 12
+    assert len(data.tags) == 9
+    assert [b.key for b in data.backgrounds if b.selectable] == [
+        "engineer",
+        "salesperson",
+        "academic",
+        "ex_big_tech",
+    ]
+    assert [p.key for p in data.personality_presets] == [
+        "visionary",
+        "operator",
+        "hustler",
+        "scientist",
+    ]
+    # formulas.md section 1 worked example uses this role definition.
+    engineer = data.role("software_engineer")
+    assert engineer.primary == ("software_engineering", "infrastructure")
+    assert engineer.secondary == ("data", "security", "communication", "product")
+    assert engineer.salary_band_mid_cents["senior"] == 11_500_000
+
+
+def test_names_cover_every_region(loaded: LoadedData) -> None:
+    names = loaded.game_data.names
+    assert set(names) == set(loaded.game_data.region_keys)
+    for region, pool in names.items():
+        assert len(pool.first) >= 60, region
+        assert len(pool.last) >= 60, region
+        assert len(set(pool.first)) == len(pool.first), region
+        assert len(set(pool.last)) == len(pool.last), region
+
+
+@pytest.mark.parametrize(
+    ("file", "expected"),
+    [
+        ("skills.yaml", "skills.0.group"),
+        ("personality.yaml", "hidden: Field required"),
+        ("interests.yaml", "interests.0.key"),
+        ("regions.yaml", "regions.0.salary_multiplier_bp"),
+        ("roles.yaml", "salary_band_mid_cents must cover"),
+        ("tags.yaml", "tags.0.boost.when.0.op"),
+        ("backgrounds.yaml", "backgrounds.0.available_in"),
+        ("names.yaml", "names.north_america.last"),
+    ],
+)
+def test_broken_fixture_per_seed_file(data_copy: Path, file: str, expected: str) -> None:
+    shutil.copy(FIXTURES_DIR / "broken_data" / file, data_copy / file)
+    with pytest.raises(DataLoadError) as info:
+        load_all(data_copy)
+    message = str(info.value)
+    assert message.startswith(f"{file}:"), message
+    assert expected in message
+
+
+@pytest.mark.parametrize(
+    ("file", "old", "new", "expected"),
+    [
+        (
+            "tags.yaml",
+            "excludes: [quiet_genius]",
+            "excludes: []",
+            "'quiet_genius' excludes 'politician' but not the other way round",
+        ),
+        (
+            "tags.yaml",
+            '{ attr: ego, op: ">=", value: 15 }',
+            '{ attr: coding, op: ">=", value: 15 }',
+            "unknown personality traits ['coding']",
+        ),
+        (
+            "roles.yaml",
+            "primary: [software_engineering, infrastructure]",
+            "primary: [software_engineering, plumbing]",
+            "unknown skills ['plumbing']",
+        ),
+        (
+            "roles.yaml",
+            "work_style_weights: { builder: 6, operator: 2, researcher: 2, seller: 0 }",
+            "work_style_weights: { builder: 6, operator: 2, researcher: 2 }",
+            "work_style_weights must cover",
+        ),
+        (
+            "backgrounds.yaml",
+            "default_allocation: { software_engineering: 8,",
+            "default_allocation: { software_engineering: 9,",
+            "'engineer' default_allocation spends 71 points",
+        ),
+        (
+            "backgrounds.yaml",
+            "bonuses: { software_engineering: 3, infrastructure: 2 }",
+            "bonuses: { software_engineering: 6, infrastructure: 2 }",
+            "puts software_engineering at 19",
+        ),
+        (
+            "backgrounds.yaml",
+            "values: { ambition: 17, loyalty: 11,",
+            "values: { ambition: 17,",
+            "preset 'visionary': values must cover",
+        ),
+        ("balance.yaml", "    oceania: 3\n", "", "region_weights must cover exactly"),
+        (
+            "balance.yaml",
+            "default_region: north_america",
+            "default_region: atlantis",
+            "founder.default_region 'atlantis'",
+        ),
+        ("names.yaml", "  oceania:", "  atlantis:", "names.yaml: regions must be exactly"),
+        ("balance.yaml", "    - { from_age: 0, value: 45 }\n", "", "first band must start"),
+    ],
+)
+def test_bad_seed_data_fails(data_copy: Path, file: str, old: str, new: str, expected: str) -> None:
+    _replace(data_copy / file, old, new)
+    with pytest.raises(DataLoadError) as info:
+        load_all(data_copy)
+    assert expected in str(info.value)
