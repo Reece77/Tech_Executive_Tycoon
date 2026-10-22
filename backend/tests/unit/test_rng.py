@@ -59,8 +59,52 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "market": 4,
         "rivals": 5,
         "events": 6,
+        "founder": 7,
+        "growth": 8,
+        "reveal": 9,
+        "tags": 10,
+        "resign": 11,
+        "retire": 12,
+        "actions": 13,
         "misc": 99,
     }
 
 
 PINNED_PEOPLE_GEN_DRAWS = [406, 755, 323, 355, 962]
+
+
+# --- ADR-0013 entity keys -------------------------------------------------------------------
+
+
+def _draws(factory: RngFactory, turn: int, name: str, *key: int) -> list[int]:
+    return factory.stream(turn, name, *key).integers(0, 2**31, size=6).tolist()
+
+
+def test_no_key_is_unchanged_from_m0() -> None:
+    # The unkeyed derivation must not move, or M0 golden snapshots would change.
+    assert RngFactory(42).stream(0, "people_gen").integers(0, 1000, size=5).tolist() == (
+        PINNED_PEOPLE_GEN_DRAWS
+    )
+
+
+def test_same_key_is_identical_and_keys_are_independent() -> None:
+    factory = RngFactory(9)
+    assert _draws(factory, 3, "growth", 17) == _draws(factory, 3, "growth", 17)
+    assert _draws(factory, 3, "growth", 17) != _draws(factory, 3, "growth", 18)
+    assert _draws(factory, 3, "growth", 17) != _draws(factory, 3, "growth")
+    assert _draws(factory, 3, "reveal", 1, 2) != _draws(factory, 3, "reveal", 2, 1)
+
+
+def test_keyed_draws_do_not_depend_on_other_entities() -> None:
+    # Person 5's growth noise is the same however many other people are drawn first.
+    alone = _draws(RngFactory(3), 1, "growth", 5)
+    factory = RngFactory(3)
+    for other in range(40):
+        _draws(factory, 1, "growth", other)
+    assert _draws(factory, 1, "growth", 5) == alone
+
+
+@pytest.mark.parametrize("bad", [(-1,), (True,), (1.5,)])
+def test_invalid_keys_raise(bad: tuple[object, ...]) -> None:
+    with pytest.raises(InvalidSeedError):
+        RngFactory(1).stream(0, "growth", *bad)  # type: ignore[arg-type]
