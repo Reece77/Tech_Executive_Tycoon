@@ -13,6 +13,8 @@ from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.errors import SimError
 from tst.sim.money import CENTS_PER_DOLLAR, Cents
+from tst.sim.people.founder import FounderSpec
+from tst.sim.setup import DEFAULT_FOUNDER
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="Tech Startup Tycoon")
 
@@ -46,9 +48,17 @@ def new_game(
     difficulty: Annotated[str, typer.Option(help="easy|standard|hard|ironman")] = (
         DEFAULT_DIFFICULTY
     ),
+    founder_background: Annotated[
+        str, typer.Option(help="engineer|salesperson|academic|ex_big_tech")
+    ] = DEFAULT_FOUNDER.background,
+    founder_preset: Annotated[
+        str | None,
+        typer.Option(help="visionary|operator|hustler|scientist; omit for a random personality"),
+    ] = None,
 ) -> None:
-    """Create a new save file at schema head."""
+    """Create a new save file at schema head, with a founder built from a background."""
     settings, data = _context()
+    founder = FounderSpec(background=founder_background, personality_preset=founder_preset)
     try:
         path = repository.create_save(
             name,
@@ -56,6 +66,7 @@ def new_game(
             scenario,
             company_name=company_name,
             difficulty=difficulty,
+            founder=founder,
             data=data,
             save_dir=settings.resolved_save_dir(),
         )

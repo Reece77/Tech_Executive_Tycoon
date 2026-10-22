@@ -6,6 +6,37 @@ from pydantic import BaseModel, Field
 
 from tst.db.repository import MAX_STORED_SEED
 from tst.sim.data_models import DEFAULT_DIFFICULTY
+from tst.sim.people.founder import FounderSpec
+from tst.sim.setup import DEFAULT_FOUNDER
+
+
+class FounderIn(BaseModel):
+    """Founder build (docs/formulas.md section 5). Omitted fields use the defaults."""
+
+    background: str = DEFAULT_FOUNDER.background
+    allocation: dict[str, int] | None = Field(
+        default=None, description="Skill points to spend; omit for the background's default"
+    )
+    personality_preset: str | None = Field(default=None, description="Omit for random")
+    age: int | None = None
+    region: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    interests: list[str] | None = None
+    work_style: str | None = None
+
+    def to_spec(self) -> FounderSpec:
+        return FounderSpec(
+            background=self.background,
+            allocation=self.allocation,
+            personality_preset=self.personality_preset,
+            age=self.age,
+            region=self.region,
+            first_name=self.first_name,
+            last_name=self.last_name,
+            interests=None if self.interests is None else tuple(self.interests),
+            work_style=self.work_style,
+        )
 
 
 class CreateSaveIn(BaseModel):
@@ -16,6 +47,7 @@ class CreateSaveIn(BaseModel):
     scenario: str
     company_name: str = Field(min_length=1, max_length=80)
     difficulty: str = DEFAULT_DIFFICULTY
+    founder: FounderIn | None = None
 
 
 class SaveOut(BaseModel):

@@ -159,6 +159,10 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The 
 - Personality: one of four presets (visionary, operator, hustler, scientist) or `Normal(10.5, 3.5)` per trait.
 - Hidden traits and PA are generated as in §2 (stream `founder`), using age 28 unless the player sets age (22–60).
 - The founding company knows the founder exactly (`hw = 0` for skills and personality; interests and work style shown). PA keeps its normal initial `hw` and is shown only as a phrase.
+- **Interests and work style** are drawn as in §2 using the weights of the founder's best-fit role, computed after the skill allocation is applied. The player may supply them instead (2–4 valid interests; one work style).
+- **Behavior tags** are rolled as in §2 step 7. The founding company knows them from turn 0 (`person_tag_reveal` rows with `revealed_turn = 0`), and sees the founder's interests and work style from turn 0.
+- **Region and name:** region is `founder.default_region` (north_america) unless chosen; the name is drawn from that region's `names.yaml` pool unless the player supplies both first and last name.
+- **Draw order** in stream `founder` (no key): birth month, personality (only if random), hidden traits, PA gap, interests, work style, tags, first name, last name. A value the player supplied skips its draw.
 - The founder has an employment row (role `founder`, level `exec`, salary 0, equity 0) so headcount counts them. In M1 the founder is excluded from payroll, morale, resignation, retirement, and firing; board removal arrives in M4.
 
 ## 6. Founder energy

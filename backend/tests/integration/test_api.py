@@ -171,3 +171,32 @@ def test_openapi_declares_response_models(client: TestClient) -> None:
         for op in ops.values():
             assert "200" in op["responses"] or "201" in op["responses"], path
             assert op.get("operationId"), path
+
+
+def test_create_with_founder(client: TestClient) -> None:
+    founder = {
+        "background": "academic",
+        "personality_preset": "scientist",
+        "age": 35,
+        "first_name": "Ada",
+        "last_name": "Mensah",
+        "interests": ["ai", "climate"],
+        "work_style": "researcher",
+    }
+    res = create(client, founder=founder)
+    assert res.status_code == 201, res.json()
+
+
+@pytest.mark.parametrize(
+    ("founder", "message"),
+    [
+        ({"allocation": {"software_engineering": 71}}, "spends 71 points"),
+        ({"background": "geologist"}, "unlocks in v3"),
+        ({"age": 70}, "age must be 22-60"),
+    ],
+)
+def test_create_with_bad_founder(client: TestClient, founder: dict[str, Any], message: str) -> None:
+    res = create(client, founder=founder)
+    assert res.status_code == 400
+    assert res.json()["code"] == "invalid_founder"
+    assert message in res.json()["message"]

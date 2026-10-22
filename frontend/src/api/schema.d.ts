@@ -111,6 +111,7 @@ export interface components {
              * @default standard
              */
             difficulty?: string;
+            founder?: components["schemas"]["FounderIn"] | null;
         };
         /**
          * ErrorOut
@@ -121,6 +122,41 @@ export interface components {
             code: string;
             /** Message */
             message: string;
+        };
+        /**
+         * FounderIn
+         * @description Founder build (docs/formulas.md section 5). Omitted fields use the defaults.
+         */
+        FounderIn: {
+            /**
+             * Background
+             * @default engineer
+             */
+            background?: string;
+            /**
+             * Allocation
+             * @description Skill points to spend; omit for the background's default
+             */
+            allocation?: {
+                [key: string]: number;
+            } | null;
+            /**
+             * Personality Preset
+             * @description Omit for random
+             */
+            personality_preset?: string | null;
+            /** Age */
+            age?: number | null;
+            /** Region */
+            region?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Interests */
+            interests?: string[] | null;
+            /** Work Style */
+            work_style?: string | null;
         };
         /** OverviewOut */
         OverviewOut: {

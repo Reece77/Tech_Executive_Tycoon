@@ -48,8 +48,9 @@ from tst.sim.errors import (
 )
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
+from tst.sim.people.founder import FounderSpec
 from tst.sim.rng import RngFactory
-from tst.sim.setup import new_game
+from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot, runway_months
 from tst.sim.state import GameState, company_cash
 from tst.sim.turn import TurnResult, advance_turn
@@ -112,6 +113,7 @@ def create_save(
     data: LoadedData,
     save_dir: Path,
     difficulty: str = DEFAULT_DIFFICULTY,
+    founder: FounderSpec = DEFAULT_FOUNDER,
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state."""
     path = save_path(save_dir, name)
@@ -128,7 +130,9 @@ def create_save(
         scenario=scenario_def,
         difficulty=difficulty,
         company_name=company_name,
+        founder=founder,
         balance=data.balance,
+        data=data.game_data,
     )
 
     save_dir.mkdir(parents=True, exist_ok=True)

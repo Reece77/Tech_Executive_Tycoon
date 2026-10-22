@@ -77,3 +77,35 @@ def test_list_empty() -> None:
 )
 def test_format_money(cents: int, text: str) -> None:
     assert format_money(cents) == text
+
+
+def test_new_game_founder_options() -> None:
+    out = run(
+        "new-game",
+        "--seed",
+        "7",
+        "--name",
+        "m1a",
+        "--company-name",
+        "M1a Co",
+        "--founder-background",
+        "salesperson",
+        "--founder-preset",
+        "hustler",
+    )
+    assert "Created m1a.tst.sqlite" in out
+
+
+@pytest.mark.parametrize(
+    ("flag", "value", "message"),
+    [
+        ("--founder-background", "astronaut", "unknown background 'astronaut'"),
+        ("--founder-background", "geologist", "unlocks in v3"),
+        ("--founder-preset", "dreamer", "unknown personality preset 'dreamer'"),
+    ],
+)
+def test_new_game_rejects_bad_founder(flag: str, value: str, message: str) -> None:
+    args = ["new-game", "--seed", "1", "--name", "x", "--company-name", "X", flag, value]
+    result = runner.invoke(app, args)
+    assert result.exit_code == 1
+    assert message in result.output
