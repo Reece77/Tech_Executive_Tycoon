@@ -135,7 +135,7 @@ class GrowthBalance(_Frozen):
     rate: float = Field(ge=0)
     age_factor: tuple[AgeBand, ...]
     decline: tuple[AgeBand, ...]
-    noise_sd: float = Field(ge=0)
+    noise_rel_sd: float = Field(ge=0)
 
     @model_validator(mode="after")
     def _check(self) -> GrowthBalance:

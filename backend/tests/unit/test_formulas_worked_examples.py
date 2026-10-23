@@ -194,3 +194,19 @@ def test_section_5_founder_build_numbers(loaded: LoadedData) -> None:
     assert founder.default_age == 28
     assert (founder.age_range.lo, founder.age_range.hi) == (22, 60)
     assert founder.default_region == "north_america"
+
+
+@pytest.mark.parametrize(
+    ("noise", "multiplier"), [(0.0, 1.0), (0.25, 1.25), (-0.5, 0.5), (-1.0, 0.0), (-3.0, 0.0)]
+)
+def test_section_3_noise_is_multiplicative(
+    loaded: LoadedData, noise: float, multiplier: float
+) -> None:
+    """Noise scales the growth term by max(0, 1 + noise); it never adds loss of its own."""
+    kwargs = {"age": 52, "ca": 106, "pa": 160, "professionalism": 14}
+    growth = loaded.balance.growth
+    decline = 0.005  # d(52)
+    base = growth_delta(in_role=True, growth=growth, **kwargs) + decline  # type: ignore[arg-type]
+    noisy = growth_delta(in_role=True, growth=growth, noise=noise, **kwargs)  # type: ignore[arg-type]
+    assert noisy == pytest.approx(base * multiplier - decline)
+    assert growth.noise_rel_sd == 0.25

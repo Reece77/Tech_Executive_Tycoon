@@ -46,8 +46,8 @@ All attributes are floats in [1.0, 20.0] internally, displayed as integers.
    - Names from `names.yaml` by region. Region weights from `balance.people.region_weights`.
    - Salary expectation (2010 USD, cents): `band(role, level).mid × (1 + (CA − level_mean)/100) × region_multiplier`, rounded to $500.
 3. **Monthly growth** (phase 8), for each primary and secondary skill of the person's current role:
-   `Δ = rate × a(age) × max(0, PA − CA)/PA × professionalism/10 − d(age) + Normal(0, 0.05)`
-   with `rate = 0.12`; growth factor `a(age)`: < 25: 1.3, 25–29: 1.0, 30–34: 0.7, 35–44: 0.4, 45–54: 0.1, 55+: 0; monthly decline `d(age)`: 0 below 50, 0.005 at 50–54, 0.015 at 55+. Skills outside the role change only by `−d(age)` plus noise. Clamp after every update; recompute CA.
+   `Δ = rate × a(age) × max(0, PA − CA)/PA × professionalism/10 × max(0, 1 + Normal(0, growth.noise_rel_sd)) − d(age)`, with `noise_rel_sd = 0.25`
+   with `rate = 0.12`; growth factor `a(age)`: < 25: 1.3, 25–29: 1.0, 30–34: 0.7, 35–44: 0.4, 45–54: 0.1, 55+: 0; monthly decline `d(age)`: 0 below 50, 0.005 at 50–54, 0.015 at 55+. Skills outside the role change only by `−d(age)`, with no noise. Clamp after every update; recompute CA.
 4. **Reveal (ADR-0007):** each `(observer_company, person, attribute)` for the 25 skills, 9 personality traits, and PA has a half-width `hw` and a fixed center offset `o ~ Uniform(−0.5, 0.5)`, drawn once from stream `reveal` keyed by `(observer_company_id, person_id)` and stored.
    - Displayed range: `min = floor(clamp(true − hw × (1 + o)))`, `max = ceil(clamp(true + hw × (1 − o)))`; if `hw < 0.5`, `min = max = round(true)`. The true value is always inside.
    - Initial `hw` for a stranger: `balance.reveal.initial_hw` (skills 5.0, personality 7.0).
@@ -110,6 +110,6 @@ Engineering decisions made by the agent:
 ## Follow-ups
 
 - The API hidden-field test still matches substrings (`potential`, `hidden`). ADR-0007 now asks for exact names, so it will block `potential_phrase` in M1b; align it then.
-- Monthly growth noise (sd 0.05 per skill) moves CA by about ±1.1 over two years. That is comparable to the growth of someone near their potential, and non-role skills random-walk. Worth a look in the balance pass.
+- Growth noise is now multiplicative on the growth term (`growth.noise_rel_sd` 0.25, settled with Reece after review), so it never turns growth into loss and non-role skills no longer drift. Worth confirming the feel in the balance pass.
 - Cash can go negative with no insolvency handling (M0 behaviour; loss conditions come later).
 - `people.retire_bp_per_year_over_60` and `reveal.pa_phrase_bounds` are loaded but unused until M1b.

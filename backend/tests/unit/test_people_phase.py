@@ -9,10 +9,11 @@ import pytest
 from tst.loader import LoadedData
 from tst.sim.decisions import Decisions
 from tst.sim.ledger import CASH
+from tst.sim.people.formulas import growth_delta
 from tst.sim.people.founder import FounderSpec
 from tst.sim.people.generator import generate_person
 from tst.sim.people.growth import grow_person
-from tst.sim.people.models import current_ability
+from tst.sim.people.models import current_ability, growth_role, role_ability
 from tst.sim.rng import RngFactory
 from tst.sim.scale import ATTR_MAX, ATTR_MIN
 from tst.sim.setup import DEFAULT_FOUNDER, PLAYER_COMPANY_ID, new_game
@@ -110,3 +111,34 @@ def test_young_founder_grows_and_old_founder_does_not(loaded: LoadedData, seed: 
     assert young_ca[-1] > young_ca[0] + 5
     assert old_ca[-1] <= old_ca[0]
     assert young[-1].people[0].age(120) == 34
+
+
+def test_only_role_skills_draw_noise(loaded: LoadedData) -> None:
+    """Non-role skills change by exactly -d(age); one growth draw per role skill, in order."""
+    data = loaded.game_data
+    founder = start(loaded, 11).people[0]
+    role = growth_role(founder, data)
+    role_keys = [k for k in data.skill_keys if k in set(role.primary) | set(role.secondary)]
+    grown = grow_person(founder, 0, RngFactory(11), data, loaded.balance)
+
+    # Age 28: d(age) = 0, so every non-role skill is unchanged.
+    for key in data.skill_keys:
+        if key not in role_keys:
+            assert grown.skills[key] == founder.skills[key]
+
+    # Replaying the stream: exactly one Normal draw per role skill, in skills.yaml order.
+    gen = RngFactory(11).stream(0, "growth", founder.id)
+    ca = role_ability(founder.skills, role)
+    for key in role_keys:
+        noise = float(gen.normal(0.0, loaded.balance.growth.noise_rel_sd))
+        expected = founder.skills[key] + growth_delta(
+            in_role=True,
+            age=founder.age(0),
+            ca=ca,
+            pa=founder.potential_ability,
+            professionalism=founder.personality["professionalism"],
+            growth=loaded.balance.growth,
+            noise=noise,
+        )
+        assert grown.skills[key] == pytest.approx(min(expected, 20.0))
+        assert grown.skills[key] >= founder.skills[key]  # growth never turns negative at 28

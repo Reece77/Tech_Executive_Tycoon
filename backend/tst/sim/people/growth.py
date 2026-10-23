@@ -1,8 +1,10 @@
 """Monthly skill growth and aging (docs/formulas.md section 3; turn phase 8).
 
 Applies to everyone with an active or notice employment, including the founder. Age is
-derived from birth_turn, so aging needs no update. Noise comes from stream `growth` keyed by
-person id: one Normal(0, noise_sd) draw per skill, in skills.yaml order, for every skill.
+derived from birth_turn, so aging needs no update. Noise is multiplicative on the growth
+term and comes from stream `growth` keyed by person id: one Normal(0, noise_rel_sd) draw per
+role skill (primary and secondary), in skills.yaml order. Skills outside the role draw
+nothing and change only by -d(age).
 """
 
 from __future__ import annotations
@@ -29,14 +31,16 @@ def grow_person(
 
     changes = {}
     for key in data.skill_keys:
-        noise = float(gen.normal(0.0, growth.noise_sd))
+        role_skill = key in in_role
+        noise = float(gen.normal(0.0, growth.noise_rel_sd)) if role_skill else 0.0
         delta = growth_delta(
-            in_role=key in in_role,
+            in_role=role_skill,
             age=age,
             ca=ca,
             pa=person.potential_ability,
             professionalism=professionalism,
             growth=growth,
+            noise=noise,
         )
-        changes[key] = person.skills[key] + delta + noise
+        changes[key] = person.skills[key] + delta
     return replace(person, skills=person.skills.updated(changes))  # updated() clamps

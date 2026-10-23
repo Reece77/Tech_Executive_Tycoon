@@ -75,10 +75,10 @@ Inputs: role, level, region, turn.
 Applies to every person with an active or notice employment, including the founder. For each primary and secondary skill of the person's current role (the founder's best-fit role):
 
 ```latex
-\Delta s = r \cdot a(age) \cdot \frac{\max(0,\,PA - CA)}{PA} \cdot \frac{professionalism}{10} \;-\; d(age) \;+\; Normal(0,\,0.05)
+\Delta s = r \cdot a(age) \cdot \frac{\max(0,\,PA - CA)}{PA} \cdot \frac{professionalism}{10} \cdot \max\big(0,\; 1 + Normal(0,\,\sigma)\big) \;-\; d(age)
 ```
 
-Skills outside the role change only by `−d(age)` plus noise. Clamp every skill, then recompute CA. `PA` never changes.
+with σ = `growth.noise_rel_sd` (0.25). The noise is multiplicative, so it scales the growth term and never turns growth into loss. Skills outside the role change only by `−d(age)`, with no noise. Clamp every skill, then recompute CA. `PA` never changes.
 
 | Age | a(age) growth factor | d(age) monthly decline |
 | --- | --- | --- |
@@ -100,7 +100,7 @@ Default r = 0.12. Mentoring and project difficulty multipliers arrive in M2 and 
 | Age 38 | 120 → 128 | 10 | +0.0030 | +0.04 |
 | Age 58 | 130 → 132 | 12 | −0.0150 | −0.18 |
 
-One noise value is drawn per skill, in `skills.yaml` order, for every skill (role skills and others).
+One noise value is drawn per role skill (primary and secondary), in `skills.yaml` order; skills outside the role draw nothing.
 
 **Retirement (from M1b, stream `retire`, key `person_id`):** from age 60, monthly chance `retire_bp_per_year_over_60 × (age − 59) / 12`; default 600 bp, so a 62-year-old retires with 150 bp (1.5%) chance per month. The founder never retires in M1.
 
@@ -355,7 +355,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `growth.rate` | 0.12 | attribute points per month | §3 |
 | `growth.age_factor.<band>` | see §3 | multiplier | §3 |
 | `growth.decline.<band>` | see §3 | attribute points per month | §3 |
-| `growth.noise_sd` | 0.05 | attribute points | §3 |
+| `growth.noise_rel_sd` | 0.25 | fraction of the growth term | §3 |
 | `people.retire_bp_per_year_over_60` | 600 | bp | §3 |
 | `reveal.initial_hw.skill` / `.personality` / `.pa` | 5.0 / 7.0 / 40.0 | attribute or CA points | §4 |
 | `reveal.strength.<action>` | see §4 | fraction | §4 |

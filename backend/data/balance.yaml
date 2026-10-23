@@ -88,7 +88,7 @@ growth: # monthly skill growth and decline (formulas.md section 3)
     - { from_age: 0, value: 0.0 }
     - { from_age: 50, value: 0.005 }
     - { from_age: 55, value: 0.015 }
-  noise_sd: 0.05 # attribute points; sd of the per-skill monthly noise
+  noise_rel_sd: 0.25 # fraction; sd of Normal noise multiplying the growth term, max(0, 1 + noise)
 
 reveal: # revealed ranges (formulas.md section 4, ADR-0007)
   initial_hw: # half-width of a stranger's range

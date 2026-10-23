@@ -75,18 +75,26 @@ def growth_delta(
     pa: float,
     professionalism: float,
     growth: GrowthBalance,
+    noise: float = 0.0,
 ) -> float:
-    """Monthly change for one skill before noise.
+    """Monthly change for one skill.
 
-    Role skills: r x a(age) x max(0, PA - CA) / PA x professionalism / 10 - d(age).
-    Other skills: -d(age).
+    Role skills: r x a(age) x max(0, PA - CA) / PA x professionalism / 10
+                 x max(0, 1 + noise) - d(age),
+    where the caller draws noise ~ Normal(0, growth.noise_rel_sd); noise 0 is the
+    noise-free value used by the worked examples.
+    Other skills: -d(age), with no noise.
     """
     decline = band_value(growth.decline, age)
     if not in_role:
         return -decline
     headroom = max(0.0, pa - ca) / pa
     factor = band_value(growth.age_factor, age)
-    return growth.rate * factor * headroom * professionalism / PROFESSIONALISM_DIVISOR - decline
+    multiplier = max(0.0, 1 + noise)
+    return (
+        growth.rate * factor * headroom * professionalism / PROFESSIONALISM_DIVISOR * multiplier
+        - decline
+    )
 
 
 # --- Section 4: revealed ranges -------------------------------------------------------------
