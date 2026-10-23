@@ -18,6 +18,7 @@ from tst.sim.data_models import (
     BackgroundsFile,
     Balance,
     GameData,
+    InboxTemplatesFile,
     InterestsFile,
     NamesFile,
     PersonalityFile,
@@ -40,10 +41,12 @@ ROLES_FILE = "roles.yaml"
 TAGS_FILE = "tags.yaml"
 BACKGROUNDS_FILE = "backgrounds.yaml"
 NAMES_FILE = "names.yaml"
+INBOX_FILE = "inbox_templates.yaml"
 DATA_FILES = (
     ACCOUNTS_FILE,
     BACKGROUNDS_FILE,
     BALANCE_FILE,
+    INBOX_FILE,
     INTERESTS_FILE,
     NAMES_FILE,
     PERSONALITY_FILE,
@@ -179,6 +182,7 @@ def load_all(path: Path) -> LoadedData:
     tags = _validate(TagsFile, parsed[TAGS_FILE], TAGS_FILE)
     backgrounds = _validate(BackgroundsFile, parsed[BACKGROUNDS_FILE], BACKGROUNDS_FILE)
     names = _validate(NamesFile, parsed[NAMES_FILE], NAMES_FILE)
+    inbox = _validate(InboxTemplatesFile, parsed[INBOX_FILE], INBOX_FILE)
     game_data = _validate(
         GameData,
         {
@@ -195,6 +199,7 @@ def load_all(path: Path) -> LoadedData:
             "backgrounds": backgrounds.backgrounds,
             "personality_presets": backgrounds.personality_presets,
             "names": names.names,
+            "inbox_templates": inbox.templates,
         },
         "seed data cross-check",
     )

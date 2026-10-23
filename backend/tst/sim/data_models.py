@@ -113,6 +113,7 @@ class PeopleBalance(_Frozen):
     max_tags: int = Field(ge=0)
     region_weights: dict[str, float]
     retire_bp_per_year_over_60: int = Field(ge=0)
+    retire_from_age: int = Field(gt=0)
 
     @model_validator(mode="after")
     def _check(self) -> PeopleBalance:
@@ -129,6 +130,9 @@ class PeopleBalance(_Frozen):
 
 class PayrollBalance(_Frozen):
     salary_round_to_cents: int = Field(gt=0)
+    benefits_bp: int = Field(ge=0)
+    office_cost_per_head_cents: int = Field(ge=0)
+    severance_months: int = Field(ge=0)
 
 
 class GrowthBalance(_Frozen):
@@ -185,6 +189,8 @@ class FounderBalance(_Frozen):
     default_age: int
     age_range: Span
     default_region: str
+    energy_per_month: int = Field(ge=0)
+    energy_cost: dict[str, int]
 
     @model_validator(mode="after")
     def _check(self) -> FounderBalance:
@@ -192,7 +198,103 @@ class FounderBalance(_Frozen):
             raise ValueError("default_age must be within age_range")
         if self.skill_base > self.skill_cap:
             raise ValueError("skill_base must not exceed skill_cap")
+        if sorted(self.energy_cost) != sorted(ENERGY_ACTIONS):
+            raise ValueError(f"energy_cost must define exactly {list(ENERGY_ACTIONS)}")
         return self
+
+
+ENERGY_ACTIONS = ("interview", "reference_check", "job_post", "recruiter", "network", "offer")
+CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
+HIRING_LEVELS = ("junior", "mid", "senior", "staff")
+
+
+class ChannelBalance(_Frozen):
+    size: Span
+    sociability_bonus: int = Field(ge=0)
+    sociability_threshold: float = Field(ge=0)
+    level_mix: dict[str, float]
+    knowledge: tuple[str, ...]
+
+    @model_validator(mode="after")
+    def _check(self) -> ChannelBalance:
+        unknown = sorted(set(self.level_mix) - set(LEVELS))
+        if unknown:
+            raise ValueError(f"level_mix has unknown levels {unknown}")
+        if any(w < 0 for w in self.level_mix.values()) or not any(
+            w > 0 for w in self.level_mix.values()
+        ):
+            raise ValueError("level_mix needs non-negative weights with one positive")
+        bad = sorted(set(self.knowledge) - set(REVEAL_ACTIONS))
+        if bad:
+            raise ValueError(f"knowledge has unknown actions {bad}")
+        return self
+
+
+class OfferBalance(_Frozen):
+    w_salary: float
+    w_equity: float
+    w_fit: float
+    w_risk: float
+    ambition_equity_boost: float
+    ambition_boost_above: float
+    equity_value_per_bp: float
+    stage_appeal: dict[int, float]
+    stage_equity_mult: dict[int, float]
+    k: float
+    threshold: float
+
+
+class HiringBalance(_Frozen):
+    hint_bands: Span
+    channel: dict[str, ChannelBalance]
+    job_post_cost_cents: int = Field(ge=0)
+    recruiter_fee_bp: int = Field(ge=0)
+    candidate_shelf_turns: int = Field(gt=0)
+    lowball_ratio: float = Field(ge=0)
+    max_offer_equity_bp: int = Field(ge=0)
+    option_pool_bp: int = Field(ge=0)
+    offer: OfferBalance
+
+    @model_validator(mode="after")
+    def _check(self) -> HiringBalance:
+        if sorted(self.channel) != sorted(CHANNELS):
+            raise ValueError(f"channel must define exactly {list(CHANNELS)}")
+        if self.max_offer_equity_bp > self.option_pool_bp:
+            raise ValueError("max_offer_equity_bp must not exceed option_pool_bp")
+        return self
+
+
+class MoraleBalance(_Frozen):
+    new_hire: float
+    target_base: float
+    pay_slope: float
+    pay_min: float
+    pay_max: float
+    fit_per_interest: float
+    work_style_mismatch: float
+    runway_warn_months: float
+    runway_crit_months: float
+    runway_warn: float
+    runway_crit: float
+    workload_term: float
+    rate: float = Field(ge=0, le=1)
+    noise_scale: float = Field(ge=0)
+    fire_penalty: float
+    fire_penalty_culture_carrier: float
+
+
+class ResignBalance(_Frozen):
+    base_bp: float = Field(ge=0)
+    cap_bp: float = Field(ge=0)
+    morale_floor: float
+    morale_divisor: float = Field(gt=0)
+    loyalty_divisor: float = Field(gt=0)
+    job_hopper_mult: float = Field(ge=0)
+
+
+class TagsBalance(_Frozen):
+    reveal_bp_per_month: int = Field(ge=0)
+    reveal_bp_on_check: int = Field(ge=0)
 
 
 class Balance(_Frozen):
@@ -205,6 +307,10 @@ class Balance(_Frozen):
     growth: GrowthBalance
     reveal: RevealBalance
     founder: FounderBalance
+    hiring: HiringBalance
+    morale: MoraleBalance
+    resign: ResignBalance
+    tags: TagsBalance
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -380,6 +486,29 @@ class NamesFile(_Frozen):
     names: dict[str, NamePool]
 
 
+class InboxTemplate(_Frozen):
+    title: str = Field(min_length=1)
+    body: str = Field(min_length=1)
+
+
+class InboxTemplatesFile(_Frozen):
+    templates: dict[str, InboxTemplate]
+
+
+# Template keys the engine emits (M1b). The loader fails if any is missing.
+INBOX_TEMPLATE_KEYS = (
+    "candidates_arrived",
+    "offer_accepted",
+    "offer_declined",
+    "resigned",
+    "retired",
+    "employee_left",
+    "fired",
+    "tag_revealed",
+    "out_of_cash",
+)
+
+
 def _dupes(keys: list[str]) -> list[str]:
     return sorted({k for k in keys if keys.count(k) > 1})
 
@@ -398,6 +527,7 @@ class GameData(_Frozen):
     backgrounds: tuple[Background, ...]
     personality_presets: tuple[PersonalityPreset, ...]
     names: dict[str, NamePool]
+    inbox_templates: dict[str, InboxTemplate]
 
     @model_validator(mode="after")
     def _check_references(self) -> GameData:
@@ -472,6 +602,10 @@ class GameData(_Frozen):
 
         if set(self.names) != set(self.region_keys):
             problems.append(f"names.yaml: regions must be exactly {sorted(self.region_keys)}")
+
+        missing = sorted(set(INBOX_TEMPLATE_KEYS) - set(self.inbox_templates))
+        if missing:
+            problems.append(f"inbox_templates.yaml: missing templates {missing}")
 
         if problems:
             raise ValueError("; ".join(problems))

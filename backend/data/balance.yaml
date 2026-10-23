@@ -71,9 +71,13 @@ people:
     africa: 3
     oceania: 3
   retire_bp_per_year_over_60: 600 # bp per month per year of age over 59; retirement roll from M1b (3)
+  retire_from_age: 60 # years; retirement rolls start at this age; chance uses (age - (retire_from_age - 1)) (3)
 
 payroll:
   salary_round_to_cents: 50000 # cents; salary expectations round to the nearest $500 (2.8)
+  benefits_bp: 2000 # bp of monthly salary; benefits posted with payroll (8)
+  office_cost_per_head_cents: 60000 # cents per month per staff member, founder included (8)
+  severance_months: 1 # months of salary paid when someone is fired (8)
 
 growth: # monthly skill growth and decline (formulas.md section 3)
   rate: 0.12 # attribute points per month; r in the growth formula
@@ -113,3 +117,84 @@ founder: # founder build (formulas.md section 5)
   default_age: 28 # years
   age_range: [22, 60] # years; allowed founder ages
   default_region: north_america # regions.yaml key; founder region when none is chosen (name pool)
+  energy_per_month: 100 # energy; founder's monthly action budget, reset after phase 12 (6)
+  energy_cost: # energy spent at once by each action (6)
+    interview: 6
+    reference_check: 3
+    job_post: 4 # open a job post search
+    recruiter: 4 # engage a recruiter
+    network: 10 # network search
+    offer: 0
+
+# --- Hiring (formulas.md section 7) -----------------------------------------------------
+hiring:
+  hint_bands: [-0.3, 0.3] # score; below the first: unlikely, above the second: likely
+  channel: # candidate batch size [min, max] and level mix (percent) per channel
+    network:
+      size: [2, 4] # candidates per batch
+      sociability_bonus: 1 # extra candidates when the actor's sociability is high enough
+      sociability_threshold: 15 # attribute points; actor sociability needed for the bonus
+      level_mix: { junior: 30, mid: 40, senior: 25, staff: 5 }
+      knowledge: [network_intro] # knowledge actions applied to each new candidate
+    job_post:
+      size: [6, 10]
+      sociability_bonus: 0
+      sociability_threshold: 0
+      level_mix: { junior: 45, mid: 40, senior: 13, staff: 2 }
+      knowledge: [job_post_screen]
+    recruiter:
+      size: [4, 6]
+      sociability_bonus: 0
+      sociability_threshold: 0
+      level_mix: { junior: 10, mid: 35, senior: 40, staff: 15 }
+      knowledge: [job_post_screen, job_post_screen]
+  job_post_cost_cents: 50000 # cents per month while a job post is open; also the cash needed to open one
+  recruiter_fee_bp: 2000 # bp of annual salary, charged when a recruiter candidate is hired
+  candidate_shelf_turns: 3 # turns a candidate stays available after their batch arrives
+  lowball_ratio: 0.85 # ratio; offers below this share of the expectation are always declined
+  max_offer_equity_bp: 200 # bp; most equity one offer may carry
+  option_pool_bp: 1000 # bp; equity held by staff plus pending offers may not exceed this
+  offer: # acceptance score and probability (7)
+    w_salary: 4.0 # score per unit of (offer / expectation - 1)
+    w_equity: 1.0 # weight on equity value
+    w_fit: 0.5 # score per mission interest the candidate shares
+    w_risk: 1.0 # score per unit of (10 - risk_appetite) / 10, subtracted
+    ambition_equity_boost: 1.5 # multiplier on w_equity when ambition is above the threshold
+    ambition_boost_above: 15 # attribute points; ambition must exceed this for the boost
+    equity_value_per_bp: 0.002 # score per bp of equity before the stage multiplier
+    stage_appeal: { 0: -0.5, 1: 0.0, 2: 0.5, 3: 1.0 } # score by company stage
+    stage_equity_mult: { 0: 1.0, 1: 0.8, 2: 0.5, 3: 0.3 } # multiplier on equity value by stage
+    k: 3.0 # logistic steepness
+    threshold: 0.0 # score at which acceptance is 50%
+
+# --- Morale (formulas.md section 9) -----------------------------------------------------
+morale:
+  new_hire: 65 # morale points; starting morale for a new hire
+  target_base: 50 # morale points; target = target_base + pay + fit + runway + workload
+  pay_slope: 60 # morale points per unit of (salary / market mid - 1)
+  pay_min: -20 # morale points; floor of the pay term
+  pay_max: 15 # morale points; ceiling of the pay term
+  fit_per_interest: 5 # morale points per shared mission interest
+  work_style_mismatch: -5 # morale points when work style differs from the role's style
+  runway_warn_months: 6 # months; runway below this costs runway_warn
+  runway_crit_months: 3 # months; runway below this (or cash <= 0) costs runway_crit
+  runway_warn: -10 # morale points
+  runway_crit: -20 # morale points
+  workload_term: 0 # morale points; placeholder until projects (M3)
+  rate: 0.3 # fraction of the gap to target closed each month
+  noise_scale: 2.0 # morale points; noise sd = noise_scale x (21 - temperament) / 20
+  fire_penalty: -3 # morale points to everyone remaining when someone is fired
+  fire_penalty_culture_carrier: -6 # morale points instead, if the fired person is a culture carrier
+
+# --- Resignations and tag reveals (formulas.md section 10) ------------------------------
+resign:
+  base_bp: 50 # bp per month before modifiers
+  cap_bp: 2000 # bp per month at most
+  morale_floor: 40 # morale points; below this the chance rises
+  morale_divisor: 20 # morale points per +100% chance below the floor
+  loyalty_divisor: 10 # loyalty term (21 - loyalty) / loyalty_divisor
+  job_hopper_mult: 2.0 # multiplier for the job_hopper tag
+
+tags:
+  reveal_bp_per_month: 500 # bp per hidden tag per month for employees
+  reveal_bp_on_check: 1500 # bp per hidden tag on an interview or reference check

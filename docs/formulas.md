@@ -203,7 +203,7 @@ p = \frac{1}{1 + e^{-3\,(score - 0)}}
 ```
 
 - `R` = offered salary ÷ expectation; `B` = equity in basis points; `F` = number of the candidate's interests that match the company mission.
-- `w_eq` = 1.0, or 1.5 if ambition > 15.
+- `w_eq` = 1.0, or 1.5 if ambition > 15 (`hiring.offer.ambition_boost_above`).
 
 | Stage | A_stage (appeal) | m_stage (equity value multiplier) |
 | --- | --- | --- |
@@ -215,6 +215,8 @@ p = \frac{1}{1 + e^{-3\,(score - 0)}}
 - If `R < 0.85`, the candidate always declines.
 - **Option pool:** an offer may carry at most 200 bp of equity, and equity held by staff plus pending offers may not exceed 1,000 bp (a 10% pool). The founder's ownership is outside the pool and arrives with the cap table in M4.
 - An accepted offer moves the company from stage 0 to stage 1 ("first hire", spec §3) in phase 10.
+- **Withdrawing an offer** removes only the pending offer. The candidate stays open and can receive a new offer the same turn: nothing is decided until Continue. **Closing a job post** stops new batches; its existing candidates stay until they expire. The candidate status `withdrawn` is reserved for M2 (a candidate or a delegate pulling out) and is unused in M1.
+- **Company mission:** two interests from `interests.yaml`, chosen at new game. If none are given, the mission is the founder's first two interests, ordered as in `interests.yaml`. When given, they must be exactly two distinct valid interests. Saves created before M1b keep an empty mission.
 - New hires start with morale 65.
 
 **Acceptance hint** shown in the offer dialog: the same score computed from what the player knows (R and equity exactly, F from revealed interests only, the midpoints of displayed ranges for risk appetite and ambition). Score ≥ +0.3 → "likely"; −0.3 to +0.3 → "uncertain"; below −0.3 → "unlikely". The true probability is never shown.
@@ -360,6 +362,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `growth.decline.<band>` | see §3 | attribute points per month | §3 |
 | `growth.noise_rel_sd` | 0.25 | fraction of the growth term | §3 |
 | `people.retire_bp_per_year_over_60` | 600 | bp | §3 |
+| `people.retire_from_age` | 60 | years | §3 |
 | `reveal.initial_hw.skill` / `.personality` / `.pa` | 5.0 / 7.0 / 40.0 | attribute or CA points | §4 |
 | `reveal.strength.<action>` | see §4 | fraction | §4 |
 | `reveal.scout_base` / `reveal.scout_divisor` | 0.5 / 40 | — | §4 |
@@ -372,11 +375,13 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `founder.default_region` | north_america | `regions.yaml` key | §5 |
 | `hiring.hint_bands` | [−0.3, 0.3] | score | §7 |
 | `hiring.channel.<channel>.size` / `.level_mix` | see §7 | count / percent | §7 |
+| `hiring.channel.<channel>.sociability_bonus` / `.sociability_threshold` | network 1 / 15, others 0 / 0 | count / attribute points | §7 |
+| `hiring.channel.<channel>.knowledge` | network [network_intro], job post [job_post_screen], recruiter [job_post_screen ×2] | knowledge actions | §7 |
 | `hiring.job_post_cost_cents` | 50000 | cents per month | §7 |
 | `hiring.recruiter_fee_bp` | 2000 | bp of annual salary | §7 |
 | `hiring.candidate_shelf_turns` | 3 | turns | §7 |
 | `hiring.offer.w_salary` / `.w_equity` / `.w_fit` / `.w_risk` | 4.0 / 1.0 / 0.5 / 1.0 | score per unit | §7 |
-| `hiring.offer.ambition_equity_boost` | 1.5 (if ambition > 15) | multiplier | §7 |
+| `hiring.offer.ambition_equity_boost` / `.ambition_boost_above` | 1.5 / 15 | multiplier / attribute points | §7 |
 | `hiring.offer.equity_value_per_bp` | 0.002 | score per bp | §7 |
 | `hiring.offer.stage_appeal.<stage>` / `.stage_equity_mult.<stage>` | see §7 | score / multiplier | §7 |
 | `hiring.offer.k` / `.threshold` | 3.0 / 0.0 | — | §7 |
@@ -389,6 +394,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `scenario.<id>.starting_cash_cents` | see §8a | cents | §8a |
 | `difficulty.<level>.starting_cash_mult_bp` | see §8a | bp | §8a |
 | `payroll.severance_months` | 1 | months | §8 |
+| `morale.target_base` | 50 | morale points | §9 |
 | `morale.pay_slope` / `.pay_min` / `.pay_max` | 60 / −20 / 15 | morale points | §9 |
 | `morale.fit_per_interest` / `.work_style_mismatch` | 5 / −5 | morale points | §9 |
 | `morale.runway_warn_months` / `.runway_crit_months` | 6 / 3 | months | §9 |
@@ -399,6 +405,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `morale.fire_penalty` / `.fire_penalty_culture_carrier` | −3 / −6 | morale points | §9 |
 | `resign.base_bp` / `.cap_bp` | 50 / 2000 | bp per month | §10 |
 | `resign.morale_floor` / `.morale_divisor` | 40 / 20 | morale points | §10 |
+| `resign.loyalty_divisor` | 10 | attribute points | §10 |
 | `resign.job_hopper_mult` | 2.0 | multiplier | §10 |
 | `tags.reveal_bp_per_month` / `.reveal_bp_on_check` | 500 / 1500 | bp | §10 |
 | `events.light_tone_chance_bp` | 1000 | bp | ADR-0011 |
