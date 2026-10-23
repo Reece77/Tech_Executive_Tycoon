@@ -103,8 +103,10 @@ def test_run_turn_writes_everything(save: Path, loaded: LoadedData) -> None:
         assert snap is not None
         assert snap.cash_cents == GARAGE_CASH - OVERHEAD
         assert snap.monthly_burn_cents == OVERHEAD
-        for row_type in (DecisionLogRow, TurnLogRow, TurnSnapshotRow):
+        for row_type in (TurnLogRow, TurnSnapshotRow):
             assert session.scalar(select(func.count()).select_from(row_type)) == 1
+        # the new-game choices (for replay) plus this turn's decisions
+        assert session.scalar(select(func.count()).select_from(DecisionLogRow)) == 2
         # starting cash + one overhead entry
         assert session.scalar(select(func.count()).select_from(LedgerEntryRow)) == 2
 
