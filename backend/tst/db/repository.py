@@ -5,10 +5,12 @@ from __future__ import annotations
 import json
 import logging
 import re
-from collections.abc import Iterator
+from collections import defaultdict
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -19,9 +21,15 @@ from tst.db.mappers import (
     company_snapshot_from_row,
     company_to_row,
     decisions_to_row,
+    employment_from_row,
+    employment_to_row,
     entry_to_row,
     game_state_from_rows,
     log_item_to_row,
+    person_from_rows,
+    person_to_rows,
+    reveal_from_rows,
+    reveal_to_rows,
     snapshot_to_rows,
     update_company_row,
 )
@@ -29,8 +37,18 @@ from tst.db.models import (
     SCHEMA_VERSION,
     AccountRow,
     CompanyRow,
+    EmploymentRow,
     LedgerEntryRow,
     LedgerLineRow,
+    PersonHiddenRow,
+    PersonInterestRow,
+    PersonPersonalityRow,
+    PersonProfileRevealRow,
+    PersonRevealRow,
+    PersonRow,
+    PersonSkillRow,
+    PersonTagRevealRow,
+    PersonTagRow,
     SaveMetaRow,
     TurnSnapshotRow,
 )
@@ -48,8 +66,10 @@ from tst.sim.errors import (
 )
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
+from tst.sim.people.founder import FounderSpec
+from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.rng import RngFactory
-from tst.sim.setup import new_game
+from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot, runway_months
 from tst.sim.state import GameState, company_cash
 from tst.sim.turn import TurnResult, advance_turn
@@ -112,6 +132,7 @@ def create_save(
     data: LoadedData,
     save_dir: Path,
     difficulty: str = DEFAULT_DIFFICULTY,
+    founder: FounderSpec = DEFAULT_FOUNDER,
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state."""
     path = save_path(save_dir, name)
@@ -128,7 +149,9 @@ def create_save(
         scenario=scenario_def,
         difficulty=difficulty,
         company_name=company_name,
+        founder=founder,
         balance=data.balance,
+        data=data.game_data,
     )
 
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -153,6 +176,7 @@ def create_save(
             )
             session.add_all(company_to_row(c) for c in state.companies)
             session.flush()
+            _save_people(session, state)
             session.add_all(entry_to_row(e) for e in entries)
     except BaseException:
         for leftover in (
@@ -179,7 +203,75 @@ def read_meta(session: Session) -> SaveMetaRow:
 def load_state(session: Session) -> GameState:
     meta = read_meta(session)
     companies = list(session.scalars(select(CompanyRow)))
-    return game_state_from_rows(meta, companies)
+    return game_state_from_rows(
+        meta, companies, _load_people(session), _load_employments(session), _load_reveals(session)
+    )
+
+
+def _by_person[R](rows: Iterable[R]) -> dict[int, list[R]]:
+    grouped: dict[int, list[R]] = defaultdict(list)
+    for row in rows:
+        grouped[row.person_id].append(row)  # type: ignore[attr-defined]
+    return grouped
+
+
+def _load_people(session: Session) -> tuple[Person, ...]:
+    skills = _by_person(session.scalars(select(PersonSkillRow)))
+    personality = _by_person(session.scalars(select(PersonPersonalityRow)))
+    hidden = _by_person(session.scalars(select(PersonHiddenRow)))
+    interests = _by_person(session.scalars(select(PersonInterestRow)))
+    tags = _by_person(session.scalars(select(PersonTagRow)))
+    return tuple(
+        person_from_rows(
+            row,
+            skills[row.id],
+            personality[row.id],
+            hidden[row.id],
+            interests[row.id],
+            tags[row.id],
+        )
+        for row in session.scalars(select(PersonRow).order_by(PersonRow.id))
+    )
+
+
+def _load_employments(session: Session) -> tuple[Employment, ...]:
+    rows = session.scalars(select(EmploymentRow).order_by(EmploymentRow.id))
+    return tuple(employment_from_row(r) for r in rows)
+
+
+def _load_reveals(session: Session) -> tuple[RevealState, ...]:
+    def key(row: Any) -> tuple[int, int]:
+        return (row.observer_company_id, row.person_id)
+
+    records: dict[tuple[int, int], list[PersonRevealRow]] = defaultdict(list)
+    for r in session.scalars(select(PersonRevealRow)):
+        records[key(r)].append(r)
+    profiles = {key(r): r for r in session.scalars(select(PersonProfileRevealRow))}
+    tags: dict[tuple[int, int], list[PersonTagRevealRow]] = defaultdict(list)
+    for t in session.scalars(select(PersonTagRevealRow)):
+        tags[key(t)].append(t)
+    return tuple(
+        reveal_from_rows(
+            observer,
+            person,
+            records[(observer, person)],
+            profiles.get((observer, person)),
+            tags[(observer, person)],
+        )
+        for observer, person in sorted(records)
+    )
+
+
+def _save_people(session: Session, state: GameState) -> None:
+    """Write people, employments and reveals as current state (insert or update in place)."""
+    for person in state.people:
+        for row in person_to_rows(person):
+            session.merge(row)
+    for employment in state.employments:
+        session.merge(employment_to_row(employment))
+    for reveal in state.reveals:
+        for row in reveal_to_rows(reveal):
+            session.merge(row)
 
 
 def ledger_balances(
@@ -276,6 +368,9 @@ def apply_turn_result(session: Session, result: TurnResult, decisions: Decisions
         else:
             update_company_row(row, company)
 
+    session.flush()
+    _save_people(session, result.new_state)
+
     player = result.new_state.player
     session.add(decisions_to_row(played, player.id, decisions))
     session.add_all(entry_to_row(e) for e in result.ledger_entries)
@@ -296,7 +391,12 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
         state = load_state(session)
         balances = ledger_balances(session, state.turn)
         result = advance_turn(
-            state, decisions, RngFactory(state.save_meta.master_seed), data.balance, balances
+            state,
+            decisions,
+            RngFactory(state.save_meta.master_seed),
+            data.balance,
+            data.game_data,
+            balances,
         )
         apply_turn_result(session, result, decisions)
 

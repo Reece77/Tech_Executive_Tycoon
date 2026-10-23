@@ -380,6 +380,16 @@
             "type": "string",
             "title": "Difficulty",
             "default": "standard"
+          },
+          "founder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FounderIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -408,6 +418,114 @@
         ],
         "title": "ErrorOut",
         "description": "Stable error body for every 4xx response."
+      },
+      "FounderIn": {
+        "properties": {
+          "background": {
+            "type": "string",
+            "title": "Background",
+            "default": "engineer"
+          },
+          "allocation": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allocation",
+            "description": "Skill points to spend; omit for the background's default"
+          },
+          "personality_preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Personality Preset",
+            "description": "Omit for random"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "interests": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interests"
+          },
+          "work_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Style"
+          }
+        },
+        "type": "object",
+        "title": "FounderIn",
+        "description": "Founder build (docs/formulas.md section 5). Omitted fields use the defaults."
       },
       "OverviewOut": {
         "properties": {

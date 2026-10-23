@@ -13,13 +13,46 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, ValidationError
 
-from tst.sim.data_models import Account, Balance, GameData, Scenario
+from tst.sim.data_models import (
+    Account,
+    BackgroundsFile,
+    Balance,
+    GameData,
+    InterestsFile,
+    NamesFile,
+    PersonalityFile,
+    RegionsFile,
+    RolesFile,
+    Scenario,
+    SkillsFile,
+    TagsFile,
+)
 from tst.sim.ledger import ENGINE_ACCOUNTS
 
 BALANCE_FILE = "balance.yaml"
 SCENARIOS_FILE = "scenarios.yaml"
 ACCOUNTS_FILE = "accounts.yaml"
-DATA_FILES = (ACCOUNTS_FILE, BALANCE_FILE, SCENARIOS_FILE)
+SKILLS_FILE = "skills.yaml"
+PERSONALITY_FILE = "personality.yaml"
+INTERESTS_FILE = "interests.yaml"
+REGIONS_FILE = "regions.yaml"
+ROLES_FILE = "roles.yaml"
+TAGS_FILE = "tags.yaml"
+BACKGROUNDS_FILE = "backgrounds.yaml"
+NAMES_FILE = "names.yaml"
+DATA_FILES = (
+    ACCOUNTS_FILE,
+    BACKGROUNDS_FILE,
+    BALANCE_FILE,
+    INTERESTS_FILE,
+    NAMES_FILE,
+    PERSONALITY_FILE,
+    REGIONS_FILE,
+    ROLES_FILE,
+    SCENARIOS_FILE,
+    SKILLS_FILE,
+    TAGS_FILE,
+)
 
 
 class DataLoadError(Exception):
@@ -87,6 +120,39 @@ def _list_of(data: Any, key: str, file: str) -> list[Any]:
     return items
 
 
+def _check_against_balance(balance: Balance, data: GameData) -> None:
+    """Checks that need both balance.yaml and the seed files."""
+    regions = set(data.region_keys)
+    if set(balance.people.region_weights) != regions:
+        raise DataLoadError(
+            f"{BALANCE_FILE}: people.region_weights must cover exactly {sorted(regions)}"
+        )
+    if balance.founder.default_region not in regions:
+        raise DataLoadError(
+            f"{BALANCE_FILE}: founder.default_region {balance.founder.default_region!r} "
+            "is not in regions.yaml"
+        )
+    founder = balance.founder
+    for bg in data.backgrounds:
+        spent = sum(bg.default_allocation.values())
+        if spent != founder.skill_points:
+            raise DataLoadError(
+                f"{BACKGROUNDS_FILE}: {bg.key!r} default_allocation spends {spent} points, "
+                f"expected founder.skill_points = {founder.skill_points}"
+            )
+        if any(points < 0 for points in bg.default_allocation.values()):
+            raise DataLoadError(f"{BACKGROUNDS_FILE}: {bg.key!r} allocates negative points")
+        for skill in data.skill_keys:
+            value = (
+                founder.skill_base + bg.default_allocation.get(skill, 0) + bg.bonuses.get(skill, 0)
+            )
+            if value > founder.skill_cap:
+                raise DataLoadError(
+                    f"{BACKGROUNDS_FILE}: {bg.key!r} puts {skill} at {value}, "
+                    f"above founder.skill_cap = {founder.skill_cap}"
+                )
+
+
 def load_all(path: Path) -> LoadedData:
     """Load and cross-check every data file in `path`. Raises DataLoadError on any problem."""
     parsed: dict[str, Any] = {}
@@ -105,11 +171,34 @@ def load_all(path: Path) -> LoadedData:
         _validate(Scenario, item, SCENARIOS_FILE)
         for item in _list_of(parsed[SCENARIOS_FILE], "scenarios", SCENARIOS_FILE)
     ]
+    skills = _validate(SkillsFile, parsed[SKILLS_FILE], SKILLS_FILE)
+    personality = _validate(PersonalityFile, parsed[PERSONALITY_FILE], PERSONALITY_FILE)
+    interests = _validate(InterestsFile, parsed[INTERESTS_FILE], INTERESTS_FILE)
+    regions = _validate(RegionsFile, parsed[REGIONS_FILE], REGIONS_FILE)
+    roles = _validate(RolesFile, parsed[ROLES_FILE], ROLES_FILE)
+    tags = _validate(TagsFile, parsed[TAGS_FILE], TAGS_FILE)
+    backgrounds = _validate(BackgroundsFile, parsed[BACKGROUNDS_FILE], BACKGROUNDS_FILE)
+    names = _validate(NamesFile, parsed[NAMES_FILE], NAMES_FILE)
     game_data = _validate(
         GameData,
-        {"accounts": accounts, "scenarios": scenarios},
-        f"{ACCOUNTS_FILE}/{SCENARIOS_FILE}",
+        {
+            "accounts": accounts,
+            "scenarios": scenarios,
+            "skills": skills.skills,
+            "personality": personality.personality,
+            "hidden": personality.hidden,
+            "work_styles": personality.work_styles,
+            "interests": interests.interests,
+            "regions": regions.regions,
+            "roles": roles.roles,
+            "tags": tags.tags,
+            "backgrounds": backgrounds.backgrounds,
+            "personality_presets": backgrounds.personality_presets,
+            "names": names.names,
+        },
+        "seed data cross-check",
     )
+    _check_against_balance(balance, game_data)
 
     scenario_ids = {s.id for s in game_data.scenarios}
     missing = sorted(scenario_ids - set(balance.scenario))

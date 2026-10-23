@@ -1,6 +1,6 @@
 # ADR-0007: Hidden true values and per-observer revealed ranges
 
-- Status: Accepted. Clarified 2026-10-21 (M1 sweep): tag reveals are per observer; the field-name check is exact.
+- Status: Accepted. Clarified 2026-10-21 (M1 sweep): tag reveals are per observer; the field-name check is exact. Amended 2026-10-21 (M1a): `person_reveal` stores `hw` and `center_offset`; ranges are derived on read.
 - Date: 2026-10-20
 - Spec sections: §1 (pillars), §5, §11
 
@@ -11,7 +11,8 @@ Football Manager's tension comes from uncertainty about people's true quality. T
 ## Decision
 
 - **True values** are stored in the database and used by the sim (`person_skill.value`, `person_personality.value`, `person_hidden.*`, later `deposit.true_*`).
-- **Revealed ranges** are stored per observer company: `person_reveal(person_id, observer_company_id, attribute, min, max, last_updated_turn)`. Rival companies have their own knowledge of the same person.
+- **Revealed ranges** are stored per observer company: `person_reveal(person_id, observer_company_id, attribute, hw, center_offset, last_updated_turn)`, where `hw` is the half-width and `center_offset` the fixed offset from `docs/formulas.md` §4. Rival companies have their own knowledge of the same person.
+- Displayed `min`/`max` are derived on read from the current true value, `hw` and `center_offset`, so ranges follow skill growth instead of going stale; they are never stored.
 - **Narrowing:** each knowledge action (interview, reference check, scouting assignment, working together, time on the job) narrows the range around the true value. The narrowed range always contains the true value. Width shrinks by a factor from `balance.yaml` that depends on the scout's `judgment_of_talent` and the action type. Exact formula: `docs/formulas.md` (M1).
 - **Range center noise:** ranges are not centered on the true value; a seeded offset keeps players from inferring the truth as the midpoint.
 - **API rule:** response schemas for people never include true values. They carry `{min, max}` per attribute for the viewing company. Own employees with long tenure converge to `min == max`.

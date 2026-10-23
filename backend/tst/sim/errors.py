@@ -61,3 +61,11 @@ class SaveExistsError(SimError):
 
 class InvalidCompanyNameError(SimError):
     code = "invalid_company_name"
+
+
+class InvalidFounderError(SimError):
+    code = "invalid_founder"
+
+
+class UnknownKnowledgeActionError(SimError):
+    code = "unknown_knowledge_action"

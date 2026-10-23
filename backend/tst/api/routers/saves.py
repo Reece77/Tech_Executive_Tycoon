@@ -11,6 +11,7 @@ from tst.api.schemas.common import ErrorOut
 from tst.api.schemas.saves import CreateSaveIn, OverviewOut, SaveOut, SnapshotPointOut
 from tst.db import repository
 from tst.sim.calendar import format_turn
+from tst.sim.setup import DEFAULT_FOUNDER
 
 router = APIRouter(prefix="/api/saves", tags=["saves"])
 
@@ -81,6 +82,7 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         body.scenario,
         company_name=body.company_name,
         difficulty=body.difficulty,
+        founder=body.founder.to_spec() if body.founder else DEFAULT_FOUNDER,
         data=data,
         save_dir=settings.resolved_save_dir(),
     )

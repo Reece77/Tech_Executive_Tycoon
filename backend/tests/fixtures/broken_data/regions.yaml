@@ -1,0 +1,3 @@
+# Deliberately broken: zero salary multiplier.
+regions:
+  - { key: north_america, label: North America, salary_multiplier_bp: 0 }

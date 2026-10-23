@@ -5,7 +5,7 @@
     "company_id": 1,
     "cash_cents": 4800000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 1,
@@ -13,7 +13,7 @@
     "company_id": 1,
     "cash_cents": 4600000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 2,
@@ -21,7 +21,7 @@
     "company_id": 1,
     "cash_cents": 4400000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 3,
@@ -29,7 +29,7 @@
     "company_id": 1,
     "cash_cents": 4200000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 4,
@@ -37,7 +37,7 @@
     "company_id": 1,
     "cash_cents": 4000000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 5,
@@ -45,7 +45,7 @@
     "company_id": 1,
     "cash_cents": 3800000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 6,
@@ -53,7 +53,7 @@
     "company_id": 1,
     "cash_cents": 3600000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 7,
@@ -61,7 +61,7 @@
     "company_id": 1,
     "cash_cents": 3400000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 8,
@@ -69,7 +69,7 @@
     "company_id": 1,
     "cash_cents": 3200000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 9,
@@ -77,7 +77,7 @@
     "company_id": 1,
     "cash_cents": 3000000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 10,
@@ -85,7 +85,7 @@
     "company_id": 1,
     "cash_cents": 2800000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 11,
@@ -93,7 +93,7 @@
     "company_id": 1,
     "cash_cents": 2600000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 12,
@@ -101,7 +101,7 @@
     "company_id": 1,
     "cash_cents": 2400000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 13,
@@ -109,7 +109,7 @@
     "company_id": 1,
     "cash_cents": 2200000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 14,
@@ -117,7 +117,7 @@
     "company_id": 1,
     "cash_cents": 2000000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 15,
@@ -125,7 +125,7 @@
     "company_id": 1,
     "cash_cents": 1800000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 16,
@@ -133,7 +133,7 @@
     "company_id": 1,
     "cash_cents": 1600000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 17,
@@ -141,7 +141,7 @@
     "company_id": 1,
     "cash_cents": 1400000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 18,
@@ -149,7 +149,7 @@
     "company_id": 1,
     "cash_cents": 1200000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 19,
@@ -157,7 +157,7 @@
     "company_id": 1,
     "cash_cents": 1000000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 20,
@@ -165,7 +165,7 @@
     "company_id": 1,
     "cash_cents": 800000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 21,
@@ -173,7 +173,7 @@
     "company_id": 1,
     "cash_cents": 600000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 22,
@@ -181,7 +181,7 @@
     "company_id": 1,
     "cash_cents": 400000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   },
   {
     "turn": 23,
@@ -189,6 +189,6 @@
     "company_id": 1,
     "cash_cents": 200000,
     "monthly_burn_cents": 200000,
-    "headcount": 0
+    "headcount": 1
   }
 ]

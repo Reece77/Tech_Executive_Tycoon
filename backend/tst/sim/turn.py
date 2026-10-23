@@ -12,7 +12,7 @@ from dataclasses import dataclass, replace
 from typing import Final
 
 from tst.sim.calendar import format_turn
-from tst.sim.data_models import Balance
+from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.ledger import (
     CASH,
@@ -24,6 +24,7 @@ from tst.sim.ledger import (
     apply_entries,
 )
 from tst.sim.money import Cents
+from tst.sim.people.growth import grow_person
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
 from tst.sim.state import GameState
@@ -57,6 +58,7 @@ class TurnContext:
     decisions: Decisions
     rng: RngFactory
     balance: Balance
+    data: GameData
     opening_balances: LedgerBalances
     balances: Mapping[tuple[int, AccountCode], Cents]  # running: opening + entries so far
     entries: tuple[LedgerEntry, ...] = ()
@@ -128,8 +130,17 @@ def financing(ctx: TurnContext) -> TurnContext:  # M4
     return ctx
 
 
-def people_updates(ctx: TurnContext) -> TurnContext:  # M1
-    return ctx
+def people_updates(ctx: TurnContext) -> TurnContext:
+    """Growth and aging for everyone on staff (formulas.md section 3), by person id.
+
+    Morale, stress, relationships and resignations join this phase in M1b.
+    """
+    staff_ids = {e.person_id for e in ctx.state.employments if e.counts_as_staff}
+    people = tuple(
+        grow_person(p, ctx.turn, ctx.rng, ctx.data, ctx.balance) if p.id in staff_ids else p
+        for p in sorted(ctx.state.people, key=lambda p: p.id)
+    )
+    return replace(ctx, state=replace(ctx.state, people=people))
 
 
 def market_and_macro_update(ctx: TurnContext) -> TurnContext:  # M3
@@ -151,7 +162,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
                 company_id=company.id,
                 cash_cents=closing,
                 monthly_burn_cents=max(opening - closing, 0),
-                headcount=0,
+                headcount=len(ctx.state.staff(company.id)),
             )
         )
         items.append(
@@ -191,6 +202,7 @@ def advance_turn(
     decisions: Decisions,
     rng: RngFactory,
     balance: Balance,
+    data: GameData,
     ledger_balances: LedgerBalances,
 ) -> TurnResult:
     """Resolve turn `state.turn` and return the next state plus everything to persist."""
@@ -199,6 +211,7 @@ def advance_turn(
         decisions=decisions,
         rng=rng,
         balance=balance,
+        data=data,
         opening_balances=ledger_balances,
         balances=dict(ledger_balances),
     )
@@ -207,7 +220,7 @@ def advance_turn(
     if ctx.snapshot is None:
         raise RuntimeError("snapshot phase did not run")
     return TurnResult(
-        new_state=replace(state, turn=state.turn + 1),
+        new_state=replace(ctx.state, turn=state.turn + 1),
         ledger_entries=ctx.entries,
         log_items=ctx.log_items,
         snapshot=ctx.snapshot,

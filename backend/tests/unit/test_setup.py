@@ -10,7 +10,7 @@ from tst.sim.errors import (
     UnknownScenarioError,
 )
 from tst.sim.ledger import CASH, apply_entries
-from tst.sim.setup import PLAYER_COMPANY_ID, new_game, starting_cash_cents
+from tst.sim.setup import DEFAULT_FOUNDER, PLAYER_COMPANY_ID, new_game, starting_cash_cents
 from tst.sim.state import company_cash
 
 
@@ -45,7 +45,9 @@ def _new(loaded: LoadedData, scenario_id: str, company_name: str = "Test Co"):  
         scenario=scenario,
         difficulty="standard",
         company_name=company_name,
+        founder=DEFAULT_FOUNDER,
         balance=loaded.balance,
+        data=loaded.game_data,
     )
 
 

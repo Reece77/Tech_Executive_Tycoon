@@ -77,3 +77,62 @@ def test_list_empty() -> None:
 )
 def test_format_money(cents: int, text: str) -> None:
     assert format_money(cents) == text
+
+
+def test_new_game_founder_options() -> None:
+    out = run(
+        "new-game",
+        "--seed",
+        "7",
+        "--name",
+        "m1a",
+        "--company-name",
+        "M1a Co",
+        "--founder-background",
+        "salesperson",
+        "--founder-preset",
+        "hustler",
+    )
+    assert "Created m1a.tst.sqlite" in out
+
+
+@pytest.mark.parametrize(
+    ("flag", "value", "message"),
+    [
+        ("--founder-background", "astronaut", "unknown background 'astronaut'"),
+        ("--founder-background", "geologist", "unlocks in v3"),
+        ("--founder-preset", "dreamer", "unknown personality preset 'dreamer'"),
+    ],
+)
+def test_new_game_rejects_bad_founder(flag: str, value: str, message: str) -> None:
+    args = ["new-game", "--seed", "1", "--name", "x", "--company-name", "X", flag, value]
+    result = runner.invoke(app, args)
+    assert result.exit_code == 1
+    assert message in result.output
+
+
+def test_inspect_person_founder() -> None:
+    run(
+        "new-game",
+        "--seed",
+        "7",
+        "--name",
+        "m1a",
+        "--company-name",
+        "M1a Co",
+        "--founder-background",
+        "engineer",
+    )
+    out = run("inspect", "--save", "m1a", "--person", "founder")
+    assert "(person 1, north_america)" in out
+    assert "age 28" in out
+    assert "Ability:     CA" in out
+    assert "* software_engineering   16.00" in out
+    assert "Personality:" in out and "Hidden:" in out
+    run("advance", "--save", "m1a", "--turns", "12")
+    later = run("inspect", "--save", "m1a", "--person", "1")
+    assert "Jan 2011" in later
+    assert "* software_engineering   16.00" not in later  # skills moved
+
+    result = runner.invoke(app, ["inspect", "--save", "m1a", "--person", "9"])
+    assert result.exit_code == 1 and "no person '9'" in result.output

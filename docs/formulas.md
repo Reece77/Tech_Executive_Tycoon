@@ -75,10 +75,10 @@ Inputs: role, level, region, turn.
 Applies to every person with an active or notice employment, including the founder. For each primary and secondary skill of the person's current role (the founder's best-fit role):
 
 ```latex
-\Delta s = r \cdot a(age) \cdot \frac{\max(0,\,PA - CA)}{PA} \cdot \frac{professionalism}{10} \;-\; d(age) \;+\; Normal(0,\,0.05)
+\Delta s = r \cdot a(age) \cdot \frac{\max(0,\,PA - CA)}{PA} \cdot \frac{professionalism}{10} \cdot \max\big(0,\; 1 + Normal(0,\,\sigma)\big) \;-\; d(age)
 ```
 
-Skills outside the role change only by `−d(age)` plus noise. Clamp every skill, then recompute CA. `PA` never changes.
+with σ = `growth.noise_rel_sd` (0.25). The noise is multiplicative, so it scales the growth term and never turns growth into loss. Skills outside the role change only by `−d(age)`, with no noise. Clamp every skill, then recompute CA. `PA` never changes.
 
 | Age | a(age) growth factor | d(age) monthly decline |
 | --- | --- | --- |
@@ -100,7 +100,7 @@ Default r = 0.12. Mentoring and project difficulty multipliers arrive in M2 and 
 | Age 38 | 120 → 128 | 10 | +0.0030 | +0.04 |
 | Age 58 | 130 → 132 | 12 | −0.0150 | −0.18 |
 
-One noise value is drawn per skill, in `skills.yaml` order, for every skill (role skills and others).
+One noise value is drawn per role skill (primary and secondary), in `skills.yaml` order; skills outside the role draw nothing.
 
 **Retirement (from M1b, stream `retire`, key `person_id`):** from age 60, monthly chance `retire_bp_per_year_over_60 × (age − 59) / 12`; default 600 bp, so a 62-year-old retires with 150 bp (1.5%) chance per month. The founder never retires in M1.
 
@@ -159,6 +159,10 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The 
 - Personality: one of four presets (visionary, operator, hustler, scientist) or `Normal(10.5, 3.5)` per trait.
 - Hidden traits and PA are generated as in §2 (stream `founder`), using age 28 unless the player sets age (22–60).
 - The founding company knows the founder exactly (`hw = 0` for skills and personality; interests and work style shown). PA keeps its normal initial `hw` and is shown only as a phrase.
+- **Interests and work style** are drawn as in §2 using the weights of the founder's best-fit role, computed after the skill allocation is applied. The player may supply them instead (2–4 valid interests; one work style).
+- **Behavior tags** are rolled as in §2 step 7. The founding company knows them from turn 0 (`person_tag_reveal` rows with `revealed_turn = 0`), and sees the founder's interests and work style from turn 0.
+- **Region and name:** region is `founder.default_region` (north_america) unless chosen; the name is drawn from that region's `names.yaml` pool unless the player supplies both first and last name.
+- **Draw order** in stream `founder` (no key): birth month, personality (only if random), hidden traits, PA gap, interests, work style, tags, first name, last name. A value the player supplied skips its draw.
 - The founder has an employment row (role `founder`, level `exec`, salary 0, equity 0) so headcount counts them. In M1 the founder is excluded from payroll, morale, resignation, retirement, and firing; board removal arrives in M4.
 
 ## 6. Founder energy
@@ -344,13 +348,14 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `people.ca_tolerance` | 2 | CA points | §2 |
 | `people.pa_gap_mean.<age_band>` / `people.pa_gap_sd` | see §2 / 15 | CA points | §2 |
 | `people.personality_mean` / `_sd` | 10.5 / 3.5 | attribute points | §2 |
+| `people.interest_count` | [2, 4] | count [min, max] | §2 |
 | `people.max_tags` | 2 | count | §2 |
 | `people.region_weights` | north_america 55, europe 15, east_asia 8, south_southeast_asia 10, latin_america 6, africa 3, oceania 3 | relative weight | §2 |
 | `payroll.salary_round_to_cents` | 50000 | cents | §2 |
 | `growth.rate` | 0.12 | attribute points per month | §3 |
 | `growth.age_factor.<band>` | see §3 | multiplier | §3 |
 | `growth.decline.<band>` | see §3 | attribute points per month | §3 |
-| `growth.noise_sd` | 0.05 | attribute points | §3 |
+| `growth.noise_rel_sd` | 0.25 | fraction of the growth term | §3 |
 | `people.retire_bp_per_year_over_60` | 600 | bp | §3 |
 | `reveal.initial_hw.skill` / `.personality` / `.pa` | 5.0 / 7.0 / 40.0 | attribute or CA points | §4 |
 | `reveal.strength.<action>` | see §4 | fraction | §4 |
@@ -361,6 +366,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `founder.energy_per_month` | 100 | energy | §6 |
 | `founder.energy_cost.<action>` | see §6 | energy | §6 |
 | `founder.age_range` | [22, 60] | years | §5 |
+| `founder.default_region` | north_america | `regions.yaml` key | §5 |
 | `hiring.hint_bands` | [−0.3, 0.3] | score | §7 |
 | `hiring.channel.<channel>.size` / `.level_mix` | see §7 | count / percent | §7 |
 | `hiring.job_post_cost_cents` | 50000 | cents per month | §7 |

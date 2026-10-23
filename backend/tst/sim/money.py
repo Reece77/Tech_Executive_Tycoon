@@ -10,7 +10,7 @@ from tst.sim.errors import InvalidMoneyError
 type Cents = int
 
 CENTS_PER_DOLLAR: Final = 100
-BP_DENOMINATOR: Final = 10_000
+BP_DENOMINATOR: Final = 10_000  # tunable-exempt: definition of a basis point
 
 _DOLLARS_RE: Final = re.compile(r"^(-)?\$?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?$")
 
