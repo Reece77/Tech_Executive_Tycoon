@@ -7,11 +7,13 @@ from typing import Any, cast
 
 from tst.db.models import (
     Base,
+    CandidateRow,
     CompanyRow,
     DecisionLogRow,
     EmploymentRow,
     LedgerEntryRow,
     LedgerLineRow,
+    OfferRow,
     PersonHiddenRow,
     PersonInterestRow,
     PersonPersonalityRow,
@@ -19,13 +21,26 @@ from tst.db.models import (
     PersonRevealRow,
     PersonRow,
     PersonSkillRow,
+    PersonStateRow,
     PersonTagRevealRow,
     PersonTagRow,
     SaveMetaRow,
+    SearchRow,
     TurnLogRow,
     TurnSnapshotRow,
 )
 from tst.sim.decisions import Decisions
+from tst.sim.hiring.models import (
+    Candidate,
+    CandidateStatus,
+    Channel,
+    NextIds,
+    Offer,
+    OfferStatus,
+    PersonState,
+    Search,
+    SearchStatus,
+)
 from tst.sim.ledger import LedgerEntry, LedgerLine
 from tst.sim.people.models import (
     PA_KEY,
@@ -51,6 +66,7 @@ def company_to_state(row: CompanyRow) -> CompanyState:
         is_player=row.is_player,
         stage=row.stage,
         founded_turn=row.founded_turn,
+        mission=tuple(row.mission or ()),
     )
 
 
@@ -61,6 +77,7 @@ def company_to_row(company: CompanyState) -> CompanyRow:
         is_player=company.is_player,
         stage=company.stage,
         founded_turn=company.founded_turn,
+        mission=list(company.mission),
     )
 
 
@@ -69,6 +86,7 @@ def update_company_row(row: CompanyRow, company: CompanyState) -> None:
     row.is_player = company.is_player
     row.stage = company.stage
     row.founded_turn = company.founded_turn
+    row.mission = list(company.mission)
 
 
 def game_state_from_rows(
@@ -138,7 +156,7 @@ def log_item_to_row(item: LogItem) -> TurnLogRow:
 
 def decisions_to_row(turn: int, company_id: int, decisions: Decisions) -> DecisionLogRow:
     return DecisionLogRow(
-        turn=turn, company_id=company_id, kind="turn_decisions", payload=asdict(decisions)
+        turn=turn, company_id=company_id, kind="turn_decisions", payload=asdict(decisions), seq=None
     )
 
 
@@ -287,3 +305,118 @@ def reveal_from_rows(
             (t.tag, t.revealed_turn) for t in sorted(tags, key=lambda t: (t.revealed_turn, t.tag))
         ),
     )
+
+
+# --- Hiring (M1b) ---------------------------------------------------------------------------
+
+
+def search_to_row(search: Search) -> SearchRow:
+    return SearchRow(
+        id=search.id,
+        company_id=search.company_id,
+        role=search.role,
+        channel=search.channel,
+        actor_id=search.actor_id,
+        opened_turn=search.opened_turn,
+        status=search.status,
+        closed_turn=search.closed_turn,
+    )
+
+
+def search_from_row(row: SearchRow) -> Search:
+    return Search(
+        id=row.id,
+        company_id=row.company_id,
+        role=row.role,
+        channel=cast(Channel, row.channel),
+        actor_id=row.actor_id,
+        opened_turn=row.opened_turn,
+        status=cast(SearchStatus, row.status),
+        closed_turn=row.closed_turn,
+    )
+
+
+def candidate_to_row(candidate: Candidate) -> CandidateRow:
+    return CandidateRow(
+        person_id=candidate.person_id,
+        company_id=candidate.company_id,
+        search_id=candidate.search_id,
+        created_turn=candidate.created_turn,
+        expires_turn=candidate.expires_turn,
+        status=candidate.status,
+        resolved_turn=candidate.resolved_turn,
+    )
+
+
+def candidate_from_row(row: CandidateRow) -> Candidate:
+    return Candidate(
+        person_id=row.person_id,
+        company_id=row.company_id,
+        search_id=row.search_id,
+        created_turn=row.created_turn,
+        expires_turn=row.expires_turn,
+        status=cast(CandidateStatus, row.status),
+        resolved_turn=row.resolved_turn,
+    )
+
+
+def offer_to_row(offer: Offer) -> OfferRow:
+    return OfferRow(
+        id=offer.id,
+        company_id=offer.company_id,
+        candidate_id=offer.candidate_id,
+        actor_id=offer.actor_id,
+        salary_cents=offer.salary_cents,
+        equity_bp=offer.equity_bp,
+        made_turn=offer.made_turn,
+        status=offer.status,
+        resolved_turn=offer.resolved_turn,
+    )
+
+
+def offer_from_row(row: OfferRow) -> Offer:
+    return Offer(
+        id=row.id,
+        company_id=row.company_id,
+        candidate_id=row.candidate_id,
+        actor_id=row.actor_id,
+        salary_cents=row.salary_cents,
+        equity_bp=row.equity_bp,
+        made_turn=row.made_turn,
+        status=cast(OfferStatus, row.status),
+        resolved_turn=row.resolved_turn,
+    )
+
+
+def person_state_to_row(ps: PersonState) -> PersonStateRow:
+    return PersonStateRow(
+        person_id=ps.person_id,
+        energy=None if ps.energy is None else float(ps.energy),
+        stress=ps.stress,
+        morale=ps.morale,
+    )
+
+
+def person_state_from_row(row: PersonStateRow) -> PersonState:
+    return PersonState(
+        person_id=row.person_id,
+        energy=None if row.energy is None else int(row.energy),
+        stress=row.stress,
+        morale=row.morale,
+    )
+
+
+def next_ids_from_meta(meta: SaveMetaRow) -> NextIds:
+    return NextIds(
+        person=meta.next_person_id,
+        search=meta.next_search_id,
+        offer=meta.next_offer_id,
+        employment=meta.next_employment_id,
+    )
+
+
+def next_ids_to_meta(meta: SaveMetaRow, ids: NextIds) -> None:
+    meta.next_person_id = ids.person
+    meta.next_search_id = ids.search
+    meta.next_offer_id = ids.offer
+    meta.next_employment_id = ids.employment

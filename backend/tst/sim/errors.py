@@ -69,3 +69,7 @@ class InvalidFounderError(SimError):
 
 class UnknownKnowledgeActionError(SimError):
     code = "unknown_knowledge_action"
+
+
+class InvalidMissionError(SimError):
+    code = "invalid_mission"

@@ -5,12 +5,10 @@ from __future__ import annotations
 import json
 import logging
 import re
-from collections import defaultdict
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -19,40 +17,22 @@ from tst.db import migrate
 from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
 from tst.db.mappers import (
     company_snapshot_from_row,
-    company_to_row,
     decisions_to_row,
-    employment_from_row,
-    employment_to_row,
     entry_to_row,
-    game_state_from_rows,
     log_item_to_row,
-    person_from_rows,
-    person_to_rows,
-    reveal_from_rows,
-    reveal_to_rows,
     snapshot_to_rows,
-    update_company_row,
 )
 from tst.db.models import (
     SCHEMA_VERSION,
     AccountRow,
-    CompanyRow,
-    EmploymentRow,
     LedgerEntryRow,
     LedgerLineRow,
-    PersonHiddenRow,
-    PersonInterestRow,
-    PersonPersonalityRow,
-    PersonProfileRevealRow,
-    PersonRevealRow,
-    PersonRow,
-    PersonSkillRow,
-    PersonTagRevealRow,
-    PersonTagRow,
+    PersonMoraleLogRow,
     SaveMetaRow,
     TurnSnapshotRow,
 )
 from tst.db.session import make_engine, make_sessionmaker
+from tst.db.state_io import META_ID, load_state, read_meta, sync_state
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
@@ -67,7 +47,6 @@ from tst.sim.errors import (
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
-from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot, runway_months
@@ -79,7 +58,6 @@ log = logging.getLogger(__name__)
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 MAX_STORED_SEED = 2**63 - 1  # SQLite INTEGER is signed 64-bit
 INDEX_FILE = "index.json"
-META_ID = 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,6 +111,7 @@ def create_save(
     save_dir: Path,
     difficulty: str = DEFAULT_DIFFICULTY,
     founder: FounderSpec = DEFAULT_FOUNDER,
+    mission: tuple[str, ...] | None = None,
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state."""
     path = save_path(save_dir, name)
@@ -152,6 +131,7 @@ def create_save(
         founder=founder,
         balance=data.balance,
         data=data.game_data,
+        mission=mission,
     )
 
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -169,14 +149,17 @@ def create_save(
                     current_turn=state.turn,
                     data_hashes=data.hashes,
                     schema_version=SCHEMA_VERSION,
+                    next_person_id=state.next_ids.person,
+                    next_search_id=state.next_ids.search,
+                    next_offer_id=state.next_ids.offer,
+                    next_employment_id=state.next_ids.employment,
                 )
             )
             session.add_all(
                 AccountRow(code=a.code, name=a.name, type=a.type) for a in data.game_data.accounts
             )
-            session.add_all(company_to_row(c) for c in state.companies)
             session.flush()
-            _save_people(session, state)
+            sync_state(session, None, state)
             session.add_all(entry_to_row(e) for e in entries)
     except BaseException:
         for leftover in (
@@ -191,87 +174,6 @@ def create_save(
 
 
 # --- Reads ----------------------------------------------------------------------------------
-
-
-def read_meta(session: Session) -> SaveMetaRow:
-    meta = session.get(SaveMetaRow, META_ID)
-    if meta is None:
-        raise SaveNotFoundError("save file has no save_meta row")
-    return meta
-
-
-def load_state(session: Session) -> GameState:
-    meta = read_meta(session)
-    companies = list(session.scalars(select(CompanyRow)))
-    return game_state_from_rows(
-        meta, companies, _load_people(session), _load_employments(session), _load_reveals(session)
-    )
-
-
-def _by_person[R](rows: Iterable[R]) -> dict[int, list[R]]:
-    grouped: dict[int, list[R]] = defaultdict(list)
-    for row in rows:
-        grouped[row.person_id].append(row)  # type: ignore[attr-defined]
-    return grouped
-
-
-def _load_people(session: Session) -> tuple[Person, ...]:
-    skills = _by_person(session.scalars(select(PersonSkillRow)))
-    personality = _by_person(session.scalars(select(PersonPersonalityRow)))
-    hidden = _by_person(session.scalars(select(PersonHiddenRow)))
-    interests = _by_person(session.scalars(select(PersonInterestRow)))
-    tags = _by_person(session.scalars(select(PersonTagRow)))
-    return tuple(
-        person_from_rows(
-            row,
-            skills[row.id],
-            personality[row.id],
-            hidden[row.id],
-            interests[row.id],
-            tags[row.id],
-        )
-        for row in session.scalars(select(PersonRow).order_by(PersonRow.id))
-    )
-
-
-def _load_employments(session: Session) -> tuple[Employment, ...]:
-    rows = session.scalars(select(EmploymentRow).order_by(EmploymentRow.id))
-    return tuple(employment_from_row(r) for r in rows)
-
-
-def _load_reveals(session: Session) -> tuple[RevealState, ...]:
-    def key(row: Any) -> tuple[int, int]:
-        return (row.observer_company_id, row.person_id)
-
-    records: dict[tuple[int, int], list[PersonRevealRow]] = defaultdict(list)
-    for r in session.scalars(select(PersonRevealRow)):
-        records[key(r)].append(r)
-    profiles = {key(r): r for r in session.scalars(select(PersonProfileRevealRow))}
-    tags: dict[tuple[int, int], list[PersonTagRevealRow]] = defaultdict(list)
-    for t in session.scalars(select(PersonTagRevealRow)):
-        tags[key(t)].append(t)
-    return tuple(
-        reveal_from_rows(
-            observer,
-            person,
-            records[(observer, person)],
-            profiles.get((observer, person)),
-            tags[(observer, person)],
-        )
-        for observer, person in sorted(records)
-    )
-
-
-def _save_people(session: Session, state: GameState) -> None:
-    """Write people, employments and reveals as current state (insert or update in place)."""
-    for person in state.people:
-        for row in person_to_rows(person):
-            session.merge(row)
-    for employment in state.employments:
-        session.merge(employment_to_row(employment))
-    for reveal in state.reveals:
-        for row in reveal_to_rows(reveal):
-            session.merge(row)
 
 
 def ledger_balances(
@@ -353,23 +255,25 @@ def player_overview(session: Session, history: int) -> Overview:
 # --- Turns ----------------------------------------------------------------------------------
 
 
-def apply_turn_result(session: Session, result: TurnResult, decisions: Decisions) -> None:
-    """Write one turn's results. Must run inside the caller's transaction."""
+def apply_turn_result(
+    session: Session, result: TurnResult, decisions: Decisions, before: GameState
+) -> None:
+    """Write one turn's results. Must run inside the caller's transaction.
+
+    `before` is the state the turn started from; only the differences are written.
+    """
     meta = read_meta(session)
     played = result.snapshot.turn
     if meta.current_turn != played:
         raise RuntimeError(f"save is at turn {meta.current_turn}, result is for turn {played}")
 
-    rows = {r.id: r for r in session.scalars(select(CompanyRow))}
-    for company in result.new_state.companies:
-        row = rows.get(company.id)
-        if row is None:
-            session.add(company_to_row(company))
-        else:
-            update_company_row(row, company)
-
-    session.flush()
-    _save_people(session, result.new_state)
+    sync_state(session, before, result.new_state)
+    staff = {e.person_id for e in result.new_state.employments if e.counts_as_staff}
+    session.add_all(
+        PersonMoraleLogRow(person_id=ps.person_id, turn=played, morale=ps.morale)
+        for ps in result.new_state.person_states
+        if ps.morale is not None and ps.person_id in staff
+    )
 
     player = result.new_state.player
     session.add(decisions_to_row(played, player.id, decisions))
@@ -398,7 +302,7 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
             data.game_data,
             balances,
         )
-        apply_turn_result(session, result, decisions)
+        apply_turn_result(session, result, decisions, state)
 
     committed = result.new_state.turn
     backup = data.balance.backup
