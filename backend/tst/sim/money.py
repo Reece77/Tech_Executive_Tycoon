@@ -38,3 +38,10 @@ def pct_of(amount: Cents, basis_points: int) -> Cents:
     if twice > BP_DENOMINATOR or (twice == BP_DENOMINATOR and quotient % 2 == 1):
         quotient += 1
     return quotient
+
+
+def format_money(amount: Cents) -> str:
+    """$1,234.56 style; negative amounts as -$1,234.56 (CLI and inbox text)."""
+    sign = "-" if amount < 0 else ""
+    dollars, rest = divmod(abs(amount), CENTS_PER_DOLLAR)
+    return f"{sign}${dollars:,}.{rest:02d}"

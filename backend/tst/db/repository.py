@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from tst.db import migrate
 from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
+from tst.db.inbox import inbox_rows
 from tst.db.mappers import (
     company_snapshot_from_row,
     decisions_to_row,
@@ -277,7 +278,11 @@ def player_overview(session: Session, history: int) -> Overview:
 
 
 def apply_turn_result(
-    session: Session, result: TurnResult, decisions: Decisions, before: GameState
+    session: Session,
+    result: TurnResult,
+    decisions: Decisions,
+    before: GameState,
+    data: LoadedData,
 ) -> None:
     """Write one turn's results. Must run inside the caller's transaction.
 
@@ -301,6 +306,9 @@ def apply_turn_result(
     session.add_all(entry_to_row(e) for e in result.ledger_entries)
     session.add_all(snapshot_to_rows(result.snapshot))
     session.add_all(log_item_to_row(i) for i in result.log_items)
+    session.add_all(
+        inbox_rows(result.log_items, result.new_state.player.id, data.game_data.inbox_templates)
+    )
     meta.current_turn = result.new_state.turn
     session.flush()
 
@@ -323,7 +331,7 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
             data.game_data,
             balances,
         )
-        apply_turn_result(session, result, decisions, state)
+        apply_turn_result(session, result, decisions, state, data)
 
     committed = result.new_state.turn
     backup = data.balance.backup
@@ -365,6 +373,9 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
         sync_state(session, state, result.new_state)
         session.add_all(entry_to_row(e) for e in result.ledger_entries)
         session.add_all(log_item_to_row(i) for i in result.log_items)
+        session.add_all(
+            inbox_rows(result.log_items, state.player.id, data.game_data.inbox_templates)
+        )
         employment = state.employment_of(action.actor_id)
         company_id = employment.company_id if employment else state.player.id
         session.add(

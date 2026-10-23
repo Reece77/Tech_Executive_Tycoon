@@ -125,4 +125,16 @@ def with_employee(
             status="active",
         ),
     )
-    return with_person_state(state, PersonState(person_id=person.id, morale=morale))
+    state = with_person_state(state, PersonState(person_id=person.id, morale=morale))
+    # Real hires keep the knowledge record they had as candidates.
+    return with_reveal(
+        state,
+        new_reveal_state(
+            observer_company_id=1,
+            person=person,
+            turn=state.turn,
+            rng=RngFactory(state.save_meta.master_seed),
+            data=loaded.game_data,
+            balance=loaded.balance,
+        ),
+    )

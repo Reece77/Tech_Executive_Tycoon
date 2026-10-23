@@ -13,6 +13,7 @@ from tst.sim.decisions import Decisions
 from tst.sim.hiring.formulas import acceptance_probability, offer_score
 from tst.sim.hiring.models import Offer, PersonState
 from tst.sim.ledger import CASH, apply_entries
+from tst.sim.log import LogItem
 from tst.sim.people.models import PA_KEY
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_offer, with_person_state
@@ -30,6 +31,7 @@ class Game:
         self.balances: dict[tuple[int, str], int] = {(1, CASH): cash}
         self.seq = 0
         self.results: list[TurnResult] = []
+        self.action_logs: list[LogItem] = []
 
     @property
     def rng(self) -> RngFactory:
@@ -48,6 +50,7 @@ class Game:
         )
         self.state = out.new_state
         self.balances = apply_entries(self.balances, out.ledger_entries)
+        self.action_logs += out.log_items
 
     def turn(self) -> TurnResult:
         result = advance_turn(

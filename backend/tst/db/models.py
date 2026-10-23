@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 
 class Base(DeclarativeBase):
@@ -295,3 +295,23 @@ class PersonMoraleLogRow(Base):
     person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
     turn: Mapped[int] = mapped_column(Integer, primary_key=True)
     morale: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+# --- Inbox (M1b, migration 0004_inbox) -------------------------------------------------------
+
+
+class InboxItemRow(Base):
+    """A rendered message for the player company. Text is fixed when written (ADR-0004)."""
+
+    __tablename__ = "inbox_item"
+    __table_args__ = (Index("ix_inbox_item_company_read", "company_id", "read"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    template: Mapped[str] = mapped_column(String(64), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    link_kind: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    link_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    read: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")

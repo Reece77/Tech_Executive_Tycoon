@@ -12,20 +12,13 @@ from tst.loader import DataLoadError, LoadedData, load_all
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.errors import SimError
-from tst.sim.money import CENTS_PER_DOLLAR, Cents
+from tst.sim.money import format_money
 from tst.sim.people.founder import FounderSpec
 from tst.sim.people.models import current_ability, growth_role
 from tst.sim.setup import DEFAULT_FOUNDER
 from tst.sim.state import GameState
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="Tech Startup Tycoon")
-
-
-def format_money(amount: Cents) -> str:
-    """$1,234.56 style; negative amounts as -$1,234.56."""
-    sign = "-" if amount < 0 else ""
-    dollars, cents = divmod(abs(amount), CENTS_PER_DOLLAR)
-    return f"{sign}${dollars:,}.{cents:02d}"
 
 
 def _fail(message: str) -> typer.Exit:

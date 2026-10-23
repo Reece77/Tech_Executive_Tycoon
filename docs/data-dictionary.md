@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 3 (migrations `0001_initial`, `0002_people`, `0003_hiring`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 4 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -20,7 +20,7 @@ One row describing the save. Current-state table (updated in place each turn).
 | `created_turn` | INTEGER | no | Turn the save was created at (0). |
 | `current_turn` | INTEGER | no | Next turn to be played. Incremented once per committed turn. |
 | `data_hashes` | JSON | no | `{file name: SHA-256}` of the data files used to create the save (line endings normalized), so later data changes can be detected (ADR-0008). |
-| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (3 after `0003_hiring`). |
+| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (4 after `0004_inbox`). |
 | `next_person_id` | INTEGER | no | Next person id to assign. Ids are never reused, because people leave the live state (M1b sweep rule 2). |
 | `next_search_id` | INTEGER | no | Next search id. |
 | `next_offer_id` | INTEGER | no | Next offer id. |
@@ -295,6 +295,24 @@ Month-end morale per employee, append-only. Primary key `(person_id, turn)`.
 | `person_id` | INTEGER FK → person.id | no | Employee. |
 | `turn` | INTEGER | no | Turn closed. |
 | `morale` | FLOAT | no | Morale after phase 8. |
+
+## Inbox (migration `0004_inbox`, M1b)
+
+### inbox_item
+
+Messages for the player company, rendered from `inbox_templates.yaml` when the turn or action that produced them is saved. Rows are only appended, except `read`. Index `ix_inbox_item_company_read (company_id, read)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Message id; newest has the highest id. |
+| `turn` | INTEGER | no | Turn that produced it. |
+| `company_id` | INTEGER FK → company.id | no | The player company. |
+| `template` | VARCHAR(64) | no | `inbox_templates.yaml` key, e.g. `offer_accepted`. |
+| `title` | VARCHAR(200) | no | Rendered title. |
+| `body` | TEXT | no | Rendered body; amounts are formatted as money. |
+| `link_kind` | VARCHAR(16) | yes | `person`, `candidate`, `search`, or null. |
+| `link_id` | INTEGER | yes | Id of the linked person or search. |
+| `read` | BOOLEAN | no | Marked read by the player. |
 
 ## Files next to the saves
 
