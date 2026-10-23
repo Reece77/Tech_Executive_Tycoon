@@ -73,3 +73,52 @@ class UnknownKnowledgeActionError(SimError):
 
 class InvalidMissionError(SimError):
     code = "invalid_mission"
+
+
+# --- Player actions (M1b, ADR-0014) ---------------------------------------------------------
+
+
+class NotFoundError(SimError):
+    """Base for unknown ids; the API returns 404."""
+
+    code = "not_found"
+
+
+class UnknownPersonError(NotFoundError):
+    code = "unknown_person"
+
+
+class UnknownCandidateError(NotFoundError):
+    code = "unknown_candidate"
+
+
+class UnknownSearchError(NotFoundError):
+    code = "unknown_search"
+
+
+class UnknownOfferError(NotFoundError):
+    code = "unknown_offer"
+
+
+class UnknownRoleError(SimError):
+    code = "unknown_role"
+
+
+class InvalidActionError(SimError):
+    code = "invalid_action"
+
+
+class InsufficientEnergyError(SimError):
+    code = "insufficient_energy"
+
+
+class InsufficientCashError(SimError):
+    code = "insufficient_cash"
+
+
+class OptionPoolError(SimError):
+    code = "option_pool"
+
+
+class OfferExistsError(SimError):
+    code = "offer_exists"

@@ -9,6 +9,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -25,6 +26,7 @@ from tst.db.mappers import (
 from tst.db.models import (
     SCHEMA_VERSION,
     AccountRow,
+    DecisionLogRow,
     LedgerEntryRow,
     LedgerLineRow,
     PersonMoraleLogRow,
@@ -34,6 +36,13 @@ from tst.db.models import (
 from tst.db.session import make_engine, make_sessionmaker
 from tst.db.state_io import META_ID, load_state, read_meta, sync_state
 from tst.loader import LoadedData
+from tst.sim.actions import (
+    Action,
+    ActionResult,
+    action_from_payload,
+    action_payload,
+    apply_action,
+)
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.decisions import Decisions
@@ -58,6 +67,7 @@ log = logging.getLogger(__name__)
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 MAX_STORED_SEED = 2**63 - 1  # SQLite INTEGER is signed 64-bit
 INDEX_FILE = "index.json"
+NEW_GAME_KIND = "new_game"  # decision_log row holding the new-game choices (for replay)
 
 
 @dataclass(frozen=True, slots=True)
@@ -161,6 +171,17 @@ def create_save(
             session.flush()
             sync_state(session, None, state)
             session.add_all(entry_to_row(e) for e in entries)
+            session.add(
+                DecisionLogRow(
+                    turn=state.turn,
+                    company_id=state.player.id,
+                    kind=NEW_GAME_KIND,
+                    payload=new_game_payload(
+                        company_name, scenario_def.id, difficulty, founder, state.player.mission
+                    ),
+                    seq=0,
+                )
+            )
     except BaseException:
         for leftover in (
             path,
@@ -310,6 +331,110 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
         periodic_backup(save_path, committed, backup.keep_periodic)
     refresh_index(save_path.parent)
     return result
+
+
+# --- Player actions (ADR-0014) --------------------------------------------------------------
+
+
+def next_action_seq(session: Session, turn: int) -> int:
+    """1, 2, 3... for the actions of one turn (decision_log.seq)."""
+    current = session.scalar(
+        select(func.max(DecisionLogRow.seq)).where(
+            DecisionLogRow.turn == turn, DecisionLogRow.kind != NEW_GAME_KIND
+        )
+    )
+    return (current or 0) + 1
+
+
+def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResult:
+    """Apply one player action in its own short transaction and log it to decision_log."""
+    migrate.ensure_current(save_path)
+    with open_session(save_path) as session, session.begin():
+        state = load_state(session)
+        balances = ledger_balances(session, state.turn)
+        seq = next_action_seq(session, state.turn)
+        result = apply_action(
+            state,
+            action,
+            RngFactory(state.save_meta.master_seed),
+            data.balance,
+            data.game_data,
+            balances,
+            seq=seq,
+        )
+        sync_state(session, state, result.new_state)
+        session.add_all(entry_to_row(e) for e in result.ledger_entries)
+        session.add_all(log_item_to_row(i) for i in result.log_items)
+        employment = state.employment_of(action.actor_id)
+        company_id = employment.company_id if employment else state.player.id
+        session.add(
+            DecisionLogRow(
+                turn=state.turn,
+                company_id=company_id,
+                kind=action.kind,
+                payload=action_payload(action),
+                seq=seq,
+            )
+        )
+    return result
+
+
+def new_game_payload(
+    company_name: str,
+    scenario: str,
+    difficulty: str,
+    founder: FounderSpec,
+    mission: tuple[str, ...],
+) -> dict[str, Any]:
+    spec = asdict(founder)
+    spec["allocation"] = None if founder.allocation is None else dict(founder.allocation)
+    spec["interests"] = None if founder.interests is None else list(founder.interests)
+    return {
+        "company_name": company_name,
+        "scenario": scenario,
+        "difficulty": difficulty,
+        "founder": spec,
+        "mission": list(mission),
+    }
+
+
+def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Path:
+    """Rebuild a save from its seed, new-game choices, logged actions and turns (ADR-0014)."""
+    with open_session(source) as session:
+        meta = read_meta(session)
+        seed, target_turn = meta.master_seed, meta.current_turn
+        start = session.scalars(
+            select(DecisionLogRow).where(DecisionLogRow.kind == NEW_GAME_KIND)
+        ).one()
+        actions = [
+            (row.turn, action_from_payload(row.payload))
+            for row in session.scalars(
+                select(DecisionLogRow)
+                .where(DecisionLogRow.seq.is_not(None), DecisionLogRow.kind != NEW_GAME_KIND)
+                .order_by(DecisionLogRow.turn, DecisionLogRow.seq)
+            )
+        ]
+    setup = start.payload
+    founder = dict(setup["founder"])
+    if founder.get("interests") is not None:
+        founder["interests"] = tuple(founder["interests"])
+    path = create_save(
+        name,
+        seed,
+        setup["scenario"],
+        company_name=setup["company_name"],
+        data=data,
+        save_dir=save_dir,
+        difficulty=setup["difficulty"],
+        founder=FounderSpec(**founder),
+        mission=tuple(setup["mission"]),
+    )
+    for turn in range(target_turn + 1):
+        for _, action in (a for a in actions if a[0] == turn):
+            run_action(path, data, action)
+        if turn < target_turn:
+            run_turn(path, data)
+    return path
 
 
 # --- Save index (ADR-0004 section 1) --------------------------------------------------------

@@ -42,6 +42,7 @@ from tst.sim.hiring.models import (
     SearchStatus,
 )
 from tst.sim.ledger import LedgerEntry, LedgerLine
+from tst.sim.log import LogItem
 from tst.sim.people.models import (
     PA_KEY,
     Employment,
@@ -56,7 +57,6 @@ from tst.sim.people.models import (
 )
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
 from tst.sim.state import CompanyState, GameState, SaveMeta
-from tst.sim.turn import LogItem
 
 
 def company_to_state(row: CompanyRow) -> CompanyState:

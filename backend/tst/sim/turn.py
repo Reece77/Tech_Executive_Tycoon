@@ -23,19 +23,12 @@ from tst.sim.ledger import (
     account_balance,
     apply_entries,
 )
+from tst.sim.log import LogItem
 from tst.sim.money import Cents
 from tst.sim.people.growth import grow_person
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
 from tst.sim.state import GameState
-
-
-@dataclass(frozen=True, slots=True)
-class LogItem:
-    turn: int
-    company_id: int | None
-    kind: str
-    message: str
 
 
 @dataclass(frozen=True, slots=True)
