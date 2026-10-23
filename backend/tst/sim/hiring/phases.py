@@ -103,8 +103,12 @@ def end_notices(state: GameState) -> tuple[GameState, tuple[LogItem, ...]]:
     return state, tuple(logs)
 
 
+def _role_label(person: Person, data: GameData) -> str:
+    return data.role(person.role).label.lower() if person.role else "open"
+
+
 def resolve_offers(
-    state: GameState, rng: RngFactory, balance: Balance
+    state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...]]:
     """Pending offers resolve in offer-id order (stream hiring, key offer id; section 7)."""
     entries: list[LedgerEntry] = []
@@ -146,7 +150,7 @@ def resolve_offers(
                     company.id,
                     "offer_declined",
                     name=_name(person),
-                    role=person.role or "",
+                    role=_role_label(person, data),
                 )
             )
             continue
@@ -192,7 +196,7 @@ def resolve_offers(
                 link_id=person.id,
                 name=_name(person),
                 level=person.level or "",
-                role=person.role or "",
+                role=_role_label(person, data),
                 salary_cents=offer.salary_cents,
             )
         )

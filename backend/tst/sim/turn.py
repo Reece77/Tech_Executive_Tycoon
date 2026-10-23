@@ -87,7 +87,7 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     Player actions themselves were applied at once between turns; Decisions stays empty in M1.
     """
     state, ended = phases.end_notices(ctx.state)
-    state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance)
+    state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
     return replace(ctx, state=state).post(*entries).log(*ended, *resolved)
 
 
