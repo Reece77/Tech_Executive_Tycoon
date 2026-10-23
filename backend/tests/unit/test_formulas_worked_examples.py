@@ -15,6 +15,7 @@ from tst.sim.people.formulas import (
     growth_delta,
     narrow,
     pa_gap_mean,
+    potential_phrase,
     salary_expectation_cents,
     scout_factor,
 )
@@ -210,3 +211,21 @@ def test_section_3_noise_is_multiplicative(
     noisy = growth_delta(in_role=True, growth=growth, noise=noise, **kwargs)  # type: ignore[arg-type]
     assert noisy == pytest.approx(base * multiplier - decline)
     assert growth.noise_rel_sd == 0.25
+
+
+@pytest.mark.parametrize(
+    ("lo", "hi", "phrase"),
+    [
+        (40, 69, "limited"),
+        (70, 99, "decent"),
+        (105, 135, "good to excellent"),
+        (130, 159, "excellent"),
+        (95, 165, "decent to outstanding"),
+        (160, 200, "outstanding"),
+    ],
+)
+def test_section_4_potential_phrase(loaded: LoadedData, lo: int, hi: int, phrase: str) -> None:
+    """PA is shown only as a phrase for each bucket the displayed range touches."""
+    bounds = loaded.balance.reveal.pa_phrase_bounds
+    assert bounds == (70, 100, 130, 160)
+    assert potential_phrase(lo, hi, bounds) == phrase

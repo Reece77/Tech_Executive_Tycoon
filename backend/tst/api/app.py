@@ -6,12 +6,13 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from tst.api.routers import meta, saves
+from tst.api.routers import game, meta, saves
 from tst.api.schemas.common import ErrorOut
-from tst.sim.errors import SaveExistsError, SaveNotFoundError, SimError
+from tst.sim.errors import NotFoundError, SaveExistsError, SaveNotFoundError, SimError
 
 ERROR_STATUS: dict[type[SimError], int] = {
     SaveNotFoundError: status.HTTP_404_NOT_FOUND,
+    NotFoundError: status.HTTP_404_NOT_FOUND,
     SaveExistsError: status.HTTP_409_CONFLICT,
 }
 
@@ -25,6 +26,7 @@ def _error(status_code: int, code: str, message: str) -> JSONResponse:
 def create_app() -> FastAPI:
     app = FastAPI(title="Tech Startup Tycoon", version="0.0.0")
     app.include_router(saves.router)
+    app.include_router(game.router)
     app.include_router(meta.router)
 
     @app.exception_handler(SimError)

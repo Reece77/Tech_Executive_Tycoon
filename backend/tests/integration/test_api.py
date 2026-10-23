@@ -6,7 +6,6 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-from pydantic import BaseModel
 
 from tst.api import schemas
 from tst.api.app import create_app
@@ -143,26 +142,43 @@ def test_scenarios(client: TestClient) -> None:
     assert scenarios["mineral_first_prospector"]["selectable"] is False
 
 
-def _response_models() -> list[type[BaseModel]]:
-    from tst.api.schemas import common, meta, saves
-
-    models = []
-    for module in (common, meta, saves):
-        for value in vars(module).values():
-            if isinstance(value, type) and issubclass(value, BaseModel) and value is not BaseModel:
-                models.append(value)
-    return models
+FORBIDDEN_NAMES = frozenset({"current_ability", "potential_ability", "master_seed"})
+FORBIDDEN_PREFIXES = ("true_", "hidden_")
 
 
-def test_no_hidden_fields_in_api_models() -> None:
-    """ADR-0007: API models never carry true/hidden values."""
+def forbidden(name: str) -> bool:
+    """ADR-0007 exact-name rule (potential_phrase is allowed)."""
+    return name in FORBIDDEN_NAMES or name.startswith(FORBIDDEN_PREFIXES)
+
+
+def test_no_hidden_fields_in_api_models(client: TestClient) -> None:
+    """ADR-0007: no schema in the OpenAPI contract has a hidden-value field."""
     assert schemas is not None
-    forbidden = ("true_", "potential", "hidden", "master_seed")
-    models = _response_models()
-    assert models
-    for model in models:
-        for field in model.model_fields:
-            assert not any(f in field for f in forbidden), f"{model.__name__}.{field}"
+    components = client.get("/openapi.json").json()["components"]["schemas"]
+    assert "PersonProfileOut" in components
+    bad = [
+        f"{model}.{field}"
+        for model, schema in components.items()
+        for field in schema.get("properties", {})
+        if forbidden(field)
+    ]
+    assert bad == []
+    assert not forbidden("potential_phrase")
+    assert forbidden("hidden_traits") and forbidden("true_skill")
+
+
+def find_forbidden_keys(value: Any, path: str = "$") -> list[str]:
+    """Every forbidden key anywhere in a JSON response."""
+    found = []
+    if isinstance(value, dict):
+        for key, inner in value.items():
+            if forbidden(str(key)):
+                found.append(f"{path}.{key}")
+            found += find_forbidden_keys(inner, f"{path}.{key}")
+    elif isinstance(value, list):
+        for i, inner in enumerate(value):
+            found += find_forbidden_keys(inner, f"{path}[{i}]")
+    return found
 
 
 def test_openapi_declares_response_models(client: TestClient) -> None:

@@ -120,3 +120,23 @@ def displayed_range(
     low = math.floor(min(max(true_value - hw * (1 + offset), lo), hi))
     high = math.ceil(min(max(true_value + hw * (1 - offset), lo), hi))
     return low, high
+
+
+PA_PHRASES: Final = ("limited", "decent", "good", "excellent", "outstanding")
+
+
+def potential_phrase(lo: float, hi: float, bounds: tuple[float, ...]) -> str:
+    """Phrase for each PA bucket the displayed range touches, joined with "to" (section 4).
+
+    `bounds` are the lower edges of every bucket after the first (balance pa_phrase_bounds).
+    """
+    if len(bounds) != len(PA_PHRASES) - 1:
+        raise ValueError("pa_phrase_bounds must have one fewer entry than the phrases")
+
+    def bucket(value: float) -> int:
+        return sum(1 for b in bounds if value >= b)
+
+    first, last = bucket(lo), bucket(hi)
+    if first == last:
+        return PA_PHRASES[first]
+    return f"{PA_PHRASES[first]} to {PA_PHRASES[last]}"

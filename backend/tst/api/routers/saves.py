@@ -6,16 +6,24 @@ import secrets
 
 from fastapi import APIRouter, status
 
+from tst.api import views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.schemas.common import ErrorOut
-from tst.api.schemas.saves import CreateSaveIn, OverviewOut, SaveOut, SnapshotPointOut
-from tst.db import repository
+from tst.api.schemas.saves import (
+    CostLineOut,
+    CreateSaveIn,
+    OverviewOut,
+    SaveOut,
+    SnapshotPointOut,
+)
+from tst.db import inbox, repository
 from tst.sim.calendar import format_turn
 from tst.sim.setup import DEFAULT_FOUNDER
 
 router = APIRouter(prefix="/api/saves", tags=["saves"])
 
 HISTORY_TURNS = 12  # Overview chart window
+LATEST_INBOX = 5  # newest inbox items on the Overview
 SEED_BITS = 63  # fits SQLite's signed 64-bit INTEGER
 
 ERRORS: dict[int | str, dict[str, object]] = {
@@ -37,10 +45,16 @@ def _save_out(summary: repository.SaveSummary) -> SaveOut:
     )
 
 
-def _overview(save_id: str, settings: SettingsDep) -> OverviewOut:
+def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
     path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
     with repository.open_session(path) as session:
         ov = repository.player_overview(session, history=HISTORY_TURNS)
+        state = repository.load_state(session)
+        player = state.player
+        latest = ov.history[-1][1] if ov.history else None
+        costs = repository.costs_for_turn(session, player.id, state.turn - 1)
+        unread = inbox.unread_count(session, player.id)
+        newest = inbox.list_inbox(session, player.id, limit=LATEST_INBOX)
     return OverviewOut(
         save_id=save_id,
         company_name=ov.company_name,
@@ -55,9 +69,24 @@ def _overview(save_id: str, settings: SettingsDep) -> OverviewOut:
                 date_label=format_turn(turn),
                 cash_cents=snap.cash_cents,
                 monthly_burn_cents=snap.monthly_burn_cents,
+                payroll_cents=snap.payroll_cents,
+                headcount=snap.headcount,
+                avg_morale=snap.avg_morale,
             )
             for turn, snap in ov.history
         ],
+        stage=player.stage,
+        mission=list(player.mission),
+        headcount=len(state.staff(player.id)),
+        payroll_cents=latest.payroll_cents if latest else 0,
+        avg_morale=latest.avg_morale if latest else None,
+        energy=views.energy(state, data),
+        unread_inbox=unread,
+        costs_last_month=[
+            CostLineOut(account=code, label=name, amount_cents=amount)
+            for code, name, amount in costs
+        ],
+        latest_inbox=[views.inbox_item(m) for m in newest],
     )
 
 
@@ -83,6 +112,7 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         company_name=body.company_name,
         difficulty=body.difficulty,
         founder=body.founder.to_spec() if body.founder else DEFAULT_FOUNDER,
+        mission=None if body.mission is None else tuple(body.mission),
         data=data,
         save_dir=settings.resolved_save_dir(),
     )
@@ -101,8 +131,8 @@ def get_save(save_id: str, settings: SettingsDep) -> SaveOut:
     responses=ERRORS,
     operation_id="getOverview",
 )
-def get_overview(save_id: str, settings: SettingsDep) -> OverviewOut:
-    return _overview(save_id, settings)
+def get_overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
+    return _overview(save_id, settings, data)
 
 
 @router.post(
@@ -114,4 +144,4 @@ def get_overview(save_id: str, settings: SettingsDep) -> OverviewOut:
 def advance(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
     path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
     repository.run_turn(path, data)
-    return _overview(save_id, settings)
+    return _overview(save_id, settings, data)

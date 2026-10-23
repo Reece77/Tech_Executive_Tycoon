@@ -240,6 +240,27 @@ def latest_snapshot(session: Session, company_id: int) -> CompanySnapshot | None
     return found[0][1] if found else None
 
 
+def costs_for_turn(session: Session, company_id: int, turn: int) -> list[tuple[str, str, Cents]]:
+    """(account code, account name, amount) of expenses posted in one turn, largest first."""
+    stmt = (
+        select(
+            LedgerLineRow.account_code,
+            AccountRow.name,
+            func.sum(LedgerLineRow.amount_cents),
+        )
+        .join(LedgerLineRow.entry)
+        .join(AccountRow, AccountRow.code == LedgerLineRow.account_code)
+        .where(
+            LedgerEntryRow.company_id == company_id,
+            LedgerEntryRow.turn == turn,
+            AccountRow.type == "expense",
+        )
+        .group_by(LedgerLineRow.account_code, AccountRow.name)
+    )
+    rows = [(code, name, int(total)) for code, name, total in session.execute(stmt)]
+    return sorted(rows, key=lambda r: (-r[2], r[0]))
+
+
 @dataclass(frozen=True, slots=True)
 class Overview:
     slug: str

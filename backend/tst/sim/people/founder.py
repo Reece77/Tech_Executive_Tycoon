@@ -56,39 +56,94 @@ def _fail(message: str) -> InvalidFounderError:
     return InvalidFounderError(f"founder: {message}")
 
 
-def founder_skills(spec: FounderSpec, data: GameData, balance: Balance) -> Skills:
-    """Validate the allocation and return the founder's starting skills."""
+@dataclass(frozen=True, slots=True)
+class FounderPreview:
+    """What the setup screen shows while the player builds a founder. No randomness."""
+
+    skills: dict[str, float]  # final values for known skills (base + allocation + bonus)
+    points_spent: int
+    points_remaining: int
+    problems: tuple[str, ...]  # every rule the build breaks, in a fixed order
+
+
+def preview_founder(spec: FounderSpec, data: GameData, balance: Balance) -> FounderPreview:
+    """Check a founder build and collect every problem, in the order build_founder reports."""
     founder = balance.founder
+    problems: list[str] = []
     background = data.background(spec.background)
     if background is None:
         known = [b.key for b in data.backgrounds]
-        raise _fail(f"unknown background {spec.background!r}; choose one of {known}")
-    if not background.selectable:
-        raise _fail(f"background {background.key!r} unlocks in {background.available_in}")
+        problems.append(f"unknown background {spec.background!r}; choose one of {known}")
+    elif not background.selectable:
+        problems.append(f"background {background.key!r} unlocks in {background.available_in}")
 
-    allocation = dict(background.default_allocation if spec.allocation is None else spec.allocation)
+    if spec.allocation is not None:
+        allocation = dict(spec.allocation)
+    else:
+        allocation = dict(background.default_allocation) if background else {}
+    bonuses = background.bonuses if background else {}
     unknown = sorted(set(allocation) - set(data.skill_keys))
     if unknown:
-        raise _fail(f"unknown skills in allocation: {unknown}")
+        problems.append(f"unknown skills in allocation: {unknown}")
     negative = sorted(k for k, v in allocation.items() if v < 0)
     if negative:
-        raise _fail(f"negative points for {negative}")
+        problems.append(f"negative points for {negative}")
     spent = sum(allocation.values())
     if spent > founder.skill_points:
-        raise _fail(f"allocation spends {spent} points; only {founder.skill_points} are available")
-    if spent < founder.skill_points:
-        raise _fail(f"allocation spends {spent} points; spend all {founder.skill_points}")
+        problems.append(
+            f"allocation spends {spent} points; only {founder.skill_points} are available"
+        )
+    elif spent < founder.skill_points:
+        problems.append(f"allocation spends {spent} points; spend all {founder.skill_points}")
 
     values: dict[str, float] = {}
     over: list[str] = []
     for key in data.skill_keys:
-        value = founder.skill_base + allocation.get(key, 0) + background.bonuses.get(key, 0)
+        value = founder.skill_base + allocation.get(key, 0) + bonuses.get(key, 0)
         if value > founder.skill_cap:
             over.append(f"{key} = {value:g}")
         values[key] = value
     if over:
-        raise _fail(f"skills above the cap of {founder.skill_cap:g}: {', '.join(over)}")
-    return Skills.build(data.skill_keys, values)
+        problems.append(f"skills above the cap of {founder.skill_cap:g}: {', '.join(over)}")
+
+    age = founder.default_age if spec.age is None else spec.age
+    if not founder.age_range.lo <= age <= founder.age_range.hi:
+        problems.append(f"age must be {founder.age_range.lo:g}-{founder.age_range.hi:g}, got {age}")
+    region = founder.default_region if spec.region is None else spec.region
+    if region not in data.region_keys:
+        problems.append(f"unknown region {region!r}")
+    if spec.personality_preset is not None and data.preset(spec.personality_preset) is None:
+        known = [p.key for p in data.personality_presets]
+        problems.append(f"unknown personality preset {spec.personality_preset!r}; choose {known}")
+    if spec.interests is not None:
+        span = balance.people.interest_count
+        if not span.lo <= len(spec.interests) <= span.hi:
+            problems.append(f"choose {span.lo:g}-{span.hi:g} interests")
+        if len(set(spec.interests)) != len(spec.interests):
+            problems.append("interests must not repeat")
+        bad = sorted(set(spec.interests) - set(data.interest_keys))
+        if bad:
+            problems.append(f"unknown interests {bad}")
+    if spec.work_style is not None and spec.work_style not in data.work_style_keys:
+        problems.append(f"unknown work style {spec.work_style!r}")
+    if spec.first_name is not None and spec.last_name is not None:
+        for label, name in (("first name", spec.first_name), ("last name", spec.last_name)):
+            if not name or not name.strip() or len(name.strip()) > NAME_MAX:
+                problems.append(f"{label} must be 1-{NAME_MAX} characters")
+    return FounderPreview(
+        skills=values,
+        points_spent=spent,
+        points_remaining=founder.skill_points - spent,
+        problems=tuple(problems),
+    )
+
+
+def founder_skills(spec: FounderSpec, data: GameData, balance: Balance) -> Skills:
+    """Validate the whole build and return the founder's starting skills."""
+    preview = preview_founder(spec, data, balance)
+    if preview.problems:
+        raise _fail(preview.problems[0])
+    return Skills.build(data.skill_keys, preview.skills)
 
 
 def build_founder(
@@ -101,36 +156,11 @@ def build_founder(
     person_id: int,
 ) -> Person:
     founder = balance.founder
-    skills = founder_skills(spec, data, balance)
-
+    skills = founder_skills(spec, data, balance)  # raises on any problem
     age = founder.default_age if spec.age is None else spec.age
-    if not founder.age_range.lo <= age <= founder.age_range.hi:
-        raise _fail(f"age must be {founder.age_range.lo:g}-{founder.age_range.hi:g}, got {age}")
     region = founder.default_region if spec.region is None else spec.region
-    if region not in data.region_keys:
-        raise _fail(f"unknown region {region!r}")
-    preset = None
-    if spec.personality_preset is not None:
-        preset = data.preset(spec.personality_preset)
-        if preset is None:
-            known = [p.key for p in data.personality_presets]
-            raise _fail(f"unknown personality preset {spec.personality_preset!r}; choose {known}")
-    if spec.interests is not None:
-        span = balance.people.interest_count
-        if not span.lo <= len(spec.interests) <= span.hi:
-            raise _fail(f"choose {span.lo:g}-{span.hi:g} interests")
-        if len(set(spec.interests)) != len(spec.interests):
-            raise _fail("interests must not repeat")
-        unknown = sorted(set(spec.interests) - set(data.interest_keys))
-        if unknown:
-            raise _fail(f"unknown interests {unknown}")
-    if spec.work_style is not None and spec.work_style not in data.work_style_keys:
-        raise _fail(f"unknown work style {spec.work_style!r}")
+    preset = None if spec.personality_preset is None else data.preset(spec.personality_preset)
     named = spec.first_name is not None and spec.last_name is not None
-    if named:
-        for label, value in (("first name", spec.first_name), ("last name", spec.last_name)):
-            if not value or not value.strip() or len(value.strip()) > NAME_MAX:
-                raise _fail(f"{label} must be 1-{NAME_MAX} characters")
 
     role, ca = best_fit_role(skills, data)
     gen = rng.stream(turn, "founder")
