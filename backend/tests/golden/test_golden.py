@@ -1,6 +1,7 @@
 """Golden seeds and determinism (ADR-0002).
 
-Seeds 1..10 are played for 24 turns through the full persistence path and their per-turn
+Seeds 1..10 are played for 24 turns through the full persistence path, as an
+ex_big_tech_founders game following a scripted hiring plan (M1b), and their per-turn
 snapshots are compared with tests/golden/snapshots/seed_NN.json. The founder's current
 ability after each turn goes to seed_NN.founder_ca.json instead: CA is hidden (ADR-0007), so
 it never enters turn_snapshot, which the API returns. Never edit these files by hand:
@@ -17,8 +18,9 @@ import pytest
 from sqlalchemy import select
 
 from tst.db.models import LedgerEntryRow, TurnSnapshotRow
-from tst.db.repository import create_save, load_state, open_session, run_turn
+from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
 from tst.loader import LoadedData
+from tst.sim.actions import CloseSearch, MakeOffer, OpenSearch
 from tst.sim.calendar import format_turn
 from tst.sim.people.models import current_ability
 
@@ -27,20 +29,54 @@ SEEDS = range(1, 11)
 TURNS = 24
 
 
+TARGET_STAFF = 8  # the plan stops making offers at this many employees
+CLOSE_JOB_POST_TURN = 6
+
+
+def hiring_plan(path: Path, data: LoadedData) -> None:
+    """Scripted player actions between turns, exercising payroll, morale and departures.
+
+    Turn 0 opens all three channels. Every turn, while staff are below TARGET_STAFF, each open
+    candidate without an offer gets one: 1.10x the ask for odd ids, 0.90x for even ids (some
+    underpaid hires, to stress morale), no equity. The job post closes at turn 6.
+    """
+    with open_session(path) as session:
+        state = load_state(session)
+    actor = 1
+    if state.turn == 0:
+        run_action(path, data, OpenSearch(actor, "software_engineer", "job_post"))
+        run_action(path, data, OpenSearch(actor, "product_manager", "recruiter"))
+        run_action(path, data, OpenSearch(actor, "designer", "network"))
+    if state.turn == CLOSE_JOB_POST_TURN:
+        for search in state.searches:
+            run_action(path, data, CloseSearch(actor, search.id))
+    staff = len(state.staff(1)) - 1
+    for candidate in state.candidates:
+        if staff >= TARGET_STAFF:
+            break
+        if state.pending_offer_for(candidate.person_id) is not None:
+            continue
+        ask = state.person(candidate.person_id).salary_expectation_cents or 0
+        ratio = 1.10 if candidate.person_id % 2 else 0.90
+        run_action(path, data, MakeOffer(actor, candidate.person_id, round(ask * ratio), 0))
+        staff += 1  # count pending offers toward the target
+
+
 def play(
     save_dir: Path, slug: str, seed: int, data: LoadedData
 ) -> tuple[Path, list[dict[str, Any]]]:
-    """Play TURNS turns; return the save and the founder's CA after each turn."""
+    """Play TURNS turns with the hiring plan; return the save and the founder's CA per turn."""
     path = create_save(
         slug,
         seed,
-        "garage_bootstrap",
+        "ex_big_tech_founders",
         company_name="Golden Co",
         data=data,
         save_dir=save_dir,
     )
     founder_ca = []
     for _ in range(TURNS):
+        hiring_plan(path, data)
         result = run_turn(path, data)
         with open_session(path) as session:
             founder = next(p for p in load_state(session).people if p.is_founder)
@@ -110,5 +146,4 @@ def test_same_seed_twice_is_identical(tmp_path: Path, loaded: LoadedData) -> Non
         assert load_state(a).people == load_state(b).people
     assert snapshots(first) == snapshots(second)
     assert ledger_rows(first) == ledger_rows(second)
-    # starting cash (2 lines) + one monthly-costs entry per turn (office, overhead, cash)
-    assert len(ledger_rows(first)) == 2 + 3 * TURNS
+    assert len(ledger_rows(first)) > 2 + 3 * TURNS  # payroll and fees on top of office/overhead
