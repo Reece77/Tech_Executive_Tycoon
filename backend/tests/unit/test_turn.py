@@ -84,10 +84,20 @@ def test_zero_overhead_posts_nothing() -> None:
 
 
 def test_month_end_log() -> None:
-    result = advance_turn(make_state(1), Decisions(), RngFactory(1), make_balance(), _BASE_DATA, {})
+    cash = {(1, CASH): 5_000_000}
+    result = advance_turn(
+        make_state(1), Decisions(), RngFactory(1), make_balance(), _BASE_DATA, cash
+    )
     assert [(i.kind, i.message) for i in result.log_items] == [
         ("month_end", "Jan 2010 closed for Co 1")
     ]
+
+
+def test_negative_cash_warns_every_month() -> None:
+    """M1 has no insolvency: the inbox warns each month cash ends below zero."""
+    result = advance_turn(make_state(1), Decisions(), RngFactory(1), make_balance(), _BASE_DATA, {})
+    warnings = [i for i in result.log_items if i.template == "out_of_cash"]
+    assert [dict(i.params) for i in warnings] == [{"cash_cents": -OVERHEAD}]
 
 
 @pytest.mark.parametrize(

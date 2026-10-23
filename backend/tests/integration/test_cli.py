@@ -48,9 +48,9 @@ def test_acceptance_flow(save_dir: Path) -> None:
 
     out = run("inspect", "--save", "dev")
     assert "Date:    Jan 2012 (turn 24)" in out
-    assert "Cash:    $2,000.00" in out  # $50,000 - 24 x $2,000
-    assert "Burn:    $2,000.00 / month" in out
-    assert "Runway:  1 month\n" in out
+    assert "Cash:    $23,600.00" in out  # $50,000 - 24 x ($500 overhead + $600 office)
+    assert "Burn:    $1,100.00 / month" in out
+    assert "Runway:  21 months\n" in out
 
     out = run("list")
     assert "dev" in out and "Test Co" in out and "Jan 2012" in out

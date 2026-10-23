@@ -52,6 +52,7 @@ def upgrade() -> None:
         sa.Column("person_id", sa.Integer(), nullable=False),
         sa.Column("company_id", sa.Integer(), nullable=False),
         sa.Column("search_id", sa.Integer(), nullable=False),
+        sa.Column("channel", sa.String(length=16), nullable=False),
         sa.Column("created_turn", sa.Integer(), nullable=False),
         sa.Column("expires_turn", sa.Integer(), nullable=False),
         sa.Column("status", sa.String(length=16), nullable=False),

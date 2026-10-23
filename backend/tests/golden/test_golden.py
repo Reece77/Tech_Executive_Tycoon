@@ -110,4 +110,5 @@ def test_same_seed_twice_is_identical(tmp_path: Path, loaded: LoadedData) -> Non
         assert load_state(a).people == load_state(b).people
     assert snapshots(first) == snapshots(second)
     assert ledger_rows(first) == ledger_rows(second)
-    assert len(ledger_rows(first)) == 2 * (1 + TURNS)  # starting cash + one entry per turn
+    # starting cash (2 lines) + one monthly-costs entry per turn (office, overhead, cash)
+    assert len(ledger_rows(first)) == 2 + 3 * TURNS

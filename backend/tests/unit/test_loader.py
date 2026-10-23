@@ -11,7 +11,7 @@ from tst.sim.ledger import ENGINE_ACCOUNTS
 
 
 def test_real_data_loads(loaded: LoadedData) -> None:
-    assert loaded.balance.company.base_monthly_cost_cents == 200_000
+    assert loaded.balance.company.base_monthly_cost_cents == 50_000
     assert loaded.balance.backup.every_n_turns == 12
     assert loaded.balance.backup.keep_periodic == 10
     assert [s.id for s in loaded.game_data.scenarios] == [

@@ -2,7 +2,7 @@
 # Formulas and rationale: docs/formulas.md.
 
 company:
-  base_monthly_cost_cents: 200000 # cents per month; placeholder overhead until payroll exists (M0 $2,000; formulas.md section 8)
+  base_monthly_cost_cents: 50000 # cents per month; base overhead on top of payroll and office ($500 from M1b, $2,000 in M0; formulas.md section 8)
 
 scenario:
   garage_bootstrap:

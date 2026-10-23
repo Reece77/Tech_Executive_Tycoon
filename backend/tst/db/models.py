@@ -265,6 +265,7 @@ class CandidateRow(Base):
     person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
     search_id: Mapped[int] = mapped_column(ForeignKey("search.id"), nullable=False)
+    channel: Mapped[str] = mapped_column(String(16), nullable=False)
     created_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     expires_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False)

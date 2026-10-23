@@ -80,6 +80,7 @@ def with_candidates(
                 person_id=pid,
                 company_id=1,
                 search_id=search_id,
+                channel="job_post",
                 created_turn=state.turn,
                 expires_turn=state.turn + loaded.balance.hiring.candidate_shelf_turns,
             ),

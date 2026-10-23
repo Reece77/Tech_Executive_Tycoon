@@ -36,6 +36,7 @@ class Candidate:
     person_id: int
     company_id: int
     search_id: int
+    channel: Channel  # kept here because one-batch searches close (recruiter fee on hire)
     created_turn: int  # turn whose phase 12 generated the batch
     expires_turn: int  # leaves in phase 12 of this turn unless hired first
     status: CandidateStatus = "open"

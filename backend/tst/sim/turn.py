@@ -8,22 +8,22 @@ entries posted earlier in the same turn, never from the database.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from typing import Final
 
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
+from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
-    GENERAL_ADMIN,
     AccountCode,
     LedgerBalances,
     LedgerEntry,
     account_balance,
     apply_entries,
 )
-from tst.sim.log import LogItem
+from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
 from tst.sim.people.growth import grow_person
 from tst.sim.rng import RngFactory
@@ -58,6 +58,7 @@ class TurnContext:
     log_items: tuple[LogItem, ...] = ()
     snapshot: TurnSnapshot | None = None
     event_requests: tuple[EventRequest, ...] = ()
+    payroll: Mapping[int, Cents] = field(default_factory=dict)  # per company, phase 6
 
     @property
     def turn(self) -> int:
@@ -81,7 +82,13 @@ type Phase = Callable[[TurnContext], TurnContext]
 
 
 def apply_player_decisions(ctx: TurnContext) -> TurnContext:
-    return ctx
+    """Notices that end this turn close; pending offers resolve (ADR-0014, formulas.md 7, 10).
+
+    Player actions themselves were applied at once between turns; Decisions stays empty in M1.
+    """
+    state, ended = phases.end_notices(ctx.state)
+    state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance)
+    return replace(ctx, state=state).post(*entries).log(*ended, *resolved)
 
 
 def rival_decisions(ctx: TurnContext) -> TurnContext:  # M5
@@ -101,22 +108,9 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:  # M3
 
 
 def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
-    """M0: post the placeholder base overhead for every company."""
-    cost = ctx.balance.company.base_monthly_cost_cents
-    if cost == 0:
-        return ctx
-    entries = tuple(
-        LedgerEntry.transfer(
-            turn=ctx.turn,
-            company_id=company.id,
-            memo="Base overhead",
-            debit=GENERAL_ADMIN,
-            credit=CASH,
-            amount=cost,
-        )
-        for company in sorted(ctx.state.companies, key=lambda c: c.id)
-    )
-    return ctx.post(*entries)
+    """Salaries, benefits, office, base overhead and job-post fees (formulas.md section 8)."""
+    entries, payroll = phases.payroll(ctx.state, ctx.balance)
+    return replace(ctx, payroll=payroll).post(*entries)
 
 
 def financing(ctx: TurnContext) -> TurnContext:  # M4
@@ -126,14 +120,21 @@ def financing(ctx: TurnContext) -> TurnContext:  # M4
 def people_updates(ctx: TurnContext) -> TurnContext:
     """Growth and aging for everyone on staff (formulas.md section 3), by person id.
 
-    Morale, stress, relationships and resignations join this phase in M1b.
+    Then morale, resignations and retirements, monthly tag reveals, and employed_month
+    narrowing (formulas.md sections 4, 9, 10). Relationships arrive later.
     """
     staff_ids = {e.person_id for e in ctx.state.employments if e.counts_as_staff}
     people = tuple(
         grow_person(p, ctx.turn, ctx.rng, ctx.data, ctx.balance) if p.id in staff_ids else p
         for p in sorted(ctx.state.people, key=lambda p: p.id)
     )
-    return replace(ctx, state=replace(ctx.state, people=people))
+    state = replace(ctx.state, people=people)
+    state, departures = phases.morale_and_departures(
+        state, ctx.rng, ctx.balance, ctx.data, ctx.opening_balances, ctx.balances
+    )
+    state, reveals = phases.monthly_tag_reveals(state, ctx.rng, ctx.balance, ctx.data)
+    state = phases.employed_month(state, ctx.balance, ctx.data)
+    return replace(ctx, state=state).log(*departures, *reveals)
 
 
 def market_and_macro_update(ctx: TurnContext) -> TurnContext:  # M3
@@ -141,7 +142,8 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:  # M3
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:
-    return ctx
+    """Stage 0 -> 1 on the first hire (formulas.md section 7)."""
+    return replace(ctx, state=phases.first_hire_stage(ctx.state))
 
 
 def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
@@ -150,14 +152,24 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     for company in sorted(ctx.state.companies, key=lambda c: c.id):
         opening = account_balance(ctx.opening_balances, company.id, CASH)
         closing = account_balance(ctx.balances, company.id, CASH)
+        morale = [
+            ctx.state.person_state(e.person_id).morale
+            for e in ctx.state.staff(company.id)
+            if not ctx.state.person(e.person_id).is_founder
+        ]
+        known = [m for m in morale if m is not None]
         snaps.append(
             CompanySnapshot(
                 company_id=company.id,
                 cash_cents=closing,
                 monthly_burn_cents=max(opening - closing, 0),
                 headcount=len(ctx.state.staff(company.id)),
+                payroll_cents=ctx.payroll.get(company.id, 0),
+                avg_morale=sum(known) / len(known) if known else None,
             )
         )
+        if closing < 0:  # M1 has no insolvency: warn every month cash is negative
+            items.append(inbox_item(ctx.turn, company.id, "out_of_cash", cash_cents=closing))
         items.append(
             LogItem(
                 turn=ctx.turn,
@@ -170,8 +182,14 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     return ctx.log(*items)
 
 
-def event_director_requests(ctx: TurnContext) -> TurnContext:  # M6
-    return ctx
+def event_director_requests(ctx: TurnContext) -> TurnContext:
+    """Phase 12: candidates expire, open searches deliver next month's batches.
+
+    Event requests for the next turn join this phase in M6 (always empty until then).
+    """
+    state = phases.expire_candidates(ctx.state)
+    state, arrivals = phases.candidate_batches(state, ctx.rng, ctx.balance, ctx.data)
+    return replace(ctx, state=state).log(*arrivals)
 
 
 PHASES: Final[tuple[tuple[str, Phase], ...]] = (
@@ -212,8 +230,10 @@ def advance_turn(
         ctx = phase(ctx)
     if ctx.snapshot is None:
         raise RuntimeError("snapshot phase did not run")
+    # Founder energy resets for the new month after phase 12 (ADR-0014).
+    final = phases.reset_energy(ctx.state, balance)
     return TurnResult(
-        new_state=replace(ctx.state, turn=state.turn + 1),
+        new_state=replace(final, turn=state.turn + 1),
         ledger_entries=ctx.entries,
         log_items=ctx.log_items,
         snapshot=ctx.snapshot,

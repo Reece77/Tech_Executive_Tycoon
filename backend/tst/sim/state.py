@@ -117,6 +117,9 @@ class GameState:
     def pending_offers(self, company_id: int) -> tuple[Offer, ...]:
         return tuple(o for o in self.offers if o.company_id == company_id and o.status == "pending")
 
+    def pending_offers_all(self) -> tuple[Offer, ...]:
+        return tuple(o for o in self.offers if o.status == "pending")
+
     def pending_offer_for(self, candidate_id: int) -> Offer | None:
         for o in self.offers:
             if o.candidate_id == candidate_id and o.status == "pending":

@@ -14,7 +14,7 @@ from tst.config import Settings, get_settings
 from tst.db.repository import open_session, read_meta
 
 GARAGE_CASH = 5_000_000
-OVERHEAD = 200_000
+OVERHEAD = 110_000  # M1b solo founder: $500 base overhead + $600 office
 
 
 @pytest.fixture
@@ -66,7 +66,7 @@ def test_overview_and_advance(client: TestClient) -> None:
     assert first["date_label"] == "Feb 2010"
     assert first["cash_cents"] == GARAGE_CASH - OVERHEAD
     assert first["monthly_burn_cents"] == OVERHEAD
-    assert first["runway_months"] == 24
+    assert first["runway_months"] == 44  # $48,900 / $1,100
 
     second = client.post("/api/saves/dev/advance").json()
     assert second["date_label"] == "Mar 2010"

@@ -145,6 +145,8 @@ def company_snapshot_from_row(row: TurnSnapshotRow) -> CompanySnapshot:
         cash_cents=int(kpis["cash_cents"]),
         monthly_burn_cents=int(kpis["monthly_burn_cents"]),
         headcount=int(kpis["headcount"]),
+        payroll_cents=int(kpis.get("payroll_cents", 0)),
+        avg_morale=kpis.get("avg_morale"),
     )
 
 
@@ -341,6 +343,7 @@ def candidate_to_row(candidate: Candidate) -> CandidateRow:
         person_id=candidate.person_id,
         company_id=candidate.company_id,
         search_id=candidate.search_id,
+        channel=candidate.channel,
         created_turn=candidate.created_turn,
         expires_turn=candidate.expires_turn,
         status=candidate.status,
@@ -353,6 +356,7 @@ def candidate_from_row(row: CandidateRow) -> Candidate:
         person_id=row.person_id,
         company_id=row.company_id,
         search_id=row.search_id,
+        channel=cast(Channel, row.channel),
         created_turn=row.created_turn,
         expires_turn=row.expires_turn,
         status=cast(CandidateStatus, row.status),

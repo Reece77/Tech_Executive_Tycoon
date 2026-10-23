@@ -262,6 +262,7 @@ A generated person available to one company. Primary key `person_id`.
 | `person_id` | INTEGER PK, FK → person.id | no | The candidate. |
 | `company_id` | INTEGER FK → company.id | no | Company that found them. |
 | `search_id` | INTEGER FK → search.id | no | Search that found them. |
+| `channel` | VARCHAR(16) | no | That search's channel, kept because one-batch searches close (decides the recruiter fee on hire). |
 | `created_turn` | INTEGER | no | Turn whose phase 12 generated the batch. |
 | `expires_turn` | INTEGER | no | They leave in phase 12 of this turn unless hired. |
 | `status` | VARCHAR(16) | no | `open`, `hired`, `declined`, `expired`, or `withdrawn` (reserved for M2). |

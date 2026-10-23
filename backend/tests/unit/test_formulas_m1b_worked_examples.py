@@ -143,6 +143,7 @@ def test_section_8_senior_engineer_costs_12100_a_month(loaded: LoadedData) -> No
 
 def test_section_8_other_costs(loaded: LoadedData) -> None:
     balance = loaded.balance
+    assert balance.company.base_monthly_cost_cents == 50_000  # $500 from M1b
     assert balance.hiring.job_post_cost_cents == 50_000
     assert recruiter_fee_cents(11_500_000, balance.hiring) == 2_300_000  # 20%
     assert severance_cents(11_500_000, balance.payroll) == 958_333  # one month

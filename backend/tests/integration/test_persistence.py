@@ -41,7 +41,7 @@ from tst.sim.state import company_cash
 from tst.sim.turn import TurnContext
 
 GARAGE_CASH = 5_000_000
-OVERHEAD = 200_000
+OVERHEAD = 110_000  # M1b solo founder: $500 base overhead + $600 office
 
 
 @pytest.fixture

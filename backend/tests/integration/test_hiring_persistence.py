@@ -85,7 +85,14 @@ def _with_hiring(loaded: LoadedData, state: GameState) -> GameState:
         state = with_person(state, person)
         state = with_candidate(
             state,
-            Candidate(person_id=pid, company_id=1, search_id=1, created_turn=0, expires_turn=3),
+            Candidate(
+                person_id=pid,
+                company_id=1,
+                search_id=1,
+                channel="job_post",
+                created_turn=0,
+                expires_turn=3,
+            ),
         )
     state = with_search(
         state, Search(1, 1, "software_engineer", "job_post", actor_id=1, opened_turn=0)

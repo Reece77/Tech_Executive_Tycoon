@@ -12,13 +12,17 @@ class CompanySnapshot:
     company_id: int
     cash_cents: Cents  # 1000_cash balance at month end
     monthly_burn_cents: Cents  # net cash decrease this month; 0 when cash did not fall
-    headcount: int  # active employees; 0 until people arrive in M1a
+    headcount: int  # active and notice employments, founder included
+    payroll_cents: Cents = 0  # salaries plus benefits posted this month (M1b)
+    avg_morale: float | None = None  # employees excluding the founder; None if there are none
 
-    def kpis(self) -> dict[str, int]:
+    def kpis(self) -> dict[str, int | float | None]:
         return {
             "cash_cents": self.cash_cents,
             "monthly_burn_cents": self.monthly_burn_cents,
             "headcount": self.headcount,
+            "payroll_cents": self.payroll_cents,
+            "avg_morale": self.avg_morale,
         }
 
 

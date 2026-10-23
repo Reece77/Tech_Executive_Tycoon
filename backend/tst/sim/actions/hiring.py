@@ -26,7 +26,7 @@ from tst.sim.errors import (
 from tst.sim.hiring.formulas import ROLL_RANGE, energy_cost, roll_succeeds, severance_cents
 from tst.sim.hiring.models import Candidate, Channel, Offer, Search
 from tst.sim.hiring.rules import offer_problems
-from tst.sim.ledger import CASH, LedgerBalances, LedgerEntry, account_balance
+from tst.sim.ledger import CASH, SALARIES, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.people.models import Person
 from tst.sim.people.reveal import apply_knowledge_action
@@ -41,7 +41,6 @@ from tst.sim.state import (
     with_search,
 )
 
-SALARIES = "6000_salaries"
 CULTURE_CARRIER = "culture_carrier"
 CHANNEL_ENERGY: dict[str, str] = {
     "network": "network",
