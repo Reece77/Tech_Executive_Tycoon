@@ -16,7 +16,8 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | --- | --- | --- |
 | [M0-foundation.md](M0-foundation.md) | Repo, tooling, schema v1, seeded RNG, turn runner, API and UI shell | — |
 | [M1a-people-model.md](M1a-people-model.md) | People model, generator, founder creation, reveal, monthly growth | M0 |
-| [M1b-hiring-payroll-morale.md](M1b-hiring-payroll-morale.md) | Hiring channels, offers, payroll, morale, resignations, inbox, people and recruitment screens | M1a |
+| [M1b-hiring-rules-and-api.md](M1b-hiring-rules-and-api.md) | Hiring, offers, payroll, morale, resignations, inbox: rules, API, and CLI | M1a |
+| [M1c-screens.md](M1c-screens.md) | New-game setup, Inbox, Overview, People, Profile, Recruitment screens | M1b |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

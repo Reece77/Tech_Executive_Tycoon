@@ -1,6 +1,6 @@
-# M1b wireframes
+# M1 wireframes
 
-Four desktop screens for M1b: Inbox, People, Person profile, and Recruitment with the offer panel. The editable canvas is the Claude Design artifact "Tech Startup Tycoon M1b Wireframes" (ask Reece for the link). The artboard sources are copied in `docs/wireframes/source/` for reference; they use the design canvas's runtime and are not meant to run in the app.
+Six desktop screens, built in M1c: New-game setup, Inbox, Overview, People, Person profile, and Recruitment with the offer panel. The editable canvas is the Claude Design artifact "Tech Startup Tycoon M1b Wireframes" (ask Reece for the link). The artboard sources are copied in `docs/wireframes/source/` for reference; they use the design canvas's runtime and are not meant to run in the app.
 
 Build the screens in React with Mantine to match these layouts. Example data (Kestrel Systems, June 2010) is consistent with `docs/formulas.md`, so the numbers can double as test fixtures.
 
@@ -37,6 +37,10 @@ Build the screens in React with Mantine to match these layouts. Example data (Ke
 **Message kinds** (inbox badges): Hire (green), Search (blue), Scout (gold), Notice (orange), Declined and Month (grey). Text labels, no icons or emoji.
 
 ## Screens
+
+**New-game setup** (no shell; replaces M0's create form). One page in four numbered panels. *Company:* name, difficulty (segmented), scenario cards with starting cash (the v3 scenario shown locked). *Founder:* optional first and last name (blank draws one), age, background cards with their bonuses (geologist locked until v3), and the skill allocation in three columns: each skill shows its background bonus, −/+ buttons, and the final value colored like `AttributeRange`; a large "points left" counter and a reset-to-default button. *Personality:* four preset cards plus "Surprise me". *Mission:* the 13 interests as toggle chips, exactly 2 chosen. A summary line and the Start button, disabled until the founder preview reports no errors. Final values and points left come from `POST /api/meta/founder-preview`; ability and potential are never shown.
+
+**Overview.** Six KPI tiles (cash, monthly burn, runway, headcount, monthly payroll, average employee morale), each with a one-line note; a line chart of cash at each month end; this month's projected costs (salaries, benefits, office, job posts, overhead, total) with a note that revenue arrives in M3; and the five latest inbox items linking to the inbox.
 
 **Inbox (home).** Filters (All, Unread, People, Hiring). Message list with a kind badge, bold title when unread, one-line preview, and date. The selected message opens in a detail panel with its body, key facts (for a resignation: role, morale, last day, salary), and actions that follow the message's link (View profile, Find a replacement, Mark unread).
 

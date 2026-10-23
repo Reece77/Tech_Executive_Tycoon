@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New game</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.step{display:flex;align-items:baseline;gap:10px;margin:0;font-size:18px;font-weight:600}
+.stepn{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 6px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:inherit;font-size:15px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:10px 12px}
+.t1{color:#9BA7B6}.t2{color:#D5DBE3}.t3{color:#6FCF8E}.t4{color:#F5C451;font-weight:600}
+.stepbtn{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#1F2A38;border:1px solid #2A3442;border-radius:5px;width:28px;height:28px;cursor:pointer;padding:0}
+.chipbtn{font-family:inherit;font-size:13px;border-radius:16px;padding:8px 14px;min-height:36px;cursor:pointer}
+</style>
+</helmet>
+<div style="min-height: 1320px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 16px 24px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <span style="font-size: 16px; font-weight: 700">Tech Startup Tycoon</span>
+    <span style="font-size: 13px; color: #9BA7B6">New game · January 2010</span>
+    <a href="#" style="margin-left: auto; font-size: 14px; text-decoration: none">← Saved games</a>
+  </header>
+  <main style="width: 100%; max-width: 1180px; margin: 0 auto; box-sizing: border-box; padding: 24px 20px 48px; display: flex; flex-direction: column; gap: 16px">
+    <section class="panel" aria-label="Company">
+      <h2 class="step"><span class="stepn">1</span>Company</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px">
+        <label class="field" style="flex: 1 1 260px">Company name<input class="input" type="text" value="Kestrel Systems"></label>
+        <fieldset style="flex: 1 1 360px; border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+          <legend style="font-size: 13px; color: #C9D1DB; padding: 0 0 6px">Difficulty</legend>
+          <div role="group" style="display: flex; border: 1px solid #2A3442; border-radius: 6px; overflow: hidden">
+            <button type="button" style="flex: 1; font-family: inherit; font-size: 13px; color: #C9D1DB; background: transparent; border: 0; padding: 10px; min-height: 40px">Easy</button>
+            <button type="button" aria-pressed="true" style="flex: 1; font-family: inherit; font-size: 13px; color: #E8ECF1; background: #1F2A38; border: 0; border-left: 1px solid #2A3442; padding: 10px; min-height: 40px">Standard</button>
+            <button type="button" style="flex: 1; font-family: inherit; font-size: 13px; color: #C9D1DB; background: transparent; border: 0; border-left: 1px solid #2A3442; padding: 10px; min-height: 40px">Hard</button>
+            <button type="button" style="flex: 1; font-family: inherit; font-size: 13px; color: #C9D1DB; background: transparent; border: 0; border-left: 1px solid #2A3442; padding: 10px; min-height: 40px">Ironman</button>
+          </div>
+        </fieldset>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px">
+        <sc-for list="{{scenarios}}" as="s" hint-placeholder-count="4">
+          <label style="{{s.cardStyle}}">
+            <span style="display: flex; justify-content: space-between; gap: 8px"><span style="font-weight: 600">{{s.name}}</span><span class="num" style="font-size: 13px; color: #C9D1DB">{{s.cash}}</span></span>
+            <span style="font-size: 13px; color: #9BA7B6; line-height: 1.45">{{s.text}}</span>
+            <input type="radio" name="scenario" checked="{{s.checked}}" disabled="{{s.locked}}" style="position: absolute; opacity: 0; pointer-events: none">
+          </label>
+        </sc-for>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Founder">
+      <h2 class="step"><span class="stepn">2</span>Founder</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px">
+        <label class="field" style="flex: 1 1 200px">First name<input class="input" type="text" placeholder="Leave blank to draw one"></label>
+        <label class="field" style="flex: 1 1 200px">Last name<input class="input" type="text" placeholder="Leave blank to draw one"></label>
+        <label class="field" style="flex: 0 1 120px">Age<input class="input num" type="text" value="28"></label>
+      </div>
+      <div style="font-size: 13px; color: #C9D1DB">Background</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px">
+        <sc-for list="{{backgrounds}}" as="b" hint-placeholder-count="5">
+          <button type="button" style="{{b.cardStyle}}">
+            <span style="font-weight: 600; font-size: 14px">{{b.name}}</span>
+            <span style="font-size: 12px; color: #9BA7B6; line-height: 1.45">{{b.text}}</span>
+            <span class="num" style="font-size: 12px; color: #6FCF8E">{{b.bonus}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 4px">
+        <span style="font-size: 13px; color: #C9D1DB">Skills: every skill starts at 5; spend 70 points; no skill above 18.</span>
+        <span style="margin-left: auto; display: flex; align-items: baseline; gap: 6px"><span class="num" style="font-size: 22px; font-weight: 700; color: #6FCF8E">0</span><span style="font-size: 13px; color: #9BA7B6">of 70 points left</span></span>
+        <button type="button" style="font-family: inherit; font-size: 13px; color: #C9D1DB; background: transparent; border: 1px solid #2A3442; border-radius: 6px; padding: 8px 12px; min-height: 36px">Reset to Engineer default</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px">
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <div style="font-size: 12px; font-weight: 600; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em; padding-bottom: 6px">{{g.name}}</div>
+            <sc-for list="{{g.skills}}" as="k" hint-placeholder-count="9">
+              <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid #1F2732; font-size: 14px">
+                <span style="flex: 1; color: #C9D1DB">{{k.label}}</span>
+                <span class="num" style="font-size: 11px; color: #6FCF8E; width: 22px; text-align: right">{{k.bonus}}</span>
+                <button type="button" class="stepbtn" aria-label="Remove a point">−</button>
+                <span class="num {{k.tier}}" style="width: 24px; text-align: center">{{k.value}}</span>
+                <button type="button" class="stepbtn" aria-label="Add a point">+</button>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 12px; color: #9BA7B6">Green numbers are your background's bonus. Values and points come from the server as you edit; your ability and potential stay hidden, as for everyone else.</p>
+    </section>
+
+    <section class="panel" aria-label="Personality">
+      <h2 class="step"><span class="stepn">3</span>Personality</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px">
+        <sc-for list="{{presets}}" as="p" hint-placeholder-count="5">
+          <button type="button" style="{{p.cardStyle}}">
+            <span style="font-weight: 600; font-size: 14px">{{p.name}}</span>
+            <span style="font-size: 12px; color: #9BA7B6; line-height: 1.45">{{p.text}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Mission">
+      <h2 class="step"><span class="stepn">4</span>Mission <span style="font-size: 13px; font-weight: 400; color: #9BA7B6">choose 2 · people who share them are happier and easier to hire</span></h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{interests}}" as="i" hint-placeholder-count="13">
+          <button type="button" class="chipbtn" aria-pressed="{{i.on}}" style="{{i.style}}">{{i.label}}</button>
+        </sc-for>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding-top: 4px">
+      <span style="font-size: 14px; color: #C9D1DB">Kestrel Systems · Ex-big-tech founders · Standard · Engineer · Visionary · AI and Enterprise</span>
+      <button type="button" style="margin-left: auto; font-family: inherit; font-size: 16px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 14px 32px; min-height: 48px; cursor: pointer">Start in January 2010</button>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1320}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const card = 'position: relative; display: flex; flex-direction: column; gap: 6px; text-align: left; font-family: inherit; color: #E8ECF1; background: #11161D; border: 1px solid #2A3442; border-radius: 8px; padding: 12px 14px; cursor: pointer';
+    const on = '; background: #172638; border-color: #5AA2FF; box-shadow: 0 0 0 1px #5AA2FF';
+    const off = '; opacity: .55; cursor: not-allowed';
+    const scenarios = [
+      { name: 'Garage bootstrap', cash: '$50,000', text: 'Your savings and a laptop. Tight from the first hire.' },
+      { name: 'Ex-big-tech founders', cash: '$400,000', text: 'Savings plus angel money from former colleagues.', checked: true },
+      { name: 'Funded spinout', cash: '$1,500,000', text: 'A seed round already closed. Room to build a team.' },
+      { name: 'Mineral-first prospector', cash: '$5,000,000', text: 'Unlocks in v3.', locked: true }
+    ].map((s) => ({ ...s, checked: !!s.checked, locked: !!s.locked, cardStyle: card + (s.checked ? on : '') + (s.locked ? off : '') }));
+    const backgrounds = [
+      { name: 'Engineer', text: 'Strongest at shipping product.', bonus: '+3 Software eng · +2 Infrastructure', sel: true },
+      { name: 'Salesperson', text: 'Strongest at finding customers and money.', bonus: '+3 Sales · +2 Negotiation' },
+      { name: 'Academic', text: 'Strongest at deep technical work.', bonus: '+3 ML research · +2 Data' },
+      { name: 'Ex-big-tech', text: 'Balanced, with a strong network.', bonus: '+2 Software eng · +2 Product · +1 Leadership' },
+      { name: 'Geologist', text: 'For the mineral-first start. Unlocks in v3.', bonus: '+3 Geology · +2 Mining eng', locked: true }
+    ].map((b) => ({ ...b, cardStyle: card + (b.sel ? on : '') + (b.locked ? off : '') }));
+    const tier = (v) => (v >= 16 ? 't4' : v >= 11 ? 't3' : v >= 6 ? 't2' : 't1');
+    const mk = (rows) => rows.map(([label, value, bonus]) => ({ label, value, bonus: bonus ? '+' + bonus : '', tier: tier(value) }));
+    const groups = [
+      { name: 'Technical', skills: mk([['Software engineering', 16, 3], ['ML research', 5], ['Data', 10], ['Infrastructure', 14, 2], ['Hardware design', 5], ['Chip design', 5], ['Manufacturing', 5], ['Geology', 5], ['Mining engineering', 5], ['Security', 9]]) },
+      { name: 'Business', skills: mk([['Product', 13], ['Design', 7], ['Sales', 8], ['Marketing', 7], ['Finance', 8], ['Legal', 5], ['Operations', 9], ['Procurement', 5], ['Recruiting', 7]]) },
+      { name: 'Leadership', skills: mk([['Leadership', 11], ['Mentoring', 5], ['Strategy', 10], ['Negotiation', 8], ['Communication', 10], ['Judgment of talent', 8]]) }
+    ];
+    const presets = [
+      { name: 'Visionary', text: 'Ambitious risk-taker; inspires, but can be impatient.', sel: true },
+      { name: 'Operator', text: 'Steady, professional, and careful with money.' },
+      { name: 'Hustler', text: 'Sociable and adaptable; always selling.' },
+      { name: 'Scientist', text: 'Principled and thorough; prefers depth to small talk.' },
+      { name: 'Surprise me', text: 'Random traits; you see them once the game starts.' }
+    ].map((p) => ({ ...p, cardStyle: card + (p.sel ? on : '') }));
+    const chosen = ['AI', 'Enterprise'];
+    const interests = ['AI', 'Hardware', 'Crypto', 'Climate', 'Security', 'Gaming', 'Mining', 'Policy', 'Design', 'Fintech', 'Consumer', 'Enterprise', 'Open source'].map((label) => {
+      const isOn = chosen.includes(label);
+      return { label, on: isOn ? 'true' : 'false', style: isOn ? 'color: #0E1217; background: #5AA2FF; border: 1px solid #5AA2FF; font-weight: 600' : 'color: #C9D1DB; background: transparent; border: 1px solid #2A3442' };
+    });
+    return { scenarios, backgrounds, groups, presets, interests };
+  }
+}
+</script>
+</body>
+</html>

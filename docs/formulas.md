@@ -213,6 +213,7 @@ p = \frac{1}{1 + e^{-3\,(score - 0)}}
 | 3 Scale-up | +1.0 | 0.3 |
 
 - If `R < 0.85`, the candidate always declines.
+- **Option pool:** an offer may carry at most 200 bp of equity, and equity held by staff plus pending offers may not exceed 1,000 bp (a 10% pool). The founder's ownership is outside the pool and arrives with the cap table in M4.
 - An accepted offer moves the company from stage 0 to stage 1 ("first hire", spec §3) in phase 10.
 - New hires start with morale 65.
 
@@ -241,6 +242,8 @@ The gap between 1.10× and 0.95× is 39 percentage points, which satisfies the M
 | Job post | $500 per month open | 6200_recruiting |
 
 All are credited to 1000_cash.
+
+**Negative cash (M1 only):** there is no insolvency until M4. Cash may fall below zero; payroll and offers are never blocked, but opening a job post requires cash of at least its first month's fee. The inbox warns the first month cash is negative and every month it stays negative. For morale's runway term, zero or negative cash counts as under 3 months.
 
 **Worked example.** A senior engineer at $115,000: salary 958,333 cents + benefits 191,667 cents + office 60,000 cents = **$12,100.00 per month**.
 
@@ -378,6 +381,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `hiring.offer.stage_appeal.<stage>` / `.stage_equity_mult.<stage>` | see §7 | score / multiplier | §7 |
 | `hiring.offer.k` / `.threshold` | 3.0 / 0.0 | — | §7 |
 | `hiring.lowball_ratio` | 0.85 | ratio | §7 |
+| `hiring.max_offer_equity_bp` / `hiring.option_pool_bp` | 200 / 1000 | bp | §7 |
 | `morale.new_hire` | 65 | morale points | §7 |
 | `payroll.benefits_bp` | 2000 | bp of salary | §8 |
 | `payroll.office_cost_per_head_cents` | 60000 | cents per month | §8 |
