@@ -22,6 +22,7 @@ from tst.sim.calendar import format_turn
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
 from tst.sim.setup import DEFAULT_FOUNDER
+from tst.sim.snapshot import runway_months
 
 router = APIRouter(prefix="/api/saves", tags=["saves"])
 
@@ -70,6 +71,8 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
     month_paid = [
         CostLineOut(account=code, label=label, amount_cents=amount) for label, code, amount in paid
     ]
+    # Runway at this month's projected phase-6 costs (M1c review decision), not last month's burn.
+    runway = runway_months(ov.cash_cents, sum(c.amount_cents for c in projected))
     runway_warn = data.balance.morale.runway_warn_months
     return OverviewOut(
         save_id=save_id,
@@ -78,7 +81,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         date_label=ov.date_label,
         cash_cents=ov.cash_cents,
         monthly_burn_cents=ov.monthly_burn_cents,
-        runway_months=ov.runway_months,
+        runway_months=runway,
         history=[
             SnapshotPointOut(
                 turn=turn,
@@ -93,7 +96,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         ],
         stage=player.stage,
         stage_label=views.STAGE_LABELS.get(player.stage, f"Stage {player.stage}"),
-        runway_low=ov.runway_months is not None and ov.runway_months < runway_warn,
+        runway_low=runway is not None and runway < runway_warn,
         mission=list(player.mission),
         headcount=len(state.staff(player.id)),
         payroll_cents=latest.payroll_cents if latest else 0,

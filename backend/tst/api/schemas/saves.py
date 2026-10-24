@@ -96,7 +96,9 @@ class OverviewOut(BaseModel):
     date_label: str
     cash_cents: int
     monthly_burn_cents: int
-    runway_months: int | None = Field(description="Null when the company is not burning cash")
+    runway_months: int | None = Field(
+        description="Whole months of cash at this month's projected costs; null if none"
+    )
     history: list[SnapshotPointOut] = Field(description="Last 12 month-end snapshots, oldest first")
     stage: int
     stage_label: str

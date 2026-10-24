@@ -64,7 +64,7 @@ describe('KindBadge', () => {
     ['resigned', 'Notice'],
     ['culture_carrier_left', 'Notice'],
     ['offer_declined', 'Declined'],
-    ['something_new', 'Month'],
+    ['something_new', 'Notice'],
   ])('%s -> %s', (kind, label) => {
     expect(kindLabel(kind)).toBe(label);
     expect(renderToStaticMarkup(<KindBadge kind={kind} />)).toContain(`>${label}<`);

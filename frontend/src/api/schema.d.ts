@@ -841,7 +841,7 @@ export interface components {
             monthly_burn_cents: number;
             /**
              * Runway Months
-             * @description Null when the company is not burning cash
+             * @description Whole months of cash at this month's projected costs; null if none
              */
             runway_months: number | null;
             /**

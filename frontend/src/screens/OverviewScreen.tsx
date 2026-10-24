@@ -48,8 +48,8 @@ export function OverviewScreen() {
           label="Runway"
           value={formatRunway(data.runway_months)}
           warn={data.runway_low}
-          note={lastMonth ? `At ${lastMonth.split(' ')[0]}'s burn` : 'No month closed yet'}
-          hint="Whole months of cash left at the last month's burn"
+          note={`At ${month}'s costs`}
+          hint="Whole months of cash left at this month's projected costs"
           testId="kpi-runway"
         />
         <KpiTile

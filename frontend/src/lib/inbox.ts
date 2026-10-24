@@ -1,7 +1,7 @@
 // Inbox badges and filters. The API sends the template key as `kind`; this maps it to the
 // wireframe's text labels (no icons) and to the People/Hiring filters.
 
-export type KindLabel = 'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined' | 'Month';
+export type KindLabel = 'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined';
 export type InboxFilter = 'all' | 'unread' | 'people' | 'hiring';
 
 const KINDS: Record<string, { label: KindLabel; group: 'people' | 'hiring' | 'company' }> = {
@@ -18,7 +18,7 @@ const KINDS: Record<string, { label: KindLabel; group: 'people' | 'hiring' | 'co
 };
 
 export function kindLabel(kind: string): KindLabel {
-  return KINDS[kind]?.label ?? 'Month';
+  return KINDS[kind]?.label ?? 'Notice'; // a template added without a label here
 }
 
 export function matchesFilter(item: { kind: string; read: boolean }, filter: InboxFilter): boolean {

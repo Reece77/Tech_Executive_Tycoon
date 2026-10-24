@@ -2889,7 +2889,7 @@
               }
             ],
             "title": "Runway Months",
-            "description": "Null when the company is not burning cash"
+            "description": "Whole months of cash at this month's projected costs; null if none"
           },
           "history": {
             "items": {

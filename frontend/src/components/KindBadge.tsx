@@ -6,7 +6,6 @@ const STYLES: Record<KindLabel, { color: string; background: string }> = {
   Scout: { color: 'var(--tst-tier-4)', background: 'var(--tst-gold-bg)' },
   Notice: { color: 'var(--tst-warn)', background: 'var(--tst-warn-bg)' },
   Declined: { color: 'var(--tst-text-2)', background: 'var(--tst-grey-bg)' },
-  Month: { color: 'var(--tst-text-2)', background: 'var(--tst-grey-bg)' },
 };
 
 /** Inbox message kind as a text badge (no icons). `kind` is the API's template key. */
