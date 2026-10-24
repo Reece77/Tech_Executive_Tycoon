@@ -2,7 +2,7 @@
 
 This is the authoritative source for game math. Task briefs summarize these formulas; when a brief and this file differ, this file wins. Every number below is a default that lives in `backend/data/balance.yaml` under the key shown in §12, never as a literal in code (ADR-0008).
 
-Status: §1–§10 are final for M1. §11 is a draft for M3 and will be confirmed in the M3 brief.
+Status: §1–§10 are final for M1. §13 (organization) is final for M2 and adds terms to §3, §6, §7 and §9, each marked "M2". §11 is a draft for M3 and will be confirmed in the M3 brief.
 
 ## 0. Conventions
 
@@ -90,7 +90,7 @@ with σ = `growth.noise_rel_sd` (0.25). The noise is multiplicative, so it scale
 | 50–54 | 0.1 | 0.005 |
 | 55+ | 0 | 0.015 |
 
-Default r = 0.12. Mentoring and project difficulty multipliers arrive in M2 and M3; until then they are 1.
+Default r = 0.12. **M2:** the growth term is also multiplied by the mentoring multiplier `M_growth` from §13.5 (1 for the founder). Project difficulty arrives in M3; until then it is 1.
 
 **Worked examples (before noise):**
 
@@ -177,6 +177,15 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The 
 | Engage a recruiter | 4 |
 | Network search | 10 |
 | Make an offer | 0 |
+| **M2:** Create or dissolve a unit | 2 |
+| **M2:** Set a unit leader | 2 |
+| **M2:** Move a person between units | 1 |
+| **M2:** Set a unit policy | 1 |
+| **M2:** Give a raise | 2 |
+| **M2:** Promote | 3 |
+| **M2:** Create or change a hiring plan | 2 |
+
+Delegates (§13.10) have their own energy and never spend the founder's.
 
 ## 7. Hiring (stream `hiring`)
 
@@ -190,12 +199,12 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The 
 | Job post | $500 per month open | 6–10 | 45/40/13/2 | job_post_screen applied |
 | Recruiter | 20% of first-year salary, charged on hire | 4–6 | 10/35/40/15 | job_post_screen applied twice |
 
-Candidates stay for 3 turns unless hired or withdrawn. Each candidate's salary expectation is shown exactly from the start.
+Candidates stay for 3 turns unless hired or withdrawn. Each candidate's salary expectation is shown exactly from the start. **M2 fix:** a candidate with a pending offer does not expire until that offer resolves in phase 1, even if their last month has passed.
 
 **Offer acceptance** (resolved in phase 1 of the next turn, stream `hiring`, key `offer_id`; one offer per candidate at a time):
 
 ```latex
-score = 4.0\,(R - 1) + w_{eq}\cdot B \cdot 0.002 \cdot m_{stage} + 0.5\,F + A_{stage} - \frac{10 - risk\_appetite}{10}
+score = 4.0\,(R - 1) + w_{eq}\cdot B \cdot 0.002 \cdot m_{stage} + 0.5\,F + A_{stage} - \frac{10 - risk\_appetite}{10} + pitch
 ```
 
 ```latex
@@ -204,6 +213,7 @@ p = \frac{1}{1 + e^{-3\,(score - 0)}}
 
 - `R` = offered salary ÷ expectation; `B` = equity in basis points; `F` = number of the candidate's interests that match the company mission.
 - `w_eq` = 1.0, or 1.5 if ambition > 15 (`hiring.offer.ambition_boost_above`).
+- **M2:** `pitch = 0.3 × (recruiting − 10) / 10`, using the true `recruiting` skill of whoever made the offer (the founder or a delegate). A recruiting-15 delegate adds +0.15; the engineer founder's default 7 gives −0.09. The worked example below assumes a recruiting-10 actor (pitch 0), so its numbers are unchanged.
 
 | Stage | A_stage (appeal) | m_stage (equity value multiplier) |
 | --- | --- | --- |
@@ -274,7 +284,7 @@ rounded half-to-even to whole cents and posted as one ledger entry on turn 0 (de
 ## 9. Morale (phase 8, stream `morale`, key `person_id`)
 
 ```latex
-target = 50 + P + F + W_{runway} + W_{load}
+target = 50 + P + F + W_{runway} + W_{load} + W_{mgr} + W_{team} + W_{remote}
 ```
 
 | Term | Formula |
@@ -283,6 +293,9 @@ target = 50 + P + F + W_{runway} + W_{load}
 | F (fit) | `+5 × matching mission interests`, `−5` if work style mismatches the role's primary work style |
 | W_runway | `−10` if runway < 6 months; `−20` if < 3 months. Runway here = current cash ÷ (opening cash − current cash) at phase 8; no penalty when cash has not fallen this month |
 | W_load | 0 in M1 (placeholder; project workload drives it from M3) |
+| W_mgr (M2) | Manager quality term, §13.4 |
+| W_team (M2) | Teammates' behavior tags, §13.6 |
+| W_remote (M2) | Work-location policy, §13.9 |
 
 Monthly update, clamped to [0, 100]:
 
@@ -292,7 +305,7 @@ morale \leftarrow morale + 0.3\,(target - morale) + Normal\!\left(0,\; 2 \cdot \
 
 **Firing side effect:** all remaining employees −3 morale, or −6 if the fired person had a revealed or hidden `culture_carrier` tag. Because the larger hit gives the tag away, firing a culture carrier also reveals that tag to the company, with an inbox item.
 
-**Worked example.** Paid $85,000 against a $90,000 market mid, one matching interest, healthy runway: P = 60 × (0.944 − 1) = −3.33; target = 50 − 3.33 + 5 = 51.67. Starting at 65, morale after 6 months is **53.2** (before noise).
+**Worked example.** Paid $85,000 against a $90,000 market mid, one matching interest, healthy runway, M2 terms zero: P = 60 × (0.944 − 1) = −3.33; target = 50 − 3.33 + 5 = 51.67. Starting at 65, morale after 6 months is **53.2** (before noise).
 
 ## 10. Resignations and tag reveals (phase 8)
 
@@ -409,3 +422,126 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `resign.job_hopper_mult` | 2.0 | multiplier | §10 |
 | `tags.reveal_bp_per_month` / `.reveal_bp_on_check` | 500 / 1500 | bp | §10 |
 | `events.light_tone_chance_bp` | 1000 | bp | ADR-0011 |
+| `org.department_unlock_headcount` | 10 | people | §13 |
+| `org.span_base` / `org.span_per_leadership` | 5 / 4 | reports / attribute points | §13 |
+| `org.manager_morale_slope` / `org.manager_morale_cap` | 0.8 / 8 | morale per quality point / morale points | §13 |
+| `org.mentoring_neutral` / `.mentoring_divisor` / `.mentor_tag_bonus` | 5 / 20 / 3 | attribute points | §13 |
+| `org.growth_mult_min` / `.growth_mult_max` | 0.75 / 1.5 | multiplier | §13 |
+| `org.tag_morale.<tag>` / `.tag_morale_cap.<tag>` | culture_carrier +2/+2, credit_taker −2/−4, toxic_high_performer −3/−6 | morale points | §13 |
+| `org.reorg.move` / `.new_leader_members` / `.replaced_leader` / `.dissolve_members` | −2 / −1 / −5 / −2 | morale points | §13 |
+| `org.raise_morale` / `.raise_threshold_bp` / `.raise_cooldown_turns` / `.pay_cut_morale` | 3 / 500 / 12 / −10 | morale points / bp / turns | §13 |
+| `org.promote_morale` | 5 | morale points | §13 |
+| `org.remote.sociable_at` / `.sociable_morale` / `.solitary_at` / `.solitary_morale` | 14 / −3 / 7 / +2 | attribute points / morale points | §13 |
+| `founder.energy_cost.<org action>` | see §6 | energy | §6 |
+| `hiring.pitch_per_recruiting` / `.pitch_neutral` | 0.3 / 10 | score per 10 points / attribute points | §7 |
+| `delegates.energy_per_month` / `.scout_cost` / `.max_ratio_bp` | 100 / 20 / 12000 | energy / energy / bp | §13 |
+
+## 13. Organization (M2)
+
+The org is a tree of units under the company. Every effect below works through things M1 already has: morale (§9), growth (§3), offers (§7) and founder energy (§6). Productivity, coordination cost and decision latency arrive with products in M3.
+
+### 13.1 Units and reporting lines
+
+| Unit | Parent | Available |
+| --- | --- | --- |
+| Company (root, implicit) | — | Always; led by the founder |
+| Department | Company | At 10 staff, or at stage 2 |
+| Team | Company or a department | Always |
+
+- Each unit has a name, an optional leader, and a work-location policy (§13.9). A unit without its own policy uses its parent's.
+- Every staff member belongs to exactly one unit; `employment.unit_id` is null for the company root. A leader must be a member of the unit they lead, and leads at most one unit. The founder always belongs to the root.
+- **Manager of a person:** the leader of their unit. If they lead that unit, or it has no leader, go up one level and repeat; the company root's leader is the founder. The founder has no manager.
+- **Direct reports** of a manager are everyone whose manager they are.
+
+**Why departments unlock at 10 staff:** spec §6 unlocks them at stage 2 (seed closed or $1M ARR), which no company can reach before M3 and M4. The headcount gate keeps the feature usable now and matches stage 2's typical size (10 to 75).
+
+### 13.2 Span of control
+
+```latex
+L = 5 + \left\lfloor \frac{leadership}{4} \right\rfloor, \qquad S = \begin{cases} 1 & n \le L \\ L / n & n > L \end{cases}
+```
+
+`n` is the number of direct reports. A leadership-14 manager handles 8 comfortably (spec §6); at 12 reports, `S = 8 / 12 = 0.67`.
+
+### 13.3 Manager quality
+
+```latex
+Q = \frac{2\,leadership + communication + mentoring}{4} \times S
+```
+
+### 13.4 Manager morale term
+
+```latex
+W_{mgr} = clamp\big(0.8\,(Q - 10),\; -8,\; +8\big)
+```
+
+Applies to every employee except the founder, using their manager's true attributes.
+
+### 13.5 Mentoring multiplier on growth
+
+```latex
+M_{growth} = clamp\left(1 + \frac{mentoring \cdot S + bonus - 5}{20},\; 0.75,\; 1.5\right)
+```
+
+`mentoring` and `S` are the manager's. `bonus` is 3 if any other member of the person's unit has the `mentor` tag (true tags, noticed or not), else 0. A manager with mentoring 5 is neutral, because most people's non-role skills are drawn from 1 to 8.
+
+### 13.6 Teammates' behavior tags
+
+Each tag affects the other members of its holder's unit (not the holder), using true tags. Sums per tag are capped.
+
+| Tag | Effect on each other member's morale target | Cap per tag |
+| --- | --- | --- |
+| `culture_carrier` | +2 | +2 |
+| `credit_taker` | −2 | −4 |
+| `toxic_high_performer` | −3 | −6 |
+
+`mentor` acts through §13.5. `politician`, `maverick`, `perfectionist` and `quiet_genius` take effect with products (M3). The API never explains a morale change by a tag the company has not noticed (§13.11).
+
+### 13.7 Reorganizing (immediate actions, ADR-0014)
+
+| Action | One-off morale change |
+| --- | --- |
+| Move a person to another unit | −2 for that person |
+| Set or replace a unit's leader | −1 for each other member; −5 for a replaced leader who stays in the unit |
+| Dissolve a unit | −2 for each member; members and child teams move to the parent |
+| Create a unit | none |
+
+### 13.8 Raises and promotions (immediate actions)
+
+- **Raise:** the new salary applies from the next payroll. A raise of at least 5% gives +3 morale once, at most once per 12 turns per person. Any pay cut gives −10 once. Pay then moves morale through §9's pay term as usual.
+- **Promote:** one level up (junior → mid → senior → staff → principal; exec is not reachable in M2). +5 morale once. The new level's market rate applies from then on, so a promotion without a raise lowers the pay term: promote and raise together.
+
+### 13.9 Work-location policy
+
+`office` (default) or `remote`, per unit. Remote members cost no office fee (§8). Remote morale term: −3 if sociability ≥ 14, +2 if sociability ≤ 7, else 0.
+
+### 13.10 Delegated hiring
+
+- **Hiring plan:** owned by a delegate (any staff member except the founder; usually a recruiter or the unit's leader), for one unit and role, with a target count, a channel (job post, recruiter, network, or any), a maximum salary ratio (at most 1.2× the ask) and equity per offer. Hires join the plan's unit.
+- **Delegate energy:** 100 per month per delegate, stored on their `person_state.energy`, reset with the founder's. It is separate from the founder's.
+- **Each turn, in phase 2** (deterministic; randomness only inside the actions it takes), for each plan in id order, while the delegate has energy:
+  1. If the plan is short and has no open search for its role, open one (channel `any` means job post).
+  2. Rank that role's open candidates by the **company's displayed** range midpoints of the role's skills (primary × 3, secondary × 1); ties by candidate id.
+  3. Interview the best uninterviewed candidates (6 energy each) while more than 20 energy would remain.
+  4. With at least 20 energy left, scout: apply `scouting_month` (§4) once to every open candidate of the plan's searches.
+  5. Offer to the best interviewed candidates without a pending offer, at the ask × the plan's ratio, up to the number still needed, within the option pool.
+- Delegate actions call the same `apply_action` with `actor` = the delegate, so energy, rules and the offer pitch (§7) apply. Their randomness uses stream `delegate`, key `(person_id, n)`, where `n` counts that delegate's actions this turn (ADR-0015).
+- **Quality emerges:** better `judgment_of_talent` narrows ranges more (§4), so a good recruiter picks better people; better `recruiting` lands more offers.
+- Each plan writes one inbox summary per turn when it acted ("Petra interviewed 4 software engineers and made 2 offers").
+
+### 13.11 What the API may explain
+
+A person's morale breakdown may show pay, fit (revealed interests only), runway, manager, remote policy, and teammate-tag effects for tags the company has noticed. Anything else is grouped as "other", so morale never reveals a hidden tag.
+
+### 13.12 Worked examples
+
+| Case | Values | Result |
+| --- | --- | --- |
+| Team lead, 6 reports | leadership 14, communication 12, mentoring 10 | L = 8, S = 1, Q = 12.5, W_mgr = **+2.0**, M_growth = **1.25** (1.40 with a mentor teammate) |
+| Same lead, 12 reports | as above | S = 0.667, Q = 8.33, W_mgr = **−1.33** |
+| Founder managing 12 directly | engineer default: leadership 11, communication 10, mentoring 5 | L = 7, S = 0.583, Q = 5.40, W_mgr = **−3.68**, M_growth = **0.90** |
+| Same founder with 2 team leads | 2 direct reports | S = 1, Q = 9.25, W_mgr for the two leads = **−0.60** |
+| Lead B, 5 reports | leadership 12, communication 11, mentoring 7 | L = 8, Q = 10.5, W_mgr = **+0.40**, M_growth = **1.10** |
+| Offer pitch | recruiting 7 / 15 | **−0.09** / **+0.15** |
+
+A flat company run by the founder loses about 4 morale per person once it passes 7 staff; two capable leads remove the penalty. Building the org is the M2 answer to M1's growing team.

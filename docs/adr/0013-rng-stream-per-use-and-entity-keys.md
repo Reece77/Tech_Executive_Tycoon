@@ -32,6 +32,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `resign` | 11 | `(person_id,)` | Monthly resignation roll | M1b |
 | `retire` | 12 | `(person_id,)` | Monthly retirement roll | M1b |
 | `actions` | 13 | `(action_seq,)` | Randomness inside an immediate player action (ADR-0014), such as tag rolls on an interview | M1b |
+| `delegate` | 14 | `(person_id, n)` | Randomness inside a delegate's action; `n` counts that delegate's actions this turn (ADR-0015) | M2a |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).
