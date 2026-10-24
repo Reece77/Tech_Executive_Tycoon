@@ -1852,6 +1852,18 @@
                 "type": "null"
               }
             ]
+          },
+          "offer_blocked_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offer Blocked Reason",
+            "description": "Why an offer is not allowed yet: null or \"interview_required\" (ADR-0016)"
           }
         },
         "type": "object",
@@ -1861,7 +1873,8 @@
           "expires_turn",
           "expires_date_label",
           "salary_expectation_cents",
-          "pending_offer"
+          "pending_offer",
+          "offer_blocked_reason"
         ],
         "title": "CandidacyOut"
       },

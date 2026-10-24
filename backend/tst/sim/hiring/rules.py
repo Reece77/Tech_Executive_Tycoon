@@ -6,12 +6,20 @@ import math
 from dataclasses import dataclass
 from fractions import Fraction
 
-from tst.sim.data_models import Balance, GameData
+from tst.sim.data_models import Balance, GameData, HiringBalance
 from tst.sim.hiring.formulas import HintBand, hint_band, is_lowball, offer_score
 from tst.sim.hiring.models import Candidate
+from tst.sim.org.formulas import pitch
 from tst.sim.people.models import Person
 from tst.sim.people.reveal import revealed_range
 from tst.sim.state import GameState
+
+RECRUITING = "recruiting"
+
+
+def offer_pitch(state: GameState, actor_id: int, hiring: HiringBalance) -> float:
+    """The pitch term from the true recruiting skill of whoever made the offer (7, M2)."""
+    return pitch(state.person(actor_id).skills[RECRUITING], hiring)
 
 
 def matching_interests(person: Person, mission: tuple[str, ...]) -> int:
@@ -67,12 +75,14 @@ def offer_preview(
     equity_bp: int,
     balance: Balance,
     data: GameData,
+    actor_id: int | None = None,
 ) -> OfferPreview:
     """The offer dialog's hint, from what the company knows (formulas.md section 7).
 
     R and equity are exact; F counts mission matches only once interests are revealed; risk
-    appetite and ambition use the midpoints of their displayed ranges. Nothing is drawn or
-    saved.
+    appetite and ambition use the midpoints of their displayed ranges; the pitch comes from
+    the offer maker (`actor_id`, usually the founder, whom the company knows exactly). Nothing
+    is drawn or saved.
     """
     person = state.person(candidate.person_id)
     company = state.company(candidate.company_id)
@@ -95,6 +105,7 @@ def offer_preview(
         ambition=midpoint("ambition"),
         stage=company.stage,
         offer=balance.hiring.offer,
+        pitch=0.0 if actor_id is None else offer_pitch(state, actor_id, balance.hiring),
     )
     pending = state.pending_offer_for(person.id)
     problems = offer_problems(

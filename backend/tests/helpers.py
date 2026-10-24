@@ -61,9 +61,18 @@ def make_person(
 
 
 def with_candidates(
-    loaded: LoadedData, state: GameState, count: int, role: str = "software_engineer"
+    loaded: LoadedData,
+    state: GameState,
+    count: int,
+    role: str = "software_engineer",
+    *,
+    interviewed: bool = False,
 ) -> GameState:
-    """Add an open job-post search and `count` candidates known as strangers."""
+    """Add an open job-post search and `count` candidates known as strangers.
+
+    `interviewed` marks them as interviewed (the ADR-0016 offer precondition) without
+    narrowing anything, for tests about offers rather than interviews.
+    """
     search_id, ids = state.next_ids.take("search")
     state = with_search(
         state,
@@ -83,6 +92,7 @@ def with_candidates(
                 channel="job_post",
                 created_turn=state.turn,
                 expires_turn=state.turn + loaded.balance.hiring.candidate_shelf_turns,
+                interviewed_turn=state.turn if interviewed else None,
             ),
         )
         state = with_reveal(
@@ -97,6 +107,20 @@ def with_candidates(
             ),
         )
     return state
+
+
+def mark_interviewed(state: GameState) -> GameState:
+    """Mark every open candidate as interviewed this turn (the ADR-0016 offer precondition)
+    without narrowing knowledge or drawing anything, for tests about offers."""
+    return replace(
+        state,
+        candidates=tuple(
+            replace(c, interviewed_turn=state.turn)
+            if c.status == "open" and c.interviewed_turn is None
+            else c
+            for c in state.candidates
+        ),
+    )
 
 
 def with_employee(

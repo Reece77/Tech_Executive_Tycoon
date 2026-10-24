@@ -26,7 +26,7 @@ from tst.sim.hiring.formulas import (
     roll_succeeds,
 )
 from tst.sim.hiring.models import Candidate, OfferStatus, PersonState, Search
-from tst.sim.hiring.rules import matching_interests
+from tst.sim.hiring.rules import matching_interests, offer_pitch
 from tst.sim.ledger import (
     BENEFITS,
     CASH,
@@ -155,6 +155,7 @@ def resolve_offers(
                 ambition=person.personality["ambition"],
                 stage=company.stage,
                 offer=hiring.offer,
+                pitch=offer_pitch(state, offer.actor_id, hiring),
             )
             accepted = draw < acceptance_probability(score, hiring.offer)
         status: OfferStatus = "accepted" if accepted else "declined"

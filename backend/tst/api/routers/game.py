@@ -269,7 +269,13 @@ def preview_offer(
     if candidate is None or candidate.company_id != state.player.id:
         raise UnknownCandidateError(f"no open candidate {candidate_id}")
     preview = offer_preview(
-        state, candidate, body.salary_cents, body.equity_bp, data.balance, data.game_data
+        state,
+        candidate,
+        body.salary_cents,
+        body.equity_bp,
+        data.balance,
+        data.game_data,
+        actor_id=_founder_id(state),
     )
     pool_left = data.balance.hiring.option_pool_bp - equity_committed(state, state.player.id)
     pending = state.pending_offer_for(candidate_id)

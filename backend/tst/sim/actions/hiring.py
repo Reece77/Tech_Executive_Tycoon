@@ -17,6 +17,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import (
     InsufficientCashError,
     InsufficientEnergyError,
+    InterviewRequired,
     InvalidActionError,
     OfferExistsError,
     OptionPoolError,
@@ -286,6 +287,10 @@ def _reveal_text(tag: str, data: GameData) -> str:
 def make_offer(state: GameState, action: MakeOffer, balance: Balance) -> Outcome:
     company = acting_company(state, action.actor_id)
     candidate = open_candidate(state, company, action.candidate_id)
+    if candidate.interviewed_turn is None:
+        raise InterviewRequired(
+            f"interview candidate {candidate.person_id} before making an offer (ADR-0016)"
+        )
     if state.pending_offer_for(candidate.person_id) is not None:
         raise OfferExistsError(
             f"candidate {candidate.person_id} already has a pending offer; withdraw it first"

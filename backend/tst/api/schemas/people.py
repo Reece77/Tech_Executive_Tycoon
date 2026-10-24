@@ -69,6 +69,9 @@ class CandidacyOut(BaseModel):
     expires_date_label: str
     salary_expectation_cents: int
     pending_offer: PendingOfferOut | None
+    offer_blocked_reason: str | None = Field(
+        description='Why an offer is not allowed yet: null or "interview_required" (ADR-0016)'
+    )
 
 
 class KnowledgeOut(BaseModel):

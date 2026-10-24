@@ -458,6 +458,11 @@ export interface components {
             /** Salary Expectation Cents */
             salary_expectation_cents: number;
             pending_offer: components["schemas"]["PendingOfferOut"] | null;
+            /**
+             * Offer Blocked Reason
+             * @description Why an offer is not allowed yet: null or "interview_required" (ADR-0016)
+             */
+            offer_blocked_reason: string | null;
         };
         /** ChannelOut */
         ChannelOut: {

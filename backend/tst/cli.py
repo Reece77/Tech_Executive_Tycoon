@@ -134,7 +134,7 @@ def inspect(
                 state = repository.load_state(session)
                 _print_person(state, person, data)
                 return
-            ov = repository.player_overview(session, history=1)
+            ov = repository.player_overview(session, history=1, balance=data.balance)
     except SimError as exc:
         raise _fail(exc.message) from exc
     if ov.runway_months is None:
@@ -145,7 +145,7 @@ def inspect(
     typer.echo(f"Date:    {ov.date_label} (turn {ov.turn})")
     typer.echo(f"Cash:    {format_money(ov.cash_cents)}")
     typer.echo(f"Burn:    {format_money(ov.monthly_burn_cents)} / month")
-    typer.echo(f"Runway:  {runway}")
+    typer.echo(f"Runway:  {runway} at this month's projected costs")
 
 
 def _print_person(state: GameState, which: str, data: LoadedData) -> None:
@@ -300,6 +300,8 @@ def candidates(save: SaveOpt) -> None:
         role = data.game_data.role(p.role)
         made = p.candidacy.pending_offer
         pending = f"; offer {format_money(made.salary_cents)} pending" if made else ""
+        if p.candidacy.offer_blocked_reason == views.INTERVIEW_REQUIRED:
+            pending += "; interview first"
         typer.echo(
             f"{p.person_id:>4}  {p.name:<24} {p.level:<7} {p.role_label:<20} age {p.age:<3} "
             f"ask {format_money(p.candidacy.salary_expectation_cents)}  "
@@ -361,7 +363,9 @@ def offer(
     if c is None or c.status != "open":
         raise _fail(f"no open candidate {candidate}")
     if preview:
-        pv = offer_preview(state, c, salary_cents, equity_bp, data.balance, data.game_data)
+        pv = offer_preview(
+            state, c, salary_cents, equity_bp, data.balance, data.game_data, _actor(state)
+        )
         typer.echo(
             f"Hint: {pv.hint}. Offer is {pv.ratio:.2f}x the ask of "
             f"{format_money(pv.expectation_cents)}; below {format_money(pv.floor_cents)} "

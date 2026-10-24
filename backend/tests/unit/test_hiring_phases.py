@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import fresh_game, make_person, with_candidates, with_employee
+from tests.helpers import fresh_game, make_person, mark_interviewed, with_candidates, with_employee
 from tst.loader import LoadedData
 from tst.sim.actions import Action, MakeOffer, OpenSearch, apply_action
 from tst.sim.decisions import Decisions
@@ -164,6 +164,7 @@ def test_candidates_expire_and_energy_resets(loaded: LoadedData) -> None:
 
 
 def _offer_all(game: Game, ratio: float, equity: int = 0) -> None:
+    game.state = mark_interviewed(game.state)  # offers need an interview (ADR-0016)
     for c in game.state.candidates:
         expectation = game.state.person(c.person_id).salary_expectation_cents or 0
         game.act(MakeOffer(1, c.person_id, round(expectation * ratio), equity))

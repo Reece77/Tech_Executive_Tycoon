@@ -8,12 +8,19 @@ from fastapi.responses import JSONResponse
 
 from tst.api.routers import game, meta, saves
 from tst.api.schemas.common import ErrorOut
-from tst.sim.errors import NotFoundError, SaveExistsError, SaveNotFoundError, SimError
+from tst.sim.errors import (
+    InterviewRequired,
+    NotFoundError,
+    SaveExistsError,
+    SaveNotFoundError,
+    SimError,
+)
 
 ERROR_STATUS: dict[type[SimError], int] = {
     SaveNotFoundError: status.HTTP_404_NOT_FOUND,
     NotFoundError: status.HTTP_404_NOT_FOUND,
     SaveExistsError: status.HTTP_409_CONFLICT,
+    InterviewRequired: status.HTTP_409_CONFLICT,  # ADR-0016
 }
 
 

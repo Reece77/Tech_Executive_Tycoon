@@ -45,7 +45,7 @@ from tst.sim.actions import (
     apply_action,
 )
 from tst.sim.calendar import format_turn
-from tst.sim.data_models import DEFAULT_DIFFICULTY
+from tst.sim.data_models import DEFAULT_DIFFICULTY, Balance
 from tst.sim.decisions import Decisions
 from tst.sim.errors import (
     InvalidSaveNameError,
@@ -55,6 +55,7 @@ from tst.sim.errors import (
     SaveNotFoundError,
     UnknownScenarioError,
 )
+from tst.sim.hiring.phases import monthly_costs
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
@@ -294,11 +295,11 @@ class Overview:
     date_label: str
     cash_cents: Cents
     monthly_burn_cents: Cents  # from the last month-end snapshot; 0 before the first turn
-    runway_months: int | None
+    runway_months: int | None  # at this month's projected phase-6 costs (M1c decision)
     history: list[tuple[int, CompanySnapshot]]  # last N snapshots, oldest first
 
 
-def player_overview(session: Session, history: int) -> Overview:
+def player_overview(session: Session, history: int, balance: Balance) -> Overview:
     """What the player sees on the Overview screen and in `tst inspect`."""
     meta = read_meta(session)
     state = load_state(session)
@@ -314,7 +315,9 @@ def player_overview(session: Session, history: int) -> Overview:
         date_label=format_turn(state.turn),
         cash_cents=cash,
         monthly_burn_cents=burn,
-        runway_months=runway_months(cash, burn),
+        runway_months=runway_months(
+            cash, sum(amount for _, _, amount in monthly_costs(state, player.id, balance))
+        ),
         history=snaps,
     )
 

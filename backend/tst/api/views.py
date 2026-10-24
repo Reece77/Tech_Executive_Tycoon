@@ -33,6 +33,7 @@ from tst.sim.errors import UnknownPersonError
 from tst.sim.hiring.formulas import market_mid_cents, severance_cents
 from tst.sim.hiring.models import Search
 from tst.sim.hiring.phases import employment_monthly_cost_cents
+from tst.sim.org.rules import is_remote
 from tst.sim.people.formulas import potential_phrase
 from tst.sim.people.models import PA_KEY, Person, RevealState
 from tst.sim.people.reveal import revealed_range
@@ -41,6 +42,7 @@ from tst.sim.state import GameState
 HISTORY_TURNS = 12
 PERSONALITY_GROUP = "personality"
 CHECK_KINDS = ("interview", "reference_check")
+INTERVIEW_REQUIRED = "interview_required"  # CandidacyOut.offer_blocked_reason (ADR-0016)
 
 # Spec section 3. Display names only; the stage number drives the rules.
 STAGE_LABELS = {
@@ -142,7 +144,11 @@ def _tags(reveal: RevealState, data: LoadedData) -> list[TagOut]:
     ]
 
 
-def _role_label(role: str | None, data: LoadedData) -> str | None:
+def person_name(person: Person) -> str:
+    return f"{person.first_name} {person.last_name}"
+
+
+def role_label(role: str | None, data: LoadedData) -> str | None:
     if role is None:
         return None
     try:
@@ -199,7 +205,7 @@ def person_summary(
         age=person.age(state.turn),
         region=person.region,
         role=role,
-        role_label=_role_label(role, data),
+        role_label=role_label(role, data),
         level=employment.level if employment else person.level,
         is_founder=person.is_founder,
         morale=state.person_state(person.id).morale if employment else None,
@@ -210,7 +216,7 @@ def person_summary(
         else EmploymentOut(
             employment_id=employment.id,
             role=employment.role,
-            role_label=_role_label(employment.role, data) or employment.role,
+            role_label=role_label(employment.role, data) or employment.role,
             level=employment.level,
             salary_cents=employment.salary_cents,
             equity_bp=employment.equity_bp,
@@ -226,7 +232,9 @@ def person_summary(
             else format_turn(employment.end_turn),
             tenure_months=state.turn - employment.start_turn,
             market_rate_cents=market_rate,
-            monthly_cost_cents=employment_monthly_cost_cents(employment, data.balance),
+            monthly_cost_cents=employment_monthly_cost_cents(
+                employment, data.balance, remote=is_remote(state, employment)
+            ),
         ),
         candidacy=None
         if candidate is None
@@ -236,6 +244,7 @@ def person_summary(
             expires_turn=candidate.expires_turn,
             expires_date_label=format_turn(candidate.expires_turn),
             salary_expectation_cents=person.salary_expectation_cents or 0,
+            offer_blocked_reason=INTERVIEW_REQUIRED if candidate.interviewed_turn is None else None,
             pending_offer=None
             if offer is None
             else PendingOfferOut(
@@ -292,7 +301,7 @@ def search_out(state: GameState, search: Search, data: LoadedData) -> SearchOut:
     return SearchOut(
         search_id=search.id,
         role=search.role,
-        role_label=_role_label(search.role, data) or search.role,
+        role_label=role_label(search.role, data) or search.role,
         channel=search.channel,
         opened_turn=search.opened_turn,
         opened_date_label=format_turn(search.opened_turn),

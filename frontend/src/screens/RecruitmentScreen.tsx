@@ -250,9 +250,17 @@ function RecruitmentBody({
                   variant="default"
                   style={{ borderColor: '#3B5A80' }}
                   onClick={() => setOfferTo(p.person_id)}
+                  disabled={p.candidacy?.offer_blocked_reason === 'interview_required'}
+                  title={
+                    p.candidacy?.offer_blocked_reason === 'interview_required'
+                      ? 'You must interview a candidate before making an offer'
+                      : undefined
+                  }
                   data-testid="offer"
                 >
-                  Offer
+                  {p.candidacy?.offer_blocked_reason === 'interview_required'
+                    ? 'Interview first'
+                    : 'Offer'}
                 </Button>
               </span>
             );

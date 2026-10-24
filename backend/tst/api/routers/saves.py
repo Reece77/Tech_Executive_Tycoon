@@ -21,8 +21,8 @@ from tst.db import inbox, repository
 from tst.sim.calendar import format_turn
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
+from tst.sim.org.rules import is_remote
 from tst.sim.setup import DEFAULT_FOUNDER
-from tst.sim.snapshot import runway_months
 
 router = APIRouter(prefix="/api/saves", tags=["saves"])
 
@@ -52,7 +52,7 @@ def _save_out(summary: repository.SaveSummary) -> SaveOut:
 def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
     path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
     with repository.open_session(path) as session:
-        ov = repository.player_overview(session, history=HISTORY_TURNS)
+        ov = repository.player_overview(session, history=HISTORY_TURNS, balance=data.balance)
         state = repository.load_state(session)
         player = state.player
         latest = ov.history[-1][1] if ov.history else None
@@ -71,8 +71,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
     month_paid = [
         CostLineOut(account=code, label=label, amount_cents=amount) for label, code, amount in paid
     ]
-    # Runway at this month's projected phase-6 costs (M1c review decision), not last month's burn.
-    runway = runway_months(ov.cash_cents, sum(c.amount_cents for c in projected))
+    runway = ov.runway_months  # at this month's projected phase-6 costs (M1c decision)
     runway_warn = data.balance.morale.runway_warn_months
     return OverviewOut(
         save_id=save_id,
@@ -111,7 +110,10 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         team=TeamOut(
             headcount=len(staff),
             on_notice=sum(1 for e in staff if e.status == "notice"),
-            people_cost_cents=sum(employment_monthly_cost_cents(e, data.balance) for e in staff),
+            people_cost_cents=sum(
+                employment_monthly_cost_cents(e, data.balance, remote=is_remote(state, e))
+                for e in staff
+            ),
             payroll_cents=sum(
                 (s := monthly_salary_cents(e.salary_cents))
                 + benefits_cents(s, data.balance.payroll)
