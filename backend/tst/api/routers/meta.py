@@ -17,10 +17,13 @@ from tst.api.schemas.meta import (
     ScenarioOut,
     SkillMetaOut,
 )
+from tst.api.schemas.org import OrgMetaOut
 from tst.api.schemas.saves import FounderIn
+from tst.sim.actions.org import DEPARTMENT_STAGE, PROMOTION_LADDER
 from tst.sim.data_models import DEFAULT_DIFFICULTY, DIFFICULTY_LEVELS
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.hiring.phases import ONE_BATCH
+from tst.sim.org.models import PLAN_CHANNELS, UNIT_KINDS, WORK_POLICIES
 from tst.sim.people.founder import preview_founder
 from tst.sim.setup import MISSION_SIZE, starting_cash_cents
 
@@ -138,6 +141,48 @@ def hiring_meta(data: DataDep) -> HiringMetaOut:
             min(abs(morale.fire_penalty), abs(morale.fire_penalty_culture_carrier))
         ),
         energy_per_month=data.balance.founder.energy_per_month,
+    )
+
+
+ORG_ACTION_ENERGY = (
+    "create_unit",
+    "dissolve_unit",
+    "set_leader",
+    "move_person",
+    "set_policy",
+    "give_raise",
+    "promote",
+    "hiring_plan",
+)
+
+
+@router.get("/org", response_model=OrgMetaOut, operation_id="getOrgMeta")
+def org_meta(data: DataDep) -> OrgMetaOut:
+    """Energy costs, unlock rule and options for the org screens (formulas.md 6, 13)."""
+    org, reorg = data.balance.org, data.balance.org.reorg
+    return OrgMetaOut(
+        energy_costs={key: energy_cost(key, data.balance) for key in ORG_ACTION_ENERGY},
+        department_unlock_headcount=org.department_unlock_headcount,
+        department_unlock_stage=DEPARTMENT_STAGE,
+        unit_kinds=list(UNIT_KINDS),
+        policies=list(WORK_POLICIES),
+        plan_channels=list(PLAN_CHANNELS),
+        max_ratio_bp=data.balance.delegates.max_ratio_bp,
+        max_offer_equity_bp=data.balance.hiring.max_offer_equity_bp,
+        delegate_energy_per_month=data.balance.delegates.energy_per_month,
+        scout_energy=data.balance.delegates.scout_cost,
+        raise_threshold_bp=org.raise_threshold_bp,
+        raise_cooldown_turns=org.raise_cooldown_turns,
+        raise_morale=org.raise_morale,
+        pay_cut_morale=org.pay_cut_morale,
+        promote_morale=org.promote_morale,
+        reorg_morale={
+            "move": reorg.move,
+            "new_leader_members": reorg.new_leader_members,
+            "replaced_leader": reorg.replaced_leader,
+            "dissolve_members": reorg.dissolve_members,
+        },
+        promotion_levels=list(PROMOTION_LADDER),
     )
 
 

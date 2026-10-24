@@ -331,6 +331,268 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/org": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Org */
+        get: operations["getOrg"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/org/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Unit */
+        post: operations["createUnit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/org/units/{unit_id}/dissolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dissolve Unit */
+        post: operations["dissolveUnit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/org/units/{unit_id}/leader": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Leader */
+        post: operations["setUnitLeader"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/org/people/{person_id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Move Person */
+        post: operations["movePerson"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/org/policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Policy */
+        post: operations["setUnitPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/org/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Change
+         * @description Energy and one-off morale changes, by person, before a reorganization (13.7).
+         */
+        post: operations["previewOrgChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/people/{person_id}/raise": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Give Raise */
+        post: operations["giveRaise"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/people/{person_id}/raise-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Raise */
+        post: operations["previewRaise"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/people/{person_id}/promote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Promote */
+        post: operations["promotePerson"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/people/{person_id}/promote-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Promotion */
+        post: operations["previewPromotion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/people/{person_id}/morale": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Morale Breakdown */
+        get: operations["getMoraleBreakdown"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/hiring-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Plans
+         * @description Plans that are not closed, by id, with what each delegate did last.
+         */
+        get: operations["listHiringPlans"];
+        put?: never;
+        /** Create Plan */
+        post: operations["createHiringPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/hiring-plans/{plan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Plan */
+        patch: operations["updateHiringPlan"];
+        trace?: never;
+    };
+    "/api/saves/{save_id}/hiring-plans/{plan_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close Plan */
+        post: operations["closeHiringPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/scenarios": {
         parameters: {
             query?: never;
@@ -380,6 +642,26 @@ export interface paths {
          * @description Channel costs, energy and offer limits for the Recruitment screen (M1c).
          */
         get: operations["getHiringMeta"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meta/org": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Org Meta
+         * @description Energy costs, unlock rule and options for the org screens (formulas.md 6, 13).
+         */
+        get: operations["getOrgMeta"];
         put?: never;
         post?: never;
         delete?: never;
@@ -464,6 +746,20 @@ export interface components {
              */
             offer_blocked_reason: string | null;
         };
+        /** ChangePreviewOut */
+        ChangePreviewOut: {
+            /** Allowed */
+            allowed: boolean;
+            /**
+             * Problem
+             * @description Why the change is refused, if it is
+             */
+            problem: string | null;
+            /** Energy Cost */
+            energy_cost: number;
+            /** Morale Changes */
+            morale_changes: components["schemas"]["MoraleChangeOut"][];
+        };
         /** ChannelOut */
         ChannelOut: {
             /** Key */
@@ -523,6 +819,15 @@ export interface components {
              * @description Two interests; omit for the founder's first two
              */
             mission?: string[] | null;
+        };
+        /** CreateUnitIn */
+        CreateUnitIn: {
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Parent Id */
+            parent_id?: number | null;
         };
         /** EmploymentOut */
         EmploymentOut: {
@@ -697,6 +1002,88 @@ export interface components {
             /** Energy Per Month */
             energy_per_month: number;
         };
+        /** HiringPlanIn */
+        HiringPlanIn: {
+            /** Owner Id */
+            owner_id: number;
+            /** Role */
+            role: string;
+            /** Target */
+            target: number;
+            /**
+             * Channel
+             * @default any
+             */
+            channel?: string;
+            /** Ratio Bp */
+            ratio_bp: number;
+            /**
+             * Equity Bp
+             * @default 0
+             */
+            equity_bp?: number;
+            /** Unit Id */
+            unit_id?: number | null;
+        };
+        /** HiringPlanOut */
+        HiringPlanOut: {
+            /** Plan Id */
+            plan_id: number;
+            /** Owner Id */
+            owner_id: number;
+            /** Owner Name */
+            owner_name: string;
+            /** Unit Id */
+            unit_id: number | null;
+            /** Unit Name */
+            unit_name: string;
+            /** Role */
+            role: string;
+            /** Role Label */
+            role_label: string;
+            /** Target */
+            target: number;
+            /** Hired */
+            hired: number;
+            /** Pending Offers */
+            pending_offers: number;
+            /** Channel */
+            channel: string;
+            /** Ratio Bp */
+            ratio_bp: number;
+            /** Equity Bp */
+            equity_bp: number;
+            /** Status */
+            status: string;
+            /** Created Turn */
+            created_turn: number;
+            /**
+             * Owner Energy
+             * @description The delegate's energy left this month
+             */
+            owner_energy: number | null;
+            last_activity: components["schemas"]["PlanActivityOut"] | null;
+        };
+        /**
+         * HiringPlanPatchIn
+         * @description Fields to change; omitted fields keep their value. `unit_id: null` means the root.
+         */
+        HiringPlanPatchIn: {
+            /** Owner Id */
+            owner_id?: number | null;
+            /** Role */
+            role?: string | null;
+            /** Target */
+            target?: number | null;
+            /** Channel */
+            channel?: string | null;
+            /** Ratio Bp */
+            ratio_bp?: number | null;
+            /** Equity Bp */
+            equity_bp?: number | null;
+            /** Unit Id */
+            unit_id?: number | null;
+        };
         /** InboxItemOut */
         InboxItemOut: {
             /** Item Id */
@@ -754,6 +1141,73 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** ManagerOut */
+        ManagerOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Leads Unit Id
+             * @description Unit they lead; null for the founder
+             */
+            leads_unit_id: number | null;
+            /**
+             * Reports
+             * @description Direct reports' person ids
+             */
+            reports: number[];
+            /**
+             * Span Limit
+             * @description L: reports handled comfortably (formulas.md 13.2)
+             */
+            span_limit: number;
+            /**
+             * Span Factor
+             * @description S: 1 up to L reports, else L / n
+             */
+            span_factor: number;
+            /** Over Span */
+            over_span: boolean;
+        };
+        /**
+         * MoraleBreakdownOut
+         * @description Why someone's morale is heading where it is (formulas.md 9, 13.11).
+         *
+         *     Terms the company cannot know (unnoticed teammate tags, unrevealed interests) are summed
+         *     into "other", so morale never reveals a hidden tag.
+         */
+        MoraleBreakdownOut: {
+            /** Person Id */
+            person_id: number;
+            /** Morale */
+            morale: number;
+            /** Target */
+            target: number;
+            /**
+             * Rate
+             * @description Share of the gap to target closed each month
+             */
+            rate: number;
+            /** Terms */
+            terms: components["schemas"]["MoraleTermOut"][];
+            /** Manager Id */
+            manager_id: number | null;
+            /** Manager Name */
+            manager_name: string | null;
+        };
+        /** MoraleChangeOut */
+        MoraleChangeOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Change
+             * @description One-off morale points (formulas.md 13.7, 13.8)
+             */
+            change: number;
+        };
         /** MoralePointOut */
         MoralePointOut: {
             /** Turn */
@@ -762,6 +1216,23 @@ export interface components {
             date_label: string;
             /** Morale */
             morale: number;
+        };
+        /** MoraleTermOut */
+        MoraleTermOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Value */
+            value: number;
+        };
+        /** MovePersonIn */
+        MovePersonIn: {
+            /**
+             * Unit Id
+             * @description Null moves them to the company root
+             */
+            unit_id: number | null;
         };
         /** NewGameMetaOut */
         NewGameMetaOut: {
@@ -829,6 +1300,116 @@ export interface components {
              * @description Why the hint reads as it does, from known values only
              */
             reasons: string[];
+        };
+        /** OrgActionOut */
+        OrgActionOut: {
+            org: components["schemas"]["OrgOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /**
+         * OrgChangeIn
+         * @description One reorganization to preview; fields as for the matching action endpoint.
+         */
+        OrgChangeIn: {
+            /** Change */
+            change: string;
+            /** Unit Id */
+            unit_id?: number | null;
+            /** Person Id */
+            person_id?: number | null;
+            /** Kind */
+            kind?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Parent Id */
+            parent_id?: number | null;
+            /** Policy */
+            policy?: string | null;
+        };
+        /** OrgMemberOut */
+        OrgMemberOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role Label */
+            role_label: string;
+            /** Level */
+            level: string;
+            /** Is Founder */
+            is_founder: boolean;
+            /**
+             * Is Leader
+             * @description Leads this unit (the founder leads the company)
+             */
+            is_leader: boolean;
+            /**
+             * Manager Id
+             * @description Null for the founder
+             */
+            manager_id: number | null;
+            /**
+             * Remote
+             * @description Works under a remote policy (no office fee)
+             */
+            remote: boolean;
+        };
+        /** OrgMetaOut */
+        OrgMetaOut: {
+            /** Energy Costs */
+            energy_costs: {
+                [key: string]: number;
+            };
+            /** Department Unlock Headcount */
+            department_unlock_headcount: number;
+            /** Department Unlock Stage */
+            department_unlock_stage: number;
+            /** Unit Kinds */
+            unit_kinds: string[];
+            /** Policies */
+            policies: string[];
+            /** Plan Channels */
+            plan_channels: string[];
+            /** Max Ratio Bp */
+            max_ratio_bp: number;
+            /** Max Offer Equity Bp */
+            max_offer_equity_bp: number;
+            /** Delegate Energy Per Month */
+            delegate_energy_per_month: number;
+            /** Scout Energy */
+            scout_energy: number;
+            /** Raise Threshold Bp */
+            raise_threshold_bp: number;
+            /** Raise Cooldown Turns */
+            raise_cooldown_turns: number;
+            /** Raise Morale */
+            raise_morale: number;
+            /** Pay Cut Morale */
+            pay_cut_morale: number;
+            /** Promote Morale */
+            promote_morale: number;
+            /** Reorg Morale */
+            reorg_morale: {
+                [key: string]: number;
+            };
+            /** Promotion Levels */
+            promotion_levels: string[];
+        };
+        /** OrgOut */
+        OrgOut: {
+            /**
+             * Units
+             * @description The company root first, then units by id
+             */
+            units: components["schemas"]["UnitOut"][];
+            /** Managers */
+            managers: components["schemas"]["ManagerOut"][];
+            /** Headcount */
+            headcount: number;
+            /** Departments Unlocked */
+            departments_unlocked: boolean;
         };
         /** OverviewOut */
         OverviewOut: {
@@ -906,6 +1487,48 @@ export interface components {
              * @description Projected plus already posted
              */
             month_total_cents: number;
+        };
+        /**
+         * PayPreviewOut
+         * @description A raise or promotion before it happens, from known values only.
+         */
+        PayPreviewOut: {
+            /** Allowed */
+            allowed: boolean;
+            /** Problem */
+            problem: string | null;
+            /** Energy Cost */
+            energy_cost: number;
+            /** Level */
+            level: string;
+            /** New Level */
+            new_level: string;
+            /** Salary Cents */
+            salary_cents: number;
+            /** New Salary Cents */
+            new_salary_cents: number;
+            /**
+             * Market Rate Cents
+             * @description Band mid for the current level and region
+             */
+            market_rate_cents: number;
+            /**
+             * New Market Rate Cents
+             * @description Band mid for the level after the change
+             */
+            new_market_rate_cents: number;
+            /**
+             * Pay Term
+             * @description Pay term of the morale target now (formulas.md 9)
+             */
+            pay_term: number;
+            /** New Pay Term */
+            new_pay_term: number;
+            /**
+             * Morale Change
+             * @description One-off morale points (formulas.md 13.8)
+             */
+            morale_change: number;
         };
         /** PendingOfferOut */
         PendingOfferOut: {
@@ -1010,6 +1633,23 @@ export interface components {
              */
             interests: string[] | null;
         };
+        /** PlanActivityOut */
+        PlanActivityOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Searches */
+            searches: number;
+            /** Interviews */
+            interviews: number;
+            /** Scouted */
+            scouted: number;
+            /** Offers */
+            offers: number;
+            /** Summary */
+            summary: string;
+        };
         /** PresetOut */
         PresetOut: {
             /** Key */
@@ -1022,6 +1662,11 @@ export interface components {
             values: {
                 [key: string]: number;
             };
+        };
+        /** RaiseIn */
+        RaiseIn: {
+            /** Salary Cents */
+            salary_cents: number;
         };
         /** RangeOut */
         RangeOut: {
@@ -1110,6 +1755,27 @@ export interface components {
             /** Open Candidates */
             open_candidates: number;
         };
+        /** SetLeaderIn */
+        SetLeaderIn: {
+            /**
+             * Person Id
+             * @description Null removes the current leader
+             */
+            person_id: number | null;
+        };
+        /** SetPolicyIn */
+        SetPolicyIn: {
+            /**
+             * Unit Id
+             * @description Null sets the company root's policy
+             */
+            unit_id: number | null;
+            /**
+             * Policy
+             * @description office | remote; null inherits (units only)
+             */
+            policy: string | null;
+        };
         /** SkillMetaOut */
         SkillMetaOut: {
             /** Key */
@@ -1175,6 +1841,35 @@ export interface components {
              * @description Employees, not the founder; null if none
              */
             avg_morale: number | null;
+        };
+        /** UnitOut */
+        UnitOut: {
+            /**
+             * Unit Id
+             * @description Null for the company root
+             */
+            unit_id: number | null;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Parent Id */
+            parent_id: number | null;
+            /** Leader Id */
+            leader_id: number | null;
+            /** Leader Name */
+            leader_name: string | null;
+            /**
+             * Policy
+             * @description Own policy (office | remote); null = inherited
+             */
+            policy: string | null;
+            /** Effective Policy */
+            effective_policy: string;
+            /** Members */
+            members: components["schemas"]["OrgMemberOut"][];
+            /** Child Unit Ids */
+            child_unit_ids: number[];
         };
         /** ValidationError */
         ValidationError: {
@@ -2405,6 +3100,980 @@ export interface operations {
             };
         };
     };
+    getOrg: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    createUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUnitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    dissolveUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                unit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setUnitLeader: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                unit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetLeaderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    movePerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MovePersonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setUnitPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPolicyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewOrgChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrgChangeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangePreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    giveRaise: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RaiseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonProfileOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewRaise: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RaiseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayPreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    promotePerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonProfileOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewPromotion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayPreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMoraleBreakdown: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoraleBreakdownOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listHiringPlans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringPlanOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    createHiringPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HiringPlanIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringPlanOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    updateHiringPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                plan_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HiringPlanPatchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringPlanOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    closeHiringPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                plan_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringPlanOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     listScenarios: {
         parameters: {
             query?: never;
@@ -2461,6 +4130,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HiringMetaOut"];
+                };
+            };
+        };
+    };
+    getOrgMeta: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgMetaOut"];
                 };
             };
         };

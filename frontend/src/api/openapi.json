@@ -1626,6 +1626,1342 @@
         }
       }
     },
+    "/api/saves/{save_id}/org": {
+      "get": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Get Org",
+        "operationId": "getOrg",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/org/units": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Create Unit",
+        "operationId": "createUnit",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUnitIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/org/units/{unit_id}/dissolve": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Dissolve Unit",
+        "operationId": "dissolveUnit",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "unit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Unit Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/org/units/{unit_id}/leader": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Set Leader",
+        "operationId": "setUnitLeader",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "unit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Unit Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetLeaderIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/org/people/{person_id}/move": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Move Person",
+        "operationId": "movePerson",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MovePersonIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/org/policy": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Set Policy",
+        "operationId": "setUnitPolicy",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPolicyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/org/preview": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Preview Change",
+        "description": "Energy and one-off morale changes, by person, before a reorganization (13.7).",
+        "operationId": "previewOrgChange",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrgChangeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangePreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/people/{person_id}/raise": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Give Raise",
+        "operationId": "giveRaise",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RaiseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonProfileOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/people/{person_id}/raise-preview": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Preview Raise",
+        "operationId": "previewRaise",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RaiseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayPreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/people/{person_id}/promote": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Promote",
+        "operationId": "promotePerson",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonProfileOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/people/{person_id}/promote-preview": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Preview Promotion",
+        "operationId": "previewPromotion",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayPreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/people/{person_id}/morale": {
+      "get": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Morale Breakdown",
+        "operationId": "getMoraleBreakdown",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoraleBreakdownOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/hiring-plans": {
+      "get": {
+        "tags": [
+          "org"
+        ],
+        "summary": "List Plans",
+        "description": "Plans that are not closed, by id, with what each delegate did last.",
+        "operationId": "listHiringPlans",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HiringPlanOut"
+                  },
+                  "title": "Response Listhiringplans"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Create Plan",
+        "operationId": "createHiringPlan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HiringPlanIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringPlanOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/hiring-plans/{plan_id}": {
+      "patch": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Update Plan",
+        "operationId": "updateHiringPlan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HiringPlanPatchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringPlanOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/hiring-plans/{plan_id}/close": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Close Plan",
+        "operationId": "closeHiringPlan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringPlanOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/meta/scenarios": {
       "get": {
         "tags": [
@@ -1688,6 +3024,28 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HiringMetaOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/meta/org": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Org Meta",
+        "description": "Energy costs, unlock rule and options for the org screens (formulas.md 6, 13).",
+        "operationId": "getOrgMeta",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgMetaOut"
                 }
               }
             }
@@ -1878,6 +3236,45 @@
         ],
         "title": "CandidacyOut"
       },
+      "ChangePreviewOut": {
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem",
+            "description": "Why the change is refused, if it is"
+          },
+          "energy_cost": {
+            "type": "integer",
+            "title": "Energy Cost"
+          },
+          "morale_changes": {
+            "items": {
+              "$ref": "#/components/schemas/MoraleChangeOut"
+            },
+            "type": "array",
+            "title": "Morale Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "allowed",
+          "problem",
+          "energy_cost",
+          "morale_changes"
+        ],
+        "title": "ChangePreviewOut"
+      },
       "ChannelOut": {
         "properties": {
           "key": {
@@ -2028,6 +3425,37 @@
           "company_name"
         ],
         "title": "CreateSaveIn"
+      },
+      "CreateUnitIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "name"
+        ],
+        "title": "CreateUnitIn"
       },
       "EmploymentOut": {
         "properties": {
@@ -2495,6 +3923,259 @@
         "title": "HiringMetaOut",
         "description": "Rules and costs the Recruitment and People screens display (formulas.md 6-8)."
       },
+      "HiringPlanIn": {
+        "properties": {
+          "owner_id": {
+            "type": "integer",
+            "title": "Owner Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "target": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Target"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel",
+            "default": "any"
+          },
+          "ratio_bp": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Ratio Bp"
+          },
+          "equity_bp": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Equity Bp",
+            "default": 0
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "owner_id",
+          "role",
+          "target",
+          "ratio_bp"
+        ],
+        "title": "HiringPlanIn"
+      },
+      "HiringPlanOut": {
+        "properties": {
+          "plan_id": {
+            "type": "integer",
+            "title": "Plan Id"
+          },
+          "owner_id": {
+            "type": "integer",
+            "title": "Owner Id"
+          },
+          "owner_name": {
+            "type": "string",
+            "title": "Owner Name"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          },
+          "unit_name": {
+            "type": "string",
+            "title": "Unit Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "target": {
+            "type": "integer",
+            "title": "Target"
+          },
+          "hired": {
+            "type": "integer",
+            "title": "Hired"
+          },
+          "pending_offers": {
+            "type": "integer",
+            "title": "Pending Offers"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "ratio_bp": {
+            "type": "integer",
+            "title": "Ratio Bp"
+          },
+          "equity_bp": {
+            "type": "integer",
+            "title": "Equity Bp"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_turn": {
+            "type": "integer",
+            "title": "Created Turn"
+          },
+          "owner_energy": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Energy",
+            "description": "The delegate's energy left this month"
+          },
+          "last_activity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanActivityOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_id",
+          "owner_id",
+          "owner_name",
+          "unit_id",
+          "unit_name",
+          "role",
+          "role_label",
+          "target",
+          "hired",
+          "pending_offers",
+          "channel",
+          "ratio_bp",
+          "equity_bp",
+          "status",
+          "created_turn",
+          "owner_energy",
+          "last_activity"
+        ],
+        "title": "HiringPlanOut"
+      },
+      "HiringPlanPatchIn": {
+        "properties": {
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel"
+          },
+          "ratio_bp": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio Bp"
+          },
+          "equity_bp": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equity Bp"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "type": "object",
+        "title": "HiringPlanPatchIn",
+        "description": "Fields to change; omitted fields keep their value. `unit_id: null` means the root."
+      },
       "InboxItemOut": {
         "properties": {
           "item_id": {
@@ -2651,6 +4332,149 @@
         ],
         "title": "LabelOut"
       },
+      "ManagerOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "leads_unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leads Unit Id",
+            "description": "Unit they lead; null for the founder"
+          },
+          "reports": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Reports",
+            "description": "Direct reports' person ids"
+          },
+          "span_limit": {
+            "type": "integer",
+            "title": "Span Limit",
+            "description": "L: reports handled comfortably (formulas.md 13.2)"
+          },
+          "span_factor": {
+            "type": "number",
+            "title": "Span Factor",
+            "description": "S: 1 up to L reports, else L / n"
+          },
+          "over_span": {
+            "type": "boolean",
+            "title": "Over Span"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "leads_unit_id",
+          "reports",
+          "span_limit",
+          "span_factor",
+          "over_span"
+        ],
+        "title": "ManagerOut"
+      },
+      "MoraleBreakdownOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "morale": {
+            "type": "number",
+            "title": "Morale"
+          },
+          "target": {
+            "type": "number",
+            "title": "Target"
+          },
+          "rate": {
+            "type": "number",
+            "title": "Rate",
+            "description": "Share of the gap to target closed each month"
+          },
+          "terms": {
+            "items": {
+              "$ref": "#/components/schemas/MoraleTermOut"
+            },
+            "type": "array",
+            "title": "Terms"
+          },
+          "manager_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Id"
+          },
+          "manager_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "morale",
+          "target",
+          "rate",
+          "terms",
+          "manager_id",
+          "manager_name"
+        ],
+        "title": "MoraleBreakdownOut",
+        "description": "Why someone's morale is heading where it is (formulas.md 9, 13.11).\n\nTerms the company cannot know (unnoticed teammate tags, unrevealed interests) are summed\ninto \"other\", so morale never reveals a hidden tag."
+      },
+      "MoraleChangeOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "change": {
+            "type": "number",
+            "title": "Change",
+            "description": "One-off morale points (formulas.md 13.7, 13.8)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "change"
+        ],
+        "title": "MoraleChangeOut"
+      },
       "MoralePointOut": {
         "properties": {
           "turn": {
@@ -2673,6 +4497,50 @@
           "morale"
         ],
         "title": "MoralePointOut"
+      },
+      "MoraleTermOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "value"
+        ],
+        "title": "MoraleTermOut"
+      },
+      "MovePersonIn": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id",
+            "description": "Null moves them to the company root"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id"
+        ],
+        "title": "MovePersonIn"
       },
       "NewGameMetaOut": {
         "properties": {
@@ -2866,6 +4734,311 @@
         ],
         "title": "OfferPreviewOut"
       },
+      "OrgActionOut": {
+        "properties": {
+          "org": {
+            "$ref": "#/components/schemas/OrgOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "org",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "OrgActionOut"
+      },
+      "OrgChangeIn": {
+        "properties": {
+          "change": {
+            "type": "string",
+            "title": "Change"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "change"
+        ],
+        "title": "OrgChangeIn",
+        "description": "One reorganization to preview; fields as for the matching action endpoint."
+      },
+      "OrgMemberOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "is_founder": {
+            "type": "boolean",
+            "title": "Is Founder"
+          },
+          "is_leader": {
+            "type": "boolean",
+            "title": "Is Leader",
+            "description": "Leads this unit (the founder leads the company)"
+          },
+          "manager_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Id",
+            "description": "Null for the founder"
+          },
+          "remote": {
+            "type": "boolean",
+            "title": "Remote",
+            "description": "Works under a remote policy (no office fee)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role_label",
+          "level",
+          "is_founder",
+          "is_leader",
+          "manager_id",
+          "remote"
+        ],
+        "title": "OrgMemberOut"
+      },
+      "OrgMetaOut": {
+        "properties": {
+          "energy_costs": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Energy Costs"
+          },
+          "department_unlock_headcount": {
+            "type": "integer",
+            "title": "Department Unlock Headcount"
+          },
+          "department_unlock_stage": {
+            "type": "integer",
+            "title": "Department Unlock Stage"
+          },
+          "unit_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unit Kinds"
+          },
+          "policies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Policies"
+          },
+          "plan_channels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Plan Channels"
+          },
+          "max_ratio_bp": {
+            "type": "integer",
+            "title": "Max Ratio Bp"
+          },
+          "max_offer_equity_bp": {
+            "type": "integer",
+            "title": "Max Offer Equity Bp"
+          },
+          "delegate_energy_per_month": {
+            "type": "integer",
+            "title": "Delegate Energy Per Month"
+          },
+          "scout_energy": {
+            "type": "integer",
+            "title": "Scout Energy"
+          },
+          "raise_threshold_bp": {
+            "type": "integer",
+            "title": "Raise Threshold Bp"
+          },
+          "raise_cooldown_turns": {
+            "type": "integer",
+            "title": "Raise Cooldown Turns"
+          },
+          "raise_morale": {
+            "type": "number",
+            "title": "Raise Morale"
+          },
+          "pay_cut_morale": {
+            "type": "number",
+            "title": "Pay Cut Morale"
+          },
+          "promote_morale": {
+            "type": "number",
+            "title": "Promote Morale"
+          },
+          "reorg_morale": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Reorg Morale"
+          },
+          "promotion_levels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Promotion Levels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "energy_costs",
+          "department_unlock_headcount",
+          "department_unlock_stage",
+          "unit_kinds",
+          "policies",
+          "plan_channels",
+          "max_ratio_bp",
+          "max_offer_equity_bp",
+          "delegate_energy_per_month",
+          "scout_energy",
+          "raise_threshold_bp",
+          "raise_cooldown_turns",
+          "raise_morale",
+          "pay_cut_morale",
+          "promote_morale",
+          "reorg_morale",
+          "promotion_levels"
+        ],
+        "title": "OrgMetaOut"
+      },
+      "OrgOut": {
+        "properties": {
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/UnitOut"
+            },
+            "type": "array",
+            "title": "Units",
+            "description": "The company root first, then units by id"
+          },
+          "managers": {
+            "items": {
+              "$ref": "#/components/schemas/ManagerOut"
+            },
+            "type": "array",
+            "title": "Managers"
+          },
+          "headcount": {
+            "type": "integer",
+            "title": "Headcount"
+          },
+          "departments_unlocked": {
+            "type": "boolean",
+            "title": "Departments Unlocked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "units",
+          "managers",
+          "headcount",
+          "departments_unlocked"
+        ],
+        "title": "OrgOut"
+      },
       "OverviewOut": {
         "properties": {
           "save_id": {
@@ -3028,6 +5201,86 @@
           "month_total_cents"
         ],
         "title": "OverviewOut"
+      },
+      "PayPreviewOut": {
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem"
+          },
+          "energy_cost": {
+            "type": "integer",
+            "title": "Energy Cost"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "new_level": {
+            "type": "string",
+            "title": "New Level"
+          },
+          "salary_cents": {
+            "type": "integer",
+            "title": "Salary Cents"
+          },
+          "new_salary_cents": {
+            "type": "integer",
+            "title": "New Salary Cents"
+          },
+          "market_rate_cents": {
+            "type": "integer",
+            "title": "Market Rate Cents",
+            "description": "Band mid for the current level and region"
+          },
+          "new_market_rate_cents": {
+            "type": "integer",
+            "title": "New Market Rate Cents",
+            "description": "Band mid for the level after the change"
+          },
+          "pay_term": {
+            "type": "number",
+            "title": "Pay Term",
+            "description": "Pay term of the morale target now (formulas.md 9)"
+          },
+          "new_pay_term": {
+            "type": "number",
+            "title": "New Pay Term"
+          },
+          "morale_change": {
+            "type": "number",
+            "title": "Morale Change",
+            "description": "One-off morale points (formulas.md 13.8)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "allowed",
+          "problem",
+          "energy_cost",
+          "level",
+          "new_level",
+          "salary_cents",
+          "new_salary_cents",
+          "market_rate_cents",
+          "new_market_rate_cents",
+          "pay_term",
+          "new_pay_term",
+          "morale_change"
+        ],
+        "title": "PayPreviewOut",
+        "description": "A raise or promotion before it happens, from known values only."
       },
       "PendingOfferOut": {
         "properties": {
@@ -3394,6 +5647,49 @@
         ],
         "title": "PersonSummaryOut"
       },
+      "PlanActivityOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "searches": {
+            "type": "integer",
+            "title": "Searches"
+          },
+          "interviews": {
+            "type": "integer",
+            "title": "Interviews"
+          },
+          "scouted": {
+            "type": "integer",
+            "title": "Scouted"
+          },
+          "offers": {
+            "type": "integer",
+            "title": "Offers"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "searches",
+          "interviews",
+          "scouted",
+          "offers",
+          "summary"
+        ],
+        "title": "PlanActivityOut"
+      },
       "PresetOut": {
         "properties": {
           "key": {
@@ -3424,6 +5720,20 @@
           "values"
         ],
         "title": "PresetOut"
+      },
+      "RaiseIn": {
+        "properties": {
+          "salary_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Salary Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "salary_cents"
+        ],
+        "title": "RaiseIn"
       },
       "RangeOut": {
         "properties": {
@@ -3657,6 +5967,61 @@
         ],
         "title": "SearchOut"
       },
+      "SetLeaderIn": {
+        "properties": {
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id",
+            "description": "Null removes the current leader"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "title": "SetLeaderIn"
+      },
+      "SetPolicyIn": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id",
+            "description": "Null sets the company root's policy"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy",
+            "description": "office | remote; null inherits (units only)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "policy"
+        ],
+        "title": "SetPolicyIn"
+      },
       "SkillMetaOut": {
         "properties": {
           "key": {
@@ -3811,6 +6176,107 @@
         ],
         "title": "TeamOut",
         "description": "The team as it stands now (not at the last month end)."
+      },
+      "UnitOut": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id",
+            "description": "Null for the company root"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "leader_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leader Id"
+          },
+          "leader_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leader Name"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy",
+            "description": "Own policy (office | remote); null = inherited"
+          },
+          "effective_policy": {
+            "type": "string",
+            "title": "Effective Policy"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/OrgMemberOut"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "child_unit_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Child Unit Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "kind",
+          "name",
+          "parent_id",
+          "leader_id",
+          "leader_name",
+          "policy",
+          "effective_policy",
+          "members",
+          "child_unit_ids"
+        ],
+        "title": "UnitOut"
       },
       "ValidationError": {
         "properties": {
