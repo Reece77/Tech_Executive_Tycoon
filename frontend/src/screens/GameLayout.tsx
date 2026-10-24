@@ -1,6 +1,7 @@
 import { Alert } from '@mantine/core';
-import { Outlet, useNavigate, useParams } from 'react-router';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router';
 import { LeftNav } from '../components/LeftNav';
+import { ScreenErrorBoundary } from '../components/ScreenErrorBoundary';
 import { TopBar } from '../components/TopBar';
 import { useAdvance, useOverview } from '../hooks/api';
 import { useGameHotkeys } from '../hooks/useGameHotkeys';
@@ -9,6 +10,7 @@ import { NAV_ITEMS } from '../lib/nav';
 export function GameLayout() {
   const { saveId = '' } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const overview = useOverview(saveId);
   const advance = useAdvance(saveId);
 
@@ -36,7 +38,9 @@ export function GameLayout() {
               {advance.error.message}
             </Alert>
           )}
-          <Outlet />
+          <ScreenErrorBoundary key={location.pathname}>
+            <Outlet />
+          </ScreenErrorBoundary>
         </main>
       </div>
     </div>

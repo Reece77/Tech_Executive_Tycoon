@@ -354,10 +354,16 @@ function ProfileBody({
                     </>
                   )}
                   <Button
-                    variant="outline"
-                    color="warn"
+                    variant="default"
                     h={44}
                     mt={8}
+                    styles={{
+                      root: {
+                        color: 'var(--tst-warn)',
+                        borderColor: '#6A4426',
+                        background: 'transparent',
+                      },
+                    }}
                     onClick={() => setConfirming(true)}
                     data-testid="fire"
                   >

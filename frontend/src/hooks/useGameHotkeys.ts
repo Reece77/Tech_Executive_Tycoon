@@ -1,12 +1,17 @@
 import { useEffect, useRef } from 'react';
 
-// Keys are ignored while typing, and on focused buttons/links, whose own Space/Enter
-// activation already fires (handling both would advance twice).
-const IGNORE_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A']);
+// No hotkeys while typing. Space/Enter are also left alone on focused buttons and links, whose
+// own activation already fires (handling both would advance twice); digits still jump there.
+const TYPING_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
+const ACTIVATING_TAGS = new Set(['BUTTON', 'A']);
 
 export function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  return IGNORE_TAGS.has(target.tagName) || target.isContentEditable;
+  return TYPING_TAGS.has(target.tagName) || target.isContentEditable;
+}
+
+function isActivatingTarget(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && ACTIVATING_TAGS.has(target.tagName);
 }
 
 /** Space/Enter -> Continue; 1-9 -> jump to the Nth left-nav screen. */
@@ -21,6 +26,7 @@ export function useGameHotkeys(onContinue: () => void, onJump: (index: number) =
       if (event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
       if (isTypingTarget(event.target)) return;
       if (event.key === ' ' || event.key === 'Enter') {
+        if (isActivatingTarget(event.target)) return;
         event.preventDefault();
         handlers.current.onContinue();
       } else if (/^[1-9]$/.test(event.key)) {

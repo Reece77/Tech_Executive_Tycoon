@@ -87,7 +87,7 @@ function overviewColumns(saveId: string) {
       id: 'top',
       header: 'Top skills',
       cell: ({ row }) => (
-        <span style={{ display: 'flex', gap: 14 }}>
+        <span style={{ display: 'flex', gap: 10 }}>
           {[...row.original.skills]
             .sort(byStrength)
             .slice(0, TOP_SKILLS)

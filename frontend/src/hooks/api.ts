@@ -124,10 +124,12 @@ export function useAdvance(saveId: string) {
   const invalidate = useInvalidateSave(saveId);
   return useMutation({
     mutationFn: async () => unwrap(await api.POST('/api/saves/{save_id}/advance', path(saveId))),
-    onSuccess: async (overview) => {
+    // Not awaited: the new month shows at once and Continue is ready again while the
+    // other screens refetch in the background.
+    onSuccess: (overview) => {
       client.setQueryData(keys.overview(saveId), overview);
-      await client.invalidateQueries({ queryKey: keys.saves, exact: true });
-      await invalidate();
+      void client.invalidateQueries({ queryKey: keys.saves, exact: true });
+      void invalidate();
     },
   });
 }

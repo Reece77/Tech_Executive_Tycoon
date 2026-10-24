@@ -123,7 +123,7 @@ a {
   font-size: 12px;
   font-weight: 600;
   color: var(--tst-muted);
-  padding: 10px 12px;
+  padding: 10px;
   border-bottom: 1px solid var(--tst-border);
   white-space: nowrap;
 }
@@ -134,7 +134,7 @@ a {
 }
 
 .tst-table td {
-  padding: 9px 12px;
+  padding: 9px 10px;
   border-bottom: 1px solid var(--tst-rule);
   white-space: nowrap;
 }

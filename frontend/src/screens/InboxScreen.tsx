@@ -53,8 +53,14 @@ export function InboxScreen() {
                   key={f.key}
                   size="sm"
                   h={36}
-                  variant={filter === f.key ? 'light' : 'default'}
-                  color={filter === f.key ? 'gray' : undefined}
+                  variant="default"
+                  fw={filter === f.key ? 600 : 400}
+                  styles={{
+                    root: {
+                      background: filter === f.key ? 'var(--tst-panel-active)' : 'transparent',
+                      color: filter === f.key ? 'var(--tst-text)' : 'var(--tst-text-2)',
+                    },
+                  }}
                   aria-pressed={filter === f.key}
                   onClick={() => setFilter(f.key)}
                 >
