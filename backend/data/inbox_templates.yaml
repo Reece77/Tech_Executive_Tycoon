@@ -1,13 +1,14 @@
 # Inbox wording (M1b). The sim emits a template key plus parameters; persistence renders
 # the title and body for the player company. Parameters ending in _cents are shown as money.
+# "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
   candidates_arrived:
     title: "{count} candidates for {role}"
-    body: "Your {channel} search for a {role} turned up {count} candidates. They will consider offers for the next {shelf} months."
+    body: "Your {channel} search for {role:a} turned up {count} candidates. They will consider offers for the next {shelf} months."
   offer_accepted:
     title: "{name} accepted your offer"
-    body: "{name} joins as a {level} {role} on {salary_cents} a year."
+    body: "{name} joins as {level:a} {role} on {salary_cents} a year."
   offer_declined:
     title: "{name} declined your offer"
     body: "{name} has turned down the {role} role and is no longer a candidate."

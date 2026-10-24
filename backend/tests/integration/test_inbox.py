@@ -12,6 +12,7 @@ from tests.helpers import fresh_game, make_person, with_employee
 from tests.unit.test_hiring_phases import Game, _staff_game
 from tst.db.inbox import (
     UnknownInboxItemError,
+    indefinite_article,
     list_inbox,
     mark_read,
     render,
@@ -30,6 +31,30 @@ def test_render_formats_money(loaded: LoadedData) -> None:
     title, body = render(item, loaded.game_data.inbox_templates)
     assert title == "Ada Mensah was let go"
     assert body == "Ada Mensah has left the company. Severance of $9,583.33 was paid."
+
+
+@pytest.mark.parametrize(
+    ("word", "article"),
+    [
+        ("Account executive", "an"),
+        ("Designer", "a"),
+        ("exec", "an"),
+        ("mid", "a"),
+        ("Operations manager", "an"),
+        ("junior", "a"),
+        ("user researcher", "a"),
+    ],
+)
+def test_indefinite_article(word: str, article: str) -> None:
+    assert indefinite_article(word) == article
+
+
+def test_render_uses_an_before_vowel_sounds(loaded: LoadedData) -> None:
+    item = inbox_item(
+        1, 1, "candidates_arrived", channel="job post", role="Account executive", count=3, shelf=3
+    )
+    _, body = render(item, loaded.game_data.inbox_templates)
+    assert body.startswith("Your job post search for an Account executive turned up 3")
 
 
 def test_every_emitted_template_renders(loaded: LoadedData) -> None:
