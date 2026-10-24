@@ -91,6 +91,7 @@ Root:
 
 ```bash
 make check     # backend lint + types + tests, frontend lint + types + tests. Must pass before you finish.
+make check-fast  # the same without the golden tests, for local iteration only
 make dev       # run API and front end together
 ```
 

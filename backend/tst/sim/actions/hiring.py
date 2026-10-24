@@ -341,13 +341,29 @@ def fire(state: GameState, action: Fire, balance: Balance) -> Outcome:
         ps = state.person_state(other.person_id)
         if ps.morale is not None:
             state = with_person_state(state, replace(ps, morale=clamp_morale(ps.morale + penalty)))
-    log = (
-        inbox_item(
-            state.turn,
-            company,
-            "fired",
-            name=f"{person.first_name} {person.last_name}",
-            severance_cents=severance,
-        ),
+    name = f"{person.first_name} {person.last_name}"
+    log: tuple[LogItem, ...] = (
+        inbox_item(state.turn, company, "fired", name=name, severance_cents=severance),
     )
+    # The larger morale hit gives the tag away, so the company learns it now (M1c brief).
+    reveal = state.reveal(company, person.id)
+    if (
+        CULTURE_CARRIER in person.tags
+        and reveal is not None
+        and CULTURE_CARRIER not in {t for t, _ in reveal.revealed_tags}
+    ):
+        state = with_reveal(
+            state,
+            replace(reveal, revealed_tags=(*reveal.revealed_tags, (CULTURE_CARRIER, state.turn))),
+        )
+        log += (
+            inbox_item(
+                state.turn,
+                company,
+                "culture_carrier_left",
+                link_kind="person",
+                link_id=person.id,
+                name=name,
+            ),
+        )
     return Outcome(state, entries, log)

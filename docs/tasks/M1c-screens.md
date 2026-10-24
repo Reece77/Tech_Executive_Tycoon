@@ -6,7 +6,7 @@
 
 ## Context
 
-M1b provides every rule and endpoint, including previews for the offer hint and the founder build. This milestone is front end only. The front end displays, sorts, filters, and formats what the API returns; it never computes a game value (`CLAUDE.md` §7). If a screen needs a number the API does not return, add it to the backend schema, regenerate the client, and note it under Decisions made.
+M1b provides every rule and endpoint, including previews for the offer hint and the founder build. This milestone is front end only. The one backend change it needed was made ahead of time, in the `m1b-followups` branch: firing a culture carrier reveals that tag to the player's company and adds an inbox item ("The team took {name}'s departure hard; they held the team together"), with a test. A hidden tag otherwise never shows, so the fire dialog must not state the exact penalty. The front end displays, sorts, filters, and formats what the API returns; it never computes a game value (`CLAUDE.md` §7). If a screen needs a number the API does not return, add it to the backend schema, regenerate the client, and note it under Decisions made.
 
 ## Out of scope
 
@@ -23,7 +23,7 @@ Any new game rule. Org chart, Products, Finance, Competitors, and History screen
 2. **Inbox:** becomes the home screen after a game loads.
 3. **Overview:** KPI tiles (cash, monthly burn, runway, headcount, monthly payroll, average morale), 12-month cash line chart, this month's cost breakdown, and the five latest inbox items.
 4. **People:** roster with Overview and Skills views, filter, summary tiles.
-5. **Person profile:** as wireframed, with Fire behind a confirm dialog that states severance and the morale penalty.
+5. **Person profile:** as wireframed, with Fire behind a confirm dialog that states the severance and says "everyone else's morale will drop by at least 3 points". Never show the exact penalty: −6 instead of −3 would reveal a hidden culture-carrier tag.
 6. **Recruitment:** open a search, your searches, candidates table, and the offer panel. The hint, floor, ratio, and rule errors come from the offer-preview endpoint as the player edits salary or equity.
 7. **Top bar:** founder energy meter, which updates after each action; Continue (Space or Enter); keys 1–9 for nav.
 
@@ -46,7 +46,7 @@ Any new game rule. Org chart, Products, Finance, Competitors, and History screen
 
 ## Manual check (Reece)
 
-1. `make dev`; create a game with the setup screen (ex-big-tech founders, your own name, mission AI and Enterprise).
+1. `make dev`; create a game with the setup screen (funded spinout, your own name, mission AI and Enterprise).
 2. Hire a team of about 10 over a few months, mixing channels; deliberately underpay two people.
 3. Play 24 months. Expect cash to fall by payroll, the underpaid pair's morale to drift down, and some traits noticed in the inbox.
 4. Fire someone; check severance on Overview and the morale dip on People.

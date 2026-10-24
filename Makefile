@@ -1,11 +1,17 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: check check-backend check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: check check-fast check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
 
 check: check-backend check-api check-frontend
 
+# Everything except the golden tests, for local iteration. `make check` (and CI) runs them all.
+check-fast: check-backend-fast check-api check-frontend
+
 check-backend:
 	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pytest -q
+
+check-backend-fast:
+	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pytest -q --ignore=tests/golden
 
 # Regenerates frontend/src/api and fails if the committed files differ (ADR-0009).
 check-api:

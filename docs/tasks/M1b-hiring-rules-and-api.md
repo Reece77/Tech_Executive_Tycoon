@@ -99,6 +99,6 @@ Engineering decisions made by the agent:
 ## Follow-ups
 
 - **Balance:** with defaults the resignation chance tops out at 600 bp (morale 0, loyalty 1, job hopper), so the 2,000 bp cap never binds. The golden plan's 8-person ex-big-tech team runs out of its $400,000 in about 7 months; morale then falls toward 30 under the runway penalty. Worth a look in the first balance pass.
-- **Firing penalty leaks a hidden tag:** the M1c fire dialog states the morale penalty, but −6 instead of −3 reveals a hidden `culture_carrier` tag. Showing −3 unless the tag is noticed is one option.
+- **Firing penalty leaks a hidden tag:** resolved in `m1b-followups`. Firing a culture carrier now reveals the tag with an inbox item, and the M1c fire dialog only promises a drop of at least 3 points.
 - The golden test now takes about 70 seconds; a smaller plan or fewer seeds would speed up `make check` if that matters.
 - Light-tone inbox variants (ADR-0011) are allowed but not written; each template has one wording.
