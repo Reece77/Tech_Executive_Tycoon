@@ -66,23 +66,27 @@ Engineering decisions made by the agent. No game rule changed and the golden sna
 
 **Front end:**
 
-- **Runway** stays "whole months at last month's burn" (the existing API value), noted as such on the tile. The wireframe's "At June costs" would be a different number; see follow-ups.
+- **Runway** (Reece, review): the Overview API's `runway_months` is whole months of cash at this month's projected costs (`phases.monthly_costs`), labelled "At {month}'s costs"; the top-bar warning uses the same number. `tst inspect` still prints runway at last month's burn.
 - **Fire dialog** states the severance and "at least 3 points" (from the hiring meta), never the exact penalty. The profile note says only that morale drops.
-- **Inbox:** clicking a message marks it read; the default selection (newest) does not. Template keys map to the wireframe's kind labels and People/Hiring filters in `src/lib/inbox.ts` (display only; unknown kinds show as Month).
+- **Inbox:** clicking a message marks it read; the default selection (newest) does not. Template keys map to the wireframe's kind labels and People/Hiring filters in `src/lib/inbox.ts` (display only; unknown kinds show as Notice). There are no month-closed messages (Reece, review); the Month kind is removed from `docs/wireframes.md`.
 - **Candidates table** shows the role's primary skills plus its first secondary skill; People "Top skills" sorts by range midpoint. Both are display ordering only.
 - **Hotkeys:** digits now work while a button or link has focus (only Space/Enter defer to the focused control). Continue no longer waits for the other screens to refetch, so a second press is not swallowed.
 - **Seed** stays available on the setup screen behind "Set a seed (optional)" (needed for the seeded e2e flows; not in the wireframe).
-- **Fonts:** IBM Plex from Google Fonts in `index.html`, falling back to system fonts offline (no new dependency).
+- **Fonts:** IBM Plex self-hosted with `@fontsource/ibm-plex-sans` and `@fontsource/ibm-plex-mono` (approved in review, added to ADR-0001).
 - **Component tests** render to static markup with `react-dom/server`: no DOM library (jsdom) is in ADR-0001, so interaction is covered by Playwright.
 - A per-screen error boundary shows a render error instead of a blank page.
 - **E2E:** `e2e/m1c.spec.ts` has flows (a), (b), (c) and a fourth test for the first acceptance criterion (ten hires within six turns via network, recruiter and job post, all through the UI). The M0 smoke tests now go through the setup screen. Locally, `PLAYWRIGHT_CHANNEL=msedge make e2e` uses the installed Edge.
 
+Review fixes (Reece):
+
+- **Hiring reveals the profile:** an accepted offer sets the company's profile reveal (interests and work style), so `person_profile_reveal` is written at hire. Unit and API tests; golden snapshots unchanged.
+- **Short skill labels:** `skills.yaml` gains `short_label` ("Software eng", "Infra", "Comms"), exposed on attributes and the new-game skill meta; People "Top skills" uses it and profiles keep full names.
+- **Articles in inbox templates:** the renderer supports `{role:a}`, choosing "a" or "an" by sound ("an Account executive").
+- **No mission at setup:** Start is allowed with none chosen (the summary reads "mission: your founder's interests" and the API default applies); one of two is still refused.
+
 ## Follow-ups
 
-- **Runway at this month's costs:** the wireframe's Overview note ("At June costs") implies runway from the projected month, not last month's burn. That is a definition change (it also feeds the top-bar warning), so it needs Reece's call.
-- **Month-closed inbox items:** the wireframe shows a "May 2010 closed" (Month) message; the engine emits none. A month-end summary template would fill it.
+- `tst inspect` still reports runway at last month's burn; switch it to the projected month if the CLI should match the screens.
 - **jsdom or happy-dom** as a dev dependency would allow Vitest interaction tests (setup stepper, offer panel); needs an ADR-0001 addition.
-- **Self-hosted fonts** (for example `@fontsource/ibm-plex-*`) if the game should look right offline; also a dependency question.
-- **Short skill labels** ("Software eng") in `skills.yaml` would keep the People "Top skills" column narrower; it currently scrolls at 1440 px with long names.
 - The network channel card shows 2–4 candidates; the +1 for founder sociability ≥ 15 is not mentioned.
 - Candidates expire in phase 12 of their last month, after an offer made that month resolves in phase 1 of the next; worth confirming an offer made in the expiry month still resolves (the UI allows it).
