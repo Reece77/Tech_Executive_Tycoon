@@ -35,6 +35,7 @@ Front end (Node 22 LTS, managed with `pnpm`):
 | Tables | `@tanstack/react-table` |
 | Charts | `recharts` |
 | Components | `@mantine/core`, `@mantine/hooks` |
+| Fonts | `@fontsource/ibm-plex-sans`, `@fontsource/ibm-plex-mono` (self-hosted, so the game needs no network) |
 | API client generation | `openapi-typescript`, `openapi-fetch` |
 | Dev | `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `globals`, `prettier`, `vitest`, `@testing-library/react`, `@playwright/test` |
 | Build support | `@vitejs/plugin-react`, `@types/node` |
@@ -42,6 +43,8 @@ Front end (Node 22 LTS, managed with `pnpm`):
 Root tooling: a `Makefile` with `check`, `dev`, `gen-api`, `golden` targets.
 
 Approved additions, 2026-10-21 (M0 review): the ESLint packages, `@vitejs/plugin-react`, `@types/node`, and `httpx2` above. The current Vite template ships oxlint, so ESLint is configured by hand.
+
+Approved additions, 2026-10-24 (M1c review): `@fontsource/ibm-plex-sans` and `@fontsource/ibm-plex-mono`, replacing the Google Fonts link for the wireframe fonts.
 
 Adding any package not listed requires a short note in the task summary and Reece's approval.
 
