@@ -75,8 +75,36 @@ Products, projects, productivity, coordination cost, decision latency, and the `
 
 ## Decisions made
 
-_(Agent fills in.)_
+Engineering and rule details that formulas.md §13, ADR-0015 and ADR-0016 left open:
+
+1. **Interview record:** `candidate.interviewed_turn` (not in the column list above) records the company's first interview; `0005_org` backfills it from `decision_log`, so upgraded saves can still offer to candidates they interviewed.
+2. **No FK constraints on columns added to existing tables** (`employment.unit_id`, `offer.plan_id`/`unit_id`, `decision_log.actor_id`): SQLite cannot add one by `ALTER TABLE`, and a referencing column could not be dropped on downgrade. The new tables have full FKs.
+3. **The root's policy** lives on `company.work_policy` (default `office`); units store their own policy or null to inherit.
+4. **Department unlock:** headcount includes the founder (`len(staff) >= 10`), or stage ≥ 2 (a spec constant in code).
+5. **Leadership changes:** set, replace and remove all count as a change: −1 for each other member, −5 for the leader who loses the post. Removing a leader is allowed (`person_id: null`).
+6. **Leaders must already be members:** `set_leader` refuses a non-member (no automatic move), and moving a leader out is refused until they are replaced or removed, so "leads at most one unit" holds by construction.
+7. **Raise bonus cooldown:** `last_raise_turn` is set only by a raise that earned the +3; smaller raises do not restart the 12 turns. Every pay cut gives −10.
+8. **Promotion** changes the employment's level only (the ladder ends at principal); salary is unchanged until a raise.
+9. **Plan energy:** create and update cost 2 (`hiring_plan`); closing is free, like closing a search. `UpdatePlan` carries every field; the API's PATCH merges omitted fields.
+10. **Plan statuses:** `active`, `paused` (owner left), `filled` (hired = target), `closed`. Raising the target or giving a paused plan a new owner on staff reactivates it.
+11. **Delegate reading of §13.10:** "no open search for its role" means any open company search for that role; the plan's candidates are all open candidates for the role. Steps 2–4 run whenever the plan is active; offers go only up to the number still needed (target − hired − pending). Interviews continue while energy − 6 > `delegates.scout_cost`; scouting needs ≥ `scout_cost`. Offer salary = ask × ratio_bp / 10,000, rounded half to even.
+12. **Scouting** is an action (`scout`) for any actor at `delegates.scout_cost`; it is not exposed in the API or CLI in M2a.
+13. **Delegate energy** starts at `delegates.energy_per_month` when a person first owns a plan, and resets with the founder's after phase 12.
+14. **People who leave:** in phase 1 (after notices end) and immediately on firing, a departed leader's post clears and their plans pause, each with an inbox item (`unit_leader_left`, `plan_paused`).
+15. **Where hires join:** the offer stores the plan's unit at the time it is made; dissolving a unit moves its plans' and pending offers' unit to the parent.
+16. **Live state** also loads whoever made a pending offer and every live plan's owner, so the pitch uses the maker's recruiting even after they leave and paused plans can still name their owner.
+17. **Delegate log rows** take `seq` values after the player's actions for that turn; replay raises `ReplayMismatchError` when recomputed delegate actions differ from the logged ones.
+18. **The founder's offer hint** includes the pitch term (the company knows the founder exactly).
+19. **Morale breakdown:** a projection for this month with runway at this month's projected costs (as on the Overview); fit appears once the profile is known; each teammate tag shows the capped term of the holders the company has noticed; the rest is "other". It is also used by `tst morale`.
+20. **Previews** apply the action to the loaded state without saving and report the differences.
+21. **Plan activity wording** ("interviewed 4 software engineers and made 2 offers") is built in the sim and passed to the `plan_activity` template.
+22. **M1 tests that offered without interviewing** now interview first through the API/CLI/DB, or set the interview precondition directly (`mark_interviewed`, `with_candidates(..., interviewed=True)`) where the test is about offers, so their numbers are unchanged.
+23. **Performance:** `summarize()` (run after every committed turn for the save index) reads the player's company row instead of loading the whole state.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+1. **Delegate searches stay open after a plan fills or closes.** A plan's job post keeps costing $500 a month and producing batches until the player closes it (the 120-turn check ends with 76 open candidates). §13.10 has no rule for it; suggest the delegate closes a job post it opened once its plan is filled or closed.
+2. **Judgment barely matters yet:** over 200 seeds, judgment-16 hires average CA 115.45 against 115.36 for judgment 6. The criterion holds, but the effect is small for the balance pass (ranking by role-skill midpoints is already close to the truth after a job-post screen and an interview).
+3. **No action reparents a team** under a department; the player must dissolve and recreate it. Worth a `move_unit` action in M2b if the screens need it.
+4. **Attrition:** the performance check starts at 25 staff and ends near 16 after 120 turns, even with three plans refilling; base resignation (about 0.5% a month) may be high for a 30-year campaign.
+5. **People screens (M2b):** person responses do not yet carry unit and manager; the screens can read them from `GET /org`.
