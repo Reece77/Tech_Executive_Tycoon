@@ -1,28 +1,42 @@
-import { Badge, NavLink as MantineNavLink, Stack } from '@mantine/core';
 import { NavLink } from 'react-router';
 import { NAV_ITEMS } from '../lib/nav';
 
-export function LeftNav({ saveId }: { saveId: string }) {
+export function LeftNav({ saveId, unread }: { saveId: string; unread: number }) {
   return (
-    <Stack gap={2} p="xs" component="nav" aria-label="Game screens">
-      {NAV_ITEMS.map((item) => (
-        <NavLink key={item.path} to={`/game/${saveId}/${item.path}`} style={{ all: 'unset' }}>
-          {({ isActive }) => (
-            <MantineNavLink
-              component="span"
-              active={isActive}
-              label={item.label}
-              rightSection={
-                item.arrivesIn ? (
-                  <Badge size="xs" variant="outline" color="gray">
-                    {item.arrivesIn}
-                  </Badge>
-                ) : undefined
-              }
-            />
+    <nav className="tst-nav" aria-label="Game screens">
+      {NAV_ITEMS.map((item, index) => (
+        <NavLink
+          key={item.path}
+          to={`/game/${saveId}/${item.path}`}
+          className="tst-navlink"
+          data-dimmed={item.arrivesIn ? 'true' : undefined}
+        >
+          <span className="tst-key">{index + 1}</span>
+          {item.label}
+          {item.arrivesIn && (
+            <span className="tst-muted" style={{ marginLeft: 'auto', fontSize: 11 }}>
+              {item.arrivesIn}
+            </span>
+          )}
+          {item.path === 'inbox' && unread > 0 && (
+            <span
+              className="tst-num"
+              data-testid="unread-count"
+              aria-label={`${unread} unread`}
+              style={{
+                marginLeft: 'auto',
+                fontSize: 12,
+                background: 'var(--tst-accent)',
+                color: 'var(--tst-bg)',
+                borderRadius: 9,
+                padding: '0 7px',
+              }}
+            >
+              {unread}
+            </span>
           )}
         </NavLink>
       ))}
-    </Stack>
+    </nav>
   );
 }
