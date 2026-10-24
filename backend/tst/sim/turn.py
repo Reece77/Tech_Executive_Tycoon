@@ -25,6 +25,7 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
+from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.people.growth import grow_person
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
@@ -118,14 +119,21 @@ def financing(ctx: TurnContext) -> TurnContext:  # M4
 
 
 def people_updates(ctx: TurnContext) -> TurnContext:
-    """Growth and aging for everyone on staff (formulas.md section 3), by person id.
+    """Growth and aging for everyone on staff (formulas.md section 3), by person id, with
+    each manager's mentoring multiplier (13.5) from the reporting lines at the phase start.
 
     Then morale, resignations and retirements, monthly tag reveals, and employed_month
     narrowing (formulas.md sections 4, 9, 10). Relationships arrive later.
     """
-    staff_ids = {e.person_id for e in ctx.state.employments if e.counts_as_staff}
+    mentoring: dict[int, float] = {}
+    for company in ctx.state.companies:
+        view = org_view(ctx.state, company.id)
+        for person_id in view.unit_of:
+            mentoring[person_id] = manager_terms(ctx.state, view, person_id, ctx.balance).growth
     people = tuple(
-        grow_person(p, ctx.turn, ctx.rng, ctx.data, ctx.balance) if p.id in staff_ids else p
+        grow_person(p, ctx.turn, ctx.rng, ctx.data, ctx.balance, mentoring[p.id])
+        if p.id in mentoring
+        else p
         for p in sorted(ctx.state.people, key=lambda p: p.id)
     )
     state = replace(ctx.state, people=people)

@@ -18,9 +18,17 @@ from tst.sim.rng import RngFactory
 
 
 def grow_person(
-    person: Person, turn: int, rng: RngFactory, data: GameData, balance: Balance
+    person: Person,
+    turn: int,
+    rng: RngFactory,
+    data: GameData,
+    balance: Balance,
+    mentoring: float = 1.0,
 ) -> Person:
-    """One month of growth: role skills grow toward PA, every skill declines with age."""
+    """One month of growth: role skills grow toward PA, every skill declines with age.
+
+    `mentoring` is the manager's M_growth (formulas.md 13.5); 1 for the founder.
+    """
     growth = balance.growth
     role = growth_role(person, data)  # the founder's best fit is recomputed each month
     in_role = set(role.primary) | set(role.secondary)
@@ -41,6 +49,7 @@ def grow_person(
             professionalism=professionalism,
             growth=growth,
             noise=noise,
+            mentoring=mentoring,
         )
         changes[key] = person.skills[key] + delta
     return replace(person, skills=person.skills.updated(changes))  # updated() clamps

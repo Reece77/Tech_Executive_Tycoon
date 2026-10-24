@@ -76,6 +76,7 @@ def growth_delta(
     professionalism: float,
     growth: GrowthBalance,
     noise: float = 0.0,
+    mentoring: float = 1.0,
 ) -> float:
     """Monthly change for one skill.
 
@@ -84,6 +85,8 @@ def growth_delta(
     where the caller draws noise ~ Normal(0, growth.noise_rel_sd); noise 0 is the
     noise-free value used by the worked examples.
     Other skills: -d(age), with no noise.
+    M2: the growth term (not the decline) is also multiplied by `mentoring`, the manager's
+    M_growth from formulas.md 13.5 (1 for the founder).
     """
     decline = band_value(growth.decline, age)
     if not in_role:
@@ -92,7 +95,13 @@ def growth_delta(
     factor = band_value(growth.age_factor, age)
     multiplier = max(0.0, 1 + noise)
     return (
-        growth.rate * factor * headroom * professionalism / PROFESSIONALISM_DIVISOR * multiplier
+        growth.rate
+        * factor
+        * headroom
+        * professionalism
+        / PROFESSIONALISM_DIVISOR
+        * multiplier
+        * mentoring
         - decline
     )
 
