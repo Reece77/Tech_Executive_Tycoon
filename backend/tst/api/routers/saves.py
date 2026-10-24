@@ -15,9 +15,12 @@ from tst.api.schemas.saves import (
     OverviewOut,
     SaveOut,
     SnapshotPointOut,
+    TeamOut,
 )
 from tst.db import inbox, repository
 from tst.sim.calendar import format_turn
+from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
+from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
 from tst.sim.setup import DEFAULT_FOUNDER
 
 router = APIRouter(prefix="/api/saves", tags=["saves"])
@@ -53,8 +56,21 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         player = state.player
         latest = ov.history[-1][1] if ov.history else None
         costs = repository.costs_for_turn(session, player.id, state.turn - 1)
+        paid = repository.costs_for_turn(session, player.id, state.turn)
         unread = inbox.unread_count(session, player.id)
         newest = inbox.list_inbox(session, player.id, limit=LATEST_INBOX)
+    staff = state.staff(player.id)
+    employees = [e for e in staff if not state.person(e.person_id).is_founder]
+    morale = [m for e in employees if (m := state.person_state(e.person_id).morale) is not None]
+    projected = [
+        CostLineOut(account=account, label=label, amount_cents=amount)
+        for label, account, amount in monthly_costs(state, player.id, data.balance)
+        if amount
+    ]
+    month_paid = [
+        CostLineOut(account=code, label=name, amount_cents=amount) for code, name, amount in paid
+    ]
+    runway_warn = data.balance.morale.runway_warn_months
     return OverviewOut(
         save_id=save_id,
         company_name=ov.company_name,
@@ -76,6 +92,8 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
             for turn, snap in ov.history
         ],
         stage=player.stage,
+        stage_label=views.STAGE_LABELS.get(player.stage, f"Stage {player.stage}"),
+        runway_low=ov.runway_months is not None and ov.runway_months < runway_warn,
         mission=list(player.mission),
         headcount=len(state.staff(player.id)),
         payroll_cents=latest.payroll_cents if latest else 0,
@@ -87,6 +105,21 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
             for code, name, amount in costs
         ],
         latest_inbox=[views.inbox_item(m) for m in newest],
+        team=TeamOut(
+            headcount=len(staff),
+            on_notice=sum(1 for e in staff if e.status == "notice"),
+            people_cost_cents=sum(employment_monthly_cost_cents(e, data.balance) for e in staff),
+            payroll_cents=sum(
+                (s := monthly_salary_cents(e.salary_cents))
+                + benefits_cents(s, data.balance.payroll)
+                for e in staff
+            ),
+            avg_morale=sum(morale) / len(morale) if morale else None,
+        ),
+        month_costs=projected,
+        month_paid=month_paid,
+        month_total_cents=sum(c.amount_cents for c in projected)
+        + sum(c.amount_cents for c in month_paid),
     )
 
 

@@ -469,6 +469,7 @@ class Background(_Frozen):
 class PersonalityPreset(_Frozen):
     key: str = Field(pattern=_KEY)
     label: str = Field(min_length=1)
+    description: str = Field(min_length=1)  # one line for the new-game preset card
     values: dict[str, float]
 
 

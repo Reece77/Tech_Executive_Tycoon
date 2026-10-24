@@ -92,11 +92,14 @@ def unread_count(session: Session, company_id: int) -> int:
     )
 
 
-def mark_read(session: Session, company_id: int, item_id: int) -> InboxMessage:
+def mark_read(
+    session: Session, company_id: int, item_id: int, *, read: bool = True
+) -> InboxMessage:
+    """Set an item's read flag (read=False marks it unread again)."""
     row = session.get(InboxItemRow, item_id)
     if row is None or row.company_id != company_id:
         raise UnknownInboxItemError(f"no inbox item {item_id}")
-    row.read = True
+    row.read = read
     return _message(row)
 
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import APIRouter, Query
+from sqlalchemy import select
 
 from tst.api import views
 from tst.api.deps import DataDep, SettingsDep
@@ -28,6 +29,8 @@ from tst.api.schemas.people import (
     SearchOut,
 )
 from tst.db import inbox, repository
+from tst.db.mappers import search_from_row
+from tst.db.models import SearchRow
 from tst.loader import LoadedData
 from tst.sim.actions import (
     Action,
@@ -77,10 +80,12 @@ def _act(path: Path, data: LoadedData, action: Action) -> tuple[ActionResult, Ac
     "/people", response_model=list[PersonSummaryOut], responses=ERRORS, operation_id="listPeople"
 )
 def list_people(save_id: str, settings: SettingsDep, data: DataDep) -> list[PersonSummaryOut]:
-    state = _state(_path(settings, save_id))
-    company = state.player.id
+    with repository.open_session(_path(settings, save_id)) as session:
+        state = repository.load_state(session)
+        company = state.player.id
+        checks = views.checks_by_person(session, company)
     return [
-        views.person_summary(state, company, e.person_id, data)
+        views.person_summary(state, company, e.person_id, data, checks)
         for e in sorted(state.staff(company), key=lambda e: e.person_id)
     ]
 
@@ -120,8 +125,22 @@ def fire_person(save_id: str, person_id: int, settings: SettingsDep, data: DataD
     operation_id="listSearches",
 )
 def list_searches(save_id: str, settings: SettingsDep, data: DataDep) -> list[SearchOut]:
-    state = _state(_path(settings, save_id))
-    return [views.search_out(state, s, data) for s in state.open_searches(state.player.id)]
+    """Open searches, plus closed ones whose candidates are still available, newest first."""
+    with repository.open_session(_path(settings, save_id)) as session:
+        state = repository.load_state(session)
+        company = state.player.id
+        live = {c.search_id for c in state.open_candidates(company)}
+        open_ids = {s.id for s in state.open_searches(company)}
+        closed = [
+            search_from_row(row)
+            for row in session.scalars(
+                select(SearchRow).where(
+                    SearchRow.id.in_(live - open_ids), SearchRow.company_id == company
+                )
+            )
+        ]
+    searches = sorted([*state.open_searches(company), *closed], key=lambda s: -s.id)
+    return [views.search_out(state, s, data) for s in searches]
 
 
 @router.post(
@@ -160,10 +179,12 @@ def close_search(save_id: str, search_id: int, settings: SettingsDep, data: Data
     operation_id="listCandidates",
 )
 def list_candidates(save_id: str, settings: SettingsDep, data: DataDep) -> list[PersonSummaryOut]:
-    state = _state(_path(settings, save_id))
-    company = state.player.id
+    with repository.open_session(_path(settings, save_id)) as session:
+        state = repository.load_state(session)
+        company = state.player.id
+        checks = views.checks_by_person(session, company)
     return [
-        views.person_summary(state, company, c.person_id, data)
+        views.person_summary(state, company, c.person_id, data, checks)
         for c in state.open_candidates(company)
     ]
 
@@ -259,6 +280,14 @@ def preview_offer(
         expectation_cents=preview.expectation_cents,
         problems=list(preview.problems),
         option_pool_left_bp=max(pool_left + (pending.equity_bp if pending else 0), 0),
+        reasons=views.offer_reasons(
+            state,
+            state.person(candidate.person_id),
+            state.player.id,
+            preview.ratio,
+            body.equity_bp,
+            data,
+        ),
     )
 
 
@@ -315,6 +344,19 @@ def mark_inbox_read(save_id: str, item_id: int, settings: SettingsDep) -> InboxI
     with repository.open_session(path) as session, session.begin():
         player = repository.load_state(session).player
         return views.inbox_item(inbox.mark_read(session, player.id, item_id))
+
+
+@router.post(
+    "/inbox/{item_id}/unread",
+    response_model=InboxItemOut,
+    responses=ERRORS,
+    operation_id="markInboxUnread",
+)
+def mark_inbox_unread(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session, session.begin():
+        player = repository.load_state(session).player
+        return views.inbox_item(inbox.mark_read(session, player.id, item_id, read=False))
 
 
 @router.get(

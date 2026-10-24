@@ -10,6 +10,7 @@ from tests.helpers import fresh_game, make_person, with_candidates, with_employe
 from tst.loader import LoadedData
 from tst.sim.actions import Action, MakeOffer, OpenSearch, apply_action
 from tst.sim.decisions import Decisions
+from tst.sim.hiring import phases
 from tst.sim.hiring.formulas import acceptance_probability, offer_score
 from tst.sim.hiring.models import Offer, PersonState
 from tst.sim.ledger import CASH, apply_entries
@@ -289,6 +290,26 @@ def test_payroll_posts_every_cost(loaded: LoadedData) -> None:
     assert snap.payroll_cents == 958_333 + 191_667
     assert snap.headcount == 2
     assert snap.cash_cents == game.cash
+
+
+def test_monthly_costs_project_phase_6(loaded: LoadedData) -> None:
+    """The Overview's projection uses the same lines phase 6 posts (formulas.md section 8)."""
+    state = fresh_game(loaded)
+    engineer = replace(make_person(loaded, 20, "software_engineer", "senior"), tags=())
+    state = with_employee(loaded, state, engineer, 11_500_000)
+    game = Game(loaded, state)
+    game.act(OpenSearch(1, "designer", "job_post"))
+    projected = {
+        account: amount
+        for _, account, amount in phases.monthly_costs(game.state, 1, loaded.balance)
+        if amount
+    }
+    (costs,) = [e for e in game.turn().ledger_entries if e.memo.startswith("Monthly costs")]
+    assert projected == {ln.account: ln.amount for ln in costs.lines if ln.account != CASH}
+    employment = game.state.employment_of(engineer.id)
+    assert employment is not None
+    # $115,000 senior engineer: $12,100.00 a month (formulas.md section 8 worked example).
+    assert phases.employment_monthly_cost_cents(employment, loaded.balance) == 1_210_000
 
 
 def test_notice_is_paid_then_ends(loaded: LoadedData) -> None:

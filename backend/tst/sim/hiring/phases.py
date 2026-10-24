@@ -206,6 +206,39 @@ def resolve_offers(
 # --- Phase 6: payroll and operating costs ---------------------------------------------------
 
 
+def monthly_costs(
+    state: GameState, company_id: int, balance: Balance
+) -> tuple[tuple[str, AccountCode, Cents], ...]:
+    """(memo label, account, amount) of one company's phase-6 costs for the current state.
+
+    Phase 6 posts exactly these; the Overview shows them as this month's projection.
+    """
+    staff = state.staff(company_id)
+    salaries = sum(monthly_salary_cents(e.salary_cents) for e in staff)
+    benefits = sum(
+        benefits_cents(monthly_salary_cents(e.salary_cents), balance.payroll) for e in staff
+    )
+    office = balance.payroll.office_cost_per_head_cents * len(staff)
+    job_posts = [s for s in state.open_searches(company_id) if s.channel == "job_post"]
+    return (
+        ("Salaries", SALARIES, salaries),
+        ("Benefits", BENEFITS, benefits),
+        ("Office", RENT, office),
+        ("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents),
+        ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts)),
+    )
+
+
+def employment_monthly_cost_cents(employment: Employment, balance: Balance) -> Cents:
+    """Salary, benefits and office for one employment per month (formulas.md section 8)."""
+    salary = monthly_salary_cents(employment.salary_cents)
+    return (
+        salary
+        + benefits_cents(salary, balance.payroll)
+        + balance.payroll.office_cost_per_head_cents
+    )
+
+
 def payroll(state: GameState, balance: Balance) -> tuple[tuple[LedgerEntry, ...], dict[int, Cents]]:
     """Salaries, benefits, office, base overhead and job-post fees (formulas.md section 8).
 
@@ -214,21 +247,10 @@ def payroll(state: GameState, balance: Balance) -> tuple[tuple[LedgerEntry, ...]
     entries: list[LedgerEntry] = []
     payroll_by_company: dict[int, Cents] = {}
     for company in sorted(state.companies, key=lambda c: c.id):
-        staff = state.staff(company.id)
-        salaries = sum(monthly_salary_cents(e.salary_cents) for e in staff)
-        benefits = sum(
-            benefits_cents(monthly_salary_cents(e.salary_cents), balance.payroll) for e in staff
+        costs = monthly_costs(state, company.id, balance)
+        payroll_by_company[company.id] = sum(
+            amount for _, account, amount in costs if account in (SALARIES, BENEFITS)
         )
-        payroll_by_company[company.id] = salaries + benefits
-        office = balance.payroll.office_cost_per_head_cents * len(staff)
-        job_posts = [s for s in state.open_searches(company.id) if s.channel == "job_post"]
-        costs: list[tuple[str, AccountCode, Cents]] = [
-            ("Salaries", SALARIES, salaries),
-            ("Benefits", BENEFITS, benefits),
-            ("Office", RENT, office),
-            ("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents),
-            ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts)),
-        ]
         lines = [LedgerLine(account, amount) for _, account, amount in costs if amount]
         total = sum(line.amount for line in lines)
         if total:
