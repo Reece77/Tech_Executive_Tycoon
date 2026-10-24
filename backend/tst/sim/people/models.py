@@ -136,6 +136,8 @@ class Employment:
     end_turn: int | None
     status: EmploymentStatus
     end_reason: EndReason | None = None
+    unit_id: int | None = None  # org unit; None = the company root (formulas.md 13.1)
+    last_raise_turn: int | None = None  # last raise that earned the raise morale bonus (13.8)
 
     @property
     def counts_as_staff(self) -> bool:

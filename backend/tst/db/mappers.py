@@ -11,9 +11,11 @@ from tst.db.models import (
     CompanyRow,
     DecisionLogRow,
     EmploymentRow,
+    HiringPlanRow,
     LedgerEntryRow,
     LedgerLineRow,
     OfferRow,
+    OrgUnitRow,
     PersonHiddenRow,
     PersonInterestRow,
     PersonPersonalityRow,
@@ -43,6 +45,16 @@ from tst.sim.hiring.models import (
 )
 from tst.sim.ledger import LedgerEntry, LedgerLine
 from tst.sim.log import LogItem
+from tst.sim.org.models import (
+    HiringPlan,
+    OrgUnit,
+    PlanActivity,
+    PlanChannel,
+    PlanStatus,
+    UnitKind,
+    UnitStatus,
+    WorkPolicy,
+)
 from tst.sim.people.models import (
     PA_KEY,
     Employment,
@@ -67,6 +79,7 @@ def company_to_state(row: CompanyRow) -> CompanyState:
         stage=row.stage,
         founded_turn=row.founded_turn,
         mission=tuple(row.mission or ()),
+        work_policy=cast(WorkPolicy, row.work_policy),
     )
 
 
@@ -78,6 +91,7 @@ def company_to_row(company: CompanyState) -> CompanyRow:
         stage=company.stage,
         founded_turn=company.founded_turn,
         mission=list(company.mission),
+        work_policy=company.work_policy,
     )
 
 
@@ -87,6 +101,7 @@ def update_company_row(row: CompanyRow, company: CompanyState) -> None:
     row.stage = company.stage
     row.founded_turn = company.founded_turn
     row.mission = list(company.mission)
+    row.work_policy = company.work_policy
 
 
 def game_state_from_rows(
@@ -248,6 +263,8 @@ def employment_to_row(employment: Employment) -> EmploymentRow:
         end_turn=employment.end_turn,
         status=employment.status,
         end_reason=employment.end_reason,
+        unit_id=employment.unit_id,
+        last_raise_turn=employment.last_raise_turn,
     )
 
 
@@ -264,6 +281,8 @@ def employment_from_row(row: EmploymentRow) -> Employment:
         end_turn=row.end_turn,
         status=cast(EmploymentStatus, row.status),
         end_reason=cast(EndReason | None, row.end_reason),
+        unit_id=row.unit_id,
+        last_raise_turn=row.last_raise_turn,
     )
 
 
@@ -348,6 +367,7 @@ def candidate_to_row(candidate: Candidate) -> CandidateRow:
         expires_turn=candidate.expires_turn,
         status=candidate.status,
         resolved_turn=candidate.resolved_turn,
+        interviewed_turn=candidate.interviewed_turn,
     )
 
 
@@ -361,6 +381,7 @@ def candidate_from_row(row: CandidateRow) -> Candidate:
         expires_turn=row.expires_turn,
         status=cast(CandidateStatus, row.status),
         resolved_turn=row.resolved_turn,
+        interviewed_turn=row.interviewed_turn,
     )
 
 
@@ -375,6 +396,8 @@ def offer_to_row(offer: Offer) -> OfferRow:
         made_turn=offer.made_turn,
         status=offer.status,
         resolved_turn=offer.resolved_turn,
+        plan_id=offer.plan_id,
+        unit_id=offer.unit_id,
     )
 
 
@@ -389,6 +412,8 @@ def offer_from_row(row: OfferRow) -> Offer:
         made_turn=row.made_turn,
         status=cast(OfferStatus, row.status),
         resolved_turn=row.resolved_turn,
+        plan_id=row.plan_id,
+        unit_id=row.unit_id,
     )
 
 
@@ -416,6 +441,8 @@ def next_ids_from_meta(meta: SaveMetaRow) -> NextIds:
         search=meta.next_search_id,
         offer=meta.next_offer_id,
         employment=meta.next_employment_id,
+        unit=meta.next_unit_id,
+        plan=meta.next_plan_id,
     )
 
 
@@ -424,3 +451,77 @@ def next_ids_to_meta(meta: SaveMetaRow, ids: NextIds) -> None:
     meta.next_search_id = ids.search
     meta.next_offer_id = ids.offer
     meta.next_employment_id = ids.employment
+    meta.next_unit_id = ids.unit
+    meta.next_plan_id = ids.plan
+
+
+# --- Organization (M2a) ---------------------------------------------------------------------
+
+
+def unit_to_row(unit: OrgUnit) -> OrgUnitRow:
+    return OrgUnitRow(
+        id=unit.id,
+        company_id=unit.company_id,
+        kind=unit.kind,
+        name=unit.name,
+        parent_id=unit.parent_id,
+        leader_id=unit.leader_id,
+        policy=unit.policy,
+        created_turn=unit.created_turn,
+        status=unit.status,
+        dissolved_turn=unit.dissolved_turn,
+    )
+
+
+def unit_from_row(row: OrgUnitRow) -> OrgUnit:
+    return OrgUnit(
+        id=row.id,
+        company_id=row.company_id,
+        kind=cast(UnitKind, row.kind),
+        name=row.name,
+        parent_id=row.parent_id,
+        leader_id=row.leader_id,
+        policy=cast(WorkPolicy | None, row.policy),
+        created_turn=row.created_turn,
+        status=cast(UnitStatus, row.status),
+        dissolved_turn=row.dissolved_turn,
+    )
+
+
+def plan_to_row(plan: HiringPlan) -> HiringPlanRow:
+    return HiringPlanRow(
+        id=plan.id,
+        company_id=plan.company_id,
+        owner_id=plan.owner_id,
+        unit_id=plan.unit_id,
+        role=plan.role,
+        target=plan.target,
+        channel=plan.channel,
+        ratio_bp=plan.ratio_bp,
+        equity_bp=plan.equity_bp,
+        created_turn=plan.created_turn,
+        status=plan.status,
+        hired=plan.hired,
+        closed_turn=plan.closed_turn,
+        last_activity=None if plan.last_activity is None else asdict(plan.last_activity),
+    )
+
+
+def plan_from_row(row: HiringPlanRow) -> HiringPlan:
+    activity = row.last_activity
+    return HiringPlan(
+        id=row.id,
+        company_id=row.company_id,
+        owner_id=row.owner_id,
+        unit_id=row.unit_id,
+        role=row.role,
+        target=row.target,
+        channel=cast(PlanChannel, row.channel),
+        ratio_bp=row.ratio_bp,
+        equity_bp=row.equity_bp,
+        created_turn=row.created_turn,
+        status=cast(PlanStatus, row.status),
+        hired=row.hired,
+        closed_turn=row.closed_turn,
+        last_activity=None if activity is None else PlanActivity(**activity),
+    )

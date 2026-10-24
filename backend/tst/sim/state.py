@@ -9,6 +9,7 @@ from typing import Any
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
+from tst.sim.org.models import HiringPlan, OrgUnit, WorkPolicy
 from tst.sim.people.models import Employment, Person, RevealState
 
 
@@ -28,6 +29,7 @@ class CompanyState:
     stage: int  # spec section 3: 0 solo founder .. 5 conglomerate
     founded_turn: int
     mission: tuple[str, ...] = ()  # two interests.yaml keys (formulas.md section 7)
+    work_policy: WorkPolicy = "office"  # the company root's policy (formulas.md 13.9)
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,6 +44,8 @@ class GameState:
     candidates: tuple[Candidate, ...] = ()  # open candidates, sorted by person id
     offers: tuple[Offer, ...] = ()  # pending offers, sorted by id
     person_states: tuple[PersonState, ...] = ()  # sorted by person id
+    units: tuple[OrgUnit, ...] = ()  # active org units, sorted by id (M2)
+    plans: tuple[HiringPlan, ...] = ()  # hiring plans that are not closed, sorted by id (M2)
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -126,6 +130,24 @@ class GameState:
                 return o
         return None
 
+    def unit(self, unit_id: int) -> OrgUnit | None:
+        for u in self.units:
+            if u.id == unit_id:
+                return u
+        return None
+
+    def active_units(self, company_id: int) -> tuple[OrgUnit, ...]:
+        return tuple(u for u in self.units if u.company_id == company_id and u.status == "active")
+
+    def plan(self, plan_id: int) -> HiringPlan | None:
+        for p in self.plans:
+            if p.id == plan_id:
+                return p
+        return None
+
+    def live_plans(self, company_id: int) -> tuple[HiringPlan, ...]:
+        return tuple(p for p in self.plans if p.company_id == company_id and p.status != "closed")
+
     @property
     def player(self) -> CompanyState:
         for company in self.companies:
@@ -178,6 +200,14 @@ def with_candidate(state: GameState, candidate: Candidate) -> GameState:
 
 def with_offer(state: GameState, offer: Offer) -> GameState:
     return replace(state, offers=_upsert(state.offers, offer, lambda o: o.id))
+
+
+def with_unit(state: GameState, unit: OrgUnit) -> GameState:
+    return replace(state, units=_upsert(state.units, unit, lambda u: u.id))
+
+
+def with_plan(state: GameState, plan: HiringPlan) -> GameState:
+    return replace(state, plans=_upsert(state.plans, plan, lambda p: p.id))
 
 
 def with_person_state(state: GameState, person_state: PersonState) -> GameState:

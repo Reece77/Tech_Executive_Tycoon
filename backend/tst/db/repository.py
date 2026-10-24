@@ -69,6 +69,8 @@ SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 MAX_STORED_SEED = 2**63 - 1  # SQLite INTEGER is signed 64-bit
 INDEX_FILE = "index.json"
 NEW_GAME_KIND = "new_game"  # decision_log row holding the new-game choices (for replay)
+PLAYER_SOURCE = "player"  # decision_log.source of player actions (re-applied by replay)
+DELEGATE_SOURCE = "delegate"  # delegate actions: recomputed by replay, never re-applied
 
 
 @dataclass(frozen=True, slots=True)
@@ -164,6 +166,8 @@ def create_save(
                     next_search_id=state.next_ids.search,
                     next_offer_id=state.next_ids.offer,
                     next_employment_id=state.next_ids.employment,
+                    next_unit_id=state.next_ids.unit,
+                    next_plan_id=state.next_ids.plan,
                 )
             )
             session.add_all(
@@ -425,6 +429,8 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
                 kind=action.kind,
                 payload=action_payload(action),
                 seq=seq,
+                source=PLAYER_SOURCE,
+                actor_id=action.actor_id,
             )
         )
     return result
