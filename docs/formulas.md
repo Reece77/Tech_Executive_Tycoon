@@ -167,6 +167,8 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The 
 
 ## 6. Founder energy
 
+**Switched off from M2a (ADR-0016).** `founder.energy_enabled` is `false` by default: founder actions neither check nor spend energy, and the screens hide the meter. The rules below stay in the code and in tests (run with the setting on) so energy can return, most likely as product attention in M3. Delegate energy (§13.10) is unaffected.
+
 100 points per month, stored on the founder's `person_state.energy`. Actions spend it at once (ADR-0014); `advance_turn` resets it after phase 12. Unused energy does not carry over.
 
 | Action | Cost |
@@ -222,6 +224,7 @@ p = \frac{1}{1 + e^{-3\,(score - 0)}}
 | 2 Venture-backed | +0.5 | 0.5 |
 | 3 Scale-up | +1.0 | 0.3 |
 
+- **M2a: an offer requires an interview** (ADR-0016). The offering company must have interviewed the candidate (the founder or one of its delegates); a network intro or reference check does not count. Otherwise the action fails with `InterviewRequired`.
 - If `R < 0.85`, the candidate always declines.
 - **Option pool:** an offer may carry at most 200 bp of equity, and equity held by staff plus pending offers may not exceed 1,000 bp (a 10% pool). The founder's ownership is outside the pool and arrives with the cap table in M4.
 - An accepted offer moves the company from stage 0 to stage 1 ("first hire", spec §3) in phase 10.
@@ -382,6 +385,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `reveal.pa_phrase_bounds` | [70, 100, 130, 160] | CA points | §4 |
 | `founder.skill_base` / `.skill_points` / `.skill_cap` | 5 / 70 / 18 | attribute points | §5 |
 | `founder.default_age` | 28 | years | §5 |
+| `founder.energy_enabled` | false | on/off | §6 (ADR-0016) |
 | `founder.energy_per_month` | 100 | energy | §6 |
 | `founder.energy_cost.<action>` | see §6 | energy | §6 |
 | `founder.age_range` | [22, 60] | years | §5 |
@@ -438,7 +442,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 
 ## 13. Organization (M2)
 
-The org is a tree of units under the company. Every effect below works through things M1 already has: morale (§9), growth (§3), offers (§7) and founder energy (§6). Productivity, coordination cost and decision latency arrive with products in M3.
+The org is a tree of units under the company. Every effect below works through things M1 already has: morale (§9), growth (§3) and offers (§7). Founder energy (§6) is switched off (ADR-0016); delegates still have their own. Productivity, coordination cost and decision latency arrive with products in M3.
 
 ### 13.1 Units and reporting lines
 
@@ -518,13 +522,13 @@ Each tag affects the other members of its holder's unit (not the holder), using 
 ### 13.10 Delegated hiring
 
 - **Hiring plan:** owned by a delegate (any staff member except the founder; usually a recruiter or the unit's leader), for one unit and role, with a target count, a channel (job post, recruiter, network, or any), a maximum salary ratio (at most 1.2× the ask) and equity per offer. Hires join the plan's unit.
-- **Delegate energy:** 100 per month per delegate, stored on their `person_state.energy`, reset with the founder's. It is separate from the founder's.
+- **Delegate energy:** 100 per month per delegate, stored on their `person_state.energy`, reset after phase 12. It is the delegate's work capacity and is unaffected by `founder.energy_enabled` (ADR-0016).
 - **Each turn, in phase 2** (deterministic; randomness only inside the actions it takes), for each plan in id order, while the delegate has energy:
   1. If the plan is short and has no open search for its role, open one (channel `any` means job post).
   2. Rank that role's open candidates by the **company's displayed** range midpoints of the role's skills (primary × 3, secondary × 1); ties by candidate id.
   3. Interview the best uninterviewed candidates (6 energy each) while more than 20 energy would remain.
   4. With at least 20 energy left, scout: apply `scouting_month` (§4) once to every open candidate of the plan's searches.
-  5. Offer to the best interviewed candidates without a pending offer, at the ask × the plan's ratio, up to the number still needed, within the option pool.
+  5. Offer to the best candidates the company has interviewed (the §7 interview rule) without a pending offer, at the ask × the plan's ratio, up to the number still needed, within the option pool.
 - Delegate actions call the same `apply_action` with `actor` = the delegate, so energy, rules and the offer pitch (§7) apply. Their randomness uses stream `delegate`, key `(person_id, n)`, where `n` counts that delegate's actions this turn (ADR-0015).
 - **Quality emerges:** better `judgment_of_talent` narrows ranges more (§4), so a good recruiter picks better people; better `recruiting` lands more offers.
 - Each plan writes one inbox summary per turn when it acted ("Petra interviewed 4 software engineers and made 2 offers").

@@ -60,7 +60,7 @@ The base turn is one month; a critical event opens a weekly crisis window of up 
 4. **Events.** The event director selects one to three events from state triggers; the LLM writes them, the engine validates them.
 5. **Month-end report.** P&L, KPI deltas, and a short narrative recap are written to the history log.
 
-**Actions between turns (ADR-0014):** decisions are immediate actions applied the moment the player confirms them (interview, scout, offer, fire, reorganize, raise). Each costs founder energy (100 a month, reset at month end); offers are answered when the player presses Continue. From M2, staff delegates take the same actions on the player's behalf in the advance step, with their own energy (ADR-0015).
+**Actions between turns (ADR-0014):** decisions are immediate actions applied the moment the player confirms them (interview, scout, offer, fire, reorganize, raise). An offer needs an interview first, and offers are answered when the player presses Continue. Founder energy is switched off after the M1 playtest and can return later (ADR-0016). From M2, staff delegates take the same actions on the player's behalf in the advance step, with their own energy (ADR-0015).
 
 **Time-scale controls:** "Continue" advances one turn; "Holiday" auto-advances until an event above a chosen severity occurs, with delegated staff making routine decisions using their own attributes.
 
@@ -97,11 +97,11 @@ Every person, including the founder and every rival employee, uses one model: vi
 
 ### 5.3 Founder
 
-The founder is built at game start with a point budget and a background (engineer, salesperson, academic, ex-big-tech, geologist). Founder energy is a scarce monthly resource spent on hands-on actions; delegation frees energy but depends on lieutenants' quality. The founder is outside payroll, morale, resignation, retirement and firing until the board arrives in M4; their tags are known to their own company, and the company mission defaults to the founder's interests.
+The founder is built at game start with a point budget and a background (engineer, salesperson, academic, ex-big-tech, geologist). Founder energy, a monthly budget for hands-on actions, is switched off for now (ADR-0016); delegation instead adds throughput and better judgment of talent, and its quality depends on the lieutenants. The founder is outside payroll, morale, resignation, retirement and firing until the board arrives in M4; their tags are known to their own company, and the company mission defaults to the founder's interests.
 
 ### 5.4 Hiring
 
-Candidate pools are generated per role and region with salary expectations tied to market rates. Recruiters and scouts with higher "judgment of talent" narrow attribute ranges faster. Channels: network, job post, recruiter, acqui-hire, poaching from rivals, university pipeline (v1 builds network, job post and recruiter). A search produces a batch of candidates who stay available for a few months; a candidate with a pending offer does not expire until it is answered, and withdrawing an offer keeps the candidate in the pool. Offers may include equity from an option pool (`docs/formulas.md` §7); a hire's interests are revealed on joining. From M2, a hiring plan lets a staff delegate search, interview and make offers each month.
+Candidate pools are generated per role and region with salary expectations tied to market rates. Recruiters and scouts with higher "judgment of talent" narrow attribute ranges faster. Channels: network, job post, recruiter, acqui-hire, poaching from rivals, university pipeline (v1 builds network, job post and recruiter). A search produces a batch of candidates who stay available for a few months; the company must interview a candidate before making an offer; a candidate with a pending offer does not expire until it is answered, and withdrawing an offer keeps the candidate in the pool. Offers may include equity from an option pool (`docs/formulas.md` §7); a hire's interests are revealed on joining. From M2, a hiring plan lets a staff delegate search, interview and make offers each month.
 
 ## 6. Corporate Structure
 
@@ -437,12 +437,14 @@ All design questions but one are settled, and each answer is recorded in an ADR 
 | Scenarios and difficulty | Four starts and four difficulties; mineral-first start unlocks in v3 | ADR-0011 |
 | LLM budget | Open: configurable monthly token cap with an on-screen meter until Reece sets a number | ADR-0005 |
 | Randomness | One stream name per call site, keyed by entity id, so draws never collide or depend on iteration order | ADR-0013 |
-| Action timing | Player actions apply immediately between turns and cost founder energy; offers are answered at Continue | ADR-0014 |
+| Action timing | Player actions apply immediately between turns; offers are answered at Continue | ADR-0014 |
 | Delegates | Act in the advance step through the player's own actions, with their own energy and random stream | ADR-0015 |
 | Offers and candidates | Withdrawing an offer keeps the candidate; a pending offer blocks expiry; equity comes from an option pool (200 bp per offer, 1,000 bp total before M4) | formulas.md §7 |
 | Company mission | Defaults to the founder's interests | M1b brief |
 | Cash before M4 | Cash may go negative; runway is shown at this month's projected costs | M1b, M1c briefs |
 | Departments | Unlock at 10 staff or at stage 2, whichever comes first | formulas.md §13.1 |
+| Interview before offer | An offer requires that the company (founder or delegate) has interviewed the candidate | ADR-0016 |
+| Founder energy | Switched off by a setting after the M1 playtest; code kept so it can return (likely as product attention in M3). Delegate energy stays as work capacity | ADR-0016 |
 
 ## 21. Pre-Build Artifacts to Generate
 
@@ -465,4 +467,4 @@ Twelve artifacts should exist before the first line of game code; the first five
 
 **Recommended order:** 1, 2, 5 in one sitting (so Claude Code can start M0), then 3 and 4, then 8 and 9 in parallel with M0.
 
-**Status:** items 1, 2, 4, and 5 are in the GitHub repository (`Reece77/Tech_Executive_Tycoon`): rules files, 15 ADRs, `docs/formulas.md` (final through §13, Organization), and briefs for M0 through M2b. Item 3 (data dictionary) is kept current with each migration. M0 and M1 (M1a, M1b, M1c) are complete; M2a is next, and M2b follows once its Org wireframes are drawn.
+**Status:** items 1, 2, 4, and 5 are in the GitHub repository (`Reece77/Tech_Executive_Tycoon`): rules files, 16 ADRs, `docs/formulas.md` (final through §13, Organization), and briefs for M0 through M2b. Item 3 (data dictionary) is kept current with each migration. M0 and M1 (M1a, M1b, M1c) are complete; M2a is next, and M2b follows once its Org wireframes are drawn.

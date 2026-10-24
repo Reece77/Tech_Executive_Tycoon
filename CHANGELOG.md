@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs (M1 playtest): ADR-0016 — offers require an interview, and founder energy is switched off by `founder.energy_enabled` (kept in code and tests); formulas.md §6, §7, §13 and the M2a and M2b briefs updated.
 - Docs (M2 prep): formulas.md §13 organization (units, managers, span of control, manager quality, mentoring, teammate tags, reorganizing, raises and promotions, remote policy, delegated hiring) with worked examples, plus M2 terms in §3, §6, §7 and §9; ADR-0015 (delegates act in phase 2); M2a and M2b briefs.
 - Docs (M1b prep): M1b split into M1b (rules, API, CLI) and M1c (screens); sweep against M1a's code adds live-state-only candidates, stored id counters, an option pool (200 bp per offer, 1,000 bp total), M1 negative-cash rules, overview KPIs, offer and founder preview endpoints, and new-game metadata; wireframes add New-game setup and Overview.
 - M0 foundation: repository tooling, pure sim primitives, data loading, persistence, CLI, golden tests, API, and front-end shell.

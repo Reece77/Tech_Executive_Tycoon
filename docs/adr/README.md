@@ -19,5 +19,6 @@ Each ADR records one decision that coding agents must not re-decide. Status is A
 | [0013](0013-rng-stream-per-use-and-entity-keys.md) | One RNG stream name per call site, keyed by entity id (extends ADR-0002) | Accepted |
 | [0014](0014-immediate-actions-and-pending-items.md) | Player actions apply at once; offers and candidate pools resolve at turn end | Accepted |
 | [0015](0015-delegates-act-in-phase-2.md) | Delegates act in phase 2 through the same actions as the player; own energy and RNG stream | Accepted |
+| [0016](0016-offers-need-an-interview-founder-energy-off.md) | Offers require an interview; founder energy switched off by a setting | Accepted |
 
 Template: [0000-template.md](0000-template.md).
