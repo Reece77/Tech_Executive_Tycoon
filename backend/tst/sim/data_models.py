@@ -203,7 +203,23 @@ class FounderBalance(_Frozen):
         return self
 
 
-ENERGY_ACTIONS = ("interview", "reference_check", "job_post", "recruiter", "network", "offer")
+ENERGY_ACTIONS = (
+    "interview",
+    "reference_check",
+    "job_post",
+    "recruiter",
+    "network",
+    "offer",
+    # M2 org actions (formulas.md section 6)
+    "create_unit",
+    "dissolve_unit",
+    "set_leader",
+    "move_person",
+    "set_policy",
+    "give_raise",
+    "promote",
+    "hiring_plan",
+)
 CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
 HIRING_LEVELS = ("junior", "mid", "senior", "staff")
 
@@ -253,6 +269,8 @@ class HiringBalance(_Frozen):
     lowball_ratio: float = Field(ge=0)
     max_offer_equity_bp: int = Field(ge=0)
     option_pool_bp: int = Field(ge=0)
+    pitch_per_recruiting: float
+    pitch_neutral: float
     offer: OfferBalance
 
     @model_validator(mode="after")
@@ -297,6 +315,70 @@ class TagsBalance(_Frozen):
     reveal_bp_on_check: int = Field(ge=0)
 
 
+ORG_TAGS = ("culture_carrier", "credit_taker", "toxic_high_performer")  # formulas.md 13.6
+MENTOR_TAG = "mentor"  # formulas.md 13.5
+
+
+class ReorgBalance(_Frozen):
+    move: float
+    new_leader_members: float
+    replaced_leader: float
+    dissolve_members: float
+
+
+class RemoteBalance(_Frozen):
+    sociable_at: float
+    sociable_morale: float
+    solitary_at: float
+    solitary_morale: float
+
+
+class OrgBalance(_Frozen):
+    department_unlock_headcount: int = Field(ge=0)
+    span_base: int = Field(ge=1)
+    span_per_leadership: float = Field(gt=0)
+    manager_morale_slope: float
+    manager_morale_cap: float = Field(ge=0)
+    mentoring_neutral: float
+    mentoring_divisor: float = Field(gt=0)
+    mentor_tag_bonus: float
+    growth_mult_min: float = Field(ge=0)
+    growth_mult_max: float = Field(ge=0)
+    tag_morale: dict[str, float]
+    tag_morale_cap: dict[str, float]
+    reorg: ReorgBalance
+    raise_morale: float
+    raise_threshold_bp: int = Field(ge=0)
+    raise_cooldown_turns: int = Field(ge=0)
+    pay_cut_morale: float
+    promote_morale: float
+    remote: RemoteBalance
+
+    @model_validator(mode="after")
+    def _check(self) -> OrgBalance:
+        if self.growth_mult_min > self.growth_mult_max:
+            raise ValueError("growth_mult_min must not exceed growth_mult_max")
+        for name, table in (
+            ("tag_morale", self.tag_morale),
+            ("tag_morale_cap", self.tag_morale_cap),
+        ):
+            if sorted(table) != sorted(ORG_TAGS):
+                raise ValueError(f"{name} must define exactly {list(ORG_TAGS)}")
+        for tag in ORG_TAGS:
+            effect, cap = self.tag_morale[tag], self.tag_morale_cap[tag]
+            if effect * cap < 0:
+                raise ValueError(
+                    f"tag_morale_cap.{tag} must have the same sign as tag_morale.{tag}"
+                )
+        return self
+
+
+class DelegatesBalance(_Frozen):
+    energy_per_month: int = Field(ge=0)
+    scout_cost: int = Field(ge=0)
+    max_ratio_bp: int = Field(gt=0)
+
+
 class Balance(_Frozen):
     company: CompanyBalance
     scenario: dict[str, ScenarioBalance]
@@ -311,6 +393,8 @@ class Balance(_Frozen):
     morale: MoraleBalance
     resign: ResignBalance
     tags: TagsBalance
+    org: OrgBalance
+    delegates: DelegatesBalance
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
