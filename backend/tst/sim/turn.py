@@ -26,6 +26,7 @@ from tst.sim.ledger import (
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
 from tst.sim.org.rules import manager_terms, org_view
+from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
@@ -88,8 +89,9 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     Player actions themselves were applied at once between turns; Decisions stays empty in M1.
     """
     state, ended = phases.end_notices(ctx.state)
+    state, detached = detach_departed(state, ctx.data)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
-    return replace(ctx, state=state).post(*entries).log(*ended, *resolved)
+    return replace(ctx, state=state).post(*entries).log(*ended, *detached, *resolved)
 
 
 def rival_decisions(ctx: TurnContext) -> TurnContext:  # M5

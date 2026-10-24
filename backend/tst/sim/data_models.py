@@ -593,6 +593,9 @@ INBOX_TEMPLATE_KEYS = (
     "culture_carrier_left",
     "tag_revealed",
     "out_of_cash",
+    # M2a
+    "unit_leader_left",
+    "plan_paused",
 )
 
 

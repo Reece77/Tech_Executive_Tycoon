@@ -1,14 +1,17 @@
 """Hiring actions (ADR-0014): they take effect at once, in their own transaction.
 
-Every action names an `actor_id` (the founder in M1; M2 delegates call the same functions).
-The actor's employer is the acting company. Founder energy is spent at once; a person who
-does not track energy (a delegate) spends none.
+Every action names an `actor_id`: the founder, or a delegate running a hiring plan (M2,
+ADR-0015), through the same functions. The actor's employer is the acting company. Energy is
+spent at once by whoever tracks it (the founder and delegates); anyone else spends none.
 """
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import Literal
+
+import numpy as np
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import (
@@ -28,12 +31,13 @@ from tst.sim.hiring.models import Candidate, Channel, Offer, Search
 from tst.sim.hiring.rules import offer_problems
 from tst.sim.ledger import CASH, SALARIES, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.models import Person
 from tst.sim.people.reveal import apply_knowledge_action
-from tst.sim.rng import RngFactory
 from tst.sim.scale import clamp_morale
 from tst.sim.state import (
     GameState,
+    with_candidate,
     with_employment,
     with_offer,
     with_person_state,
@@ -107,6 +111,9 @@ class Fire:
 type HiringAction = (
     OpenSearch | CloseSearch | Interview | ReferenceCheck | MakeOffer | WithdrawOffer | Fire
 )
+# The generator for randomness inside one action, created only if the action draws: stream
+# `actions` keyed by seq for the player, `delegate` keyed (person, n) for delegates (ADR-0015).
+type Draws = Callable[[], np.random.Generator]
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,11 +133,15 @@ def acting_company(state: GameState, actor_id: int) -> int:
     return employment.company_id
 
 
-def spend_energy(state: GameState, actor_id: int, action: str, balance: Balance) -> GameState:
-    cost = energy_cost(action, balance)
+def spend_energy(
+    state: GameState, actor_id: int, action: str, balance: Balance, *, cost: int | None = None
+) -> GameState:
+    """Spend `cost` (default: founder.energy_cost[action]) from the actor's energy."""
+    if cost is None:
+        cost = energy_cost(action, balance)
     ps = state.person_state(actor_id)
     if ps.energy is None:
-        return state  # only the founder tracks energy in M1
+        return state  # this person does not track energy
     if ps.energy < cost:
         raise InsufficientEnergyError(f"{action} needs {cost} energy; {ps.energy} left this month")
     return with_person_state(state, replace(ps, energy=ps.energy - cost))
@@ -195,17 +206,16 @@ def _check_tags(
     state: GameState,
     company: int,
     person: Person,
-    rng: RngFactory,
-    seq: int,
+    draws: Draws,
     balance: Balance,
 ) -> GameState:
     """One roll per still-hidden tag, in the person's tag order, at reveal_bp_on_check
-    (stream actions, key seq)."""
+    (the action's generator: stream actions keyed by seq, or delegate keyed (person, n))."""
     reveal = state.reveal(company, person.id)
     if reveal is None:
         return state
     known = {tag for tag, _ in reveal.revealed_tags}
-    gen = rng.stream(state.turn, "actions", seq)
+    gen = draws()
     found = []
     for tag in person.tags:
         if tag in known:
@@ -225,8 +235,7 @@ def check_candidate(
     actor_id: int,
     candidate_id: int,
     action: Literal["interview", "reference_check"],
-    rng: RngFactory,
-    seq: int,
+    draws: Draws,
     balance: Balance,
     data: GameData,
 ) -> Outcome:
@@ -247,7 +256,9 @@ def check_candidate(
     )
     state = with_reveal(state, reveal)
     before = {t for t, _ in reveal.revealed_tags}
-    state = _check_tags(state, company, person, rng, seq, balance)
+    if action == "interview" and candidate.interviewed_turn is None:
+        state = with_candidate(state, replace(candidate, interviewed_turn=state.turn))
+    state = _check_tags(state, company, person, draws, balance)
     after = state.reveal(company, person.id)
     assert after is not None
     log = tuple(
@@ -305,7 +316,7 @@ def withdraw_offer(state: GameState, action: WithdrawOffer) -> Outcome:
     return Outcome(with_offer(state, replace(offer, status="withdrawn", resolved_turn=state.turn)))
 
 
-def fire(state: GameState, action: Fire, balance: Balance) -> Outcome:
+def fire(state: GameState, action: Fire, balance: Balance, data: GameData) -> Outcome:
     company = acting_company(state, action.actor_id)
     employment = state.employment_of(action.person_id)
     if employment is None or employment.company_id != company:
@@ -345,6 +356,8 @@ def fire(state: GameState, action: Fire, balance: Balance) -> Outcome:
     log: tuple[LogItem, ...] = (
         inbox_item(state.turn, company, "fired", name=name, severance_cents=severance),
     )
+    state, detached = detach_departed(state, data)
+    log += detached
     # The larger morale hit gives the tag away, so the company learns it now (M1c brief).
     reveal = state.reveal(company, person.id)
     if (

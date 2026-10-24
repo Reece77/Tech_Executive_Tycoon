@@ -122,3 +122,32 @@ class OptionPoolError(SimError):
 
 class OfferExistsError(SimError):
     code = "offer_exists"
+
+
+# --- Organization (M2a) ---------------------------------------------------------------------
+
+
+class UnknownUnitError(NotFoundError):
+    code = "unknown_unit"
+
+
+class UnknownPlanError(NotFoundError):
+    code = "unknown_plan"
+
+
+class OrgRuleError(SimError):
+    """An org action would break a rule of formulas.md 13.1 (units and reporting lines)."""
+
+    code = "org_rule"
+
+
+class InterviewRequired(SimError):  # named by ADR-0016
+    """An offer needs a prior interview by the offering company (ADR-0016)."""
+
+    code = "interview_required"
+
+
+class ReplayMismatchError(SimError):
+    """Replay recomputed different delegate actions than the save logged (ADR-0015)."""
+
+    code = "replay_mismatch"

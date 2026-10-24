@@ -21,7 +21,15 @@ from tst.db.inbox import (
 from tst.db.repository import create_save, open_session, run_action, run_turn
 from tst.db.state_io import load_state, sync_state
 from tst.loader import LoadedData
-from tst.sim.actions import Fire, MakeOffer, OpenSearch
+from tst.sim.actions import (
+    CreatePlan,
+    CreateUnit,
+    Fire,
+    MakeOffer,
+    MovePerson,
+    OpenSearch,
+    SetLeader,
+)
 from tst.sim.data_models import INBOX_TEMPLATE_KEYS
 from tst.sim.log import inbox_item
 
@@ -85,7 +93,14 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     broke = Game(loaded, with_employee(loaded, fresh_game(loaded), carrier, 9_000_000), cash=0)
     broke.act(Fire(1, 30))
     broke.turn()
-    games = (sad, hiring, broke)
+    lead = make_person(loaded, 40)
+    org = Game(loaded, with_employee(loaded, fresh_game(loaded), lead, 9_000_000))
+    org.act(CreateUnit(1, "team", "Platform"))
+    org.act(MovePerson(1, 40, 1))
+    org.act(SetLeader(1, 1, 40))
+    org.act(CreatePlan(1, 40, "designer", 1, "network", 10_000))
+    org.act(Fire(1, 40))  # the unit loses its leader and the plan pauses
+    games = (sad, hiring, broke, org)
     items = [i for g in games for r in g.results for i in r.log_items]
     items += [i for g in games for i in g.action_logs]
     for item in items:
