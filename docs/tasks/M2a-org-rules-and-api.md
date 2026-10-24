@@ -6,7 +6,7 @@
 
 ## Context
 
-M1 gave the company people, hiring and a payroll. As the team grows, everyone reports to the founder, and a flat company loses morale and growth. M2 adds the answer: an org chart whose managers affect morale and growth, and delegates who hire on the founder's behalf. Every effect works through systems M1 already has (morale, growth, offers); productivity and coordination cost arrive with products in M3.
+M1 gave the company people, hiring and a payroll. As the team grows, everyone reports to the founder, whose energy and attention run out. M2 adds the answer: an org chart whose managers affect morale and growth, and delegates who hire on the founder's behalf. Every effect works through systems M1 already has (morale, growth, offers, energy); productivity and coordination cost arrive with products in M3.
 
 `docs/formulas.md` §13 is authoritative for every rule and number. ADR-0015 says where delegates act and how their randomness and replay work.
 
@@ -31,8 +31,7 @@ Products, projects, productivity, coordination cost, decision latency, and the `
 ## Changes from Reece's M1 playtest (ADR-0016)
 
 1. **Offers require an interview.** `make_offer` fails with `InterviewRequired` (HTTP 409) unless the offering company has interviewed the candidate. Candidates in API responses gain `offer_blocked_reason` (`null` or `"interview_required"`). Tests: an offer without an interview is refused for the player and for a delegate; an interview by a delegate unlocks a player offer.
-2. **Founder energy switched off.** Add `founder.energy_enabled: false` to `balance.yaml` (with a comment). When false, founder actions neither check nor spend energy and the founder's energy stays at `energy_per_month`. Keep the energy code; existing energy tests run with the setting on through a balance override, and one new test shows an off setting never rejects an action for energy. Delegate energy is unchanged. Hiring and org metadata report `founder_energy_enabled`.
-3. **Screens (small, in this milestone):** regenerate the client; hide the energy meter when `founder_energy_enabled` is false; disable the Offer button for a candidate with `offer_blocked_reason` and show "Interview first". Update the M1c Playwright hiring flow to interview before offering.
+2. **Screens (small, in this milestone):** regenerate the client; disable the Offer button for a candidate with `offer_blocked_reason` and show "Interview first". Update the M1c Playwright hiring flow to interview before offering.
 
 ## Fixes carried from M1
 
@@ -44,10 +43,10 @@ Products, projects, productivity, coordination cost, decision latency, and the `
 1. **Formula tests and data:** every §13.12 worked example and the pitch examples as unit tests (noise off); all new keys from §12 in `balance.yaml`.
 2. **State and persistence:** `org_unit` (company, kind, name, parent, leader person, work-location policy or inherit), `employment.unit_id` and `last_raise_turn`, `hiring_plan` (owner, unit, role, target, channel, ratio bp, equity bp, status), `decision_log.source` and actor, delegate energy, `next_ids` for units and plans. Migration `0005_org`; existing saves put everyone in the root. Data dictionary.
 3. **Org rules:** pure functions for manager resolution, span, quality, morale terms, growth multiplier, remote cost; wire them into phases 6 and 8. Property tests: every non-founder has exactly one manager; no cycles; the founder has none; leaders belong to their units.
-4. **Actions** (ADR-0014): `create_unit`, `dissolve_unit`, `set_leader`, `move_person`, `set_policy`, `give_raise`, `promote`, `create_plan`, `update_plan`, `close_plan`, with founder energy per §6 (inactive while `founder.energy_enabled` is false) and validation errors for every rule in §13.1.
+4. **Actions** (ADR-0014): `create_unit`, `dissolve_unit`, `set_leader`, `move_person`, `set_policy`, `give_raise`, `promote`, `create_plan`, `update_plan`, `close_plan`, with founder energy per §6 and validation errors for every rule in §13.1.
 5. **Delegates** (ADR-0015): phase 2 behavior, stream `delegate` (id 14) added to `STREAM_IDS` and ADR-0013's table, inbox summaries, plans pausing when their owner leaves, and the replay check that recomputed delegate actions equal the logged ones.
 6. **Playtest changes and M1 fixes** above, and the offer pitch term.
-7. **API** (save-scoped): org tree (units, leaders, members, each manager's reports, `L`, `S` and an over-span flag); the org actions; previews for reorganizations (the one-off morale changes, by person) and for raises and promotions (new salary versus market rate, one-off morale); hiring plans (list, create, update, close, last turn's activity); the person morale breakdown per §13.11; org metadata (energy costs, `founder_energy_enabled`, unlock rule, policy options). Extend the hidden-field test to the new responses, and add a test that a hidden toxic teammate shows only as "other" in the breakdown.
+7. **API** (save-scoped): org tree (units, leaders, members, each manager's reports, `L`, `S` and an over-span flag); the org actions; previews for reorganizations (the one-off morale changes, by person) and for raises and promotions (new salary versus market rate, one-off morale); hiring plans (list, create, update, close, last turn's activity); the person morale breakdown per §13.11; org metadata (energy costs, unlock rule, policy options). Extend the hidden-field test to the new responses, and add a test that a hidden toxic teammate shows only as "other" in the breakdown.
 8. **CLI:** `tst org`, `tst unit create|dissolve|lead|move|policy`, `tst raise`, `tst promote`, `tst plan create|list|update|close`, `tst morale --person`.
 9. **Golden snapshots:** the scripted plan interviews before every offer, and adds two teams with leads around turn 6, a department at 10 staff, and one recruiter-led hiring plan; regenerate with a CHANGELOG note.
 
@@ -56,9 +55,8 @@ Products, projects, productivity, coordination cost, decision latency, and the `
 - [ ] A scripted test builds a three-level org (company → department → team), with leaders, from the API.
 - [ ] A founder managing 12 directly shows the §13.12 manager penalty in the morale breakdown; adding two leads removes it.
 - [ ] Each reorganization's one-off morale change matches §13.7, and the preview reports it before the action.
-- [ ] A recruiter-led plan fills 4 hires within 4 turns with no founder actions.
+- [ ] A recruiter-led plan fills 4 hires within 4 turns without spending founder energy.
 - [ ] An offer to a candidate nobody at the company has interviewed is refused with `InterviewRequired`, from the API, the CLI and a delegate; the Offer button is disabled with "Interview first".
-- [ ] With `founder.energy_enabled` false, no founder action is rejected for energy and the meter is hidden; with it true, the M1 energy tests still pass.
 - [ ] Over 200 seeded runs, plans run by a judgment-16 recruiter hire people with a higher mean true CA than plans run by a judgment-6 recruiter (comparative test).
 - [ ] An offer made in a candidate's last month still resolves.
 - [ ] Replay reproduces a save with reorganizations, raises and delegates, and recomputed delegate actions match the log.
@@ -71,7 +69,7 @@ Products, projects, productivity, coordination cost, decision latency, and the `
 1. Start a `funded_spinout` game and hire about 12 people (as in M1).
 2. `uv run tst morale --save <save> --person <id>` for an employee: the manager term should be negative with everyone reporting to you.
 3. Create two teams, appoint leads with good leadership, move people in, and check the same person's morale breakdown again.
-4. Create a hiring plan owned by a recruiter for 3 engineers; advance 3 turns; read the inbox summaries; confirm the hires joined the plan's unit.
+4. Create a hiring plan owned by a recruiter for 3 engineers; advance 3 turns; read the inbox summaries; confirm the hires joined the plan's unit and your energy stayed at 100.
 5. Give someone a raise and a promotion and watch their morale over the next months.
 6. Try `tst offer` on a candidate you have not interviewed: it should refuse and tell you to interview first.
 

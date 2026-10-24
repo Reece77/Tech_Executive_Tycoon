@@ -1,6 +1,6 @@
 # ADR-0014: Immediate player actions and pending items
 
-- Status: Accepted. §5 amended by ADR-0016 (founder energy switched off by default).
+- Status: Accepted.
 - Date: 2026-10-21
 - Spec sections: §4, §5.3, §5.4, §13
 

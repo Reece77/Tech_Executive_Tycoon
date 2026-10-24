@@ -27,7 +27,7 @@ Any new rule. Products, Finance, Competitors and History screens.
 2. Org screen.
 3. Profile and People additions.
 4. Recruitment hiring plans; inbox paging and the delegate badge; Overview tile.
-5. Playwright: (a) build company → department → team and appoint leads; (b) create a hiring plan, Continue three times, see hires join the plan's unit with no founder actions; (c) give a raise and a promotion and see the preview match the result.
+5. Playwright: (a) build company → department → team and appoint leads; (b) create a hiring plan, Continue three times, see hires join the plan's unit while founder energy stays full; (c) give a raise and a promotion and see the preview match the result.
 
 ## Acceptance criteria
 
@@ -40,7 +40,7 @@ Any new rule. Products, Finance, Competitors and History screens.
 
 1. Play a `funded_spinout` game to about 15 people, then build two teams and a department in the Org screen.
 2. Hand engineering hiring to a recruiter's plan and play 12 months without hiring yourself.
-3. Note whether morale and growth respond the way the org suggests, and whether delegating hiring is worth it without founder energy. These notes feed the balance pass and M3.
+3. Note whether morale and growth respond the way the org suggests, and whether the founder's energy now feels like a resource, given that every hire needs an interview. These notes feed the balance pass and M3.
 
 ## Decisions made
 

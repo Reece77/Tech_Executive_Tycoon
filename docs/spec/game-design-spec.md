@@ -60,7 +60,7 @@ The base turn is one month; a critical event opens a weekly crisis window of up 
 4. **Events.** The event director selects one to three events from state triggers; the LLM writes them, the engine validates them.
 5. **Month-end report.** P&L, KPI deltas, and a short narrative recap are written to the history log.
 
-**Actions between turns (ADR-0014):** decisions are immediate actions applied the moment the player confirms them (interview, scout, offer, fire, reorganize, raise). An offer needs an interview first, and offers are answered when the player presses Continue. Founder energy is switched off after the M1 playtest and can return later (ADR-0016). From M2, staff delegates take the same actions on the player's behalf in the advance step, with their own energy (ADR-0015).
+**Actions between turns (ADR-0014):** decisions are immediate actions applied the moment the player confirms them (interview, scout, offer, fire, reorganize, raise). Each costs founder energy (100 a month, reset at month end). An offer needs an interview first (ADR-0016), and offers are answered when the player presses Continue. From M2, staff delegates take the same actions on the player's behalf in the advance step, with their own energy (ADR-0015).
 
 **Time-scale controls:** "Continue" advances one turn; "Holiday" auto-advances until an event above a chosen severity occurs, with delegated staff making routine decisions using their own attributes.
 
@@ -97,7 +97,7 @@ Every person, including the founder and every rival employee, uses one model: vi
 
 ### 5.3 Founder
 
-The founder is built at game start with a point budget and a background (engineer, salesperson, academic, ex-big-tech, geologist). Founder energy, a monthly budget for hands-on actions, is switched off for now (ADR-0016); delegation instead adds throughput and better judgment of talent, and its quality depends on the lieutenants. The founder is outside payroll, morale, resignation, retirement and firing until the board arrives in M4; their tags are known to their own company, and the company mission defaults to the founder's interests.
+The founder is built at game start with a point budget and a background (engineer, salesperson, academic, ex-big-tech, geologist). Founder energy is a scarce monthly resource spent on hands-on actions; delegation frees energy but depends on lieutenants' quality. The founder is outside payroll, morale, resignation, retirement and firing until the board arrives in M4; their tags are known to their own company, and the company mission defaults to the founder's interests.
 
 ### 5.4 Hiring
 
@@ -444,7 +444,7 @@ All design questions but one are settled, and each answer is recorded in an ADR 
 | Cash before M4 | Cash may go negative; runway is shown at this month's projected costs | M1b, M1c briefs |
 | Departments | Unlock at 10 staff or at stage 2, whichever comes first | formulas.md §13.1 |
 | Interview before offer | An offer requires that the company (founder or delegate) has interviewed the candidate | ADR-0016 |
-| Founder energy | Switched off by a setting after the M1 playtest; code kept so it can return (likely as product attention in M3). Delegate energy stays as work capacity | ADR-0016 |
+| Founder energy | Stays on (100 a month) after the M1 playtest; every hire now costs at least one interview. Delegates have their own energy | ADR-0016 |
 
 ## 21. Pre-Build Artifacts to Generate
 
