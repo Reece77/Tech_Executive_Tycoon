@@ -23,6 +23,9 @@ templates:
   fired:
     title: "{name} was let go"
     body: "{name} has left the company. Severance of {severance_cents} was paid."
+  culture_carrier_left:
+    title: "{name}'s departure hit the team"
+    body: "The team took {name}'s departure hard; they held the team together."
   tag_revealed:
     title: "You noticed something about {name}"
     body: "You have noticed that {name} {reveal_text}."

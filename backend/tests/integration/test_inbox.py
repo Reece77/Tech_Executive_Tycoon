@@ -6,6 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from sqlalchemy import text
 
 from tests.helpers import fresh_game, make_person, with_employee
 from tests.unit.test_hiring_phases import Game, _staff_game
@@ -17,7 +18,7 @@ from tst.db.inbox import (
     unread_count,
 )
 from tst.db.repository import create_save, open_session, run_action, run_turn
-from tst.db.state_io import load_state
+from tst.db.state_io import load_state, sync_state
 from tst.loader import LoadedData
 from tst.sim.actions import Fire, MakeOffer, OpenSearch
 from tst.sim.data_models import INBOX_TEMPLATE_KEYS
@@ -55,11 +56,8 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
                     ask = game.state.person(c.person_id).salary_expectation_cents or 0
                     ratio = 1.4 if c.person_id % 2 else 0.5
                     game.act(MakeOffer(1, c.person_id, round(ask * ratio), 0))
-    broke = Game(
-        loaded,
-        with_employee(loaded, fresh_game(loaded), make_person(loaded, 30), 9_000_000),
-        cash=0,
-    )
+    carrier = replace(make_person(loaded, 30), tags=("culture_carrier",))
+    broke = Game(loaded, with_employee(loaded, fresh_game(loaded), carrier, 9_000_000), cash=0)
     broke.act(Fire(1, 30))
     broke.turn()
     games = (sad, hiring, broke)
@@ -108,3 +106,24 @@ def test_inbox_persists_from_turns_and_actions(tmp_path: Path, loaded: LoadedDat
             m.id for m in messages[1:]
         ]
         assert len(list_inbox(session, 1, limit=2)) == 2
+
+
+def test_fired_culture_carrier_is_stored_and_announced(tmp_path: Path, loaded: LoadedData) -> None:
+    """Firing a culture carrier reveals the tag to the company and says so in the inbox."""
+    path = create_save(
+        "carrier", 2, "funded_spinout", company_name="Co", data=loaded, save_dir=tmp_path
+    )
+    with open_session(path) as session, session.begin():
+        before = load_state(session)
+        carrier = replace(make_person(loaded, 2), tags=("culture_carrier",))
+        sync_state(session, before, with_employee(loaded, before, carrier, 9_000_000))
+    run_action(path, loaded, Fire(1, 2))
+    name = f"{carrier.first_name} {carrier.last_name}"
+    with open_session(path) as session:
+        newest = list_inbox(session, 1)[0]
+        tags = session.execute(
+            text("SELECT tag, revealed_turn FROM person_tag_reveal WHERE person_id = 2")
+        ).all()
+    assert newest.title == f"{name}'s departure hit the team"
+    assert newest.body == f"The team took {name}'s departure hard; they held the team together."
+    assert [tuple(t) for t in tags] == [("culture_carrier", 0)]

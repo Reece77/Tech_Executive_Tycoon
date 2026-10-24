@@ -504,6 +504,7 @@ INBOX_TEMPLATE_KEYS = (
     "retired",
     "employee_left",
     "fired",
+    "culture_carrier_left",
     "tag_revealed",
     "out_of_cash",
 )

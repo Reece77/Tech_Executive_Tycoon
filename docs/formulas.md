@@ -290,7 +290,7 @@ Monthly update, clamped to [0, 100]:
 morale \leftarrow morale + 0.3\,(target - morale) + Normal\!\left(0,\; 2 \cdot \frac{21 - temperament}{20}\right)
 ```
 
-**Firing side effect:** all remaining employees −3 morale, or −6 if the fired person had a revealed or hidden `culture_carrier` tag.
+**Firing side effect:** all remaining employees −3 morale, or −6 if the fired person had a revealed or hidden `culture_carrier` tag. Because the larger hit gives the tag away, firing a culture carrier also reveals that tag to the company, with an inbox item.
 
 **Worked example.** Paid $85,000 against a $90,000 market mid, one matching interest, healthy runway: P = 60 × (0.944 − 1) = −3.33; target = 50 − 3.33 + 5 = 51.67. Starting at 65, morale after 6 months is **53.2** (before noise).
 

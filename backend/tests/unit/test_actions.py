@@ -35,7 +35,7 @@ from tst.sim.hiring.models import PersonState
 from tst.sim.ledger import CASH
 from tst.sim.people.models import PA_KEY
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, with_person_state
+from tst.sim.state import GameState, with_person_state, with_reveal
 
 RICH = {(1, CASH): 40_000_000}
 
@@ -211,6 +211,30 @@ def test_firing_a_culture_carrier_costs_six(loaded: LoadedData) -> None:
     state = with_employee(loaded, state, make_person(loaded, 21), 9_000_000, morale=4)
     out = act(loaded, state, Fire(1, 20))
     assert out.new_state.person_state(21).morale == 0  # 4 - 6, clamped
+
+
+def test_firing_a_culture_carrier_reveals_the_tag(loaded: LoadedData) -> None:
+    """The bigger morale hit gives the tag away: the company learns it, with an inbox item."""
+    state = fresh_game(loaded)
+    carrier = replace(make_person(loaded, 20), tags=("mentor", "culture_carrier"))
+    state = with_employee(loaded, state, carrier, 9_000_000)
+    out = act(loaded, state, Fire(1, 20))
+    reveal = out.new_state.reveal(1, 20)
+    assert reveal is not None and reveal.revealed_tags == (("culture_carrier", 0),)
+    assert [i.template for i in out.log_items] == ["fired", "culture_carrier_left"]
+    left = out.log_items[1]
+    assert (left.link_kind, left.link_id) == ("person", 20)
+
+    # Already noticed: no second announcement.
+    noticed = with_reveal(
+        state, replace(state.reveal(1, 20), revealed_tags=(("culture_carrier", 0),))
+    )  # type: ignore[arg-type]
+    again = act(loaded, noticed, Fire(1, 20))
+    assert [i.template for i in again.log_items] == ["fired"]
+
+    # Anyone else: no reveal, no extra item.
+    plain = with_employee(loaded, fresh_game(loaded), replace(make_person(loaded, 30), tags=()), 1)
+    assert [i.template for i in act(loaded, plain, Fire(1, 30)).log_items] == ["fired"]
 
 
 def test_cannot_fire_founder_or_strangers(loaded: LoadedData) -> None:
