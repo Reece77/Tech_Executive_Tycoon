@@ -55,6 +55,7 @@ from tst.sim.state import (
     with_offer,
     with_person,
     with_person_state,
+    with_plan,
     with_reveal,
     with_search,
 )
@@ -98,6 +99,31 @@ def end_notices(state: GameState) -> tuple[GameState, tuple[LogItem, ...]]:
                 )
             )
     return state, tuple(logs)
+
+
+def _count_plan_hire(
+    state: GameState, plan_id: int | None, data: GameData
+) -> tuple[GameState, list[LogItem]]:
+    """An accepted plan offer counts toward the plan; reaching the target fills it (13.10)."""
+    plan = state.plan(plan_id) if plan_id is not None else None
+    if plan is None or plan.status == "closed":
+        return state, []
+    hired = plan.hired + 1
+    fills = plan.status == "active" and hired >= plan.target
+    state = with_plan(state, replace(plan, hired=hired, status="filled" if fills else plan.status))
+    if not fills:
+        return state, []
+    owner = state.person(plan.owner_id)
+    return state, [
+        inbox_item(
+            state.turn,
+            plan.company_id,
+            "plan_filled",
+            name=_name(owner),
+            role=data.role(plan.role).label.lower(),
+            target=plan.target,
+        )
+    ]
 
 
 def _role_label(person: Person, data: GameData) -> str:
@@ -153,6 +179,7 @@ def resolve_offers(
             continue
         emp_id, ids = state.next_ids.take("employment")
         state = replace(state, next_ids=ids)
+        joins = state.unit(offer.unit_id) if offer.unit_id is not None else None
         state = with_employment(
             state,
             Employment(
@@ -166,8 +193,10 @@ def resolve_offers(
                 start_turn=state.turn,
                 end_turn=None,
                 status="active",
+                unit_id=joins.id if joins is not None and joins.status == "active" else None,
             ),
         )
+        state, filled = _count_plan_hire(state, offer.plan_id, data)
         state = with_person_state(
             state, PersonState(person_id=person.id, morale=balance.morale.new_hire)
         )
@@ -201,6 +230,7 @@ def resolve_offers(
                 salary_cents=offer.salary_cents,
             )
         )
+        logs += filled
     return state, tuple(entries), tuple(logs)
 
 
@@ -542,8 +572,14 @@ def _actor(state: GameState, search: Search) -> Person | None:
 
 
 def reset_energy(state: GameState, balance: Balance) -> GameState:
-    """Founder energy resets after phase 12 for the new month (ADR-0014)."""
+    """Founder and delegate energy reset after phase 12 for the new month (ADR-0014, 0015)."""
+    founders = {p.id for p in state.people if p.is_founder}
     for ps in state.person_states:
         if ps.energy is not None:
-            state = with_person_state(state, replace(ps, energy=balance.founder.energy_per_month))
+            cap = (
+                balance.founder.energy_per_month
+                if ps.person_id in founders
+                else balance.delegates.energy_per_month
+            )
+            state = with_person_state(state, replace(ps, energy=cap))
     return state

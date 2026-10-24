@@ -66,6 +66,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "resign": 11,
         "retire": 12,
         "actions": 13,
+        "delegate": 14,
         "misc": 99,
     }
 

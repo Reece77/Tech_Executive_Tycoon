@@ -100,7 +100,15 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     org.act(SetLeader(1, 1, 40))
     org.act(CreatePlan(1, 40, "designer", 1, "network", 10_000))
     org.act(Fire(1, 40))  # the unit loses its leader and the plan pauses
-    games = (sad, hiring, broke, org)
+    recruiter = make_person(loaded, 41, "recruiter", "senior")
+    delegated = Game(loaded, with_employee(loaded, fresh_game(loaded), recruiter, 9_000_000))
+    delegated.state = replace(
+        delegated.state, next_ids=replace(delegated.state.next_ids, person=42)
+    )
+    delegated.act(CreatePlan(1, 41, "software_engineer", 1, "job_post", 12_000))
+    for _ in range(4):
+        delegated.turn()  # activity summaries, then the plan fills
+    games = (sad, hiring, broke, org, delegated)
     items = [i for g in games for r in g.results for i in r.log_items]
     items += [i for g in games for i in g.action_logs]
     for item in items:

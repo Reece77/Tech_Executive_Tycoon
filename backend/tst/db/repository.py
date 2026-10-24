@@ -50,6 +50,7 @@ from tst.sim.decisions import Decisions
 from tst.sim.errors import (
     InvalidSaveNameError,
     InvalidSeedError,
+    ReplayMismatchError,
     SaveExistsError,
     SaveNotFoundError,
     UnknownScenarioError,
@@ -347,6 +348,19 @@ def apply_turn_result(
 
     player = result.new_state.player
     session.add(decisions_to_row(played, player.id, decisions))
+    first = next_action_seq(session, played)
+    session.add_all(
+        DecisionLogRow(
+            turn=played,
+            company_id=company_id,
+            kind=action.kind,
+            payload=action_payload(action),
+            seq=first + i,
+            source=DELEGATE_SOURCE,
+            actor_id=action.actor_id,
+        )
+        for i, (company_id, action) in enumerate(result.delegate_actions)
+    )
     session.add_all(entry_to_row(e) for e in result.ledger_entries)
     session.add_all(snapshot_to_rows(result.snapshot))
     session.add_all(log_item_to_row(i) for i in result.log_items)
@@ -456,21 +470,34 @@ def new_game_payload(
 
 
 def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Path:
-    """Rebuild a save from its seed, new-game choices, logged actions and turns (ADR-0014)."""
+    """Rebuild a save from its seed, new-game choices, logged actions and turns (ADR-0014).
+
+    Player actions are re-applied. Delegate actions are not: each turn recomputes them from
+    the plans in state, and they must equal the logged ones (ADR-0015), else
+    ReplayMismatchError.
+    """
     with open_session(source) as session:
         meta = read_meta(session)
         seed, target_turn = meta.master_seed, meta.current_turn
         start = session.scalars(
             select(DecisionLogRow).where(DecisionLogRow.kind == NEW_GAME_KIND)
         ).one()
+        logged = session.scalars(
+            select(DecisionLogRow)
+            .where(DecisionLogRow.seq.is_not(None), DecisionLogRow.kind != NEW_GAME_KIND)
+            .order_by(DecisionLogRow.turn, DecisionLogRow.seq)
+        ).all()
         actions = [
             (row.turn, action_from_payload(row.payload))
-            for row in session.scalars(
-                select(DecisionLogRow)
-                .where(DecisionLogRow.seq.is_not(None), DecisionLogRow.kind != NEW_GAME_KIND)
-                .order_by(DecisionLogRow.turn, DecisionLogRow.seq)
-            )
+            for row in logged
+            if row.source == PLAYER_SOURCE
         ]
+        delegated: dict[int, list[tuple[int, Action]]] = {}
+        for row in logged:
+            if row.source == DELEGATE_SOURCE:
+                delegated.setdefault(row.turn, []).append(
+                    (row.company_id, action_from_payload(row.payload))
+                )
     setup = start.payload
     founder = dict(setup["founder"])
     if founder.get("interests") is not None:
@@ -490,7 +517,11 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         for _, action in (a for a in actions if a[0] == turn):
             run_action(path, data, action)
         if turn < target_turn:
-            run_turn(path, data)
+            result = run_turn(path, data)
+            if list(result.delegate_actions) != delegated.get(turn, []):
+                raise ReplayMismatchError(
+                    f"turn {turn}: recomputed delegate actions differ from the logged ones"
+                )
     return path
 
 

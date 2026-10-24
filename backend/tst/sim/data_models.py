@@ -596,6 +596,8 @@ INBOX_TEMPLATE_KEYS = (
     # M2a
     "unit_leader_left",
     "plan_paused",
+    "plan_filled",
+    "plan_activity",
 )
 
 

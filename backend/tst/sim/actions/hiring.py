@@ -23,6 +23,7 @@ from tst.sim.errors import (
     UnknownCandidateError,
     UnknownOfferError,
     UnknownPersonError,
+    UnknownPlanError,
     UnknownRoleError,
     UnknownSearchError,
 )
@@ -91,6 +92,7 @@ class MakeOffer:
     candidate_id: int
     salary_cents: int
     equity_bp: int
+    plan_id: int | None = None  # set by a delegate working a hiring plan (ADR-0015)
     kind: Literal["make_offer"] = "make_offer"
 
 
@@ -293,6 +295,12 @@ def make_offer(state: GameState, action: MakeOffer, balance: Balance) -> Outcome
     problems = offer_problems(state, company, action.equity_bp, balance)
     if problems:
         raise OptionPoolError("; ".join(problems))
+    unit_id = None
+    if action.plan_id is not None:
+        plan = state.plan(action.plan_id)
+        if plan is None or plan.company_id != company or plan.status == "closed":
+            raise UnknownPlanError(f"no hiring plan {action.plan_id}")
+        unit_id = plan.unit_id
     state = spend_energy(state, action.actor_id, "offer", balance)
     offer_id, ids = state.next_ids.take("offer")
     offer = Offer(
@@ -303,6 +311,8 @@ def make_offer(state: GameState, action: MakeOffer, balance: Balance) -> Outcome
         salary_cents=action.salary_cents,
         equity_bp=action.equity_bp,
         made_turn=state.turn,
+        plan_id=action.plan_id,
+        unit_id=unit_id,
     )
     return Outcome(replace(with_offer(state, offer), next_ids=ids))
 

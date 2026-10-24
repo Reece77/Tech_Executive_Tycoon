@@ -11,6 +11,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from typing import Final
 
+from tst.sim.actions import Action
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
@@ -25,6 +26,7 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
+from tst.sim.org.delegates import run_delegates
 from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
@@ -45,6 +47,8 @@ class TurnResult:
     log_items: tuple[LogItem, ...]
     snapshot: TurnSnapshot
     event_requests: tuple[EventRequest, ...]
+    # Phase 2's delegate actions as (company id, action), in the order taken (ADR-0015).
+    delegate_actions: tuple[tuple[int, Action], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,6 +65,7 @@ class TurnContext:
     snapshot: TurnSnapshot | None = None
     event_requests: tuple[EventRequest, ...] = ()
     payroll: Mapping[int, Cents] = field(default_factory=dict)  # per company, phase 6
+    delegate_actions: tuple[tuple[int, Action], ...] = ()  # phase 2
 
     @property
     def turn(self) -> int:
@@ -94,8 +99,12 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     return replace(ctx, state=state).post(*entries).log(*ended, *detached, *resolved)
 
 
-def rival_decisions(ctx: TurnContext) -> TurnContext:  # M5
-    return ctx
+def rival_decisions(ctx: TurnContext) -> TurnContext:
+    """Phase 2: delegates work their hiring plans (ADR-0015); rivals join in M5."""
+    state, entries, logs, taken = run_delegates(
+        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
+    )
+    return replace(ctx, state=state, delegate_actions=taken).post(*entries).log(*logs)
 
 
 def research_progress(ctx: TurnContext) -> TurnContext:  # v2
@@ -240,7 +249,7 @@ def advance_turn(
         ctx = phase(ctx)
     if ctx.snapshot is None:
         raise RuntimeError("snapshot phase did not run")
-    # Founder energy resets for the new month after phase 12 (ADR-0014).
+    # Founder and delegate energy reset for the new month after phase 12 (ADR-0014).
     final = phases.reset_energy(ctx.state, balance)
     return TurnResult(
         new_state=replace(final, turn=state.turn + 1),
@@ -248,4 +257,5 @@ def advance_turn(
         log_items=ctx.log_items,
         snapshot=ctx.snapshot,
         event_requests=ctx.event_requests,
+        delegate_actions=ctx.delegate_actions,
     )
