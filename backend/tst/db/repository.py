@@ -27,6 +27,7 @@ from tst.db.mappers import (
 from tst.db.models import (
     SCHEMA_VERSION,
     AccountRow,
+    CompanyRow,
     DecisionLogRow,
     LedgerEntryRow,
     LedgerLineRow,
@@ -534,7 +535,9 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
 def summarize(path: Path) -> SaveSummary:
     with open_session(path) as session:
         meta = read_meta(session)
-        player = load_state(session).player
+        # Only the player's name is needed; loading the whole state here cost a second full
+        # load on every turn (M2a performance check).
+        player = session.scalars(select(CompanyRow).where(CompanyRow.is_player.is_(True))).one()
         return SaveSummary(
             slug=slug_of(path),
             company_name=player.name,
