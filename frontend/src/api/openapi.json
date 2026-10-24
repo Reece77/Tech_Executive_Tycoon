@@ -3152,13 +3152,6 @@
           "knowledge": {
             "$ref": "#/components/schemas/KnowledgeOut"
           },
-          "personality": {
-            "items": {
-              "$ref": "#/components/schemas/AttributeOut"
-            },
-            "type": "array",
-            "title": "Personality"
-          },
           "interests": {
             "anyOf": [
               {
@@ -3173,6 +3166,13 @@
             ],
             "title": "Interests",
             "description": "Null until an interview or network intro"
+          },
+          "personality": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Personality"
           },
           "work_style": {
             "anyOf": [
@@ -3224,8 +3224,8 @@
           "candidacy",
           "noticed_tags",
           "knowledge",
-          "personality",
           "interests",
+          "personality",
           "work_style",
           "work_style_matches_role",
           "morale_history"
@@ -3338,6 +3338,21 @@
           },
           "knowledge": {
             "$ref": "#/components/schemas/KnowledgeOut"
+          },
+          "interests": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interests",
+            "description": "Null until an interview or network intro"
           }
         },
         "type": "object",
@@ -3356,7 +3371,8 @@
           "employment",
           "candidacy",
           "noticed_tags",
-          "knowledge"
+          "knowledge",
+          "interests"
         ],
         "title": "PersonSummaryOut"
       },

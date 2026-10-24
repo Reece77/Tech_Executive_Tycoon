@@ -96,11 +96,11 @@ class PersonSummaryOut(BaseModel):
     candidacy: CandidacyOut | None
     noticed_tags: list[TagOut]
     knowledge: KnowledgeOut
+    interests: list[str] | None = Field(description="Null until an interview or network intro")
 
 
 class PersonProfileOut(PersonSummaryOut):
     personality: list[AttributeOut]
-    interests: list[str] | None = Field(description="Null until an interview or network intro")
     work_style: str | None = Field(description="Null until an interview or network intro")
     work_style_matches_role: bool | None = Field(description="Null while work style is unknown")
     morale_history: list[MoralePointOut] = Field(description="Last 12 months, oldest first")

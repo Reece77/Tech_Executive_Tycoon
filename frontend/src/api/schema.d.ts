@@ -945,13 +945,13 @@ export interface components {
             /** Noticed Tags */
             noticed_tags: components["schemas"]["TagOut"][];
             knowledge: components["schemas"]["KnowledgeOut"];
-            /** Personality */
-            personality: components["schemas"]["AttributeOut"][];
             /**
              * Interests
              * @description Null until an interview or network intro
              */
             interests: string[] | null;
+            /** Personality */
+            personality: components["schemas"]["AttributeOut"][];
             /**
              * Work Style
              * @description Null until an interview or network intro
@@ -997,6 +997,11 @@ export interface components {
             /** Noticed Tags */
             noticed_tags: components["schemas"]["TagOut"][];
             knowledge: components["schemas"]["KnowledgeOut"];
+            /**
+             * Interests
+             * @description Null until an interview or network intro
+             */
+            interests: string[] | null;
         };
         /** PresetOut */
         PresetOut: {

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -150,6 +151,10 @@ def test_candidate_knowledge_offer_and_reasons(api: Client) -> None:
     )
     assert preview["reasons"][0] == "Pay matches their ask."
     assert any("do not know their interests" in r for r in preview["reasons"])
+    risk = next(r for r in preview["reasons"] if r.startswith("Their risk appetite"))
+    # A known value ("12") or a range joined by an en dash ("9-13" with U+2013).
+    assert re.fullmatch(r"Their risk appetite looks like \d+([^\d\s-]\d+)? out of 20\.", risk)
+    assert all(1 <= int(n) <= 20 for n in re.findall(r"\d+", risk))
     assert any("solo founder company is a harder sell" in r for r in preview["reasons"])
 
     api.post(f"{BASE}/recruitment/candidates/{pid}/interview")

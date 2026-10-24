@@ -245,6 +245,7 @@ def person_summary(
         knowledge=_knowledge_out(
             reveal, (checks or {}).get(person.id, ()), candidate.channel if candidate else None
         ),
+        interests=list(person.interests) if reveal.profile_revealed_turn is not None else None,
     )
 
 
@@ -270,7 +271,6 @@ def person_profile(
     return PersonProfileOut(
         **summary.model_dump(),
         personality=_personality(person, reveal, data),
-        interests=list(person.interests) if known else None,
         work_style=person.work_style if known else None,
         work_style_matches_role=None
         if not known or role is None
@@ -305,7 +305,7 @@ def search_out(state: GameState, search: Search, data: LoadedData) -> SearchOut:
 
 
 def _range_text(lo: int, hi: int) -> str:
-    return str(lo) if lo == hi else f"{lo}2013{hi}"
+    return str(lo) if lo == hi else f"{lo}\N{EN DASH}{hi}"
 
 
 def offer_reasons(
