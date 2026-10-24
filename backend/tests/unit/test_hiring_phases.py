@@ -190,6 +190,25 @@ def test_accepted_offer_hires_and_moves_stage(loaded: LoadedData) -> None:
     assert all(c.person_id not in {e.person_id for e in hires} for c in game.state.candidates)
 
 
+def test_hiring_reveals_interests_and_work_style(loaded: LoadedData) -> None:
+    """Job-post candidates arrive without a known profile; hiring reveals it that turn."""
+    game = Game(loaded, fresh_game(loaded, 6))
+    game.act(OpenSearch(1, "software_engineer", "job_post"))
+    game.turn()
+    unknown = [c.person_id for c in game.state.candidates]
+    assert all(game.state.reveal(1, pid).profile_revealed_turn is None for pid in unknown)  # type: ignore[union-attr]
+    _offer_all(game, 1.5)
+    game.turn()
+    hired = [e.person_id for e in game.state.employments if e.role != "founder"]
+    assert hired
+    for pid in hired:
+        reveal = game.state.reveal(1, pid)
+        assert reveal is not None and reveal.profile_revealed_turn == 1
+    for pid in set(unknown) - set(hired):  # declined candidates stay unknown
+        reveal = game.state.reveal(1, pid)
+        assert reveal is None or reveal.profile_revealed_turn is None
+
+
 def test_lowball_offers_are_always_declined(loaded: LoadedData) -> None:
     game = Game(loaded, fresh_game(loaded, 6))
     game.act(OpenSearch(1, "software_engineer", "job_post"))

@@ -174,6 +174,10 @@ def resolve_offers(
         state = with_person_state(
             state, PersonState(person_id=person.id, morale=balance.morale.new_hire)
         )
+        # Working together shows interests and work style (M1c review): reveal them at hire.
+        reveal = state.reveal(company.id, person.id)
+        if reveal is not None and reveal.profile_revealed_turn is None:
+            state = with_reveal(state, replace(reveal, profile_revealed_turn=state.turn))
         if candidate is not None and candidate.channel == "recruiter":
             fee = recruiter_fee_cents(offer.salary_cents, hiring)
             if fee:

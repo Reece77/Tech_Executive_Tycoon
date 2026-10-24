@@ -100,6 +100,10 @@ def test_people_fields_and_fire(api: Client) -> None:
     emp = hire["employment"]
     assert emp["tenure_months"] == 1 and emp["start_date_label"] == "Feb 2010"
     assert emp["market_rate_cents"] > 0 and emp["end_date_label"] is None
+    # No one was interviewed, but hiring reveals interests and work style (persisted).
+    assert all(p["interests"] is not None for p in staff)
+    profile = api.get(f"{BASE}/people/{hire['person_id']}")
+    assert profile["work_style"] is not None and profile["knowledge"]["profile_known"]
     salary = emp["salary_cents"]
     monthly = round(salary / 12)
     assert emp["monthly_cost_cents"] == monthly + round(monthly * 0.2) + 60_000
