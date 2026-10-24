@@ -56,7 +56,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         player = state.player
         latest = ov.history[-1][1] if ov.history else None
         costs = repository.costs_for_turn(session, player.id, state.turn - 1)
-        paid = repository.costs_for_turn(session, player.id, state.turn)
+        paid = repository.expenses_by_memo(session, player.id, state.turn)
         unread = inbox.unread_count(session, player.id)
         newest = inbox.list_inbox(session, player.id, limit=LATEST_INBOX)
     staff = state.staff(player.id)
@@ -68,7 +68,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         if amount
     ]
     month_paid = [
-        CostLineOut(account=code, label=name, amount_cents=amount) for code, name, amount in paid
+        CostLineOut(account=code, label=label, amount_cents=amount) for label, code, amount in paid
     ]
     runway_warn = data.balance.morale.runway_warn_months
     return OverviewOut(

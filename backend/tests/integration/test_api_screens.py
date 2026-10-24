@@ -113,7 +113,9 @@ def test_people_fields_and_fire(api: Client) -> None:
 
     fired = api.post(f"{BASE}/people/{hire['person_id']}/fire")
     ov = api.get(f"{BASE}/overview")
-    assert [c["amount_cents"] for c in ov["month_paid"]] == [fired["severance_cents"]]
+    assert ov["month_paid"] == [
+        {"account": "6000_salaries", "label": "Severance", "amount_cents": fired["severance_cents"]}
+    ]
     assert ov["month_total_cents"] == fired["severance_cents"] + sum(
         c["amount_cents"] for c in ov["month_costs"]
     )

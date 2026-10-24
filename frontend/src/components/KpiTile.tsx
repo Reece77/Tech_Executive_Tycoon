@@ -1,21 +1,36 @@
-import { Paper, Text } from '@mantine/core';
-
 interface Props {
   label: string;
   value: string;
-  hint?: string;
+  note?: string;
+  warn?: boolean;
+  hint?: string; // tooltip: what drives the number
   testId?: string;
+  small?: boolean; // text values such as the mission
 }
 
-export function KpiTile({ label, value, hint, testId }: Props) {
+export function KpiTile({ label, value, note, warn, hint, testId, small }: Props) {
   return (
-    <Paper withBorder p="sm" radius="sm" title={hint}>
-      <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+    <div className="tst-panel" style={{ padding: '12px 16px', flex: '1 1 150px' }} title={hint}>
+      <div className="tst-muted" style={{ fontSize: 12 }}>
         {label}
-      </Text>
-      <Text size="xl" fw={700} className="tst-num" data-testid={testId}>
+      </div>
+      <div
+        className={small ? undefined : 'tst-num'}
+        style={{
+          fontSize: small ? 15 : 22,
+          fontWeight: 600,
+          paddingTop: small ? 4 : 0,
+          color: warn ? 'var(--tst-warn)' : undefined,
+        }}
+        data-testid={testId}
+      >
         {value}
-      </Text>
-    </Paper>
+      </div>
+      {note && (
+        <div className="tst-muted" style={{ fontSize: 12 }}>
+          {note}
+        </div>
+      )}
+    </div>
   );
 }
