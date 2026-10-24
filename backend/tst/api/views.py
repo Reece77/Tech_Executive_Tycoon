@@ -126,7 +126,13 @@ def _personality(person: Person, reveal: RevealState, data: LoadedData) -> list[
 def _tags(reveal: RevealState, data: LoadedData) -> list[TagOut]:
     tags = {t.key: t for t in data.game_data.tags}
     return [
-        TagOut(key=key, label=tags[key].label, text=tags[key].reveal_text, noticed_turn=turn)
+        TagOut(
+            key=key,
+            label=tags[key].label,
+            text=tags[key].reveal_text,
+            noticed_turn=turn,
+            noticed_date_label=format_turn(turn),
+        )
         for key, turn in reveal.revealed_tags
     ]
 

@@ -18,22 +18,6 @@ export function LoadError({ title, error }: { title: string; error: Error | null
   );
 }
 
-/** Render children once every query has data; otherwise the first loading or error state. */
-export function WhenLoaded({
-  queries,
-  title,
-  children,
-}: {
-  queries: { isPending: boolean; error: Error | null }[];
-  title: string;
-  children: () => ReactNode;
-}) {
-  const failed = queries.find((q) => q.error);
-  if (failed) return <LoadError title={title} error={failed.error} />;
-  if (queries.some((q) => q.isPending)) return <Loading />;
-  return <>{children()}</>;
-}
-
 export function Panel({
   title,
   children,

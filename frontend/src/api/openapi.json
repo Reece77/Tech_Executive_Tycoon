@@ -3713,6 +3713,10 @@
           "noticed_turn": {
             "type": "integer",
             "title": "Noticed Turn"
+          },
+          "noticed_date_label": {
+            "type": "string",
+            "title": "Noticed Date Label"
           }
         },
         "type": "object",
@@ -3720,7 +3724,8 @@
           "key",
           "label",
           "text",
-          "noticed_turn"
+          "noticed_turn",
+          "noticed_date_label"
         ],
         "title": "TagOut"
       },

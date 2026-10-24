@@ -1134,6 +1134,8 @@ export interface components {
             text: string;
             /** Noticed Turn */
             noticed_turn: number;
+            /** Noticed Date Label */
+            noticed_date_label: string;
         };
         /**
          * TeamOut

@@ -26,6 +26,7 @@ class TagOut(BaseModel):
     label: str
     text: str  # e.g. "is a natural mentor"
     noticed_turn: int
+    noticed_date_label: str
 
 
 class MoralePointOut(BaseModel):
