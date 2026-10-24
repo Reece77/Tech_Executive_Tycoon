@@ -32,3 +32,41 @@ export function formatRunway(months: number | null): string {
   if (months === null) return 'Not burning';
   return `${months} month${months === 1 ? '' : 's'}`;
 }
+
+/** Whole dollars for tiles and tables: 25140000 -> "$251,400" (half-cent rounding is display only). */
+export function formatMoneyWhole(cents: number): string {
+  if (!Number.isSafeInteger(cents)) {
+    throw new RangeError(`formatMoneyWhole expects integer cents, got ${cents}`);
+  }
+  const sign = cents < 0 ? '-' : '';
+  const dollars = Math.round(Math.abs(cents) / 100);
+  return `${sign}$${groupFormat.format(dollars)}`;
+}
+
+/** Basis points as a percentage, by integer math: 50 -> "0.50%", 1000 -> "10.00%". */
+export function formatBpPercent(bp: number): string {
+  const sign = bp < 0 ? '-' : '';
+  const abs = Math.abs(Math.trunc(bp));
+  return `${sign}${Math.trunc(abs / 100)}.${String(abs % 100).padStart(2, '0')}%`;
+}
+
+/** A ratio from the API: 1.0438 -> "1.04×". */
+export function formatRatio(ratio: number): string {
+  return `${ratio.toFixed(2)}×`;
+}
+
+/** 1 -> "1 month", 4 -> "4 months". */
+export function formatMonths(months: number): string {
+  return `${months} month${months === 1 ? '' : 's'}`;
+}
+
+/** Morale and other 0-100 floats are shown as whole numbers. */
+export function formatWhole(value: number): string {
+  return String(Math.round(value));
+}
+
+/** "senior" -> "Senior", "job_post" -> "Job post". */
+export function humanize(key: string): string {
+  const text = key.replace(/_/g, ' ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

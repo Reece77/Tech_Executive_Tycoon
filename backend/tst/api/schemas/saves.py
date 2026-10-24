@@ -79,6 +79,16 @@ class CostLineOut(BaseModel):
     amount_cents: int
 
 
+class TeamOut(BaseModel):
+    """The team as it stands now (not at the last month end)."""
+
+    headcount: int
+    on_notice: int
+    people_cost_cents: int = Field(description="Salaries, benefits and office this month")
+    payroll_cents: int = Field(description="Salaries plus benefits this month")
+    avg_morale: float | None = Field(description="Employees, not the founder; null if none")
+
+
 class OverviewOut(BaseModel):
     save_id: str
     company_name: str
@@ -86,9 +96,13 @@ class OverviewOut(BaseModel):
     date_label: str
     cash_cents: int
     monthly_burn_cents: int
-    runway_months: int | None = Field(description="Null when the company is not burning cash")
+    runway_months: int | None = Field(
+        description="Whole months of cash at this month's projected costs; null if none"
+    )
     history: list[SnapshotPointOut] = Field(description="Last 12 month-end snapshots, oldest first")
     stage: int
+    stage_label: str
+    runway_low: bool = Field(description="Runway is below the morale warning threshold")
     mission: list[str]
     headcount: int
     payroll_cents: int = Field(description="Salaries plus benefits in the last closed month")
@@ -97,3 +111,9 @@ class OverviewOut(BaseModel):
     unread_inbox: int
     costs_last_month: list[CostLineOut] = Field(description="Expenses posted last month")
     latest_inbox: list[InboxItemOut] = Field(description="Five newest inbox items")
+    team: TeamOut
+    month_costs: list[CostLineOut] = Field(
+        description="This month's projected month-end costs at the current team and searches"
+    )
+    month_paid: list[CostLineOut] = Field(description="Expenses already posted this month")
+    month_total_cents: int = Field(description="Projected plus already posted")

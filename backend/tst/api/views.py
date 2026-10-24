@@ -5,6 +5,8 @@ Ranges come from the company's knowledge records; true values never leave this m
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,6 +16,7 @@ from tst.api.schemas.people import (
     EmploymentOut,
     EnergyOut,
     InboxItemOut,
+    KnowledgeOut,
     MoralePointOut,
     PendingOfferOut,
     PersonProfileOut,
@@ -23,12 +26,13 @@ from tst.api.schemas.people import (
     TagOut,
 )
 from tst.db.inbox import InboxMessage
-from tst.db.models import PersonMoraleLogRow
+from tst.db.models import DecisionLogRow, PersonMoraleLogRow
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.errors import UnknownPersonError
-from tst.sim.hiring.formulas import severance_cents
+from tst.sim.hiring.formulas import market_mid_cents, severance_cents
 from tst.sim.hiring.models import Search
+from tst.sim.hiring.phases import employment_monthly_cost_cents
 from tst.sim.people.formulas import potential_phrase
 from tst.sim.people.models import PA_KEY, Person, RevealState
 from tst.sim.people.reveal import revealed_range
@@ -36,6 +40,32 @@ from tst.sim.state import GameState
 
 HISTORY_TURNS = 12
 PERSONALITY_GROUP = "personality"
+CHECK_KINDS = ("interview", "reference_check")
+
+# Spec section 3. Display names only; the stage number drives the rules.
+STAGE_LABELS = {
+    0: "Solo founder",
+    1: "Garage startup",
+    2: "Venture-backed",
+    3: "Scale-up",
+    4: "Public company",
+    5: "Conglomerate",
+}
+
+type Checks = Mapping[int, Sequence[tuple[str, int]]]  # person id -> (kind, turn), in order
+
+
+def checks_by_person(session: Session, company_id: int) -> dict[int, list[tuple[str, int]]]:
+    """Interviews and reference checks the company has run, from decision_log."""
+    rows = session.scalars(
+        select(DecisionLogRow)
+        .where(DecisionLogRow.company_id == company_id, DecisionLogRow.kind.in_(CHECK_KINDS))
+        .order_by(DecisionLogRow.turn, DecisionLogRow.seq)
+    ).all()
+    out: dict[int, list[tuple[str, int]]] = {}
+    for row in rows:
+        out.setdefault(int(row.payload["candidate_id"]), []).append((row.kind, row.turn))
+    return out
 
 
 def energy(state: GameState, data: LoadedData) -> EnergyOut:
@@ -72,7 +102,11 @@ def _skills(person: Person, reveal: RevealState, data: LoadedData) -> list[Attri
         lo, hi = revealed_range(person, reveal, skill.key)
         out.append(
             AttributeOut(
-                key=skill.key, label=skill.label, group=skill.group, range=RangeOut(min=lo, max=hi)
+                key=skill.key,
+                label=skill.label,
+                short_label=skill.short_label,
+                group=skill.group,
+                range=RangeOut(min=lo, max=hi),
             )
         )
     return out
@@ -86,6 +120,7 @@ def _personality(person: Person, reveal: RevealState, data: LoadedData) -> list[
             AttributeOut(
                 key=trait.key,
                 label=trait.label,
+                short_label=trait.label,
                 group=PERSONALITY_GROUP,
                 range=RangeOut(min=lo, max=hi),
             )
@@ -96,7 +131,13 @@ def _personality(person: Person, reveal: RevealState, data: LoadedData) -> list[
 def _tags(reveal: RevealState, data: LoadedData) -> list[TagOut]:
     tags = {t.key: t for t in data.game_data.tags}
     return [
-        TagOut(key=key, label=tags[key].label, text=tags[key].reveal_text, noticed_turn=turn)
+        TagOut(
+            key=key,
+            label=tags[key].label,
+            text=tags[key].reveal_text,
+            noticed_turn=turn,
+            noticed_date_label=format_turn(turn),
+        )
         for key, turn in reveal.revealed_tags
     ]
 
@@ -110,8 +151,25 @@ def _role_label(role: str | None, data: LoadedData) -> str | None:
         return role.replace("_", " ").capitalize()  # "founder"
 
 
+def _knowledge_out(
+    reveal: RevealState, checks: Sequence[tuple[str, int]], channel: str | None
+) -> KnowledgeOut:
+    interviews = [turn for kind, turn in checks if kind == "interview"]
+    return KnowledgeOut(
+        channel=channel,
+        interviews=len(interviews),
+        reference_checks=sum(1 for kind, _ in checks if kind == "reference_check"),
+        first_interview_date_label=format_turn(interviews[0]) if interviews else None,
+        profile_known=reveal.profile_revealed_turn is not None,
+    )
+
+
 def person_summary(
-    state: GameState, company_id: int, person_id: int, data: LoadedData
+    state: GameState,
+    company_id: int,
+    person_id: int,
+    data: LoadedData,
+    checks: Checks | None = None,
 ) -> PersonSummaryOut:
     try:
         person = state.person(person_id)
@@ -129,6 +187,12 @@ def person_summary(
     pa_lo, pa_hi = revealed_range(person, reveal, PA_KEY)
     offer = state.pending_offer_for(person.id)
     role = employment.role if employment else person.role
+    market_rate = None
+    if employment is not None and not person.is_founder:
+        market_rate = market_mid_cents(
+            data.game_data.role(employment.role).salary_band_mid_cents[employment.level],
+            data.game_data.region(person.region).salary_multiplier_bp,
+        )
     return PersonSummaryOut(
         person_id=person.id,
         name=f"{person.first_name} {person.last_name}",
@@ -156,6 +220,13 @@ def person_summary(
             severance_cents=0
             if person.is_founder
             else severance_cents(employment.salary_cents, data.balance.payroll),
+            start_date_label=format_turn(employment.start_turn),
+            end_date_label=None
+            if employment.end_turn is None
+            else format_turn(employment.end_turn),
+            tenure_months=state.turn - employment.start_turn,
+            market_rate_cents=market_rate,
+            monthly_cost_cents=employment_monthly_cost_cents(employment, data.balance),
         ),
         candidacy=None
         if candidate is None
@@ -163,6 +234,7 @@ def person_summary(
             search_id=candidate.search_id,
             channel=candidate.channel,
             expires_turn=candidate.expires_turn,
+            expires_date_label=format_turn(candidate.expires_turn),
             salary_expectation_cents=person.salary_expectation_cents or 0,
             pending_offer=None
             if offer is None
@@ -171,19 +243,30 @@ def person_summary(
                 salary_cents=offer.salary_cents,
                 equity_bp=offer.equity_bp,
                 made_turn=offer.made_turn,
+                answer_date_label=format_turn(offer.made_turn + 1),
             ),
         ),
         noticed_tags=_tags(reveal, data),
+        knowledge=_knowledge_out(
+            reveal, (checks or {}).get(person.id, ()), candidate.channel if candidate else None
+        ),
+        interests=list(person.interests) if reveal.profile_revealed_turn is not None else None,
     )
 
 
 def person_profile(
     session: Session, state: GameState, company_id: int, person_id: int, data: LoadedData
 ) -> PersonProfileOut:
-    summary = person_summary(state, company_id, person_id, data)
+    summary = person_summary(
+        state, company_id, person_id, data, checks_by_person(session, company_id)
+    )
     person = state.person(person_id)
     reveal = _knowledge(state, company_id, person)
     known = reveal.profile_revealed_turn is not None
+    role_key = summary.employment.role if summary.employment else person.role
+    role = None
+    if role_key is not None and role_key in {r.key for r in data.game_data.roles}:
+        role = data.game_data.role(role_key)
     rows = session.scalars(
         select(PersonMoraleLogRow)
         .where(PersonMoraleLogRow.person_id == person_id)
@@ -193,8 +276,10 @@ def person_profile(
     return PersonProfileOut(
         **summary.model_dump(),
         personality=_personality(person, reveal, data),
-        interests=list(person.interests) if known else None,
         work_style=person.work_style if known else None,
+        work_style_matches_role=None
+        if not known or role is None
+        else person.work_style == role.work_style,
         morale_history=[
             MoralePointOut(turn=r.turn, date_label=format_turn(r.turn), morale=r.morale)
             for r in reversed(rows)
@@ -203,13 +288,18 @@ def person_profile(
 
 
 def search_out(state: GameState, search: Search, data: LoadedData) -> SearchOut:
+    is_open = search.status == "open"
     return SearchOut(
         search_id=search.id,
         role=search.role,
         role_label=_role_label(search.role, data) or search.role,
         channel=search.channel,
         opened_turn=search.opened_turn,
+        opened_date_label=format_turn(search.opened_turn),
         status=search.status,
+        closed_date_label=None if search.closed_turn is None else format_turn(search.closed_turn),
+        # Batches are generated in phase 12 of the current turn, visible the next month.
+        next_batch_date_label=format_turn(state.turn + 1) if is_open else None,
         monthly_cost_cents=data.balance.hiring.job_post_cost_cents
         if search.channel == "job_post" and search.status == "open"
         else 0,
@@ -217,3 +307,57 @@ def search_out(state: GameState, search: Search, data: LoadedData) -> SearchOut:
             1 for c in state.candidates if c.search_id == search.id and c.status == "open"
         ),
     )
+
+
+def _range_text(lo: int, hi: int) -> str:
+    return str(lo) if lo == hi else f"{lo}\N{EN DASH}{hi}"
+
+
+def offer_reasons(
+    state: GameState,
+    person: Person,
+    company_id: int,
+    ratio: float,
+    equity_bp: int,
+    data: LoadedData,
+) -> list[str]:
+    """Plain sentences behind the offer hint, built only from what the company knows.
+
+    Mirrors the known-value score in formulas.md section 7: pay ratio, equity, revealed mission
+    interests, the displayed risk-appetite range, and company stage.
+    """
+    hiring = data.balance.hiring
+    reveal = _knowledge(state, company_id, person)
+    company = state.company(company_id)
+    reasons = []
+    if ratio < hiring.lowball_ratio:
+        reasons.append(
+            f"The salary is below {round(hiring.lowball_ratio * 100)}% of their ask, "
+            "so they will decline."
+        )
+    elif round(ratio, 2) == 1:
+        reasons.append("Pay matches their ask.")
+    elif ratio > 1:
+        reasons.append("Pay is above their ask.")
+    else:
+        reasons.append("Pay is below their ask.")
+    if equity_bp > 0:
+        reasons.append(f"{equity_bp} bp of equity adds to the appeal.")
+    if reveal.profile_revealed_turn is None:
+        reasons.append("You do not know their interests yet; an interview reveals them.")
+    else:
+        labels = {i.key: i.label for i in data.game_data.interests}
+        shared = [labels[k] for k in company.mission if k in person.interests]
+        reasons.append(
+            f"They share {' and '.join(shared)} with your mission."
+            if shared
+            else "They share none of your mission's interests."
+        )
+    lo, hi = revealed_range(person, reveal, "risk_appetite")
+    reasons.append(f"Their risk appetite looks like {_range_text(lo, hi)} out of 20.")
+    appeal = hiring.offer.stage_appeal.get(company.stage, 0.0)
+    if appeal < 0:
+        reasons.append(f"A {STAGE_LABELS[company.stage].lower()} company is a harder sell.")
+    elif appeal > 0:
+        reasons.append("Your company's stage makes the offer more attractive.")
+    return reasons

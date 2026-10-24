@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,13 @@ class Client:
 
 @pytest.fixture
 def api(tmp_path: Path) -> Iterator[Client]:
+    with hiring_client(tmp_path) as client:
+        yield client
+
+
+@contextmanager
+def hiring_client(tmp_path: Path) -> Iterator[Client]:
+    """A fresh save "m1b" (seed 11, ex-big-tech founders, mission AI and Enterprise)."""
     app = create_app()
     app.dependency_overrides[get_settings] = lambda: Settings(save_dir=tmp_path / "saves")
     with TestClient(app) as c:
@@ -149,7 +157,11 @@ def test_full_hiring_flow(api: Client) -> None:
     assert fired["severance_cents"] == profile["employment"]["severance_cents"] > 0
     assert all(p["person_id"] != pid for p in api.get(f"{BASE}/people"))
     api.post(f"{BASE}/recruitment/searches/1/close")
-    assert api.get(f"{BASE}/recruitment/searches") == []
+    # A closed search stays listed while its candidates are still available (M1c).
+    searches = api.get(f"{BASE}/recruitment/searches")
+    assert [(s["search_id"], s["status"]) for s in searches] == [(1, "closed")]
+    assert searches[0]["open_candidates"] > 0
+    assert searches[0]["next_batch_date_label"] is None
 
 
 @pytest.mark.parametrize(

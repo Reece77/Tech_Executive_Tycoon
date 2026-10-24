@@ -1,5 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { formatMoney, formatMoneyShort, formatRunway } from './format';
+import {
+  formatBpPercent,
+  formatMoney,
+  formatMoneyShort,
+  formatMoneyWhole,
+  formatMonths,
+  formatRatio,
+  formatRunway,
+  humanize,
+} from './format';
+
+describe('display helpers', () => {
+  it('formats whole dollars', () => {
+    expect(formatMoneyWhole(25_140_000)).toBe('$251,400');
+    expect(formatMoneyWhole(983_350)).toBe('$9,834');
+    expect(formatMoneyWhole(-150)).toBe('-$2');
+  });
+
+  it('formats basis points, ratios and months', () => {
+    expect(formatBpPercent(50)).toBe('0.50%');
+    expect(formatBpPercent(1000)).toBe('10.00%');
+    expect(formatRatio(1.0438)).toBe('1.04×');
+    expect(formatMonths(1)).toBe('1 month');
+    expect(formatMonths(4)).toBe('4 months');
+    expect(humanize('job_post')).toBe('Job post');
+  });
+});
 
 describe('formatMoney', () => {
   it.each([

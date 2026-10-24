@@ -10,6 +10,7 @@ class ScenarioOut(BaseModel):
     available_in: str
     selectable: bool
     starting_cash_cents: int  # at standard difficulty
+    starting_cash_by_difficulty: dict[str, int]
 
 
 class LabelOut(BaseModel):
@@ -20,6 +21,7 @@ class LabelOut(BaseModel):
 class SkillMetaOut(BaseModel):
     key: str
     label: str
+    short_label: str
     group: str
 
 
@@ -36,6 +38,7 @@ class BackgroundOut(BaseModel):
 class PresetOut(BaseModel):
     key: str
     label: str
+    description: str
     values: dict[str, float]
 
 
@@ -75,3 +78,38 @@ class FounderPreviewOut(BaseModel):
     points_spent: int
     points_remaining: int
     errors: list[str]
+
+
+class ChannelOut(BaseModel):
+    key: str  # network | job_post | recruiter
+    label: str
+    energy: int
+    monthly_cost_cents: int  # while open (job post)
+    hire_fee_bp: int  # of first-year salary, charged on hire (recruiter)
+    batch_min: int
+    batch_max: int
+    repeats: bool  # a new batch every month until closed
+    level_mix: dict[str, int]  # percent by level
+
+
+class RoleOut(BaseModel):
+    key: str
+    label: str
+    primary_skills: list[str]
+    secondary_skills: list[str]
+
+
+class HiringMetaOut(BaseModel):
+    """Rules and costs the Recruitment and People screens display (formulas.md 6-8)."""
+
+    channels: list[ChannelOut]
+    roles: list[RoleOut]
+    interview_energy: int
+    reference_check_energy: int
+    offer_energy: int
+    max_offer_equity_bp: int
+    option_pool_bp: int
+    lowball_ratio: float
+    candidate_shelf_turns: int
+    fire_morale_penalty_min: int  # morale points everyone else loses at least
+    energy_per_month: int

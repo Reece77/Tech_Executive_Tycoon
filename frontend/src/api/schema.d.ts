@@ -127,7 +127,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Searches */
+        /**
+         * List Searches
+         * @description Open searches, plus closed ones whose candidates are still available, newest first.
+         */
         get: operations["listSearches"];
         put?: never;
         /** Open Search */
@@ -294,6 +297,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/inbox/{item_id}/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Inbox Unread */
+        post: operations["markInboxUnread"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/founder/energy": {
         parameters: {
             query?: never;
@@ -348,6 +368,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meta/hiring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Hiring Meta
+         * @description Channel costs, energy and offer limits for the Recruitment screen (M1c).
+         */
+        get: operations["getHiringMeta"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/founder-preview": {
         parameters: {
             query?: never;
@@ -378,6 +418,8 @@ export interface components {
             key: string;
             /** Label */
             label: string;
+            /** Short Label */
+            short_label: string;
             /** Group */
             group: string;
             range: components["schemas"]["RangeOut"];
@@ -411,9 +453,34 @@ export interface components {
             channel: string;
             /** Expires Turn */
             expires_turn: number;
+            /** Expires Date Label */
+            expires_date_label: string;
             /** Salary Expectation Cents */
             salary_expectation_cents: number;
             pending_offer: components["schemas"]["PendingOfferOut"] | null;
+        };
+        /** ChannelOut */
+        ChannelOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Energy */
+            energy: number;
+            /** Monthly Cost Cents */
+            monthly_cost_cents: number;
+            /** Hire Fee Bp */
+            hire_fee_bp: number;
+            /** Batch Min */
+            batch_min: number;
+            /** Batch Max */
+            batch_max: number;
+            /** Repeats */
+            repeats: boolean;
+            /** Level Mix */
+            level_mix: {
+                [key: string]: number;
+            };
         };
         /** CostLineOut */
         CostLineOut: {
@@ -474,6 +541,22 @@ export interface components {
             end_turn: number | null;
             /** Severance Cents */
             severance_cents: number;
+            /** Start Date Label */
+            start_date_label: string;
+            /** End Date Label */
+            end_date_label: string | null;
+            /** Tenure Months */
+            tenure_months: number;
+            /**
+             * Market Rate Cents
+             * @description Role and level band mid for the region
+             */
+            market_rate_cents: number | null;
+            /**
+             * Monthly Cost Cents
+             * @description Salary, benefits and office per month
+             */
+            monthly_cost_cents: number;
         };
         /** EnergyOut */
         EnergyOut: {
@@ -581,6 +664,34 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * HiringMetaOut
+         * @description Rules and costs the Recruitment and People screens display (formulas.md 6-8).
+         */
+        HiringMetaOut: {
+            /** Channels */
+            channels: components["schemas"]["ChannelOut"][];
+            /** Roles */
+            roles: components["schemas"]["RoleOut"][];
+            /** Interview Energy */
+            interview_energy: number;
+            /** Reference Check Energy */
+            reference_check_energy: number;
+            /** Offer Energy */
+            offer_energy: number;
+            /** Max Offer Equity Bp */
+            max_offer_equity_bp: number;
+            /** Option Pool Bp */
+            option_pool_bp: number;
+            /** Lowball Ratio */
+            lowball_ratio: number;
+            /** Candidate Shelf Turns */
+            candidate_shelf_turns: number;
+            /** Fire Morale Penalty Min */
+            fire_morale_penalty_min: number;
+            /** Energy Per Month */
+            energy_per_month: number;
+        };
         /** InboxItemOut */
         InboxItemOut: {
             /** Item Id */
@@ -608,6 +719,28 @@ export interface components {
             unread: number;
             /** Items */
             items: components["schemas"]["InboxItemOut"][];
+        };
+        /**
+         * KnowledgeOut
+         * @description How the viewing company has come to know someone (not what it knows).
+         */
+        KnowledgeOut: {
+            /**
+             * Channel
+             * @description Search channel of an open candidacy
+             */
+            channel: string | null;
+            /** Interviews */
+            interviews: number;
+            /** Reference Checks */
+            reference_checks: number;
+            /** First Interview Date Label */
+            first_interview_date_label: string | null;
+            /**
+             * Profile Known
+             * @description Interests and work style are visible
+             */
+            profile_known: boolean;
         };
         /** LabelOut */
         LabelOut: {
@@ -686,6 +819,11 @@ export interface components {
             problems: string[];
             /** Option Pool Left Bp */
             option_pool_left_bp: number;
+            /**
+             * Reasons
+             * @description Why the hint reads as it does, from known values only
+             */
+            reasons: string[];
         };
         /** OverviewOut */
         OverviewOut: {
@@ -703,7 +841,7 @@ export interface components {
             monthly_burn_cents: number;
             /**
              * Runway Months
-             * @description Null when the company is not burning cash
+             * @description Whole months of cash at this month's projected costs; null if none
              */
             runway_months: number | null;
             /**
@@ -713,6 +851,13 @@ export interface components {
             history: components["schemas"]["SnapshotPointOut"][];
             /** Stage */
             stage: number;
+            /** Stage Label */
+            stage_label: string;
+            /**
+             * Runway Low
+             * @description Runway is below the morale warning threshold
+             */
+            runway_low: boolean;
             /** Mission */
             mission: string[];
             /** Headcount */
@@ -740,6 +885,22 @@ export interface components {
              * @description Five newest inbox items
              */
             latest_inbox: components["schemas"]["InboxItemOut"][];
+            team: components["schemas"]["TeamOut"];
+            /**
+             * Month Costs
+             * @description This month's projected month-end costs at the current team and searches
+             */
+            month_costs: components["schemas"]["CostLineOut"][];
+            /**
+             * Month Paid
+             * @description Expenses already posted this month
+             */
+            month_paid: components["schemas"]["CostLineOut"][];
+            /**
+             * Month Total Cents
+             * @description Projected plus already posted
+             */
+            month_total_cents: number;
         };
         /** PendingOfferOut */
         PendingOfferOut: {
@@ -751,6 +912,11 @@ export interface components {
             equity_bp: number;
             /** Made Turn */
             made_turn: number;
+            /**
+             * Answer Date Label
+             * @description The month whose Continue resolves the offer
+             */
+            answer_date_label: string;
         };
         /** PersonProfileOut */
         PersonProfileOut: {
@@ -780,18 +946,24 @@ export interface components {
             candidacy: components["schemas"]["CandidacyOut"] | null;
             /** Noticed Tags */
             noticed_tags: components["schemas"]["TagOut"][];
-            /** Personality */
-            personality: components["schemas"]["AttributeOut"][];
+            knowledge: components["schemas"]["KnowledgeOut"];
             /**
              * Interests
              * @description Null until an interview or network intro
              */
             interests: string[] | null;
+            /** Personality */
+            personality: components["schemas"]["AttributeOut"][];
             /**
              * Work Style
              * @description Null until an interview or network intro
              */
             work_style: string | null;
+            /**
+             * Work Style Matches Role
+             * @description Null while work style is unknown
+             */
+            work_style_matches_role: boolean | null;
             /**
              * Morale History
              * @description Last 12 months, oldest first
@@ -826,6 +998,12 @@ export interface components {
             candidacy: components["schemas"]["CandidacyOut"] | null;
             /** Noticed Tags */
             noticed_tags: components["schemas"]["TagOut"][];
+            knowledge: components["schemas"]["KnowledgeOut"];
+            /**
+             * Interests
+             * @description Null until an interview or network intro
+             */
+            interests: string[] | null;
         };
         /** PresetOut */
         PresetOut: {
@@ -833,6 +1011,8 @@ export interface components {
             key: string;
             /** Label */
             label: string;
+            /** Description */
+            description: string;
             /** Values */
             values: {
                 [key: string]: number;
@@ -844,6 +1024,17 @@ export interface components {
             min: number;
             /** Max */
             max: number;
+        };
+        /** RoleOut */
+        RoleOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Primary Skills */
+            primary_skills: string[];
+            /** Secondary Skills */
+            secondary_skills: string[];
         };
         /** SaveOut */
         SaveOut: {
@@ -874,6 +1065,10 @@ export interface components {
             selectable: boolean;
             /** Starting Cash Cents */
             starting_cash_cents: number;
+            /** Starting Cash By Difficulty */
+            starting_cash_by_difficulty: {
+                [key: string]: number;
+            };
         };
         /** SearchIn */
         SearchIn: {
@@ -894,8 +1089,17 @@ export interface components {
             channel: string;
             /** Opened Turn */
             opened_turn: number;
+            /** Opened Date Label */
+            opened_date_label: string;
             /** Status */
             status: string;
+            /** Closed Date Label */
+            closed_date_label: string | null;
+            /**
+             * Next Batch Date Label
+             * @description When an open search's batch arrives
+             */
+            next_batch_date_label: string | null;
             /** Monthly Cost Cents */
             monthly_cost_cents: number;
             /** Open Candidates */
@@ -907,6 +1111,8 @@ export interface components {
             key: string;
             /** Label */
             label: string;
+            /** Short Label */
+            short_label: string;
             /** Group */
             group: string;
         };
@@ -937,6 +1143,33 @@ export interface components {
             text: string;
             /** Noticed Turn */
             noticed_turn: number;
+            /** Noticed Date Label */
+            noticed_date_label: string;
+        };
+        /**
+         * TeamOut
+         * @description The team as it stands now (not at the last month end).
+         */
+        TeamOut: {
+            /** Headcount */
+            headcount: number;
+            /** On Notice */
+            on_notice: number;
+            /**
+             * People Cost Cents
+             * @description Salaries, benefits and office this month
+             */
+            people_cost_cents: number;
+            /**
+             * Payroll Cents
+             * @description Salaries plus benefits this month
+             */
+            payroll_cents: number;
+            /**
+             * Avg Morale
+             * @description Employees, not the founder; null if none
+             */
+            avg_morale: number | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -2050,6 +2283,65 @@ export interface operations {
             };
         };
     };
+    markInboxUnread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     getFounderEnergy: {
         parameters: {
             query?: never;
@@ -2144,6 +2436,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NewGameMetaOut"];
+                };
+            };
+        };
+    };
+    getHiringMeta: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringMetaOut"];
                 };
             };
         };

@@ -559,6 +559,7 @@
           "game"
         ],
         "summary": "List Searches",
+        "description": "Open searches, plus closed ones whose candidates are still available, newest first.",
         "operationId": "listSearches",
         "parameters": [
           {
@@ -1472,6 +1473,87 @@
         }
       }
     },
+    "/api/saves/{save_id}/inbox/{item_id}/unread": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Mark Inbox Unread",
+        "operationId": "markInboxUnread",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/founder/energy": {
       "get": {
         "tags": [
@@ -1591,6 +1673,28 @@
         }
       }
     },
+    "/api/meta/hiring": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Hiring Meta",
+        "description": "Channel costs, energy and offer limits for the Recruitment screen (M1c).",
+        "operationId": "getHiringMeta",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringMetaOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/meta/founder-preview": {
       "post": {
         "tags": [
@@ -1646,6 +1750,10 @@
             "type": "string",
             "title": "Label"
           },
+          "short_label": {
+            "type": "string",
+            "title": "Short Label"
+          },
           "group": {
             "type": "string",
             "title": "Group"
@@ -1658,6 +1766,7 @@
         "required": [
           "key",
           "label",
+          "short_label",
           "group",
           "range"
         ],
@@ -1726,6 +1835,10 @@
             "type": "integer",
             "title": "Expires Turn"
           },
+          "expires_date_label": {
+            "type": "string",
+            "title": "Expires Date Label"
+          },
           "salary_expectation_cents": {
             "type": "integer",
             "title": "Salary Expectation Cents"
@@ -1746,10 +1859,67 @@
           "search_id",
           "channel",
           "expires_turn",
+          "expires_date_label",
           "salary_expectation_cents",
           "pending_offer"
         ],
         "title": "CandidacyOut"
+      },
+      "ChannelOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          },
+          "monthly_cost_cents": {
+            "type": "integer",
+            "title": "Monthly Cost Cents"
+          },
+          "hire_fee_bp": {
+            "type": "integer",
+            "title": "Hire Fee Bp"
+          },
+          "batch_min": {
+            "type": "integer",
+            "title": "Batch Min"
+          },
+          "batch_max": {
+            "type": "integer",
+            "title": "Batch Max"
+          },
+          "repeats": {
+            "type": "boolean",
+            "title": "Repeats"
+          },
+          "level_mix": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Level Mix"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "energy",
+          "monthly_cost_cents",
+          "hire_fee_bp",
+          "batch_min",
+          "batch_max",
+          "repeats",
+          "level_mix"
+        ],
+        "title": "ChannelOut"
       },
       "CostLineOut": {
         "properties": {
@@ -1894,6 +2064,42 @@
           "severance_cents": {
             "type": "integer",
             "title": "Severance Cents"
+          },
+          "start_date_label": {
+            "type": "string",
+            "title": "Start Date Label"
+          },
+          "end_date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date Label"
+          },
+          "tenure_months": {
+            "type": "integer",
+            "title": "Tenure Months"
+          },
+          "market_rate_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Rate Cents",
+            "description": "Role and level band mid for the region"
+          },
+          "monthly_cost_cents": {
+            "type": "integer",
+            "title": "Monthly Cost Cents",
+            "description": "Salary, benefits and office per month"
           }
         },
         "type": "object",
@@ -1907,7 +2113,12 @@
           "start_turn",
           "status",
           "end_turn",
-          "severance_cents"
+          "severance_cents",
+          "start_date_label",
+          "end_date_label",
+          "tenure_months",
+          "market_rate_cents",
+          "monthly_cost_cents"
         ],
         "title": "EmploymentOut"
       },
@@ -2201,6 +2412,76 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "HiringMetaOut": {
+        "properties": {
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/ChannelOut"
+            },
+            "type": "array",
+            "title": "Channels"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleOut"
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "interview_energy": {
+            "type": "integer",
+            "title": "Interview Energy"
+          },
+          "reference_check_energy": {
+            "type": "integer",
+            "title": "Reference Check Energy"
+          },
+          "offer_energy": {
+            "type": "integer",
+            "title": "Offer Energy"
+          },
+          "max_offer_equity_bp": {
+            "type": "integer",
+            "title": "Max Offer Equity Bp"
+          },
+          "option_pool_bp": {
+            "type": "integer",
+            "title": "Option Pool Bp"
+          },
+          "lowball_ratio": {
+            "type": "number",
+            "title": "Lowball Ratio"
+          },
+          "candidate_shelf_turns": {
+            "type": "integer",
+            "title": "Candidate Shelf Turns"
+          },
+          "fire_morale_penalty_min": {
+            "type": "integer",
+            "title": "Fire Morale Penalty Min"
+          },
+          "energy_per_month": {
+            "type": "integer",
+            "title": "Energy Per Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channels",
+          "roles",
+          "interview_energy",
+          "reference_check_energy",
+          "offer_energy",
+          "max_offer_equity_bp",
+          "option_pool_bp",
+          "lowball_ratio",
+          "candidate_shelf_turns",
+          "fire_morale_penalty_min",
+          "energy_per_month"
+        ],
+        "title": "HiringMetaOut",
+        "description": "Rules and costs the Recruitment and People screens display (formulas.md 6-8)."
+      },
       "InboxItemOut": {
         "properties": {
           "item_id": {
@@ -2288,6 +2569,56 @@
           "items"
         ],
         "title": "InboxOut"
+      },
+      "KnowledgeOut": {
+        "properties": {
+          "channel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel",
+            "description": "Search channel of an open candidacy"
+          },
+          "interviews": {
+            "type": "integer",
+            "title": "Interviews"
+          },
+          "reference_checks": {
+            "type": "integer",
+            "title": "Reference Checks"
+          },
+          "first_interview_date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Interview Date Label"
+          },
+          "profile_known": {
+            "type": "boolean",
+            "title": "Profile Known",
+            "description": "Interests and work style are visible"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel",
+          "interviews",
+          "reference_checks",
+          "first_interview_date_label",
+          "profile_known"
+        ],
+        "title": "KnowledgeOut",
+        "description": "How the viewing company has come to know someone (not what it knows)."
       },
       "LabelOut": {
         "properties": {
@@ -2500,6 +2831,14 @@
           "option_pool_left_bp": {
             "type": "integer",
             "title": "Option Pool Left Bp"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "Why the hint reads as it does, from known values only"
           }
         },
         "type": "object",
@@ -2509,7 +2848,8 @@
           "floor_cents",
           "expectation_cents",
           "problems",
-          "option_pool_left_bp"
+          "option_pool_left_bp",
+          "reasons"
         ],
         "title": "OfferPreviewOut"
       },
@@ -2549,7 +2889,7 @@
               }
             ],
             "title": "Runway Months",
-            "description": "Null when the company is not burning cash"
+            "description": "Whole months of cash at this month's projected costs; null if none"
           },
           "history": {
             "items": {
@@ -2562,6 +2902,15 @@
           "stage": {
             "type": "integer",
             "title": "Stage"
+          },
+          "stage_label": {
+            "type": "string",
+            "title": "Stage Label"
+          },
+          "runway_low": {
+            "type": "boolean",
+            "title": "Runway Low",
+            "description": "Runway is below the morale warning threshold"
           },
           "mission": {
             "items": {
@@ -2613,6 +2962,30 @@
             "type": "array",
             "title": "Latest Inbox",
             "description": "Five newest inbox items"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamOut"
+          },
+          "month_costs": {
+            "items": {
+              "$ref": "#/components/schemas/CostLineOut"
+            },
+            "type": "array",
+            "title": "Month Costs",
+            "description": "This month's projected month-end costs at the current team and searches"
+          },
+          "month_paid": {
+            "items": {
+              "$ref": "#/components/schemas/CostLineOut"
+            },
+            "type": "array",
+            "title": "Month Paid",
+            "description": "Expenses already posted this month"
+          },
+          "month_total_cents": {
+            "type": "integer",
+            "title": "Month Total Cents",
+            "description": "Projected plus already posted"
           }
         },
         "type": "object",
@@ -2626,6 +2999,8 @@
           "runway_months",
           "history",
           "stage",
+          "stage_label",
+          "runway_low",
           "mission",
           "headcount",
           "payroll_cents",
@@ -2633,7 +3008,11 @@
           "energy",
           "unread_inbox",
           "costs_last_month",
-          "latest_inbox"
+          "latest_inbox",
+          "team",
+          "month_costs",
+          "month_paid",
+          "month_total_cents"
         ],
         "title": "OverviewOut"
       },
@@ -2654,6 +3033,11 @@
           "made_turn": {
             "type": "integer",
             "title": "Made Turn"
+          },
+          "answer_date_label": {
+            "type": "string",
+            "title": "Answer Date Label",
+            "description": "The month whose Continue resolves the offer"
           }
         },
         "type": "object",
@@ -2661,7 +3045,8 @@
           "offer_id",
           "salary_cents",
           "equity_bp",
-          "made_turn"
+          "made_turn",
+          "answer_date_label"
         ],
         "title": "PendingOfferOut"
       },
@@ -2769,12 +3154,8 @@
             "type": "array",
             "title": "Noticed Tags"
           },
-          "personality": {
-            "items": {
-              "$ref": "#/components/schemas/AttributeOut"
-            },
-            "type": "array",
-            "title": "Personality"
+          "knowledge": {
+            "$ref": "#/components/schemas/KnowledgeOut"
           },
           "interests": {
             "anyOf": [
@@ -2791,6 +3172,13 @@
             "title": "Interests",
             "description": "Null until an interview or network intro"
           },
+          "personality": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Personality"
+          },
           "work_style": {
             "anyOf": [
               {
@@ -2802,6 +3190,18 @@
             ],
             "title": "Work Style",
             "description": "Null until an interview or network intro"
+          },
+          "work_style_matches_role": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Style Matches Role",
+            "description": "Null while work style is unknown"
           },
           "morale_history": {
             "items": {
@@ -2828,9 +3228,11 @@
           "employment",
           "candidacy",
           "noticed_tags",
-          "personality",
+          "knowledge",
           "interests",
+          "personality",
           "work_style",
+          "work_style_matches_role",
           "morale_history"
         ],
         "title": "PersonProfileOut"
@@ -2938,6 +3340,24 @@
             },
             "type": "array",
             "title": "Noticed Tags"
+          },
+          "knowledge": {
+            "$ref": "#/components/schemas/KnowledgeOut"
+          },
+          "interests": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interests",
+            "description": "Null until an interview or network intro"
           }
         },
         "type": "object",
@@ -2955,7 +3375,9 @@
           "skills",
           "employment",
           "candidacy",
-          "noticed_tags"
+          "noticed_tags",
+          "knowledge",
+          "interests"
         ],
         "title": "PersonSummaryOut"
       },
@@ -2969,6 +3391,10 @@
             "type": "string",
             "title": "Label"
           },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
           "values": {
             "additionalProperties": {
               "type": "number"
@@ -2981,6 +3407,7 @@
         "required": [
           "key",
           "label",
+          "description",
           "values"
         ],
         "title": "PresetOut"
@@ -3002,6 +3429,40 @@
           "max"
         ],
         "title": "RangeOut"
+      },
+      "RoleOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "primary_skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Primary Skills"
+          },
+          "secondary_skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Secondary Skills"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "primary_skills",
+          "secondary_skills"
+        ],
+        "title": "RoleOut"
       },
       "SaveOut": {
         "properties": {
@@ -3066,6 +3527,13 @@
           "starting_cash_cents": {
             "type": "integer",
             "title": "Starting Cash Cents"
+          },
+          "starting_cash_by_difficulty": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Starting Cash By Difficulty"
           }
         },
         "type": "object",
@@ -3075,7 +3543,8 @@
           "description",
           "available_in",
           "selectable",
-          "starting_cash_cents"
+          "starting_cash_cents",
+          "starting_cash_by_difficulty"
         ],
         "title": "ScenarioOut"
       },
@@ -3119,9 +3588,36 @@
             "type": "integer",
             "title": "Opened Turn"
           },
+          "opened_date_label": {
+            "type": "string",
+            "title": "Opened Date Label"
+          },
           "status": {
             "type": "string",
             "title": "Status"
+          },
+          "closed_date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Date Label"
+          },
+          "next_batch_date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Batch Date Label",
+            "description": "When an open search's batch arrives"
           },
           "monthly_cost_cents": {
             "type": "integer",
@@ -3139,7 +3635,10 @@
           "role_label",
           "channel",
           "opened_turn",
+          "opened_date_label",
           "status",
+          "closed_date_label",
+          "next_batch_date_label",
           "monthly_cost_cents",
           "open_candidates"
         ],
@@ -3155,6 +3654,10 @@
             "type": "string",
             "title": "Label"
           },
+          "short_label": {
+            "type": "string",
+            "title": "Short Label"
+          },
           "group": {
             "type": "string",
             "title": "Group"
@@ -3164,6 +3667,7 @@
         "required": [
           "key",
           "label",
+          "short_label",
           "group"
         ],
         "title": "SkillMetaOut"
@@ -3235,6 +3739,10 @@
           "noticed_turn": {
             "type": "integer",
             "title": "Noticed Turn"
+          },
+          "noticed_date_label": {
+            "type": "string",
+            "title": "Noticed Date Label"
           }
         },
         "type": "object",
@@ -3242,9 +3750,54 @@
           "key",
           "label",
           "text",
-          "noticed_turn"
+          "noticed_turn",
+          "noticed_date_label"
         ],
         "title": "TagOut"
+      },
+      "TeamOut": {
+        "properties": {
+          "headcount": {
+            "type": "integer",
+            "title": "Headcount"
+          },
+          "on_notice": {
+            "type": "integer",
+            "title": "On Notice"
+          },
+          "people_cost_cents": {
+            "type": "integer",
+            "title": "People Cost Cents",
+            "description": "Salaries, benefits and office this month"
+          },
+          "payroll_cents": {
+            "type": "integer",
+            "title": "Payroll Cents",
+            "description": "Salaries plus benefits this month"
+          },
+          "avg_morale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Morale",
+            "description": "Employees, not the founder; null if none"
+          }
+        },
+        "type": "object",
+        "required": [
+          "headcount",
+          "on_notice",
+          "people_cost_cents",
+          "payroll_cents",
+          "avg_morale"
+        ],
+        "title": "TeamOut",
+        "description": "The team as it stands now (not at the last month end)."
       },
       "ValidationError": {
         "properties": {

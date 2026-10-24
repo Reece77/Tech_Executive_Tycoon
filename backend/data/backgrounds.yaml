@@ -43,13 +43,17 @@ backgrounds:
 personality_presets:
   - key: visionary
     label: Visionary
+    description: Ambitious risk-taker; inspires, but can be impatient.
     values: { ambition: 17, loyalty: 11, professionalism: 12, temperament: 10, adaptability: 15, risk_appetite: 17, ego: 14, integrity: 12, sociability: 14 }
   - key: operator
     label: Operator
+    description: Steady, professional, and careful with money.
     values: { ambition: 12, loyalty: 14, professionalism: 17, temperament: 15, adaptability: 11, risk_appetite: 8, ego: 8, integrity: 15, sociability: 11 }
   - key: hustler
     label: Hustler
+    description: Sociable and adaptable; always selling.
     values: { ambition: 16, loyalty: 9, professionalism: 10, temperament: 11, adaptability: 16, risk_appetite: 15, ego: 13, integrity: 10, sociability: 17 }
   - key: scientist
     label: Scientist
+    description: Principled and thorough; prefers depth to small talk.
     values: { ambition: 11, loyalty: 13, professionalism: 15, temperament: 13, adaptability: 12, risk_appetite: 9, ego: 10, integrity: 16, sociability: 8 }

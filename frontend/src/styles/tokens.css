@@ -1,30 +1,45 @@
-/* Design tokens. Dark theme by default; information density over decoration. */
+/* Design tokens from docs/wireframes.md (dark theme). Information density over decoration. */
 :root {
   color-scheme: dark;
 
-  --tst-bg: #0f1216;
-  --tst-surface: #161b22;
-  --tst-surface-raised: #1d232c;
-  --tst-border: #2a313c;
-  --tst-text: #e6e9ee;
-  --tst-text-muted: #8b95a3;
-  --tst-accent: #3b82f6;
-  --tst-positive: #22c55e;
-  --tst-negative: #ef4444;
-  --tst-warning: #f59e0b;
+  --tst-bg: #0e1217;
+  --tst-nav-bg: #11161d;
+  --tst-panel: #151b23;
+  --tst-panel-active: #1f2a38;
+  --tst-hover: #1b232e;
+  --tst-border: #2a3442;
+  --tst-rule: #222b37;
+  --tst-text: #e8ecf1;
+  --tst-text-2: #c9d1db;
+  --tst-muted: #9ba7b6;
+  --tst-accent: #5aa2ff;
+  --tst-link: #7db6ff;
+  --tst-warn: #f5a25d;
+  --tst-good: #6fcf8e;
+  --tst-track: #263040;
 
-  --tst-topbar-height: 56px;
-  --tst-nav-width: 200px;
-  --tst-radius: 4px;
+  /* AttributeRange tiers by range midpoint: 1-5, 6-10, 11-15, 16-20. */
+  --tst-tier-1: #9ba7b6;
+  --tst-tier-2: #d5dbe3;
+  --tst-tier-3: #6fcf8e;
+  --tst-tier-4: #f5c451;
 
-  --tst-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --tst-font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+  /* Badge fills (text uses the matching token above). */
+  --tst-good-bg: #16301f;
+  --tst-accent-bg: #172638;
+  --tst-gold-bg: #2b2a16;
+  --tst-warn-bg: #3a2a1c;
+  --tst-grey-bg: #2a2f38;
+
+  --tst-radius: 10px;
+  --tst-font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tst-font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 }
 
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
 }
 
@@ -32,11 +47,233 @@ body {
   background: var(--tst-bg);
   color: var(--tst-text);
   font-family: var(--tst-font);
-  /* Numbers line up in tables, tiles, and the top bar. */
-  font-variant-numeric: tabular-nums;
 }
 
+a {
+  color: var(--tst-link);
+}
+
+/* Every number: IBM Plex Mono with tabular numerals. */
 .tst-num {
+  font-family: var(--tst-font-mono);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.tst-panel {
+  background: var(--tst-panel);
+  border: 1px solid var(--tst-border);
+  border-radius: var(--tst-radius);
+  padding: 16px 18px;
+  min-width: 0;
+}
+
+.tst-ptitle {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tst-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tst-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--tst-rule);
+  font-size: 14px;
+}
+
+.tst-muted {
+  color: var(--tst-muted);
+}
+
+.tst-tier-1 {
+  color: var(--tst-tier-1);
+}
+.tst-tier-2 {
+  color: var(--tst-tier-2);
+}
+.tst-tier-3 {
+  color: var(--tst-tier-3);
+}
+.tst-tier-4 {
+  color: var(--tst-tier-4);
+  font-weight: 600;
+}
+
+/* Tables: wide ones scroll inside their panel. */
+.tst-table-wrap {
+  background: var(--tst-panel);
+  border: 1px solid var(--tst-border);
+  border-radius: var(--tst-radius);
+  overflow-x: auto;
+}
+
+.tst-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tst-table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tst-muted);
+  padding: 10px;
+  border-bottom: 1px solid var(--tst-border);
+  white-space: nowrap;
+}
+
+.tst-table th button {
+  all: unset;
+  cursor: pointer;
+}
+
+.tst-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--tst-rule);
+  white-space: nowrap;
+}
+
+.tst-table tr[data-selected='true'] {
+  background: var(--tst-accent-bg);
+}
+
+/* Shell: nav and content wrap to one column on narrow windows. */
+.tst-shell-body {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.tst-nav {
+  flex: 1 1 200px;
+  max-width: 240px;
+  box-sizing: border-box;
+  padding: 16px 12px;
+  background: var(--tst-nav-bg);
+  border-right: 1px solid var(--tst-rule);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tst-main {
+  flex: 999 1 560px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 800px) {
+  .tst-nav {
+    max-width: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: 0;
+    border-bottom: 1px solid var(--tst-rule);
+  }
+  .tst-main {
+    flex-basis: 100%;
+    padding: 16px;
+  }
+}
+
+.tst-navlink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: var(--tst-text-2);
+  text-decoration: none;
+  font-size: 14px;
+  min-height: 28px;
+}
+.tst-navlink:hover {
+  background: var(--tst-hover);
+  color: var(--tst-text);
+}
+.tst-navlink[aria-current='page'] {
+  background: var(--tst-panel-active);
+  color: var(--tst-text);
+  font-weight: 600;
+}
+.tst-navlink[data-dimmed='true'] {
+  color: var(--tst-muted);
+}
+
+.tst-key {
+  font-family: var(--tst-font-mono);
+  font-size: 11px;
+  color: var(--tst-muted);
+  border: 1px solid var(--tst-border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* Selectable cards (scenario, background, preset, channel). */
+.tst-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--tst-text);
+  background: var(--tst-nav-bg);
+  border: 1px solid var(--tst-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  min-height: 44px;
+}
+.tst-card[aria-pressed='true'],
+.tst-card[aria-checked='true'] {
+  background: var(--tst-accent-bg);
+  border-color: var(--tst-accent);
+  box-shadow: 0 0 0 1px var(--tst-accent);
+}
+.tst-card:disabled,
+.tst-card[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.tst-chip {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--tst-text-2);
+  border: 1px solid var(--tst-border);
+  border-radius: 14px;
+  padding: 3px 10px;
+}
+
+.tst-msg {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--tst-rule);
+  background: transparent;
+  color: var(--tst-text-2);
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+.tst-msg:hover {
+  background: var(--tst-hover);
+}
+.tst-msg[aria-current='true'] {
+  background: var(--tst-panel-active);
+  box-shadow: inset 3px 0 0 var(--tst-accent);
 }

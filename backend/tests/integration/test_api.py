@@ -58,14 +58,14 @@ def test_overview_and_advance(client: TestClient) -> None:
     assert ov["date_label"] == "Jan 2010"
     assert ov["cash_cents"] == GARAGE_CASH
     assert ov["monthly_burn_cents"] == 0
-    assert ov["runway_months"] is None
+    assert ov["runway_months"] == 45  # $50,000 / $1,100 projected for January (M1c)
     assert ov["history"] == []
 
     first = client.post("/api/saves/dev/advance").json()
     assert first["date_label"] == "Feb 2010"
     assert first["cash_cents"] == GARAGE_CASH - OVERHEAD
     assert first["monthly_burn_cents"] == OVERHEAD
-    assert first["runway_months"] == 44  # $48,900 / $1,100
+    assert first["runway_months"] == 44  # $48,900 / $1,100 projected for February
 
     second = client.post("/api/saves/dev/advance").json()
     assert second["date_label"] == "Mar 2010"

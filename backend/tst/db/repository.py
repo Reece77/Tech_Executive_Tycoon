@@ -261,6 +261,25 @@ def costs_for_turn(session: Session, company_id: int, turn: int) -> list[tuple[s
     return sorted(rows, key=lambda r: (-r[2], r[0]))
 
 
+def expenses_by_memo(session: Session, company_id: int, turn: int) -> list[tuple[str, str, Cents]]:
+    """(memo label, account code, amount) of expenses posted in one turn, in posting order.
+
+    The label is the memo up to its first colon ("Severance: Ada Byron" -> "Severance").
+    """
+    stmt = (
+        select(LedgerEntryRow.memo, LedgerLineRow.account_code, LedgerLineRow.amount_cents)
+        .join(LedgerLineRow.entry)
+        .join(AccountRow, AccountRow.code == LedgerLineRow.account_code)
+        .where(
+            LedgerEntryRow.company_id == company_id,
+            LedgerEntryRow.turn == turn,
+            AccountRow.type == "expense",
+        )
+        .order_by(LedgerEntryRow.id, LedgerLineRow.id)
+    )
+    return [(memo.split(":")[0], code, int(amount)) for memo, code, amount in session.execute(stmt)]
+
+
 @dataclass(frozen=True, slots=True)
 class Overview:
     slug: str

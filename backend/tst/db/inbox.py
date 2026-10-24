@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import string
 from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -15,6 +17,31 @@ from tst.sim.log import LogItem
 from tst.sim.money import format_money
 
 MONEY_SUFFIX = "_cents"
+ARTICLE_SPEC = "a"  # "{role:a}" renders "a Designer" or "an Account executive"
+# Words that start with a vowel letter but a consonant sound, and the reverse.
+CONSONANT_SOUND = ("uni", "use", "usu", "eu", "one")
+VOWEL_SOUND = ("hour", "honest", "heir")
+
+
+def indefinite_article(word: str) -> str:
+    """'a' or 'an' by the sound of the first word (simple English rules)."""
+    lower = word.strip().lower()
+    if lower.startswith(VOWEL_SOUND):
+        return "an"
+    if lower.startswith(CONSONANT_SOUND):
+        return "a"
+    return "an" if lower[:1] in {"a", "e", "i", "o", "u"} else "a"
+
+
+class _TemplateFormatter(string.Formatter):
+    def format_field(self, value: Any, format_spec: str) -> Any:
+        if format_spec == ARTICLE_SPEC:
+            text = str(value)
+            return f"{indefinite_article(text)} {text}"
+        return super().format_field(value, format_spec)
+
+
+_FORMATTER = _TemplateFormatter()
 
 
 class UnknownInboxItemError(NotFoundError):
@@ -41,7 +68,10 @@ def render(item: LogItem, templates: dict[str, InboxTemplate]) -> tuple[str, str
         key: format_money(int(value)) if key.endswith(MONEY_SUFFIX) else value
         for key, value in item.params
     }
-    return template.title.format_map(params), template.body.format_map(params)
+    return (
+        _FORMATTER.vformat(template.title, (), params),
+        _FORMATTER.vformat(template.body, (), params),
+    )
 
 
 def inbox_rows(
@@ -92,11 +122,14 @@ def unread_count(session: Session, company_id: int) -> int:
     )
 
 
-def mark_read(session: Session, company_id: int, item_id: int) -> InboxMessage:
+def mark_read(
+    session: Session, company_id: int, item_id: int, *, read: bool = True
+) -> InboxMessage:
+    """Set an item's read flag (read=False marks it unread again)."""
     row = session.get(InboxItemRow, item_id)
     if row is None or row.company_id != company_id:
         raise UnknownInboxItemError(f"no inbox item {item_id}")
-    row.read = True
+    row.read = read
     return _message(row)
 
 

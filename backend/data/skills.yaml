@@ -1,29 +1,30 @@
 # Skills (spec section 5.1). Order is significant: random draws per skill follow this
 # order (ADR-0013), so append new skills at the end of their group and never reorder.
 # Drafted for M1a; M1a adds the schema and loads this file.
+# short_label is for narrow table columns (People "Top skills"); profiles use label.
 skills:
-  - { key: software_engineering, label: Software engineering, group: technical }
-  - { key: ml_research, label: ML research, group: technical }
-  - { key: data, label: Data, group: technical }
-  - { key: infrastructure, label: Infrastructure, group: technical }
-  - { key: hardware_design, label: Hardware design, group: technical }
-  - { key: chip_design, label: Chip design, group: technical }
-  - { key: manufacturing, label: Manufacturing, group: technical }
-  - { key: geology, label: Geology, group: technical }
-  - { key: mining_engineering, label: Mining engineering, group: technical }
-  - { key: security, label: Security, group: technical }
-  - { key: product, label: Product, group: business }
-  - { key: design, label: Design, group: business }
-  - { key: sales, label: Sales, group: business }
-  - { key: marketing, label: Marketing, group: business }
-  - { key: finance, label: Finance, group: business }
-  - { key: legal, label: Legal, group: business }
-  - { key: operations, label: Operations, group: business }
-  - { key: procurement, label: Procurement, group: business }
-  - { key: recruiting, label: Recruiting, group: business }
-  - { key: leadership, label: Leadership, group: leadership }
-  - { key: mentoring, label: Mentoring, group: leadership }
-  - { key: strategy, label: Strategy, group: leadership }
-  - { key: negotiation, label: Negotiation, group: leadership }
-  - { key: communication, label: Communication, group: leadership }
-  - { key: judgment_of_talent, label: Judgment of talent, group: leadership }
+  - { key: software_engineering, label: Software engineering, short_label: Software eng, group: technical }
+  - { key: ml_research, label: ML research, short_label: ML research, group: technical }
+  - { key: data, label: Data, short_label: Data, group: technical }
+  - { key: infrastructure, label: Infrastructure, short_label: Infra, group: technical }
+  - { key: hardware_design, label: Hardware design, short_label: Hardware, group: technical }
+  - { key: chip_design, label: Chip design, short_label: Chips, group: technical }
+  - { key: manufacturing, label: Manufacturing, short_label: Mfg, group: technical }
+  - { key: geology, label: Geology, short_label: Geology, group: technical }
+  - { key: mining_engineering, label: Mining engineering, short_label: Mining eng, group: technical }
+  - { key: security, label: Security, short_label: Security, group: technical }
+  - { key: product, label: Product, short_label: Product, group: business }
+  - { key: design, label: Design, short_label: Design, group: business }
+  - { key: sales, label: Sales, short_label: Sales, group: business }
+  - { key: marketing, label: Marketing, short_label: Marketing, group: business }
+  - { key: finance, label: Finance, short_label: Finance, group: business }
+  - { key: legal, label: Legal, short_label: Legal, group: business }
+  - { key: operations, label: Operations, short_label: Ops, group: business }
+  - { key: procurement, label: Procurement, short_label: Procurement, group: business }
+  - { key: recruiting, label: Recruiting, short_label: Recruiting, group: business }
+  - { key: leadership, label: Leadership, short_label: Leadership, group: leadership }
+  - { key: mentoring, label: Mentoring, short_label: Mentoring, group: leadership }
+  - { key: strategy, label: Strategy, short_label: Strategy, group: leadership }
+  - { key: negotiation, label: Negotiation, short_label: Negotiation, group: leadership }
+  - { key: communication, label: Communication, short_label: Comms, group: leadership }
+  - { key: judgment_of_talent, label: Judgment of talent, short_label: Judging talent, group: leadership }

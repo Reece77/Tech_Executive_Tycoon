@@ -54,8 +54,39 @@ Any new game rule. Org chart, Products, Finance, Competitors, and History screen
 
 ## Decisions made
 
-_(Agent fills in.)_
+Engineering decisions made by the agent. No game rule changed and the golden snapshots are unchanged.
+
+**API additions** (screens needed numbers the API did not return; all display values, built in `tst/api`, with integration tests in `tests/integration/test_api_screens.py`):
+
+- **Overview:** `team` (headcount, on notice, people cost, payroll and average morale *now*, not at the last month end), `month_costs` (this month's projection from `phases.monthly_costs`, the same function phase 6 posts, so a test checks the projection equals what Continue posts), `month_paid` (expenses already posted this month, labelled by ledger memo, so a firing shows "Severance"), `month_total_cents`, `stage_label` (spec §3 names) and `runway_low` (runway below `morale.runway_warn_months`).
+- **People:** employment gains `market_rate_cents` (role band mid × region), `monthly_cost_cents`, `tenure_months` and start/end date labels; every person gains `knowledge` (search channel, interview and reference-check counts from `decision_log`, first interview month) and `interests` (moved from the profile to the summary, still null until revealed, so the candidates table needs no extra requests); the profile gains `work_style_matches_role`; tags and pending offers gain date labels ("answer in Mar 2010").
+- **Recruitment:** `GET /api/meta/hiring` (channel energy, cost, fee, batch size, repeat, level mix; role key skills; energy costs; offer limits; the minimum firing morale penalty, 3). Searches list closed searches whose candidates are still available (the "Closed after one batch" row) and carry batch dates. The offer preview returns `reasons`: plain sentences built only from what the company knows (pay vs ask, equity, revealed mission matches, the displayed risk-appetite range, stage appeal).
+- **Inbox:** `POST /inbox/{id}/unread` for Mark unread. **Setup:** preset descriptions in `backgrounds.yaml`; scenarios carry starting cash for every difficulty.
+- `phases.payroll` now builds its lines from `monthly_costs`; `employment_monthly_cost_cents` reproduces the §8 worked example ($12,100.00), with a unit test.
+
+**Front end:**
+
+- **Runway** (Reece, review): the Overview API's `runway_months` is whole months of cash at this month's projected costs (`phases.monthly_costs`), labelled "At {month}'s costs"; the top-bar warning uses the same number. `tst inspect` still prints runway at last month's burn.
+- **Fire dialog** states the severance and "at least 3 points" (from the hiring meta), never the exact penalty. The profile note says only that morale drops.
+- **Inbox:** clicking a message marks it read; the default selection (newest) does not. Template keys map to the wireframe's kind labels and People/Hiring filters in `src/lib/inbox.ts` (display only; unknown kinds show as Notice). There are no month-closed messages (Reece, review); the Month kind is removed from `docs/wireframes.md`.
+- **Candidates table** shows the role's primary skills plus its first secondary skill; People "Top skills" sorts by range midpoint. Both are display ordering only.
+- **Hotkeys:** digits now work while a button or link has focus (only Space/Enter defer to the focused control). Continue no longer waits for the other screens to refetch, so a second press is not swallowed.
+- **Seed** stays available on the setup screen behind "Set a seed (optional)" (needed for the seeded e2e flows; not in the wireframe).
+- **Fonts:** IBM Plex self-hosted with `@fontsource/ibm-plex-sans` and `@fontsource/ibm-plex-mono` (approved in review, added to ADR-0001).
+- **Component tests** render to static markup with `react-dom/server`: no DOM library (jsdom) is in ADR-0001, so interaction is covered by Playwright.
+- A per-screen error boundary shows a render error instead of a blank page.
+- **E2E:** `e2e/m1c.spec.ts` has flows (a), (b), (c) and a fourth test for the first acceptance criterion (ten hires within six turns via network, recruiter and job post, all through the UI). The M0 smoke tests now go through the setup screen. Locally, `PLAYWRIGHT_CHANNEL=msedge make e2e` uses the installed Edge.
+
+Review fixes (Reece):
+
+- **Hiring reveals the profile:** an accepted offer sets the company's profile reveal (interests and work style), so `person_profile_reveal` is written at hire. Unit and API tests; golden snapshots unchanged.
+- **Short skill labels:** `skills.yaml` gains `short_label` ("Software eng", "Infra", "Comms"), exposed on attributes and the new-game skill meta; People "Top skills" uses it and profiles keep full names.
+- **Articles in inbox templates:** the renderer supports `{role:a}`, choosing "a" or "an" by sound ("an Account executive").
+- **No mission at setup:** Start is allowed with none chosen (the summary reads "mission: your founder's interests" and the API default applies); one of two is still refused.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- `tst inspect` still reports runway at last month's burn; switch it to the projected month if the CLI should match the screens.
+- **jsdom or happy-dom** as a dev dependency would allow Vitest interaction tests (setup stepper, offer panel); needs an ADR-0001 addition.
+- The network channel card shows 2–4 candidates; the +1 for founder sociability ≥ 15 is not mentioned.
+- Candidates expire in phase 12 of their last month, after an offer made that month resolves in phase 1 of the next; worth confirming an offer made in the expiry month still resolves (the UI allows it).
