@@ -486,13 +486,23 @@ def summarize(path: Path) -> SaveSummary:
 
 
 def refresh_index(save_dir: Path) -> list[SaveSummary]:
-    """Rebuild saves/index.json from the save files. The files are the source of truth."""
+    """Rebuild saves/index.json from the save files. The files are the source of truth.
+
+    Older saves are upgraded first (after a pre-migration backup, ADR-0004). A save that
+    cannot be upgraded or read is skipped with a one-line warning, not a traceback.
+    """
     summaries = []
     for path in sorted(save_dir.glob(f"*{SAVE_SUFFIX}")):
+        slug = slug_of(path)
+        try:
+            migrate.ensure_current(path)
+        except Exception as exc:
+            log.warning("Skipping save %s: needs upgrade (%s)", slug, type(exc).__name__)
+            continue
         try:
             summaries.append(summarize(path))
-        except Exception:
-            log.exception("Skipping unreadable save %s", path.name)
+        except Exception as exc:
+            log.warning("Skipping save %s: unreadable (%s)", slug, type(exc).__name__)
     (save_dir / INDEX_FILE).write_text(
         json.dumps([asdict(s) for s in summaries], indent=2) + "\n", encoding="utf-8"
     )
