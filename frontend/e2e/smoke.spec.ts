@@ -5,7 +5,20 @@ import { setupGame } from './helpers.ts';
 // has dropped by two months of costs ($50,000 - 2 x ($500 base overhead + $600 office)).
 test('create a game and continue two months', async ({ page }) => {
   const company = `Smoke ${Date.now()}`;
-  await setupGame(page, { company });
+  // No mission chosen: allowed, and the API uses the founder's first two interests.
+  await page.goto('/new');
+  await page.getByTestId('company-name-input').fill(company);
+  await expect(page.getByTestId('setup-summary')).toContainText(
+    "mission: your founder's interests",
+  );
+  await page.getByTestId('interest-ai').click();
+  await expect(page.getByTestId('start-game')).toBeDisabled(); // one of two is not allowed
+  await page.getByTestId('interest-ai').click();
+  await setupGame(page, { company, mission: [] });
+  await page.keyboard.press('3');
+  await expect(page.getByText('Company mission')).toBeVisible();
+  await expect(page.getByTestId('person-row')).toHaveCount(1);
+  await page.keyboard.press('1');
 
   await expect(page.getByTestId('game-date')).toHaveText('Jan 2010');
   await expect(page.getByTestId('company-name')).toHaveText(company);

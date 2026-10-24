@@ -4,7 +4,7 @@ export interface SetupOptions {
   company: string;
   seed?: number;
   scenario?: string;
-  mission?: [string, string];
+  mission?: string[]; // [] starts with no mission (the founder's interests)
 }
 
 /** Create a game through the setup screen with the default founder; lands on the Inbox. */

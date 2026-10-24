@@ -177,7 +177,8 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
   const seedValid = SEED_RE.test(seed) && (seed === '' || Number.isSafeInteger(Number(seed)));
   const founderOk =
     previewCurrent && preview.data !== undefined && preview.data.errors.length === 0;
-  const missionOk = mission.length === rules.mission_size;
+  // No mission is allowed: the API then uses the founder's first two interests.
+  const missionOk = mission.length === 0 || mission.length === rules.mission_size;
   const canStart =
     slug !== '' && scenario !== '' && seedValid && founderOk && missionOk && !create.isPending;
 
@@ -212,7 +213,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
         difficulty,
         seed: seed === '' ? null : Number(seed),
         founder,
-        mission,
+        mission: mission.length ? mission : null,
       },
       { onSuccess: (save) => void navigate(`/game/${save.save_id}`) },
     );
@@ -227,7 +228,9 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
     preset === SURPRISE
       ? 'Surprise personality'
       : meta.personality_presets.find((p) => p.key === preset)?.label,
-    mission.length ? mission.map((k) => interestLabel.get(k)).join(' and ') : 'no mission yet',
+    mission.length
+      ? mission.map((k) => interestLabel.get(k)).join(' and ')
+      : "mission: your founder's interests",
   ]
     .filter(Boolean)
     .join(' · ');
@@ -576,6 +579,13 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
             );
           })}
         </div>
+        <p className="tst-muted" style={{ margin: 0, fontSize: 12 }} data-testid="mission-note">
+          {mission.length === 0
+            ? "Optional: with none chosen, the mission is your founder's first two interests."
+            : mission.length < rules.mission_size
+              ? `Choose ${rules.mission_size - mission.length} more, or clear your choice to use your founder's interests.`
+              : 'Click a chosen interest to swap it.'}
+        </p>
       </Step>
 
       {create.error && (
