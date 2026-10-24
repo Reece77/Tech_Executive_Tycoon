@@ -16,7 +16,7 @@ const columns = helper.columns([
     cell: ({ row }) => (
       <Button
         component={Link}
-        to={`/game/${row.original.save_id}/overview`}
+        to={`/game/${row.original.save_id}`}
         size="compact-sm"
         variant="light"
         data-testid={`open-${row.original.save_id}`}
@@ -31,7 +31,7 @@ export function SavesTable({ saves }: { saves: Save[] }) {
   const table = useTable({ features, columns, data: saves });
 
   if (saves.length === 0) {
-    return <Text c="dimmed">No saves yet. Create a new game below.</Text>;
+    return <Text c="dimmed">No saves yet. Start a new game.</Text>;
   }
   return (
     <Table striped highlightOnHover verticalSpacing={4} className="tst-num">
