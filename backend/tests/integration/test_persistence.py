@@ -41,7 +41,7 @@ from tst.sim.state import company_cash
 from tst.sim.turn import TurnContext
 
 GARAGE_CASH = 5_000_000
-OVERHEAD = 200_000
+OVERHEAD = 110_000  # M1b solo founder: $500 base overhead + $600 office
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ def test_create_save(save: Path, loaded: LoadedData) -> None:
         assert state.player.name == "Test Co"
         assert meta.master_seed == 42
         assert meta.data_hashes == loaded.hashes
-        assert meta.schema_version == SCHEMA_VERSION == 2
+        assert meta.schema_version == SCHEMA_VERSION == 4
         assert company_cash(ledger_balances(session), state.player.id) == GARAGE_CASH
 
 
@@ -103,8 +103,10 @@ def test_run_turn_writes_everything(save: Path, loaded: LoadedData) -> None:
         assert snap is not None
         assert snap.cash_cents == GARAGE_CASH - OVERHEAD
         assert snap.monthly_burn_cents == OVERHEAD
-        for row_type in (DecisionLogRow, TurnLogRow, TurnSnapshotRow):
+        for row_type in (TurnLogRow, TurnSnapshotRow):
             assert session.scalar(select(func.count()).select_from(row_type)) == 1
+        # the new-game choices (for replay) plus this turn's decisions
+        assert session.scalar(select(func.count()).select_from(DecisionLogRow)) == 2
         # starting cash + one overhead entry
         assert session.scalar(select(func.count()).select_from(LedgerEntryRow)) == 2
 

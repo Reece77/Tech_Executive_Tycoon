@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.people import EnergyOut, InboxItemOut
 from tst.db.repository import MAX_STORED_SEED
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.people.founder import FounderSpec
@@ -48,6 +49,9 @@ class CreateSaveIn(BaseModel):
     company_name: str = Field(min_length=1, max_length=80)
     difficulty: str = DEFAULT_DIFFICULTY
     founder: FounderIn | None = None
+    mission: list[str] | None = Field(
+        default=None, description="Two interests; omit for the founder's first two"
+    )
 
 
 class SaveOut(BaseModel):
@@ -64,6 +68,15 @@ class SnapshotPointOut(BaseModel):
     date_label: str
     cash_cents: int
     monthly_burn_cents: int
+    payroll_cents: int
+    headcount: int
+    avg_morale: float | None
+
+
+class CostLineOut(BaseModel):
+    account: str
+    label: str
+    amount_cents: int
 
 
 class OverviewOut(BaseModel):
@@ -75,3 +88,12 @@ class OverviewOut(BaseModel):
     monthly_burn_cents: int
     runway_months: int | None = Field(description="Null when the company is not burning cash")
     history: list[SnapshotPointOut] = Field(description="Last 12 month-end snapshots, oldest first")
+    stage: int
+    mission: list[str]
+    headcount: int
+    payroll_cents: int = Field(description="Salaries plus benefits in the last closed month")
+    avg_morale: float | None = Field(description="Employees, not the founder; null if none")
+    energy: EnergyOut
+    unread_inbox: int
+    costs_last_month: list[CostLineOut] = Field(description="Expenses posted last month")
+    latest_inbox: list[InboxItemOut] = Field(description="Five newest inbox items")

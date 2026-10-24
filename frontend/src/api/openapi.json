@@ -315,6 +315,1235 @@
         }
       }
     },
+    "/api/saves/{save_id}/people": {
+      "get": {
+        "tags": [
+          "game"
+        ],
+        "summary": "List People",
+        "operationId": "listPeople",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonSummaryOut"
+                  },
+                  "title": "Response Listpeople"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/people/{person_id}": {
+      "get": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Get Person",
+        "operationId": "getPerson",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonProfileOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/people/{person_id}/fire": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Fire Person",
+        "operationId": "firePerson",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FireOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/searches": {
+      "get": {
+        "tags": [
+          "game"
+        ],
+        "summary": "List Searches",
+        "operationId": "listSearches",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchOut"
+                  },
+                  "title": "Response Listsearches"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Open Search",
+        "operationId": "openSearch",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/searches/{search_id}/close": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Close Search",
+        "operationId": "closeSearch",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "search_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Search Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/candidates": {
+      "get": {
+        "tags": [
+          "game"
+        ],
+        "summary": "List Candidates",
+        "operationId": "listCandidates",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonSummaryOut"
+                  },
+                  "title": "Response Listcandidates"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/candidates/{candidate_id}/interview": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Interview",
+        "operationId": "interviewCandidate",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonProfileOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/candidates/{candidate_id}/reference-check": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Reference Check",
+        "operationId": "referenceCheck",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonProfileOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/candidates/{candidate_id}/offer": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Make Offer",
+        "operationId": "makeOffer",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfferIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/candidates/{candidate_id}/offer-preview": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Preview Offer",
+        "description": "The offer dialog's hint and rule checks. No energy, no randomness, nothing saved.",
+        "operationId": "previewOffer",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfferIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferPreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/offers/{offer_id}/withdraw": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Withdraw Offer",
+        "operationId": "withdrawOffer",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "offer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Offer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox": {
+      "get": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Get Inbox",
+        "operationId": "getInbox",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "unread_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Unread Only"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/{item_id}/read": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Mark Inbox Read",
+        "operationId": "markInboxRead",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/energy": {
+      "get": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Founder Energy",
+        "operationId": "getFounderEnergy",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnergyOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/meta/scenarios": {
       "get": {
         "tags": [
@@ -339,10 +1568,212 @@
           }
         }
       }
+    },
+    "/api/meta/new-game": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "New Game Meta",
+        "description": "Everything the new-game setup screen needs (M1c).",
+        "operationId": "getNewGameMeta",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewGameMetaOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/meta/founder-preview": {
+      "post": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Founder Preview",
+        "description": "Skill values, points left and every rule broken. Never current ability.",
+        "operationId": "previewFounder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FounderIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FounderPreviewOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AttributeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group"
+          },
+          "range": {
+            "$ref": "#/components/schemas/RangeOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "group",
+          "range"
+        ],
+        "title": "AttributeOut"
+      },
+      "BackgroundOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "available_in": {
+            "type": "string",
+            "title": "Available In"
+          },
+          "selectable": {
+            "type": "boolean",
+            "title": "Selectable"
+          },
+          "bonuses": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Bonuses"
+          },
+          "default_allocation": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Default Allocation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "description",
+          "available_in",
+          "selectable",
+          "bonuses",
+          "default_allocation"
+        ],
+        "title": "BackgroundOut"
+      },
+      "CandidacyOut": {
+        "properties": {
+          "search_id": {
+            "type": "integer",
+            "title": "Search Id"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "expires_turn": {
+            "type": "integer",
+            "title": "Expires Turn"
+          },
+          "salary_expectation_cents": {
+            "type": "integer",
+            "title": "Salary Expectation Cents"
+          },
+          "pending_offer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PendingOfferOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "search_id",
+          "channel",
+          "expires_turn",
+          "salary_expectation_cents",
+          "pending_offer"
+        ],
+        "title": "CandidacyOut"
+      },
+      "CostLineOut": {
+        "properties": {
+          "account": {
+            "type": "string",
+            "title": "Account"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account",
+          "label",
+          "amount_cents"
+        ],
+        "title": "CostLineOut"
+      },
       "CreateSaveIn": {
         "properties": {
           "name": {
@@ -390,6 +1821,21 @@
                 "type": "null"
               }
             ]
+          },
+          "mission": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mission",
+            "description": "Two interests; omit for the founder's first two"
           }
         },
         "type": "object",
@@ -399,6 +1845,89 @@
           "company_name"
         ],
         "title": "CreateSaveIn"
+      },
+      "EmploymentOut": {
+        "properties": {
+          "employment_id": {
+            "type": "integer",
+            "title": "Employment Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "salary_cents": {
+            "type": "integer",
+            "title": "Salary Cents"
+          },
+          "equity_bp": {
+            "type": "integer",
+            "title": "Equity Bp"
+          },
+          "start_turn": {
+            "type": "integer",
+            "title": "Start Turn"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "end_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Turn"
+          },
+          "severance_cents": {
+            "type": "integer",
+            "title": "Severance Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "employment_id",
+          "role",
+          "role_label",
+          "level",
+          "salary_cents",
+          "equity_bp",
+          "start_turn",
+          "status",
+          "end_turn",
+          "severance_cents"
+        ],
+        "title": "EmploymentOut"
+      },
+      "EnergyOut": {
+        "properties": {
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          },
+          "max": {
+            "type": "integer",
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "energy",
+          "max"
+        ],
+        "title": "EnergyOut"
       },
       "ErrorOut": {
         "properties": {
@@ -418,6 +1947,28 @@
         ],
         "title": "ErrorOut",
         "description": "Stable error body for every 4xx response."
+      },
+      "FireOut": {
+        "properties": {
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          },
+          "severance_cents": {
+            "type": "integer",
+            "title": "Severance Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "energy",
+          "unread_inbox",
+          "severance_cents"
+        ],
+        "title": "FireOut"
       },
       "FounderIn": {
         "properties": {
@@ -527,6 +2078,441 @@
         "title": "FounderIn",
         "description": "Founder build (docs/formulas.md section 5). Omitted fields use the defaults."
       },
+      "FounderPreviewOut": {
+        "properties": {
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/FounderSkillOut"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "points_spent": {
+            "type": "integer",
+            "title": "Points Spent"
+          },
+          "points_remaining": {
+            "type": "integer",
+            "title": "Points Remaining"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skills",
+          "points_spent",
+          "points_remaining",
+          "errors"
+        ],
+        "title": "FounderPreviewOut"
+      },
+      "FounderRulesOut": {
+        "properties": {
+          "skill_base": {
+            "type": "number",
+            "title": "Skill Base"
+          },
+          "skill_points": {
+            "type": "integer",
+            "title": "Skill Points"
+          },
+          "skill_cap": {
+            "type": "number",
+            "title": "Skill Cap"
+          },
+          "age_min": {
+            "type": "integer",
+            "title": "Age Min"
+          },
+          "age_max": {
+            "type": "integer",
+            "title": "Age Max"
+          },
+          "default_age": {
+            "type": "integer",
+            "title": "Default Age"
+          },
+          "default_region": {
+            "type": "string",
+            "title": "Default Region"
+          },
+          "mission_size": {
+            "type": "integer",
+            "title": "Mission Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill_base",
+          "skill_points",
+          "skill_cap",
+          "age_min",
+          "age_max",
+          "default_age",
+          "default_region",
+          "mission_size"
+        ],
+        "title": "FounderRulesOut"
+      },
+      "FounderSkillOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "group",
+          "value"
+        ],
+        "title": "FounderSkillOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InboxItemOut": {
+        "properties": {
+          "item_id": {
+            "type": "integer",
+            "title": "Item Id"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "link_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link Kind"
+          },
+          "link_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link Id"
+          },
+          "read": {
+            "type": "boolean",
+            "title": "Read"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "turn",
+          "date_label",
+          "kind",
+          "title",
+          "body",
+          "link_kind",
+          "link_id",
+          "read"
+        ],
+        "title": "InboxItemOut"
+      },
+      "InboxOut": {
+        "properties": {
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InboxItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unread",
+          "items"
+        ],
+        "title": "InboxOut"
+      },
+      "LabelOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "LabelOut"
+      },
+      "MoralePointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "morale": {
+            "type": "number",
+            "title": "Morale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "morale"
+        ],
+        "title": "MoralePointOut"
+      },
+      "NewGameMetaOut": {
+        "properties": {
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioOut"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          },
+          "difficulties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Difficulties"
+          },
+          "backgrounds": {
+            "items": {
+              "$ref": "#/components/schemas/BackgroundOut"
+            },
+            "type": "array",
+            "title": "Backgrounds"
+          },
+          "personality_presets": {
+            "items": {
+              "$ref": "#/components/schemas/PresetOut"
+            },
+            "type": "array",
+            "title": "Personality Presets"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/SkillMetaOut"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "interests": {
+            "items": {
+              "$ref": "#/components/schemas/LabelOut"
+            },
+            "type": "array",
+            "title": "Interests"
+          },
+          "work_styles": {
+            "items": {
+              "$ref": "#/components/schemas/LabelOut"
+            },
+            "type": "array",
+            "title": "Work Styles"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/LabelOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/LabelOut"
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "founder_rules": {
+            "$ref": "#/components/schemas/FounderRulesOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenarios",
+          "difficulties",
+          "backgrounds",
+          "personality_presets",
+          "skills",
+          "interests",
+          "work_styles",
+          "regions",
+          "roles",
+          "founder_rules"
+        ],
+        "title": "NewGameMetaOut"
+      },
+      "OfferIn": {
+        "properties": {
+          "salary_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Salary Cents"
+          },
+          "equity_bp": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Equity Bp",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "salary_cents"
+        ],
+        "title": "OfferIn"
+      },
+      "OfferOut": {
+        "properties": {
+          "offer_id": {
+            "type": "integer",
+            "title": "Offer Id"
+          },
+          "candidate_id": {
+            "type": "integer",
+            "title": "Candidate Id"
+          },
+          "salary_cents": {
+            "type": "integer",
+            "title": "Salary Cents"
+          },
+          "equity_bp": {
+            "type": "integer",
+            "title": "Equity Bp"
+          },
+          "made_turn": {
+            "type": "integer",
+            "title": "Made Turn"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "offer_id",
+          "candidate_id",
+          "salary_cents",
+          "equity_bp",
+          "made_turn",
+          "status"
+        ],
+        "title": "OfferOut"
+      },
+      "OfferPreviewOut": {
+        "properties": {
+          "hint": {
+            "type": "string",
+            "title": "Hint"
+          },
+          "ratio": {
+            "type": "number",
+            "title": "Ratio"
+          },
+          "floor_cents": {
+            "type": "integer",
+            "title": "Floor Cents"
+          },
+          "expectation_cents": {
+            "type": "integer",
+            "title": "Expectation Cents"
+          },
+          "problems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Problems"
+          },
+          "option_pool_left_bp": {
+            "type": "integer",
+            "title": "Option Pool Left Bp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hint",
+          "ratio",
+          "floor_cents",
+          "expectation_cents",
+          "problems",
+          "option_pool_left_bp"
+        ],
+        "title": "OfferPreviewOut"
+      },
       "OverviewOut": {
         "properties": {
           "save_id": {
@@ -572,6 +2558,61 @@
             "type": "array",
             "title": "History",
             "description": "Last 12 month-end snapshots, oldest first"
+          },
+          "stage": {
+            "type": "integer",
+            "title": "Stage"
+          },
+          "mission": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Mission"
+          },
+          "headcount": {
+            "type": "integer",
+            "title": "Headcount"
+          },
+          "payroll_cents": {
+            "type": "integer",
+            "title": "Payroll Cents",
+            "description": "Salaries plus benefits in the last closed month"
+          },
+          "avg_morale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Morale",
+            "description": "Employees, not the founder; null if none"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          },
+          "costs_last_month": {
+            "items": {
+              "$ref": "#/components/schemas/CostLineOut"
+            },
+            "type": "array",
+            "title": "Costs Last Month",
+            "description": "Expenses posted last month"
+          },
+          "latest_inbox": {
+            "items": {
+              "$ref": "#/components/schemas/InboxItemOut"
+            },
+            "type": "array",
+            "title": "Latest Inbox",
+            "description": "Five newest inbox items"
           }
         },
         "type": "object",
@@ -583,9 +2624,384 @@
           "cash_cents",
           "monthly_burn_cents",
           "runway_months",
-          "history"
+          "history",
+          "stage",
+          "mission",
+          "headcount",
+          "payroll_cents",
+          "avg_morale",
+          "energy",
+          "unread_inbox",
+          "costs_last_month",
+          "latest_inbox"
         ],
         "title": "OverviewOut"
+      },
+      "PendingOfferOut": {
+        "properties": {
+          "offer_id": {
+            "type": "integer",
+            "title": "Offer Id"
+          },
+          "salary_cents": {
+            "type": "integer",
+            "title": "Salary Cents"
+          },
+          "equity_bp": {
+            "type": "integer",
+            "title": "Equity Bp"
+          },
+          "made_turn": {
+            "type": "integer",
+            "title": "Made Turn"
+          }
+        },
+        "type": "object",
+        "required": [
+          "offer_id",
+          "salary_cents",
+          "equity_bp",
+          "made_turn"
+        ],
+        "title": "PendingOfferOut"
+      },
+      "PersonProfileOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "age": {
+            "type": "integer",
+            "title": "Age"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "role_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Label"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "is_founder": {
+            "type": "boolean",
+            "title": "Is Founder"
+          },
+          "morale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Morale"
+          },
+          "potential_phrase": {
+            "type": "string",
+            "title": "Potential Phrase"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "employment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmploymentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidacy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CandidacyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "noticed_tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagOut"
+            },
+            "type": "array",
+            "title": "Noticed Tags"
+          },
+          "personality": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Personality"
+          },
+          "interests": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interests",
+            "description": "Null until an interview or network intro"
+          },
+          "work_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Style",
+            "description": "Null until an interview or network intro"
+          },
+          "morale_history": {
+            "items": {
+              "$ref": "#/components/schemas/MoralePointOut"
+            },
+            "type": "array",
+            "title": "Morale History",
+            "description": "Last 12 months, oldest first"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "age",
+          "region",
+          "role",
+          "role_label",
+          "level",
+          "is_founder",
+          "morale",
+          "potential_phrase",
+          "skills",
+          "employment",
+          "candidacy",
+          "noticed_tags",
+          "personality",
+          "interests",
+          "work_style",
+          "morale_history"
+        ],
+        "title": "PersonProfileOut"
+      },
+      "PersonSummaryOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "age": {
+            "type": "integer",
+            "title": "Age"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "role_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Label"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "is_founder": {
+            "type": "boolean",
+            "title": "Is Founder"
+          },
+          "morale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Morale"
+          },
+          "potential_phrase": {
+            "type": "string",
+            "title": "Potential Phrase"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "employment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmploymentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidacy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CandidacyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "noticed_tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagOut"
+            },
+            "type": "array",
+            "title": "Noticed Tags"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "age",
+          "region",
+          "role",
+          "role_label",
+          "level",
+          "is_founder",
+          "morale",
+          "potential_phrase",
+          "skills",
+          "employment",
+          "candidacy",
+          "noticed_tags"
+        ],
+        "title": "PersonSummaryOut"
+      },
+      "PresetOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "values": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "values"
+        ],
+        "title": "PresetOut"
+      },
+      "RangeOut": {
+        "properties": {
+          "min": {
+            "type": "integer",
+            "title": "Min"
+          },
+          "max": {
+            "type": "integer",
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "min",
+          "max"
+        ],
+        "title": "RangeOut"
       },
       "SaveOut": {
         "properties": {
@@ -663,6 +3079,95 @@
         ],
         "title": "ScenarioOut"
       },
+      "SearchIn": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "channel"
+        ],
+        "title": "SearchIn"
+      },
+      "SearchOut": {
+        "properties": {
+          "search_id": {
+            "type": "integer",
+            "title": "Search Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "opened_turn": {
+            "type": "integer",
+            "title": "Opened Turn"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "monthly_cost_cents": {
+            "type": "integer",
+            "title": "Monthly Cost Cents"
+          },
+          "open_candidates": {
+            "type": "integer",
+            "title": "Open Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "search_id",
+          "role",
+          "role_label",
+          "channel",
+          "opened_turn",
+          "status",
+          "monthly_cost_cents",
+          "open_candidates"
+        ],
+        "title": "SearchOut"
+      },
+      "SkillMetaOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "group"
+        ],
+        "title": "SkillMetaOut"
+      },
       "SnapshotPointOut": {
         "properties": {
           "turn": {
@@ -680,6 +3185,25 @@
           "monthly_burn_cents": {
             "type": "integer",
             "title": "Monthly Burn Cents"
+          },
+          "payroll_cents": {
+            "type": "integer",
+            "title": "Payroll Cents"
+          },
+          "headcount": {
+            "type": "integer",
+            "title": "Headcount"
+          },
+          "avg_morale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Morale"
           }
         },
         "type": "object",
@@ -687,9 +3211,80 @@
           "turn",
           "date_label",
           "cash_cents",
-          "monthly_burn_cents"
+          "monthly_burn_cents",
+          "payroll_cents",
+          "headcount",
+          "avg_morale"
         ],
         "title": "SnapshotPointOut"
+      },
+      "TagOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "noticed_turn": {
+            "type": "integer",
+            "title": "Noticed Turn"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "text",
+          "noticed_turn"
+        ],
+        "title": "TagOut"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }

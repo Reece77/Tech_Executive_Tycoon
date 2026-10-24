@@ -1,0 +1,31 @@
+# Inbox wording (M1b). The sim emits a template key plus parameters; persistence renders
+# the title and body for the player company. Parameters ending in _cents are shown as money.
+# Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
+templates:
+  candidates_arrived:
+    title: "{count} candidates for {role}"
+    body: "Your {channel} search for a {role} turned up {count} candidates. They will consider offers for the next {shelf} months."
+  offer_accepted:
+    title: "{name} accepted your offer"
+    body: "{name} joins as a {level} {role} on {salary_cents} a year."
+  offer_declined:
+    title: "{name} declined your offer"
+    body: "{name} has turned down the {role} role and is no longer a candidate."
+  resigned:
+    title: "{name} has resigned"
+    body: "{name} has handed in their notice and will leave at the start of next month."
+  retired:
+    title: "{name} is retiring"
+    body: "{name} has decided to retire and will leave at the start of next month."
+  employee_left:
+    title: "{name} has left"
+    body: "{name} has left the company ({reason})."
+  fired:
+    title: "{name} was let go"
+    body: "{name} has left the company. Severance of {severance_cents} was paid."
+  tag_revealed:
+    title: "You noticed something about {name}"
+    body: "You have noticed that {name} {reveal_text}."
+  out_of_cash:
+    title: "You are out of cash"
+    body: "Cash stands at {cash_cents}. Payroll will keep running, but the team will notice."

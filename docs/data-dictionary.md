@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 2 (migrations `0001_initial`, `0002_people`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 4 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -20,7 +20,11 @@ One row describing the save. Current-state table (updated in place each turn).
 | `created_turn` | INTEGER | no | Turn the save was created at (0). |
 | `current_turn` | INTEGER | no | Next turn to be played. Incremented once per committed turn. |
 | `data_hashes` | JSON | no | `{file name: SHA-256}` of the data files used to create the save (line endings normalized), so later data changes can be detected (ADR-0008). |
-| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (2 after `0002_people`). |
+| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (4 after `0004_inbox`). |
+| `next_person_id` | INTEGER | no | Next person id to assign. Ids are never reused, because people leave the live state (M1b sweep rule 2). |
+| `next_search_id` | INTEGER | no | Next search id. |
+| `next_offer_id` | INTEGER | no | Next offer id. |
+| `next_employment_id` | INTEGER | no | Next employment id. |
 
 ## company
 
@@ -33,6 +37,7 @@ The player company and (from M5) all rivals, handled by the same code (ADR-0010)
 | `is_player` | BOOLEAN | no | True for the player's company. |
 | `stage` | INTEGER | no | Company stage, 0 (solo founder) to 5 (conglomerate), spec §3. |
 | `founded_turn` | INTEGER | no | Turn the company was founded. |
+| `mission` | JSON | no | List of two `interests.yaml` keys (formulas.md §7); empty for saves made before M1b. |
 
 Cash is not stored here; it is the `1000_cash` ledger balance (ADR-0003).
 
@@ -95,7 +100,8 @@ Decisions applied each turn, for replay and narrative. Append-only history.
 | `turn` | INTEGER | no | Turn the decisions were applied in. |
 | `company_id` | INTEGER FK → company.id | no | Deciding company. |
 | `kind` | VARCHAR(64) | no | `turn_decisions` for the per-turn `Decisions` object. |
-| `payload` | JSON | no | Serialized `Decisions` (includes its `version`). |
+| `payload` | JSON | no | Serialized `Decisions` (includes its `version`), or an action's fields. |
+| `seq` | INTEGER | yes | Order of a player action within its turn (1, 2, 3…; ADR-0014); null for the per-turn `turn_decisions` row. |
 
 Index `ix_decision_log_turn (turn)`.
 
@@ -190,14 +196,14 @@ Behavior tags an observer has learned (ADR-0007). Primary key `(person_id, obser
 
 ### person_state
 
-Energy, stress and morale. Created in M1a and **empty**; M1b fills it (founder energy, morale).
+Energy, stress and morale; one row per person who has any (M1b: the founder's energy, employees' morale).
 
 | Column | Type | Null | Description |
 | --- | --- | --- | --- |
 | `person_id` | INTEGER PK, FK → person.id | no | Person. |
-| `energy` | FLOAT | yes | Founder energy for the month (formulas.md §6, M1b). |
+| `energy` | FLOAT | yes | Founder energy left this month (formulas.md §6); reset after phase 12. |
 | `stress` | FLOAT | yes | 0–100 (M1b+). |
-| `morale` | FLOAT | yes | 0–100 (M1b). |
+| `morale` | FLOAT | yes | 0–100 for employees; null for the founder (formulas.md §9). |
 
 ### employment
 
@@ -227,6 +233,86 @@ Created in M1a and **empty**; affinity defaults to 0 (neutral). Primary key `(pe
 | `other_person_id` | INTEGER FK → person.id | no | The other person. |
 | `affinity` | FLOAT | no | Relationship strength; 0 is neutral. |
 | `updated_turn` | INTEGER | no | Turn of the last change. |
+
+## Hiring (migration `0003_hiring`, M1b)
+
+Live records are loaded into the game state; finished ones keep their rows with a status (M1b sweep rule 1).
+
+### search
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Search id. |
+| `company_id` | INTEGER FK → company.id | no | Searching company. |
+| `role` | VARCHAR(64) | no | `roles.yaml` role searched for. |
+| `channel` | VARCHAR(16) | no | `network`, `job_post` or `recruiter`. |
+| `actor_id` | INTEGER FK → person.id | no | Who opened it; their judgment of talent scouts its candidates. |
+| `opened_turn` | INTEGER | no | Turn opened. |
+| `status` | VARCHAR(16) | no | `open` or `closed`. Network and recruiter searches close after their one batch. |
+| `closed_turn` | INTEGER | yes | Turn closed. |
+
+Index `ix_search_company_status (company_id, status)`.
+
+### candidate
+
+A generated person available to one company. Primary key `person_id`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER PK, FK → person.id | no | The candidate. |
+| `company_id` | INTEGER FK → company.id | no | Company that found them. |
+| `search_id` | INTEGER FK → search.id | no | Search that found them. |
+| `channel` | VARCHAR(16) | no | That search's channel, kept because one-batch searches close (decides the recruiter fee on hire). |
+| `created_turn` | INTEGER | no | Turn whose phase 12 generated the batch. |
+| `expires_turn` | INTEGER | no | They leave in phase 12 of this turn unless hired. |
+| `status` | VARCHAR(16) | no | `open`, `hired`, `declined`, `expired`, or `withdrawn` (reserved for M2). |
+| `resolved_turn` | INTEGER | yes | Turn the status left `open`. |
+
+Index `ix_candidate_company_status (company_id, status)`.
+
+### offer
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Offer id; offers resolve in id order. |
+| `company_id` | INTEGER FK → company.id | no | Offering company. |
+| `candidate_id` | INTEGER FK → person.id | no | Candidate. |
+| `actor_id` | INTEGER FK → person.id | no | Who made the offer. |
+| `salary_cents` | BIGINT | no | Annual salary offered. |
+| `equity_bp` | INTEGER | no | Equity offered, in basis points (option pool rules, formulas.md §7). |
+| `made_turn` | INTEGER | no | Turn made; resolved in phase 1 of that turn's Continue. |
+| `status` | VARCHAR(16) | no | `pending`, `accepted`, `declined`, or `withdrawn` (by the player). |
+| `resolved_turn` | INTEGER | yes | Turn resolved or withdrawn. |
+
+Index `ix_offer_company_status (company_id, status)`.
+
+### person_morale_log
+
+Month-end morale per employee, append-only. Primary key `(person_id, turn)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER FK → person.id | no | Employee. |
+| `turn` | INTEGER | no | Turn closed. |
+| `morale` | FLOAT | no | Morale after phase 8. |
+
+## Inbox (migration `0004_inbox`, M1b)
+
+### inbox_item
+
+Messages for the player company, rendered from `inbox_templates.yaml` when the turn or action that produced them is saved. Rows are only appended, except `read`. Index `ix_inbox_item_company_read (company_id, read)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Message id; newest has the highest id. |
+| `turn` | INTEGER | no | Turn that produced it. |
+| `company_id` | INTEGER FK → company.id | no | The player company. |
+| `template` | VARCHAR(64) | no | `inbox_templates.yaml` key, e.g. `offer_accepted`. |
+| `title` | VARCHAR(200) | no | Rendered title. |
+| `body` | TEXT | no | Rendered body; amounts are formatted as money. |
+| `link_kind` | VARCHAR(16) | yes | `person`, `candidate`, `search`, or null. |
+| `link_id` | INTEGER | yes | Id of the linked person or search. |
+| `read` | BOOLEAN | no | Marked read by the player. |
 
 ## Files next to the saves
 

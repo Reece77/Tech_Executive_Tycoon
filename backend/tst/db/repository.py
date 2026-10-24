@@ -5,8 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from collections import defaultdict
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -17,43 +16,34 @@ from sqlalchemy.orm import Session
 
 from tst.db import migrate
 from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
+from tst.db.inbox import inbox_rows
 from tst.db.mappers import (
     company_snapshot_from_row,
-    company_to_row,
     decisions_to_row,
-    employment_from_row,
-    employment_to_row,
     entry_to_row,
-    game_state_from_rows,
     log_item_to_row,
-    person_from_rows,
-    person_to_rows,
-    reveal_from_rows,
-    reveal_to_rows,
     snapshot_to_rows,
-    update_company_row,
 )
 from tst.db.models import (
     SCHEMA_VERSION,
     AccountRow,
-    CompanyRow,
-    EmploymentRow,
+    DecisionLogRow,
     LedgerEntryRow,
     LedgerLineRow,
-    PersonHiddenRow,
-    PersonInterestRow,
-    PersonPersonalityRow,
-    PersonProfileRevealRow,
-    PersonRevealRow,
-    PersonRow,
-    PersonSkillRow,
-    PersonTagRevealRow,
-    PersonTagRow,
+    PersonMoraleLogRow,
     SaveMetaRow,
     TurnSnapshotRow,
 )
 from tst.db.session import make_engine, make_sessionmaker
+from tst.db.state_io import META_ID, load_state, read_meta, sync_state
 from tst.loader import LoadedData
+from tst.sim.actions import (
+    Action,
+    ActionResult,
+    action_from_payload,
+    action_payload,
+    apply_action,
+)
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.decisions import Decisions
@@ -67,7 +57,6 @@ from tst.sim.errors import (
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
-from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot, runway_months
@@ -79,7 +68,7 @@ log = logging.getLogger(__name__)
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 MAX_STORED_SEED = 2**63 - 1  # SQLite INTEGER is signed 64-bit
 INDEX_FILE = "index.json"
-META_ID = 1
+NEW_GAME_KIND = "new_game"  # decision_log row holding the new-game choices (for replay)
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,6 +122,7 @@ def create_save(
     save_dir: Path,
     difficulty: str = DEFAULT_DIFFICULTY,
     founder: FounderSpec = DEFAULT_FOUNDER,
+    mission: tuple[str, ...] | None = None,
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state."""
     path = save_path(save_dir, name)
@@ -152,6 +142,7 @@ def create_save(
         founder=founder,
         balance=data.balance,
         data=data.game_data,
+        mission=mission,
     )
 
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -169,15 +160,29 @@ def create_save(
                     current_turn=state.turn,
                     data_hashes=data.hashes,
                     schema_version=SCHEMA_VERSION,
+                    next_person_id=state.next_ids.person,
+                    next_search_id=state.next_ids.search,
+                    next_offer_id=state.next_ids.offer,
+                    next_employment_id=state.next_ids.employment,
                 )
             )
             session.add_all(
                 AccountRow(code=a.code, name=a.name, type=a.type) for a in data.game_data.accounts
             )
-            session.add_all(company_to_row(c) for c in state.companies)
             session.flush()
-            _save_people(session, state)
+            sync_state(session, None, state)
             session.add_all(entry_to_row(e) for e in entries)
+            session.add(
+                DecisionLogRow(
+                    turn=state.turn,
+                    company_id=state.player.id,
+                    kind=NEW_GAME_KIND,
+                    payload=new_game_payload(
+                        company_name, scenario_def.id, difficulty, founder, state.player.mission
+                    ),
+                    seq=0,
+                )
+            )
     except BaseException:
         for leftover in (
             path,
@@ -191,87 +196,6 @@ def create_save(
 
 
 # --- Reads ----------------------------------------------------------------------------------
-
-
-def read_meta(session: Session) -> SaveMetaRow:
-    meta = session.get(SaveMetaRow, META_ID)
-    if meta is None:
-        raise SaveNotFoundError("save file has no save_meta row")
-    return meta
-
-
-def load_state(session: Session) -> GameState:
-    meta = read_meta(session)
-    companies = list(session.scalars(select(CompanyRow)))
-    return game_state_from_rows(
-        meta, companies, _load_people(session), _load_employments(session), _load_reveals(session)
-    )
-
-
-def _by_person[R](rows: Iterable[R]) -> dict[int, list[R]]:
-    grouped: dict[int, list[R]] = defaultdict(list)
-    for row in rows:
-        grouped[row.person_id].append(row)  # type: ignore[attr-defined]
-    return grouped
-
-
-def _load_people(session: Session) -> tuple[Person, ...]:
-    skills = _by_person(session.scalars(select(PersonSkillRow)))
-    personality = _by_person(session.scalars(select(PersonPersonalityRow)))
-    hidden = _by_person(session.scalars(select(PersonHiddenRow)))
-    interests = _by_person(session.scalars(select(PersonInterestRow)))
-    tags = _by_person(session.scalars(select(PersonTagRow)))
-    return tuple(
-        person_from_rows(
-            row,
-            skills[row.id],
-            personality[row.id],
-            hidden[row.id],
-            interests[row.id],
-            tags[row.id],
-        )
-        for row in session.scalars(select(PersonRow).order_by(PersonRow.id))
-    )
-
-
-def _load_employments(session: Session) -> tuple[Employment, ...]:
-    rows = session.scalars(select(EmploymentRow).order_by(EmploymentRow.id))
-    return tuple(employment_from_row(r) for r in rows)
-
-
-def _load_reveals(session: Session) -> tuple[RevealState, ...]:
-    def key(row: Any) -> tuple[int, int]:
-        return (row.observer_company_id, row.person_id)
-
-    records: dict[tuple[int, int], list[PersonRevealRow]] = defaultdict(list)
-    for r in session.scalars(select(PersonRevealRow)):
-        records[key(r)].append(r)
-    profiles = {key(r): r for r in session.scalars(select(PersonProfileRevealRow))}
-    tags: dict[tuple[int, int], list[PersonTagRevealRow]] = defaultdict(list)
-    for t in session.scalars(select(PersonTagRevealRow)):
-        tags[key(t)].append(t)
-    return tuple(
-        reveal_from_rows(
-            observer,
-            person,
-            records[(observer, person)],
-            profiles.get((observer, person)),
-            tags[(observer, person)],
-        )
-        for observer, person in sorted(records)
-    )
-
-
-def _save_people(session: Session, state: GameState) -> None:
-    """Write people, employments and reveals as current state (insert or update in place)."""
-    for person in state.people:
-        for row in person_to_rows(person):
-            session.merge(row)
-    for employment in state.employments:
-        session.merge(employment_to_row(employment))
-    for reveal in state.reveals:
-        for row in reveal_to_rows(reveal):
-            session.merge(row)
 
 
 def ledger_balances(
@@ -316,6 +240,27 @@ def latest_snapshot(session: Session, company_id: int) -> CompanySnapshot | None
     return found[0][1] if found else None
 
 
+def costs_for_turn(session: Session, company_id: int, turn: int) -> list[tuple[str, str, Cents]]:
+    """(account code, account name, amount) of expenses posted in one turn, largest first."""
+    stmt = (
+        select(
+            LedgerLineRow.account_code,
+            AccountRow.name,
+            func.sum(LedgerLineRow.amount_cents),
+        )
+        .join(LedgerLineRow.entry)
+        .join(AccountRow, AccountRow.code == LedgerLineRow.account_code)
+        .where(
+            LedgerEntryRow.company_id == company_id,
+            LedgerEntryRow.turn == turn,
+            AccountRow.type == "expense",
+        )
+        .group_by(LedgerLineRow.account_code, AccountRow.name)
+    )
+    rows = [(code, name, int(total)) for code, name, total in session.execute(stmt)]
+    return sorted(rows, key=lambda r: (-r[2], r[0]))
+
+
 @dataclass(frozen=True, slots=True)
 class Overview:
     slug: str
@@ -353,29 +298,38 @@ def player_overview(session: Session, history: int) -> Overview:
 # --- Turns ----------------------------------------------------------------------------------
 
 
-def apply_turn_result(session: Session, result: TurnResult, decisions: Decisions) -> None:
-    """Write one turn's results. Must run inside the caller's transaction."""
+def apply_turn_result(
+    session: Session,
+    result: TurnResult,
+    decisions: Decisions,
+    before: GameState,
+    data: LoadedData,
+) -> None:
+    """Write one turn's results. Must run inside the caller's transaction.
+
+    `before` is the state the turn started from; only the differences are written.
+    """
     meta = read_meta(session)
     played = result.snapshot.turn
     if meta.current_turn != played:
         raise RuntimeError(f"save is at turn {meta.current_turn}, result is for turn {played}")
 
-    rows = {r.id: r for r in session.scalars(select(CompanyRow))}
-    for company in result.new_state.companies:
-        row = rows.get(company.id)
-        if row is None:
-            session.add(company_to_row(company))
-        else:
-            update_company_row(row, company)
-
-    session.flush()
-    _save_people(session, result.new_state)
+    sync_state(session, before, result.new_state)
+    staff = {e.person_id for e in result.new_state.employments if e.counts_as_staff}
+    session.add_all(
+        PersonMoraleLogRow(person_id=ps.person_id, turn=played, morale=ps.morale)
+        for ps in result.new_state.person_states
+        if ps.morale is not None and ps.person_id in staff
+    )
 
     player = result.new_state.player
     session.add(decisions_to_row(played, player.id, decisions))
     session.add_all(entry_to_row(e) for e in result.ledger_entries)
     session.add_all(snapshot_to_rows(result.snapshot))
     session.add_all(log_item_to_row(i) for i in result.log_items)
+    session.add_all(
+        inbox_rows(result.log_items, result.new_state.player.id, data.game_data.inbox_templates)
+    )
     meta.current_turn = result.new_state.turn
     session.flush()
 
@@ -398,7 +352,7 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
             data.game_data,
             balances,
         )
-        apply_turn_result(session, result, decisions)
+        apply_turn_result(session, result, decisions, state, data)
 
     committed = result.new_state.turn
     backup = data.balance.backup
@@ -406,6 +360,113 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
         periodic_backup(save_path, committed, backup.keep_periodic)
     refresh_index(save_path.parent)
     return result
+
+
+# --- Player actions (ADR-0014) --------------------------------------------------------------
+
+
+def next_action_seq(session: Session, turn: int) -> int:
+    """1, 2, 3... for the actions of one turn (decision_log.seq)."""
+    current = session.scalar(
+        select(func.max(DecisionLogRow.seq)).where(
+            DecisionLogRow.turn == turn, DecisionLogRow.kind != NEW_GAME_KIND
+        )
+    )
+    return (current or 0) + 1
+
+
+def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResult:
+    """Apply one player action in its own short transaction and log it to decision_log."""
+    migrate.ensure_current(save_path)
+    with open_session(save_path) as session, session.begin():
+        state = load_state(session)
+        balances = ledger_balances(session, state.turn)
+        seq = next_action_seq(session, state.turn)
+        result = apply_action(
+            state,
+            action,
+            RngFactory(state.save_meta.master_seed),
+            data.balance,
+            data.game_data,
+            balances,
+            seq=seq,
+        )
+        sync_state(session, state, result.new_state)
+        session.add_all(entry_to_row(e) for e in result.ledger_entries)
+        session.add_all(log_item_to_row(i) for i in result.log_items)
+        session.add_all(
+            inbox_rows(result.log_items, state.player.id, data.game_data.inbox_templates)
+        )
+        employment = state.employment_of(action.actor_id)
+        company_id = employment.company_id if employment else state.player.id
+        session.add(
+            DecisionLogRow(
+                turn=state.turn,
+                company_id=company_id,
+                kind=action.kind,
+                payload=action_payload(action),
+                seq=seq,
+            )
+        )
+    return result
+
+
+def new_game_payload(
+    company_name: str,
+    scenario: str,
+    difficulty: str,
+    founder: FounderSpec,
+    mission: tuple[str, ...],
+) -> dict[str, Any]:
+    spec = asdict(founder)
+    spec["allocation"] = None if founder.allocation is None else dict(founder.allocation)
+    spec["interests"] = None if founder.interests is None else list(founder.interests)
+    return {
+        "company_name": company_name,
+        "scenario": scenario,
+        "difficulty": difficulty,
+        "founder": spec,
+        "mission": list(mission),
+    }
+
+
+def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Path:
+    """Rebuild a save from its seed, new-game choices, logged actions and turns (ADR-0014)."""
+    with open_session(source) as session:
+        meta = read_meta(session)
+        seed, target_turn = meta.master_seed, meta.current_turn
+        start = session.scalars(
+            select(DecisionLogRow).where(DecisionLogRow.kind == NEW_GAME_KIND)
+        ).one()
+        actions = [
+            (row.turn, action_from_payload(row.payload))
+            for row in session.scalars(
+                select(DecisionLogRow)
+                .where(DecisionLogRow.seq.is_not(None), DecisionLogRow.kind != NEW_GAME_KIND)
+                .order_by(DecisionLogRow.turn, DecisionLogRow.seq)
+            )
+        ]
+    setup = start.payload
+    founder = dict(setup["founder"])
+    if founder.get("interests") is not None:
+        founder["interests"] = tuple(founder["interests"])
+    path = create_save(
+        name,
+        seed,
+        setup["scenario"],
+        company_name=setup["company_name"],
+        data=data,
+        save_dir=save_dir,
+        difficulty=setup["difficulty"],
+        founder=FounderSpec(**founder),
+        mission=tuple(setup["mission"]),
+    )
+    for turn in range(target_turn + 1):
+        for _, action in (a for a in actions if a[0] == turn):
+            run_action(path, data, action)
+        if turn < target_turn:
+            run_turn(path, data)
+    return path
 
 
 # --- Save index (ADR-0004 section 1) --------------------------------------------------------

@@ -23,3 +23,12 @@ def clamp_attr(value: float) -> float:
 def clamp_ability(value: float) -> float:
     """Clamp a current or potential ability to [10, 200]."""
     return min(max(value, ABILITY_MIN), ABILITY_MAX)
+
+
+ATTR_NEUTRAL: Final = 10  # tunable-exempt: neutral trait value in (10 - risk_appetite) / 10 (7)
+MORALE_MIN: Final = 0  # morale scale floor (formulas.md section 0)
+MORALE_MAX: Final = 100  # morale scale ceiling
+
+
+def clamp_morale(value: float) -> float:
+    return min(max(value, MORALE_MIN), MORALE_MAX)

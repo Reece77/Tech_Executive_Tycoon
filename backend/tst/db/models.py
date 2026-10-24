@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 4
 
 
 class Base(DeclarativeBase):
@@ -31,6 +31,10 @@ class SaveMetaRow(Base):
     current_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     data_hashes: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False)
     schema_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    next_person_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_search_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_offer_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_employment_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
 
 
 class CompanyRow(Base):
@@ -41,6 +45,7 @@ class CompanyRow(Base):
     is_player: Mapped[bool] = mapped_column(Boolean, nullable=False)
     stage: Mapped[int] = mapped_column(Integer, nullable=False)
     founded_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    mission: Mapped[list[str]] = mapped_column(JSON, nullable=False, server_default="[]")
 
 
 class AccountRow(Base):
@@ -96,6 +101,7 @@ class DecisionLogRow(Base):
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
     kind: Mapped[str] = mapped_column(String(64), nullable=False)
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    seq: Mapped[int | None] = mapped_column(Integer, nullable=True)  # action order in a turn
 
 
 class TurnLogRow(Base):
@@ -233,3 +239,79 @@ class RelationshipRow(Base):
     other_person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
     affinity: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)  # 0 = neutral
     updated_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+# --- Hiring (M1b, migration 0003_hiring) -----------------------------------------------------
+
+
+class SearchRow(Base):
+    __tablename__ = "search"
+    __table_args__ = (Index("ix_search_company_status", "company_id", "status"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    role: Mapped[str] = mapped_column(String(64), nullable=False)
+    channel: Mapped[str] = mapped_column(String(16), nullable=False)
+    actor_id: Mapped[int] = mapped_column(ForeignKey("person.id"), nullable=False)
+    opened_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class CandidateRow(Base):
+    __tablename__ = "candidate"
+    __table_args__ = (Index("ix_candidate_company_status", "company_id", "status"),)
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    search_id: Mapped[int] = mapped_column(ForeignKey("search.id"), nullable=False)
+    channel: Mapped[str] = mapped_column(String(16), nullable=False)
+    created_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    expires_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class OfferRow(Base):
+    __tablename__ = "offer"
+    __table_args__ = (Index("ix_offer_company_status", "company_id", "status"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    candidate_id: Mapped[int] = mapped_column(ForeignKey("person.id"), nullable=False)
+    actor_id: Mapped[int] = mapped_column(ForeignKey("person.id"), nullable=False)
+    salary_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    equity_bp: Mapped[int] = mapped_column(Integer, nullable=False)
+    made_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class PersonMoraleLogRow(Base):
+    """Month-end morale per employee, append-only (for the profile's 12-turn history)."""
+
+    __tablename__ = "person_morale_log"
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    morale: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+# --- Inbox (M1b, migration 0004_inbox) -------------------------------------------------------
+
+
+class InboxItemRow(Base):
+    """A rendered message for the player company. Text is fixed when written (ADR-0004)."""
+
+    __tablename__ = "inbox_item"
+    __table_args__ = (Index("ix_inbox_item_company_read", "company_id", "read"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    template: Mapped[str] = mapped_column(String(64), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    link_kind: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    link_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    read: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")

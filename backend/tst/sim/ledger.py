@@ -18,7 +18,20 @@ CASH: Final = "1000_cash"
 COMMON_EQUITY: Final = "3000_common_equity"
 PREFERRED_EQUITY: Final = "3100_preferred_equity"
 GENERAL_ADMIN: Final = "6900_general_admin"
-ENGINE_ACCOUNTS: Final = (CASH, COMMON_EQUITY, PREFERRED_EQUITY, GENERAL_ADMIN)
+SALARIES: Final = "6000_salaries"
+BENEFITS: Final = "6010_benefits"
+RENT: Final = "6100_rent"
+RECRUITING: Final = "6200_recruiting"
+ENGINE_ACCOUNTS: Final = (
+    CASH,
+    COMMON_EQUITY,
+    PREFERRED_EQUITY,
+    GENERAL_ADMIN,
+    SALARIES,
+    BENEFITS,
+    RENT,
+    RECRUITING,
+)
 
 
 @dataclass(frozen=True, slots=True)

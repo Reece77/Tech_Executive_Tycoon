@@ -8,7 +8,13 @@ import pytest
 from sqlalchemy import func, select, text
 
 from tst.db import migrate
-from tst.db.models import EmploymentRow, PersonRow, PersonStateRow, RelationshipRow
+from tst.db.models import (
+    SCHEMA_VERSION,
+    EmploymentRow,
+    PersonRow,
+    PersonStateRow,
+    RelationshipRow,
+)
 from tst.db.repository import create_save, load_state, open_session, run_turn
 from tst.db.session import make_engine
 from tst.loader import LoadedData
@@ -57,7 +63,8 @@ def test_turns_update_people_in_place(save: Path, loaded: LoadedData) -> None:
         after = load_state(session)
         assert session.scalar(select(func.count()).select_from(PersonRow)) == 1
         assert session.scalar(select(func.count()).select_from(EmploymentRow)) == 1
-        assert session.scalar(select(func.count()).select_from(PersonStateRow)) == 0
+        # M1b: the founder's energy lives in person_state.
+        assert session.scalar(select(func.count()).select_from(PersonStateRow)) == 1
         assert session.scalar(select(func.count()).select_from(RelationshipRow)) == 0
     assert after.people == result.new_state.people
     assert after.people[0].skills != before.skills
@@ -86,11 +93,11 @@ def test_upgrade_from_0001_keeps_m0_data(tmp_path: Path, loaded: LoadedData) -> 
 
     backup = migrate.ensure_current(path)
     assert backup is not None and backup.name == "old.turn-003.pre-migration-0001_initial.sqlite"
-    assert migrate.current_revision(path) == migrate.head_revision() == "0002_people"
+    assert migrate.current_revision(path) == migrate.head_revision()
     with open_session(path) as session:
         state = load_state(session)
         meta_version = session.execute(text("SELECT schema_version FROM save_meta")).scalar()
-    assert meta_version == 2
+    assert meta_version == SCHEMA_VERSION
     assert state.turn == 3
     assert state.player.name == "Old Co"
     assert state.people == ()

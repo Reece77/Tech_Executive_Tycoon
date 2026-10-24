@@ -74,8 +74,31 @@ These close gaps found by checking this brief against M1a's code. Add each numbe
 
 ## Decisions made
 
-_(Agent fills in.)_
+Settled with Reece during the build (also in `docs/formulas.md` §7):
+
+- **Withdrawing an offer** removes only the pending offer; the candidate stays open and can get a new offer the same turn. Closing a job post stops new batches, and its candidates stay until they expire. `withdrawn` stays in the candidate status enum, unused in M1 (M2: a candidate or delegate pulls out).
+- **Mission:** if omitted, the founder's first two interests in `interests.yaml` order; if given, exactly two distinct valid interests. Saves made before M1b keep an empty mission.
+
+Engineering decisions made by the agent:
+
+- **New balance keys** for numbers the formulas used as literals (all added to §12): `people.retire_from_age` (60), `morale.target_base` (50), `resign.loyalty_divisor` (10), `hiring.offer.ambition_boost_above` (15), and per-channel `sociability_bonus` / `sociability_threshold` and starting `knowledge` actions. The base overhead drops to $500 in sub-task 4 together with payroll, so each commit stays green.
+- **`apply_action` takes keyword `seq`** (the action's order in its turn), which ADR-0014 needs for the `actions` stream but its signature omitted. Interviews and reference checks roll still-hidden tags from that stream, in the person's tag order.
+- **Live state:** finished records stay in the resulting `GameState` with their new status for the rest of that turn or action, so persistence can store the status; the next load drops them. `tst/db/state_io.py` writes only the differences between the loaded and resulting state, which keeps a turn at about 0.3 s with 13 staff.
+- **Candidates carry their search's `channel`**, because recruiter and network searches close after one batch but the recruiter fee is charged on hire. The column was added to migration `0003_hiring` before the branch was pushed (it had never touched a real save). The inbox is a separate migration, `0004_inbox`.
+- **Replay:** `create_save` logs the new-game choices (company, scenario, difficulty, founder build, mission) as a `new_game` row in `decision_log`. `replay_save` rebuilds a save from that row, the logged actions and the turns, and a test compares every table.
+- **Phase 12** keeps its ADR-0006 function name (`event_director_requests`, so `test_turn_order.py` is unchanged) and does candidate expiry and batches; event requests join it in M6. Founder energy resets after the phase loop.
+- **Phase 1** ends notices first, then resolves offers. **Phase 8** runs growth, then morale, then a resignation roll and, if none, a retirement roll, then monthly tag reveals, then `employed_month` narrowing. The scout for that narrowing is the best true `judgment_of_talent` among active staff.
+- **Batch draw order** in stream `people_gen` (key search id): size, then one level per candidate, then the people. Candidates are visible for the 3 turns after their batch and leave in phase 12 of `expires_turn`.
+- **Monthly costs** post as one ledger entry per company (salaries, benefits, office, overhead, job posts, credited to cash). Recruiter fees and severance are separate entries.
+- **Offer preview:** a lowball offer (below 85% of the ask) is always hinted "unlikely". `option_pool_left_bp` counts a pending offer for the same candidate as replaceable.
+- **Founder preview:** `preview_founder` collects every problem in build order. `build_founder` raises the first one, so existing error messages are unchanged.
+- **API shape:** interviews and reference checks return the updated profile. Fire returns the severance. The overview adds last month's costs by account and the five newest inbox items for M1c. The person profile includes `severance_cents` for the fire dialog.
+- **CLI salaries** are in dollars (`--salary 92000`). Hiring commands print ranges and phrases; only `inspect --person` shows true values.
+- **The 1,000-offer acceptance test** uses the §7 reference candidate (stage 0, 50 bp, one matching interest, risk appetite and ambition 10), where the gap is 37 points (42.6% vs 81.8% expected).
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Balance:** with defaults the resignation chance tops out at 600 bp (morale 0, loyalty 1, job hopper), so the 2,000 bp cap never binds. The golden plan's 8-person ex-big-tech team runs out of its $400,000 in about 7 months; morale then falls toward 30 under the runway penalty. Worth a look in the first balance pass.
+- **Firing penalty leaks a hidden tag:** the M1c fire dialog states the morale penalty, but −6 instead of −3 reveals a hidden `culture_carrier` tag. Showing −3 unless the tag is noticed is one option.
+- The golden test now takes about 70 seconds; a smaller plan or fewer seeds would speed up `make check` if that matters.
+- Light-tone inbox variants (ADR-0011) are allowed but not written; each template has one wording.

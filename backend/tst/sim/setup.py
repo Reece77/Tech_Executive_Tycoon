@@ -7,14 +7,16 @@ from typing import Final
 from tst.sim.data_models import Balance, GameData, Scenario
 from tst.sim.errors import (
     InvalidCompanyNameError,
+    InvalidMissionError,
     ScenarioUnavailableError,
     UnknownDifficultyError,
     UnknownScenarioError,
 )
+from tst.sim.hiring.models import NextIds, PersonState
 from tst.sim.ledger import CASH, LedgerEntry
 from tst.sim.money import Cents, pct_of
 from tst.sim.people.founder import FounderSpec, build_founder
-from tst.sim.people.models import FOUNDER_ROLE, Employment
+from tst.sim.people.models import FOUNDER_ROLE, Employment, Person
 from tst.sim.people.reveal import new_reveal_state
 from tst.sim.rng import RngFactory
 from tst.sim.state import CompanyState, GameState, SaveMeta
@@ -23,10 +25,30 @@ PLAYER_COMPANY_ID: Final = 1
 FOUNDER_PERSON_ID: Final = 1
 FOUNDER_EMPLOYMENT_ID: Final = 1
 FOUNDER_LEVEL: Final = "exec"
+MISSION_SIZE: Final = 2  # interests in a company mission (formulas.md section 7)
 DEFAULT_FOUNDER: Final = FounderSpec(background="engineer")  # CLI and API default
 START_TURN: Final = 0
 START_STAGE: Final = 0  # solo founder (spec section 3)
 MAX_COMPANY_NAME: Final = 80  # tunable-exempt: column width of company.name
+
+
+def company_mission(
+    mission: tuple[str, ...] | None, founder: Person, data: GameData
+) -> tuple[str, ...]:
+    """Two mission interests (formulas.md section 7).
+
+    Omitted: the founder's first two interests, ordered as in interests.yaml. Given: exactly
+    two distinct, valid interest keys.
+    """
+    if mission is None:
+        order = {key: i for i, key in enumerate(data.interest_keys)}
+        return tuple(sorted(founder.interests, key=lambda k: order[k])[:MISSION_SIZE])
+    if len(mission) != MISSION_SIZE or len(set(mission)) != MISSION_SIZE:
+        raise InvalidMissionError(f"mission must be exactly {MISSION_SIZE} different interests")
+    unknown = sorted(set(mission) - set(data.interest_keys))
+    if unknown:
+        raise InvalidMissionError(f"unknown mission interests {unknown}")
+    return tuple(mission)
 
 
 def starting_cash_cents(balance: Balance, scenario_id: str, difficulty: str) -> Cents:
@@ -49,6 +71,7 @@ def new_game(
     founder: FounderSpec,
     balance: Balance,
     data: GameData,
+    mission: tuple[str, ...] | None = None,
 ) -> tuple[GameState, tuple[LedgerEntry, ...]]:
     """Return the turn-0 state and the opening ledger entries. The caller persists both.
 
@@ -103,11 +126,16 @@ def new_game(
                 is_player=True,
                 stage=START_STAGE,
                 founded_turn=START_TURN,
+                mission=company_mission(mission, person, data),
             ),
         ),
         people=(person,),
         employments=(employment,),
         reveals=(reveal,),
+        person_states=(PersonState(person_id=person.id, energy=balance.founder.energy_per_month),),
+        next_ids=NextIds(
+            person=FOUNDER_PERSON_ID + 1, search=1, offer=1, employment=FOUNDER_EMPLOYMENT_ID + 1
+        ),
     )
     entries: tuple[LedgerEntry, ...] = ()
     if cash:
