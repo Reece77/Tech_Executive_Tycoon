@@ -418,6 +418,8 @@ export interface components {
             key: string;
             /** Label */
             label: string;
+            /** Short Label */
+            short_label: string;
             /** Group */
             group: string;
             range: components["schemas"]["RangeOut"];
@@ -1109,6 +1111,8 @@ export interface components {
             key: string;
             /** Label */
             label: string;
+            /** Short Label */
+            short_label: string;
             /** Group */
             group: string;
         };

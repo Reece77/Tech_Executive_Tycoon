@@ -21,6 +21,7 @@ class LabelOut(BaseModel):
 class SkillMetaOut(BaseModel):
     key: str
     label: str
+    short_label: str
     group: str
 
 

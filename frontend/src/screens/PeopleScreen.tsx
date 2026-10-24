@@ -93,8 +93,8 @@ function overviewColumns(saveId: string) {
             .slice(0, TOP_SKILLS)
             .map((s) => (
               <span key={s.key} style={{ display: 'flex', gap: 6, alignItems: 'baseline' }}>
-                <span className="tst-muted" style={{ fontSize: 12 }}>
-                  {s.label}
+                <span className="tst-muted" style={{ fontSize: 12 }} title={s.label}>
+                  {s.short_label}
                 </span>
                 <AttributeRange range={s.range} label={s.label} />
               </span>

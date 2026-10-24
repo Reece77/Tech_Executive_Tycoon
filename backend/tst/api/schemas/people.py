@@ -17,6 +17,7 @@ class RangeOut(BaseModel):
 class AttributeOut(BaseModel):
     key: str
     label: str
+    short_label: str  # for narrow columns; equals label for personality
     group: str  # technical | business | leadership | personality
     range: RangeOut
 

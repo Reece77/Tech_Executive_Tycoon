@@ -102,7 +102,11 @@ def _skills(person: Person, reveal: RevealState, data: LoadedData) -> list[Attri
         lo, hi = revealed_range(person, reveal, skill.key)
         out.append(
             AttributeOut(
-                key=skill.key, label=skill.label, group=skill.group, range=RangeOut(min=lo, max=hi)
+                key=skill.key,
+                label=skill.label,
+                short_label=skill.short_label,
+                group=skill.group,
+                range=RangeOut(min=lo, max=hi),
             )
         )
     return out
@@ -116,6 +120,7 @@ def _personality(person: Person, reveal: RevealState, data: LoadedData) -> list[
             AttributeOut(
                 key=trait.key,
                 label=trait.label,
+                short_label=trait.label,
                 group=PERSONALITY_GROUP,
                 range=RangeOut(min=lo, max=hi),
             )

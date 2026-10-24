@@ -1750,6 +1750,10 @@
             "type": "string",
             "title": "Label"
           },
+          "short_label": {
+            "type": "string",
+            "title": "Short Label"
+          },
           "group": {
             "type": "string",
             "title": "Group"
@@ -1762,6 +1766,7 @@
         "required": [
           "key",
           "label",
+          "short_label",
           "group",
           "range"
         ],
@@ -3649,6 +3654,10 @@
             "type": "string",
             "title": "Label"
           },
+          "short_label": {
+            "type": "string",
+            "title": "Short Label"
+          },
           "group": {
             "type": "string",
             "title": "Group"
@@ -3658,6 +3667,7 @@
         "required": [
           "key",
           "label",
+          "short_label",
           "group"
         ],
         "title": "SkillMetaOut"

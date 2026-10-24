@@ -357,6 +357,7 @@ type Version = Literal["v1", "v3"]
 class SkillDef(_Frozen):
     key: str = Field(pattern=_KEY)
     label: str = Field(min_length=1)
+    short_label: str = Field(min_length=1, max_length=16)  # narrow table columns
     group: Literal["technical", "business", "leadership"]
 
 

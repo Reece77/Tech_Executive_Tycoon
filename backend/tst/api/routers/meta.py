@@ -74,7 +74,10 @@ def new_game_meta(data: DataDep) -> NewGameMetaOut:
             PresetOut(key=p.key, label=p.label, description=p.description, values=dict(p.values))
             for p in game.personality_presets
         ],
-        skills=[SkillMetaOut(key=s.key, label=s.label, group=s.group) for s in game.skills],
+        skills=[
+            SkillMetaOut(key=s.key, label=s.label, short_label=s.short_label, group=s.group)
+            for s in game.skills
+        ],
         interests=[LabelOut(key=i.key, label=i.label) for i in game.interests],
         work_styles=[LabelOut(key=w.key, label=w.label) for w in game.work_styles],
         regions=[LabelOut(key=r.key, label=r.label) for r in game.regions],
