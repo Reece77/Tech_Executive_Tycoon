@@ -23,11 +23,13 @@ from tst.sim.errors import (
 from tst.sim.org.formulas import is_raise_bonus
 from tst.sim.org.models import (
     PLAN_CHANNELS,
+    PLAN_FOCUSES,
     UNIT_KINDS,
     WORK_POLICIES,
     HiringPlan,
     OrgUnit,
     PlanChannel,
+    PlanFocus,
     PlanStatus,
     UnitKind,
     WorkPolicy,
@@ -131,6 +133,7 @@ class CreatePlan:
     ratio_bp: int
     equity_bp: int = 0
     unit_id: int | None = None
+    focus: PlanFocus = "current"
     kind: Literal["create_plan"] = "create_plan"
 
 
@@ -147,6 +150,7 @@ class UpdatePlan:
     ratio_bp: int
     equity_bp: int
     unit_id: int | None
+    focus: PlanFocus = "current"  # default keeps M2a decision logs loadable
     kind: Literal["update_plan"] = "update_plan"
 
 
@@ -451,10 +455,13 @@ def _check_plan(
     ratio_bp: int,
     equity_bp: int,
     unit_id: int | None,
+    focus: str,
     balance: Balance,
     data: GameData,
 ) -> None:
     employee(state, company, owner_id, "own a hiring plan (it needs a delegate)")
+    if focus not in PLAN_FOCUSES:
+        raise InvalidActionError(f"unknown focus {focus!r}")
     if role not in {r.key for r in data.roles}:
         raise UnknownRoleError(f"unknown role {role!r}")
     if target < 1:
@@ -492,6 +499,7 @@ def create_plan(state: GameState, action: CreatePlan, balance: Balance, data: Ga
         action.ratio_bp,
         action.equity_bp,
         action.unit_id,
+        action.focus,
         balance,
         data,
     )
@@ -509,6 +517,7 @@ def create_plan(state: GameState, action: CreatePlan, balance: Balance, data: Ga
         ratio_bp=action.ratio_bp,
         equity_bp=action.equity_bp,
         created_turn=state.turn,
+        focus=action.focus,
     )
     return Outcome(replace(with_plan(state, plan), next_ids=ids))
 
@@ -534,6 +543,7 @@ def update_plan(state: GameState, action: UpdatePlan, balance: Balance, data: Ga
         action.ratio_bp,
         action.equity_bp,
         action.unit_id,
+        action.focus,
         balance,
         data,
     )
@@ -550,6 +560,7 @@ def update_plan(state: GameState, action: UpdatePlan, balance: Balance, data: Ga
         equity_bp=action.equity_bp,
         unit_id=action.unit_id,
         status=status,
+        focus=action.focus,
     )
     return Outcome(with_plan(state, updated))
 

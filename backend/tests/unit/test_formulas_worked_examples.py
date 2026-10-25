@@ -173,7 +173,7 @@ def test_section_4_worked_example(loaded: LoadedData) -> None:
 
 def test_section_4_initial_half_widths(loaded: LoadedData) -> None:
     hw = loaded.balance.reveal.initial_hw
-    assert (hw.skill, hw.personality, hw.pa) == (5.0, 7.0, 40.0)
+    assert (hw.skill, hw.personality, hw.pa) == (5.0, 7.0, 67.0)  # PA raised in M2b (formulas.md 4)
 
 
 def test_section_4_exact_below_half_point() -> None:

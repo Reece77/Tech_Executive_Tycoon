@@ -304,6 +304,7 @@ def create_plan(
         body.ratio_bp,
         body.equity_bp,
         body.unit_id,
+        body.focus,  # type: ignore[arg-type]
     )
     result = repository.run_action(path, data, action)
     plan = max(result.new_state.plans, key=lambda p: p.id)
@@ -333,6 +334,7 @@ def update_plan(
         ratio_bp=body.ratio_bp if body.ratio_bp is not None else plan.ratio_bp,
         equity_bp=body.equity_bp if body.equity_bp is not None else plan.equity_bp,
         unit_id=body.unit_id if "unit_id" in given else plan.unit_id,
+        focus=body.focus if body.focus is not None else plan.focus,  # type: ignore[arg-type]
     )
     result = repository.run_action(path, data, action)
     updated = result.new_state.plan(plan_id)

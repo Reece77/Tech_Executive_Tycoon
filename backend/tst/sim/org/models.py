@@ -14,12 +14,15 @@ type UnitKind = Literal["department", "team"]
 type UnitStatus = Literal["active", "dissolved"]
 type WorkPolicy = Literal["office", "remote"]
 type PlanChannel = Literal["network", "job_post", "recruiter", "any"]
+type PlanFocus = Literal["current", "potential"]  # 13.10: best now, or spot potential (M2b)
 # active: the delegate works it; paused: its owner left; filled: target reached; closed.
 type PlanStatus = Literal["active", "paused", "filled", "closed"]
 
 UNIT_KINDS: tuple[UnitKind, ...] = ("department", "team")
 WORK_POLICIES: tuple[WorkPolicy, ...] = ("office", "remote")
 PLAN_CHANNELS: tuple[PlanChannel, ...] = ("job_post", "recruiter", "network", "any")
+PLAN_FOCUSES: tuple[PlanFocus, ...] = ("current", "potential")
+POTENTIAL_LEVELS = ("junior", "mid")  # focus potential considers only these (13.10)
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,3 +70,4 @@ class HiringPlan:
     hired: int = 0  # accepted offers made under this plan
     closed_turn: int | None = None
     last_activity: PlanActivity | None = None
+    focus: PlanFocus = "current"

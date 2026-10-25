@@ -151,6 +151,7 @@ class HiringPlanOut(BaseModel):
     channel: str  # job_post | recruiter | network | any
     ratio_bp: int
     equity_bp: int
+    focus: str = Field(description='current ("Best now") | potential ("Spot potential")')
     status: str  # active | paused | filled | closed
     created_turn: int
     owner_energy: int | None = Field(description="The delegate's energy left this month")
@@ -165,6 +166,7 @@ class HiringPlanIn(BaseModel):
     ratio_bp: int = Field(gt=0)
     equity_bp: int = Field(default=0, ge=0)
     unit_id: int | None = None
+    focus: str = "current"  # current | potential
 
 
 class HiringPlanPatchIn(BaseModel):
@@ -177,6 +179,7 @@ class HiringPlanPatchIn(BaseModel):
     ratio_bp: int | None = Field(default=None, gt=0)
     equity_bp: int | None = Field(default=None, ge=0)
     unit_id: int | None = None
+    focus: str | None = None  # current | potential
 
 
 class MoraleTermOut(BaseModel):

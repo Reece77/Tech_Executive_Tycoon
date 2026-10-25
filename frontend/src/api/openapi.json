@@ -4056,6 +4056,11 @@
               }
             ],
             "title": "Unit Id"
+          },
+          "focus": {
+            "type": "string",
+            "title": "Focus",
+            "default": "current"
           }
         },
         "type": "object",
@@ -4128,6 +4133,11 @@
             "type": "integer",
             "title": "Equity Bp"
           },
+          "focus": {
+            "type": "string",
+            "title": "Focus",
+            "description": "current (\"Best now\") | potential (\"Spot potential\")"
+          },
           "status": {
             "type": "string",
             "title": "Status"
@@ -4174,6 +4184,7 @@
           "channel",
           "ratio_bp",
           "equity_bp",
+          "focus",
           "status",
           "created_turn",
           "owner_energy",
@@ -4262,6 +4273,17 @@
               }
             ],
             "title": "Unit Id"
+          },
+          "focus": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Focus"
           }
         },
         "type": "object",

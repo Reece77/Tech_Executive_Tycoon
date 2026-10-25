@@ -1044,6 +1044,11 @@ export interface components {
             equity_bp?: number;
             /** Unit Id */
             unit_id?: number | null;
+            /**
+             * Focus
+             * @default current
+             */
+            focus?: string;
         };
         /** HiringPlanOut */
         HiringPlanOut: {
@@ -1073,6 +1078,11 @@ export interface components {
             ratio_bp: number;
             /** Equity Bp */
             equity_bp: number;
+            /**
+             * Focus
+             * @description current ("Best now") | potential ("Spot potential")
+             */
+            focus: string;
             /** Status */
             status: string;
             /** Created Turn */
@@ -1103,6 +1113,8 @@ export interface components {
             equity_bp?: number | null;
             /** Unit Id */
             unit_id?: number | null;
+            /** Focus */
+            focus?: string | null;
         };
         /** InboxItemOut */
         InboxItemOut: {

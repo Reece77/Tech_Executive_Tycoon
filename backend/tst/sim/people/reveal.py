@@ -8,7 +8,7 @@ from typing import Final
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import UnknownKnowledgeActionError
-from tst.sim.people.formulas import displayed_range, narrow
+from tst.sim.people.formulas import displayed_range, narrow, narrow_pa
 from tst.sim.people.models import PA_KEY, Person, RevealRecord, RevealState
 from tst.sim.rng import RngFactory
 from tst.sim.scale import ABILITY_MAX, ABILITY_MIN, ATTR_MAX, ATTR_MIN
@@ -32,7 +32,7 @@ def new_reveal_state(
     Offsets come from stream `reveal` keyed (observer, person), one per attribute in order:
     skills (skills.yaml), personality (personality.yaml), then PA. All are drawn even when
     `knows_exactly` (the founding company and its founder: skills and personality start at
-    hw 0; PA keeps its normal initial hw, formulas.md section 5).
+    hw 0; PA starts at reveal.founder_pa_hw, formulas.md sections 4-5).
     """
     gen = rng.stream(turn, "reveal", observer_company_id, person.id)
     initial = balance.reveal.initial_hw
@@ -41,8 +41,8 @@ def new_reveal_state(
     records = []
     for key in keys:
         offset = float(gen.uniform(OFFSET_LOW, OFFSET_HIGH))
-        if key == PA_KEY:
-            hw = initial.pa
+        if key == PA_KEY:  # the founding company reads its own founder's potential better (M2b)
+            hw = balance.reveal.founder_pa_hw if knows_exactly else initial.pa
         elif knows_exactly:
             hw = 0.0
         else:
@@ -92,27 +92,26 @@ def apply_knowledge_action(
     turn: int,
     skill_keys: frozenset[str],
 ) -> RevealState:
-    """Narrow every attribute the action applies to: hw <- hw x (1 - strength x scout_factor).
+    """Narrow every attribute the action applies to: hw <- hw x (1 - strength x scout_factor),
+    with PA's own strength and scout factor (formulas.md section 4, M2b).
 
     Ranges never widen: hw can only shrink. Offsets never change.
     """
     if action not in ACTION_GROUPS:
         raise UnknownKnowledgeActionError(f"unknown knowledge action {action!r}")
-    strength = balance.reveal.strength[action]
+    cfg = balance.reveal
     groups = ACTION_GROUPS[action]
-    attributes = tuple(
-        (
-            key,
-            replace(
-                rec,
-                hw=narrow(rec.hw, strength, scout_judgment, balance.reveal),
-                last_updated_turn=turn,
-            )
-            if _group(key, skill_keys) in groups
-            else rec,
-        )
-        for key, rec in reveal.attributes
-    )
+
+    def narrowed(key: str, rec: RevealRecord) -> RevealRecord:
+        if _group(key, skill_keys) not in groups:
+            return rec
+        if key == PA_KEY:  # potential uses its own strength and scout factor (M2b)
+            hw = narrow_pa(rec.hw, cfg.pa_strength[action], scout_judgment, cfg)
+        else:
+            hw = narrow(rec.hw, cfg.strength[action], scout_judgment, cfg)
+        return replace(rec, hw=hw, last_updated_turn=turn)
+
+    attributes = tuple((key, narrowed(key, rec)) for key, rec in reveal.attributes)
     profile = reveal.profile_revealed_turn
     if profile is None and action in PROFILE_ACTIONS:
         profile = turn

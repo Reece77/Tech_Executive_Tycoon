@@ -98,7 +98,7 @@ reveal: # revealed ranges (formulas.md section 4, ADR-0007)
   initial_hw: # half-width of a stranger's range
     skill: 5.0 # attribute points
     personality: 7.0 # attribute points
-    pa: 40.0 # CA points
+    pa: 67.0 # CA points; a stranger's potential is genuinely unknown (M2b, tuned to 13.10's +3 PA target)
   strength: # fraction of hw removed per action, before the scout factor
     job_post_screen: 0.20
     network_intro: 0.30
@@ -108,6 +108,16 @@ reveal: # revealed ranges (formulas.md section 4, ADR-0007)
     employed_month: 0.08
   scout_base: 0.5 # scout_factor = scout_base + judgment_of_talent / scout_divisor
   scout_divisor: 40 # attribute points
+  founder_pa_hw: 40 # CA points; initial PA half-width of the founding company's view of its founder (M2b, 4-5)
+  pa_scout_divisor: 16 # attribute points; PA scout factor = clamp(judgment / pa_scout_divisor, ...) (M2b, 4)
+  pa_scout_clamp: [0.1, 1.0] # multiplier [min, max]; bounds of the PA scout factor (M2b, 4)
+  pa_strength: # fraction of PA's hw removed per action, before the PA scout factor (M2b, 4; tuned to 13.10)
+    job_post_screen: 0.05 # a screen says little about potential
+    network_intro: 0.30
+    interview: 0.10 # one conversation says little about potential
+    reference_check: 0.30
+    scouting_month: 0.60 # a scouting month is where a good scout earns their keep
+    employed_month: 0.08
   pa_phrase_bounds: [70, 100, 130, 160] # CA points; limited/decent/good/excellent/outstanding (M1b)
 
 founder: # founder build (formulas.md section 5)

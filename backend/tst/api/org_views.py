@@ -237,6 +237,7 @@ def plan_out(state: GameState, plan: HiringPlan, data: LoadedData) -> HiringPlan
         channel=plan.channel,
         ratio_bp=plan.ratio_bp,
         equity_bp=plan.equity_bp,
+        focus=plan.focus,
         status=plan.status,
         created_turn=plan.created_turn,
         owner_energy=state.person_state(plan.owner_id).energy,
@@ -249,7 +250,7 @@ def plan_out(state: GameState, plan: HiringPlan, data: LoadedData) -> HiringPlan
             interviews=activity.interviews,
             scouted=activity.scouted,
             offers=activity.offers,
-            summary=activity_text(activity, label.lower()),
+            summary=activity_text(activity, label.lower(), plan.focus),
         ),
     )
 

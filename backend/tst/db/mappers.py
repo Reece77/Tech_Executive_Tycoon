@@ -50,6 +50,7 @@ from tst.sim.org.models import (
     OrgUnit,
     PlanActivity,
     PlanChannel,
+    PlanFocus,
     PlanStatus,
     UnitKind,
     UnitStatus,
@@ -506,6 +507,7 @@ def plan_to_row(plan: HiringPlan) -> HiringPlanRow:
         hired=plan.hired,
         closed_turn=plan.closed_turn,
         last_activity=None if plan.last_activity is None else asdict(plan.last_activity),
+        focus=plan.focus,
     )
 
 
@@ -526,4 +528,5 @@ def plan_from_row(row: HiringPlanRow) -> HiringPlan:
         hired=row.hired,
         closed_turn=row.closed_turn,
         last_activity=None if activity is None else PlanActivity(**activity),
+        focus=cast(PlanFocus, row.focus),
     )

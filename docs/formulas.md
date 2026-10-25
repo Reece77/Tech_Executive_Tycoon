@@ -137,7 +137,16 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). **M2
 scout\_factor_{PA} = clamp\left(\frac{judgment\_of\_talent}{20},\; 0.1,\; 1.0\right)
 ```
 
-and each action's PA strength is `reveal.pa_strength.<action>` (initially the same as the table above). A judgment-6 scout learns potential at 0.3 of the full rate and a judgment-16 scout at 0.8, against 0.65 and 0.9 for skills. This is what makes a good scout worth having: current skills show themselves quickly; potential does not. `reveal.pa_scout_divisor` (20) and `reveal.pa_strength.*` are tuned to the §13.10 target.
+and each action's PA strength is `reveal.pa_strength.<action>`. This is what makes a good scout worth having: current skills show themselves quickly; potential does not. `reveal.initial_hw.pa`, `reveal.pa_scout_divisor` and `reveal.pa_strength.*` are tuned to the §13.10 target. **Tuned in M2b:** stranger PA `hw` 67, `pa_scout_divisor` 16 (a judgment-6 scout learns potential at 0.375 of the full rate, judgment 16 and above at 1.0, against 0.65 and 0.9 for skills), and PA strengths job-post screen 0.05, interview 0.10, scouting month 0.60, network intro 0.30, reference check 0.30, employed month 0.08.
+
+**PA worked example (M2b values).** True PA 140, offset +0.2, scout judgment 12 (PA scout factor 0.75):
+
+| Step | hw | Displayed | Phrase |
+| --- | --- | --- | --- |
+| Stranger | 67.00 | 59–194 | limited to outstanding |
+| After job-post screen | 64.49 | 62–192 | limited to outstanding |
+| After interview | 59.65 | 68–188 | limited to outstanding |
+| After 6 months employed | 41.15 | 90–173 | decent to outstanding |
 
 **Interests and work style** are not ranges: they are hidden until the first interview or network intro, then shown exactly.
 
@@ -386,11 +395,12 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `growth.noise_rel_sd` | 0.25 | fraction of the growth term | §3 |
 | `people.retire_bp_per_year_over_60` | 600 | bp | §3 |
 | `people.retire_from_age` | 60 | years | §3 |
-| `reveal.initial_hw.skill` / `.personality` / `.pa` | 5.0 / 7.0 / 40.0 | attribute or CA points | §4 |
+| `reveal.initial_hw.skill` / `.personality` / `.pa` | 5.0 / 7.0 / 67.0 (40.0 before M2b) | attribute or CA points | §4 |
 | `reveal.strength.<action>` | see §4 | fraction | §4 |
 | `reveal.scout_base` / `reveal.scout_divisor` | 0.5 / 40 | — | §4 |
 | `reveal.pa_phrase_bounds` | [70, 100, 130, 160] | CA points | §4 |
-| `reveal.pa_scout_divisor` / `reveal.pa_strength.<action>` | 20 / as §4 table | attribute points / fraction | §4, tuned in M2b |
+| `reveal.pa_scout_divisor` / `reveal.pa_strength.<action>` | 16 / see §4 (tuned) | attribute points / fraction | §4, tuned in M2b |
+| `reveal.pa_scout_clamp` | [0.1, 1.0] | multiplier [min, max] | §4 (M2b) |
 | `reveal.founder_pa_hw` | 40 | CA points | §4, §5 (M2b) |
 | `founder.skill_base` / `.skill_points` / `.skill_cap` | 5 / 70 / 18 | attribute points | §5 |
 | `founder.default_age` | 28 | years | §5 |

@@ -56,7 +56,15 @@ Per `docs/formulas.md` §4 (PA scout factor) and §13.10 (plan focus, potential 
 
 ## Decisions made
 
-_(Agent fills in.)_
+1. **Tuned PA values** (formulas.md §4, §13.10): stranger PA `hw` (`reveal.initial_hw.pa`) **67**, founder's own PA `hw` (`reveal.founder_pa_hw`) **40**, `reveal.pa_scout_divisor` **16**, `reveal.pa_strength`: job-post screen **0.05**, interview **0.10**, scouting month **0.60**; network intro 0.30, reference check 0.30, employed month 0.08 unchanged. Result: **+3.09 PA** over 400 seeds (judgment 16: 132.66, judgment 6: 129.57).
+   - 67 is the smallest whole value that reaches +3: 66 gives +2.93 and 65 at most +2.94 with any strengths tried. At 40 the named keys topped out at +1.27; 70 gives +3.33 and 75 gives +3.41 with the same strengths. The margin at 67 is thin (0.09 PA), so a later change to candidate generation or delegate ranking could tip the test under 3.
+   - Tuning runs (400 seeds each): at hw 60–70 the strengths and divisor moved the gap by at most about 0.3; divisor 16 beat 14, 17, 18, 20 and 24; scouting 0.6 beat 0.4 and 0.8.
+2. **What the player's own reading costs:** a judgment-10 founder, after a job-post screen and one interview, typically sees **"limited to outstanding"** (45 of 100 seeded candidates) or **"decent to outstanding"** (30); then "limited to excellent" (19), "good to outstanding" (3) and "limited to good" (3). The displayed PA range averages 119 points wide. A 6-month employee read by a judgment-12 scout narrows to about "decent to outstanding" (§4 PA worked example).
+3. **`reveal.pa_scout_clamp`** ([0.1, 1.0]) holds the bounds of the PA scout factor in `balance.yaml` rather than as literals (not tuned).
+4. **Old decision logs:** `CreatePlan` and `UpdatePlan` default `focus` to `current`, so M2a saves replay unchanged.
+5. **Potential focus** affects steps 2, 3 and 5 only; scouting (step 4) still covers every open candidate for the role, and step 1 is unchanged.
+6. **Tests pinning the old PA value** (`test_section_4_initial_half_widths`, the founder knowledge test) now check 67 for strangers and `founder_pa_hw` for the founder, as formulas.md now says.
+7. **Golden snapshots** are unchanged by the slice: the scripted games use current-focus plans and nothing they decide depends on PA knowledge.
 
 ## Follow-ups
 
