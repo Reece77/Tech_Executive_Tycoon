@@ -1,4 +1,4 @@
-# M1 wireframes
+# Wireframes (M1 and M2b)
 
 Six desktop screens, built in M1c: New-game setup, Inbox, Overview, People, Person profile, and Recruitment with the offer panel. The editable canvas is the Claude Design artifact "Tech Startup Tycoon M1b Wireframes" (ask Reece for the link). The artboard sources are copied in `docs/wireframes/source/` for reference; they use the design canvas's runtime and are not meant to run in the app.
 
@@ -50,9 +50,28 @@ Build the screens in React with Mantine to match these layouts. Example data (Ke
 
 **Recruitment.** Open-a-search panel: role select and three channel cards showing energy, cost, batch size, and whether the search stays open; the submit button names its energy cost. "Your searches" list with Close on open job posts. Candidates table for the selected search: name, level, age, asking salary (exact), the role's key skills as ranges, interests ("Interview to learn" until revealed), what you know (Screened, Interviewed, references), and actions with energy costs, or "Offer pending · answer in <month>". Offer panel: salary with its ratio to the ask and the 85% decline floor, equity in basis points with its percent, the hint ("Likely to accept", "Uncertain", "Unlikely") with a one-sentence reason drawn only from what the player knows, Send offer and Cancel, and a note that the answer comes at Continue.
 
+## M2b screens
+
+Three more artboards on the same canvas, in its second row: **Org**, **Profile additions**, and **Hiring plans**. Example data is Kestrel Systems in March 2011 with 19 people. Unlike the M1 examples, the morale numbers in the M2b boards are illustrative, not test fixtures; span counts and headcounts are consistent with `docs/formulas.md` §13.
+
+**Shell change.** Nav key 5, Org, is live. The other dimmed items are unchanged.
+
+**Org.** Header with headcount, unit count and how many managers are over span; New team and New department buttons with energy costs (New department shown only once departments unlock, otherwise the reason). The chart is an indented tree: company → departments → teams, with people who report to the founder directly shown as chips in a dashed row. Each node shows a kind label (Company, Department, Team), name, leader (linked), work location (with "(inherited)" when it comes from the parent), headcount, and a span badge `reports / comfortable span` (green, or orange "over span"). Selecting a node opens the side panel: leader, reports against span, the manager label (strong, fine, stretched), an explanation when over span, the work-location select (inherit, office, remote), Set leader, Rename, Move team, Dissolve (with energy costs), and the members table with a "Leads" chip and a "Move to…" button per person. People can be dragged onto a unit, and teams onto a department. Every change opens a preview first: who it moves, the one-off morale change for each person affected (from the API preview), the energy cost, and Confirm or Cancel.
+
+**Profile additions.** The summary band gains Unit and Manager links and three buttons: Give a raise, Promote, Move to…. A "Why his morale is moving" panel lists the API's morale breakdown: starting point 50, pay, fit, runway, manager (naming the manager and why), teammates (noticed traits only), work location, and other, with where morale is heading. "Other" is labelled as things the player does not know yet (§13.11). Raise dialog: new salary, percent change, ratio to the market rate, one-off morale, monthly cost change, energy, and the yearly-bonus and pay-cut rules. Promote dialog: level change, market rate before and after, salary against the new rate, one-off morale, energy, a warning when pay falls well below the new market rate, and a "Promote and raise…" path. All values come from the preview endpoints.
+
+**Hiring plans** (Recruitment, below the M1 panels). Table: owner (and role), unit, role, focus ("Spot potential" in gold), progress with a bar, channel, highest offer as times the ask, equity, last month's activity in words, status (Active, Paused), and Edit or Choose owner, and Close. A plan whose owner left shows "No owner" and the reason. The New plan dialog: owner (with their judgment of talent and recruiting as the company's displayed ranges, and their own energy), unit hires join, role, how many, Focus ("Best now" or "Spot potential", with one line on what it does), channel (Any, Job post, Recruiter, Network), highest offer (up to 1.20×), equity per offer with what is left in the option pool, and Start plan with its energy cost. Candidates the company has not interviewed show "Interview first" instead of Offer.
+
+**Not drawn (text only):**
+- *People:* Unit and Manager columns, a unit filter, and a "Leads" chip next to leaders' names.
+- *Inbox:* a **Delegate** kind badge (purple, `#B9A6FF` on `#262040`) for plan summaries; 50 messages per page with Newer and Older buttons and the page range shown (for example "51–100 of 342").
+- *Overview:* an Org tile showing units, managers over span, and the average manager label (strong, fine, stretched).
+- *Recruitment:* the Network channel card adds "+1 candidate: your founder is sociable" when it applies.
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).
 - The offer hint uses only known values (`docs/formulas.md` §7).
-- Actions apply at once and spend energy; offers resolve at Continue (ADR-0014).
+- Actions apply at once and spend energy; offers resolve at Continue (ADR-0014). An offer needs an interview first (ADR-0016).
+- The front end never computes a game value: spans, manager labels, morale terms and previews all come from the API (`CLAUDE.md` §7).
 - Touch targets at least 44 px for primary buttons; real buttons, links, and labelled inputs.

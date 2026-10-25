@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Org</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:16px 18px}
+.ptitle{margin:0 0 10px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1F2A38;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.primary{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.ghost{font-family:inherit;font-size:14px;color:#C9D1DB;background:transparent;border:1px solid #2A3442;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.node{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 14px;background:#151B23;border:1px solid #2A3442;border-radius:8px;cursor:grab}
+.kind{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-radius:4px;padding:2px 7px}
+.k-co{color:#C9D1DB;background:#2A2F38}.k-dept{color:#B9A6FF;background:#262040}.k-team{color:#7DB6FF;background:#172638}
+.span-ok{font-size:12px;color:#6FCF8E;background:#16301F;border-radius:4px;padding:2px 8px}
+.span-over{font-size:12px;font-weight:600;color:#F5A25D;background:#3A2A1C;border-radius:4px;padding:2px 8px}
+.meta{font-size:13px;color:#9BA7B6}
+.branch{margin-left:22px;padding-left:18px;border-left:1px solid #2A3442;display:flex;flex-direction:column;gap:8px}
+th{font-size:11px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:8px 10px;border-bottom:1px solid #2A3442;white-space:nowrap}
+td{font-size:14px;padding:7px 10px;border-bottom:1px solid #222B37;white-space:nowrap}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+</style>
+</helmet>
+<div style="min-height: 1100px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 1 · Garage startup</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Mar 2011</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$1,126,800</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px">7 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">88 / 100</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 88%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Main.dc.html"><span class="key">1</span>Inbox<span class="num" style="margin-left: auto; font-size: 12px; background: #5AA2FF; color: #0E1217; border-radius: 9px; padding: 0 7px">4</span></a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">5</span>Org</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">6</span>Products<span class="soon">M3</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">7</span>Finance<span class="soon">M4</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">8</span>Competitors<span class="soon">M5</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">Org</h1>
+        <span class="meta">19 people · 4 units · 1 manager over span</span>
+        <span style="display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto">
+          <button type="button" class="btn">New team · 2</button>
+          <button type="button" class="btn">New department · 2</button>
+        </span>
+      </div>
+      <p style="margin: -6px 0 0; font-size: 12px; color: #9BA7B6">Departments unlocked at 10 staff. Drag a person onto a unit to move them, or drag a team onto a department. Every change shows its morale cost before you confirm. Numbers after an action are its energy cost.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <section aria-label="Org chart" style="flex: 3 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+          <div class="node">
+            <span class="kind k-co">Company</span>
+            <span style="font-weight: 600; font-size: 15px">Kestrel Systems</span>
+            <span class="meta">Led by <a href="ProfileOrg.dc.html">Jordan Hale</a> (founder)</span>
+            <span class="meta">Office</span>
+            <span style="margin-left: auto; display: flex; gap: 10px; align-items: center"><span class="num meta">19 people</span><span class="span-ok num">4 / 8 reports</span></span>
+          </div>
+          <div class="branch">
+            <div class="node">
+              <span class="kind k-dept">Department</span>
+              <span style="font-weight: 600; font-size: 15px">Engineering</span>
+              <span class="meta">Led by <a href="#">Priya Raman</a></span>
+              <span class="meta">Office</span>
+              <span style="margin-left: auto; display: flex; gap: 10px; align-items: center"><span class="num meta">13 people</span><span class="span-ok num">2 / 7 reports</span></span>
+            </div>
+            <div class="branch">
+              <div class="node" style="border-color: #5AA2FF; background: #172638">
+                <span class="kind k-team">Team</span>
+                <span style="font-weight: 600; font-size: 15px">Platform</span>
+                <span class="meta">Led by <a href="#">Marcus Ode</a></span>
+                <span class="meta">Office (inherited)</span>
+                <span style="margin-left: auto; display: flex; gap: 10px; align-items: center"><span class="num meta">8 people</span><span class="span-over num">7 / 6 reports · over span</span></span>
+              </div>
+              <div class="node">
+                <span class="kind k-team">Team</span>
+                <span style="font-weight: 600; font-size: 15px">Product</span>
+                <span class="meta">Led by <a href="#">Lena Fischer</a></span>
+                <span class="meta">Office (inherited)</span>
+                <span style="margin-left: auto; display: flex; gap: 10px; align-items: center"><span class="num meta">4 people</span><span class="span-ok num">3 / 8 reports</span></span>
+              </div>
+            </div>
+            <div class="node">
+              <span class="kind k-team">Team</span>
+              <span style="font-weight: 600; font-size: 15px">Go-to-market</span>
+              <span class="meta">Led by <a href="#">Daniel Osei</a></span>
+              <span class="meta" style="color: #7DB6FF">Remote</span>
+              <span style="margin-left: auto; display: flex; gap: 10px; align-items: center"><span class="num meta">3 people</span><span class="span-ok num">2 / 7 reports</span></span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 14px; border: 1px dashed #2A3442; border-radius: 8px">
+              <span class="meta">Reporting to Jordan directly, no unit:</span>
+              <span style="font-size: 13px; background: #1F2A38; border: 1px solid #2A3442; border-radius: 14px; padding: 4px 12px">Ravi Menon · Recruiter</span>
+              <span style="font-size: 13px; background: #1F2A38; border: 1px solid #2A3442; border-radius: 14px; padding: 4px 12px">Hannah Brooks · Operations</span>
+            </div>
+          </div>
+          <p style="margin: 4px 0 0; font-size: 12px; color: #9BA7B6">Reports shows direct reports against the leader's comfortable span. A team lead reports to the leader of the unit above.</p>
+        </section>
+        <aside class="panel" aria-label="Selected unit" style="flex: 2 1 380px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px">
+            <h2 style="margin: 0; font-size: 18px; font-weight: 600">Platform</h2>
+            <span class="kind k-team">Team</span>
+            <span class="meta">in Engineering</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px">
+            <div><div class="meta">Leader</div><div style="font-size: 15px"><a href="#">Marcus Ode</a></div></div>
+            <div><div class="meta">Reports</div><div class="num" style="font-size: 15px; color: #F5A25D">7 of 6 comfortable</div></div>
+            <div><div class="meta">As a manager</div><div style="font-size: 15px">Stretched</div></div>
+          </div>
+          <div style="background: #3A2A1C; border: 1px solid #6A4426; border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; color: #E8ECF1">Marcus has more reports than he can handle well, so his team's morale and growth suffer. Move someone out, split the team, or appoint a stronger lead.</div>
+          <label class="field">Work location
+            <select class="input"><option selected>Inherit from Engineering (office)</option><option>Office</option><option>Remote</option></select>
+          </label>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <button type="button" class="btn">Set leader · 2</button>
+            <button type="button" class="btn">Rename</button>
+            <button type="button" class="btn">Move team · 2</button>
+            <button type="button" class="btn" style="color: #F5A25D; border-color: #6A4426">Dissolve · 2</button>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse">
+              <thead><tr><th>Member</th><th>Role</th><th>Level</th><th>Morale</th><th></th></tr></thead>
+              <tbody>
+                <sc-for list="{{members}}" as="m" hint-placeholder-count="8">
+                  <tr style="{{m.rowStyle}}">
+                    <td><a href="ProfileOrg.dc.html" style="font-weight: 600; text-decoration: none">{{m.name}}</a> <span style="{{m.leadStyle}}">{{m.lead}}</span></td>
+                    <td style="color: #C9D1DB">{{m.role}}</td>
+                    <td style="color: #C9D1DB">{{m.level}}</td>
+                    <td class="num" style="{{m.moraleStyle}}">{{m.morale}}</td>
+                    <td><button type="button" class="btn" style="font-size: 12px; min-height: 32px; padding: 5px 10px">Move to… · 1</button></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </aside>
+      </div>
+      <section aria-label="Move preview" style="align-self: flex-end; width: min(520px, 100%); background: #151B23; border: 1px solid #3B5A80; border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.45)">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">Move Nadia Karim to Product?</h2>
+        <span class="meta">From Platform (Marcus Ode) to Product (Lena Fischer). Costs 1 energy.</span>
+        <div>
+          <h3 class="ptitle" style="margin: 0 0 6px">One-off morale changes</h3>
+          <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222B37; font-size: 14px"><span>Nadia Karim</span><span class="num" style="color: #F5A25D">−2</span></div>
+          <p style="margin: 6px 0 0; font-size: 12px; color: #9BA7B6">Nobody else is affected. Her manager changes, so her monthly morale and growth follow Lena from next month.</p>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <button type="button" class="primary">Move Nadia</button>
+          <button type="button" class="ghost">Cancel</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const mstyle = (m) => 'color: ' + (m < 40 ? '#F5A25D' : m < 60 ? '#D5DBE3' : '#5AA2FF');
+    const lead = 'font-size: 11px; font-weight: 600; color: #7DB6FF; background: #172638; border-radius: 4px; padding: 1px 6px; margin-left: 4px';
+    const raw = [
+      { name: 'Marcus Ode', role: 'DevOps engineer', level: 'Senior', morale: 61, lead: true },
+      { name: 'Kofi Mensah', role: 'Software engineer', level: 'Mid', morale: 58 },
+      { name: 'Mei Chen', role: 'Software engineer', level: 'Mid', morale: 54 },
+      { name: 'Nadia Karim', role: 'Software engineer', level: 'Mid', morale: 49, selected: true },
+      { name: 'Ben Carter', role: 'Software engineer', level: 'Junior', morale: 56 },
+      { name: 'Yuki Sato', role: 'Data scientist', level: 'Mid', morale: 52 },
+      { name: 'Lucas Moreau', role: 'Security engineer', level: 'Senior', morale: 47 },
+      { name: 'Tomás Rivera', role: 'Software engineer', level: 'Junior', morale: 38 }
+    ];
+    const members = raw.map((m) => ({
+      ...m,
+      lead: m.lead ? 'Leads' : '',
+      leadStyle: m.lead ? lead : 'display: none',
+      moraleStyle: mstyle(m.morale),
+      rowStyle: m.selected ? 'background: #172638' : ''
+    }));
+    return { members };
+  }
+}
+</script>
+</body>
+</html>

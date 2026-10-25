@@ -2,7 +2,7 @@
 
 **Goal:** manage the organization from the browser: see and edit the org chart, appoint leaders, set policies, run hiring plans, and give raises and promotions.
 
-**Spec sections:** §6, §13 · **ADRs:** 0007, 0009, 0014, 0015, 0016 · **Wireframes:** `docs/wireframes.md` (Org section, added before this milestone starts) · **Depends on:** M2a (`m2a-done`)
+**Spec sections:** §6, §13 · **ADRs:** 0007, 0009, 0014, 0015, 0016 · **Wireframes:** `docs/wireframes.md` (M2b screens) and `docs/wireframes/source/Org.dc.html`, `ProfileOrg.dc.html`, `RecruitmentPlans.dc.html` · **Depends on:** M2a (`m2a-done`)
 
 ## Context
 

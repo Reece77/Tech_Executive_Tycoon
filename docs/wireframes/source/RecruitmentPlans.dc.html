@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hiring plans</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:16px 18px}
+.ptitle{margin:0 0 10px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+th{font-size:11px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:10px 10px;border-bottom:1px solid #2A3442;white-space:nowrap}
+td{font-size:14px;padding:9px 10px;border-bottom:1px solid #222B37;white-space:nowrap;vertical-align:top}
+.act{font-family:inherit;font-size:12px;color:#E8ECF1;background:#1F2A38;border:1px solid #2A3442;border-radius:6px;padding:6px 10px;min-height:32px;cursor:pointer}
+.primary{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.ghost{font-family:inherit;font-size:14px;color:#C9D1DB;background:transparent;border:1px solid #2A3442;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.mono{font-family:'IBM Plex Mono',monospace}
+.seg{font-family:inherit;font-size:13px;border:0;padding:9px 14px;min-height:40px;cursor:pointer}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 1 · Garage startup</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Mar 2011</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$1,126,800</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px">7 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">88 / 100</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 88%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Main.dc.html"><span class="key">1</span>Inbox<span class="num" style="margin-left: auto; font-size: 12px; background: #5AA2FF; color: #0E1217; border-radius: 9px; padding: 0 7px">4</span></a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">6</span>Products<span class="soon">M3</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">7</span>Finance<span class="soon">M4</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">8</span>Competitors<span class="soon">M5</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Recruitment</h1>
+      <p style="margin: -8px 0 0; font-size: 12px; color: #9BA7B6">Open a search, Your searches and the candidates table stay as in M1, above this panel. Candidates you have not interviewed show "Interview first" in place of Offer.</p>
+      <section aria-label="Hiring plans" style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 600">Hiring plans</h2>
+          <span class="meta">Delegates search, interview and make offers for you each month, using their own energy.</span>
+          <button type="button" class="act" style="margin-left: auto; min-height: 36px; font-size: 13px; padding: 8px 12px">New plan · 2</button>
+        </div>
+        <div style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse">
+            <thead><tr><th>Owner</th><th>Unit</th><th>Role</th><th>Focus</th><th>Progress</th><th>Channel</th><th>Max pay</th><th>Equity</th><th>Last month</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <sc-for list="{{plans}}" as="p" hint-placeholder-count="3">
+                <tr>
+                  <td><a href="ProfileOrg.dc.html" style="font-weight: 600; text-decoration: none">{{p.owner}}</a><div style="font-size: 12px; color: #9BA7B6">{{p.ownerRole}}</div></td>
+                  <td>{{p.unit}}</td>
+                  <td>{{p.role}}</td>
+                  <td style="{{p.focusStyle}}">{{p.focus}}</td>
+                  <td><span class="num">{{p.progress}}</span><div style="width: 80px; height: 6px; background: #263040; border-radius: 3px; margin-top: 6px"><div style="{{p.bar}}"></div></div></td>
+                  <td style="color: #C9D1DB">{{p.channel}}</td>
+                  <td class="num">{{p.ratio}}</td>
+                  <td class="num">{{p.equity}}</td>
+                  <td style="font-size: 13px; color: #C9D1DB; white-space: normal; min-width: 220px">{{p.activity}}</td>
+                  <td><span style="{{p.statusStyle}}">{{p.status}}</span></td>
+                  <td><span style="display: flex; gap: 6px"><button type="button" class="act">{{p.edit}}</button><button type="button" class="act">Close</button></span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin: 0; font-size: 12px; color: #9BA7B6">Hires join the plan's unit. When a plan fills or closes, its delegate closes the job posts it opened. Each plan's monthly summary also arrives in the inbox with a Delegate badge.</p>
+      </section>
+      <section aria-label="New hiring plan" style="align-self: flex-start; width: min(720px, 100%); background: #151B23; border: 1px solid #3B5A80; border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.45)">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">New hiring plan</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px">
+          <label class="field">Owner
+            <select class="input"><option selected>Ravi Menon · Recruiter</option><option>Priya Raman · leads Engineering</option><option>Lena Fischer · leads Product</option><option>Daniel Osei · leads Go-to-market</option></select>
+            <span style="font-size: 12px; color: #9BA7B6">Judgment of talent <span class="mono" style="color: #6FCF8E">12–15</span> · Recruiting <span class="mono" style="color: #6FCF8E">13–16</span> · 100 energy a month of his own</span>
+          </label>
+          <label class="field">Hires join
+            <select class="input"><option selected>Platform (Engineering)</option><option>Product (Engineering)</option><option>Engineering</option><option>Go-to-market</option><option>Kestrel Systems (no unit)</option></select>
+          </label>
+          <label class="field">Role
+            <select class="input"><option selected>Software engineer</option><option>Data scientist</option><option>Designer</option><option>DevOps engineer</option></select>
+          </label>
+          <label class="field">How many
+            <input class="input mono" type="text" value="3">
+          </label>
+        </div>
+        <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+          <legend style="font-size: 13px; color: #C9D1DB; padding: 0 0 6px">Focus</legend>
+          <div role="group" aria-label="Focus" style="display: flex; flex-wrap: wrap; border: 1px solid #2A3442; border-radius: 6px; overflow: hidden; align-self: flex-start">
+            <button type="button" class="seg" aria-pressed="false" style="color: #C9D1DB; background: transparent">Best now</button>
+            <button type="button" class="seg" aria-pressed="true" style="color: #E8ECF1; background: #1F2A38; border-left: 1px solid #2A3442">Spot potential</button>
+          </div>
+          <span style="font-size: 12px; color: #9BA7B6">Spot potential looks only at juniors and mids and ranks them by how good they could become. A recruiter with better judgment of talent reads potential far better.</span>
+        </fieldset>
+        <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+          <legend style="font-size: 13px; color: #C9D1DB; padding: 0 0 6px">Channel</legend>
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 14px">
+            <label style="display: flex; gap: 6px; align-items: center"><input type="radio" name="ch" checked style="accent-color: #5AA2FF">Any (job post first)</label>
+            <label style="display: flex; gap: 6px; align-items: center"><input type="radio" name="ch" style="accent-color: #5AA2FF">Job post</label>
+            <label style="display: flex; gap: 6px; align-items: center"><input type="radio" name="ch" style="accent-color: #5AA2FF">Recruiter</label>
+            <label style="display: flex; gap: 6px; align-items: center"><input type="radio" name="ch" style="accent-color: #5AA2FF">Network</label>
+          </div>
+        </fieldset>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px">
+          <label class="field">Highest offer, times the ask
+            <input class="input mono" type="text" value="1.10">
+            <span style="font-size: 12px; color: #9BA7B6">Up to 1.20. Higher offers are accepted more often.</span>
+          </label>
+          <label class="field">Equity per offer (basis points)
+            <input class="input mono" type="text" value="25">
+            <span style="font-size: 12px; color: #9BA7B6">Up to 200 · 640 bp left in the 1,000 bp pool</span>
+          </label>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+          <button type="button" class="primary">Start plan · 2 energy</button>
+          <button type="button" class="ghost">Cancel</button>
+          <span class="meta">Ravi starts next month. Searches and recruiter fees are charged as usual.</span>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const chip = (fg, bg) => 'font-size: 12px; font-weight: 600; color: ' + fg + '; background: ' + bg + '; border-radius: 4px; padding: 2px 8px';
+    const status = { Active: chip('#6FCF8E', '#16301F'), Paused: chip('#F5A25D', '#3A2A1C') };
+    const raw = [
+      { owner: 'Ravi Menon', ownerRole: 'Recruiter', unit: 'Platform', role: 'Software engineer', focus: 'Best now', hired: 2, target: 4, channel: 'Job post', ratio: '1.10×', equity: '25 bp', activity: 'Interviewed 6 software engineers, scouted 8 candidates and made 2 offers', status: 'Active' },
+      { owner: 'Ravi Menon', ownerRole: 'Recruiter', unit: 'Product', role: 'Designer', focus: 'Spot potential', hired: 0, target: 1, channel: 'Any', ratio: '1.05×', equity: '10 bp', activity: 'Interviewed 4 designers, favouring potential; no offer yet', status: 'Active' },
+      { owner: 'No owner', ownerRole: 'Sam Porter left in Feb', unit: 'Go-to-market', role: 'Account executive', focus: 'Best now', hired: 1, target: 2, channel: 'Recruiter', ratio: '1.15×', equity: '0 bp', activity: 'Paused until you choose a new owner', status: 'Paused' }
+    ];
+    const plans = raw.map((p) => ({
+      ...p,
+      progress: p.hired + ' / ' + p.target,
+      bar: 'height: 6px; border-radius: 3px; background: #5AA2FF; width: ' + Math.round((100 * p.hired) / p.target) + '%',
+      focusStyle: p.focus === 'Spot potential' ? 'color: #F5C451' : 'color: #C9D1DB',
+      statusStyle: status[p.status],
+      edit: p.status === 'Paused' ? 'Choose owner' : 'Edit'
+    }));
+    return { plans };
+  }
+}
+</script>
+</body>
+</html>
