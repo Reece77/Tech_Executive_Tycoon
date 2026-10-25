@@ -131,6 +131,14 @@ hw \leftarrow hw \times (1 - strength \times scout\_factor), \qquad scout\_facto
 
 Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The scout is the actor; for `employed_month` it is the highest true `judgment_of_talent` among the company's active employees, including the founder.
 
+**Potential narrows more steeply with judgment (M2b).** For PA only, the scout factor is
+
+```latex
+scout\_factor_{PA} = clamp\left(\frac{judgment\_of\_talent}{20},\; 0.1,\; 1.0\right)
+```
+
+and each action's PA strength is `reveal.pa_strength.<action>` (initially the same as the table above). A judgment-6 scout learns potential at 0.3 of the full rate and a judgment-16 scout at 0.8, against 0.65 and 0.9 for skills. This is what makes a good scout worth having: current skills show themselves quickly; potential does not. `reveal.pa_scout_divisor` (20) and `reveal.pa_strength.*` are tuned to the §13.10 target.
+
 **Interests and work style** are not ranges: they are hidden until the first interview or network intro, then shown exactly.
 
 **Worked example.** True skill 14, offset +0.2, scout judgment 12 (scout_factor 0.8):
@@ -382,6 +390,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `reveal.strength.<action>` | see §4 | fraction | §4 |
 | `reveal.scout_base` / `reveal.scout_divisor` | 0.5 / 40 | — | §4 |
 | `reveal.pa_phrase_bounds` | [70, 100, 130, 160] | CA points | §4 |
+| `reveal.pa_scout_divisor` / `reveal.pa_strength.<action>` | 20 / as §4 table | attribute points / fraction | §4, tuned in M2b |
 | `founder.skill_base` / `.skill_points` / `.skill_cap` | 5 / 70 / 18 | attribute points | §5 |
 | `founder.default_age` | 28 | years | §5 |
 | `founder.energy_per_month` | 100 | energy | §6 |
@@ -520,16 +529,18 @@ Each tag affects the other members of its holder's unit (not the holder), using 
 
 ### 13.10 Delegated hiring
 
-- **Hiring plan:** owned by a delegate (any staff member except the founder; usually a recruiter or the unit's leader), for one unit and role, with a target count, a channel (job post, recruiter, network, or any), a maximum salary ratio (at most 1.2× the ask) and equity per offer. Hires join the plan's unit.
+- **Hiring plan:** owned by a delegate (any staff member except the founder; usually a recruiter or the unit's leader), for one unit and role, with a target count, a channel (job post, recruiter, network, or any), a maximum salary ratio (at most 1.2× the ask), equity per offer, and a **focus**: `current` (default) or `potential` (M2b). Hires join the plan's unit.
 - **Delegate energy:** 100 per month per delegate, stored on their `person_state.energy`, reset with the founder's. It is separate from the founder's.
 - **Each turn, in phase 2** (deterministic; randomness only inside the actions it takes), for each plan in id order, while the delegate has energy:
   1. If the plan is short and has no open search for its role, open one (channel `any` means job post).
-  2. Rank that role's open candidates by the **company's displayed** range midpoints of the role's skills (primary × 3, secondary × 1); ties by candidate id.
+  2. Rank that role's open candidates by the **company's displayed** range midpoints of the role's skills (primary × 3, secondary × 1); ties by candidate id. **Focus `potential` (M2b):** consider only junior and mid candidates, and rank by the midpoint of the company's displayed PA range, ties by the role-skill score and then candidate id. Steps 3 and 5 use the same order.
   3. Interview the best uninterviewed candidates (6 energy each) while more than 20 energy would remain.
   4. With at least 20 energy left, scout: apply `scouting_month` (§4) once to every open candidate of the plan's searches.
   5. Offer to the best candidates the company has interviewed (the §7 interview rule) without a pending offer, at the ask × the plan's ratio, up to the number still needed, within the option pool.
 - Delegate actions call the same `apply_action` with `actor` = the delegate, so energy, rules and the offer pitch (§7) apply. Their randomness uses stream `delegate`, key `(person_id, n)`, where `n` counts that delegate's actions this turn (ADR-0015).
-- **Quality emerges:** better `judgment_of_talent` narrows ranges more (§4), so a good recruiter picks better people; better `recruiting` lands more offers.
+- **Quality emerges:** better `judgment_of_talent` narrows ranges more (§4); better `recruiting` lands more offers. M2a found that judgment barely changes current-ability hires (gap about 0.1 CA), because every candidate in a batch is interviewed and current skills show quickly. Judgment's real job is **spotting potential**.
+- **Potential target (M2b acceptance):** over 400 seeded runs of a `potential` plan for 2 software engineers, a judgment-16 recruiter's hires have a mean true PA at least **4 points** higher than a judgment-6 recruiter's on the same seeds (about a quarter of `people.pa_gap_sd`). Tune `reveal.pa_scout_divisor` and `reveal.pa_strength.*` (lowering interview and job-post PA strength is the expected lever, so scouting carries more of the knowledge) until it holds, and record the final values in the M2b brief. The current-focus CA gap is printed but has no target.
+- The API never shows a PA number: focus changes only the delegate's ranking, and the plan's inbox summary says "favouring potential".
 - Each plan writes one inbox summary per turn when it acted ("Petra interviewed 4 software engineers and made 2 offers").
 - **Closing searches:** when a plan fills or closes, its delegate closes any job post it opened for that plan, unless another open plan for the same role uses it. A filled plan's job posts close in phase 2 (a `close_search` action by the delegate); a closed plan's close with the `close_plan` action. A job post another open (active or paused) plan for the same role uses stays open and passes to that plan, lowest plan id first.
 
