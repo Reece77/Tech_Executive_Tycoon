@@ -120,3 +120,12 @@ def test_plan_focus(save_dir: Path) -> None:
     assert "spotting potential" in out
     out = run("plan", "update", "--save", SAVE, "--plan", "1", "--focus", "current")
     assert "best now" in out
+
+
+def test_rename_a_unit(save_dir: Path) -> None:
+    run("unit", "create", "--save", SAVE, "--kind", "team", "--name", "Web")
+    run("unit", "rename", "--save", SAVE, "--unit", "1", "--name", "Platform")
+    assert "Platform (team 1" in run("org", "--save", SAVE)
+    assert "already named" in run(
+        "unit", "rename", "--save", SAVE, "--unit", "1", "--name", "Platform", code=1
+    )
