@@ -140,3 +140,22 @@ export function OrgNode(props: OrgNodeProps) {
     </div>
   );
 }
+
+/** Marks a unit's leader in member lists and the People roster. */
+export function LeadsChip() {
+  return (
+    <span
+      data-testid="leads-chip"
+      style={{
+        fontSize: 11,
+        fontWeight: 600,
+        color: 'var(--tst-link)',
+        background: 'var(--tst-accent-bg)',
+        borderRadius: 4,
+        padding: '1px 6px',
+      }}
+    >
+      Leads
+    </span>
+  );
+}

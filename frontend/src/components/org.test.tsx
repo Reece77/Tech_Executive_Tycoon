@@ -6,6 +6,7 @@ import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { policyText, signed } from '../lib/org';
 import { OrgNode } from './OrgNode';
+import { RaiseFacts } from './PersonOrg';
 import { PreviewBody } from './PreviewDialog';
 import { SpanBadge } from './SpanBadge';
 
@@ -127,5 +128,38 @@ describe('org text helpers', () => {
   it('marks inherited policies', () => {
     expect(policyText(null, 'remote')).toBe('Remote (inherited)');
     expect(policyText('office', 'office')).toBe('Office');
+  });
+});
+
+describe('RaiseFacts', () => {
+  it('shows the change, ratio to market, morale, monthly cost and energy from the preview', () => {
+    const html = wrap(
+      <RaiseFacts
+        roleText="Mid software engineer"
+        pv={{
+          allowed: true,
+          problem: null,
+          energy_cost: 2,
+          level: 'mid',
+          new_level: 'mid',
+          salary_cents: 9_500_000,
+          new_salary_cents: 10_000_000,
+          market_rate_cents: 9_100_000,
+          new_market_rate_cents: 9_100_000,
+          pay_term: 2.6,
+          new_pay_term: 5.9,
+          salary_change_bp: 526,
+          market_ratio: 1.04,
+          new_market_ratio: 1.0989,
+          monthly_cost_change_cents: 50_000,
+          below_market: false,
+          morale_change: 3,
+        }}
+      />,
+    );
+    expect(html).toContain('Up 5.26% from $95,000');
+    expect(html).toContain('market rate $91,000: this is 1.10×');
+    expect(html).toContain('+3');
+    expect(html).toContain('+$500');
   });
 });
