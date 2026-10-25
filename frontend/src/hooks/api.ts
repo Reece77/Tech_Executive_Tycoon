@@ -217,7 +217,7 @@ export function usePerson(saveId: string, personId: number) {
 }
 
 export function useFire(saveId: string) {
-  const invalidate = useInvalidateSave(saveId);
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async (personId: number) =>
       unwrap(
@@ -225,7 +225,14 @@ export function useFire(saveId: string) {
           params: { path: { save_id: saveId, person_id: personId } },
         }),
       ),
-    onSuccess: invalidate,
+    // Refetch everything except the fired person's own profile and morale, which no longer
+    // exist (refetching them would error the profile before it navigates away).
+    onSuccess: (_out, personId) =>
+      client.invalidateQueries({
+        queryKey: keys.save(saveId),
+        predicate: (q) =>
+          !(['person', 'morale'].includes(String(q.queryKey[2])) && q.queryKey[3] === personId),
+      }),
   });
 }
 

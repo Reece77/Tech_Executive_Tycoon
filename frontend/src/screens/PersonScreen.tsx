@@ -438,10 +438,12 @@ function ProfileBody({
               h={44}
               loading={fire.isPending}
               data-testid="fire-confirm"
-              onClick={() =>
-                fire.mutate(p.person_id, {
-                  onSuccess: () => void navigate(`/game/${saveId}/people`),
-                })
+              onClick={
+                () =>
+                  void fire
+                    .mutateAsync(p.person_id)
+                    .then(() => navigate(`/game/${saveId}/people`))
+                    .catch(() => undefined) // the error shows in the dialog
               }
             >
               Fire {firstName}
