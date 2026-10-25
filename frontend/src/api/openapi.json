@@ -1299,6 +1299,7 @@
           "game"
         ],
         "summary": "Get Inbox",
+        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b).",
         "operationId": "getInbox",
         "parameters": [
           {
@@ -1335,6 +1336,17 @@
                 }
               ],
               "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
             }
           }
         ],
@@ -1807,6 +1819,98 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/org/units/{unit_id}/rename": {
+      "post": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Rename Unit",
+        "description": "Rename a department or team (free).",
+        "operationId": "renameUnit",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "unit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Unit Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameUnitIn"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4086,6 +4190,15 @@
             "type": "string",
             "title": "Owner Name"
           },
+          "owner_role_label": {
+            "type": "string",
+            "title": "Owner Role Label"
+          },
+          "owner_on_staff": {
+            "type": "boolean",
+            "title": "Owner On Staff",
+            "description": "False once the owner has left (the plan pauses)"
+          },
           "unit_id": {
             "anyOf": [
               {
@@ -4174,6 +4287,8 @@
           "plan_id",
           "owner_id",
           "owner_name",
+          "owner_role_label",
+          "owner_on_staff",
           "unit_id",
           "unit_name",
           "role",
@@ -4363,6 +4478,16 @@
             "type": "integer",
             "title": "Unread"
           },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Messages matching the query, before paging (M2b)"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset",
+            "default": 0
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/InboxItemOut"
@@ -4374,6 +4499,7 @@
         "type": "object",
         "required": [
           "unread",
+          "total",
           "items"
         ],
         "title": "InboxOut"
@@ -4489,6 +4615,11 @@
           "over_span": {
             "type": "boolean",
             "title": "Over Span"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "strong | fine | stretched, from their manager morale term"
           }
         },
         "type": "object",
@@ -4499,7 +4630,8 @@
           "reports",
           "span_limit",
           "span_factor",
-          "over_span"
+          "over_span",
+          "label"
         ],
         "title": "ManagerOut"
       },
@@ -5163,6 +5295,10 @@
           "departments_unlocked": {
             "type": "boolean",
             "title": "Departments Unlocked"
+          },
+          "managers_over_span": {
+            "type": "integer",
+            "title": "Managers Over Span"
           }
         },
         "type": "object",
@@ -5170,9 +5306,43 @@
           "units",
           "managers",
           "headcount",
-          "departments_unlocked"
+          "departments_unlocked",
+          "managers_over_span"
         ],
         "title": "OrgOut"
+      },
+      "OrgTileOut": {
+        "properties": {
+          "units": {
+            "type": "integer",
+            "title": "Units",
+            "description": "Departments and teams"
+          },
+          "managers_over_span": {
+            "type": "integer",
+            "title": "Managers Over Span"
+          },
+          "manager_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Label",
+            "description": "strong | fine | stretched for the average manager morale term; null if none"
+          }
+        },
+        "type": "object",
+        "required": [
+          "units",
+          "managers_over_span",
+          "manager_label"
+        ],
+        "title": "OrgTileOut",
+        "description": "The Overview's Org tile (M2b)."
       },
       "OverviewOut": {
         "properties": {
@@ -5307,6 +5477,28 @@
             "type": "integer",
             "title": "Month Total Cents",
             "description": "Projected plus already posted"
+          },
+          "option_pool_left_bp": {
+            "type": "integer",
+            "title": "Option Pool Left Bp",
+            "description": "Option pool left: staff equity plus pending offers counted",
+            "default": 0
+          },
+          "network_bonus_candidates": {
+            "type": "integer",
+            "title": "Network Bonus Candidates",
+            "description": "Extra network candidates the founder's sociability brings",
+            "default": 0
+          },
+          "org": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrgTileOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -5393,6 +5585,31 @@
             "type": "number",
             "title": "New Pay Term"
           },
+          "salary_change_bp": {
+            "type": "integer",
+            "title": "Salary Change Bp",
+            "description": "New salary against the old, in bp (+530 = +5.3%)"
+          },
+          "market_ratio": {
+            "type": "number",
+            "title": "Market Ratio",
+            "description": "Salary / market rate now"
+          },
+          "new_market_ratio": {
+            "type": "number",
+            "title": "New Market Ratio",
+            "description": "New salary / the new level's market rate"
+          },
+          "monthly_cost_change_cents": {
+            "type": "integer",
+            "title": "Monthly Cost Change Cents",
+            "description": "Change in salary plus benefits a month"
+          },
+          "below_market": {
+            "type": "boolean",
+            "title": "Below Market",
+            "description": "The new salary is below the new market rate"
+          },
           "morale_change": {
             "type": "number",
             "title": "Morale Change",
@@ -5412,6 +5629,11 @@
           "new_market_rate_cents",
           "pay_term",
           "new_pay_term",
+          "salary_change_bp",
+          "market_ratio",
+          "new_market_ratio",
+          "monthly_cost_change_cents",
+          "below_market",
           "morale_change"
         ],
         "title": "PayPreviewOut",
@@ -5450,6 +5672,84 @@
           "answer_date_label"
         ],
         "title": "PendingOfferOut"
+      },
+      "PersonOrgOut": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id",
+            "description": "Null for the company root"
+          },
+          "unit_name": {
+            "type": "string",
+            "title": "Unit Name"
+          },
+          "parent_unit_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Unit Name",
+            "description": "The unit's parent unit, if any"
+          },
+          "manager_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Id",
+            "description": "Null for the founder"
+          },
+          "manager_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Name"
+          },
+          "leads_unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leads Unit Id",
+            "description": "The unit they lead, if any"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "unit_name",
+          "parent_unit_name",
+          "manager_id",
+          "manager_name",
+          "leads_unit_id"
+        ],
+        "title": "PersonOrgOut",
+        "description": "Where a staff member sits in the org (M2b)."
       },
       "PersonProfileOut": {
         "properties": {
@@ -5572,6 +5872,29 @@
             ],
             "title": "Interests",
             "description": "Null until an interview or network intro"
+          },
+          "org": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonOrgOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Staff only (M2b)"
+          },
+          "energy": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Energy",
+            "description": "Energy left this month: the founder and delegates only"
           },
           "personality": {
             "items": {
@@ -5759,6 +6082,29 @@
             ],
             "title": "Interests",
             "description": "Null until an interview or network intro"
+          },
+          "org": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonOrgOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Staff only (M2b)"
+          },
+          "energy": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Energy",
+            "description": "Energy left this month: the founder and delegates only"
           }
         },
         "type": "object",
@@ -5887,6 +6233,21 @@
           "max"
         ],
         "title": "RangeOut"
+      },
+      "RenameUnitIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "RenameUnitIn"
       },
       "RoleOut": {
         "properties": {
@@ -6396,6 +6757,11 @@
             },
             "type": "array",
             "title": "Child Unit Ids"
+          },
+          "headcount": {
+            "type": "integer",
+            "title": "Headcount",
+            "description": "People in this unit and every unit below it"
           }
         },
         "type": "object",
@@ -6409,7 +6775,8 @@
           "policy",
           "effective_policy",
           "members",
-          "child_unit_ids"
+          "child_unit_ids",
+          "headcount"
         ],
         "title": "UnitOut"
       },

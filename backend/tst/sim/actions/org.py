@@ -75,6 +75,16 @@ class DissolveUnit:
 
 
 @dataclass(frozen=True, slots=True)
+class RenameUnit:
+    """Rename a department or team (free; no morale change)."""
+
+    actor_id: int
+    unit_id: int
+    name: str
+    kind: Literal["rename_unit"] = "rename_unit"
+
+
+@dataclass(frozen=True, slots=True)
 class MoveUnit:
     """Re-parent a team under a department or the company root (13.1, 13.7)."""
 
@@ -174,6 +184,7 @@ type OrgAction = (
     CreateUnit
     | DissolveUnit
     | MoveUnit
+    | RenameUnit
     | SetLeader
     | MovePerson
     | SetPolicy
@@ -308,6 +319,15 @@ def dissolve_unit(state: GameState, action: DissolveUnit, balance: Balance) -> O
             state = with_offer(state, replace(offer, unit_id=parent))
     dissolved = replace(unit, status="dissolved", dissolved_turn=state.turn, leader_id=None)
     return Outcome(with_unit(state, dissolved))
+
+
+def rename_unit(state: GameState, action: RenameUnit) -> Outcome:
+    company = acting_company(state, action.actor_id)
+    unit = active_unit(state, company, action.unit_id)
+    name = _clean_name(state, company, action.name, keep=unit.id)
+    if name == unit.name:
+        raise OrgRuleError(f"the unit is already named {name!r}")
+    return Outcome(with_unit(state, replace(unit, name=name)))
 
 
 def move_unit(state: GameState, action: MoveUnit, balance: Balance) -> Outcome:

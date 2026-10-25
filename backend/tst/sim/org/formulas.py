@@ -7,6 +7,7 @@ Every number comes from `Balance` or from the scale definitions in `tst.sim.scal
 from __future__ import annotations
 
 import math
+from typing import Literal
 
 from tst.sim.data_models import HiringBalance, OrgBalance
 from tst.sim.money import BP_DENOMINATOR
@@ -38,6 +39,19 @@ def manager_morale_term(quality: float, org: OrgBalance) -> float:
     """W_mgr = clamp(0.8 (Q - 10), -8, +8) (13.4)."""
     raw = org.manager_morale_slope * (quality - ATTR_NEUTRAL)
     return min(max(raw, -org.manager_morale_cap), org.manager_morale_cap)
+
+
+type ManagerLabel = Literal["strong", "fine", "stretched"]
+
+
+def manager_label(morale_term: float, org: OrgBalance) -> ManagerLabel:
+    """How a manager comes across, from their W_mgr (13.4): strong at or above the upper
+    band, stretched at or below the lower band, else fine (M2b display label)."""
+    if morale_term >= org.manager_label_bands.hi:
+        return "strong"
+    if morale_term <= org.manager_label_bands.lo:
+        return "stretched"
+    return "fine"
 
 
 def growth_multiplier(

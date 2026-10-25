@@ -227,6 +227,7 @@ org:
   span_per_leadership: 4 # attribute points of leadership per extra report in L (13.2)
   manager_morale_slope: 0.8 # morale points per point of manager quality above 10 (13.4)
   manager_morale_cap: 8 # morale points; W_mgr is clamped to [-cap, +cap] (13.4)
+  manager_label_bands: [-2, 2] # morale points of W_mgr; at or below: "stretched", at or above: "strong", between: "fine" (M2b display)
   mentoring_neutral: 5 # attribute points; mentoring x S + bonus at which growth is unchanged (13.5)
   mentoring_divisor: 20 # attribute points per +100% growth in M_growth (13.5)
   mentor_tag_bonus: 3 # attribute points added when another member of the unit is a mentor (13.5)

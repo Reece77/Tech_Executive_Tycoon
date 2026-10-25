@@ -41,6 +41,7 @@ from tst.sim.actions.org import (
     MoveUnit,
     OrgAction,
     Promote,
+    RenameUnit,
     Scout,
     SetLeader,
     SetPolicy,
@@ -53,6 +54,7 @@ from tst.sim.actions.org import (
     move_person,
     move_unit,
     promote,
+    rename_unit,
     scout,
     set_leader,
     set_policy,
@@ -78,6 +80,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "create_unit": CreateUnit,
     "dissolve_unit": DissolveUnit,
     "move_unit": MoveUnit,
+    "rename_unit": RenameUnit,
     "set_leader": SetLeader,
     "move_person": MovePerson,
     "set_policy": SetPolicy,
@@ -108,6 +111,7 @@ __all__ = [
     "OpenSearch",
     "Promote",
     "ReferenceCheck",
+    "RenameUnit",
     "Scout",
     "SetLeader",
     "SetPolicy",
@@ -179,6 +183,8 @@ def apply_action(
             out = dissolve_unit(state, action, balance)
         case MoveUnit():
             out = move_unit(state, action, balance)
+        case RenameUnit():
+            out = rename_unit(state, action)
         case SetLeader():
             out = set_leader(state, action, balance)
         case MovePerson():

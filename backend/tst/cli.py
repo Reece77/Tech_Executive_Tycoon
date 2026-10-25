@@ -35,6 +35,7 @@ from tst.sim.actions import (
     OpenSearch,
     Promote,
     ReferenceCheck,
+    RenameUnit,
     SetLeader,
     SetPolicy,
     UpdatePlan,
@@ -539,6 +540,16 @@ def unit_dissolve(
 ) -> None:
     """Dissolve a unit: its members and teams move to its parent (members lose 2 morale)."""
     _org_run(save, DissolveUnit(_actor(_game(save)[2]), unit), preview)
+
+
+@unit_app.command("rename")
+def unit_rename(
+    save: SaveOpt,
+    unit: Annotated[int, typer.Option(help="Unit id")],
+    name: Annotated[str, typer.Option(help="New name")],
+) -> None:
+    """Rename a department or team (free)."""
+    _org_run(save, RenameUnit(_actor(_game(save)[2]), unit, name))
 
 
 @unit_app.command("reparent")

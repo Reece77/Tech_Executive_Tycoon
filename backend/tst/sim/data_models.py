@@ -345,6 +345,7 @@ class OrgBalance(_Frozen):
     span_per_leadership: float = Field(gt=0)
     manager_morale_slope: float
     manager_morale_cap: float = Field(ge=0)
+    manager_label_bands: Span
     mentoring_neutral: float
     mentoring_divisor: float = Field(gt=0)
     mentor_tag_bonus: float

@@ -33,6 +33,7 @@ class UnitOut(BaseModel):
     effective_policy: str
     members: list[OrgMemberOut]
     child_unit_ids: list[int]
+    headcount: int = Field(description="People in this unit and every unit below it")
 
 
 class ManagerOut(BaseModel):
@@ -43,6 +44,7 @@ class ManagerOut(BaseModel):
     span_limit: int = Field(description="L: reports handled comfortably (formulas.md 13.2)")
     span_factor: float = Field(description="S: 1 up to L reports, else L / n")
     over_span: bool
+    label: str = Field(description="strong | fine | stretched, from their manager morale term")
 
 
 class OrgOut(BaseModel):
@@ -50,6 +52,7 @@ class OrgOut(BaseModel):
     managers: list[ManagerOut]
     headcount: int
     departments_unlocked: bool
+    managers_over_span: int
 
 
 class CreateUnitIn(BaseModel):
@@ -60,6 +63,10 @@ class CreateUnitIn(BaseModel):
 
 class MoveUnitIn(BaseModel):
     parent_id: int | None = Field(description="A department, or null for the company root")
+
+
+class RenameUnitIn(BaseModel):
+    name: str = Field(min_length=1, max_length=64)
 
 
 class SetLeaderIn(BaseModel):
@@ -78,7 +85,8 @@ class SetPolicyIn(BaseModel):
 class OrgChangeIn(BaseModel):
     """One reorganization to preview; fields as for the matching action endpoint."""
 
-    change: str  # create_unit | dissolve_unit | move_unit | set_leader | move_person | set_policy
+    # create_unit | dissolve_unit | rename_unit | move_unit | set_leader | move_person | set_policy
+    change: str
     unit_id: int | None = None
     person_id: int | None = None
     kind: str | None = None
@@ -124,6 +132,11 @@ class PayPreviewOut(BaseModel):
     new_market_rate_cents: int = Field(description="Band mid for the level after the change")
     pay_term: float = Field(description="Pay term of the morale target now (formulas.md 9)")
     new_pay_term: float
+    salary_change_bp: int = Field(description="New salary against the old, in bp (+530 = +5.3%)")
+    market_ratio: float = Field(description="Salary / market rate now")
+    new_market_ratio: float = Field(description="New salary / the new level's market rate")
+    monthly_cost_change_cents: int = Field(description="Change in salary plus benefits a month")
+    below_market: bool = Field(description="The new salary is below the new market rate")
     morale_change: float = Field(description="One-off morale points (formulas.md 13.8)")
 
 
@@ -141,6 +154,8 @@ class HiringPlanOut(BaseModel):
     plan_id: int
     owner_id: int
     owner_name: str
+    owner_role_label: str
+    owner_on_staff: bool = Field(description="False once the owner has left (the plan pauses)")
     unit_id: int | None
     unit_name: str
     role: str

@@ -30,6 +30,8 @@
   --tst-gold-bg: #2b2a16;
   --tst-warn-bg: #3a2a1c;
   --tst-grey-bg: #2a2f38;
+  --tst-purple: #b9a6ff; /* Department kind and the Delegate inbox badge (M2b) */
+  --tst-purple-bg: #262040;
 
   --tst-radius: 10px;
   --tst-font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;

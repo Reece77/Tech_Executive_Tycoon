@@ -6,7 +6,7 @@ import secrets
 
 from fastapi import APIRouter, status
 
-from tst.api import views
+from tst.api import org_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.schemas.common import ErrorOut
 from tst.api.schemas.saves import (
@@ -21,8 +21,10 @@ from tst.db import inbox, repository
 from tst.sim.calendar import format_turn
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
+from tst.sim.hiring.rules import equity_committed
 from tst.sim.org.rules import is_remote
 from tst.sim.setup import DEFAULT_FOUNDER
+from tst.sim.state import GameState
 
 router = APIRouter(prefix="/api/saves", tags=["saves"])
 
@@ -125,7 +127,22 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         month_paid=month_paid,
         month_total_cents=sum(c.amount_cents for c in projected)
         + sum(c.amount_cents for c in month_paid),
+        option_pool_left_bp=max(
+            data.balance.hiring.option_pool_bp - equity_committed(state, player.id), 0
+        ),
+        network_bonus_candidates=network_bonus(state, player.id, data),
+        org=org_views.org_tile(state, player.id, data),
     )
+
+
+def network_bonus(state: GameState, company_id: int, data: DataDep) -> int:
+    """Extra candidates a founder-opened network search brings (formulas.md 7)."""
+    founder = state.founder_of(company_id)
+    channel = data.balance.hiring.channel["network"]
+    sociable = founder is not None and (
+        founder.personality["sociability"] >= channel.sociability_threshold
+    )
+    return channel.sociability_bonus if sociable else 0
 
 
 @router.get("", response_model=list[SaveOut], operation_id="listSaves")

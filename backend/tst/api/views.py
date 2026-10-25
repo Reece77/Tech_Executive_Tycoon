@@ -19,6 +19,7 @@ from tst.api.schemas.people import (
     KnowledgeOut,
     MoralePointOut,
     PendingOfferOut,
+    PersonOrgOut,
     PersonProfileOut,
     PersonSummaryOut,
     RangeOut,
@@ -33,7 +34,7 @@ from tst.sim.errors import UnknownPersonError
 from tst.sim.hiring.formulas import market_mid_cents, severance_cents
 from tst.sim.hiring.models import Search
 from tst.sim.hiring.phases import employment_monthly_cost_cents
-from tst.sim.org.rules import is_remote
+from tst.sim.org.rules import is_remote, org_view
 from tst.sim.people.formulas import potential_phrase
 from tst.sim.people.models import PA_KEY, Person, RevealState
 from tst.sim.people.reveal import revealed_range
@@ -142,6 +143,24 @@ def _tags(reveal: RevealState, data: LoadedData) -> list[TagOut]:
         )
         for key, turn in reveal.revealed_tags
     ]
+
+
+def person_org(state: GameState, company_id: int, person_id: int) -> PersonOrgOut:
+    """Unit, manager and led unit of a staff member (M2b)."""
+    view = org_view(state, company_id)
+    unit_id = view.unit_of.get(person_id)
+    unit = view.units.get(unit_id) if unit_id is not None else None
+    parent = view.units.get(unit.parent_id) if unit is not None and unit.parent_id else None
+    manager = view.manager_of.get(person_id)
+    leads = next((u.id for u in view.units.values() if u.leader_id == person_id), None)
+    return PersonOrgOut(
+        unit_id=unit_id,
+        unit_name=state.company(company_id).name if unit is None else unit.name,
+        parent_unit_name=None if parent is None else parent.name,
+        manager_id=manager,
+        manager_name=None if manager is None else person_name(state.person(manager)),
+        leads_unit_id=leads,
+    )
 
 
 def person_name(person: Person) -> str:
@@ -260,6 +279,8 @@ def person_summary(
             reveal, (checks or {}).get(person.id, ()), candidate.channel if candidate else None
         ),
         interests=list(person.interests) if reveal.profile_revealed_turn is not None else None,
+        org=None if employment is None else person_org(state, company_id, person.id),
+        energy=state.person_state(person.id).energy if employment is not None else None,
     )
 
 
