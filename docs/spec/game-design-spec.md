@@ -445,6 +445,7 @@ All design questions but one are settled, and each answer is recorded in an ADR 
 | Departments | Unlock at 10 staff or at stage 2, whichever comes first | formulas.md §13.1 |
 | Interview before offer | An offer requires that the company (founder or delegate) has interviewed the candidate | ADR-0016 |
 | Founder energy | Stays on (100 a month) after the M1 playtest; every hire now costs at least one interview. Delegates have their own energy | ADR-0016 |
+| Judgment of talent | Its main job is spotting potential: potential narrows much faster for good scouts, and hiring plans can favour potential (juniors and mids) | formulas.md §4, §13.10 |
 
 ## 21. Pre-Build Artifacts to Generate
 
