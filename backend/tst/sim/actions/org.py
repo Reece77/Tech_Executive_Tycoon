@@ -32,6 +32,7 @@ from tst.sim.org.models import (
     UnitKind,
     WorkPolicy,
 )
+from tst.sim.org.upkeep import release_job_posts
 from tst.sim.people.models import Employment
 from tst.sim.people.reveal import apply_knowledge_action
 from tst.sim.scale import clamp_morale
@@ -43,6 +44,7 @@ from tst.sim.state import (
     with_person_state,
     with_plan,
     with_reveal,
+    with_search,
     with_unit,
 )
 
@@ -526,10 +528,15 @@ def update_plan(state: GameState, action: UpdatePlan, balance: Balance, data: Ga
 
 
 def close_plan(state: GameState, action: ClosePlan) -> Outcome:
-    """Free, like closing a search. Offers already made still resolve."""
+    """Free, like closing a search. Offers already made still resolve. The job posts the
+    plan opened close too, unless another open plan for the role uses them (13.10)."""
     company = acting_company(state, action.actor_id)
     plan = live_plan(state, company, action.plan_id)
-    return Outcome(with_plan(state, replace(plan, status="closed", closed_turn=state.turn)))
+    closed = replace(plan, status="closed", closed_turn=state.turn)
+    state, to_close = release_job_posts(with_plan(state, closed), closed)
+    for search in to_close:
+        state = with_search(state, replace(search, status="closed", closed_turn=state.turn))
+    return Outcome(state)
 
 
 def scout(state: GameState, action: Scout, balance: Balance, data: GameData) -> Outcome:

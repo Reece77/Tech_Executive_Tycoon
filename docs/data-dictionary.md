@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 5 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 6 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -20,7 +20,7 @@ One row describing the save. Current-state table (updated in place each turn).
 | `created_turn` | INTEGER | no | Turn the save was created at (0). |
 | `current_turn` | INTEGER | no | Next turn to be played. Incremented once per committed turn. |
 | `data_hashes` | JSON | no | `{file name: SHA-256}` of the data files used to create the save (line endings normalized), so later data changes can be detected (ADR-0008). |
-| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (5 after `0005_org`). |
+| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (6 after `0006_search_plan`). |
 | `next_person_id` | INTEGER | no | Next person id to assign. Ids are never reused, because people leave the live state (M1b sweep rule 2). |
 | `next_search_id` | INTEGER | no | Next search id. |
 | `next_offer_id` | INTEGER | no | Next offer id. |
@@ -257,6 +257,7 @@ Live records are loaded into the game state; finished ones keep their rows with 
 | `opened_turn` | INTEGER | no | Turn opened. |
 | `status` | VARCHAR(16) | no | `open` or `closed`. Network and recruiter searches close after their one batch. |
 | `closed_turn` | INTEGER | yes | Turn closed. |
+| `plan_id` | INTEGER | yes | Hiring plan whose delegate opened it, or that inherited it (`hiring_plan.id`); null for the player's searches. A filled or closed plan's job posts close (formulas.md §13.10). No FK constraint (added by `ALTER TABLE` in `0006_search_plan`). |
 
 Index `ix_search_company_status (company_id, status)`.
 

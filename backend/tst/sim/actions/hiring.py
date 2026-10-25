@@ -63,6 +63,7 @@ class OpenSearch:
     actor_id: int
     role: str
     channel: Channel
+    plan_id: int | None = None  # set by a delegate opening it for a hiring plan (13.10)
     kind: Literal["open_search"] = "open_search"
 
 
@@ -183,6 +184,10 @@ def open_search(
             raise InsufficientCashError(
                 f"a job post needs at least its first month's fee in cash ({fee} cents)"
             )
+    if action.plan_id is not None:
+        plan = state.plan(action.plan_id)
+        if plan is None or plan.company_id != company or plan.status == "closed":
+            raise UnknownPlanError(f"no hiring plan {action.plan_id}")
     state = spend_energy(state, action.actor_id, CHANNEL_ENERGY[action.channel], balance)
     search_id, ids = state.next_ids.take("search")
     search = Search(
@@ -192,6 +197,7 @@ def open_search(
         channel=action.channel,
         actor_id=action.actor_id,
         opened_turn=state.turn,
+        plan_id=action.plan_id,
     )
     return Outcome(replace(with_search(state, search), next_ids=ids))
 

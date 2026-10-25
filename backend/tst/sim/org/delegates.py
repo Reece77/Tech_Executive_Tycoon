@@ -16,7 +16,15 @@ from fractions import Fraction
 
 import numpy as np
 
-from tst.sim.actions import Action, Interview, MakeOffer, OpenSearch, Scout, apply_action
+from tst.sim.actions import (
+    Action,
+    CloseSearch,
+    Interview,
+    MakeOffer,
+    OpenSearch,
+    Scout,
+    apply_action,
+)
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import SimError
 from tst.sim.hiring.formulas import energy_cost
@@ -25,6 +33,7 @@ from tst.sim.ledger import AccountCode, LedgerEntry, apply_entries
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import BP_DENOMINATOR, Cents
 from tst.sim.org.models import HiringPlan, PlanActivity
+from tst.sim.org.upkeep import release_job_posts
 from tst.sim.people.reveal import revealed_range
 from tst.sim.rng import RngFactory
 from tst.sim.scale import PRIMARY_WEIGHT, SECONDARY_WEIGHT
@@ -129,7 +138,7 @@ def _work_plan(run: _Run, plan: HiringPlan) -> PlanActivity:
     searching = any(s.role == role for s in run.state.open_searches(company))
     if still_needed(run.state, plan) > 0 and not searching:
         channel: Channel = ANY_CHANNEL if plan.channel == "any" else plan.channel
-        if run.attempt(company, OpenSearch(owner, role, channel)):
+        if run.attempt(company, OpenSearch(owner, role, channel, plan_id=plan.id)):
             activity = replace(activity, searches=activity.searches + 1)
 
     # 2-3. Interview the best uninterviewed candidates while more than the reserve would remain.
@@ -200,6 +209,14 @@ def run_delegates(
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...], tuple[DelegateAction, ...]]:
     """Phase 2 for every company's delegates (ADR-0015). Plans act in id order."""
     run = _Run(state=state, balances=dict(balances), rng=rng, balance=balance, data=data)
+    # Filled plans give up their job posts first (13.10): the delegate closes them.
+    for plan_id in sorted(p.id for p in state.plans):
+        plan = run.state.plan(plan_id)
+        if plan is None or plan.status != "filled":
+            continue
+        run.state, to_close = release_job_posts(run.state, plan)
+        for search in to_close:
+            run.attempt(plan.company_id, CloseSearch(plan.owner_id, search.id))
     for plan_id in sorted(p.id for p in state.plans):
         plan = run.state.plan(plan_id)
         if plan is None or plan.status != "active":

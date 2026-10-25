@@ -133,4 +133,4 @@ def test_upgrade_from_0004_backfills_interviews_and_keeps_everyone_in_the_root(
     with engine.connect() as conn:
         version = conn.execute(text("SELECT schema_version FROM save_meta")).scalar()
     engine.dispose()
-    assert version == 5
+    assert version == 6

@@ -27,6 +27,7 @@ class Search:
     opened_turn: int
     status: SearchStatus = "open"
     closed_turn: int | None = None
+    plan_id: int | None = None  # the hiring plan it serves (opened by its delegate, M2a)
 
 
 @dataclass(frozen=True, slots=True)

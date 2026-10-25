@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 
 class Base(DeclarativeBase):
@@ -263,6 +263,7 @@ class SearchRow(Base):
     opened_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    plan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # hiring_plan id (0006)
 
 
 class CandidateRow(Base):

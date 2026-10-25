@@ -341,6 +341,7 @@ def search_to_row(search: Search) -> SearchRow:
         opened_turn=search.opened_turn,
         status=search.status,
         closed_turn=search.closed_turn,
+        plan_id=search.plan_id,
     )
 
 
@@ -354,6 +355,7 @@ def search_from_row(row: SearchRow) -> Search:
         opened_turn=row.opened_turn,
         status=cast(SearchStatus, row.status),
         closed_turn=row.closed_turn,
+        plan_id=row.plan_id,
     )
 
 

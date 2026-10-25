@@ -10,7 +10,16 @@ import pytest
 from tests.helpers import fresh_game, make_person, with_candidates, with_employee
 from tests.unit.test_hiring_phases import Game
 from tst.loader import LoadedData
-from tst.sim.actions import CreatePlan, CreateUnit, Interview, MakeOffer, OpenSearch, Scout
+from tst.sim.actions import (
+    ClosePlan,
+    CloseSearch,
+    CreatePlan,
+    CreateUnit,
+    Interview,
+    MakeOffer,
+    OpenSearch,
+    Scout,
+)
 from tst.sim.org.delegates import (
     activity_text,
     known_score,
@@ -100,7 +109,7 @@ def test_first_turn_opens_a_job_post_for_channel_any(loaded: LoadedData) -> None
     game.act(CreatePlan(FOUNDER, RECRUITER, "designer", 1, "any", 10_000))
     result = game.turn()
     assert [a for _, a in result.delegate_actions] == [
-        OpenSearch(RECRUITER, "designer", "job_post")
+        OpenSearch(RECRUITER, "designer", "job_post", plan_id=1)
     ]
     assert game.state.plans[0].last_activity == PlanActivity(turn=0, searches=1)
     # No second search while one is open for the role.
@@ -201,3 +210,52 @@ def test_energy_resets_for_delegates(loaded: LoadedData) -> None:
 )
 def test_activity_text(activity: PlanActivity, text: str) -> None:
     assert activity_text(activity, "designer") == text
+
+
+# --- Closing a plan's job posts (13.10) -------------------------------------------------------
+
+
+def _job_posts(state: GameState) -> list[tuple[int, int | None, str]]:
+    return [(s.id, s.plan_id, s.status) for s in state.searches if s.channel == "job_post"]
+
+
+def test_filled_plan_delegate_closes_its_job_post(loaded: LoadedData) -> None:
+    game = recruiter_game(loaded)
+    game.act(OpenSearch(FOUNDER, "software_engineer", "job_post"))  # the player's own
+    game.act(CreatePlan(FOUNDER, RECRUITER, "designer", 1, "any", 12_000))
+    game.turn()
+    assert _job_posts(game.state) == [(1, None, "open"), (2, 1, "open")]
+    closed = None
+    for _ in range(4):
+        result = game.turn()
+        closes = [a for _, a in result.delegate_actions if isinstance(a, CloseSearch)]
+        if closes:
+            closed = closes
+            break
+    assert game.state.plans[0].status == "filled"
+    assert closed == [CloseSearch(RECRUITER, 2)]
+    assert [s.id for s in game.state.open_searches(1)] == [1]  # the player's stays open
+
+
+def test_closing_a_plan_closes_its_job_post(loaded: LoadedData) -> None:
+    game = recruiter_game(loaded)
+    game.act(CreatePlan(FOUNDER, RECRUITER, "designer", 3, "any", 10_000))
+    game.turn()
+    assert _job_posts(game.state) == [(1, 1, "open")]
+    game.act(ClosePlan(FOUNDER, 1))
+    assert game.state.open_searches(1) == ()
+
+
+def test_job_post_passes_to_another_open_plan_for_the_role(loaded: LoadedData) -> None:
+    game = recruiter_game(loaded)
+    other = make_person(loaded, 3, "recruiter", "mid")
+    game.state = with_employee(loaded, game.state, other, 9_000_000)
+    game.state = replace(game.state, next_ids=replace(game.state.next_ids, person=4))
+    game.act(CreatePlan(FOUNDER, RECRUITER, "designer", 3, "any", 10_000))
+    game.act(CreatePlan(FOUNDER, 3, "designer", 3, "any", 10_000))
+    game.turn()  # plan 1 opens the job post; plan 2 sees it open and opens nothing
+    assert _job_posts(game.state) == [(1, 1, "open")]
+    game.act(ClosePlan(FOUNDER, 1))
+    assert _job_posts(game.state) == [(1, 2, "open")]  # plan 2 uses it, so it stays
+    game.act(ClosePlan(FOUNDER, 2))
+    assert _job_posts(game.state) == [(1, 2, "closed")]
