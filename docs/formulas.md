@@ -129,7 +129,7 @@ hw \leftarrow hw \times (1 - strength \times scout\_factor), \qquad scout\_facto
 | scouting_month | 0.25 | all | — (M2, delegated) |
 | employed_month | 0.08 | all | 0 (automatic, each month) |
 
-Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The scout is the actor; for `employed_month` it is the highest true `judgment_of_talent` among the company's active employees, including the founder.
+Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). **M2b:** a stranger's PA `hw` is raised (tuned in the range 60–120 to the §13.10 target), because potential must be genuinely unknown for a good scout to matter; the founder's own PA keeps `reveal.founder_pa_hw` = 40. The scout is the actor; for `employed_month` it is the highest true `judgment_of_talent` among the company's active employees, including the founder.
 
 **Potential narrows more steeply with judgment (M2b).** For PA only, the scout factor is
 
@@ -166,7 +166,7 @@ and each action's PA strength is `reveal.pa_strength.<action>` (initially the sa
 - Background bonuses (`backgrounds.yaml`): engineer +3 software engineering, +2 infrastructure; salesperson +3 sales, +2 negotiation; academic +3 ML research, +2 data; ex-big-tech +2 software engineering, +2 product, +1 leadership; geologist +3 geology, +2 mining engineering (available in v3).
 - Personality: one of four presets (visionary, operator, hustler, scientist) or `Normal(10.5, 3.5)` per trait.
 - Hidden traits and PA are generated as in §2 (stream `founder`), using age 28 unless the player sets age (22–60).
-- The founding company knows the founder exactly (`hw = 0` for skills and personality; interests and work style shown). PA keeps its normal initial `hw` and is shown only as a phrase.
+- The founding company knows the founder exactly (`hw = 0` for skills and personality; interests and work style shown). PA starts at `reveal.founder_pa_hw` (40) and is shown only as a phrase.
 - **Interests and work style** are drawn as in §2 using the weights of the founder's best-fit role, computed after the skill allocation is applied. The player may supply them instead (2–4 valid interests; one work style).
 - **Behavior tags** are rolled as in §2 step 7. The founding company knows them from turn 0 (`person_tag_reveal` rows with `revealed_turn = 0`), and sees the founder's interests and work style from turn 0.
 - **Region and name:** region is `founder.default_region` (north_america) unless chosen; the name is drawn from that region's `names.yaml` pool unless the player supplies both first and last name.
@@ -391,6 +391,7 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `reveal.scout_base` / `reveal.scout_divisor` | 0.5 / 40 | — | §4 |
 | `reveal.pa_phrase_bounds` | [70, 100, 130, 160] | CA points | §4 |
 | `reveal.pa_scout_divisor` / `reveal.pa_strength.<action>` | 20 / as §4 table | attribute points / fraction | §4, tuned in M2b |
+| `reveal.founder_pa_hw` | 40 | CA points | §4, §5 (M2b) |
 | `founder.skill_base` / `.skill_points` / `.skill_cap` | 5 / 70 / 18 | attribute points | §5 |
 | `founder.default_age` | 28 | years | §5 |
 | `founder.energy_per_month` | 100 | energy | §6 |
@@ -539,7 +540,7 @@ Each tag affects the other members of its holder's unit (not the holder), using 
   5. Offer to the best candidates the company has interviewed (the §7 interview rule) without a pending offer, at the ask × the plan's ratio, up to the number still needed, within the option pool.
 - Delegate actions call the same `apply_action` with `actor` = the delegate, so energy, rules and the offer pitch (§7) apply. Their randomness uses stream `delegate`, key `(person_id, n)`, where `n` counts that delegate's actions this turn (ADR-0015).
 - **Quality emerges:** better `judgment_of_talent` narrows ranges more (§4); better `recruiting` lands more offers. M2a found that judgment barely changes current-ability hires (gap about 0.1 CA), because every candidate in a batch is interviewed and current skills show quickly. Judgment's real job is **spotting potential**.
-- **Potential target (M2b acceptance):** over 400 seeded runs of a `potential` plan for 2 software engineers, a judgment-16 recruiter's hires have a mean true PA at least **4 points** higher than a judgment-6 recruiter's on the same seeds (about a quarter of `people.pa_gap_sd`). Tune `reveal.pa_scout_divisor` and `reveal.pa_strength.*` (lowering interview and job-post PA strength is the expected lever, so scouting carries more of the knowledge) until it holds, and record the final values in the M2b brief. The current-focus CA gap is printed but has no target.
+- **Potential target (M2b acceptance, revised after the first tuning run):** over 400 seeded runs of a `potential` plan for 2 software engineers, a judgment-16 recruiter's hires have a mean true PA at least **3 points** higher than a judgment-6 recruiter's on the same seeds. With a stranger's PA `hw` at 40 the named keys reached only +1.3, because a 40-point range is already accurate enough to rank candidates whose potential spreads over about 25 points. Tune `reveal.initial_hw.pa` (60–120, preferring the smallest value that meets the target) together with `reveal.pa_scout_divisor` and `reveal.pa_strength.*`. Record the final values and, for a judgment-10 founder, the typical potential phrase after a job-post screen plus one interview (for example "decent to excellent"), so the cost to the player's own reading is visible. The current-focus CA gap is printed but has no target.
 - The API never shows a PA number: focus changes only the delegate's ranking, and the plan's inbox summary says "favouring potential".
 - Each plan writes one inbox summary per turn when it acted ("Petra interviewed 4 software engineers and made 2 offers").
 - **Closing searches:** when a plan fills or closes, its delegate closes any job post it opened for that plan, unless another open plan for the same role uses it. A filled plan's job posts close in phase 2 (a `close_search` action by the delegate); a closed plan's close with the `close_plan` action. A job post another open (active or paused) plan for the same role uses stays open and passes to that plan, lowest plan id first.

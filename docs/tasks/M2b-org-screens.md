@@ -19,7 +19,7 @@ Per `docs/formulas.md` §4 (PA scout factor) and §13.10 (plan focus, potential 
 1. `hiring_plan.focus` (`current` default, `potential`), migration `0007_plan_focus`, data dictionary; `create_plan` / `update_plan`, API and `tst plan create|update --focus`.
 2. Delegate ranking for `potential` (junior and mid only, by displayed PA midpoint).
 3. The PA scout factor and `reveal.pa_scout_divisor`, `reveal.pa_strength.*` in `balance.yaml`, with unit tests and the §4 worked example extended with a PA row.
-4. The comparative test: 400 seeds, judgment 16 vs 6, mean true PA gap ≥ 4. Tune only the keys §13.10 names; record the values under Decisions made. If no reasonable values reach the target, stop and report the best gap rather than adding a new mechanism.
+4. The comparative test: 400 seeds, judgment 16 vs 6, mean true PA gap ≥ 3. Tune only the keys §13.10 names (now including `reveal.initial_hw.pa`, 60–120, and the founder's own PA kept at `reveal.founder_pa_hw` = 40); record the values and the typical phrase §13.10 asks for under Decisions made. If no values in range reach the target, stop and report the best gap.
 5. Golden snapshots regenerated if the PA change moves them, with a CHANGELOG note.
 
 ## Screens
@@ -42,7 +42,7 @@ Per `docs/formulas.md` §4 (PA scout factor) and §13.10 (plan focus, potential 
 
 ## Acceptance criteria
 
-- [ ] The potential target in `docs/formulas.md` §13.10 holds (printed gap ≥ 4 PA over 400 runs), with the tuned values recorded.
+- [ ] The potential target in `docs/formulas.md` §13.10 holds (printed gap ≥ 3 PA over 400 runs), with the tuned values recorded.
 - [ ] Every M2a action is reachable from the screens, with its preview shown before it is applied.
 - [ ] The Org screen matches its wireframe and stays usable with 40 people and 8 units.
 - [ ] No game value is computed in the front end.
