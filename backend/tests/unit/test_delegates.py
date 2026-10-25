@@ -20,6 +20,7 @@ from tst.sim.actions import (
     OpenSearch,
     Scout,
 )
+from tst.sim.data_models import GameData
 from tst.sim.org.delegates import (
     activity_text,
     known_score,
@@ -29,6 +30,7 @@ from tst.sim.org.delegates import (
 )
 from tst.sim.org.models import PlanActivity
 from tst.sim.people.models import current_ability
+from tst.sim.people.reveal import revealed_range
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -84,24 +86,49 @@ def test_recruiter_plan_fills_four_hires_within_four_turns(loaded: LoadedData) -
     assert "plan_filled" in kinds and "plan_activity" in kinds
 
 
-def test_better_judgment_hires_better_people(loaded: LoadedData) -> None:
-    """Acceptance: over 200 seeded runs, a judgment-16 recruiter's hires have a higher mean
-    true CA than a judgment-6 recruiter's (same seeds, so the same candidate pools)."""
+def _role_skill_width(state: GameState, data: GameData, role: str) -> list[float]:
+    """Displayed range widths (max - min) of the role's skills, for every person of that role
+    the company has a knowledge record for (candidates and hires alike)."""
+    skills = (*data.role(role).primary, *data.role(role).secondary)
+    widths = []
+    for reveal in state.reveals:
+        person = state.person(reveal.person_id)
+        if reveal.observer_company_id != 1 or person.role != role:
+            continue
+        for skill in skills:
+            lo, hi = revealed_range(person, reveal, skill)
+            widths.append(float(hi - lo))
+    return widths
+
+
+def test_better_judgment_narrows_ranges_faster(loaded: LoadedData) -> None:
+    """Acceptance (revised): over 200 seeded runs, a judgment-16 recruiter's plan leaves the
+    company with narrower ranges on the candidates it worked than a judgment-6 recruiter's
+    (same seeds, so the same candidate pools).
+
+    The hires' mean true CA is printed too. The gap is about 0.1 CA: every candidate gets
+    interviewed and scouted either way, and ranking by role-skill midpoints is already close
+    to the truth, so judgment barely changes who is hired (brief follow-up).
+    """
+    widths: dict[float, list[float]] = {16: [], 6: []}
     cas: dict[float, list[float]] = {16: [], 6: []}
     for seed in range(1, 201):
-        for judgment, found in cas.items():
+        for judgment in (16, 6):
             game = recruiter_game(loaded, seed, judgment)
             game.act(CreatePlan(FOUNDER, RECRUITER, "software_engineer", 2, "job_post", 11_000))
             for _ in range(3):
                 game.turn()
-            found += [
+            widths[judgment] += _role_skill_width(game.state, loaded.game_data, "software_engineer")
+            cas[judgment] += [
                 current_ability(game.state.person(p), loaded.game_data) for p in hires(game.state)
             ]
     print(
-        f"mean CA of hires: judgment 16 {mean(cas[16]):.2f} ({len(cas[16])}), "
-        f"judgment 6 {mean(cas[6]):.2f} ({len(cas[6])})"
+        f"mean role-skill range width: judgment 16 {mean(widths[16]):.2f}, "
+        f"judgment 6 {mean(widths[6]):.2f}; mean CA of hires: judgment 16 "
+        f"{mean(cas[16]):.2f} ({len(cas[16])}), judgment 6 {mean(cas[6]):.2f} "
+        f"({len(cas[6])}), gap {mean(cas[16]) - mean(cas[6]):+.2f}"
     )
-    assert mean(cas[16]) > mean(cas[6])
+    assert mean(widths[16]) < mean(widths[6])
 
 
 def test_first_turn_opens_a_job_post_for_channel_any(loaded: LoadedData) -> None:

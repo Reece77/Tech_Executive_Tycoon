@@ -57,7 +57,7 @@ Products, projects, productivity, coordination cost, decision latency, and the `
 - [ ] Each reorganization's one-off morale change matches §13.7, and the preview reports it before the action.
 - [ ] A recruiter-led plan fills 4 hires within 4 turns without spending founder energy.
 - [ ] An offer to a candidate nobody at the company has interviewed is refused with `InterviewRequired`, from the API, the CLI and a delegate; the Offer button is disabled with "Interview first".
-- [ ] Over 200 seeded runs, plans run by a judgment-16 recruiter hire people with a higher mean true CA than plans run by a judgment-6 recruiter (comparative test).
+- [ ] Over 200 seeded runs, plans run by a judgment-16 recruiter hire people with a higher mean true CA than plans run by a judgment-6 recruiter (comparative test). *Revised by Reece after M2a: the test asserts that the judgment-16 recruiter's ranges narrow faster and prints the CA gap (see Follow-ups).*
 - [ ] An offer made in a candidate's last month still resolves.
 - [ ] Replay reproduces a save with reorganizations, raises and delegates, and recomputed delegate actions match the log.
 - [ ] No API response leaks a hidden field or an unnoticed tag (exact-name test and breakdown test).
@@ -100,11 +100,13 @@ Engineering and rule details that formulas.md §13, ADR-0015 and ADR-0016 left o
 21. **Plan activity wording** ("interviewed 4 software engineers and made 2 offers") is built in the sim and passed to the `plan_activity` template.
 22. **M1 tests that offered without interviewing** now interview first through the API/CLI/DB, or set the interview precondition directly (`mark_interviewed`, `with_candidates(..., interviewed=True)`) where the test is about offers, so their numbers are unchanged.
 23. **Performance:** `summarize()` (run after every committed turn for the save index) reads the player's company row instead of loading the whole state.
+24. **Closing a plan's job posts** (formulas.md §13.10, added after M2a review): searches record the plan they serve (`search.plan_id`, migration `0006_search_plan`). "Another open plan" means an active or paused plan for the same role; it inherits the job post (lowest plan id first), so the post closes when that plan fills or closes. A filled plan's posts close in phase 2 by `close_search` actions from its delegate; a closed plan's close inside `close_plan`. Only job posts are affected (network and recruiter searches close after one batch anyway); the player's own searches never are.
+25. **`move_unit`** (added after M2a review): only teams move, under a department or the company root; 2 energy (`founder.energy_cost.move_unit`); no one-off morale, since nobody changes unit (formulas.md §6 and §13.7 rows added). Members, leader and plans go with the team.
 
 ## Follow-ups
 
-1. **Delegate searches stay open after a plan fills or closes.** A plan's job post keeps costing $500 a month and producing batches until the player closes it (the 120-turn check ends with 76 open candidates). §13.10 has no rule for it; suggest the delegate closes a job post it opened once its plan is filled or closed.
-2. **Judgment barely matters yet:** over 200 seeds, judgment-16 hires average CA 115.45 against 115.36 for judgment 6. The criterion holds, but the effect is small for the balance pass (ranking by role-skill midpoints is already close to the truth after a job-post screen and an interview).
-3. **No action reparents a team** under a department; the player must dissolve and recreate it. Worth a `move_unit` action in M2b if the screens need it.
+1. ~~Delegate searches stay open after a plan fills or closes.~~ Done: decision 24.
+2. **Judgment barely changes who is hired.** Over 200 seeds the judgment-16 recruiter's ranges are clearly narrower (mean role-skill width 6.51 against 7.32), but its hires' mean true CA is only about 0.1 higher (115.07 against 114.99). Every candidate in a batch gets interviewed and scouted either way, and ranking by role-skill midpoints is already close to the truth, so better knowledge rarely changes the top picks. The acceptance test now asserts the narrowing and prints the CA gap. For the balance pass: let judgment matter where knowledge is scarce (fewer interviews per month, larger batches, or ranking that uses potential).
+3. ~~No action reparents a team.~~ Done: decision 25.
 4. **Attrition:** the performance check starts at 25 staff and ends near 16 after 120 turns, even with three plans refilling; base resignation (about 0.5% a month) may be high for a 30-year campaign.
 5. **People screens (M2b):** person responses do not yet carry unit and manager; the screens can read them from `GET /org`.
