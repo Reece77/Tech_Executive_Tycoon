@@ -14,6 +14,8 @@ import yaml
 from pydantic import BaseModel, ValidationError
 
 from tst.sim.data_models import (
+    MENTOR_TAG,
+    ORG_TAGS,
     Account,
     BackgroundsFile,
     Balance,
@@ -135,6 +137,10 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
             f"{BALANCE_FILE}: founder.default_region {balance.founder.default_region!r} "
             "is not in regions.yaml"
         )
+    tag_keys = {t.key for t in data.tags}
+    missing_tags = sorted({*ORG_TAGS, MENTOR_TAG} - tag_keys)
+    if missing_tags:
+        raise DataLoadError(f"{TAGS_FILE}: org rules need tags {missing_tags} (formulas.md 13)")
     founder = balance.founder
     for bg in data.backgrounds:
         spent = sum(bg.default_allocation.values())

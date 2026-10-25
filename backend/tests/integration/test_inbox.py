@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import text
 
-from tests.helpers import fresh_game, make_person, with_employee
+from tests.helpers import fresh_game, make_person, mark_interviewed, with_employee
 from tests.unit.test_hiring_phases import Game, _staff_game
 from tst.db.inbox import (
     UnknownInboxItemError,
@@ -21,7 +21,16 @@ from tst.db.inbox import (
 from tst.db.repository import create_save, open_session, run_action, run_turn
 from tst.db.state_io import load_state, sync_state
 from tst.loader import LoadedData
-from tst.sim.actions import Fire, MakeOffer, OpenSearch
+from tst.sim.actions import (
+    CreatePlan,
+    CreateUnit,
+    Fire,
+    Interview,
+    MakeOffer,
+    MovePerson,
+    OpenSearch,
+    SetLeader,
+)
 from tst.sim.data_models import INBOX_TEMPLATE_KEYS
 from tst.sim.log import inbox_item
 
@@ -77,6 +86,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
         for t in range(turns):
             game.turn()
             if game is hiring and t == 0:
+                game.state = mark_interviewed(game.state)
                 for c in game.state.candidates:
                     ask = game.state.person(c.person_id).salary_expectation_cents or 0
                     ratio = 1.4 if c.person_id % 2 else 0.5
@@ -85,7 +95,22 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     broke = Game(loaded, with_employee(loaded, fresh_game(loaded), carrier, 9_000_000), cash=0)
     broke.act(Fire(1, 30))
     broke.turn()
-    games = (sad, hiring, broke)
+    lead = make_person(loaded, 40)
+    org = Game(loaded, with_employee(loaded, fresh_game(loaded), lead, 9_000_000))
+    org.act(CreateUnit(1, "team", "Platform"))
+    org.act(MovePerson(1, 40, 1))
+    org.act(SetLeader(1, 1, 40))
+    org.act(CreatePlan(1, 40, "designer", 1, "network", 10_000))
+    org.act(Fire(1, 40))  # the unit loses its leader and the plan pauses
+    recruiter = make_person(loaded, 41, "recruiter", "senior")
+    delegated = Game(loaded, with_employee(loaded, fresh_game(loaded), recruiter, 9_000_000))
+    delegated.state = replace(
+        delegated.state, next_ids=replace(delegated.state.next_ids, person=42)
+    )
+    delegated.act(CreatePlan(1, 41, "software_engineer", 1, "job_post", 12_000))
+    for _ in range(4):
+        delegated.turn()  # activity summaries, then the plan fills
+    games = (sad, hiring, broke, org, delegated)
     items = [i for g in games for r in g.results for i in r.log_items]
     items += [i for g in games for i in g.action_logs]
     for item in items:
@@ -113,6 +138,7 @@ def test_inbox_persists_from_turns_and_actions(tmp_path: Path, loaded: LoadedDat
     assert arrived.title.endswith("candidates for Software engineer")
     for c in state.candidates:
         ask = state.person(c.person_id).salary_expectation_cents or 0
+        run_action(path, loaded, Interview(1, c.person_id))
         run_action(path, loaded, MakeOffer(1, c.person_id, round(ask * 1.5), 0))
     run_turn(path, loaded)
     with open_session(path) as session, session.begin():

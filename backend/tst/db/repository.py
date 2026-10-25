@@ -27,6 +27,7 @@ from tst.db.mappers import (
 from tst.db.models import (
     SCHEMA_VERSION,
     AccountRow,
+    CompanyRow,
     DecisionLogRow,
     LedgerEntryRow,
     LedgerLineRow,
@@ -45,15 +46,17 @@ from tst.sim.actions import (
     apply_action,
 )
 from tst.sim.calendar import format_turn
-from tst.sim.data_models import DEFAULT_DIFFICULTY
+from tst.sim.data_models import DEFAULT_DIFFICULTY, Balance
 from tst.sim.decisions import Decisions
 from tst.sim.errors import (
     InvalidSaveNameError,
     InvalidSeedError,
+    ReplayMismatchError,
     SaveExistsError,
     SaveNotFoundError,
     UnknownScenarioError,
 )
+from tst.sim.hiring.phases import monthly_costs
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
@@ -69,6 +72,8 @@ SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 MAX_STORED_SEED = 2**63 - 1  # SQLite INTEGER is signed 64-bit
 INDEX_FILE = "index.json"
 NEW_GAME_KIND = "new_game"  # decision_log row holding the new-game choices (for replay)
+PLAYER_SOURCE = "player"  # decision_log.source of player actions (re-applied by replay)
+DELEGATE_SOURCE = "delegate"  # delegate actions: recomputed by replay, never re-applied
 
 
 @dataclass(frozen=True, slots=True)
@@ -164,6 +169,8 @@ def create_save(
                     next_search_id=state.next_ids.search,
                     next_offer_id=state.next_ids.offer,
                     next_employment_id=state.next_ids.employment,
+                    next_unit_id=state.next_ids.unit,
+                    next_plan_id=state.next_ids.plan,
                 )
             )
             session.add_all(
@@ -289,11 +296,11 @@ class Overview:
     date_label: str
     cash_cents: Cents
     monthly_burn_cents: Cents  # from the last month-end snapshot; 0 before the first turn
-    runway_months: int | None
+    runway_months: int | None  # at this month's projected phase-6 costs (M1c decision)
     history: list[tuple[int, CompanySnapshot]]  # last N snapshots, oldest first
 
 
-def player_overview(session: Session, history: int) -> Overview:
+def player_overview(session: Session, history: int, balance: Balance) -> Overview:
     """What the player sees on the Overview screen and in `tst inspect`."""
     meta = read_meta(session)
     state = load_state(session)
@@ -309,7 +316,9 @@ def player_overview(session: Session, history: int) -> Overview:
         date_label=format_turn(state.turn),
         cash_cents=cash,
         monthly_burn_cents=burn,
-        runway_months=runway_months(cash, burn),
+        runway_months=runway_months(
+            cash, sum(amount for _, _, amount in monthly_costs(state, player.id, balance))
+        ),
         history=snaps,
     )
 
@@ -343,6 +352,19 @@ def apply_turn_result(
 
     player = result.new_state.player
     session.add(decisions_to_row(played, player.id, decisions))
+    first = next_action_seq(session, played)
+    session.add_all(
+        DecisionLogRow(
+            turn=played,
+            company_id=company_id,
+            kind=action.kind,
+            payload=action_payload(action),
+            seq=first + i,
+            source=DELEGATE_SOURCE,
+            actor_id=action.actor_id,
+        )
+        for i, (company_id, action) in enumerate(result.delegate_actions)
+    )
     session.add_all(entry_to_row(e) for e in result.ledger_entries)
     session.add_all(snapshot_to_rows(result.snapshot))
     session.add_all(log_item_to_row(i) for i in result.log_items)
@@ -425,6 +447,8 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
                 kind=action.kind,
                 payload=action_payload(action),
                 seq=seq,
+                source=PLAYER_SOURCE,
+                actor_id=action.actor_id,
             )
         )
     return result
@@ -450,21 +474,34 @@ def new_game_payload(
 
 
 def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Path:
-    """Rebuild a save from its seed, new-game choices, logged actions and turns (ADR-0014)."""
+    """Rebuild a save from its seed, new-game choices, logged actions and turns (ADR-0014).
+
+    Player actions are re-applied. Delegate actions are not: each turn recomputes them from
+    the plans in state, and they must equal the logged ones (ADR-0015), else
+    ReplayMismatchError.
+    """
     with open_session(source) as session:
         meta = read_meta(session)
         seed, target_turn = meta.master_seed, meta.current_turn
         start = session.scalars(
             select(DecisionLogRow).where(DecisionLogRow.kind == NEW_GAME_KIND)
         ).one()
+        logged = session.scalars(
+            select(DecisionLogRow)
+            .where(DecisionLogRow.seq.is_not(None), DecisionLogRow.kind != NEW_GAME_KIND)
+            .order_by(DecisionLogRow.turn, DecisionLogRow.seq)
+        ).all()
         actions = [
             (row.turn, action_from_payload(row.payload))
-            for row in session.scalars(
-                select(DecisionLogRow)
-                .where(DecisionLogRow.seq.is_not(None), DecisionLogRow.kind != NEW_GAME_KIND)
-                .order_by(DecisionLogRow.turn, DecisionLogRow.seq)
-            )
+            for row in logged
+            if row.source == PLAYER_SOURCE
         ]
+        delegated: dict[int, list[tuple[int, Action]]] = {}
+        for row in logged:
+            if row.source == DELEGATE_SOURCE:
+                delegated.setdefault(row.turn, []).append(
+                    (row.company_id, action_from_payload(row.payload))
+                )
     setup = start.payload
     founder = dict(setup["founder"])
     if founder.get("interests") is not None:
@@ -484,7 +521,11 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         for _, action in (a for a in actions if a[0] == turn):
             run_action(path, data, action)
         if turn < target_turn:
-            run_turn(path, data)
+            result = run_turn(path, data)
+            if list(result.delegate_actions) != delegated.get(turn, []):
+                raise ReplayMismatchError(
+                    f"turn {turn}: recomputed delegate actions differ from the logged ones"
+                )
     return path
 
 
@@ -494,7 +535,9 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
 def summarize(path: Path) -> SaveSummary:
     with open_session(path) as session:
         meta = read_meta(session)
-        player = load_state(session).player
+        # Only the player's name is needed; loading the whole state here cost a second full
+        # load on every turn (M2a performance check).
+        player = session.scalars(select(CompanyRow).where(CompanyRow.is_player.is_(True))).one()
         return SaveSummary(
             slug=slug_of(path),
             company_name=player.name,

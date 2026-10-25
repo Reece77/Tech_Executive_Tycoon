@@ -27,6 +27,7 @@ class Search:
     opened_turn: int
     status: SearchStatus = "open"
     closed_turn: int | None = None
+    plan_id: int | None = None  # the hiring plan it serves (opened by its delegate, M2a)
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,6 +42,7 @@ class Candidate:
     expires_turn: int  # leaves in phase 12 of this turn unless hired first
     status: CandidateStatus = "open"
     resolved_turn: int | None = None
+    interviewed_turn: int | None = None  # first interview by this company (ADR-0016)
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,6 +56,8 @@ class Offer:
     made_turn: int
     status: OfferStatus = "pending"
     resolved_turn: int | None = None
+    plan_id: int | None = None  # the hiring plan a delegate made it under
+    unit_id: int | None = None  # where the hire joins; None = the company root
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,7 +65,7 @@ class PersonState:
     """Mutable-per-turn values for one person. None means not tracked for this person."""
 
     person_id: int
-    energy: int | None = None  # founder only (formulas.md section 6)
+    energy: int | None = None  # founder and delegates (formulas.md sections 6, 13.10)
     stress: float | None = None  # M3+
     morale: float | None = None  # employees, not the founder (formulas.md section 9)
 
@@ -74,8 +78,12 @@ class NextIds:
     search: int = 1
     offer: int = 1
     employment: int = 1
+    unit: int = 1
+    plan: int = 1
 
-    def take(self, kind: Literal["person", "search", "offer", "employment"]) -> tuple[int, NextIds]:
+    def take(
+        self, kind: Literal["person", "search", "offer", "employment", "unit", "plan"]
+    ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)
         return value, replace(self, **{kind: value + 1})
 

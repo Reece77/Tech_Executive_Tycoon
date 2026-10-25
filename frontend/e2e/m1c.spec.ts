@@ -77,11 +77,15 @@ test('(b) job post, interview, offer at the ask, hire, payroll', async ({ page }
   const rows = page.getByTestId('candidate-row');
   await expect(rows.first()).toBeVisible();
   await expect(rows.first()).toContainText('Interview to learn');
+  // Offers need an interview first (ADR-0016).
+  await expect(rows.first().getByTestId('offer')).toBeDisabled();
+  await expect(rows.first().getByTestId('offer')).toHaveText('Interview first');
 
   await rows.first().getByTestId('interview').click();
   await expect(page.getByTestId('energy')).toHaveText('94 / 100'); // energy resets each month
   await expect(rows.first()).toContainText('Interviewed');
   await expect(rows.first()).not.toContainText('Interview to learn');
+  await expect(rows.first().getByTestId('offer')).toBeEnabled();
 
   // Preview at the ask: ratio 1.00x and the 85% floor, then send.
   await rows.first().getByTestId('offer').click();
@@ -132,6 +136,7 @@ test('(c) fire someone: severance and the morale dip', async ({ page, request })
   await api(request, 'POST', `${base}/advance`);
   type Candidate = { person_id: number; candidacy: { salary_expectation_cents: number } };
   for (const c of await api<Candidate[]>(request, 'GET', `${base}/recruitment/candidates`)) {
+    await api(request, 'POST', `${base}/recruitment/candidates/${c.person_id}/interview`);
     await api(request, 'POST', `${base}/recruitment/candidates/${c.person_id}/offer`, {
       salary_cents: Math.round(c.candidacy.salary_expectation_cents * 1.5),
       equity_bp: 0,

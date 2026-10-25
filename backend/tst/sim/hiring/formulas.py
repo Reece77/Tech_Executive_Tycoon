@@ -44,8 +44,12 @@ def offer_score(
     ambition: float,
     stage: int,
     offer: OfferBalance,
+    pitch: float = 0.0,
 ) -> float:
-    """4 (R - 1) + w_eq B 0.002 m_stage + 0.5 F + A_stage - (10 - risk_appetite) / 10."""
+    """4 (R - 1) + w_eq B 0.002 m_stage + 0.5 F + A_stage - (10 - risk_appetite) / 10 + pitch.
+
+    `pitch` is the M2 term from whoever made the offer (tst.sim.org.formulas.pitch).
+    """
     w_eq = offer.w_equity * (
         offer.ambition_equity_boost if ambition > offer.ambition_boost_above else 1
     )
@@ -55,6 +59,7 @@ def offer_score(
         + offer.w_fit * matching_interests
         + offer.stage_appeal[stage]
         - offer.w_risk * (ATTR_NEUTRAL - risk_appetite) / ATTR_NEUTRAL
+        + pitch
     )
 
 

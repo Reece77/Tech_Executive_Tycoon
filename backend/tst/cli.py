@@ -1,4 +1,4 @@
-"""Headless commands: new-game, advance, inspect, list, and hiring (M1b).
+"""Headless commands: new-game, advance, inspect, list, hiring (M1b), and the org (M2a).
 
 Hiring commands call the same action functions as the API, with the founder as actor.
 They show what the company knows (ranges), never true values; only `inspect --person`
@@ -13,7 +13,7 @@ from typing import Annotated, Any
 
 import typer
 
-from tst.api import views
+from tst.api import org_views, views
 from tst.config import Settings
 from tst.db import inbox as inbox_db
 from tst.db import repository
@@ -21,22 +21,34 @@ from tst.loader import DataLoadError, LoadedData, load_all
 from tst.sim.actions import (
     Action,
     ActionResult,
+    ClosePlan,
     CloseSearch,
+    CreatePlan,
+    CreateUnit,
+    DissolveUnit,
     Fire,
+    GiveRaise,
     Interview,
     MakeOffer,
+    MovePerson,
+    MoveUnit,
     OpenSearch,
+    Promote,
     ReferenceCheck,
+    SetLeader,
+    SetPolicy,
+    UpdatePlan,
 )
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.errors import SimError
+from tst.sim.hiring.phases import monthly_costs
 from tst.sim.hiring.rules import offer_preview
 from tst.sim.money import cents, format_money
 from tst.sim.people.founder import FounderSpec
 from tst.sim.people.models import current_ability, growth_role
 from tst.sim.setup import DEFAULT_FOUNDER
-from tst.sim.state import GameState
+from tst.sim.state import GameState, company_cash
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="Tech Startup Tycoon")
 
@@ -134,7 +146,7 @@ def inspect(
                 state = repository.load_state(session)
                 _print_person(state, person, data)
                 return
-            ov = repository.player_overview(session, history=1)
+            ov = repository.player_overview(session, history=1, balance=data.balance)
     except SimError as exc:
         raise _fail(exc.message) from exc
     if ov.runway_months is None:
@@ -145,7 +157,7 @@ def inspect(
     typer.echo(f"Date:    {ov.date_label} (turn {ov.turn})")
     typer.echo(f"Cash:    {format_money(ov.cash_cents)}")
     typer.echo(f"Burn:    {format_money(ov.monthly_burn_cents)} / month")
-    typer.echo(f"Runway:  {runway}")
+    typer.echo(f"Runway:  {runway} at this month's projected costs")
 
 
 def _print_person(state: GameState, which: str, data: LoadedData) -> None:
@@ -300,6 +312,8 @@ def candidates(save: SaveOpt) -> None:
         role = data.game_data.role(p.role)
         made = p.candidacy.pending_offer
         pending = f"; offer {format_money(made.salary_cents)} pending" if made else ""
+        if p.candidacy.offer_blocked_reason == views.INTERVIEW_REQUIRED:
+            pending += "; interview first"
         typer.echo(
             f"{p.person_id:>4}  {p.name:<24} {p.level:<7} {p.role_label:<20} age {p.age:<3} "
             f"ask {format_money(p.candidacy.salary_expectation_cents)}  "
@@ -361,7 +375,9 @@ def offer(
     if c is None or c.status != "open":
         raise _fail(f"no open candidate {candidate}")
     if preview:
-        pv = offer_preview(state, c, salary_cents, equity_bp, data.balance, data.game_data)
+        pv = offer_preview(
+            state, c, salary_cents, equity_bp, data.balance, data.game_data, _actor(state)
+        )
         typer.echo(
             f"Hint: {pv.hint}. Offer is {pv.ratio:.2f}x the ask of "
             f"{format_money(pv.expectation_cents)}; below {format_money(pv.floor_cents)} "
@@ -422,6 +438,324 @@ def inbox(
             typer.echo(f"    {m.body}")
             if mark_read and not m.read:
                 inbox_db.mark_read(session, state.player.id, m.id)
+
+
+# --- Organization (M2a) ---------------------------------------------------------------------
+
+unit_app = typer.Typer(no_args_is_help=True, help="Create, dissolve, lead and staff org units")
+app.add_typer(unit_app, name="unit")
+plan_app = typer.Typer(no_args_is_help=True, help="Hiring plans run by delegates")
+app.add_typer(plan_app, name="plan")
+
+PreviewOpt = Annotated[bool, typer.Option(help="Show the effect without doing it")]
+ROOT_UNIT = "root"  # --unit value for the company root
+BP_PER_RATIO = 10_000
+
+
+def _unit_arg(value: str | None) -> int | None:
+    """A unit id, or None for the company root ('root' or omitted)."""
+    if value is None or value == ROOT_UNIT:
+        return None
+    if not value.isdigit():
+        raise _fail(f"--unit takes a unit id or '{ROOT_UNIT}'")
+    return int(value)
+
+
+def _org_preview(state: GameState, data: LoadedData, action: Action) -> None:
+    pv = org_views.change_preview(state, action, data)
+    if not pv.allowed:
+        typer.echo(f"Not allowed: {pv.problem}")
+        return
+    typer.echo(f"Costs {pv.energy_cost} energy.")
+    if not pv.morale_changes:
+        typer.echo("No one's morale changes.")
+    for change in pv.morale_changes:
+        typer.echo(f"  {change.name:<24} morale {change.change:+.0f}")
+
+
+def _org_run(save: str, action: Action, preview: bool = False) -> None:
+    path, data, state = _game(save)
+    if preview:
+        _org_preview(state, data, action)
+        return
+    _run(path, data, action)
+    typer.echo(f"Done; {_energy(_game(save)[2], data)}")
+
+
+@app.command("org")
+def org_tree(save: SaveOpt) -> None:
+    """Show the org chart: units, leaders, members, and each manager's span."""
+    _, data, state = _game(save)
+    org = org_views.org_out(state, state.player.id, data)
+    units = {u.unit_id: u for u in org.units}
+    managers = {m.person_id: m for m in org.managers}
+
+    def show(unit_id: int | None, depth: int) -> None:
+        unit = units[unit_id]
+        pad = "  " * depth
+        own = unit.policy or f"inherits {unit.effective_policy}"
+        label = unit.kind if unit_id is None else f"{unit.kind} {unit_id}"
+        typer.echo(f"{pad}{unit.name} ({label}; {own}); leader {unit.leader_name or 'none'}")
+        for m in unit.members:
+            span = ""
+            if m.person_id in managers:
+                mgr = managers[m.person_id]
+                over = "  OVER SPAN" if mgr.over_span else ""
+                span = (
+                    f"  manages {len(mgr.reports)} (limit {mgr.span_limit}, "
+                    f"S {mgr.span_factor:.2f}){over}"
+                )
+            lead = " *" if m.is_leader else "  "
+            typer.echo(f"{pad} {lead}{m.person_id:>4}  {m.name:<24} {m.role_label:<20}{span}")
+        for child in unit.child_unit_ids:
+            show(child, depth + 1)
+
+    show(None, 0)
+    if not org.departments_unlocked:
+        typer.echo(
+            f"Departments unlock at {data.balance.org.department_unlock_headcount} staff "
+            f"(you have {org.headcount})."
+        )
+
+
+@unit_app.command("create")
+def unit_create(
+    save: SaveOpt,
+    kind: Annotated[str, typer.Option(help="team|department")],
+    name: Annotated[str, typer.Option(help="Unit name")],
+    parent: Annotated[int | None, typer.Option(help="Parent department id (teams only)")] = None,
+) -> None:
+    """Create a team (under the company or a department) or a department."""
+    path, data, state = _game(save)
+    result = _run(path, data, CreateUnit(_actor(state), kind, name, parent))  # type: ignore[arg-type]
+    unit = max(result.new_state.units, key=lambda u: u.id)
+    typer.echo(f"Created {unit.kind} {unit.id}: {unit.name}; {_energy(result.new_state, data)}")
+
+
+@unit_app.command("dissolve")
+def unit_dissolve(
+    save: SaveOpt, unit: Annotated[int, typer.Option(help="Unit id")], preview: PreviewOpt = False
+) -> None:
+    """Dissolve a unit: its members and teams move to its parent (members lose 2 morale)."""
+    _org_run(save, DissolveUnit(_actor(_game(save)[2]), unit), preview)
+
+
+@unit_app.command("reparent")
+def unit_reparent(
+    save: SaveOpt,
+    unit: Annotated[int, typer.Option(help="Team id")],
+    parent: Annotated[str, typer.Option(help="Department id, or 'root'")],
+    preview: PreviewOpt = False,
+) -> None:
+    """Move a team under a department or the company; its members go with it."""
+    _org_run(save, MoveUnit(_actor(_game(save)[2]), unit, _unit_arg(parent)), preview)
+
+
+@unit_app.command("lead")
+def unit_lead(
+    save: SaveOpt,
+    unit: Annotated[int, typer.Option(help="Unit id")],
+    person: Annotated[int | None, typer.Option(help="New leader (a member of the unit)")] = None,
+    remove: Annotated[bool, typer.Option(help="Remove the current leader")] = False,
+    preview: PreviewOpt = False,
+) -> None:
+    """Set, replace or remove a unit's leader."""
+    if (person is None) == (not remove):
+        raise _fail("give --person or --remove")
+    _org_run(save, SetLeader(_actor(_game(save)[2]), unit, None if remove else person), preview)
+
+
+@unit_app.command("move")
+def unit_move(
+    save: SaveOpt,
+    person: Annotated[int, typer.Option(help="Person id")],
+    unit: Annotated[str | None, typer.Option(help="Unit id, or 'root'")] = None,
+    preview: PreviewOpt = False,
+) -> None:
+    """Move someone to another unit (they lose 2 morale)."""
+    _org_run(save, MovePerson(_actor(_game(save)[2]), person, _unit_arg(unit)), preview)
+
+
+@unit_app.command("policy")
+def unit_policy(
+    save: SaveOpt,
+    policy: Annotated[str, typer.Option(help="office|remote|inherit")],
+    unit: Annotated[str | None, typer.Option(help="Unit id, or 'root' for the company")] = None,
+) -> None:
+    """Set a unit's (or the company's) work-location policy."""
+    chosen = None if policy == "inherit" else policy
+    _org_run(save, SetPolicy(_actor(_game(save)[2]), _unit_arg(unit), chosen))  # type: ignore[arg-type]
+
+
+def _pay_preview(state: GameState, data: LoadedData, action: GiveRaise | Promote) -> None:
+    pv = org_views.pay_preview(state, action, data)
+    if not pv.allowed:
+        typer.echo(f"Not allowed: {pv.problem}")
+    typer.echo(
+        f"Level {pv.level} -> {pv.new_level}; salary {format_money(pv.salary_cents)} -> "
+        f"{format_money(pv.new_salary_cents)}; market rate {format_money(pv.market_rate_cents)}"
+        f" -> {format_money(pv.new_market_rate_cents)}"
+    )
+    typer.echo(
+        f"Pay term {pv.pay_term:+.1f} -> {pv.new_pay_term:+.1f}; one-off morale "
+        f"{pv.morale_change:+.0f}; costs {pv.energy_cost} energy"
+    )
+
+
+@app.command("raise")
+def give_raise(
+    save: SaveOpt,
+    person: Annotated[int, typer.Option(help="Person id")],
+    salary: Annotated[str, typer.Option(help="New annual salary in dollars, e.g. 98000")],
+    preview: PreviewOpt = False,
+) -> None:
+    """Change someone's salary from the next payroll (5%+ raises lift morale once a year)."""
+    path, data, state = _game(save)
+    try:
+        salary_cents = cents(salary)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    action = GiveRaise(_actor(state), person, salary_cents)
+    if preview:
+        _pay_preview(state, data, action)
+        return
+    result = _run(path, data, action)
+    typer.echo(
+        f"Salary of person {person} is now {format_money(salary_cents)}; "
+        f"{_energy(result.new_state, data)}"
+    )
+
+
+@app.command()
+def promote(
+    save: SaveOpt,
+    person: Annotated[int, typer.Option(help="Person id")],
+    preview: PreviewOpt = False,
+) -> None:
+    """Promote someone one level (+5 morale; the new level's market rate applies)."""
+    path, data, state = _game(save)
+    action = Promote(_actor(state), person)
+    if preview:
+        _pay_preview(state, data, action)
+        return
+    result = _run(path, data, action)
+    employment = result.new_state.employment_of(person)
+    assert employment is not None
+    typer.echo(f"Person {person} is now {employment.level}; {_energy(result.new_state, data)}")
+
+
+def _ratio_bp(ratio: float) -> int:
+    return round(ratio * BP_PER_RATIO)
+
+
+def _plan_line(plan: Any) -> str:
+    activity = plan.last_activity
+    last = f"; {activity.date_label}: {activity.summary}" if activity else ""
+    return (
+        f"{plan.plan_id:>3}  {plan.role_label:<20} {plan.hired}/{plan.target} hired, "
+        f"{plan.pending_offers} pending  owner {plan.owner_name} ({plan.owner_energy} energy)  "
+        f"unit {plan.unit_name}  {plan.channel} at {plan.ratio_bp / BP_PER_RATIO:.2f}x  "
+        f"[{plan.status}]{last}"
+    )
+
+
+@plan_app.command("create")
+def plan_create(
+    save: SaveOpt,
+    owner: Annotated[int, typer.Option(help="Delegate's person id (not the founder)")],
+    role: Annotated[str, typer.Option(help="Role key, e.g. software_engineer")],
+    target: Annotated[int, typer.Option(help="Hires wanted")],
+    channel: Annotated[str, typer.Option(help="any|job_post|recruiter|network")] = "any",
+    ratio: Annotated[float, typer.Option(help="Salary offered as a multiple of the ask")] = 1.0,
+    equity_bp: Annotated[int, typer.Option("--equity-bp", help="Equity per offer, bp")] = 0,
+    unit: Annotated[str | None, typer.Option(help="Unit the hires join, or 'root'")] = None,
+) -> None:
+    """Create a hiring plan; the delegate works it each month on their own energy."""
+    path, data, state = _game(save)
+    action = CreatePlan(
+        _actor(state),
+        owner,
+        role,
+        target,
+        channel,  # type: ignore[arg-type]
+        _ratio_bp(ratio),
+        equity_bp,
+        _unit_arg(unit),
+    )
+    result = _run(path, data, action)
+    plan = max(result.new_state.plans, key=lambda p: p.id)
+    typer.echo(_plan_line(org_views.plan_out(result.new_state, plan, data)))
+
+
+@plan_app.command("list")
+def plan_list(save: SaveOpt) -> None:
+    """List hiring plans that are not closed."""
+    _, data, state = _game(save)
+    plans = state.live_plans(state.player.id)
+    if not plans:
+        typer.echo("No hiring plans.")
+    for plan in plans:
+        typer.echo(_plan_line(org_views.plan_out(state, plan, data)))
+
+
+@plan_app.command("update")
+def plan_update(
+    save: SaveOpt,
+    plan: Annotated[int, typer.Option(help="Plan id")],
+    owner: Annotated[int | None, typer.Option(help="New delegate")] = None,
+    target: Annotated[int | None, typer.Option(help="Hires wanted")] = None,
+    channel: Annotated[str | None, typer.Option(help="any|job_post|recruiter|network")] = None,
+    ratio: Annotated[float | None, typer.Option(help="Salary multiple of the ask")] = None,
+    equity_bp: Annotated[int | None, typer.Option("--equity-bp", help="Equity, bp")] = None,
+    unit: Annotated[str | None, typer.Option(help="Unit id, or 'root'")] = None,
+) -> None:
+    """Change a plan; a paused plan restarts once its owner is on staff."""
+    path, data, state = _game(save)
+    current = state.plan(plan)
+    if current is None or current.status == "closed":
+        raise _fail(f"no hiring plan {plan}")
+    action = UpdatePlan(
+        _actor(state),
+        plan,
+        owner_id=current.owner_id if owner is None else owner,
+        role=current.role,
+        target=current.target if target is None else target,
+        channel=current.channel if channel is None else channel,  # type: ignore[arg-type]
+        ratio_bp=current.ratio_bp if ratio is None else _ratio_bp(ratio),
+        equity_bp=current.equity_bp if equity_bp is None else equity_bp,
+        unit_id=current.unit_id if unit is None else _unit_arg(unit),
+    )
+    result = _run(path, data, action)
+    updated = result.new_state.plan(plan)
+    assert updated is not None
+    typer.echo(_plan_line(org_views.plan_out(result.new_state, updated, data)))
+
+
+@plan_app.command("close")
+def plan_close(save: SaveOpt, plan: Annotated[int, typer.Option(help="Plan id")]) -> None:
+    """Close a plan (free). Offers it already made still get their answer."""
+    path, data, state = _game(save)
+    _run(path, data, ClosePlan(_actor(state), plan))
+    typer.echo(f"Closed hiring plan {plan}")
+
+
+@app.command()
+def morale(save: SaveOpt, person: Annotated[int, typer.Option(help="Person id")]) -> None:
+    """Why someone's morale is moving: this month's target, term by term (what you know)."""
+    path, data, _ = _game(save)
+    with repository.open_session(path) as session:
+        state = repository.load_state(session)
+        cash = company_cash(repository.ledger_balances(session), state.player.id)
+    projected = sum(a for _, _, a in monthly_costs(state, state.player.id, data.balance))
+    try:
+        b = org_views.morale_breakdown(state, state.player.id, person, data, cash, projected)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    name = views.person_name(state.person(person))
+    manager = f"; manager {b.manager_name}" if b.manager_name else ""
+    typer.echo(f"{name}: morale {b.morale:.1f}, heading for {b.target:.1f}{manager}")
+    for t in b.terms:
+        typer.echo(f"  {t.label:<34} {t.value:+7.2f}")
 
 
 if __name__ == "__main__":

@@ -178,6 +178,7 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). The 
 | Network search | 10 |
 | Make an offer | 0 |
 | **M2:** Create or dissolve a unit | 2 |
+| **M2:** Move a team to another parent | 2 |
 | **M2:** Set a unit leader | 2 |
 | **M2:** Move a person between units | 1 |
 | **M2:** Set a unit policy | 1 |
@@ -506,6 +507,7 @@ Each tag affects the other members of its holder's unit (not the holder), using 
 | Set or replace a unit's leader | −1 for each other member; −5 for a replaced leader who stays in the unit |
 | Dissolve a unit | −2 for each member; members and child teams move to the parent |
 | Create a unit | none |
+| Move a team under a department or the company | none; its members and child units go with it |
 
 ### 13.8 Raises and promotions (immediate actions)
 
@@ -529,6 +531,7 @@ Each tag affects the other members of its holder's unit (not the holder), using 
 - Delegate actions call the same `apply_action` with `actor` = the delegate, so energy, rules and the offer pitch (§7) apply. Their randomness uses stream `delegate`, key `(person_id, n)`, where `n` counts that delegate's actions this turn (ADR-0015).
 - **Quality emerges:** better `judgment_of_talent` narrows ranges more (§4), so a good recruiter picks better people; better `recruiting` lands more offers.
 - Each plan writes one inbox summary per turn when it acted ("Petra interviewed 4 software engineers and made 2 offers").
+- **Closing searches:** when a plan fills or closes, its delegate closes any job post it opened for that plan, unless another open plan for the same role uses it. A filled plan's job posts close in phase 2 (a `close_search` action by the delegate); a closed plan's close with the `close_plan` action. A job post another open (active or paused) plan for the same role uses stays open and passes to that plan, lowest plan id first.
 
 ### 13.11 What the API may explain
 

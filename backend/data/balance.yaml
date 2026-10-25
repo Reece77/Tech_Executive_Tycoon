@@ -125,6 +125,15 @@ founder: # founder build (formulas.md section 5)
     recruiter: 4 # engage a recruiter
     network: 10 # network search
     offer: 0
+    create_unit: 2 # create a department or team (M2, section 13.7)
+    dissolve_unit: 2 # dissolve a unit; members and child teams move to the parent (M2)
+    move_unit: 2 # move a team under a department or the company (M2, section 13.7)
+    set_leader: 2 # set, replace or remove a unit's leader (M2)
+    move_person: 1 # move a person to another unit (M2)
+    set_policy: 1 # set a unit's work-location policy (M2, section 13.9)
+    give_raise: 2 # change someone's salary (M2, section 13.8)
+    promote: 3 # promote someone one level (M2, section 13.8)
+    hiring_plan: 2 # create or change a hiring plan; closing one is free (M2, section 13.10)
 
 # --- Hiring (formulas.md section 7) -----------------------------------------------------
 hiring:
@@ -153,6 +162,8 @@ hiring:
   candidate_shelf_turns: 3 # turns a candidate stays available after their batch arrives
   lowball_ratio: 0.85 # ratio; offers below this share of the expectation are always declined
   max_offer_equity_bp: 200 # bp; most equity one offer may carry
+  pitch_per_recruiting: 0.3 # score per 10 points of the offer maker's recruiting above neutral (M2, 7)
+  pitch_neutral: 10 # attribute points; recruiting at which the pitch term is 0 (M2, 7)
   option_pool_bp: 1000 # bp; equity held by staff plus pending offers may not exceed this
   offer: # acceptance score and probability (7)
     w_salary: 4.0 # score per unit of (offer / expectation - 1)
@@ -198,3 +209,44 @@ resign:
 tags:
   reveal_bp_per_month: 500 # bp per hidden tag per month for employees
   reveal_bp_on_check: 1500 # bp per hidden tag on an interview or reference check
+
+# --- Organization (formulas.md section 13, M2) -----------------------------------------
+org:
+  department_unlock_headcount: 10 # people on staff (founder included) before departments unlock (13.1)
+  span_base: 5 # reports; span limit L = span_base + floor(leadership / span_per_leadership) (13.2)
+  span_per_leadership: 4 # attribute points of leadership per extra report in L (13.2)
+  manager_morale_slope: 0.8 # morale points per point of manager quality above 10 (13.4)
+  manager_morale_cap: 8 # morale points; W_mgr is clamped to [-cap, +cap] (13.4)
+  mentoring_neutral: 5 # attribute points; mentoring x S + bonus at which growth is unchanged (13.5)
+  mentoring_divisor: 20 # attribute points per +100% growth in M_growth (13.5)
+  mentor_tag_bonus: 3 # attribute points added when another member of the unit is a mentor (13.5)
+  growth_mult_min: 0.75 # multiplier; floor of M_growth (13.5)
+  growth_mult_max: 1.5 # multiplier; ceiling of M_growth (13.5)
+  tag_morale: # morale points each holder adds to every other member's morale target (13.6)
+    culture_carrier: 2
+    credit_taker: -2
+    toxic_high_performer: -3
+  tag_morale_cap: # morale points; the sum per tag is capped at this (same sign as the effect) (13.6)
+    culture_carrier: 2
+    credit_taker: -4
+    toxic_high_performer: -6
+  reorg: # one-off morale points (13.7)
+    move: -2 # the person moved to another unit
+    new_leader_members: -1 # each other member when a unit's leader is set or replaced
+    replaced_leader: -5 # a replaced or removed leader who stays in the unit
+    dissolve_members: -2 # each member of a dissolved unit
+  raise_morale: 3 # morale points, once, for a raise of at least raise_threshold_bp (13.8)
+  raise_threshold_bp: 500 # bp; a raise this large or larger earns raise_morale (13.8)
+  raise_cooldown_turns: 12 # turns; raise_morale is given at most once in this many turns per person (13.8)
+  pay_cut_morale: -10 # morale points, once, for any pay cut (13.8)
+  promote_morale: 5 # morale points, once, for a promotion (13.8)
+  remote: # work-location policy morale terms (13.9)
+    sociable_at: 14 # attribute points; sociability at or above this dislikes remote work
+    sociable_morale: -3 # morale points for a sociable remote worker
+    solitary_at: 7 # attribute points; sociability at or below this prefers remote work
+    solitary_morale: 2 # morale points for a solitary remote worker
+
+delegates: # delegated hiring (formulas.md section 13.10, ADR-0015)
+  energy_per_month: 100 # energy; each delegate's monthly budget, reset with the founder's
+  scout_cost: 20 # energy; one scouting pass over a plan's candidates; also the reserve kept back while interviewing
+  max_ratio_bp: 12000 # bp of the ask; highest salary ratio a plan may offer (1.2x)

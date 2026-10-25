@@ -1,8 +1,10 @@
 """Load live GameState from a save and write back only what changed.
 
 Live state only (M1b sweep rule 1): staff (active and notice employments), open candidates,
-open searches, pending offers, and the people and knowledge records they need. Records that
-leave the live set keep their rows, with a status, in the database.
+open searches, pending offers, active org units, hiring plans that are not closed, and the
+people and knowledge records they need (including whoever made a pending offer and every
+plan's owner, who may have left). Records that leave the live set keep their rows, with a
+status, in the database.
 
 `sync_state(old, new)` compares the state that was loaded with the state the sim returned
 and writes inserts and in-place updates for the differences, so a turn costs time in
@@ -34,16 +36,22 @@ from tst.db.mappers import (
     person_state_from_row,
     person_state_to_row,
     person_to_rows,
+    plan_from_row,
+    plan_to_row,
     reveal_from_rows,
     reveal_to_rows,
     search_from_row,
     search_to_row,
+    unit_from_row,
+    unit_to_row,
 )
 from tst.db.models import (
     CandidateRow,
     CompanyRow,
     EmploymentRow,
+    HiringPlanRow,
     OfferRow,
+    OrgUnitRow,
     PersonHiddenRow,
     PersonInterestRow,
     PersonPersonalityRow,
@@ -99,7 +107,24 @@ def load_state(session: Session) -> GameState:
             .order_by(CandidateRow.person_id)
         )
     ]
-    live_ids = sorted({e.person_id for e in employments} | {c.person_id for c in candidates})
+    offers = [
+        offer_from_row(r)
+        for r in session.scalars(
+            select(OfferRow).where(OfferRow.status == "pending").order_by(OfferRow.id)
+        )
+    ]
+    plans = [
+        plan_from_row(r)
+        for r in session.scalars(
+            select(HiringPlanRow).where(HiringPlanRow.status != "closed").order_by(HiringPlanRow.id)
+        )
+    ]
+    live_ids = sorted(
+        {e.person_id for e in employments}
+        | {c.person_id for c in candidates}
+        | {o.actor_id for o in offers}
+        | {p.owner_id for p in plans}
+    )
 
     def in_live(column: Any) -> Any:
         return column.in_(live_ids)
@@ -163,12 +188,14 @@ def load_state(session: Session) -> GameState:
             )
         ),
         candidates=tuple(candidates),
-        offers=tuple(
-            offer_from_row(r)
+        offers=tuple(offers),
+        units=tuple(
+            unit_from_row(r)
             for r in session.scalars(
-                select(OfferRow).where(OfferRow.status == "pending").order_by(OfferRow.id)
+                select(OrgUnitRow).where(OrgUnitRow.status == "active").order_by(OrgUnitRow.id)
             )
         ),
+        plans=tuple(plans),
         person_states=tuple(
             person_state_from_row(r)
             for r in session.scalars(
@@ -247,10 +274,17 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     if skill_updates:
         session.execute(update(PersonSkillRow), skill_updates)
 
+    # Units before employments and plans, which reference them; plans before offers.
+    for unit in _changed(old.units, new.units, lambda u: u.id):
+        session.merge(unit_to_row(unit))
+    session.flush()
     for employment in _changed(old.employments, new.employments, lambda e: e.id):
         session.merge(employment_to_row(employment))
     for search in _changed(old.searches, new.searches, lambda s: s.id):
         session.merge(search_to_row(search))
+    session.flush()
+    for plan in _changed(old.plans, new.plans, lambda p: p.id):
+        session.merge(plan_to_row(plan))
     session.flush()
     for candidate in _changed(old.candidates, new.candidates, lambda c: c.person_id):
         session.merge(candidate_to_row(candidate))

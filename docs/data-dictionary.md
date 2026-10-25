@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 4 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 6 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -20,11 +20,13 @@ One row describing the save. Current-state table (updated in place each turn).
 | `created_turn` | INTEGER | no | Turn the save was created at (0). |
 | `current_turn` | INTEGER | no | Next turn to be played. Incremented once per committed turn. |
 | `data_hashes` | JSON | no | `{file name: SHA-256}` of the data files used to create the save (line endings normalized), so later data changes can be detected (ADR-0008). |
-| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (4 after `0004_inbox`). |
+| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (6 after `0006_search_plan`). |
 | `next_person_id` | INTEGER | no | Next person id to assign. Ids are never reused, because people leave the live state (M1b sweep rule 2). |
 | `next_search_id` | INTEGER | no | Next search id. |
 | `next_offer_id` | INTEGER | no | Next offer id. |
 | `next_employment_id` | INTEGER | no | Next employment id. |
+| `next_unit_id` | INTEGER | no | Next org unit id (M2a). |
+| `next_plan_id` | INTEGER | no | Next hiring plan id (M2a). |
 
 ## company
 
@@ -38,6 +40,7 @@ The player company and (from M5) all rivals, handled by the same code (ADR-0010)
 | `stage` | INTEGER | no | Company stage, 0 (solo founder) to 5 (conglomerate), spec §3. |
 | `founded_turn` | INTEGER | no | Turn the company was founded. |
 | `mission` | JSON | no | List of two `interests.yaml` keys (formulas.md §7); empty for saves made before M1b. |
+| `work_policy` | VARCHAR(16) | no | The company root's work-location policy, `office` (default) or `remote` (formulas.md §13.9, M2a). Units without their own policy inherit it. |
 
 Cash is not stored here; it is the `1000_cash` ledger balance (ADR-0003).
 
@@ -101,7 +104,9 @@ Decisions applied each turn, for replay and narrative. Append-only history.
 | `company_id` | INTEGER FK → company.id | no | Deciding company. |
 | `kind` | VARCHAR(64) | no | `turn_decisions` for the per-turn `Decisions` object. |
 | `payload` | JSON | no | Serialized `Decisions` (includes its `version`), or an action's fields. |
-| `seq` | INTEGER | yes | Order of a player action within its turn (1, 2, 3…; ADR-0014); null for the per-turn `turn_decisions` row. |
+| `seq` | INTEGER | yes | Order of an action within its turn (1, 2, 3…; ADR-0014): player actions first, then delegate actions in the order phase 2 took them; null for the per-turn `turn_decisions` row. |
+| `source` | VARCHAR(16) | no | `player` (re-applied by replay) or `delegate` (taken in phase 2, recomputed by replay and checked against this row; ADR-0015). Default `player` (M2a). |
+| `actor_id` | INTEGER | yes | Person who took the action (the founder or a delegate); null for `turn_decisions` and `new_game`. No FK constraint (added by `ALTER TABLE` in `0005_org`). |
 
 Index `ix_decision_log_turn (turn)`.
 
@@ -196,12 +201,12 @@ Behavior tags an observer has learned (ADR-0007). Primary key `(person_id, obser
 
 ### person_state
 
-Energy, stress and morale; one row per person who has any (M1b: the founder's energy, employees' morale).
+Energy, stress and morale; one row per person who has any (the founder's and delegates' energy, employees' morale).
 
 | Column | Type | Null | Description |
 | --- | --- | --- | --- |
 | `person_id` | INTEGER PK, FK → person.id | no | Person. |
-| `energy` | FLOAT | yes | Founder energy left this month (formulas.md §6); reset after phase 12. |
+| `energy` | FLOAT | yes | Energy left this month for the founder (formulas.md §6) and for delegates who own a hiring plan (§13.10); reset after phase 12. Null for everyone else. |
 | `stress` | FLOAT | yes | 0–100 (M1b+). |
 | `morale` | FLOAT | yes | 0–100 for employees; null for the founder (formulas.md §9). |
 
@@ -222,6 +227,8 @@ A person's job at a company. Rows are closed (`status = ended`, `end_turn`, `end
 | `end_turn` | INTEGER | yes | Last turn employed, once known. |
 | `status` | VARCHAR(16) | no | `active`, `notice` or `ended`; headcount counts `active` and `notice`. |
 | `end_reason` | VARCHAR(16) | yes | `resigned`, `fired`, `retired`, or null while employed. |
+| `unit_id` | INTEGER | yes | Org unit (`org_unit.id`) the person belongs to; null = the company root, where the founder always is (formulas.md §13.1, M2a). No FK constraint (added by `ALTER TABLE`). |
+| `last_raise_turn` | INTEGER | yes | Turn of the last raise that earned the raise morale bonus (§13.8); null if none. |
 
 ### relationship
 
@@ -250,6 +257,7 @@ Live records are loaded into the game state; finished ones keep their rows with 
 | `opened_turn` | INTEGER | no | Turn opened. |
 | `status` | VARCHAR(16) | no | `open` or `closed`. Network and recruiter searches close after their one batch. |
 | `closed_turn` | INTEGER | yes | Turn closed. |
+| `plan_id` | INTEGER | yes | Hiring plan whose delegate opened it, or that inherited it (`hiring_plan.id`); null for the player's searches. A filled or closed plan's job posts close (formulas.md §13.10). No FK constraint (added by `ALTER TABLE` in `0006_search_plan`). |
 
 Index `ix_search_company_status (company_id, status)`.
 
@@ -267,6 +275,7 @@ A generated person available to one company. Primary key `person_id`.
 | `expires_turn` | INTEGER | no | They leave in phase 12 of this turn unless hired. |
 | `status` | VARCHAR(16) | no | `open`, `hired`, `declined`, `expired`, or `withdrawn` (reserved for M2). |
 | `resolved_turn` | INTEGER | yes | Turn the status left `open`. |
+| `interviewed_turn` | INTEGER | yes | Turn the company first interviewed them (founder or delegate); an offer needs one (ADR-0016, M2a). Backfilled from `decision_log` by `0005_org`. |
 
 Index `ix_candidate_company_status (company_id, status)`.
 
@@ -283,6 +292,8 @@ Index `ix_candidate_company_status (company_id, status)`.
 | `made_turn` | INTEGER | no | Turn made; resolved in phase 1 of that turn's Continue. |
 | `status` | VARCHAR(16) | no | `pending`, `accepted`, `declined`, or `withdrawn` (by the player). |
 | `resolved_turn` | INTEGER | yes | Turn resolved or withdrawn. |
+| `plan_id` | INTEGER | yes | Hiring plan a delegate made it under (`hiring_plan.id`); null for the player's offers (M2a). |
+| `unit_id` | INTEGER | yes | Org unit the hire joins; null = the company root (M2a). |
 
 Index `ix_offer_company_status (company_id, status)`.
 
@@ -295,6 +306,48 @@ Month-end morale per employee, append-only. Primary key `(person_id, turn)`.
 | `person_id` | INTEGER FK → person.id | no | Employee. |
 | `turn` | INTEGER | no | Turn closed. |
 | `morale` | FLOAT | no | Morale after phase 8. |
+
+## Organization (migration `0005_org`, M2a)
+
+Active units and hiring plans that are not closed are loaded into the game state; dissolved units and closed plans keep their rows with a status.
+
+### org_unit
+
+A department or team (formulas.md §13.1). The company root is implicit and has no row. Index `ix_org_unit_company_status (company_id, status)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Unit id. |
+| `company_id` | INTEGER FK → company.id | no | Owning company. |
+| `kind` | VARCHAR(16) | no | `department` (parent is the root) or `team` (parent is the root or a department). |
+| `name` | VARCHAR(64) | no | Display name, unique among the company's active units. |
+| `parent_id` | INTEGER FK → org_unit.id | yes | Parent unit; null = the company root. |
+| `leader_id` | INTEGER FK → person.id | yes | Leader, a member of this unit who leads no other; null if none. |
+| `policy` | VARCHAR(16) | yes | `office` or `remote`; null = inherit the parent's (§13.9). |
+| `created_turn` | INTEGER | no | Turn created. |
+| `status` | VARCHAR(16) | no | `active` or `dissolved`. |
+| `dissolved_turn` | INTEGER | yes | Turn dissolved. |
+
+### hiring_plan
+
+Delegated hiring (formulas.md §13.10, ADR-0015). Index `ix_hiring_plan_company_status (company_id, status)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Plan id; plans act in id order in phase 2. |
+| `company_id` | INTEGER FK → company.id | no | Hiring company. |
+| `owner_id` | INTEGER FK → person.id | no | The delegate (any staff member except the founder). |
+| `unit_id` | INTEGER FK → org_unit.id | yes | Unit the hires join; null = the company root. |
+| `role` | VARCHAR(64) | no | `roles.yaml` role hired for. |
+| `target` | INTEGER | no | Hires wanted in total. |
+| `channel` | VARCHAR(16) | no | `job_post`, `recruiter`, `network`, or `any` (searches as a job post). |
+| `ratio_bp` | INTEGER | no | Salary offered as basis points of the candidate's ask, at most `delegates.max_ratio_bp`. |
+| `equity_bp` | INTEGER | no | Equity per offer, in basis points. |
+| `created_turn` | INTEGER | no | Turn created. |
+| `status` | VARCHAR(16) | no | `active`, `paused` (its owner left), `filled` (target reached), or `closed`. |
+| `hired` | INTEGER | no | Offers made under the plan that were accepted. |
+| `closed_turn` | INTEGER | yes | Turn closed. |
+| `last_activity` | JSON | yes | `{turn, searches, interviews, scouted, offers}` for the last turn the delegate worked the plan. |
 
 ## Inbox (migration `0004_inbox`, M1b)
 

@@ -12,7 +12,7 @@ from tst.db.repository import create_save, open_session, replay_save, run_action
 from tst.db.state_io import load_state
 from tst.loader import LoadedData
 from tst.sim.actions import Interview, MakeOffer, OpenSearch
-from tst.sim.errors import OptionPoolError
+from tst.sim.errors import InsufficientEnergyError, OptionPoolError
 from tst.sim.state import GameState
 
 
@@ -22,15 +22,18 @@ def state_of(path: Path) -> GameState:
 
 
 def offer_everyone(path: Path, loaded: LoadedData, ratio: float, equity_bp: int) -> None:
-    """Offer ratio x the ask to every open candidate without an offer, best levels first."""
+    """Offer ratio x the ask to every open candidate without an offer, interviewing first
+    (ADR-0016) while the founder has energy."""
     state = state_of(path)
     for c in state.candidates:
         if state.pending_offer_for(c.person_id) is not None:
             continue
         ask = state.person(c.person_id).salary_expectation_cents or 0
         try:
+            if c.interviewed_turn is None:
+                run_action(path, loaded, Interview(1, c.person_id))
             run_action(path, loaded, MakeOffer(1, c.person_id, round(ask * ratio), equity_bp))
-        except OptionPoolError:
+        except (OptionPoolError, InsufficientEnergyError):
             return
 
 

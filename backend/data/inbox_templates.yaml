@@ -33,3 +33,16 @@ templates:
   out_of_cash:
     title: "You are out of cash"
     body: "Cash stands at {cash_cents}. Payroll will keep running, but the team will notice."
+  # --- Organization (M2a) ---
+  unit_leader_left:
+    title: "{unit} has no leader"
+    body: "{name} has left, so {unit} has no leader. Its members report one level up until you appoint one."
+  plan_paused:
+    title: "Hiring plan paused"
+    body: "{name} has left, so the {role} hiring plan is paused. Give it a new owner to restart it."
+  plan_filled:
+    title: "Hiring plan filled"
+    body: "{name} has made all {target} hires for the {role} plan."
+  plan_activity:
+    title: "{name} worked on the {role} plan"
+    body: "{name} {activity}."

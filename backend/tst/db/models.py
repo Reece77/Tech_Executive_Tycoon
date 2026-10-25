@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 6
 
 
 class Base(DeclarativeBase):
@@ -35,6 +35,8 @@ class SaveMetaRow(Base):
     next_search_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_offer_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_employment_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_unit_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_plan_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
 
 
 class CompanyRow(Base):
@@ -46,6 +48,7 @@ class CompanyRow(Base):
     stage: Mapped[int] = mapped_column(Integer, nullable=False)
     founded_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     mission: Mapped[list[str]] = mapped_column(JSON, nullable=False, server_default="[]")
+    work_policy: Mapped[str] = mapped_column(String(16), nullable=False, server_default="office")
 
 
 class AccountRow(Base):
@@ -102,6 +105,8 @@ class DecisionLogRow(Base):
     kind: Mapped[str] = mapped_column(String(64), nullable=False)
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     seq: Mapped[int | None] = mapped_column(Integer, nullable=True)  # action order in a turn
+    source: Mapped[str] = mapped_column(String(16), nullable=False, server_default="player")
+    actor_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # person id (no FK, 0005)
 
 
 class TurnLogRow(Base):
@@ -230,6 +235,8 @@ class EmploymentRow(Base):
     end_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     end_reason: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # org_unit id (no FK, 0005)
+    last_raise_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class RelationshipRow(Base):
@@ -256,6 +263,7 @@ class SearchRow(Base):
     opened_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    plan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # hiring_plan id (0006)
 
 
 class CandidateRow(Base):
@@ -270,6 +278,7 @@ class CandidateRow(Base):
     expires_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    interviewed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class OfferRow(Base):
@@ -285,6 +294,8 @@ class OfferRow(Base):
     made_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    plan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # hiring_plan id (no FK)
+    unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # org_unit id (no FK)
 
 
 class PersonMoraleLogRow(Base):
@@ -315,3 +326,46 @@ class InboxItemRow(Base):
     link_kind: Mapped[str | None] = mapped_column(String(16), nullable=True)
     link_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     read: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+
+
+# --- Organization (M2a, migration 0005_org) --------------------------------------------------
+
+
+class OrgUnitRow(Base):
+    """A department or team. The company root has no row (formulas.md 13.1)."""
+
+    __tablename__ = "org_unit"
+    __table_args__ = (Index("ix_org_unit_company_status", "company_id", "status"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    name: Mapped[str] = mapped_column(String(64), nullable=False)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("org_unit.id"), nullable=True)
+    leader_id: Mapped[int | None] = mapped_column(ForeignKey("person.id"), nullable=True)
+    policy: Mapped[str | None] = mapped_column(String(16), nullable=True)  # None = inherit
+    created_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    dissolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class HiringPlanRow(Base):
+    """Delegated hiring for one unit and role (formulas.md 13.10, ADR-0015)."""
+
+    __tablename__ = "hiring_plan"
+    __table_args__ = (Index("ix_hiring_plan_company_status", "company_id", "status"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("person.id"), nullable=False)
+    unit_id: Mapped[int | None] = mapped_column(ForeignKey("org_unit.id"), nullable=True)
+    role: Mapped[str] = mapped_column(String(64), nullable=False)
+    target: Mapped[int] = mapped_column(Integer, nullable=False)
+    channel: Mapped[str] = mapped_column(String(16), nullable=False)
+    ratio_bp: Mapped[int] = mapped_column(Integer, nullable=False)
+    equity_bp: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    hired: Mapped[int] = mapped_column(Integer, nullable=False)
+    closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    last_activity: Mapped[dict[str, int] | None] = mapped_column(JSON, nullable=True)

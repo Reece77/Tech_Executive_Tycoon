@@ -11,6 +11,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from typing import Final
 
+from tst.sim.actions import Action
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
@@ -25,6 +26,9 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
+from tst.sim.org.delegates import run_delegates
+from tst.sim.org.rules import manager_terms, org_view
+from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
@@ -43,6 +47,8 @@ class TurnResult:
     log_items: tuple[LogItem, ...]
     snapshot: TurnSnapshot
     event_requests: tuple[EventRequest, ...]
+    # Phase 2's delegate actions as (company id, action), in the order taken (ADR-0015).
+    delegate_actions: tuple[tuple[int, Action], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +65,7 @@ class TurnContext:
     snapshot: TurnSnapshot | None = None
     event_requests: tuple[EventRequest, ...] = ()
     payroll: Mapping[int, Cents] = field(default_factory=dict)  # per company, phase 6
+    delegate_actions: tuple[tuple[int, Action], ...] = ()  # phase 2
 
     @property
     def turn(self) -> int:
@@ -87,12 +94,17 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     Player actions themselves were applied at once between turns; Decisions stays empty in M1.
     """
     state, ended = phases.end_notices(ctx.state)
+    state, detached = detach_departed(state, ctx.data)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
-    return replace(ctx, state=state).post(*entries).log(*ended, *resolved)
+    return replace(ctx, state=state).post(*entries).log(*ended, *detached, *resolved)
 
 
-def rival_decisions(ctx: TurnContext) -> TurnContext:  # M5
-    return ctx
+def rival_decisions(ctx: TurnContext) -> TurnContext:
+    """Phase 2: delegates work their hiring plans (ADR-0015); rivals join in M5."""
+    state, entries, logs, taken = run_delegates(
+        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
+    )
+    return replace(ctx, state=state, delegate_actions=taken).post(*entries).log(*logs)
 
 
 def research_progress(ctx: TurnContext) -> TurnContext:  # v2
@@ -118,14 +130,21 @@ def financing(ctx: TurnContext) -> TurnContext:  # M4
 
 
 def people_updates(ctx: TurnContext) -> TurnContext:
-    """Growth and aging for everyone on staff (formulas.md section 3), by person id.
+    """Growth and aging for everyone on staff (formulas.md section 3), by person id, with
+    each manager's mentoring multiplier (13.5) from the reporting lines at the phase start.
 
     Then morale, resignations and retirements, monthly tag reveals, and employed_month
     narrowing (formulas.md sections 4, 9, 10). Relationships arrive later.
     """
-    staff_ids = {e.person_id for e in ctx.state.employments if e.counts_as_staff}
+    mentoring: dict[int, float] = {}
+    for company in ctx.state.companies:
+        view = org_view(ctx.state, company.id)
+        for person_id in view.unit_of:
+            mentoring[person_id] = manager_terms(ctx.state, view, person_id, ctx.balance).growth
     people = tuple(
-        grow_person(p, ctx.turn, ctx.rng, ctx.data, ctx.balance) if p.id in staff_ids else p
+        grow_person(p, ctx.turn, ctx.rng, ctx.data, ctx.balance, mentoring[p.id])
+        if p.id in mentoring
+        else p
         for p in sorted(ctx.state.people, key=lambda p: p.id)
     )
     state = replace(ctx.state, people=people)
@@ -230,7 +249,7 @@ def advance_turn(
         ctx = phase(ctx)
     if ctx.snapshot is None:
         raise RuntimeError("snapshot phase did not run")
-    # Founder energy resets for the new month after phase 12 (ADR-0014).
+    # Founder and delegate energy reset for the new month after phase 12 (ADR-0014).
     final = phases.reset_energy(ctx.state, balance)
     return TurnResult(
         new_state=replace(final, turn=state.turn + 1),
@@ -238,4 +257,5 @@ def advance_turn(
         log_items=ctx.log_items,
         snapshot=ctx.snapshot,
         event_requests=ctx.event_requests,
+        delegate_actions=ctx.delegate_actions,
     )

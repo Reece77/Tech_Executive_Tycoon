@@ -149,7 +149,7 @@ def test_checks_need_an_open_candidate(loaded: LoadedData) -> None:
 
 
 def test_offers_withdraw_and_remake(loaded: LoadedData) -> None:
-    state = with_candidates(loaded, fresh_game(loaded), 1)
+    state = with_candidates(loaded, fresh_game(loaded), 1, interviewed=True)
     offered = act(loaded, state, MakeOffer(1, 2, 9_000_000, 50)).new_state
     (offer,) = offered.offers
     assert (offer.id, offer.candidate_id, offer.status, offer.made_turn) == (1, 2, "pending", 0)
@@ -170,7 +170,7 @@ def test_offers_withdraw_and_remake(loaded: LoadedData) -> None:
 
 
 def test_option_pool_and_per_offer_cap(loaded: LoadedData) -> None:
-    state = with_candidates(loaded, fresh_game(loaded), 6)
+    state = with_candidates(loaded, fresh_game(loaded), 6, interviewed=True)
     with pytest.raises(OptionPoolError, match="at most 200 bp"):
         act(loaded, state, MakeOffer(1, 2, 9_000_000, 201))
     # Staff equity counts: an employee already holds 300 bp.

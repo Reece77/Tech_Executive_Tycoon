@@ -15,23 +15,18 @@ from tst.sim.hiring.formulas import (
     ROLL_RANGE,
     acceptance_probability,
     benefits_cents,
-    fit_term,
     is_lowball,
-    market_mid_cents,
     monthly_salary_cents,
     morale_noise_sd,
     morale_step,
-    morale_target,
     offer_score,
-    pay_term,
     recruiter_fee_cents,
     resignation_bp,
     retirement_bp,
     roll_succeeds,
-    runway_term,
 )
 from tst.sim.hiring.models import Candidate, OfferStatus, PersonState, Search
-from tst.sim.hiring.rules import matching_interests
+from tst.sim.hiring.rules import matching_interests, offer_pitch
 from tst.sim.ledger import (
     BENEFITS,
     CASH,
@@ -46,6 +41,8 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
+from tst.sim.org.morale import morale_terms
+from tst.sim.org.rules import is_remote, org_view
 from tst.sim.people.generator import generate_pool
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
@@ -58,6 +55,7 @@ from tst.sim.state import (
     with_offer,
     with_person,
     with_person_state,
+    with_plan,
     with_reveal,
     with_search,
 )
@@ -103,6 +101,31 @@ def end_notices(state: GameState) -> tuple[GameState, tuple[LogItem, ...]]:
     return state, tuple(logs)
 
 
+def _count_plan_hire(
+    state: GameState, plan_id: int | None, data: GameData
+) -> tuple[GameState, list[LogItem]]:
+    """An accepted plan offer counts toward the plan; reaching the target fills it (13.10)."""
+    plan = state.plan(plan_id) if plan_id is not None else None
+    if plan is None or plan.status == "closed":
+        return state, []
+    hired = plan.hired + 1
+    fills = plan.status == "active" and hired >= plan.target
+    state = with_plan(state, replace(plan, hired=hired, status="filled" if fills else plan.status))
+    if not fills:
+        return state, []
+    owner = state.person(plan.owner_id)
+    return state, [
+        inbox_item(
+            state.turn,
+            plan.company_id,
+            "plan_filled",
+            name=_name(owner),
+            role=data.role(plan.role).label.lower(),
+            target=plan.target,
+        )
+    ]
+
+
 def _role_label(person: Person, data: GameData) -> str:
     return data.role(person.role).label.lower() if person.role else "open"
 
@@ -132,6 +155,7 @@ def resolve_offers(
                 ambition=person.personality["ambition"],
                 stage=company.stage,
                 offer=hiring.offer,
+                pitch=offer_pitch(state, offer.actor_id, hiring),
             )
             accepted = draw < acceptance_probability(score, hiring.offer)
         status: OfferStatus = "accepted" if accepted else "declined"
@@ -156,6 +180,7 @@ def resolve_offers(
             continue
         emp_id, ids = state.next_ids.take("employment")
         state = replace(state, next_ids=ids)
+        joins = state.unit(offer.unit_id) if offer.unit_id is not None else None
         state = with_employment(
             state,
             Employment(
@@ -169,8 +194,10 @@ def resolve_offers(
                 start_turn=state.turn,
                 end_turn=None,
                 status="active",
+                unit_id=joins.id if joins is not None and joins.status == "active" else None,
             ),
         )
+        state, filled = _count_plan_hire(state, offer.plan_id, data)
         state = with_person_state(
             state, PersonState(person_id=person.id, morale=balance.morale.new_hire)
         )
@@ -204,6 +231,7 @@ def resolve_offers(
                 salary_cents=offer.salary_cents,
             )
         )
+        logs += filled
     return state, tuple(entries), tuple(logs)
 
 
@@ -215,14 +243,17 @@ def monthly_costs(
 ) -> tuple[tuple[str, AccountCode, Cents], ...]:
     """(memo label, account, amount) of one company's phase-6 costs for the current state.
 
-    Phase 6 posts exactly these; the Overview shows them as this month's projection.
+    Phase 6 posts exactly these; the Overview shows them as this month's projection. Remote
+    staff cost no office fee (formulas.md 13.9).
     """
     staff = state.staff(company_id)
     salaries = sum(monthly_salary_cents(e.salary_cents) for e in staff)
     benefits = sum(
         benefits_cents(monthly_salary_cents(e.salary_cents), balance.payroll) for e in staff
     )
-    office = balance.payroll.office_cost_per_head_cents * len(staff)
+    office = balance.payroll.office_cost_per_head_cents * sum(
+        1 for e in staff if not is_remote(state, e)
+    )
     job_posts = [s for s in state.open_searches(company_id) if s.channel == "job_post"]
     return (
         ("Salaries", SALARIES, salaries),
@@ -233,14 +264,16 @@ def monthly_costs(
     )
 
 
-def employment_monthly_cost_cents(employment: Employment, balance: Balance) -> Cents:
-    """Salary, benefits and office for one employment per month (formulas.md section 8)."""
+def employment_monthly_cost_cents(
+    employment: Employment, balance: Balance, *, remote: bool = False
+) -> Cents:
+    """Salary, benefits and office for one employment per month (formulas.md section 8).
+
+    Remote staff cost no office fee (13.9).
+    """
     salary = monthly_salary_cents(employment.salary_cents)
-    return (
-        salary
-        + benefits_cents(salary, balance.payroll)
-        + balance.payroll.office_cost_per_head_cents
-    )
+    office = 0 if remote else balance.payroll.office_cost_per_head_cents
+    return salary + benefits_cents(salary, balance.payroll) + office
 
 
 def payroll(state: GameState, balance: Balance) -> tuple[tuple[LedgerEntry, ...], dict[int, Cents]]:
@@ -281,30 +314,25 @@ def morale_and_departures(
     current: Mapping[tuple[int, AccountCode], Cents],
 ) -> tuple[GameState, tuple[LogItem, ...]]:
     """Morale update (stream morale), then resignation (resign) or retirement (retire) rolls
-    for active employees, by person id. The founder is excluded (formulas.md sections 9-10)."""
+    for active employees, by person id. The founder is excluded (formulas.md sections 9-10).
+
+    The M2 terms (manager, teammates, remote; section 13) use the reporting lines at the start
+    of the phase.
+    """
     logs: list[LogItem] = []
     morale_cfg = balance.morale
+    views = {c.id: org_view(state, c.id) for c in state.companies}
     for employment, person in _employees(state):
         company = state.company(employment.company_id)
-        role = data.role(employment.role)
-        market_mid = market_mid_cents(
-            role.salary_band_mid_cents[employment.level],
-            data.region(person.region).salary_multiplier_bp,
-        )
-        target = morale_target(
-            pay_term(employment.salary_cents, market_mid, morale_cfg),
-            fit_term(
-                matching_interests(person, company.mission),
-                style_mismatch=person.work_style != role.work_style,
-                morale=morale_cfg,
-            ),
-            runway_term(
-                account_balance(opening, company.id, CASH),
-                account_balance(current, company.id, CASH),
-                morale_cfg,
-            ),
-            morale_cfg,
-        )
+        target = morale_terms(
+            state,
+            views[company.id],
+            employment,
+            balance,
+            data,
+            account_balance(opening, company.id, CASH),
+            account_balance(current, company.id, CASH),
+        ).target
         ps = state.person_state(person.id)
         start = morale_cfg.new_hire if ps.morale is None else ps.morale
         gen = rng.stream(state.turn, "morale", person.id)
@@ -545,8 +573,14 @@ def _actor(state: GameState, search: Search) -> Person | None:
 
 
 def reset_energy(state: GameState, balance: Balance) -> GameState:
-    """Founder energy resets after phase 12 for the new month (ADR-0014)."""
+    """Founder and delegate energy reset after phase 12 for the new month (ADR-0014, 0015)."""
+    founders = {p.id for p in state.people if p.is_founder}
     for ps in state.person_states:
         if ps.energy is not None:
-            state = with_person_state(state, replace(ps, energy=balance.founder.energy_per_month))
+            cap = (
+                balance.founder.energy_per_month
+                if ps.person_id in founders
+                else balance.delegates.energy_per_month
+            )
+            state = with_person_state(state, replace(ps, energy=cap))
     return state

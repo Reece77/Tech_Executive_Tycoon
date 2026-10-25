@@ -1,8 +1,10 @@
 """Golden seeds and determinism (ADR-0002).
 
 Seeds 1..10 are played for 24 turns through the full persistence path, as an
-ex_big_tech_founders game following a scripted hiring plan (M1b), and their per-turn
-snapshots are compared with tests/golden/snapshots/seed_NN.json. The founder's current
+ex_big_tech_founders game following a scripted plan (M1b hiring; M2a interviews before every
+offer, two teams with leads at turn 6, a department once there are 10 staff, and a
+recruiter-led hiring plan), and their per-turn snapshots are compared with
+tests/golden/snapshots/seed_NN.json. The founder's current
 ability after each turn goes to seed_NN.founder_ca.json instead: CA is hidden (ADR-0007), so
 it never enters turn_snapshot, which the API returns. Never edit these files by hand:
 regenerate with `uv run pytest tests/golden --update-golden` and record why in CHANGELOG.md.
@@ -20,46 +22,129 @@ from sqlalchemy import select
 from tst.db.models import LedgerEntryRow, TurnSnapshotRow
 from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
 from tst.loader import LoadedData
-from tst.sim.actions import CloseSearch, MakeOffer, OpenSearch
+from tst.sim.actions import (
+    CloseSearch,
+    CreatePlan,
+    CreateUnit,
+    Interview,
+    MakeOffer,
+    MovePerson,
+    OpenSearch,
+    SetLeader,
+)
+from tst.sim.actions.org import departments_unlocked
 from tst.sim.calendar import format_turn
 from tst.sim.people.models import current_ability
+from tst.sim.state import GameState
 
 SNAPSHOT_DIR = Path(__file__).resolve().parent / "snapshots"
 SEEDS = range(1, 11)
 TURNS = 24
 
 
-TARGET_STAFF = 8  # the plan stops making offers at this many employees
+TARGET_STAFF = 10  # the player stops making offers at this many employees
 CLOSE_JOB_POST_TURN = 6
+TEAMS_TURN = 6  # two teams with leads (M2a)
+INTERVIEW_ENERGY = 6
+PLAN_ROLE = "software_engineer"  # the recruiter-led plan (M2a)
+PLAN_TARGET = 2
+PLAN_RATIO_BP = 11_000
+
+
+def _state(path: Path) -> GameState:
+    with open_session(path) as session:
+        return load_state(session)
+
+
+def _employees(state: GameState) -> list[int]:
+    return sorted(e.person_id for e in state.staff(1) if e.person_id != 1 and e.status == "active")
+
+
+def _unit_of(state: GameState, person_id: int) -> int | None:
+    employment = state.employment_of(person_id)
+    assert employment is not None
+    return employment.unit_id
+
+
+def _role_of(state: GameState, person_id: int) -> str:
+    employment = state.employment_of(person_id)
+    assert employment is not None
+    return employment.role
+
+
+def org_plan(path: Path, data: LoadedData, state: GameState) -> None:
+    """M2a: two teams with leads at turn 6, a department once departments unlock, and a
+    hiring plan run by the first recruiter on staff. Choices go by person id."""
+    actor = 1
+    if state.turn == TEAMS_TURN:
+        people = _employees(state)
+        for name, members in (("Platform", people[0::2]), ("Product", people[1::2])):
+            if not members:
+                continue
+            run_action(path, data, CreateUnit(actor, "team", name))
+            unit = max(_state(path).units, key=lambda u: u.id).id
+            for pid in members:
+                run_action(path, data, MovePerson(actor, pid, unit))
+            run_action(path, data, SetLeader(actor, unit, members[0]))
+    if (
+        state.turn > TEAMS_TURN
+        and not any(u.kind == "department" for u in state.units)
+        and departments_unlocked(state, 1, data.balance)
+    ):
+        run_action(path, data, CreateUnit(actor, "department", "Engineering"))
+        after = _state(path)
+        dept = max(after.units, key=lambda u: u.id).id
+        in_root = [p for p in _employees(after) if _unit_of(after, p) is None]
+        for pid in in_root:
+            run_action(path, data, MovePerson(actor, pid, dept))
+        if in_root:
+            run_action(path, data, SetLeader(actor, dept, in_root[0]))
+    recruiters = [p for p in _employees(state) if _role_of(state, p) == "recruiter"]
+    if recruiters and not state.plans and state.next_ids.plan == 1:
+        run_action(
+            path,
+            data,
+            CreatePlan(actor, recruiters[0], PLAN_ROLE, PLAN_TARGET, "any", PLAN_RATIO_BP),
+        )
 
 
 def hiring_plan(path: Path, data: LoadedData) -> None:
     """Scripted player actions between turns, exercising payroll, morale and departures.
 
-    Turn 0 opens all three channels. Every turn, while staff are below TARGET_STAFF, each open
-    candidate without an offer gets one: 1.10x the ask for odd ids, 0.90x for even ids (some
-    underpaid hires, to stress morale), no equity. The job post closes at turn 6.
+    Turn 0 opens all three channels, plus a network search for a recruiter. Every turn, while
+    staff are below TARGET_STAFF, open candidates without an offer are interviewed (while the
+    founder has the energy) and get one: 1.10x the ask for odd ids, 0.90x for even ids (some
+    underpaid hires, to stress morale), no equity. The job post closes at turn 6. Then the
+    M2a org steps (org_plan).
     """
-    with open_session(path) as session:
-        state = load_state(session)
+    state = _state(path)
     actor = 1
     if state.turn == 0:
         run_action(path, data, OpenSearch(actor, "software_engineer", "job_post"))
         run_action(path, data, OpenSearch(actor, "product_manager", "recruiter"))
         run_action(path, data, OpenSearch(actor, "designer", "network"))
+        run_action(path, data, OpenSearch(actor, "recruiter", "network"))
     if state.turn == CLOSE_JOB_POST_TURN:
         for search in state.searches:
-            run_action(path, data, CloseSearch(actor, search.id))
+            if search.actor_id == actor:
+                run_action(path, data, CloseSearch(actor, search.id))
     staff = len(state.staff(1)) - 1
+    energy = state.person_state(actor).energy or 0
     for candidate in state.candidates:
         if staff >= TARGET_STAFF:
             break
         if state.pending_offer_for(candidate.person_id) is not None:
             continue
+        if candidate.interviewed_turn is None:
+            if energy < INTERVIEW_ENERGY:
+                break
+            run_action(path, data, Interview(actor, candidate.person_id))
+            energy -= INTERVIEW_ENERGY
         ask = state.person(candidate.person_id).salary_expectation_cents or 0
         ratio = 1.10 if candidate.person_id % 2 else 0.90
         run_action(path, data, MakeOffer(actor, candidate.person_id, round(ask * ratio), 0))
         staff += 1  # count pending offers toward the target
+    org_plan(path, data, _state(path))
 
 
 def play(

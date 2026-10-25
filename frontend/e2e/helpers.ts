@@ -34,12 +34,32 @@ export async function continueMonth(page: Page) {
   await expect(date).not.toHaveText(before ?? '');
 }
 
-/** Send an offer to every candidate in the selected search that has none pending. */
-export async function offerToAll(page: Page, salaryMultiple = 1) {
+/** Founder energy left this month, from the top bar ("94 / 100"). */
+export async function energyLeft(page: Page): Promise<number> {
+  return Number(((await page.getByTestId('energy').textContent()) ?? '0').split('/')[0]);
+}
+
+/**
+ * Send an offer to every candidate in the selected search that has none pending,
+ * interviewing first (offers need an interview, ADR-0016) while energy lasts.
+ */
+export async function offerToAll(page: Page, salaryMultiple = 1, interviewEnergy = 6) {
   const panel = page.getByRole('complementary', { name: 'Make an offer' });
   for (;;) {
-    const offer = page.getByTestId('candidate-row').getByTestId('offer').first();
-    if ((await offer.count()) === 0) break;
+    const row = page
+      .getByTestId('candidate-row')
+      .filter({ has: page.getByTestId('offer') })
+      .first();
+    if ((await row.count()) === 0) break;
+    const offer = row.getByTestId('offer');
+    if (await offer.isDisabled()) {
+      await expect(offer).toHaveText('Interview first');
+      if ((await energyLeft(page)) < interviewEnergy) break;
+      const before = await energyLeft(page);
+      await row.getByTestId('interview').click();
+      await expect(page.getByTestId('energy')).not.toHaveText(`${before} / 100`);
+      await expect(offer).toBeEnabled();
+    }
     await offer.click();
     await expect(panel).toBeVisible();
     if (salaryMultiple !== 1) {

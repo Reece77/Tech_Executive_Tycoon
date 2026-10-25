@@ -26,6 +26,7 @@ def _hire_team(api: Client) -> list[dict[str, Any]]:
     api.post(f"{BASE}/advance")
     for c in api.get(f"{BASE}/recruitment/candidates"):
         ask = c["candidacy"]["salary_expectation_cents"]
+        api.post(f"{BASE}/recruitment/candidates/{c['person_id']}/interview")
         api.post(
             f"{BASE}/recruitment/candidates/{c['person_id']}/offer",
             {"salary_cents": round(ask * 1.5), "equity_bp": 50},
@@ -100,7 +101,7 @@ def test_people_fields_and_fire(api: Client) -> None:
     emp = hire["employment"]
     assert emp["tenure_months"] == 1 and emp["start_date_label"] == "Feb 2010"
     assert emp["market_rate_cents"] > 0 and emp["end_date_label"] is None
-    # No one was interviewed, but hiring reveals interests and work style (persisted).
+    # Interviews (needed before an offer) and hiring reveal interests and work style.
     assert all(p["interests"] is not None for p in staff)
     profile = api.get(f"{BASE}/people/{hire['person_id']}")
     assert profile["work_style"] is not None and profile["knowledge"]["profile_known"]
