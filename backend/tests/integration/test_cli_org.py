@@ -99,3 +99,14 @@ def test_errors_are_one_line(save_dir: Path) -> None:
     assert "no unit 9" in out
     assert "give --person or --remove" in run("unit", "lead", "--save", SAVE, "--unit", "1", code=1)
     assert "founder has no morale" in run("morale", "--save", SAVE, "--person", "1", code=1)
+
+
+def test_reparent_a_team(save_dir: Path) -> None:
+    run("unit", "create", "--save", SAVE, "--kind", "department", "--name", "Eng")
+    run("unit", "create", "--save", SAVE, "--kind", "team", "--name", "Web")
+    preview = run("unit", "reparent", "--save", SAVE, "--unit", "2", "--parent", "1", "--preview")
+    assert "Costs 2 energy." in preview and "No one's morale changes." in preview
+    run("unit", "reparent", "--save", SAVE, "--unit", "2", "--parent", "1")
+    assert "\n    Web (team 2" in run("org", "--save", SAVE)  # two levels down, under Eng
+    out = run("unit", "reparent", "--save", SAVE, "--unit", "1", "--parent", "root", code=1)
+    assert "only teams move" in out

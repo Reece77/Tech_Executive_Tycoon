@@ -58,6 +58,10 @@ class CreateUnitIn(BaseModel):
     parent_id: int | None = None
 
 
+class MoveUnitIn(BaseModel):
+    parent_id: int | None = Field(description="A department, or null for the company root")
+
+
 class SetLeaderIn(BaseModel):
     person_id: int | None = Field(description="Null removes the current leader")
 
@@ -74,7 +78,7 @@ class SetPolicyIn(BaseModel):
 class OrgChangeIn(BaseModel):
     """One reorganization to preview; fields as for the matching action endpoint."""
 
-    change: str  # create_unit | dissolve_unit | set_leader | move_person | set_policy
+    change: str  # create_unit | dissolve_unit | move_unit | set_leader | move_person | set_policy
     unit_id: int | None = None
     person_id: int | None = None
     kind: str | None = None

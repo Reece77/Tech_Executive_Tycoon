@@ -147,6 +147,7 @@ def hiring_meta(data: DataDep) -> HiringMetaOut:
 ORG_ACTION_ENERGY = (
     "create_unit",
     "dissolve_unit",
+    "move_unit",
     "set_leader",
     "move_person",
     "set_policy",

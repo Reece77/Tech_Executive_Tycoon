@@ -73,6 +73,16 @@ class DissolveUnit:
 
 
 @dataclass(frozen=True, slots=True)
+class MoveUnit:
+    """Re-parent a team under a department or the company root (13.1, 13.7)."""
+
+    actor_id: int
+    unit_id: int
+    parent_id: int | None  # a department, or None for the company root
+    kind: Literal["move_unit"] = "move_unit"
+
+
+@dataclass(frozen=True, slots=True)
 class SetLeader:
     actor_id: int
     unit_id: int
@@ -159,6 +169,7 @@ class Scout:
 type OrgAction = (
     CreateUnit
     | DissolveUnit
+    | MoveUnit
     | SetLeader
     | MovePerson
     | SetPolicy
@@ -293,6 +304,22 @@ def dissolve_unit(state: GameState, action: DissolveUnit, balance: Balance) -> O
             state = with_offer(state, replace(offer, unit_id=parent))
     dissolved = replace(unit, status="dissolved", dissolved_turn=state.turn, leader_id=None)
     return Outcome(with_unit(state, dissolved))
+
+
+def move_unit(state: GameState, action: MoveUnit, balance: Balance) -> Outcome:
+    """A team moves with its members and leader; nobody's morale changes (13.7)."""
+    company = acting_company(state, action.actor_id)
+    unit = active_unit(state, company, action.unit_id)
+    if unit.kind != "team":
+        raise OrgRuleError("only teams move; a department sits directly under the company")
+    if action.parent_id is not None:
+        parent = active_unit(state, company, action.parent_id)
+        if parent.kind != "department":
+            raise OrgRuleError("a team sits under the company or a department, not a team")
+    if unit.parent_id == action.parent_id:
+        raise OrgRuleError(f"{unit.name} is already there")
+    state = spend_energy(state, action.actor_id, "move_unit", balance)
+    return Outcome(with_unit(state, replace(unit, parent_id=action.parent_id)))
 
 
 def set_leader(state: GameState, action: SetLeader, balance: Balance) -> Outcome:

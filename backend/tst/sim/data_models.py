@@ -213,6 +213,7 @@ ENERGY_ACTIONS = (
     # M2 org actions (formulas.md section 6)
     "create_unit",
     "dissolve_unit",
+    "move_unit",
     "set_leader",
     "move_person",
     "set_policy",

@@ -31,6 +31,7 @@ from tst.sim.actions import (
     Interview,
     MakeOffer,
     MovePerson,
+    MoveUnit,
     OpenSearch,
     Promote,
     ReferenceCheck,
@@ -537,6 +538,17 @@ def unit_dissolve(
 ) -> None:
     """Dissolve a unit: its members and teams move to its parent (members lose 2 morale)."""
     _org_run(save, DissolveUnit(_actor(_game(save)[2]), unit), preview)
+
+
+@unit_app.command("reparent")
+def unit_reparent(
+    save: SaveOpt,
+    unit: Annotated[int, typer.Option(help="Team id")],
+    parent: Annotated[str, typer.Option(help="Department id, or 'root'")],
+    preview: PreviewOpt = False,
+) -> None:
+    """Move a team under a department or the company; its members go with it."""
+    _org_run(save, MoveUnit(_actor(_game(save)[2]), unit, _unit_arg(parent)), preview)
 
 
 @unit_app.command("lead")

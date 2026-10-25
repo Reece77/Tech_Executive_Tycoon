@@ -314,6 +314,7 @@ def test_org_meta(make_api: Any) -> None:
     assert meta["energy_costs"] == {
         "create_unit": 2,
         "dissolve_unit": 2,
+        "move_unit": 2,
         "set_leader": 2,
         "move_person": 1,
         "set_policy": 1,
@@ -338,3 +339,25 @@ def test_remote_policy_through_the_api(make_api: Any) -> None:
     salary = person["employment"]["salary_cents"]
     monthly = round(salary / 12)
     assert person["employment"]["monthly_cost_cents"] == monthly + round(monthly * 0.2)
+
+
+def test_move_unit_through_the_api(make_api: Any) -> None:
+    api = make_api(10, leaders=(2, 3))
+    api.post(f"{BASE}/org/units", {"kind": "department", "name": "Eng"}, 201)
+    api.post(f"{BASE}/org/units", {"kind": "team", "name": "Web"}, 201)
+    for pid, unit in ((2, 1), (3, 2), (4, 2)):
+        api.post(f"{BASE}/org/people/{pid}/move", {"unit_id": unit})
+    api.post(f"{BASE}/org/units/1/leader", {"person_id": 2})
+    api.post(f"{BASE}/org/units/2/leader", {"person_id": 3})
+    preview = api.post(f"{BASE}/org/preview", {"change": "move_unit", "unit_id": 2, "parent_id": 1})
+    assert preview == {"allowed": True, "problem": None, "energy_cost": 2, "morale_changes": []}
+    out = api.post(f"{BASE}/org/units/2/move", {"parent_id": 1})
+    root, eng, web = out["org"]["units"]
+    assert web["parent_id"] == 1 and eng["child_unit_ids"] == [2] and root["child_unit_ids"] == [1]
+    members = {m["person_id"]: m for u in out["org"]["units"] for m in u["members"]}
+    assert members[3]["manager_id"] == 2
+    refused = api.post(
+        f"{BASE}/org/preview", {"change": "move_unit", "unit_id": 1, "parent_id": None}
+    )
+    assert not refused["allowed"] and "only teams move" in refused["problem"]
+    assert api.post(f"{BASE}/org/units/1/move", {"parent_id": None}, 400)["code"] == "org_rule"

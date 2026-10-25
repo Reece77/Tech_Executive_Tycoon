@@ -18,6 +18,7 @@ from tst.sim.actions import (
     Fire,
     GiveRaise,
     MovePerson,
+    MoveUnit,
     Promote,
     Scout,
     SetLeader,
@@ -36,6 +37,7 @@ from tst.sim.errors import (
     UnknownPlanError,
     UnknownUnitError,
 )
+from tst.sim.org.rules import org_view
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_company
 
@@ -371,6 +373,7 @@ def test_org_actions_round_trip_as_payloads() -> None:
     actions: list[Action] = [
         CreateUnit(1, "team", "A", None),
         DissolveUnit(1, 2),
+        MoveUnit(1, 2, None),
         SetLeader(1, 2, None),
         MovePerson(1, 3, None),
         SetPolicy(1, None, "remote"),
@@ -395,3 +398,56 @@ def test_energy_runs_out_for_org_actions(loaded: LoadedData) -> None:
     )
     with pytest.raises(InsufficientEnergyError):
         act(loaded, state, CreateUnit(FOUNDER, "team", "A"))
+
+
+# --- Moving a team (13.1) -------------------------------------------------------------------
+
+
+def test_move_unit_reparents_a_team(loaded: LoadedData) -> None:
+    state = org_game(loaded, staff=9)
+    state = run(
+        loaded,
+        state,
+        CreateUnit(FOUNDER, "department", "Eng"),
+        CreateUnit(FOUNDER, "team", "Web"),
+        MovePerson(FOUNDER, 2, 2),
+        MovePerson(FOUNDER, 3, 2),
+        SetLeader(FOUNDER, 2, 2),
+        MovePerson(FOUNDER, 4, 1),
+        SetLeader(FOUNDER, 1, 4),
+    )
+    before = {p: morale(state, p) for p in range(2, 11)}
+    spent = energy(state) or 0
+    after = run(loaded, state, MoveUnit(FOUNDER, 2, 1))
+    assert after.unit(2).parent_id == 1  # type: ignore[union-attr]
+    assert energy(after) == spent - 2
+    assert {p: morale(after, p) for p in range(2, 11)} == before  # no one-off morale
+    view = org_view(after, 1)
+    assert view.manager_of[2] == 4  # the team lead now reports to the department head
+    back = run(loaded, after, MoveUnit(FOUNDER, 2, None))
+    assert back.unit(2).parent_id is None  # type: ignore[union-attr]
+    assert org_view(back, 1).manager_of[2] == FOUNDER
+
+
+@pytest.mark.parametrize(
+    ("action", "error", "message"),
+    [
+        (MoveUnit(FOUNDER, 1, None), OrgRuleError, "only teams move"),
+        (MoveUnit(FOUNDER, 2, 3), OrgRuleError, "not a team"),
+        (MoveUnit(FOUNDER, 2, None), OrgRuleError, "already there"),
+        (MoveUnit(FOUNDER, 2, 9), UnknownUnitError, "no unit 9"),
+        (MoveUnit(FOUNDER, 9, 1), UnknownUnitError, "no unit 9"),
+    ],
+)
+def test_move_unit_rules(
+    loaded: LoadedData, action: MoveUnit, error: type[SimError], message: str
+) -> None:
+    state = run(
+        loaded,
+        org_game(loaded, staff=9),
+        CreateUnit(FOUNDER, "department", "Eng"),
+        CreateUnit(FOUNDER, "team", "Web"),
+        CreateUnit(FOUNDER, "team", "App"),
+    )
+    with pytest.raises(error, match=message):
+        act(loaded, state, action)

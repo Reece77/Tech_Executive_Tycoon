@@ -382,6 +382,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/org/units/{unit_id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move Unit
+         * @description Move a team under a department or the company root (formulas.md 13.1).
+         */
+        post: operations["moveUnit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/org/units/{unit_id}/leader": {
         parameters: {
             query?: never;
@@ -1233,6 +1253,14 @@ export interface components {
              * @description Null moves them to the company root
              */
             unit_id: number | null;
+        };
+        /** MoveUnitIn */
+        MoveUnitIn: {
+            /**
+             * Parent Id
+             * @description A department, or null for the company root
+             */
+            parent_id: number | null;
         };
         /** NewGameMetaOut */
         NewGameMetaOut: {
@@ -3231,6 +3259,69 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    moveUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                unit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveUnitIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

@@ -127,6 +127,7 @@ founder: # founder build (formulas.md section 5)
     offer: 0
     create_unit: 2 # create a department or team (M2, section 13.7)
     dissolve_unit: 2 # dissolve a unit; members and child teams move to the parent (M2)
+    move_unit: 2 # move a team under a department or the company (M2, section 13.7)
     set_leader: 2 # set, replace or remove a unit's leader (M2)
     move_person: 1 # move a person to another unit (M2)
     set_policy: 1 # set a unit's work-location policy (M2, section 13.9)

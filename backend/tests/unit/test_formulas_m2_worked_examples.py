@@ -30,6 +30,7 @@ from tst.sim.setup import DEFAULT_FOUNDER
     [
         ("create_unit", 2),
         ("dissolve_unit", 2),
+        ("move_unit", 2),
         ("set_leader", 2),
         ("move_person", 1),
         ("set_policy", 1),

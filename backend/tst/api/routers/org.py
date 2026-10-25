@@ -24,6 +24,7 @@ from tst.api.schemas.org import (
     HiringPlanPatchIn,
     MoraleBreakdownOut,
     MovePersonIn,
+    MoveUnitIn,
     OrgActionOut,
     OrgChangeIn,
     OrgOut,
@@ -43,6 +44,7 @@ from tst.sim.actions import (
     DissolveUnit,
     GiveRaise,
     MovePerson,
+    MoveUnit,
     Promote,
     SetLeader,
     SetPolicy,
@@ -105,6 +107,20 @@ def dissolve_unit(save_id: str, unit_id: int, settings: SettingsDep, data: DataD
 
 
 @router.post(
+    "/org/units/{unit_id}/move",
+    response_model=OrgActionOut,
+    responses=ERRORS,
+    operation_id="moveUnit",
+)
+def move_unit(
+    save_id: str, unit_id: int, body: MoveUnitIn, settings: SettingsDep, data: DataDep
+) -> OrgActionOut:
+    """Move a team under a department or the company root (formulas.md 13.1)."""
+    path = _path(settings, save_id)
+    return _org_act(path, data, MoveUnit(_founder_id(_state(path)), unit_id, body.parent_id))
+
+
+@router.post(
     "/org/units/{unit_id}/leader",
     response_model=OrgActionOut,
     responses=ERRORS,
@@ -147,6 +163,8 @@ def _change_action(founder: int, body: OrgChangeIn) -> Action:
             return CreateUnit(founder, body.kind or "", body.name or "", body.parent_id)  # type: ignore[arg-type]
         case "dissolve_unit" if body.unit_id is not None:
             return DissolveUnit(founder, body.unit_id)
+        case "move_unit" if body.unit_id is not None:
+            return MoveUnit(founder, body.unit_id, body.parent_id)
         case "set_leader" if body.unit_id is not None:
             return SetLeader(founder, body.unit_id, body.person_id)
         case "move_person" if body.person_id is not None:
