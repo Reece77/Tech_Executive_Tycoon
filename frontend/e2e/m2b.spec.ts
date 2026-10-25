@@ -90,6 +90,16 @@ test('(a) build company → department → team and appoint leads', async ({ pag
     await expect(page.getByTestId('unit-panel')).not.toContainText('LeaderNone');
     await expect(page.getByTestId('manager-label')).not.toHaveText('—');
   }
+  // Drag-and-drop opens the same preview: a direct report dragged onto Platform.
+  await page
+    .getByTestId('direct-chip')
+    .first()
+    .dragTo(page.getByRole('button', { name: 'Team Platform' }));
+  await expect(page.getByRole('dialog')).toContainText('to Platform?');
+  await expect(page.getByTestId('preview-change')).toHaveCount(1);
+  await page.getByTestId('preview-cancel').click();
+  await expect(page.getByTestId('preview')).toBeHidden();
+
   await expect(page.getByTestId('org-summary')).toContainText('2 units');
   const platform = page.getByRole('button', { name: 'Team Platform' });
   await expect(platform).toContainText('Led by');
