@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { AttributeRange } from '../components/AttributeRange';
 import { DataTable } from '../components/DataTable';
+import { HiringPlansPanel } from '../components/HiringPlans';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import {
   useCandidates,
@@ -15,6 +16,7 @@ import {
   useNewGameMeta,
   useOfferPreview,
   useOpenSearch,
+  useOverview,
   useSearches,
   useWithdrawOffer,
   type HiringMeta,
@@ -361,6 +363,7 @@ function RecruitmentBody({
           )}
         </div>
       )}
+      <HiringPlansPanel saveId={saveId} hiring={hiring} />
     </>
   );
 }
@@ -377,6 +380,8 @@ function OpenSearchPanel({
   onOpened: (searchId: number) => void;
 }) {
   const open = useOpenSearch(saveId);
+  const overview = useOverview(saveId);
+  const networkBonus = overview.data?.network_bonus_candidates ?? 0;
   const [role, setRole] = useState<string | null>(
     hiring.roles.find((r) => r.key === initialRole)?.key ?? hiring.roles[0]?.key ?? null,
   );
@@ -424,6 +429,11 @@ function OpenSearchPanel({
             <span className="tst-muted" style={{ fontSize: 12 }}>
               {levelText(c)} {CHANNEL_TEXT[c.key] ?? ''}
             </span>
+            {c.key === 'network' && networkBonus > 0 && (
+              <span style={{ fontSize: 12, color: 'var(--tst-good)' }} data-testid="network-bonus">
+                +{networkBonus} candidate: your founder is sociable
+              </span>
+            )}
           </button>
         ))}
       </div>

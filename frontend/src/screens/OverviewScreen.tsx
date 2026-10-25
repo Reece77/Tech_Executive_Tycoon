@@ -4,6 +4,7 @@ import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOverview, type Overview } from '../hooks/api';
 import { formatMoneyWhole, formatRunway, formatWhole } from '../lib/format';
+import { MANAGER_LABELS } from '../lib/org';
 
 // Phase-6 memo labels (backend/tst/sim/hiring/phases.py) as the wireframe words them.
 const COST_LABELS: Record<string, string> = {
@@ -71,6 +72,20 @@ export function OverviewScreen() {
           note="Employees, not the founder"
           testId="kpi-morale"
         />
+        {data.org && (
+          <KpiTile
+            label="Org"
+            value={`${data.org.units} ${data.org.units === 1 ? 'unit' : 'units'}`}
+            warn={data.org.managers_over_span > 0}
+            note={`${data.org.managers_over_span} over span · managers ${
+              data.org.manager_label
+                ? (MANAGER_LABELS[data.org.manager_label] ?? '').toLowerCase()
+                : 'n/a'
+            }`}
+            hint="Departments and teams; managers with more reports than they handle well; the average manager"
+            testId="kpi-org"
+          />
+        )}
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' }}>
         <Panel title="Cash at month end" style={{ flex: '2 1 480px' }}>

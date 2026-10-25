@@ -4,7 +4,9 @@ import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
+import { kindLabel, matchesFilter, pageRange } from '../lib/inbox';
 import { policyText, signed } from '../lib/org';
+import { KindBadge } from './KindBadge';
 import { OrgNode } from './OrgNode';
 import { RaiseFacts } from './PersonOrg';
 import { PreviewBody } from './PreviewDialog';
@@ -161,5 +163,22 @@ describe('RaiseFacts', () => {
     expect(html).toContain('market rate $91,000: this is 1.10×');
     expect(html).toContain('+3');
     expect(html).toContain('+$500');
+  });
+});
+
+describe('inbox additions', () => {
+  it.each(['plan_activity', 'plan_filled', 'plan_paused'])('%s has the Delegate badge', (kind) => {
+    expect(kindLabel(kind)).toBe('Delegate');
+    expect(renderToStaticMarkup(<KindBadge kind={kind} />)).toContain('>Delegate<');
+    expect(matchesFilter({ kind, read: true }, 'hiring')).toBe(true);
+  });
+
+  it.each([
+    [0, 50, 342, '1–50 of 342'],
+    [50, 50, 342, '51–100 of 342'],
+    [300, 42, 342, '301–342 of 342'],
+    [0, 0, 0, '0 of 0'],
+  ])('pageRange(%i, %i, %i) = %s', (offset, shown, total, text) => {
+    expect(pageRange(offset, shown, total)).toBe(text);
   });
 });
