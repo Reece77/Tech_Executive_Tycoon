@@ -20,6 +20,7 @@ from tst.sim.errors import (
     UnknownRoleError,
     UnknownUnitError,
 )
+from tst.sim.hiring.models import Candidate
 from tst.sim.org.formulas import is_raise_bonus
 from tst.sim.org.models import (
     PLAN_CHANNELS,
@@ -607,7 +608,19 @@ def scout(state: GameState, action: Scout, balance: Balance, data: GameData) -> 
     state = spend_energy(
         state, action.actor_id, "scout", balance, cost=balance.delegates.scout_cost
     )
-    scout_judgment = judgment(state.person(action.actor_id))
+    return Outcome(scout_candidates(state, company, action.actor_id, targets, balance, data))
+
+
+def scout_candidates(
+    state: GameState,
+    company: int,
+    actor_id: int,
+    targets: list[Candidate],
+    balance: Balance,
+    data: GameData,
+) -> GameState:
+    """scouting_month (formulas.md 4) once on each candidate, with the actor as the scout."""
+    scout_judgment = judgment(state.person(actor_id))
     skill_keys = frozenset(data.skill_keys)
     for candidate in targets:
         reveal = state.reveal(company, candidate.person_id)
@@ -624,4 +637,4 @@ def scout(state: GameState, action: Scout, balance: Balance, data: GameData) -> 
                 skill_keys=skill_keys,
             ),
         )
-    return Outcome(state)
+    return state

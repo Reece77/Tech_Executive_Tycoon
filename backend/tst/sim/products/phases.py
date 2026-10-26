@@ -31,6 +31,7 @@ from tst.sim.state import (
     with_market,
     with_product,
     with_product_segment,
+    with_unit,
 )
 
 CUSTOMER_ROUNDING = 0.5  # tunable-exempt: customers are shown rounded; below this is "none"
@@ -309,7 +310,19 @@ def _revenue(
             for seg in segments:
                 state = with_product_segment(state, replace(seg, customers=0.0))
             state = with_product(state, replace(product, status="retired", retired_turn=turn))
+            state = release_assignments(state, product.id)
     return state, tuple(entries), revenue, flows, logs
+
+
+def release_assignments(state: GameState, product_id: int) -> GameState:
+    """Units (and the root) working on a retired product become free (11.3)."""
+    for company in state.companies:
+        if company.root_product_id == product_id:
+            state = with_company(state, replace(company, root_product_id=None))
+    for unit in state.units:
+        if unit.product_id == product_id:
+            state = with_unit(state, replace(unit, product_id=None))
+    return state
 
 
 # --- Phase 6: hosting and marketing ---------------------------------------------------------

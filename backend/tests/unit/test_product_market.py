@@ -232,3 +232,10 @@ def test_unpriced_segments_do_not_sell(loaded: LoadedData) -> None:
     out = run_markets(state, RngFactory(4), loaded.balance, loaded.game_data)
     flow = out.flows[(PRODUCT, "mid_market")]
     assert (flow.new, flow.churned, flow.revenue_cents) == (0, 0, 0)
+
+
+def test_retiring_frees_the_units_working_on_it(loaded: LoadedData) -> None:
+    state = base(loaded, customers={"smb": 0.2}, status="sunset")
+    assert state.player.root_product_id == PRODUCT
+    out = run_markets(state, RngFactory(4), loaded.balance, loaded.game_data)
+    assert out.state.player.root_product_id is None
