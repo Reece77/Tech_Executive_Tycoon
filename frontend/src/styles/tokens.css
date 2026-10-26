@@ -32,6 +32,8 @@
   --tst-grey-bg: #2a2f38;
   --tst-purple: #b9a6ff; /* Department kind and the Delegate inbox badge (M2b) */
   --tst-purple-bg: #262040;
+  --tst-teal: #5fd4c4; /* the Product inbox badge (M3b) */
+  --tst-teal-bg: #123331;
 
   --tst-radius: 10px;
   --tst-font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -278,4 +280,34 @@ a {
 .tst-msg[aria-current='true'] {
   background: var(--tst-panel-active);
   box-shadow: inset 3px 0 0 var(--tst-accent);
+}
+
+/* Segmented toggle (Product competition segments, Market categories; M3b). */
+.tst-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--tst-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tst-toggle button {
+  font: inherit;
+  font-size: 13px;
+  color: var(--tst-text-2);
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--tst-border);
+  padding: 6px 12px;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.tst-toggle button:first-child {
+  border-left: 0;
+}
+
+.tst-toggle button[aria-pressed='true'] {
+  color: var(--tst-text);
+  background: var(--tst-panel-active);
 }

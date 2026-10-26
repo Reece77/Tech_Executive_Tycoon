@@ -1,10 +1,12 @@
 // Inbox badges and filters. The API sends the template key as `kind`; this maps it to the
-// wireframe's text labels (no icons) and to the People/Hiring filters.
+// wireframe's text labels (no icons) and to the People/Hiring/Products filters.
 
-export type KindLabel = 'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined' | 'Delegate';
-export type InboxFilter = 'all' | 'unread' | 'people' | 'hiring';
+export type KindLabel =
+  'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined' | 'Delegate' | 'Product';
+export type InboxFilter = 'all' | 'unread' | 'people' | 'hiring' | 'products';
+type Group = 'people' | 'hiring' | 'company' | 'products';
 
-const KINDS: Record<string, { label: KindLabel; group: 'people' | 'hiring' | 'company' }> = {
+const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   candidates_arrived: { label: 'Search', group: 'hiring' },
   offer_accepted: { label: 'Hire', group: 'hiring' },
   offer_declined: { label: 'Declined', group: 'hiring' },
@@ -20,7 +22,19 @@ const KINDS: Record<string, { label: KindLabel; group: 'people' | 'hiring' | 'co
   plan_filled: { label: 'Delegate', group: 'hiring' },
   plan_paused: { label: 'Delegate', group: 'hiring' },
   unit_leader_left: { label: 'Notice', group: 'people' },
+  // M3: products
+  product_launched: { label: 'Product', group: 'products' },
+  first_customer: { label: 'Product', group: 'products' },
+  arr_milestone: { label: 'Product', group: 'products' },
+  sales_capacity_limited: { label: 'Product', group: 'products' },
+  product_rotting: { label: 'Product', group: 'products' },
 };
+
+/** The message kinds a filter keeps, for the API (across every page); null keeps all. */
+export function kindsFor(filter: InboxFilter): string[] | null {
+  if (filter === 'all' || filter === 'unread') return null;
+  return Object.keys(KINDS).filter((kind) => KINDS[kind].group === filter);
+}
 
 /** "51–100 of 342" for one inbox page. */
 export function pageRange(offset: number, shown: number, total: number): string {

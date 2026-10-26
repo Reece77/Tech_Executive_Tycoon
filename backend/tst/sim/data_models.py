@@ -237,6 +237,7 @@ ENERGY_ACTIONS = (
     "add_segment",
     "launch_product",
     "sunset_product",
+    "cancel_product",
 )
 CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
 HIRING_LEVELS = ("junior", "mid", "senior", "staff")

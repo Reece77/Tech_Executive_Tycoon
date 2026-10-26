@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import string
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -103,25 +103,37 @@ def list_inbox(
     company_id: int,
     *,
     unread_only: bool = False,
+    kinds: Sequence[str] | None = None,
     limit: int | None = None,
     offset: int = 0,
 ) -> list[InboxMessage]:
-    """Newest first; `offset` skips that many (paging, M2b)."""
+    """Newest first; `offset` skips that many (paging, M2b); `kinds` keeps only those
+    templates (M3b)."""
     stmt = select(InboxItemRow).where(InboxItemRow.company_id == company_id)
     if unread_only:
         stmt = stmt.where(InboxItemRow.read.is_(False))
+    if kinds is not None:
+        stmt = stmt.where(InboxItemRow.template.in_(kinds))
     stmt = stmt.order_by(InboxItemRow.id.desc()).offset(offset)
     if limit is not None:
         stmt = stmt.limit(limit)
     return [_message(r) for r in session.scalars(stmt)]
 
 
-def inbox_total(session: Session, company_id: int, *, unread_only: bool = False) -> int:
+def inbox_total(
+    session: Session,
+    company_id: int,
+    *,
+    unread_only: bool = False,
+    kinds: Sequence[str] | None = None,
+) -> int:
     stmt = (
         select(func.count()).select_from(InboxItemRow).where(InboxItemRow.company_id == company_id)
     )
     if unread_only:
         stmt = stmt.where(InboxItemRow.read.is_(False))
+    if kinds is not None:
+        stmt = stmt.where(InboxItemRow.template.in_(kinds))
     return int(session.scalar(stmt) or 0)
 
 

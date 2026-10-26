@@ -23,6 +23,7 @@ from tst.api.schemas.products import (
     CreateProductIn,
     MarketingIn,
     MarketOut,
+    PortfolioOut,
     PriceIn,
     PricePreviewOut,
     ProductActionOut,
@@ -35,6 +36,7 @@ from tst.sim.actions import (
     Action,
     AddSegment,
     AssignUnit,
+    CancelProduct,
     CreateProduct,
     LaunchProduct,
     ScoutSearch,
@@ -99,6 +101,21 @@ def get_market(save_id: str, category: str, settings: SettingsDep, data: DataDep
 
 
 # --- The player's products ------------------------------------------------------------------
+
+
+@router.get(
+    "/portfolio", response_model=PortfolioOut, responses=ERRORS, operation_id="getPortfolio"
+)
+def get_portfolio(save_id: str, settings: SettingsDep, data: DataDep) -> PortfolioOut:
+    """The Products screen's tiles: MRR and its change, ARR, customers, hosting and
+    marketing this month."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session:
+        state = repository.load_state(session)
+        snapshots = repository.recent_snapshots(session, state.player.id, 2)
+    stage = state.player.stage
+    label = views.STAGE_LABELS.get(stage, f"Stage {stage}")
+    return product_views.portfolio_out(state, snapshots, label, data)
 
 
 @router.get(
@@ -253,6 +270,19 @@ def sunset(save_id: str, product_id: int, settings: SettingsDep, data: DataDep) 
     return _product_act(
         path, data, SunsetProduct(_founder_id(_state(path)), product_id), product_id
     )
+
+
+@router.post(
+    "/products/{product_id}/cancel",
+    response_model=ActionOut,
+    responses=ERRORS,
+    operation_id="cancelProduct",
+)
+def cancel(save_id: str, product_id: int, settings: SettingsDep, data: DataDep) -> ActionOut:
+    """Cancel a product in development: it retires at once and its units are freed."""
+    path = _path(settings, save_id)
+    _, out = _act(path, data, CancelProduct(_founder_id(_state(path)), product_id))
+    return out
 
 
 # --- Founder scouting -----------------------------------------------------------------------

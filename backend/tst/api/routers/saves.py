@@ -6,7 +6,7 @@ import secrets
 
 from fastapi import APIRouter, status
 
-from tst.api import org_views, views
+from tst.api import org_views, product_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.schemas.common import ErrorOut
 from tst.api.schemas.saves import (
@@ -136,6 +136,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         org=org_views.org_tile(state, player.id, data),
         mrr_cents=latest.mrr_cents if latest else 0,
         arr_cents=latest.arr_cents if latest else 0,
+        month_revenue_cents=product_views.projected_revenue(state, player.id),
     )
 
 

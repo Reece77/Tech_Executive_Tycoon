@@ -17,6 +17,8 @@ import {
   useOfferPreview,
   useOpenSearch,
   useOverview,
+  useProductsMeta,
+  useScoutSearch,
   useSearches,
   useWithdrawOffer,
   type HiringMeta,
@@ -476,6 +478,8 @@ function SearchRow({
   onSelect: () => void;
 }) {
   const close = useCloseSearch(saveId);
+  const scout = useScoutSearch(saveId);
+  const scoutCost = useProductsMeta().data?.energy_costs.scout_search;
   const channel = hiring.channels.find((c) => c.key === search.channel);
   const isOpen = search.status === 'open';
   let detail: string;
@@ -495,6 +499,7 @@ function SearchRow({
   return (
     <div
       data-testid="search-row"
+      data-search-id={search.search_id}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -507,6 +512,7 @@ function SearchRow({
     >
       <button
         type="button"
+        data-testid="select-search"
         onClick={onSelect}
         aria-pressed={selected}
         style={{
@@ -529,6 +535,18 @@ function SearchRow({
       <span className="tst-num" style={{ fontSize: 13, color: 'var(--tst-text-2)' }}>
         {count}
       </span>
+      {search.open_candidates > 0 && scoutCost !== undefined && (
+        <Button
+          size="compact-sm"
+          variant="default"
+          loading={scout.isPending}
+          onClick={() => scout.mutate(search.search_id)}
+          title="Look closely at every open candidate in this search yourself: narrows what you know of them"
+          data-testid="scout-search"
+        >
+          Scout · {scoutCost}
+        </Button>
+      )}
       {isOpen && channel?.repeats && (
         <Button
           size="compact-sm"
@@ -538,6 +556,11 @@ function SearchRow({
         >
           Close
         </Button>
+      )}
+      {scout.error && (
+        <span style={{ flexBasis: '100%', fontSize: 12, color: 'var(--tst-warn)' }} role="alert">
+          {scout.error.message}
+        </span>
       )}
     </div>
   );

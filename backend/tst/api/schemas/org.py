@@ -34,6 +34,8 @@ class UnitOut(BaseModel):
     members: list[OrgMemberOut]
     child_unit_ids: list[int]
     headcount: int = Field(description="People in this unit and every unit below it")
+    product_id: int | None = Field(default=None, description="The product it works on (M3)")
+    product_name: str | None = None
 
 
 class ManagerOut(BaseModel):

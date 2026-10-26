@@ -1299,7 +1299,7 @@
           "game"
         ],
         "summary": "Get Inbox",
-        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b).",
+        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to\nkeep only those message kinds, across every page (M3b).",
         "operationId": "getInbox",
         "parameters": [
           {
@@ -1319,6 +1319,25 @@
               "type": "boolean",
               "default": false,
               "title": "Unread Only"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
             }
           },
           {
@@ -3317,6 +3336,79 @@
         }
       }
     },
+    "/api/saves/{save_id}/portfolio": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get Portfolio",
+        "description": "The Products screen's tiles: MRR and its change, ARR, customers, hosting and\nmarketing this month.",
+        "operationId": "getPortfolio",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/products": {
       "get": {
         "tags": [
@@ -4266,6 +4358,88 @@
         }
       }
     },
+    "/api/saves/{save_id}/products/{product_id}/cancel": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Cancel",
+        "description": "Cancel a product in development: it retires at once and its units are freed.",
+        "operationId": "cancelProduct",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/recruitment/searches/{search_id}/scout": {
       "post": {
         "tags": [
@@ -4480,6 +4654,28 @@
           }
         }
       }
+    },
+    "/api/meta/products": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Products Meta",
+        "description": "Energy costs and launch thresholds for the product screens (formulas.md 6, 11.2).",
+        "operationId": "getProductsMeta",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductsMetaOut"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4500,6 +4696,35 @@
           "unread_inbox"
         ],
         "title": "ActionOut"
+      },
+      "AppealWeightsOut": {
+        "properties": {
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "price": {
+            "type": "number",
+            "title": "Price"
+          },
+          "brand": {
+            "type": "number",
+            "title": "Brand"
+          },
+          "features": {
+            "type": "number",
+            "title": "Features"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quality",
+          "price",
+          "brand",
+          "features"
+        ],
+        "title": "AppealWeightsOut",
+        "description": "How a segment's buyers weigh the four scores (formulas.md 11.6); they sum to 1."
       },
       "AssignIn": {
         "properties": {
@@ -4746,6 +4971,14 @@
             "type": "integer",
             "title": "Hosting Cents",
             "description": "Hosting cost per customer per month"
+          },
+          "weights": {
+            "$ref": "#/components/schemas/AppealWeightsOut"
+          },
+          "counts_users": {
+            "type": "boolean",
+            "title": "Counts Users",
+            "description": "Customers are consumer users, not businesses"
           }
         },
         "type": "object",
@@ -4755,7 +4988,9 @@
           "reach",
           "addressable",
           "reference_price_cents",
-          "hosting_cents"
+          "hosting_cents",
+          "weights",
+          "counts_users"
         ],
         "title": "CategorySegmentOut"
       },
@@ -6023,6 +6258,11 @@
             "type": "string",
             "title": "Label"
           },
+          "annual_growth": {
+            "type": "number",
+            "title": "Annual Growth",
+            "description": "Addressable demand growth per year (fraction)"
+          },
           "segments": {
             "items": {
               "$ref": "#/components/schemas/MarketSegmentOut"
@@ -6035,6 +6275,7 @@
         "required": [
           "category",
           "label",
+          "annual_growth",
           "segments"
         ],
         "title": "MarketOut"
@@ -6081,6 +6322,10 @@
             "type": "integer",
             "title": "Price Cents"
           },
+          "price_score": {
+            "type": "number",
+            "title": "Price Score"
+          },
           "appeal": {
             "type": "number",
             "title": "Appeal"
@@ -6117,6 +6362,7 @@
           "feature_score",
           "brand",
           "price_cents",
+          "price_score",
           "appeal",
           "customers",
           "share_of_served",
@@ -6148,6 +6394,28 @@
             "title": "Served",
             "description": "Customers of every product in the segment"
           },
+          "unserved": {
+            "type": "number",
+            "title": "Unserved",
+            "description": "Addressable customers who use no product yet"
+          },
+          "reference_price_cents": {
+            "type": "integer",
+            "title": "Reference Price Cents",
+            "description": "The segment's typical monthly price"
+          },
+          "weights": {
+            "$ref": "#/components/schemas/AppealWeightsOut"
+          },
+          "counts_users": {
+            "type": "boolean",
+            "title": "Counts Users"
+          },
+          "player_sells": {
+            "type": "boolean",
+            "title": "Player Sells",
+            "description": "The player has a product selling here"
+          },
           "products": {
             "items": {
               "$ref": "#/components/schemas/MarketProductOut"
@@ -6164,6 +6432,11 @@
           "reach",
           "addressable",
           "served",
+          "unserved",
+          "reference_price_cents",
+          "weights",
+          "counts_users",
+          "player_sells",
           "products"
         ],
         "title": "MarketSegmentOut"
@@ -7067,14 +7340,17 @@
           "mrr_cents": {
             "type": "integer",
             "title": "Mrr Cents",
-            "description": "Revenue in the last closed month (M3a)",
-            "default": 0
+            "description": "Revenue in the last closed month (M3a)"
           },
           "arr_cents": {
             "type": "integer",
             "title": "Arr Cents",
-            "description": "12 x MRR",
-            "default": 0
+            "description": "12 x MRR"
+          },
+          "month_revenue_cents": {
+            "type": "integer",
+            "title": "Month Revenue Cents",
+            "description": "This month's revenue at the current customers and prices (M3b)"
           }
         },
         "type": "object",
@@ -7101,7 +7377,10 @@
           "team",
           "month_costs",
           "month_paid",
-          "month_total_cents"
+          "month_total_cents",
+          "mrr_cents",
+          "arr_cents",
+          "month_revenue_cents"
         ],
         "title": "OverviewOut"
       },
@@ -7747,6 +8026,92 @@
         ],
         "title": "PlanActivityOut"
       },
+      "PortfolioOut": {
+        "properties": {
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents",
+            "description": "Revenue in the last closed month"
+          },
+          "mrr_change": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mrr Change",
+            "description": "Against the month before, as a fraction"
+          },
+          "previous_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Label",
+            "description": "The month compared against, e.g. 'May'"
+          },
+          "arr_cents": {
+            "type": "integer",
+            "title": "Arr Cents"
+          },
+          "stage": {
+            "type": "integer",
+            "title": "Stage"
+          },
+          "stage_label": {
+            "type": "string",
+            "title": "Stage Label"
+          },
+          "paying_customers": {
+            "type": "number",
+            "title": "Paying Customers",
+            "description": "Business customers across products now"
+          },
+          "consumer_users": {
+            "type": "number",
+            "title": "Consumer Users",
+            "description": "Consumer users across products now"
+          },
+          "hosting_cents": {
+            "type": "integer",
+            "title": "Hosting Cents",
+            "description": "Hosting this month at the current customers"
+          },
+          "marketing_cents": {
+            "type": "integer",
+            "title": "Marketing Cents",
+            "description": "Marketing budgets this month"
+          },
+          "product_costs_cents": {
+            "type": "integer",
+            "title": "Product Costs Cents",
+            "description": "Hosting plus marketing this month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mrr_cents",
+          "mrr_change",
+          "previous_label",
+          "arr_cents",
+          "stage",
+          "stage_label",
+          "paying_customers",
+          "consumer_users",
+          "hosting_cents",
+          "marketing_cents",
+          "product_costs_cents"
+        ],
+        "title": "PortfolioOut",
+        "description": "The Products screen's tiles: the company's revenue and product costs."
+      },
       "PresetOut": {
         "properties": {
           "key": {
@@ -7819,6 +8184,28 @@
             "title": "Choice Share",
             "description": "share* among live products and no purchase, 0-1"
           },
+          "current_price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Price Cents"
+          },
+          "current_price_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Price Score"
+          },
           "current_appeal": {
             "anyOf": [
               {
@@ -7840,6 +8227,18 @@
               }
             ],
             "title": "Current Choice Share"
+          },
+          "revenue_per_customer_change": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenue Per Customer Change",
+            "description": "New price against the current one, as a fraction; null without a price"
           }
         },
         "type": "object",
@@ -7849,8 +8248,11 @@
           "price_score",
           "appeal",
           "choice_share",
+          "current_price_cents",
+          "current_price_score",
           "current_appeal",
-          "current_choice_share"
+          "current_choice_share",
+          "revenue_per_customer_change"
         ],
         "title": "PricePreviewOut",
         "description": "Appeal and share* at a price against the current competitors; no customer numbers."
@@ -8004,9 +8406,73 @@
             ],
             "title": "Launched Turn"
           },
+          "launched_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Launched Label",
+            "description": "Launch month, e.g. 'Sep 2010'"
+          },
           "mrr_cents": {
             "type": "integer",
             "title": "Mrr Cents"
+          },
+          "mrr_change": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mrr Change",
+            "description": "Revenue in the last closed month against the month before, as a fraction"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers",
+            "description": "Customers (or users) across its segments now"
+          },
+          "customer_trend": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Trend",
+            "description": "Month-on-month change in customers at the last month end, as a fraction"
+          },
+          "new_last_month": {
+            "type": "number",
+            "title": "New Last Month"
+          },
+          "churned_last_month": {
+            "type": "number",
+            "title": "Churned Last Month"
+          },
+          "hosting_cents": {
+            "type": "integer",
+            "title": "Hosting Cents",
+            "description": "Hosting this month at the current customers"
+          },
+          "brand_trend": {
+            "type": "string",
+            "title": "Brand Trend",
+            "description": "rising | falling | steady, from the last two months"
+          },
+          "counts_users": {
+            "type": "boolean",
+            "title": "Counts Users",
+            "description": "Every segment counts consumer users"
           },
           "segments": {
             "items": {
@@ -8063,6 +8529,14 @@
             "type": "array",
             "title": "History",
             "description": "Last 12 months, oldest first"
+          },
+          "monthly": {
+            "items": {
+              "$ref": "#/components/schemas/ProductTotalMonthOut"
+            },
+            "type": "array",
+            "title": "Monthly",
+            "description": "Last 12 months summed over segments, oldest first"
           }
         },
         "type": "object",
@@ -8079,7 +8553,16 @@
           "marketing_budget_cents",
           "created_turn",
           "launched_turn",
+          "launched_label",
           "mrr_cents",
+          "mrr_change",
+          "customers",
+          "customer_trend",
+          "new_last_month",
+          "churned_last_month",
+          "hosting_cents",
+          "brand_trend",
+          "counts_users",
           "segments",
           "assigned_units",
           "builders",
@@ -8088,7 +8571,8 @@
           "pace",
           "rotting",
           "launch",
-          "history"
+          "history",
+          "monthly"
         ],
         "title": "ProductOut"
       },
@@ -8116,6 +8600,18 @@
               }
             ],
             "title": "Price Cents"
+          },
+          "price_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Score",
+            "description": "Null until a price is set"
           },
           "customers": {
             "type": "number",
@@ -8153,6 +8649,20 @@
             "type": "integer",
             "title": "Mrr Cents"
           },
+          "new_last_month": {
+            "type": "number",
+            "title": "New Last Month",
+            "description": "New customers in the last closed month"
+          },
+          "churned_last_month": {
+            "type": "number",
+            "title": "Churned Last Month",
+            "description": "Customers lost in the last closed month"
+          },
+          "counts_users": {
+            "type": "boolean",
+            "title": "Counts Users"
+          },
           "note": {
             "anyOf": [
               {
@@ -8172,14 +8682,81 @@
           "label",
           "reach",
           "price_cents",
+          "price_score",
           "customers",
           "appeal",
           "share_of_served",
           "churn_rate",
           "mrr_cents",
+          "new_last_month",
+          "churned_last_month",
+          "counts_users",
           "note"
         ],
         "title": "ProductSegmentOut"
+      },
+      "ProductTotalMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "customers",
+          "revenue_cents"
+        ],
+        "title": "ProductTotalMonthOut",
+        "description": "One month end across every segment of a product (the 12-month chart)."
+      },
+      "ProductsMetaOut": {
+        "properties": {
+          "energy_costs": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Energy Costs",
+            "description": "By action key, e.g. create_product"
+          },
+          "start_quality": {
+            "type": "number",
+            "title": "Start Quality",
+            "description": "A new product's quality"
+          },
+          "launch_min_quality": {
+            "type": "number",
+            "title": "Launch Min Quality"
+          },
+          "launch_min_feature": {
+            "type": "number",
+            "title": "Launch Min Feature"
+          }
+        },
+        "type": "object",
+        "required": [
+          "energy_costs",
+          "start_quality",
+          "launch_min_quality",
+          "launch_min_feature"
+        ],
+        "title": "ProductsMetaOut",
+        "description": "Energy costs and launch thresholds for the product screens (formulas.md 6, 11.2)."
       },
       "RaiseIn": {
         "properties": {
@@ -8577,13 +9154,11 @@
           },
           "mrr_cents": {
             "type": "integer",
-            "title": "Mrr Cents",
-            "default": 0
+            "title": "Mrr Cents"
           },
           "arr_cents": {
             "type": "integer",
-            "title": "Arr Cents",
-            "default": 0
+            "title": "Arr Cents"
           }
         },
         "type": "object",
@@ -8594,7 +9169,9 @@
           "monthly_burn_cents",
           "payroll_cents",
           "headcount",
-          "avg_morale"
+          "avg_morale",
+          "mrr_cents",
+          "arr_cents"
         ],
         "title": "SnapshotPointOut"
       },
@@ -8764,6 +9341,29 @@
             "type": "integer",
             "title": "Headcount",
             "description": "People in this unit and every unit below it"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id",
+            "description": "The product it works on (M3)"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
           }
         },
         "type": "object",

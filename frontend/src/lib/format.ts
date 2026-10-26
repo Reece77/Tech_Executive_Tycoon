@@ -43,6 +43,14 @@ export function formatMoneyWhole(cents: number): string {
   return `${sign}$${groupFormat.format(dollars)}`;
 }
 
+/** Typed dollars to integer cents by string math: "$1,000.5" -> 100050; invalid -> 0. */
+export function parseDollars(text: string): number {
+  const digits = text.replace(/[$,\s]/g, '');
+  if (!/^\d+(\.\d{1,2})?$/.test(digits)) return 0;
+  const [whole, frac = ''] = digits.split('.');
+  return Number(whole) * 100 + Number(frac.padEnd(2, '0'));
+}
+
 /** Basis points as a percentage, by integer math: 50 -> "0.50%", 1000 -> "10.00%". */
 export function formatBpPercent(bp: number): string {
   const sign = bp < 0 ? '-' : '';

@@ -1,5 +1,6 @@
 import {
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -22,7 +23,7 @@ export function CashChart({ history }: { history: Overview['history'] }) {
   return (
     <div
       role="img"
-      aria-label={`Cash at month end, ${history[0].date_label} to ${last.date_label}; now ${formatMoneyWhole(last.cash_cents)}`}
+      aria-label={`Cash and revenue at month end, ${history[0].date_label} to ${last.date_label}; now ${formatMoneyWhole(last.cash_cents)} cash and ${formatMoneyWhole(last.mrr_cents)} revenue`}
     >
       <ResponsiveContainer width="100%" height={240}>
         <LineChart data={history} margin={{ top: 16, right: 16, bottom: 0, left: 8 }}>
@@ -48,6 +49,16 @@ export function CashChart({ history }: { history: Overview['history'] }) {
               border: '1px solid var(--tst-border)',
               fontFamily: 'var(--tst-font-mono)',
             }}
+          />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Line
+            type="linear"
+            dataKey="mrr_cents"
+            name="Revenue (MRR)"
+            stroke="var(--tst-good)"
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={false}
           />
           <Line
             type="linear"

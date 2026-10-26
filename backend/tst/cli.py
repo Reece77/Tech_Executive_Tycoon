@@ -24,6 +24,7 @@ from tst.sim.actions import (
     ActionResult,
     AddSegment,
     AssignUnit,
+    CancelProduct,
     ClosePlan,
     CloseSearch,
     CreatePlan,
@@ -984,6 +985,16 @@ def product_sunset(save: SaveOpt, product: ProductOpt) -> None:
     """Sunset a live product: no new customers, faster churn, retired when none remain."""
     _, _, state = _game(save)
     _product_done(save, product, SunsetProduct(_actor(state), product))
+
+
+@product_app.command("cancel")
+def product_cancel(save: SaveOpt, product: ProductOpt) -> None:
+    """Cancel a product in development: it retires at once and its units are freed."""
+    path, data, state = _game(save)
+    result = _run(path, data, CancelProduct(_actor(state), product))
+    cancelled = result.new_state.product(product)
+    name = cancelled.name if cancelled is not None else f"product {product}"
+    typer.echo(f"Cancelled {name}; {_energy(result.new_state, data)}")
 
 
 @app.command()

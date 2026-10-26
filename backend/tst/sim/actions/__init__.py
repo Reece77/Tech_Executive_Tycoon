@@ -63,6 +63,7 @@ from tst.sim.actions.org import (
 from tst.sim.actions.products import (
     AddSegment,
     AssignUnit,
+    CancelProduct,
     CreateProduct,
     LaunchProduct,
     ProductAction,
@@ -73,6 +74,7 @@ from tst.sim.actions.products import (
     UnassignUnit,
     add_segment,
     assign_unit,
+    cancel_product,
     create_product,
     launch_product,
     scout_search,
@@ -119,6 +121,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "set_marketing": SetMarketing,
     "launch_product": LaunchProduct,
     "sunset_product": SunsetProduct,
+    "cancel_product": CancelProduct,
     "scout_search": ScoutSearch,
 }
 
@@ -128,6 +131,7 @@ __all__ = [
     "ActionResult",
     "AddSegment",
     "AssignUnit",
+    "CancelProduct",
     "ClosePlan",
     "CloseSearch",
     "CreatePlan",
@@ -258,6 +262,8 @@ def apply_action(
             out = launch_product(state, action, balance, data)
         case SunsetProduct():
             out = sunset_product(state, action, balance)
+        case CancelProduct():
+            out = cancel_product(state, action, balance)
         case ScoutSearch():
             out = scout_search(state, action, balance, data)
     return ActionResult(new_state=out.state, ledger_entries=out.entries, log_items=out.log)

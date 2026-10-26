@@ -14,6 +14,15 @@ from pydantic import BaseModel, Field
 from tst.api.schemas.people import EnergyOut
 
 
+class AppealWeightsOut(BaseModel):
+    """How a segment's buyers weigh the four scores (formulas.md 11.6); they sum to 1."""
+
+    quality: float
+    price: float
+    brand: float
+    features: float
+
+
 class CategorySegmentOut(BaseModel):
     segment: str
     label: str
@@ -21,6 +30,8 @@ class CategorySegmentOut(BaseModel):
     addressable: int = Field(description="Addressable customers now, rounded")
     reference_price_cents: int
     hosting_cents: int = Field(description="Hosting cost per customer per month")
+    weights: AppealWeightsOut
+    counts_users: bool = Field(description="Customers are consumer users, not businesses")
 
 
 class CategoryOut(BaseModel):
@@ -41,6 +52,7 @@ class MarketProductOut(BaseModel):
     feature_score: float
     brand: float
     price_cents: int
+    price_score: float
     appeal: float
     customers: float
     share_of_served: float = Field(description="Share of the segment's served customers, 0-1")
@@ -54,12 +66,18 @@ class MarketSegmentOut(BaseModel):
     reach: str
     addressable: int
     served: float = Field(description="Customers of every product in the segment")
+    unserved: float = Field(description="Addressable customers who use no product yet")
+    reference_price_cents: int = Field(description="The segment's typical monthly price")
+    weights: AppealWeightsOut
+    counts_users: bool
+    player_sells: bool = Field(description="The player has a product selling here")
     products: list[MarketProductOut] = Field(description="Most customers first")
 
 
 class MarketOut(BaseModel):
     category: str
     label: str
+    annual_growth: float = Field(description="Addressable demand growth per year (fraction)")
     segments: list[MarketSegmentOut]
 
 
@@ -78,11 +96,15 @@ class ProductSegmentOut(BaseModel):
     label: str
     reach: str
     price_cents: int | None
+    price_score: float | None = Field(description="Null until a price is set")
     customers: float
     appeal: float | None = Field(description="Null until a price is set")
     share_of_served: float
     churn_rate: float | None = Field(description="Null unless the product is selling here")
     mrr_cents: int
+    new_last_month: float = Field(description="New customers in the last closed month")
+    churned_last_month: float = Field(description="Customers lost in the last closed month")
+    counts_users: bool
     note: str | None = Field(
         description="'Sales capacity limited new customers in <segment>' when it bound"
     )
@@ -99,6 +121,15 @@ class ProductMonthOut(BaseModel):
     customers: float
     new: float
     churned: float
+    revenue_cents: int
+
+
+class ProductTotalMonthOut(BaseModel):
+    """One month end across every segment of a product (the 12-month chart)."""
+
+    turn: int
+    date_label: str
+    customers: float
     revenue_cents: int
 
 
@@ -120,7 +151,20 @@ class ProductOut(BaseModel):
     marketing_budget_cents: int
     created_turn: int
     launched_turn: int | None
+    launched_label: str | None = Field(description="Launch month, e.g. 'Sep 2010'")
     mrr_cents: int
+    mrr_change: float | None = Field(
+        description="Revenue in the last closed month against the month before, as a fraction"
+    )
+    customers: float = Field(description="Customers (or users) across its segments now")
+    customer_trend: float | None = Field(
+        description="Month-on-month change in customers at the last month end, as a fraction"
+    )
+    new_last_month: float
+    churned_last_month: float
+    hosting_cents: int = Field(description="Hosting this month at the current customers")
+    brand_trend: str = Field(description="rising | falling | steady, from the last two months")
+    counts_users: bool = Field(description="Every segment counts consumer users")
     segments: list[ProductSegmentOut]
     assigned_units: list[AssignedUnitOut]
     builders: list[NamedOut]
@@ -130,6 +174,9 @@ class ProductOut(BaseModel):
     rotting: bool = Field(description="Nobody works on it, so quality is falling")
     launch: LaunchReadinessOut
     history: list[ProductMonthOut] = Field(description="Last 12 months, oldest first")
+    monthly: list[ProductTotalMonthOut] = Field(
+        description="Last 12 months summed over segments, oldest first"
+    )
 
 
 class ProductActionOut(BaseModel):
@@ -169,5 +216,35 @@ class PricePreviewOut(BaseModel):
     price_score: float
     appeal: float
     choice_share: float = Field(description="share* among live products and no purchase, 0-1")
+    current_price_cents: int | None
+    current_price_score: float | None
     current_appeal: float | None
     current_choice_share: float | None
+    revenue_per_customer_change: float | None = Field(
+        description="New price against the current one, as a fraction; null without a price"
+    )
+
+
+class PortfolioOut(BaseModel):
+    """The Products screen's tiles: the company's revenue and product costs."""
+
+    mrr_cents: int = Field(description="Revenue in the last closed month")
+    mrr_change: float | None = Field(description="Against the month before, as a fraction")
+    previous_label: str | None = Field(description="The month compared against, e.g. 'May'")
+    arr_cents: int
+    stage: int
+    stage_label: str
+    paying_customers: float = Field(description="Business customers across products now")
+    consumer_users: float = Field(description="Consumer users across products now")
+    hosting_cents: int = Field(description="Hosting this month at the current customers")
+    marketing_cents: int = Field(description="Marketing budgets this month")
+    product_costs_cents: int = Field(description="Hosting plus marketing this month")
+
+
+class ProductsMetaOut(BaseModel):
+    """Energy costs and launch thresholds for the product screens (formulas.md 6, 11.2)."""
+
+    energy_costs: dict[str, int] = Field(description="By action key, e.g. create_product")
+    start_quality: float = Field(description="A new product's quality")
+    launch_min_quality: float
+    launch_min_feature: float

@@ -153,6 +153,7 @@ founder: # founder build (formulas.md section 5)
     add_segment: 2 # sell a product into another segment of its category (M3, section 11.2)
     launch_product: 3 # launch a product (M3, section 11.2)
     sunset_product: 3 # sunset a product (M3, section 11.2)
+    cancel_product: 3 # cancel a product still in development (M3b, section 11.2)
 
 # --- Hiring (formulas.md section 7) -----------------------------------------------------
 hiring:

@@ -12,6 +12,7 @@ from tst.sim.actions import (
     Action,
     AddSegment,
     AssignUnit,
+    CancelProduct,
     CreateProduct,
     CreateUnit,
     LaunchProduct,
@@ -63,7 +64,7 @@ def test_energy_costs_match_formulas_section_6(loaded: LoadedData) -> None:
     assert cost["assign_unit"] == cost["unassign_unit"] == 2
     assert cost["set_price"] == cost["set_marketing"] == 1
     assert cost["add_segment"] == 2
-    assert cost["launch_product"] == cost["sunset_product"] == 3
+    assert cost["launch_product"] == cost["sunset_product"] == cost["cancel_product"] == 3
 
 
 def test_create_product(loaded: LoadedData) -> None:
@@ -98,7 +99,7 @@ def test_create_product(loaded: LoadedData) -> None:
         (AddSegment(FOUNDER, PRODUCT, "smb"), "already sells"),
         (AddSegment(FOUNDER, PRODUCT, "consumer"), "does not sell to"),
         (SetMarketing(FOUNDER, PRODUCT, -1), "zero or more"),
-        (SunsetProduct(FOUNDER, PRODUCT), "only a live product"),
+        (SunsetProduct(FOUNDER, PRODUCT), "cancel its development instead"),
         (UnassignUnit(FOUNDER, None), "does not work on a product"),
     ],
 )
@@ -184,6 +185,37 @@ def test_launch_and_sunset(loaded: LoadedData) -> None:
     assert sunset is not None and sunset.status == "sunset" and sunset.sunset_turn == 1
     with pytest.raises(ProductRuleError, match="being sunset"):
         act(result.new_state, AddSegment(FOUNDER, PRODUCT, "enterprise"), loaded)
+
+
+def test_cancel_retires_a_product_in_development_and_frees_its_units(
+    loaded: LoadedData,
+) -> None:
+    state = act(created(loaded), CreateUnit(FOUNDER, "team", "Core"), loaded)
+    unit = state.units[0].id
+    state = act(state, AssignUnit(FOUNDER, PRODUCT, None), loaded)
+    state = act(state, AssignUnit(FOUNDER, PRODUCT, unit), loaded)
+    before = energy(state)
+    with pytest.raises(ProductRuleError, match="cancel its development instead"):
+        act(state, SunsetProduct(FOUNDER, PRODUCT), loaded)
+    state = act(state, CancelProduct(FOUNDER, PRODUCT), loaded)
+    product = state.product(PRODUCT)
+    assert product is not None and product.status == "retired"
+    assert product.retired_turn == state.turn
+    assert state.player.root_product_id is None
+    assert state.unit(unit) is not None and state.unit(unit).product_id is None  # type: ignore[union-attr]
+    assert energy(state) == before - 3
+    with pytest.raises(UnknownProductError):
+        act(state, CancelProduct(FOUNDER, PRODUCT), loaded)
+    # the name is free again and a freed unit can take another product
+    state = act(state, CreateProduct(FOUNDER, "Pipeline", "b2b_saas", ("smb",)), loaded)
+    assert state.products[-1].name == "Pipeline" and state.products[-1].id != PRODUCT
+
+
+def test_only_a_product_in_development_can_be_cancelled(loaded: LoadedData) -> None:
+    state = with_product(fresh_game(loaded))  # live
+    with pytest.raises(ProductRuleError, match="only a product in development"):
+        act(state, CancelProduct(FOUNDER, PRODUCT), loaded)
+    assert energy(state) == 100
 
 
 def test_launch_posts_an_inbox_note(loaded: LoadedData) -> None:

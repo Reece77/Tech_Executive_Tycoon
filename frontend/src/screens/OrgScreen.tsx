@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { MoraleBar } from '../components/MoraleBar';
 import { LeadsChip, OrgNode, UnitKindBadge } from '../components/OrgNode';
+import { WorksOn } from '../components/WorksOn';
 import { ChangeDialog, type Pending } from '../components/OrgChangeDialog';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import {
@@ -131,6 +132,7 @@ function OrgBody({
             ? { reports: leader.reports.length, limit: leader.span_limit, over: leader.over_span }
             : null
         }
+        product={u.product_name}
         selected={selected === k}
         dropActive={dropOn === k}
         draggable={u.kind === 'team'}
@@ -486,6 +488,7 @@ function UnitPanel({
           </div>
         </div>
       </div>
+      <WorksOn unit={unit} />
       {leader?.over_span && (
         <Alert color="warn" data-testid="over-span-note">
           {unit.leader_name} has more reports than they can handle well, so their team&apos;s morale

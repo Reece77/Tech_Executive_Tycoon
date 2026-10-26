@@ -18,6 +18,7 @@ from tst.api.schemas.meta import (
     SkillMetaOut,
 )
 from tst.api.schemas.org import OrgMetaOut
+from tst.api.schemas.products import ProductsMetaOut
 from tst.api.schemas.saves import FounderIn
 from tst.sim.actions.org import DEPARTMENT_STAGE, PROMOTION_LADDER
 from tst.sim.data_models import DEFAULT_DIFFICULTY, DIFFICULTY_LEVELS
@@ -199,4 +200,30 @@ def founder_preview(body: FounderIn, data: DataDep) -> FounderPreviewOut:
         points_spent=preview.points_spent,
         points_remaining=preview.points_remaining,
         errors=list(preview.problems),
+    )
+
+
+PRODUCT_ACTION_ENERGY = (
+    "create_product",
+    "set_price",
+    "add_segment",
+    "assign_unit",
+    "unassign_unit",
+    "set_marketing",
+    "launch_product",
+    "sunset_product",
+    "cancel_product",
+    "scout_search",
+)
+
+
+@router.get("/products", response_model=ProductsMetaOut, operation_id="getProductsMeta")
+def products_meta(data: DataDep) -> ProductsMetaOut:
+    """Energy costs and launch thresholds for the product screens (formulas.md 6, 11.2)."""
+    pb = data.balance.products
+    return ProductsMetaOut(
+        energy_costs={key: energy_cost(key, data.balance) for key in PRODUCT_ACTION_ENERGY},
+        start_quality=pb.start_quality,
+        launch_min_quality=pb.launch_min_quality,
+        launch_min_feature=pb.launch_min_feature,
     )

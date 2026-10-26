@@ -25,6 +25,7 @@ import {
   formatRunway,
   formatWhole,
   humanize,
+  parseDollars,
 } from '../lib/format';
 import { MANAGER_LABELS, POLICY_LABELS, signed } from '../lib/org';
 import { ChangeDialog, type Pending } from './OrgChangeDialog';
@@ -51,13 +52,6 @@ export function UnitManagerLine({ saveId, p }: { saveId: string; p: Profile }) {
       )}
     </span>
   );
-}
-
-function parseDollars(text: string): number {
-  const digits = text.replace(/[$,\s]/g, '');
-  if (!/^\d+(\.\d{1,2})?$/.test(digits)) return 0;
-  const [whole, frac = ''] = digits.split('.');
-  return Number(whole) * 100 + Number(frac.padEnd(2, '0'));
 }
 
 /** Give a raise, Promote and Move to…, each opening its preview before it is applied. */

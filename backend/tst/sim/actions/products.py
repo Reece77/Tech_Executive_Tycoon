@@ -1,5 +1,5 @@
-"""Product actions (ADR-0014): create, price, segments, staffing, marketing, launch and
-sunset (docs/formulas.md 11.2, 11.3, 11.5), and the founder's scouting of a search (11.12).
+"""Product actions (ADR-0014): create, price, segments, staffing, marketing, launch, sunset
+and cancel (docs/formulas.md 11.2, 11.3, 11.5), and the founder's scouting of a search (11.12).
 They take effect at once and spend the actor's energy (formulas.md section 6).
 
 Every rule an action could break raises `ProductRuleError` (or `LaunchNotReadyError`, which
@@ -23,7 +23,12 @@ from tst.sim.errors import (
 )
 from tst.sim.log import inbox_item
 from tst.sim.products.models import Product, ProductSegment
-from tst.sim.products.phases import PRODUCT_LINK, current_feature, shown_turn
+from tst.sim.products.phases import (
+    PRODUCT_LINK,
+    current_feature,
+    release_assignments,
+    shown_turn,
+)
 from tst.sim.state import GameState, with_company, with_product, with_product_segment, with_unit
 
 PRODUCT_NAME_MAX: Final = 80  # tunable-exempt: product.name column width
@@ -99,6 +104,13 @@ class SunsetProduct:
 
 
 @dataclass(frozen=True, slots=True)
+class CancelProduct:
+    actor_id: int
+    product_id: int
+    kind: Literal["cancel_product"] = "cancel_product"
+
+
+@dataclass(frozen=True, slots=True)
 class ScoutSearch:
     """scouting_month (formulas.md 4) on every open candidate of one search (11.12)."""
 
@@ -116,6 +128,7 @@ type ProductAction = (
     | SetMarketing
     | LaunchProduct
     | SunsetProduct
+    | CancelProduct
     | ScoutSearch
 )
 
@@ -324,10 +337,28 @@ def sunset_product(state: GameState, action: SunsetProduct, balance: Balance) ->
     """No new customers; existing ones churn 3x faster; cannot be undone (11.2)."""
     company = acting_company(state, action.actor_id)
     product = own_product(state, company, action.product_id)
+    if product.status == "in_development":
+        raise ProductRuleError(
+            f"{product.name} is still in development; cancel its development instead"
+        )
     if product.status != "live":
         raise ProductRuleError(f"only a live product can be sunset; {product.name} is not live")
     state = spend_energy(state, action.actor_id, "sunset_product", balance)
     return Outcome(with_product(state, replace(product, status="sunset", sunset_turn=state.turn)))
+
+
+def cancel_product(state: GameState, action: CancelProduct, balance: Balance) -> Outcome:
+    """A product in development retires at once and its units are freed (11.2, M3b)."""
+    company = acting_company(state, action.actor_id)
+    product = own_product(state, company, action.product_id)
+    if product.status != "in_development":
+        raise ProductRuleError(
+            f"only a product in development can be cancelled; {product.name} is "
+            f"{product.status.replace('_', ' ')}"
+        )
+    state = spend_energy(state, action.actor_id, "cancel_product", balance)
+    state = with_product(state, replace(product, status="retired", retired_turn=state.turn))
+    return Outcome(release_assignments(state, product.id))
 
 
 def scout_search(

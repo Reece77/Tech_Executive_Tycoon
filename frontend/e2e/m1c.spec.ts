@@ -193,8 +193,15 @@ test('ten hires within six turns using all three channels', async ({ page }) => 
         await expect(page.getByTestId('search-row')).toHaveCount(searches + 1);
       }
     }
-    for (const row of await page.getByTestId('search-row').all()) {
-      await row.getByRole('button').first().click();
+    // Go by search id, re-finding each row: searches close and the list reorders as we go.
+    const ids = await page
+      .getByTestId('search-row')
+      .evaluateAll((rows) => rows.map((r) => r.getAttribute('data-search-id') ?? ''));
+    for (const id of ids) {
+      const row = page.locator(`[data-testid="search-row"][data-search-id="${id}"]`);
+      if ((await row.count()) === 0) continue;
+      await row.getByTestId('select-search').click();
+      await expect(row.getByTestId('select-search')).toHaveAttribute('aria-pressed', 'true');
       await offerToAll(page, 1.3);
     }
     await continueMonth(page);
