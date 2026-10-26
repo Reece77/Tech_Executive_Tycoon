@@ -144,11 +144,37 @@ def test_scenarios(client: TestClient) -> None:
 
 FORBIDDEN_NAMES = frozenset({"current_ability", "potential_ability", "master_seed"})
 FORBIDDEN_PREFIXES = ("true_", "hidden_")
+# formulas.md 11.13: product responses never carry Q_cap, development skill d_i, output o_i,
+# sales capacity or per-person contributions, which would reveal true skills (M3a).
+PRODUCT_FORBIDDEN_NAMES = frozenset(
+    {
+        "q_cap",
+        "qcap",
+        "quality_cap",
+        "d_i",
+        "o_i",
+        "dev_skill",
+        "output",
+        "base_output",
+        "capacity",
+        "sales_capacity",
+        "cap",
+        "contribution",
+        "contributions",
+        "mu",
+        "sell_skill",
+        "marketing_skill",
+    }
+)
 
 
 def forbidden(name: str) -> bool:
-    """ADR-0007 exact-name rule (potential_phrase is allowed)."""
-    return name in FORBIDDEN_NAMES or name.startswith(FORBIDDEN_PREFIXES)
+    """ADR-0007 exact-name rule (potential_phrase is allowed), plus the 11.13 names."""
+    return (
+        name in FORBIDDEN_NAMES
+        or name in PRODUCT_FORBIDDEN_NAMES
+        or name.startswith(FORBIDDEN_PREFIXES)
+    )
 
 
 def test_no_hidden_fields_in_api_models(client: TestClient) -> None:
@@ -165,6 +191,8 @@ def test_no_hidden_fields_in_api_models(client: TestClient) -> None:
     assert bad == []
     assert not forbidden("potential_phrase")
     assert forbidden("hidden_traits") and forbidden("true_skill")
+    assert "ProductOut" in components and "MarketProductOut" in components
+    assert forbidden("q_cap") and forbidden("contribution") and not forbidden("pace")
 
 
 def find_forbidden_keys(value: Any, path: str = "$") -> list[str]:

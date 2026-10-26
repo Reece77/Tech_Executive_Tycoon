@@ -92,6 +92,8 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
                 payroll_cents=snap.payroll_cents,
                 headcount=snap.headcount,
                 avg_morale=snap.avg_morale,
+                mrr_cents=snap.mrr_cents,
+                arr_cents=snap.arr_cents,
             )
             for turn, snap in ov.history
         ],
@@ -132,6 +134,8 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         ),
         network_bonus_candidates=network_bonus(state, player.id, data),
         org=org_views.org_tile(state, player.id, data),
+        mrr_cents=latest.mrr_cents if latest else 0,
+        arr_cents=latest.arr_cents if latest else 0,
     )
 
 

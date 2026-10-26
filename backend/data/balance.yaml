@@ -304,6 +304,8 @@ products:
   perfectionist_qcap_bonus: 3 # attribute points added to a perfectionist's d in Q_cap, capped at 20 (11.10)
   pace_bands: [0.4, 0.75] # fraction of scope min(1, o / sigma): below the first slow, from the second fast (11.13)
   arr_milestones_cents: [10000000, 100000000, 1000000000] # cents; inbox note when ARR first reaches $100k, $1M, $10M (M3a brief)
+  growth_label_months: 6 # months of customer trend behind the Growth / Mature display label (11.2, display only)
+  growth_label_rate: 0.05 # fraction per month; customers rising faster than this over that window shows "Growth" (11.2)
 
 market:
   gamma: 3 # exponent on appeal in the choice share (11.7)

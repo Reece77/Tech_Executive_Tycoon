@@ -22,6 +22,7 @@ from tst.db.mappers import (
     decisions_to_row,
     entry_to_row,
     log_item_to_row,
+    product_month_from_row,
     product_month_to_row,
     snapshot_to_rows,
 )
@@ -33,6 +34,7 @@ from tst.db.models import (
     LedgerEntryRow,
     LedgerLineRow,
     PersonMoraleLogRow,
+    ProductMonthRow,
     SaveMetaRow,
     TurnSnapshotRow,
 )
@@ -61,6 +63,7 @@ from tst.sim.hiring.phases import monthly_costs
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
+from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot, runway_months
@@ -287,6 +290,16 @@ def expenses_by_memo(session: Session, company_id: int, turn: int) -> list[tuple
         .order_by(LedgerEntryRow.id, LedgerLineRow.id)
     )
     return [(memo.split(":")[0], code, int(amount)) for memo, code, amount in session.execute(stmt)]
+
+
+def product_history(session: Session, product_id: int, since_turn: int) -> list[ProductMonth]:
+    """A product's month-end rows from `since_turn` on, oldest first, by segment."""
+    rows = session.scalars(
+        select(ProductMonthRow)
+        .where(ProductMonthRow.product_id == product_id, ProductMonthRow.turn >= since_turn)
+        .order_by(ProductMonthRow.turn, ProductMonthRow.segment)
+    )
+    return [product_month_from_row(r) for r in rows]
 
 
 @dataclass(frozen=True, slots=True)

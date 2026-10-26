@@ -432,6 +432,8 @@ class ProductsBalance(_Frozen):
     perfectionist_qcap_bonus: float = Field(ge=0)
     pace_bands: Span
     arr_milestones_cents: tuple[int, ...]
+    growth_label_months: int = Field(gt=0)
+    growth_label_rate: float
 
     @model_validator(mode="after")
     def _check(self) -> ProductsBalance:
