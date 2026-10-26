@@ -1,6 +1,6 @@
 # Tech Startup Tycoon: Game Design and Technical Specification v1.0
 
-Oct 24, 2026 · Reece DeHaan
+Oct 26, 2026 · Reece DeHaan
 
 > Exported from the Claude Doc of the same name. The Doc is the editable source; re-export after changes. Where this spec and the ADRs differ on technical detail, the ADRs win (see `CLAUDE.md` §1).
 
@@ -159,6 +159,8 @@ Concept, prototype, beta, launch, growth, maturity, sunset. Each stage needs ass
 - Rivals research too, so tech leadership decays without continued spend.
 - Breakthroughs and dead ends are rolled events, weighted by research team quality.
 
+**Built in M3 (`docs/formulas.md` §11):** four categories (B2B SaaS, developer tools, consumer apps, cybersecurity) with consumer, SMB, mid-market and enterprise segments. Org units are assigned to products; their builders raise quality toward a cap set by their skill and add features against a rising market expectation; sellers give mid-market and enterprise sales capacity; marketers and budget build brand. Lifecycle in v1: in development, live, sunset (launch at quality 25 and feature score 30). The technology tree, beta stage and tech debt wait for v2.
+
 ## 8. Value Chain and Production
 
 The economy is one connected chain of seven tiers, and every tier can be bought from the market, contracted, or owned by the player.
@@ -198,6 +200,8 @@ Demand is segmented, and market share is split each turn by relative appeal amon
 - Real-company starting stats are approximate and fictionalized after turn one; personal use only.
 
 **Macro layer:** interest rates, venture funding climate, AI compute demand cycle, consumer confidence, and a geopolitics index that affects export controls and regional risk.
+
+**Built in M3:** one global market per category and segment (regions later). Each month churned and newly adopting customers are in play; products win them by appeal cubed against a no-purchase option, limited by awareness in self-serve segments and by sales capacity in sales-led ones. Until rival AI arrives in M5, the competitors are 2010 incumbents (Salesforce, Oracle, Zoho, Atlassian, Microsoft, GitHub, Facebook, Zynga, Evernote, Symantec, McAfee, Check Point) with fixed scores (ADR-0017).
 
 ## 10. Finance and Capital Markets
 
@@ -373,8 +377,8 @@ Each milestone ends in something playable and a green test suite; nothing from a
 | --- | --- | --- | --- |
 | M0 Foundation (done) | Repo, tooling, schema v1 for save and company, seeded RNG, turn runner, CI | New save advances 24 turns headless; same seed gives identical results; backup file written | v1 |
 | M1 People (done: M1a, M1b, M1c) | Person generator, attributes, personality, interests, hidden traits with reveal, hiring, payroll, morale | Hire 10 people via UI; profiles render; payroll hits ledger; morale moves with pay and fit | v1 |
-| M2 Org (M2a rules and API, M2b screens) | Departments, teams, reporting lines, span of control, remote policy, raises and promotions, delegated hiring | Build a 3-level org chart; span penalty visible; reorg costs morale; a recruiter's plan hires without founder energy | v1 |
-| M3 Products and market | 4 software categories, lifecycle, ratings, segments, share formula, revenue and churn | A company can earn, burn, and go bankrupt; share responds to price and quality | v1 |
+| M2 Org (done: M2a, M2b) | Departments, teams, reporting lines, span of control, remote policy, raises and promotions, delegated hiring | Build a 3-level org chart; span penalty visible; reorg costs morale; a recruiter's plan hires without founder energy | v1 |
+| M3 Products and market (M3a rules and API, M3b screens) | 4 software categories, lifecycle, ratings, segments, share formula, revenue and churn | A company can earn and burn (bankruptcy arrives with M4); share responds to price and quality | v1 |
 | M4 Finance | Double-entry ledger, statements, SAFEs, priced rounds, cap table, board | Statements reconcile every turn; dilution correct across 3 rounds | v1 |
 | M5 Rivals | 8 agent rivals with personalities and utility AI, poaching | Rivals launch, price, hire, and die across 120 turns; balance runner passes targets | v1 |
 | M6 Events | Director, templates, LLM adapter, validator, storylines, crisis windows | 200 LLM events with zero invalid state writes; offline mode works | v1 |
@@ -446,6 +450,8 @@ All design questions but one are settled, and each answer is recorded in an ADR 
 | Interview before offer | An offer requires that the company (founder or delegate) has interviewed the candidate | ADR-0016 |
 | Founder energy | Stays on (100 a month) after the M1 playtest; every hire now costs at least one interview. Delegates have their own energy | ADR-0016 |
 | Judgment of talent | Its main job is spotting potential: potential narrows much faster for good scouts, and hiring plans can favour potential (juniors and mids) | formulas.md §4, §13.10 |
+| Competitors before M5 | Real 2010 incumbents with fixed product scores and starting customers; the same companies get people, ledgers and AI in M5 | ADR-0017 |
+| Founder scouting | The founder can scout a search for 20 energy, the same action delegates use | formulas.md §11.12 |
 
 ## 21. Pre-Build Artifacts to Generate
 
@@ -468,4 +474,4 @@ Twelve artifacts should exist before the first line of game code; the first five
 
 **Recommended order:** 1, 2, 5 in one sitting (so Claude Code can start M0), then 3 and 4, then 8 and 9 in parallel with M0.
 
-**Status:** items 1, 2, 4, and 5 are in the GitHub repository (`Reece77/Tech_Executive_Tycoon`): rules files, 16 ADRs, `docs/formulas.md` (final through §13, Organization), and briefs for M0 through M2b. Item 3 (data dictionary) is kept current with each migration. M0 and M1 (M1a, M1b, M1c) are complete; M2a is next, and M2b follows once its Org wireframes are drawn.
+**Status:** items 1, 2, 4, and 5 are in the GitHub repository (`Reece77/Tech_Executive_Tycoon`): rules files, 17 ADRs, `docs/formulas.md` (final through M3: §11 products and markets, §13 organization), and briefs for M0 through M3b. Item 3 (data dictionary) is kept current with each migration. M0, M1 and M2 are complete; M3a is next, and M3b follows once its product wireframes are drawn.
