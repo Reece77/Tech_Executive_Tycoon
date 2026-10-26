@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { Line, LineChart, ResponsiveContainer, YAxis } from 'recharts';
 import { AttributeRange } from '../components/AttributeRange';
 import { MoraleBar } from '../components/MoraleBar';
+import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../components/PersonOrg';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { StatusChip } from '../components/StatusChip';
 import {
@@ -15,6 +16,7 @@ import {
   type Attribute,
   type HiringMeta,
   type NewGameMeta,
+  type Overview,
   type Profile,
 } from '../hooks/api';
 import {
@@ -58,7 +60,7 @@ export function PersonScreen() {
       p={person.data}
       meta={meta.data}
       hiring={hiring.data}
-      mission={overview.data.mission}
+      overview={overview.data}
     />
   );
 }
@@ -115,14 +117,15 @@ function ProfileBody({
   p,
   meta,
   hiring,
-  mission,
+  overview,
 }: {
   saveId: string;
   p: Profile;
   meta: NewGameMeta;
   hiring: HiringMeta;
-  mission: string[];
+  overview: Overview;
 }) {
+  const mission = overview.mission;
   const navigate = useNavigate();
   const fire = useFire(saveId);
   const [confirming, setConfirming] = useState(false);
@@ -158,6 +161,7 @@ function ProfileBody({
               .join(' · ')}{' '}
             {emp && <StatusChip status={statusOf(p)} />}
           </span>
+          <UnitManagerLine saveId={saveId} p={p} />
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 28 }}>
           {emp && !p.is_founder && (
@@ -187,7 +191,9 @@ function ProfileBody({
             </div>
           )}
         </div>
+        <PersonActions saveId={saveId} p={p} />
       </section>
+      <MoraleBreakdownPanel saveId={saveId} p={p} overview={overview} />
 
       <div
         style={{
@@ -432,10 +438,12 @@ function ProfileBody({
               h={44}
               loading={fire.isPending}
               data-testid="fire-confirm"
-              onClick={() =>
-                fire.mutate(p.person_id, {
-                  onSuccess: () => void navigate(`/game/${saveId}/people`),
-                })
+              onClick={
+                () =>
+                  void fire
+                    .mutateAsync(p.person_id)
+                    .then(() => navigate(`/game/${saveId}/people`))
+                    .catch(() => undefined) // the error shows in the dialog
               }
             >
               Fire {firstName}

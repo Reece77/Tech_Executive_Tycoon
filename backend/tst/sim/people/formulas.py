@@ -113,6 +113,21 @@ def scout_factor(judgment_of_talent: float, reveal: RevealBalance) -> float:
     return reveal.scout_base + judgment_of_talent / reveal.scout_divisor
 
 
+def pa_scout_factor(judgment_of_talent: float, reveal: RevealBalance) -> float:
+    """clamp(judgment_of_talent / 20, 0.1, 1.0): potential narrows more steeply with
+    judgment than skills do (formulas.md section 4, M2b)."""
+    raw = judgment_of_talent / reveal.pa_scout_divisor
+    return min(max(raw, reveal.pa_scout_clamp.lo), reveal.pa_scout_clamp.hi)
+
+
+def narrow_pa(
+    hw: float, strength: float, judgment_of_talent: float, reveal: RevealBalance
+) -> float:
+    """PA's hw x (1 - pa_strength x pa_scout_factor), never below 0 or above the old hw."""
+    shrink = strength * pa_scout_factor(judgment_of_talent, reveal)
+    return hw * min(max(1 - shrink, 0.0), 1.0)
+
+
 def narrow(hw: float, strength: float, judgment_of_talent: float, reveal: RevealBalance) -> float:
     """hw x (1 - strength x scout_factor), never below 0 and never above the old hw."""
     shrink = strength * scout_factor(judgment_of_talent, reveal)

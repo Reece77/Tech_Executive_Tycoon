@@ -35,6 +35,7 @@ from tst.sim.actions import (
     OpenSearch,
     Promote,
     ReferenceCheck,
+    RenameUnit,
     SetLeader,
     SetPolicy,
     UpdatePlan,
@@ -450,6 +451,7 @@ app.add_typer(plan_app, name="plan")
 PreviewOpt = Annotated[bool, typer.Option(help="Show the effect without doing it")]
 ROOT_UNIT = "root"  # --unit value for the company root
 BP_PER_RATIO = 10_000
+FOCUS_LABELS = {"current": "best now", "potential": "spotting potential"}
 
 
 def _unit_arg(value: str | None) -> int | None:
@@ -538,6 +540,16 @@ def unit_dissolve(
 ) -> None:
     """Dissolve a unit: its members and teams move to its parent (members lose 2 morale)."""
     _org_run(save, DissolveUnit(_actor(_game(save)[2]), unit), preview)
+
+
+@unit_app.command("rename")
+def unit_rename(
+    save: SaveOpt,
+    unit: Annotated[int, typer.Option(help="Unit id")],
+    name: Annotated[str, typer.Option(help="New name")],
+) -> None:
+    """Rename a department or team (free)."""
+    _org_run(save, RenameUnit(_actor(_game(save)[2]), unit, name))
 
 
 @unit_app.command("reparent")
@@ -655,6 +667,7 @@ def _plan_line(plan: Any) -> str:
         f"{plan.plan_id:>3}  {plan.role_label:<20} {plan.hired}/{plan.target} hired, "
         f"{plan.pending_offers} pending  owner {plan.owner_name} ({plan.owner_energy} energy)  "
         f"unit {plan.unit_name}  {plan.channel} at {plan.ratio_bp / BP_PER_RATIO:.2f}x  "
+        f"{FOCUS_LABELS.get(plan.focus, plan.focus)}  "
         f"[{plan.status}]{last}"
     )
 
@@ -669,6 +682,9 @@ def plan_create(
     ratio: Annotated[float, typer.Option(help="Salary offered as a multiple of the ask")] = 1.0,
     equity_bp: Annotated[int, typer.Option("--equity-bp", help="Equity per offer, bp")] = 0,
     unit: Annotated[str | None, typer.Option(help="Unit the hires join, or 'root'")] = None,
+    focus: Annotated[
+        str, typer.Option(help="current (best now) or potential (juniors and mids)")
+    ] = "current",
 ) -> None:
     """Create a hiring plan; the delegate works it each month on their own energy."""
     path, data, state = _game(save)
@@ -681,6 +697,7 @@ def plan_create(
         _ratio_bp(ratio),
         equity_bp,
         _unit_arg(unit),
+        focus,  # type: ignore[arg-type]
     )
     result = _run(path, data, action)
     plan = max(result.new_state.plans, key=lambda p: p.id)
@@ -708,6 +725,7 @@ def plan_update(
     ratio: Annotated[float | None, typer.Option(help="Salary multiple of the ask")] = None,
     equity_bp: Annotated[int | None, typer.Option("--equity-bp", help="Equity, bp")] = None,
     unit: Annotated[str | None, typer.Option(help="Unit id, or 'root'")] = None,
+    focus: Annotated[str | None, typer.Option(help="current or potential")] = None,
 ) -> None:
     """Change a plan; a paused plan restarts once its owner is on staff."""
     path, data, state = _game(save)
@@ -724,6 +742,7 @@ def plan_update(
         ratio_bp=current.ratio_bp if ratio is None else _ratio_bp(ratio),
         equity_bp=current.equity_bp if equity_bp is None else equity_bp,
         unit_id=current.unit_id if unit is None else _unit_arg(unit),
+        focus=current.focus if focus is None else focus,  # type: ignore[arg-type]
     )
     result = _run(path, data, action)
     updated = result.new_state.plan(plan)

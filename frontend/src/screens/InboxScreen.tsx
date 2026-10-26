@@ -3,9 +3,16 @@ import { useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { KindBadge } from '../components/KindBadge';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
-import { useInbox, useOverview, usePerson, useSetRead, type InboxItem } from '../hooks/api';
+import {
+  INBOX_PAGE,
+  useInbox,
+  useOverview,
+  usePerson,
+  useSetRead,
+  type InboxItem,
+} from '../hooks/api';
 import { formatMoneyWhole, formatWhole, humanize } from '../lib/format';
-import { kindLabel, matchesFilter, preview, type InboxFilter } from '../lib/inbox';
+import { kindLabel, matchesFilter, pageRange, preview, type InboxFilter } from '../lib/inbox';
 import { moraleBand } from '../lib/attr';
 
 const FILTERS: { key: InboxFilter; label: string }[] = [
@@ -17,7 +24,8 @@ const FILTERS: { key: InboxFilter; label: string }[] = [
 
 export function InboxScreen() {
   const { saveId = '' } = useParams();
-  const inbox = useInbox(saveId);
+  const [offset, setOffset] = useState(0);
+  const inbox = useInbox(saveId, offset);
   const overview = useOverview(saveId);
   const setRead = useSetRead(saveId);
   const [params, setParams] = useSearchParams();
@@ -125,6 +133,40 @@ export function InboxScreen() {
                 </span>
               </button>
             ))
+          )}
+          {inbox.data.total > INBOX_PAGE && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 16px',
+                borderTop: '1px solid var(--tst-rule)',
+              }}
+            >
+              <span className="tst-num tst-muted" style={{ fontSize: 13 }} data-testid="inbox-page">
+                {pageRange(offset, inbox.data.items.length, inbox.data.total)}
+              </span>
+              <Button
+                size="compact-sm"
+                variant="default"
+                ml="auto"
+                disabled={offset === 0}
+                data-testid="inbox-newer"
+                onClick={() => setOffset(Math.max(0, offset - INBOX_PAGE))}
+              >
+                Newer
+              </Button>
+              <Button
+                size="compact-sm"
+                variant="default"
+                disabled={offset + INBOX_PAGE >= inbox.data.total}
+                data-testid="inbox-older"
+                onClick={() => setOffset(offset + INBOX_PAGE)}
+              >
+                Older
+              </Button>
+            </div>
           )}
         </section>
         {selected && (

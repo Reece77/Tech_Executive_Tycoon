@@ -56,8 +56,29 @@ Per `docs/formulas.md` §4 (PA scout factor) and §13.10 (plan focus, potential 
 
 ## Decisions made
 
-_(Agent fills in.)_
+1. **Tuned PA values** (formulas.md §4, §13.10): stranger PA `hw` (`reveal.initial_hw.pa`) **67**, founder's own PA `hw` (`reveal.founder_pa_hw`) **40**, `reveal.pa_scout_divisor` **16**, `reveal.pa_strength`: job-post screen **0.05**, interview **0.10**, scouting month **0.60**; network intro 0.30, reference check 0.30, employed month 0.08 unchanged. Result: **+3.09 PA** over 400 seeds (judgment 16: 132.66, judgment 6: 129.57).
+   - 67 is the smallest whole value that reaches +3: 66 gives +2.93 and 65 at most +2.94 with any strengths tried. At 40 the named keys topped out at +1.27; 70 gives +3.33 and 75 gives +3.41 with the same strengths. The margin at 67 is thin (0.09 PA), so a later change to candidate generation or delegate ranking could tip the test under 3.
+   - Tuning runs (400 seeds each): at hw 60–70 the strengths and divisor moved the gap by at most about 0.3; divisor 16 beat 14, 17, 18, 20 and 24; scouting 0.6 beat 0.4 and 0.8.
+2. **What the player's own reading costs:** a judgment-10 founder, after a job-post screen and one interview, typically sees **"limited to outstanding"** (45 of 100 seeded candidates) or **"decent to outstanding"** (30); then "limited to excellent" (19), "good to outstanding" (3) and "limited to good" (3). The displayed PA range averages 119 points wide. A 6-month employee read by a judgment-12 scout narrows to about "decent to outstanding" (§4 PA worked example).
+3. **`reveal.pa_scout_clamp`** ([0.1, 1.0]) holds the bounds of the PA scout factor in `balance.yaml` rather than as literals (not tuned).
+4. **Old decision logs:** `CreatePlan` and `UpdatePlan` default `focus` to `current`, so M2a saves replay unchanged.
+5. **Potential focus** affects steps 2, 3 and 5 only; scouting (step 4) still covers every open candidate for the role, and step 1 is unchanged.
+6. **Tests pinning the old PA value** (`test_section_4_initial_half_widths`, the founder knowledge test) now check 67 for strangers and `founder_pa_hw` for the founder, as formulas.md now says.
+7. **Golden snapshots** are unchanged by the slice: the scripted games use current-focus plans and nothing they decide depends on PA knowledge.
+8. **Values added to the API for the screens** (the brief allows this; none is a new rule): `rename_unit` (see 9); `UnitOut.headcount` (the unit and every unit below it); `ManagerOut.label` and `OrgOut.managers_over_span`; `PersonSummaryOut.org` (unit, parent unit, manager, led unit) and `.energy`; `PayPreviewOut.salary_change_bp`, `.market_ratio`, `.new_market_ratio`, `.monthly_cost_change_cents`, `.below_market`; `OverviewOut.org` (the Org tile), `.option_pool_left_bp`, `.network_bonus_candidates`; `InboxOut.total` and `.offset` with an `offset` query parameter; `HiringPlanOut.owner_on_staff` and `.owner_role_label`.
+9. **Renaming a unit** is a new action, `rename_unit` (API `POST /org/units/{id}/rename`, `tst unit rename`, previewable): free, with no morale change, as the wireframe shows Rename without an energy cost. Names follow the create rules (1–64 characters, unique among active units).
+10. **Manager label** (strong, fine, stretched) comes from the manager's W_mgr (§13.4): at or above +2 strong, at or below −2 stretched, between fine (`org.manager_label_bands`, morale points). The Overview's average label is the label of the mean W_mgr over everyone who manages anyone (founder included). This display rule was not in the spec; the bands mean "about a quarter of the cap either way".
+11. **"Well below the market rate"** in the Promote dialog is shown whenever the salary would be below the new level's market rate (`below_market`), so no extra threshold was invented.
+12. **Inbox:** the filters (Unread, People, Hiring) apply to the 50 messages on the current page. Plan messages (`plan_activity`, `plan_filled`, `plan_paused`) get the Delegate badge and the Hiring group; `unit_leader_left` is a Notice.
+13. **Org screen:** a new team is created under the selected department when one is selected, otherwise under the company; the root has no "inherit" policy option; a leader's Move to… is disabled until they are replaced (the API refuses it anyway). Drag-and-drop uses HTML5 drag events; people and teams also have menus for keyboard use.
+14. **Promote and raise…** promotes first, then opens the raise dialog at the new level's market rate.
+15. **Plan dialog:** an owner who has never owned a plan shows `delegates.energy_per_month` from `GET /meta/org`; the owner defaults to the first staff member until the player picks.
+16. **Smoke e2e:** key 5 now opens Org, so the placeholder check moved to key 6 (Products, M3).
 
 ## Follow-ups
 
-_(Agent fills in.)_
+1. **The potential target has a thin margin** (+3.09 against +3 at stranger PA `hw` 67). A change to candidate generation, batch sizes or delegate ranking could tip the comparative test under 3; 70 would give +3.33 if more headroom is wanted.
+2. **Potential is now hard to read for the player.** After a job-post screen and one interview a judgment-10 founder usually sees "limited to outstanding" (45 of 100 candidates). The balance pass may want the founder's own interviews to read potential better, or a cheaper way to learn it than hiring a scout.
+3. **No player-initiated scouting.** Scouting is the main source of PA knowledge but only delegates can do it; a founder "scout this candidate" action would let the player buy knowledge with energy.
+4. **Inbox filters are per page.** With many messages, People or Hiring filters show only matches from the current 50; server-side filters would fix it if long games make it awkward.
+5. **Manager label bands** (±2 W_mgr) are a first guess for the playtest.

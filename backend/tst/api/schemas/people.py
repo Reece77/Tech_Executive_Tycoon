@@ -84,6 +84,17 @@ class KnowledgeOut(BaseModel):
     profile_known: bool = Field(description="Interests and work style are visible")
 
 
+class PersonOrgOut(BaseModel):
+    """Where a staff member sits in the org (M2b)."""
+
+    unit_id: int | None = Field(description="Null for the company root")
+    unit_name: str
+    parent_unit_name: str | None = Field(description="The unit's parent unit, if any")
+    manager_id: int | None = Field(description="Null for the founder")
+    manager_name: str | None
+    leads_unit_id: int | None = Field(description="The unit they lead, if any")
+
+
 class PersonSummaryOut(BaseModel):
     person_id: int
     name: str
@@ -101,6 +112,10 @@ class PersonSummaryOut(BaseModel):
     noticed_tags: list[TagOut]
     knowledge: KnowledgeOut
     interests: list[str] | None = Field(description="Null until an interview or network intro")
+    org: PersonOrgOut | None = Field(default=None, description="Staff only (M2b)")
+    energy: int | None = Field(
+        default=None, description="Energy left this month: the founder and delegates only"
+    )
 
 
 class PersonProfileOut(PersonSummaryOut):
@@ -181,4 +196,6 @@ class InboxItemOut(BaseModel):
 
 class InboxOut(BaseModel):
     unread: int
+    total: int = Field(description="Messages matching the query, before paging (M2b)")
+    offset: int = 0
     items: list[InboxItemOut]

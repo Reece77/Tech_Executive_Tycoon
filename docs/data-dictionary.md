@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 6 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 7 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -20,7 +20,7 @@ One row describing the save. Current-state table (updated in place each turn).
 | `created_turn` | INTEGER | no | Turn the save was created at (0). |
 | `current_turn` | INTEGER | no | Next turn to be played. Incremented once per committed turn. |
 | `data_hashes` | JSON | no | `{file name: SHA-256}` of the data files used to create the save (line endings normalized), so later data changes can be detected (ADR-0008). |
-| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (6 after `0006_search_plan`). |
+| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (7 after `0007_plan_focus`). |
 | `next_person_id` | INTEGER | no | Next person id to assign. Ids are never reused, because people leave the live state (M1b sweep rule 2). |
 | `next_search_id` | INTEGER | no | Next search id. |
 | `next_offer_id` | INTEGER | no | Next offer id. |
@@ -348,6 +348,7 @@ Delegated hiring (formulas.md §13.10, ADR-0015). Index `ix_hiring_plan_company_
 | `hired` | INTEGER | no | Offers made under the plan that were accepted. |
 | `closed_turn` | INTEGER | yes | Turn closed. |
 | `last_activity` | JSON | yes | `{turn, searches, interviews, scouted, offers}` for the last turn the delegate worked the plan. |
+| `focus` | VARCHAR(16) | no | `current` ("Best now", default) or `potential` ("Spot potential": juniors and mids ranked by the displayed PA midpoint, formulas.md §13.10). Added by `0007_plan_focus` (M2b). |
 
 ## Inbox (migration `0004_inbox`, M1b)
 

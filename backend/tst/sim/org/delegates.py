@@ -32,8 +32,9 @@ from tst.sim.hiring.models import Candidate, Channel
 from tst.sim.ledger import AccountCode, LedgerEntry, apply_entries
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import BP_DENOMINATOR, Cents
-from tst.sim.org.models import HiringPlan, PlanActivity
+from tst.sim.org.models import POTENTIAL_LEVELS, HiringPlan, PlanActivity, PlanFocus
 from tst.sim.org.upkeep import release_job_posts
+from tst.sim.people.models import PA_KEY
 from tst.sim.people.reveal import revealed_range
 from tst.sim.rng import RngFactory
 from tst.sim.scale import PRIMARY_WEIGHT, SECONDARY_WEIGHT
@@ -61,11 +62,34 @@ def known_score(state: GameState, company_id: int, candidate: Candidate, data: G
     )
 
 
+def known_potential(state: GameState, company_id: int, candidate: Candidate) -> float:
+    """Midpoint of the company's displayed PA range (13.10 focus potential)."""
+    reveal = state.reveal(company_id, candidate.person_id)
+    if reveal is None:
+        return 0.0
+    lo, hi = revealed_range(state.person(candidate.person_id), reveal, PA_KEY)
+    return (lo + hi) / 2
+
+
 def ranked_candidates(
-    state: GameState, company_id: int, role: str, data: GameData
+    state: GameState, company_id: int, role: str, data: GameData, focus: PlanFocus = "current"
 ) -> list[Candidate]:
-    """The role's open candidates, best known score first; ties by candidate id."""
+    """The role's open candidates, best first (13.10, step 2).
+
+    Focus current: by the known role-skill score, ties by candidate id. Focus potential:
+    juniors and mids only, by the known PA midpoint, ties by the role-skill score, then id.
+    """
     pool = [c for c in state.open_candidates(company_id) if state.person(c.person_id).role == role]
+    if focus == "potential":
+        pool = [c for c in pool if state.person(c.person_id).level in POTENTIAL_LEVELS]
+        return sorted(
+            pool,
+            key=lambda c: (
+                -known_potential(state, company_id, c),
+                -known_score(state, company_id, c, data),
+                c.person_id,
+            ),
+        )
     return sorted(pool, key=lambda c: (-known_score(state, company_id, c, data), c.person_id))
 
 
@@ -142,7 +166,7 @@ def _work_plan(run: _Run, plan: HiringPlan) -> PlanActivity:
             activity = replace(activity, searches=activity.searches + 1)
 
     # 2-3. Interview the best uninterviewed candidates while more than the reserve would remain.
-    for candidate in ranked_candidates(run.state, company, role, run.data):
+    for candidate in ranked_candidates(run.state, company, role, run.data, plan.focus):
         if candidate.interviewed_turn is not None:
             continue
         if run.energy(owner) - interview_cost <= reserve:
@@ -157,7 +181,7 @@ def _work_plan(run: _Run, plan: HiringPlan) -> PlanActivity:
 
     # 5. Offer to the best interviewed candidates without a pending offer, as many as needed.
     needed = still_needed(run.state, plan)
-    for candidate in ranked_candidates(run.state, company, role, run.data):
+    for candidate in ranked_candidates(run.state, company, role, run.data, plan.focus):
         if needed <= 0:
             break
         if candidate.interviewed_turn is None:
@@ -182,8 +206,9 @@ def _plural(word: str, count: int) -> str:
     return word if count == 1 else f"{word}s"
 
 
-def activity_text(activity: PlanActivity, role_label: str) -> str:
-    """'opened a job post, interviewed 4 software engineers and made 2 offers'."""
+def activity_text(activity: PlanActivity, role_label: str, focus: PlanFocus = "current") -> str:
+    """'interviewed 4 software engineers and made 2 offers', plus ', favouring potential'
+    for a potential plan (13.10)."""
     parts = []
     if activity.searches:
         parts.append("opened a new search")
@@ -195,9 +220,8 @@ def activity_text(activity: PlanActivity, role_label: str) -> str:
         parts.append(f"scouted {activity.scouted} {_plural('candidate', activity.scouted)}")
     if activity.offers:
         parts.append(f"made {activity.offers} {_plural('offer', activity.offers)}")
-    if len(parts) == 1:
-        return parts[0]
-    return ", ".join(parts[:-1]) + " and " + parts[-1]
+    text = parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " and " + parts[-1]
+    return f"{text}, favouring potential" if focus == "potential" else text
 
 
 def run_delegates(
@@ -246,7 +270,7 @@ def run_delegates(
                 link_id=owner.id,
                 name=f"{owner.first_name} {owner.last_name}",
                 role=role_label,
-                activity=activity_text(activity, role_label),
+                activity=activity_text(activity, role_label, plan.focus),
             )
         )
     return run.state, tuple(run.entries), tuple(run.logs), tuple(run.taken)

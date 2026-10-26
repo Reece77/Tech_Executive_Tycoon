@@ -3,6 +3,7 @@ import { GameLayout } from './screens/GameLayout';
 import { InboxScreen } from './screens/InboxScreen';
 import { MainMenu } from './screens/MainMenu';
 import { NewGameScreen } from './screens/NewGameScreen';
+import { OrgScreen } from './screens/OrgScreen';
 import { OverviewScreen } from './screens/OverviewScreen';
 import { PeopleScreen } from './screens/PeopleScreen';
 import { PersonScreen } from './screens/PersonScreen';
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="people" element={<PeopleScreen />} />
           <Route path="people/:personId" element={<PersonScreen />} />
           <Route path="recruitment" element={<RecruitmentScreen />} />
+          <Route path="org" element={<OrgScreen />} />
           <Route path=":section" element={<PlaceholderScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

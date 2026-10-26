@@ -1,4 +1,5 @@
 import type { ReactTable, RowData } from '@tanstack/react-table';
+import type { HTMLAttributes } from 'react';
 import type { GameTableFeatures } from '../lib/table';
 
 const ARROWS = { asc: ' ▲', desc: ' ▼' } as const;
@@ -9,6 +10,7 @@ interface Props<T extends RowData> {
   rowTestId?: string;
   selectedRowId?: string;
   empty?: string;
+  rowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement>; // e.g. draggable rows (Org)
 }
 
 /** Table markup for a TanStack table: header click sorts, wide tables scroll in the panel. */
@@ -18,6 +20,7 @@ export function DataTable<T extends RowData>({
   rowTestId,
   selectedRowId,
   empty,
+  rowProps,
 }: Props<T>) {
   const rows = table.getRowModel().rows;
   return (
@@ -60,7 +63,12 @@ export function DataTable<T extends RowData>({
             </tr>
           ) : (
             rows.map((row) => (
-              <tr key={row.id} data-testid={rowTestId} data-selected={row.id === selectedRowId}>
+              <tr
+                key={row.id}
+                data-testid={rowTestId}
+                data-selected={row.id === selectedRowId}
+                {...rowProps?.(row.original)}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id}>
                     <table.FlexRender cell={cell} />

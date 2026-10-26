@@ -152,7 +152,9 @@ def test_new_game_creates_founder_employment_and_knowledge(loaded: LoadedData) -
     assert reveal is not None
     for key in [*loaded.game_data.skill_keys, *loaded.game_data.personality_keys]:
         assert reveal.record(key).hw == 0
-    assert reveal.record(PA_KEY).hw == loaded.balance.reveal.initial_hw.pa
+    assert (
+        reveal.record(PA_KEY).hw == loaded.balance.reveal.founder_pa_hw
+    )  # 40, formulas.md 5 (M2b)
     assert reveal.profile_revealed_turn == 0
     assert reveal.revealed_tags == tuple((tag, 0) for tag in person.tags)
     offsets = [rec.offset for _, rec in reveal.attributes]

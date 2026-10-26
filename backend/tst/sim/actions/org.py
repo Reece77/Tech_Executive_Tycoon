@@ -23,11 +23,13 @@ from tst.sim.errors import (
 from tst.sim.org.formulas import is_raise_bonus
 from tst.sim.org.models import (
     PLAN_CHANNELS,
+    PLAN_FOCUSES,
     UNIT_KINDS,
     WORK_POLICIES,
     HiringPlan,
     OrgUnit,
     PlanChannel,
+    PlanFocus,
     PlanStatus,
     UnitKind,
     WorkPolicy,
@@ -70,6 +72,16 @@ class DissolveUnit:
     actor_id: int
     unit_id: int
     kind: Literal["dissolve_unit"] = "dissolve_unit"
+
+
+@dataclass(frozen=True, slots=True)
+class RenameUnit:
+    """Rename a department or team (free; no morale change)."""
+
+    actor_id: int
+    unit_id: int
+    name: str
+    kind: Literal["rename_unit"] = "rename_unit"
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,6 +143,7 @@ class CreatePlan:
     ratio_bp: int
     equity_bp: int = 0
     unit_id: int | None = None
+    focus: PlanFocus = "current"
     kind: Literal["create_plan"] = "create_plan"
 
 
@@ -147,6 +160,7 @@ class UpdatePlan:
     ratio_bp: int
     equity_bp: int
     unit_id: int | None
+    focus: PlanFocus = "current"  # default keeps M2a decision logs loadable
     kind: Literal["update_plan"] = "update_plan"
 
 
@@ -170,6 +184,7 @@ type OrgAction = (
     CreateUnit
     | DissolveUnit
     | MoveUnit
+    | RenameUnit
     | SetLeader
     | MovePerson
     | SetPolicy
@@ -304,6 +319,15 @@ def dissolve_unit(state: GameState, action: DissolveUnit, balance: Balance) -> O
             state = with_offer(state, replace(offer, unit_id=parent))
     dissolved = replace(unit, status="dissolved", dissolved_turn=state.turn, leader_id=None)
     return Outcome(with_unit(state, dissolved))
+
+
+def rename_unit(state: GameState, action: RenameUnit) -> Outcome:
+    company = acting_company(state, action.actor_id)
+    unit = active_unit(state, company, action.unit_id)
+    name = _clean_name(state, company, action.name, keep=unit.id)
+    if name == unit.name:
+        raise OrgRuleError(f"the unit is already named {name!r}")
+    return Outcome(with_unit(state, replace(unit, name=name)))
 
 
 def move_unit(state: GameState, action: MoveUnit, balance: Balance) -> Outcome:
@@ -451,10 +475,13 @@ def _check_plan(
     ratio_bp: int,
     equity_bp: int,
     unit_id: int | None,
+    focus: str,
     balance: Balance,
     data: GameData,
 ) -> None:
     employee(state, company, owner_id, "own a hiring plan (it needs a delegate)")
+    if focus not in PLAN_FOCUSES:
+        raise InvalidActionError(f"unknown focus {focus!r}")
     if role not in {r.key for r in data.roles}:
         raise UnknownRoleError(f"unknown role {role!r}")
     if target < 1:
@@ -492,6 +519,7 @@ def create_plan(state: GameState, action: CreatePlan, balance: Balance, data: Ga
         action.ratio_bp,
         action.equity_bp,
         action.unit_id,
+        action.focus,
         balance,
         data,
     )
@@ -509,6 +537,7 @@ def create_plan(state: GameState, action: CreatePlan, balance: Balance, data: Ga
         ratio_bp=action.ratio_bp,
         equity_bp=action.equity_bp,
         created_turn=state.turn,
+        focus=action.focus,
     )
     return Outcome(replace(with_plan(state, plan), next_ids=ids))
 
@@ -534,6 +563,7 @@ def update_plan(state: GameState, action: UpdatePlan, balance: Balance, data: Ga
         action.ratio_bp,
         action.equity_bp,
         action.unit_id,
+        action.focus,
         balance,
         data,
     )
@@ -550,6 +580,7 @@ def update_plan(state: GameState, action: UpdatePlan, balance: Balance, data: Ga
         equity_bp=action.equity_bp,
         unit_id=action.unit_id,
         status=status,
+        focus=action.focus,
     )
     return Outcome(with_plan(state, updated))
 

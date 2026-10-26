@@ -89,6 +89,16 @@ class TeamOut(BaseModel):
     avg_morale: float | None = Field(description="Employees, not the founder; null if none")
 
 
+class OrgTileOut(BaseModel):
+    """The Overview's Org tile (M2b)."""
+
+    units: int = Field(description="Departments and teams")
+    managers_over_span: int
+    manager_label: str | None = Field(
+        description="strong | fine | stretched for the average manager morale term; null if none"
+    )
+
+
 class OverviewOut(BaseModel):
     save_id: str
     company_name: str
@@ -117,3 +127,10 @@ class OverviewOut(BaseModel):
     )
     month_paid: list[CostLineOut] = Field(description="Expenses already posted this month")
     month_total_cents: int = Field(description="Projected plus already posted")
+    option_pool_left_bp: int = Field(
+        default=0, description="Option pool left: staff equity plus pending offers counted"
+    )
+    network_bonus_candidates: int = Field(
+        default=0, description="Extra network candidates the founder's sociability brings"
+    )
+    org: OrgTileOut | None = None

@@ -361,3 +361,15 @@ def test_move_unit_through_the_api(make_api: Any) -> None:
     )
     assert not refused["allowed"] and "only teams move" in refused["problem"]
     assert api.post(f"{BASE}/org/units/1/move", {"parent_id": None}, 400)["code"] == "org_rule"
+
+
+def test_plan_focus_through_the_api(make_api: Any) -> None:
+    api = make_api(2)
+    body = {"owner_id": 2, "role": "designer", "target": 1, "ratio_bp": 10_000}
+    assert api.post(f"{BASE}/hiring-plans", body, 201)["focus"] == "current"
+    plan = api.post(f"{BASE}/hiring-plans", {**body, "focus": "potential"}, 201)
+    assert plan["focus"] == "potential"
+    patched = api.call("PATCH", f"{BASE}/hiring-plans/{plan['plan_id']}", json={"focus": "current"})
+    assert patched["focus"] == "current" and patched["target"] == 1
+    bad = api.post(f"{BASE}/hiring-plans", {**body, "focus": "hunch"}, 400)
+    assert bad["code"] == "invalid_action"

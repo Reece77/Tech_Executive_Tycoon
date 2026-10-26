@@ -328,13 +328,19 @@ def get_inbox(
     settings: SettingsDep,
     unread_only: bool = False,
     limit: int | None = Query(default=None, ge=1),
+    offset: int = Query(default=0, ge=0),
 ) -> InboxOut:
+    """Newest first. `limit` and `offset` page through a long inbox (M2b)."""
     path = _path(settings, save_id)
     with repository.open_session(path) as session:
         player = repository.load_state(session).player
-        items = inbox.list_inbox(session, player.id, unread_only=unread_only, limit=limit)
+        items = inbox.list_inbox(
+            session, player.id, unread_only=unread_only, limit=limit, offset=offset
+        )
         return InboxOut(
             unread=inbox.unread_count(session, player.id),
+            total=inbox.inbox_total(session, player.id, unread_only=unread_only),
+            offset=offset,
             items=[views.inbox_item(m) for m in items],
         )
 

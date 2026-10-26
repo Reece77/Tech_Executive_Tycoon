@@ -22,21 +22,32 @@ from tst.api.schemas.org import (
     PlanActivityOut,
     UnitOut,
 )
+from tst.api.schemas.saves import OrgTileOut
 from tst.api.views import person_name, role_label
 from tst.loader import LoadedData
 from tst.sim.actions import Action, GiveRaise, Promote, apply_action
 from tst.sim.actions.org import departments_unlocked, next_level
 from tst.sim.calendar import format_turn
-from tst.sim.data_models import ORG_TAGS
+from tst.sim.data_models import ORG_TAGS, Balance
 from tst.sim.errors import SimError, UnknownPersonError
-from tst.sim.hiring.formulas import pay_term
-from tst.sim.money import Cents
+from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents, pay_term
+from tst.sim.money import BP_DENOMINATOR, Cents
 from tst.sim.org.delegates import activity_text, still_needed
-from tst.sim.org.formulas import span_factor, span_limit, tag_term
+from tst.sim.org.formulas import (
+    manager_label,
+    manager_morale_term,
+    manager_quality,
+    span_factor,
+    span_limit,
+    tag_term,
+)
 from tst.sim.org.models import HiringPlan
 from tst.sim.org.morale import market_mid_for, morale_terms
 from tst.sim.org.rules import (
+    COMMUNICATION,
     LEADERSHIP,
+    MENTORING,
+    OrgView,
     effective_policy,
     is_remote,
     manager_terms,
@@ -85,12 +96,14 @@ def org_out(state: GameState, company_id: int, data: LoadedData) -> OrgOut:
             effective_policy=effective_policy(state, company_id, unit_id),
             members=[member(pid, unit_id) for pid in view.members.get(unit_id, ())],
             child_unit_ids=sorted(u.id for u in view.units.values() if u.parent_id == unit_id),
+            headcount=_headcount(view, unit_id),
         )
 
     managers = []
     for manager_id, reports in sorted(view.reports.items()):
         leadership = state.person(manager_id).skills[LEADERSHIP]
         limit = span_limit(leadership, data.balance.org)
+        term = manager_term(state, view, manager_id, data.balance)
         managers.append(
             ManagerOut(
                 person_id=manager_id,
@@ -100,6 +113,7 @@ def org_out(state: GameState, company_id: int, data: LoadedData) -> OrgOut:
                 span_limit=limit,
                 span_factor=span_factor(leadership, len(reports), data.balance.org),
                 over_span=len(reports) > limit,
+                label=manager_label(term, data.balance.org),
             )
         )
     return OrgOut(
@@ -107,6 +121,43 @@ def org_out(state: GameState, company_id: int, data: LoadedData) -> OrgOut:
         managers=managers,
         headcount=len(state.staff(company_id)),
         departments_unlocked=departments_unlocked(state, company_id, data.balance),
+        managers_over_span=sum(1 for m in managers if m.over_span),
+    )
+
+
+def _headcount(view: OrgView, unit_id: int | None) -> int:
+    """Members of the unit and of every unit below it (the root counts everyone)."""
+    if unit_id is None:
+        return sum(len(m) for m in view.members.values())
+    below = [u.id for u in view.units.values() if unit_id in view.unit_chain(u.id)]
+    return sum(len(view.members.get(u, ())) for u in below)
+
+
+def manager_term(state: GameState, view: OrgView, manager_id: int, balance: Balance) -> float:
+    """The W_mgr a manager gives each direct report (13.3, 13.4)."""
+    manager = state.person(manager_id)
+    reports = len(view.reports.get(manager_id, ()))
+    leadership = manager.skills[LEADERSHIP]
+    span = span_factor(leadership, reports, balance.org)
+    quality = manager_quality(
+        leadership, manager.skills[COMMUNICATION], manager.skills[MENTORING], span
+    )
+    return manager_morale_term(quality, balance.org)
+
+
+def org_tile(state: GameState, company_id: int, data: LoadedData) -> OrgTileOut:
+    """Units, managers over span, and the label of the average manager term (M2b)."""
+    view = org_view(state, company_id)
+    org = data.balance.org
+    terms = [manager_term(state, view, m, data.balance) for m in sorted(view.reports)]
+    over = 0
+    for manager_id, reports in view.reports.items():
+        limit = span_limit(state.person(manager_id).skills[LEADERSHIP], org)
+        over += len(reports) > limit
+    return OrgTileOut(
+        units=len(view.units),
+        managers_over_span=over,
+        manager_label=manager_label(sum(terms) / len(terms), org) if terms else None,
     )
 
 
@@ -197,6 +248,12 @@ def _pay_out(
     )
     morale_before = before.person_state(action.person_id).morale
     morale_after = after.person_state(action.person_id).morale
+    old_salary = old.salary_cents
+
+    def monthly(salary: int) -> int:
+        month = monthly_salary_cents(salary)
+        return month + benefits_cents(month, data.balance.payroll)
+
     return PayPreviewOut(
         allowed=problem is None,
         problem=problem,
@@ -209,6 +266,13 @@ def _pay_out(
         new_market_rate_cents=new_market,
         pay_term=0.0 if founder else pay_term(old.salary_cents, market, morale_cfg),
         new_pay_term=0.0 if founder else pay_term(salary, new_market, morale_cfg),
+        salary_change_bp=0
+        if old_salary == 0
+        else round((salary - old_salary) * BP_DENOMINATOR / old_salary),
+        market_ratio=0.0 if not market else old_salary / market,
+        new_market_ratio=0.0 if not new_market else salary / new_market,
+        monthly_cost_change_cents=monthly(salary) - monthly(old_salary),
+        below_market=not founder and salary < new_market,
         morale_change=0.0
         if morale_before is None or morale_after is None
         else morale_after - morale_before,
@@ -227,6 +291,8 @@ def plan_out(state: GameState, plan: HiringPlan, data: LoadedData) -> HiringPlan
         plan_id=plan.id,
         owner_id=plan.owner_id,
         owner_name=person_name(state.person(plan.owner_id)),
+        owner_role_label=role_label(state.person(plan.owner_id).role, data) or "",
+        owner_on_staff=_on_staff(state, plan),
         unit_id=plan.unit_id,
         unit_name=state.company(plan.company_id).name if unit is None else unit.name,
         role=plan.role,
@@ -237,6 +303,7 @@ def plan_out(state: GameState, plan: HiringPlan, data: LoadedData) -> HiringPlan
         channel=plan.channel,
         ratio_bp=plan.ratio_bp,
         equity_bp=plan.equity_bp,
+        focus=plan.focus,
         status=plan.status,
         created_turn=plan.created_turn,
         owner_energy=state.person_state(plan.owner_id).energy,
@@ -249,9 +316,14 @@ def plan_out(state: GameState, plan: HiringPlan, data: LoadedData) -> HiringPlan
             interviews=activity.interviews,
             scouted=activity.scouted,
             offers=activity.offers,
-            summary=activity_text(activity, label.lower()),
+            summary=activity_text(activity, label.lower(), plan.focus),
         ),
     )
+
+
+def _on_staff(state: GameState, plan: HiringPlan) -> bool:
+    employment = state.employment_of(plan.owner_id)
+    return employment is not None and employment.company_id == plan.company_id
 
 
 # --- Morale breakdown -----------------------------------------------------------------------

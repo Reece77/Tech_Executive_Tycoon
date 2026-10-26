@@ -169,14 +169,19 @@ class RevealBalance(_Frozen):
     strength: dict[str, float]
     scout_base: float
     scout_divisor: float = Field(gt=0)
+    pa_scout_divisor: float = Field(gt=0)
+    founder_pa_hw: float = Field(ge=0)
+    pa_scout_clamp: Span
+    pa_strength: dict[str, float]
     pa_phrase_bounds: tuple[float, ...]
 
     @model_validator(mode="after")
     def _check(self) -> RevealBalance:
-        if sorted(self.strength) != sorted(REVEAL_ACTIONS):
-            raise ValueError(f"strength must define exactly {list(REVEAL_ACTIONS)}")
-        if any(not 0 <= s <= 1 for s in self.strength.values()):
-            raise ValueError("strength values must be fractions in [0, 1]")
+        for name, table in (("strength", self.strength), ("pa_strength", self.pa_strength)):
+            if sorted(table) != sorted(REVEAL_ACTIONS):
+                raise ValueError(f"{name} must define exactly {list(REVEAL_ACTIONS)}")
+            if any(not 0 <= s <= 1 for s in table.values()):
+                raise ValueError(f"{name} values must be fractions in [0, 1]")
         if list(self.pa_phrase_bounds) != sorted(self.pa_phrase_bounds):
             raise ValueError("pa_phrase_bounds must be increasing")
         return self
@@ -340,6 +345,7 @@ class OrgBalance(_Frozen):
     span_per_leadership: float = Field(gt=0)
     manager_morale_slope: float
     manager_morale_cap: float = Field(ge=0)
+    manager_label_bands: Span
     mentoring_neutral: float
     mentoring_divisor: float = Field(gt=0)
     mentor_tag_bonus: float

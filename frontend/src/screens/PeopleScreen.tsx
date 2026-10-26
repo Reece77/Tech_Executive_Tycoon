@@ -1,4 +1,4 @@
-import { Button, Checkbox, Menu, TextInput, UnstyledButton } from '@mantine/core';
+import { Button, Checkbox, Menu, NativeSelect, TextInput, UnstyledButton } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
@@ -6,6 +6,7 @@ import { AttributeRange } from '../components/AttributeRange';
 import { DataTable } from '../components/DataTable';
 import { KpiTile } from '../components/KpiTile';
 import { MoraleBar } from '../components/MoraleBar';
+import { LeadsChip } from '../components/OrgNode';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import { StatusChip } from '../components/StatusChip';
 import {
@@ -32,18 +33,45 @@ function overviewColumns(saveId: string) {
       sortFn: 'alphanumeric',
       enableHiding: false,
       cell: ({ row }) => (
-        <Link
-          to={`/game/${saveId}/people/${row.original.person_id}`}
-          style={{ fontWeight: 600, textDecoration: 'none' }}
-        >
-          {row.original.name}
-        </Link>
+        <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <Link
+            to={`/game/${saveId}/people/${row.original.person_id}`}
+            style={{ fontWeight: 600, textDecoration: 'none' }}
+          >
+            {row.original.name}
+          </Link>
+          {row.original.org?.leads_unit_id != null && <LeadsChip />}
+        </span>
       ),
     }),
     helper.accessor((p) => p.role_label ?? '', {
       id: 'role',
       header: 'Role',
       sortFn: 'alphanumeric',
+    }),
+    helper.accessor((p) => p.org?.unit_name ?? '', {
+      id: 'unit',
+      header: 'Unit',
+      sortFn: 'alphanumeric',
+      cell: ({ row }) => (
+        <span style={{ color: 'var(--tst-text-2)' }} data-testid="person-unit">
+          {row.original.org?.unit_name ?? ''}
+        </span>
+      ),
+    }),
+    helper.accessor((p) => p.org?.manager_name ?? '', {
+      id: 'manager',
+      header: 'Manager',
+      sortFn: 'alphanumeric',
+      cell: ({ row }) => {
+        const o = row.original.org;
+        if (!o || o.manager_id === null) return <span className="tst-muted">—</span>;
+        return (
+          <Link to={`/game/${saveId}/people/${o.manager_id}`} data-testid="person-manager">
+            {o.manager_name}
+          </Link>
+        );
+      },
     }),
     helper.accessor((p) => p.level ?? '', {
       id: 'level',
@@ -178,17 +206,25 @@ function PeopleBody({
 }) {
   const [view, setView] = useState<View>('overview');
   const [filter, setFilter] = useState('');
+  const [unitFilter, setUnitFilter] = useState('');
+  const unitNames = useMemo(
+    () => [...new Set(people.map((p) => p.org?.unit_name ?? ''))].filter(Boolean).sort(),
+    [people],
+  );
   const columns = useMemo(
     () => (view === 'overview' ? overviewColumns(saveId) : skillColumns(saveId, meta)),
     [view, saveId, meta],
   );
   const data = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return people;
-    return people.filter(
+    const inUnit = unitFilter
+      ? people.filter((p) => (p.org?.unit_name ?? '') === unitFilter)
+      : people;
+    if (!q) return inUnit;
+    return inUnit.filter(
       (p) => p.name.toLowerCase().includes(q) || (p.role_label ?? '').toLowerCase().includes(q),
     );
-  }, [people, filter]);
+  }, [people, filter, unitFilter]);
   const table = useTable({
     features: gameTableFeatures,
     columns,
@@ -253,8 +289,16 @@ function PeopleBody({
                   ))}
               </Menu.Dropdown>
             </Menu>
-            <TextInput
+            <NativeSelect
               ml="auto"
+              w={180}
+              aria-label="Filter by unit"
+              data-testid="unit-filter"
+              value={unitFilter}
+              onChange={(e) => setUnitFilter(e.currentTarget.value)}
+              data={[{ value: '', label: 'All units' }, ...unitNames]}
+            />
+            <TextInput
               w={200}
               type="search"
               placeholder="Name or role"

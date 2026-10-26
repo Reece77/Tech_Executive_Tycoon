@@ -270,7 +270,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Inbox */
+        /**
+         * Get Inbox
+         * @description Newest first. `limit` and `offset` page through a long inbox (M2b).
+         */
         get: operations["getInbox"];
         put?: never;
         post?: never;
@@ -376,6 +379,26 @@ export interface paths {
         put?: never;
         /** Dissolve Unit */
         post: operations["dissolveUnit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/org/units/{unit_id}/rename": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rename Unit
+         * @description Rename a department or team (free).
+         */
+        post: operations["renameUnit"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1044,6 +1067,11 @@ export interface components {
             equity_bp?: number;
             /** Unit Id */
             unit_id?: number | null;
+            /**
+             * Focus
+             * @default current
+             */
+            focus?: string;
         };
         /** HiringPlanOut */
         HiringPlanOut: {
@@ -1053,6 +1081,13 @@ export interface components {
             owner_id: number;
             /** Owner Name */
             owner_name: string;
+            /** Owner Role Label */
+            owner_role_label: string;
+            /**
+             * Owner On Staff
+             * @description False once the owner has left (the plan pauses)
+             */
+            owner_on_staff: boolean;
             /** Unit Id */
             unit_id: number | null;
             /** Unit Name */
@@ -1073,6 +1108,11 @@ export interface components {
             ratio_bp: number;
             /** Equity Bp */
             equity_bp: number;
+            /**
+             * Focus
+             * @description current ("Best now") | potential ("Spot potential")
+             */
+            focus: string;
             /** Status */
             status: string;
             /** Created Turn */
@@ -1103,6 +1143,8 @@ export interface components {
             equity_bp?: number | null;
             /** Unit Id */
             unit_id?: number | null;
+            /** Focus */
+            focus?: string | null;
         };
         /** InboxItemOut */
         InboxItemOut: {
@@ -1129,6 +1171,16 @@ export interface components {
         InboxOut: {
             /** Unread */
             unread: number;
+            /**
+             * Total
+             * @description Messages matching the query, before paging (M2b)
+             */
+            total: number;
+            /**
+             * Offset
+             * @default 0
+             */
+            offset?: number;
             /** Items */
             items: components["schemas"]["InboxItemOut"][];
         };
@@ -1189,6 +1241,11 @@ export interface components {
             span_factor: number;
             /** Over Span */
             over_span: boolean;
+            /**
+             * Label
+             * @description strong | fine | stretched, from their manager morale term
+             */
+            label: string;
         };
         /**
          * MoraleBreakdownOut
@@ -1438,6 +1495,26 @@ export interface components {
             headcount: number;
             /** Departments Unlocked */
             departments_unlocked: boolean;
+            /** Managers Over Span */
+            managers_over_span: number;
+        };
+        /**
+         * OrgTileOut
+         * @description The Overview's Org tile (M2b).
+         */
+        OrgTileOut: {
+            /**
+             * Units
+             * @description Departments and teams
+             */
+            units: number;
+            /** Managers Over Span */
+            managers_over_span: number;
+            /**
+             * Manager Label
+             * @description strong | fine | stretched for the average manager morale term; null if none
+             */
+            manager_label: string | null;
         };
         /** OverviewOut */
         OverviewOut: {
@@ -1515,6 +1592,19 @@ export interface components {
              * @description Projected plus already posted
              */
             month_total_cents: number;
+            /**
+             * Option Pool Left Bp
+             * @description Option pool left: staff equity plus pending offers counted
+             * @default 0
+             */
+            option_pool_left_bp?: number;
+            /**
+             * Network Bonus Candidates
+             * @description Extra network candidates the founder's sociability brings
+             * @default 0
+             */
+            network_bonus_candidates?: number;
+            org?: components["schemas"]["OrgTileOut"] | null;
         };
         /**
          * PayPreviewOut
@@ -1553,6 +1643,31 @@ export interface components {
             /** New Pay Term */
             new_pay_term: number;
             /**
+             * Salary Change Bp
+             * @description New salary against the old, in bp (+530 = +5.3%)
+             */
+            salary_change_bp: number;
+            /**
+             * Market Ratio
+             * @description Salary / market rate now
+             */
+            market_ratio: number;
+            /**
+             * New Market Ratio
+             * @description New salary / the new level's market rate
+             */
+            new_market_ratio: number;
+            /**
+             * Monthly Cost Change Cents
+             * @description Change in salary plus benefits a month
+             */
+            monthly_cost_change_cents: number;
+            /**
+             * Below Market
+             * @description The new salary is below the new market rate
+             */
+            below_market: boolean;
+            /**
              * Morale Change
              * @description One-off morale points (formulas.md 13.8)
              */
@@ -1573,6 +1688,36 @@ export interface components {
              * @description The month whose Continue resolves the offer
              */
             answer_date_label: string;
+        };
+        /**
+         * PersonOrgOut
+         * @description Where a staff member sits in the org (M2b).
+         */
+        PersonOrgOut: {
+            /**
+             * Unit Id
+             * @description Null for the company root
+             */
+            unit_id: number | null;
+            /** Unit Name */
+            unit_name: string;
+            /**
+             * Parent Unit Name
+             * @description The unit's parent unit, if any
+             */
+            parent_unit_name: string | null;
+            /**
+             * Manager Id
+             * @description Null for the founder
+             */
+            manager_id: number | null;
+            /** Manager Name */
+            manager_name: string | null;
+            /**
+             * Leads Unit Id
+             * @description The unit they lead, if any
+             */
+            leads_unit_id: number | null;
         };
         /** PersonProfileOut */
         PersonProfileOut: {
@@ -1608,6 +1753,13 @@ export interface components {
              * @description Null until an interview or network intro
              */
             interests: string[] | null;
+            /** @description Staff only (M2b) */
+            org?: components["schemas"]["PersonOrgOut"] | null;
+            /**
+             * Energy
+             * @description Energy left this month: the founder and delegates only
+             */
+            energy?: number | null;
             /** Personality */
             personality: components["schemas"]["AttributeOut"][];
             /**
@@ -1660,6 +1812,13 @@ export interface components {
              * @description Null until an interview or network intro
              */
             interests: string[] | null;
+            /** @description Staff only (M2b) */
+            org?: components["schemas"]["PersonOrgOut"] | null;
+            /**
+             * Energy
+             * @description Energy left this month: the founder and delegates only
+             */
+            energy?: number | null;
         };
         /** PlanActivityOut */
         PlanActivityOut: {
@@ -1702,6 +1861,11 @@ export interface components {
             min: number;
             /** Max */
             max: number;
+        };
+        /** RenameUnitIn */
+        RenameUnitIn: {
+            /** Name */
+            name: string;
         };
         /** RoleOut */
         RoleOut: {
@@ -1898,6 +2062,11 @@ export interface components {
             members: components["schemas"]["OrgMemberOut"][];
             /** Child Unit Ids */
             child_unit_ids: number[];
+            /**
+             * Headcount
+             * @description People in this unit and every unit below it
+             */
+            headcount: number;
         };
         /** ValidationError */
         ValidationError: {
@@ -2896,6 +3065,7 @@ export interface operations {
             query?: {
                 unread_only?: boolean;
                 limit?: number | null;
+                offset?: number;
             };
             header?: never;
             path: {
@@ -3259,6 +3429,69 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    renameUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                unit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameUnitIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
