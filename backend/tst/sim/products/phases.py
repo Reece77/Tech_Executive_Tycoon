@@ -325,6 +325,18 @@ def release_assignments(state: GameState, product_id: int) -> GameState:
     return state
 
 
+def projected_revenue(state: GameState, company_id: int) -> Cents:
+    """This month's revenue at the current customers and prices: round(C x price) per
+    segment of every selling product, as phase 5 would book it before this month's flows."""
+    return sum(
+        round(seg.customers * seg.price_cents)
+        for product in state.company_products(company_id)
+        if product.status in SELLING
+        for seg in state.segments_of(product.id)
+        if seg.price_cents is not None
+    )
+
+
 # --- Phase 6: hosting and marketing ---------------------------------------------------------
 
 

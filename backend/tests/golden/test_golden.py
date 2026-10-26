@@ -42,6 +42,7 @@ from tst.sim.actions import (
 from tst.sim.actions.org import departments_unlocked
 from tst.sim.actions.products import launch_problems
 from tst.sim.calendar import format_turn
+from tst.sim.finance import statements as fs
 from tst.sim.people.models import current_ability
 from tst.sim.state import GameState
 
@@ -276,6 +277,27 @@ def ledger_rows(path: Path) -> list[tuple[Any, ...]]:
         ]
 
 
+def assert_statements_reconcile(path: Path, loaded: LoadedData) -> None:
+    """formulas.md 14.1 on every turn: the balance sheet balances, cash flow's parts add up
+    to the cash account's movement, and month-end cash matches turn_snapshot."""
+    types = {a.code: a.type for a in loaded.game_data.accounts}
+    lines = [
+        (turn, account, amount)
+        for _, turn, company, _, _, account, amount in ledger_rows(path)
+        if company == 1
+    ]
+    cash_at = {row["turn"]: row["cash_cents"] for row in snapshots(path)}
+    for turn in range(TURNS):
+        sheet = fs.balance_sheet(lines, types, turn)
+        assert sheet.total_assets == sheet.total_liabilities_and_equity, turn
+        assert sheet.assets.get("1000_cash", 0) == cash_at[turn], turn
+        flow = fs.cash_flow(lines, types, turn, turn)
+        assert flow.reconciles, turn
+    for period in fs.PERIODS:
+        for first, last in fs.period_bounds(period, TURNS - 1):
+            assert fs.cash_flow(lines, types, first, last).reconciles
+
+
 @pytest.mark.parametrize("seed", SEEDS)
 def test_golden_seed(
     seed: int, tmp_path: Path, loaded: LoadedData, request: pytest.FixtureRequest
@@ -288,6 +310,7 @@ def test_golden_seed(
     update = bool(request.config.getoption("--update-golden"))
     _check_golden(f"seed_{seed:02d}.json", actual, update)
     _check_golden(f"seed_{seed:02d}.founder_ca.json", founder_ca, update)
+    assert_statements_reconcile(path, loaded)
 
 
 def test_same_seed_twice_is_identical(tmp_path: Path, loaded: LoadedData) -> None:

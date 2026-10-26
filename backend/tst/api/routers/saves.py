@@ -6,7 +6,7 @@ import secrets
 
 from fastapi import APIRouter, status
 
-from tst.api import org_views, product_views, views
+from tst.api import org_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.schemas.common import ErrorOut
 from tst.api.schemas.saves import (
@@ -23,6 +23,7 @@ from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
 from tst.sim.hiring.rules import equity_committed
 from tst.sim.org.rules import is_remote
+from tst.sim.products.phases import projected_revenue
 from tst.sim.setup import DEFAULT_FOUNDER
 from tst.sim.state import GameState
 
@@ -136,7 +137,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         org=org_views.org_tile(state, player.id, data),
         mrr_cents=latest.mrr_cents if latest else 0,
         arr_cents=latest.arr_cents if latest else 0,
-        month_revenue_cents=product_views.projected_revenue(state, player.id),
+        month_revenue_cents=projected_revenue(state, player.id),
     )
 
 

@@ -59,14 +59,14 @@ from tst.sim.errors import (
     SaveNotFoundError,
     UnknownScenarioError,
 )
-from tst.sim.hiring.phases import monthly_costs
+from tst.sim.finance.statements import projected_runway
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
 from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
-from tst.sim.snapshot import CompanySnapshot, runway_months
+from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState, company_cash
 from tst.sim.turn import TurnResult, advance_turn
 
@@ -331,13 +331,8 @@ def player_overview(session: Session, history: int, data: LoadedData) -> Overvie
         date_label=format_turn(state.turn),
         cash_cents=cash,
         monthly_burn_cents=burn,
-        runway_months=runway_months(
-            cash,
-            sum(
-                amount
-                for _, _, amount in monthly_costs(state, player.id, data.balance, data.game_data)
-            ),
-        ),
+        # Cash over this month's projected net burn; None = profitable (formulas.md 14.1).
+        runway_months=projected_runway(state, player.id, cash, data.balance, data.game_data),
         history=snaps,
     )
 
