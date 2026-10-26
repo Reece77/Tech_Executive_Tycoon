@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs (M3 prep): formulas.md §11 products and markets is final (categories, segments, development, quality and features, brand, appeal, customer flow, revenue and costs, 2010 incumbents, tag effects, ARR stages, founder scouting, worked examples and a design check); §6 M3 energy rows; ADR-0017 (static incumbents until M5, product phases, `product_dev` stream); M3a and M3b briefs.
 - Docs (M2b tuning): potential target lowered to +3 PA; a stranger's PA range (`reveal.initial_hw.pa`, 60–120) joins the tuning keys; the founder's own PA range stays at 40 (`reveal.founder_pa_hw`).
 - Docs (after M2a): judgment of talent's job is spotting potential — formulas.md §4 adds a steeper PA scout factor and §13.10 a plan focus (`current` or `potential`) with a tuning target (judgment 16 hires ≥ 4 PA above judgment 6); M2b brief gains a backend slice.
 - Docs (M1 playtest): ADR-0016 — offers require an interview by the company (founder or delegate); founder energy stays on. formulas.md §7, §13.10 and the M2a brief updated.

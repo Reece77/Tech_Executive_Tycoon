@@ -20,6 +20,8 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M1c-screens.md](M1c-screens.md) | New-game setup, Inbox, Overview, People, Profile, Recruitment screens | M1b |
 | [M2a-org-rules-and-api.md](M2a-org-rules-and-api.md) | Org units, managers, span, raises and promotions, remote policy, delegated hiring: rules, API, CLI | M1c |
 | [M2b-org-screens.md](M2b-org-screens.md) | Org screen and the profile, people, recruitment, inbox and overview additions | M2a |
+| [M3a-products-and-market.md](M3a-products-and-market.md) | Products, development, markets with 2010 incumbents, revenue, founder scouting: rules, API, CLI | M2b |
+| [M3b-product-screens.md](M3b-product-screens.md) | Products screen, product profile, market view, and the org, overview, recruitment and inbox additions | M3a |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

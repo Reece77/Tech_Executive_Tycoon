@@ -20,5 +20,6 @@ Each ADR records one decision that coding agents must not re-decide. Status is A
 | [0014](0014-immediate-actions-and-pending-items.md) | Player actions apply at once; offers and candidate pools resolve at turn end | Accepted |
 | [0015](0015-delegates-act-in-phase-2.md) | Delegates act in phase 2 through the same actions as the player; own energy and RNG stream | Accepted |
 | [0016](0016-offers-need-an-interview.md) | Offers require an interview by the company (founder or delegate) | Accepted |
+| [0017](0017-static-incumbents-and-product-phases.md) | Static 2010 incumbents until M5; products run in phases 3, 5, 6, 9 and 10 | Accepted |
 
 Template: [0000-template.md](0000-template.md).

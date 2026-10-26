@@ -2,7 +2,7 @@
 
 This is the authoritative source for game math. Task briefs summarize these formulas; when a brief and this file differ, this file wins. Every number below is a default that lives in `backend/data/balance.yaml` under the key shown in §12, never as a literal in code (ADR-0008).
 
-Status: §1–§10 are final for M1. §13 (organization) is final for M2 and adds terms to §3, §6, §7 and §9, each marked "M2". §11 is a draft for M3 and will be confirmed in the M3 brief.
+Status: §1–§10 are final for M1. §13 (organization) is final for M2 and adds terms to §3, §6, §7 and §9, each marked "M2". §11 (products and markets) is final for M3 and adds rows to §6, each marked "M3".
 
 ## 0. Conventions
 
@@ -202,6 +202,12 @@ and each action's PA strength is `reveal.pa_strength.<action>`. This is what mak
 | **M2:** Give a raise | 2 |
 | **M2:** Promote | 3 |
 | **M2:** Create or change a hiring plan | 2 |
+| **M3:** Scout a search (§11.12) | 20 |
+| **M3:** Create a product | 4 |
+| **M3:** Assign or unassign a unit to a product | 2 |
+| **M3:** Set a price or a marketing budget | 1 |
+| **M3:** Add a segment | 2 |
+| **M3:** Launch or sunset a product | 3 |
 
 Delegates (§13.10) have their own energy and never spend the founder's.
 
@@ -344,33 +350,241 @@ A resignation sets employment status to `notice` with `end_turn = turn + 1`. A n
 
 **Tag reveal:** each hidden tag of an employee reveals with 500 bp per month (stream `tags`, key `person_id`). An interview or reference check also rolls each still-hidden tag once at 1,500 bp (stream `actions`, key `action_seq`). Reveals are recorded per observer company (ADR-0007). A reveal writes an inbox item.
 
-## 11. Market formulas (draft for M3)
+## 11. Products and markets (M3)
 
-These are proposals to be confirmed in the M3 brief.
+Final for M3. Products are built by org units (§13), sold into segments of a category's market, and compete on appeal against every other product in that market. Until rivals get AI in M5, the other products belong to **incumbents**: real 2010 companies whose products hold fixed scores (ADR-0017). Regions are not modelled in M3: each category has one global market per segment.
 
-**Appeal** of product i in segment s, each score on 0–100:
+### 11.1 Categories and segments (data: `categories.yaml`)
+
+Four v1 categories. Each sells to some of four segments. Per category and segment: addressable customers `D₀` in January 2010, reference monthly price `p_ref`, and hosting cost per customer per month `h`.
+
+| Category | Segment | D₀ (customers) | p_ref / month | h / month |
+| --- | --- | --- | --- | --- |
+| B2B SaaS (`b2b_saas`) | SMB | 400,000 | $50 | $4 |
+| | Mid-market | 40,000 | $800 | $50 |
+| | Enterprise | 4,000 | $8,000 | $400 |
+| Developer tools (`dev_tools`) | SMB | 200,000 | $30 | $6 |
+| | Mid-market | 20,000 | $500 | $80 |
+| | Enterprise | 3,000 | $5,000 | $700 |
+| Consumer apps (`consumer_apps`) | Consumer | 50,000,000 | $0.40 (revenue per user) | $0.04 |
+| Cybersecurity (`cybersecurity`) | SMB | 300,000 | $40 | $3 |
+| | Mid-market | 30,000 | $1,000 | $60 |
+| | Enterprise | 5,000 | $12,000 | $600 |
+
+| Category | Annual market growth `g` | Features expected at turn 0 `F₀` | Expected features added per month `ΔF` | Scope `σ` | Brand constant `K` |
+| --- | --- | --- | --- | --- | --- |
+| B2B SaaS | 20% | 60 | 4.0 | 6 | 60 |
+| Developer tools | 25% | 50 | 4.0 | 5 | 50 |
+| Consumer apps | 30% | 40 | 5.0 | 4 | 300 |
+| Cybersecurity | 15% | 70 | 3.5 | 7 | 70 |
+
+| Segment | Appeal weights quality / price / brand / features | Outside option `a₀` | Base churn per month | Adoption of the unserved per month | How new customers are reached |
+| --- | --- | --- | --- | --- | --- |
+| Consumer | 0.30 / 0.20 / 0.30 / 0.20 | 45 | 6% | 3.0% | Self-serve: awareness |
+| SMB | 0.25 / 0.35 / 0.15 / 0.25 | 45 | 3% | 1.5% | Self-serve: awareness |
+| Mid-market | 0.30 / 0.25 / 0.20 / 0.25 | 45 | 1.5% | 1.0% | Sales capacity |
+| Enterprise | 0.35 / 0.10 / 0.25 / 0.30 | 45 | 0.8% | 0.5% | Sales capacity |
+
+Addressable customers grow every month in phase 9: `D ← D × (1 + g)^(1/12)`.
+
+### 11.2 Products and lifecycle
+
+- **Create** (immediate action, energy 4): name, category, and one or more of the category's segments. The product starts `in_development` with quality 10, features 0, brand 0, no customers. A price must be set for each segment before launch (immediate action, energy 1 per change; any positive amount in cents).
+- **Launch** (energy 3): allowed when quality ≥ 25 and feature score ≥ 30 (§11.4). From the next phase 5 the product can win customers.
+- **Add a segment** (energy 2) at any time; customers start at 0 there.
+- **Sunset** (energy 3): no new customers; existing customers churn at 3× the normal rate; when none remain the product is retired. A sunset cannot be undone.
+- **Lifecycle labels** shown in the UI: In development, Live, Sunset. "Growth" and "maturity" are display labels the API derives from the 6-month customer trend (rising more than 5% a month: growth; otherwise mature); they change no rule.
+- A company may have any number of products.
+
+### 11.3 Who works on a product
+
+- **Assignment** (immediate action, energy 2 to assign or unassign): an org unit, including the company root, is assigned to at most one product. A product may have several units. Everyone whose unit is the assigned unit works on that product; members of child units do not (they follow their own unit's assignment). The founder works on whatever the root is assigned to.
+- **Function by role** (`roles.yaml` gains `product_function`): software engineer, data scientist, DevOps engineer, security engineer, product manager and designer are **builders**; sales representative and account executive are **sellers**; marketer is a **marketer**; finance, recruiter and operations roles contribute nothing to products. The founder counts as a builder.
+- **Morale factor**: `m = 0.7 + 0.6 × morale / 100` (morale 50 gives 1.0). The founder has no morale and uses `m = 1`.
+
+**Builder output.** Each category weights skills into a development skill (`categories.yaml`, weights sum to 1):
+
+| Category | Development skill weights |
+| --- | --- |
+| B2B SaaS | software engineering 0.35, product 0.20, design 0.15, infrastructure 0.15, data 0.10, security 0.05 |
+| Developer tools | software engineering 0.40, infrastructure 0.25, product 0.15, data 0.10, security 0.10 |
+| Consumer apps | software engineering 0.30, design 0.25, product 0.25, marketing 0.10, data 0.10 |
+| Cybersecurity | security 0.40, software engineering 0.25, infrastructure 0.20, data 0.10, product 0.05 |
 
 ```latex
-appeal_{i,s} = \sum_k w_{s,k} \cdot score_{i,k}, \qquad k \in \{quality, price, brand, features, reach\}
+d_i = \sum_k w_k \cdot skill_{i,k}, \qquad o_i = \frac{d_i}{10} \cdot m_i \cdot t_i, \qquad o = coord(n) \cdot \varepsilon \cdot \sum_i o_i
 ```
 
-with `price_score = clamp(50 × reference_price / price, 0, 100)` and segment weights summing to 1 (for example SMB: quality 0.25, price 0.35, brand 0.15, features 0.15, reach 0.10; enterprise: quality 0.30, price 0.10, brand 0.25, features 0.25, reach 0.10).
+- `t_i` is the tag multiplier (§11.10, 1 for most people).
+- `coord(n) = max(0.6, 1 − 0.02 × max(0, n − 5))`, where `n` is the number of builders on the product across all its units: a coordination cost for large teams.
+- `ε = max(0, 1 + N(0, sd))` is monthly development noise (stream `product_dev`, key `product_id`), with `sd = 0.15 + 0.10` per maverick builder, capped at 0.40.
 
-**Market share target and smoothing** (γ = 3):
+**Seller capacity** (mid-market and enterprise only), with `sell_i = (2·sales + negotiation + communication) / 4`:
 
 ```latex
-share^{*}_i = \frac{appeal_i^{\gamma}}{\sum_j appeal_j^{\gamma}}, \qquad share_{i,t} = share_{i,t-1} + (1 - c_s)\,(share^{*}_i - share_{i,t-1})
+cap_{p,s} = r_s \cdot \sum_{sellers} \frac{sell_i}{10} \cdot m_i
 ```
 
-where `c_s` is the segment's switching cost (consumer 0.5, SMB 0.7, enterprise 0.9).
+with `r_s` = 2 new customers a month for mid-market and 0.3 for enterprise. One seller works for all of the product's sales-capacity segments at once: each segment gets the full capacity (a simplification; splitting effort waits for v2).
 
-**Monthly churn:**
+**Marketer contribution**, with `mkt_i = (2·marketing + communication + design) / 4`: `μ = Σ (mkt_i / 10) × m_i`.
+
+### 11.4 Quality and features (phase 3)
+
+Phase 3 (named "R&D progress" in ADR-0006) now runs product development; the technology tree joins it in v2.
 
 ```latex
-churn_{i,s} = base\_churn_s \times \left(1 + \frac{\max(0,\; best\_rival\_appeal - appeal_i)}{50}\right) \times (1.5 \text{ if quality} < 40)
+\bar d = \frac{\sum_i o_i\, d_i}{\sum_i o_i}, \qquad Q_{cap} = 5\,\bar d
 ```
 
-with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
+```latex
+Q \leftarrow Q + 0.15 \cdot \min\left(1, \frac{o}{\sigma}\right) \cdot (Q_{cap} - Q) \quad \text{when } Q < Q_{cap}
+```
+
+- If `Q ≥ Q_cap` (a weaker team took over), quality falls 1% a month toward `Q_cap`.
+- If `o < 0.25 σ` (no or a token team), quality falls 0.5 points a month: unmaintained software rots.
+- Quality is kept in [0, 100]. A perfectionist builder raises `Q_cap` (§11.10).
+
+**Features.** Accumulated feature points `F` grow by `o` each month. The market expects `F_exp(t) = F₀ + ΔF × t` (t = turn). The feature score is
+
+```latex
+feature = clamp\left(100 \cdot \frac{F}{F_{exp}(t)},\; 0,\; 100\right)
+```
+
+so a product must keep developing or its feature score slides as the market moves on. Over a long run a team's feature score settles near `100 × o / ΔF`: a B2B SaaS team needs about 4 output a month (roughly four average builders) to stay at full marks.
+
+### 11.5 Brand and marketing (phase 9)
+
+Each product has a monthly marketing budget (immediate action, energy 1 to change; cents; posted to `6400_marketing` in phase 6).
+
+```latex
+mk = \frac{budget_{\$}}{1000} + 5\,\mu, \qquad B^{*} = 100 \cdot \frac{mk}{mk + K}, \qquad brand \leftarrow brand + 0.10\,(B^{*} - brand)
+```
+
+Brand is per product and kept in [0, 100]. With no marketing, brand drifts toward 0.
+
+### 11.6 Appeal (phase 5)
+
+For product `i` in segment `s`, all scores on 0–100:
+
+```latex
+price\_score = clamp\left(50 \cdot \frac{p_{ref}}{price},\; 0,\; 100\right)
+```
+
+```latex
+appeal_{i,s} = w_q\, Q + w_p\, price\_score + w_b\, brand + w_f\, feature
+```
+
+A product at the reference price scores 50 for price; at half the reference price, 100.
+
+### 11.7 Customers (phase 5, stream `market`, key `(category_index, segment_index)`)
+
+For each category and segment, with `C_j` the customers of every live or sunset product `j` (player's and incumbents'):
+
+1. **Churn.** Each product loses `C_j × churn_j`, where
+
+```latex
+churn_j = base_s \cdot \left(1 + \frac{\max(0,\; best_s - appeal_j)}{50}\right) \cdot (1.5 \text{ if } Q_j < 40) \cdot (3 \text{ if sunset})
+```
+
+and `best_s` is the highest appeal of any live product in the segment.
+
+2. **In play.** `P = (Σ_j C_j × churn_j + adoption_s × U) × η`, where `U = max(0, D − Σ_j C_j)` is unserved demand and `η = max(0, 1 + N(0, 0.05))` is monthly demand noise.
+
+3. **Choice.** Among live products and the outside option:
+
+```latex
+share^{*}_i = \frac{appeal_i^{3}}{a_0^{3} + \sum_{j\ \text{live}} appeal_j^{3}}
+```
+
+4. **New customers.** Self-serve segments: `new_i = P × share*_i × awareness_i`, with `awareness_i = 0.5 × max(brand_i, 5) / 100` (half of customers who would choose a product never hear of one with modest brand). Sales segments: `new_i = min(P × share*_i, cap_{i,s})`. Incumbents use awareness 1 and no capacity limit. In-play customers not won return to the unserved pool.
+
+5. `C_i ← C_i − churned + new_i`. Customers are stored as floats (not money) and shown rounded.
+
+### 11.8 Revenue and costs
+
+- **Revenue** (phase 5): for each player product and segment, `round(C × price)` cents, debit `1000_cash`, credit `4000_revenue_subscriptions`. Consumer apps book revenue per user the same way.
+- **Hosting** (phase 6): `round(C × h)` cents to `6300_compute`.
+- **Marketing** (phase 6): each product's budget to `6400_marketing`. Budgets are paid even with negative cash until M4.
+- **MRR** = this month's revenue; **ARR** = 12 × MRR, summed over the company's products. Both go into `turn_snapshot`.
+- Incumbents have no ledger until M5.
+
+### 11.9 Incumbents (data: `incumbents.yaml`, ADR-0017)
+
+Companies with `is_player = false`, no people and no AI. Each product has fixed quality, brand and price per segment. Its feature score stays fixed: its `F` grows with `F_exp`. Initial customers are a share of `D₀`.
+
+| Company | Product (category) | Q / features / brand | Price and starting share of D₀ by segment |
+| --- | --- | --- | --- |
+| Salesforce | Sales Cloud (B2B SaaS) | 70 / 80 / 80 | SMB $65, 15% · mid $900, 30% · ent $9,000, 30% |
+| Oracle | CRM On Demand (B2B SaaS) | 60 / 75 / 70 | mid $800, 15% · ent $8,000, 30% |
+| Zoho | Zoho CRM (B2B SaaS) | 55 / 60 / 40 | SMB $25, 10% · mid $400, 10% |
+| Atlassian | JIRA (developer tools) | 70 / 75 / 60 | SMB $25, 20% · mid $450, 25% · ent $4,500, 15% |
+| Microsoft | Team Foundation Server (developer tools) | 65 / 80 / 85 | mid $600, 25% · ent $6,000, 40% |
+| GitHub | GitHub (developer tools) | 75 / 60 / 50 | SMB $25, 15% · mid $300, 10% |
+| Facebook | Facebook (consumer apps) | 65 / 80 / 95 | consumer $0.35, 30% |
+| Zynga | FarmVille (consumer apps) | 55 / 60 / 70 | consumer $0.50, 10% |
+| Evernote | Evernote (consumer apps) | 70 / 55 / 40 | consumer $0.20, 5% |
+| Symantec | Norton (cybersecurity) | 60 / 80 / 85 | SMB $35, 20% · mid $900, 25% · ent $11,000, 25% |
+| McAfee | McAfee Total Protection (cybersecurity) | 55 / 75 / 80 | SMB $30, 15% · mid $850, 20% · ent $10,000, 20% |
+| Check Point | Check Point (cybersecurity) | 70 / 70 / 60 | mid $1,100, 15% · ent $13,000, 25% |
+
+Starting shares within a segment sum to at most 90%; the rest is unserved. Real names, approximate 2010 values, personal use (CLAUDE.md §7).
+
+### 11.10 Behavior tags on products
+
+Using true tags, for builders on a product:
+
+| Tag | Effect |
+| --- | --- |
+| `quiet_genius` | `t_i = 1.25` |
+| `toxic_high_performer` | `t_i = 1.20` (the §13.6 morale drain on teammates still applies) |
+| `perfectionist` | `t_i = 0.85`, and their `d_i` counts as `d_i + 3` (capped at 20) in `Q_cap` |
+| `maverick` | `t_i = 1.10`, and +0.10 development noise sd (§11.3) |
+| `politician` | none in M3 (conflict events in M6) |
+
+### 11.11 Stages from revenue (phase 10)
+
+Stage 2 is entered at ARR ≥ $1M (or a closed seed round, M4); stage 3 at ARR ≥ $20M (or Series B, M4). Stages only rise. Stage 3 unlocks nothing new until v2.
+
+### 11.12 Founder scouting (immediate action)
+
+The founder may **scout a search** (energy 20): apply `scouting_month` (§4) once to every open candidate of that search, with the founder as the scout. It is the same action delegates use (§13.10).
+
+### 11.13 What the API may show
+
+Quality, feature score, brand, price, appeal, customers, share of the segment's customers, MRR and churn rate for every product in a market (incumbents' scores are public). For the player's own products also: assigned units, builders, sellers and marketers by name, and a development-pace label (fast if `min(1, o/σ) ≥ 0.75`, steady if ≥ 0.4, else slow). Never `Q_cap`, `d_i`, `o_i`, `cap` or per-person contributions, which would reveal true skills. A sales-capacity limit is shown only as "Sales capacity limited new customers in <segment>" when it bound.
+
+### 11.14 Worked examples (noise off)
+
+**Design check (not a test).** A spreadsheet model of the M3a earn-and-burn script (founder plus three builders at d ≈ 11, one account executive and one marketer, $10,000 a month marketing, SMB at $40 and mid-market at $700 against the §11.9 incumbents) gives first revenue around turn 5, break-even (about $60,000 a month of costs) around turn 17, and an ARR of about $2.6M at turn 36; without the marketing budget, about $1.4M. These values set the band in the M3a brief.
+
+**Team output and quality.** A B2B SaaS product built by the root: the founder (d = 12.0) and two engineers (d = 10.5, morale 58; d = 9.0, morale 54).
+
+| Step | Value |
+| --- | --- |
+| Morale factors | 1.0 (founder), 1.048, 1.024 |
+| `o_i` | 1.200, 1.100, 0.922 |
+| `o` (n = 3, coord 1) | 3.222 |
+| `d̄`, `Q_cap` | 10.63, 53.2 |
+| Created in January 2010; phase 3 first runs in turn 0 | |
+| Quality after turns 0, 5, 11 (from 10) | 13.5, 27.1, 37.4 |
+| Feature points after turns 5 / 8 / 11 | 19.3 / 29.0 / 38.7 |
+| Feature score after turn 8 (`F_exp(8)` = 92) | 31.5: launch allowed from turn 9 (quality 32.9 ≥ 25, features ≥ 30) |
+
+**Appeal and share (SMB, B2B SaaS).** The player's product at quality 40, price $40, brand 10, features 40, against Salesforce (70, $65, 80, 80) and Zoho (55, $25, 40, 60):
+
+| Product | Price score | Appeal | share* |
+| --- | --- | --- | --- |
+| Player | 62.5 | 43.38 | 10.71% |
+| Salesforce | 38.5 | 62.96 | 32.77% |
+| Zoho | 100 | 69.75 | 44.55% |
+| No purchase (`a₀` = 45) | — | 45 | 11.96% |
+
+With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) and 3.00% (Zoho); in play = 2,044 + 1,200 + 4,500 = **7,744**. At brand 10 (awareness 0.5 × 0.10 = 0.05) the player wins **41.5** new customers. Its own churn is 3% × (1 + 26.37/50) = **4.58%** a month.
+
+**Brand.** $10,000 a month plus one marketer (mkt 12, morale 50): `mk = 10 + 5 × 1.2 = 16`, `B* = 21.05`; from 0, brand is **15.1** after 12 months.
+
+**Sales capacity.** One account executive with sell 12 and morale 60 closes up to **2.54** mid-market customers a month.
 
 ## 12. Balance keys
 
@@ -457,6 +671,21 @@ with base churn: consumer 6%, SMB 3%, mid-market 1.5%, enterprise 0.8%.
 | `founder.energy_cost.<org action>` | see §6 | energy | §6 |
 | `hiring.pitch_per_recruiting` / `.pitch_neutral` | 0.3 / 10 | score per 10 points / attribute points | §7 |
 | `delegates.energy_per_month` / `.scout_cost` / `.max_ratio_bp` | 100 / 20 / 12000 | energy / energy / bp | §13 |
+
+| `products.start_quality` / `.launch_min_quality` / `.launch_min_feature` | 10 / 25 / 30 | quality or feature points | §11.2, §11.4 |
+| `products.morale_factor_base` / `.morale_factor_slope` | 0.7 / 0.6 | multiplier | §11.3 |
+| `products.coord_free_builders` / `.coord_per_builder` / `.coord_floor` | 5 / 0.02 / 0.6 | builders / fraction / multiplier | §11.3 |
+| `products.dev_noise_sd` / `.maverick_noise_sd` / `.dev_noise_sd_cap` | 0.15 / 0.10 / 0.40 | multiplier sd | §11.3 |
+| `products.seller_rate.<segment>` | mid-market 2, enterprise 0.3 | customers per month per 10 sell | §11.3 |
+| `products.marketer_mk` / `.budget_mk_unit_cents` | 5 / 100000 | mk points / cents per mk point | §11.5 |
+| `products.qcap_per_skill` / `.quality_rate` / `.overcap_decay` / `.rot_threshold` / `.rot_per_month` | 5 / 0.15 / 0.01 / 0.25 / 0.5 | quality points / fraction / fraction / fraction of σ / quality points | §11.4 |
+| `products.brand_rate` | 0.10 | fraction per month | §11.5 |
+| `products.tag.<tag>.output` / `.perfectionist_qcap_bonus` | see §11.10 / 3 | multiplier / attribute points | §11.10 |
+| `products.pace_bands` | [0.4, 0.75] | fraction of σ | §11.13 |
+| `market.gamma` / `.awareness_floor` / `.awareness_scale` / `.demand_noise_sd` | 3 / 5 / 0.5 / 0.05 | exponent / brand points / fraction / multiplier sd | §11.7 |
+| `market.gap_divisor` / `.low_quality_at` / `.low_quality_churn_mult` / `.sunset_churn_mult` | 50 / 40 / 1.5 / 3 | appeal points / quality / multiplier / multiplier | §11.7 |
+| `stages.arr_cents.<stage>` | 2: 100000000, 3: 2000000000 | cents | §11.11 |
+| Category, segment and incumbent values | see §11.1, §11.9 | — | data: `categories.yaml`, `incumbents.yaml` |
 
 ## 13. Organization (M2)
 

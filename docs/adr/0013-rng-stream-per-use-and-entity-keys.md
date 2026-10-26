@@ -22,7 +22,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `people_gen` | 1 | `(search_id,)` | Generating a search's candidate batch | M1b |
 | `hiring` | 2 | `(offer_id,)` | Offer acceptance roll | M1b |
 | `morale` | 3 | `(person_id,)` | Monthly morale noise | M1b |
-| `market` | 4 | — | Reserved (M3) | — |
+| `market` | 4 | `(category_index, segment_index)` | Monthly demand noise per market segment (ADR-0017) | M3 |
 | `rivals` | 5 | — | Reserved (M5) | — |
 | `events` | 6 | — | Reserved (M6) | — |
 | `founder` | 7 | none | Founder hidden traits, PA, random personality (turn 0) | M1a |
@@ -33,6 +33,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `retire` | 12 | `(person_id,)` | Monthly retirement roll | M1b |
 | `actions` | 13 | `(action_seq,)` | Randomness inside an immediate player action (ADR-0014), such as tag rolls on an interview | M1b |
 | `delegate` | 14 | `(person_id, n)` | Randomness inside a delegate's action; `n` counts that delegate's actions this turn (ADR-0015) | M2a |
+| `product_dev` | 15 | `(product_id,)` | Monthly development noise per product (ADR-0017) | M3 |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).
