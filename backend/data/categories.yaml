@@ -1,0 +1,101 @@
+# Product categories and market segments (docs/formulas.md 11.1 and 11.3, M3).
+# Order is significant: the `market` RNG stream is keyed (category_index, segment_index)
+# in the order of this file (ADR-0017), so append new entries and never reorder.
+#
+# segments: how customers in each segment choose (11.1 segment table, 11.6, 11.7).
+# - weights: appeal weights on quality / price / brand / features (sum to 1).
+# - outside_option: appeal of buying nothing (a0).
+# - base_churn: fraction of a product's customers lost per month before modifiers.
+# - adoption: fraction of unserved demand that comes into play per month.
+# - reach: self_serve (new customers limited by awareness) or sales (by sales capacity).
+#
+# categories: per category (11.1 category table) and per segment it sells to.
+# - growth: annual growth of addressable demand (fraction per year).
+# - features_at_start: features the market expects at turn 0 (F0).
+# - features_per_month: expected features added per month (dF).
+# - scope: team output that counts as full speed (sigma, 11.4).
+# - brand_constant: marketing points for half of the maximum brand (K, 11.5).
+# - dev_weights: skill weights of the development skill d (11.3), summing to 1.
+# - markets: addressable customers in January 2010 (D0), reference monthly price and hosting
+#   cost per customer per month, both in cents.
+segments:
+  - key: consumer
+    label: Consumer
+    weights: { quality: 0.30, price: 0.20, brand: 0.30, features: 0.20 }
+    outside_option: 45
+    base_churn: 0.06
+    adoption: 0.03
+    reach: self_serve
+  - key: smb
+    label: SMB
+    weights: { quality: 0.25, price: 0.35, brand: 0.15, features: 0.25 }
+    outside_option: 45
+    base_churn: 0.03
+    adoption: 0.015
+    reach: self_serve
+  - key: mid_market
+    label: Mid-market
+    weights: { quality: 0.30, price: 0.25, brand: 0.20, features: 0.25 }
+    outside_option: 45
+    base_churn: 0.015
+    adoption: 0.01
+    reach: sales
+  - key: enterprise
+    label: Enterprise
+    weights: { quality: 0.35, price: 0.10, brand: 0.25, features: 0.30 }
+    outside_option: 45
+    base_churn: 0.008
+    adoption: 0.005
+    reach: sales
+
+categories:
+  - key: b2b_saas
+    label: B2B SaaS
+    growth: 0.20
+    features_at_start: 60
+    features_per_month: 4.0
+    scope: 6
+    brand_constant: 60
+    dev_weights: { software_engineering: 0.35, product: 0.20, design: 0.15, infrastructure: 0.15, data: 0.10, security: 0.05 }
+    markets:
+      - { segment: smb, addressable: 400000, reference_price_cents: 5000, hosting_cents: 400 }
+      - { segment: mid_market, addressable: 40000, reference_price_cents: 80000, hosting_cents: 5000 }
+      - { segment: enterprise, addressable: 4000, reference_price_cents: 800000, hosting_cents: 40000 }
+
+  - key: dev_tools
+    label: Developer tools
+    growth: 0.25
+    features_at_start: 50
+    features_per_month: 4.0
+    scope: 5
+    brand_constant: 50
+    dev_weights: { software_engineering: 0.40, infrastructure: 0.25, product: 0.15, data: 0.10, security: 0.10 }
+    markets:
+      - { segment: smb, addressable: 200000, reference_price_cents: 3000, hosting_cents: 600 }
+      - { segment: mid_market, addressable: 20000, reference_price_cents: 50000, hosting_cents: 8000 }
+      - { segment: enterprise, addressable: 3000, reference_price_cents: 500000, hosting_cents: 70000 }
+
+  - key: consumer_apps
+    label: Consumer apps
+    growth: 0.30
+    features_at_start: 40
+    features_per_month: 5.0
+    scope: 4
+    brand_constant: 300
+    dev_weights: { software_engineering: 0.30, design: 0.25, product: 0.25, marketing: 0.10, data: 0.10 }
+    markets:
+      # Consumer apps book revenue per user (11.8): the reference price is revenue per user.
+      - { segment: consumer, addressable: 50000000, reference_price_cents: 40, hosting_cents: 4 }
+
+  - key: cybersecurity
+    label: Cybersecurity
+    growth: 0.15
+    features_at_start: 70
+    features_per_month: 3.5
+    scope: 7
+    brand_constant: 70
+    dev_weights: { security: 0.40, software_engineering: 0.25, infrastructure: 0.20, data: 0.10, product: 0.05 }
+    markets:
+      - { segment: smb, addressable: 300000, reference_price_cents: 4000, hosting_cents: 300 }
+      - { segment: mid_market, addressable: 30000, reference_price_cents: 100000, hosting_cents: 6000 }
+      - { segment: enterprise, addressable: 5000, reference_price_cents: 1200000, hosting_cents: 60000 }

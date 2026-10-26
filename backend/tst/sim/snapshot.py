@@ -15,6 +15,8 @@ class CompanySnapshot:
     headcount: int  # active and notice employments, founder included
     payroll_cents: Cents = 0  # salaries plus benefits posted this month (M1b)
     avg_morale: float | None = None  # employees excluding the founder; None if there are none
+    mrr_cents: Cents = 0  # this month's revenue (formulas.md 11.8, M3)
+    arr_cents: Cents = 0  # 12 x MRR
 
     def kpis(self) -> dict[str, int | float | None]:
         return {
@@ -23,6 +25,8 @@ class CompanySnapshot:
             "headcount": self.headcount,
             "payroll_cents": self.payroll_cents,
             "avg_morale": self.avg_morale,
+            "mrr_cents": self.mrr_cents,
+            "arr_cents": self.arr_cents,
         }
 
 

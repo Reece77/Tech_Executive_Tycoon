@@ -71,6 +71,8 @@ class SnapshotPointOut(BaseModel):
     payroll_cents: int
     headcount: int
     avg_morale: float | None
+    mrr_cents: int = 0
+    arr_cents: int = 0
 
 
 class CostLineOut(BaseModel):
@@ -134,3 +136,5 @@ class OverviewOut(BaseModel):
         default=0, description="Extra network candidates the founder's sociability brings"
     )
     org: OrgTileOut | None = None
+    mrr_cents: int = Field(default=0, description="Revenue in the last closed month (M3a)")
+    arr_cents: int = Field(default=0, description="12 x MRR")

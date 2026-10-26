@@ -144,6 +144,15 @@ founder: # founder build (formulas.md section 5)
     give_raise: 2 # change someone's salary (M2, section 13.8)
     promote: 3 # promote someone one level (M2, section 13.8)
     hiring_plan: 2 # create or change a hiring plan; closing one is free (M2, section 13.10)
+    scout_search: 20 # founder scouts every open candidate of one search (M3, section 11.12)
+    create_product: 4 # create a product (M3, section 11.2)
+    assign_unit: 2 # assign a unit (or the company root) to a product (M3, section 11.3)
+    unassign_unit: 2 # take a unit off its product (M3, section 11.3)
+    set_price: 1 # set or change one segment's price (M3, section 11.2)
+    set_marketing: 1 # set or change a product's monthly marketing budget (M3, section 11.5)
+    add_segment: 2 # sell a product into another segment of its category (M3, section 11.2)
+    launch_product: 3 # launch a product (M3, section 11.2)
+    sunset_product: 3 # sunset a product (M3, section 11.2)
 
 # --- Hiring (formulas.md section 7) -----------------------------------------------------
 hiring:
@@ -261,3 +270,54 @@ delegates: # delegated hiring (formulas.md section 13.10, ADR-0015)
   energy_per_month: 100 # energy; each delegate's monthly budget, reset with the founder's
   scout_cost: 20 # energy; one scouting pass over a plan's candidates; also the reserve kept back while interviewing
   max_ratio_bp: 12000 # bp of the ask; highest salary ratio a plan may offer (1.2x)
+
+# --- Products and markets (formulas.md section 11, M3) -------------------------------------
+# Category, segment and incumbent values are data: categories.yaml and incumbents.yaml.
+products:
+  start_quality: 10 # quality points; a new product's quality (11.2)
+  launch_min_quality: 25 # quality points; launch needs at least this quality (11.2)
+  launch_min_feature: 30 # feature-score points; launch needs at least this feature score (11.2)
+  morale_factor_base: 0.7 # multiplier; m = base + slope x morale / 100 (morale 50 gives 1.0) (11.3)
+  morale_factor_slope: 0.6 # multiplier per 100 morale points (11.3)
+  coord_free_builders: 5 # builders; coordination cost starts above this many builders on a product (11.3)
+  coord_per_builder: 0.02 # fraction of output lost per builder above the free number (11.3)
+  coord_floor: 0.6 # multiplier; coordination factor never drops below this (11.3)
+  dev_noise_sd: 0.15 # multiplier sd of monthly development noise (stream product_dev) (11.3)
+  maverick_noise_sd: 0.10 # multiplier sd added per maverick builder (11.3, 11.10)
+  dev_noise_sd_cap: 0.40 # multiplier sd; development noise sd is capped here (11.3)
+  seller_rate: # new customers a month per seller at sell 10 and morale factor 1, sales segments only (11.3)
+    mid_market: 2
+    enterprise: 0.3
+  marketer_mk: 5 # marketing points per unit of marketer contribution mu (11.5)
+  budget_mk_unit_cents: 100000 # cents of monthly budget per marketing point ($1,000) (11.5)
+  qcap_per_skill: 5 # quality points of Q_cap per point of output-weighted development skill (11.4)
+  quality_rate: 0.15 # fraction of the gap to Q_cap closed per month at full speed (11.4)
+  overcap_decay: 0.01 # fraction per month quality falls while above Q_cap, not below Q_cap (11.4)
+  rot_threshold: 0.25 # fraction of scope; output below this counts as no team (11.4)
+  rot_per_month: 0.5 # quality points lost per month with no team (11.4)
+  brand_rate: 0.10 # fraction of the gap to target brand closed per month (11.5)
+  tag: # output multiplier t_i for builders holding a true tag (11.10)
+    quiet_genius: { output: 1.25 }
+    toxic_high_performer: { output: 1.20 }
+    perfectionist: { output: 0.85 }
+    maverick: { output: 1.10 }
+  perfectionist_qcap_bonus: 3 # attribute points added to a perfectionist's d in Q_cap, capped at 20 (11.10)
+  pace_bands: [0.4, 0.75] # fraction of scope min(1, o / sigma): below the first slow, from the second fast (11.13)
+  arr_milestones_cents: [10000000, 100000000, 1000000000] # cents; inbox note when ARR first reaches $100k, $1M, $10M (M3a brief)
+  growth_label_months: 6 # months of customer trend behind the Growth / Mature display label (11.2, display only)
+  growth_label_rate: 0.05 # fraction per month; customers rising faster than this over that window shows "Growth" (11.2)
+
+market:
+  gamma: 3 # exponent on appeal in the choice share (11.7)
+  awareness_floor: 5 # brand points; awareness uses at least this brand (11.7)
+  awareness_scale: 0.5 # fraction; awareness = scale x max(brand, floor) / 100 (11.7)
+  demand_noise_sd: 0.05 # multiplier sd of monthly in-play noise (stream market) (11.7)
+  gap_divisor: 50 # appeal points per +100% churn below the best product (11.7)
+  low_quality_at: 40 # quality points; below this, churn is multiplied (11.7)
+  low_quality_churn_mult: 1.5 # multiplier on churn below low_quality_at (11.7)
+  sunset_churn_mult: 3 # multiplier on churn for a sunset product (11.2, 11.7)
+
+stages:
+  arr_cents: # cents of ARR that put a company in a stage; stages only rise (11.11)
+    2: 100000000 # $1M ARR: venture-backed
+    3: 2000000000 # $20M ARR: scale-up

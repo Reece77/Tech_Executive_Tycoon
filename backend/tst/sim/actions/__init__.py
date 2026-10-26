@@ -60,6 +60,27 @@ from tst.sim.actions.org import (
     set_policy,
     update_plan,
 )
+from tst.sim.actions.products import (
+    AddSegment,
+    AssignUnit,
+    CreateProduct,
+    LaunchProduct,
+    ProductAction,
+    ScoutSearch,
+    SetMarketing,
+    SetPrice,
+    SunsetProduct,
+    UnassignUnit,
+    add_segment,
+    assign_unit,
+    create_product,
+    launch_product,
+    scout_search,
+    set_marketing,
+    set_price,
+    sunset_product,
+    unassign_unit,
+)
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
 from tst.sim.ledger import LedgerBalances, LedgerEntry
@@ -67,7 +88,7 @@ from tst.sim.log import LogItem
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
-type Action = HiringAction | OrgAction
+type Action = HiringAction | OrgAction | ProductAction
 
 ACTION_TYPES: dict[str, type[Any]] = {
     "open_search": OpenSearch,
@@ -90,21 +111,34 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "update_plan": UpdatePlan,
     "close_plan": ClosePlan,
     "scout": Scout,
+    "create_product": CreateProduct,
+    "set_price": SetPrice,
+    "add_segment": AddSegment,
+    "assign_unit": AssignUnit,
+    "unassign_unit": UnassignUnit,
+    "set_marketing": SetMarketing,
+    "launch_product": LaunchProduct,
+    "sunset_product": SunsetProduct,
+    "scout_search": ScoutSearch,
 }
 
 __all__ = [
     "ACTION_TYPES",
     "Action",
     "ActionResult",
+    "AddSegment",
+    "AssignUnit",
     "ClosePlan",
     "CloseSearch",
     "CreatePlan",
+    "CreateProduct",
     "CreateUnit",
     "DissolveUnit",
     "Draws",
     "Fire",
     "GiveRaise",
     "Interview",
+    "LaunchProduct",
     "MakeOffer",
     "MovePerson",
     "MoveUnit",
@@ -113,8 +147,13 @@ __all__ = [
     "ReferenceCheck",
     "RenameUnit",
     "Scout",
+    "ScoutSearch",
     "SetLeader",
+    "SetMarketing",
     "SetPolicy",
+    "SetPrice",
+    "SunsetProduct",
+    "UnassignUnit",
     "UpdatePlan",
     "WithdrawOffer",
     "action_from_payload",
@@ -203,6 +242,24 @@ def apply_action(
             out = close_plan(state, action)
         case Scout():
             out = scout(state, action, balance, data)
+        case CreateProduct():
+            out = create_product(state, action, balance, data)
+        case SetPrice():
+            out = set_price(state, action, balance)
+        case AddSegment():
+            out = add_segment(state, action, balance, data)
+        case AssignUnit():
+            out = assign_unit(state, action, balance)
+        case UnassignUnit():
+            out = unassign_unit(state, action, balance)
+        case SetMarketing():
+            out = set_marketing(state, action, balance)
+        case LaunchProduct():
+            out = launch_product(state, action, balance, data)
+        case SunsetProduct():
+            out = sunset_product(state, action, balance)
+        case ScoutSearch():
+            out = scout_search(state, action, balance, data)
     return ActionResult(new_state=out.state, ledger_entries=out.entries, log_items=out.log)
 
 

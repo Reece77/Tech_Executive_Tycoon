@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 
 class Base(DeclarativeBase):
@@ -37,6 +37,7 @@ class SaveMetaRow(Base):
     next_employment_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_unit_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_plan_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_product_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
 
 
 class CompanyRow(Base):
@@ -49,6 +50,8 @@ class CompanyRow(Base):
     founded_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     mission: Mapped[list[str]] = mapped_column(JSON, nullable=False, server_default="[]")
     work_policy: Mapped[str] = mapped_column(String(16), nullable=False, server_default="office")
+    root_product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # product (no FK)
+    arr_milestone_cents: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
 
 
 class AccountRow(Base):
@@ -347,6 +350,7 @@ class OrgUnitRow(Base):
     created_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     dissolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # product (no FK, 0008)
 
 
 class HiringPlanRow(Base):
@@ -370,3 +374,68 @@ class HiringPlanRow(Base):
     closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
     last_activity: Mapped[dict[str, int] | None] = mapped_column(JSON, nullable=True)
     focus: Mapped[str] = mapped_column(String(16), nullable=False, server_default="current")
+
+
+# --- Products and markets (M3a, migration 0008_products) ------------------------------------
+
+
+class ProductRow(Base):
+    """A product of the player or an incumbent (formulas.md 11.2, ADR-0017)."""
+
+    __tablename__ = "product"
+    __table_args__ = (Index("ix_product_company_status", "company_id", "status"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    category: Mapped[str] = mapped_column(String(32), nullable=False)
+    name: Mapped[str] = mapped_column(String(80), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    quality: Mapped[float] = mapped_column(Float, nullable=False)
+    feature_points: Mapped[float] = mapped_column(Float, nullable=False)
+    brand: Mapped[float] = mapped_column(Float, nullable=False)
+    marketing_budget_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    created_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    launched_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    sunset_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    retired_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    held_feature: Mapped[float | None] = mapped_column(Float, nullable=True)
+    first_customer_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rotting: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+
+
+class ProductSegmentRow(Base):
+    __tablename__ = "product_segment"
+
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id"), primary_key=True)
+    segment: Mapped[str] = mapped_column(String(32), primary_key=True)
+    price_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    customers: Mapped[float] = mapped_column(Float, nullable=False)
+    capacity_limited: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+    added_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class MarketSegmentRow(Base):
+    __tablename__ = "market_segment"
+
+    category: Mapped[str] = mapped_column(String(32), primary_key=True)
+    segment: Mapped[str] = mapped_column(String(32), primary_key=True)
+    addressable: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class ProductMonthRow(Base):
+    """Month-end history per product and segment, append-only."""
+
+    __tablename__ = "product_month"
+    __table_args__ = (Index("ix_product_month_turn", "turn"),)
+
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id"), primary_key=True)
+    segment: Mapped[str] = mapped_column(String(32), primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    quality: Mapped[float] = mapped_column(Float, nullable=False)
+    feature_score: Mapped[float] = mapped_column(Float, nullable=False)
+    brand: Mapped[float] = mapped_column(Float, nullable=False)
+    appeal: Mapped[float | None] = mapped_column(Float, nullable=True)
+    customers: Mapped[float] = mapped_column(Float, nullable=False)
+    new: Mapped[float] = mapped_column(Float, nullable=False)
+    churned: Mapped[float] = mapped_column(Float, nullable=False)
+    revenue_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)

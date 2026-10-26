@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 7 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 8 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -20,17 +20,18 @@ One row describing the save. Current-state table (updated in place each turn).
 | `created_turn` | INTEGER | no | Turn the save was created at (0). |
 | `current_turn` | INTEGER | no | Next turn to be played. Incremented once per committed turn. |
 | `data_hashes` | JSON | no | `{file name: SHA-256}` of the data files used to create the save (line endings normalized), so later data changes can be detected (ADR-0008). |
-| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (7 after `0007_plan_focus`). |
+| `schema_version` | INTEGER | no | Current schema version; each schema migration sets it (8 after `0008_products`). |
 | `next_person_id` | INTEGER | no | Next person id to assign. Ids are never reused, because people leave the live state (M1b sweep rule 2). |
 | `next_search_id` | INTEGER | no | Next search id. |
 | `next_offer_id` | INTEGER | no | Next offer id. |
 | `next_employment_id` | INTEGER | no | Next employment id. |
 | `next_unit_id` | INTEGER | no | Next org unit id (M2a). |
 | `next_plan_id` | INTEGER | no | Next hiring plan id (M2a). |
+| `next_product_id` | INTEGER | no | Next product id (M3a). The 12 incumbent products take 1..12 in a new game. |
 
 ## company
 
-The player company and (from M5) all rivals, handled by the same code (ADR-0010). Current-state table.
+The player company, the 2010 incumbents (M3a, ADR-0017: `is_player` false, no people, no ledger, no decisions until M5) and, from M5, all rivals, handled by the same code (ADR-0010). Current-state table.
 
 | Column | Type | Null | Description |
 | --- | --- | --- | --- |
@@ -38,9 +39,11 @@ The player company and (from M5) all rivals, handled by the same code (ADR-0010)
 | `name` | VARCHAR(80) | no | Display name. |
 | `is_player` | BOOLEAN | no | True for the player's company. |
 | `stage` | INTEGER | no | Company stage, 0 (solo founder) to 5 (conglomerate), spec §3. |
-| `founded_turn` | INTEGER | no | Turn the company was founded. |
+| `founded_turn` | INTEGER | no | Turn the company was founded; negative for incumbents (January of `founded_year` in `incumbents.yaml`). |
 | `mission` | JSON | no | List of two `interests.yaml` keys (formulas.md §7); empty for saves made before M1b. |
 | `work_policy` | VARCHAR(16) | no | The company root's work-location policy, `office` (default) or `remote` (formulas.md §13.9, M2a). Units without their own policy inherit it. |
+| `root_product_id` | INTEGER | yes | Product the company root's members (the founder included) work on (formulas.md §11.3, M3a); null = none. No FK (added by `0008_products`). |
+| `arr_milestone_cents` | BIGINT | no | Highest ARR milestone (`products.arr_milestones_cents`) already announced in the inbox; 0 = none (M3a). |
 
 Cash is not stored here; it is the `1000_cash` ledger balance (ADR-0003).
 
@@ -89,7 +92,7 @@ Month-end KPIs per company per turn, written by phase 11. Append-only history.
 | `id` | INTEGER PK | no | Row id. |
 | `turn` | INTEGER | no | Turn the snapshot closes. |
 | `company_id` | INTEGER FK → company.id | no | Company. |
-| `kpis` | JSON | no | `{cash_cents, monthly_burn_cents, headcount}`. `cash_cents` equals the `1000_cash` balance through this turn; `monthly_burn_cents` is the net cash decrease this month (0 if cash did not fall); `headcount` counts the company's `active` and `notice` employments (1 for the founder from turn 0). |
+| `kpis` | JSON | no | `{cash_cents, monthly_burn_cents, headcount, payroll_cents, avg_morale, mrr_cents, arr_cents}`. Only companies with a ledger (the player until M5) get a row. `mrr_cents` is this month's subscription revenue and `arr_cents` 12 × MRR (formulas.md §11.8, M3a). `cash_cents` equals the `1000_cash` balance through this turn; `monthly_burn_cents` is the net cash decrease this month (0 if cash did not fall); `headcount` counts the company's `active` and `notice` employments (1 for the founder from turn 0). |
 
 Unique index `ux_turn_snapshot_turn_company (turn, company_id)`.
 
@@ -327,6 +330,7 @@ A department or team (formulas.md §13.1). The company root is implicit and has 
 | `created_turn` | INTEGER | no | Turn created. |
 | `status` | VARCHAR(16) | no | `active` or `dissolved`. |
 | `dissolved_turn` | INTEGER | yes | Turn dissolved. |
+| `product_id` | INTEGER | yes | Product the unit's members work on (formulas.md §11.3, M3a); a unit works on at most one. No FK (added by `0008_products`). |
 
 ### hiring_plan
 
@@ -349,6 +353,74 @@ Delegated hiring (formulas.md §13.10, ADR-0015). Index `ix_hiring_plan_company_
 | `closed_turn` | INTEGER | yes | Turn closed. |
 | `last_activity` | JSON | yes | `{turn, searches, interviews, scouted, offers}` for the last turn the delegate worked the plan. |
 | `focus` | VARCHAR(16) | no | `current` ("Best now", default) or `potential` ("Spot potential": juniors and mids ranked by the displayed PA midpoint, formulas.md §13.10). Added by `0007_plan_focus` (M2b). |
+
+## Products and markets (migration `0008_products`, M3a)
+
+Products that are not retired, their segments, and every market segment are loaded into the game state; retired products keep their rows with a status. An existing save upgraded by `0008_products` gets the 2010 market from the current `categories.yaml` and `incumbents.yaml`, with demand grown to the save's turn (ADR-0017).
+
+### product
+
+A product of the player or an incumbent (formulas.md §11.2, §11.9). Index `ix_product_company_status (company_id, status)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Product id. |
+| `company_id` | INTEGER FK → company.id | no | Owner. |
+| `category` | VARCHAR(32) | no | `categories.yaml` category key, e.g. `b2b_saas`. |
+| `name` | VARCHAR(80) | no | Display name. |
+| `status` | VARCHAR(16) | no | `in_development`, `live`, `sunset`, or `retired` (a sunset product with no customers left). |
+| `quality` | FLOAT | no | Quality, 0–100 (§11.4). |
+| `feature_points` | FLOAT | no | Accumulated feature points F; the feature score is 100 × F / F_exp(t), clamped to 0–100. |
+| `brand` | FLOAT | no | Brand, 0–100 (§11.5). |
+| `marketing_budget_cents` | BIGINT | no | Monthly marketing budget, posted to `6400_marketing` in phase 6. |
+| `created_turn` | INTEGER | no | Turn created. |
+| `launched_turn` | INTEGER | yes | Turn launched. |
+| `sunset_turn` | INTEGER | yes | Turn sunset. |
+| `retired_turn` | INTEGER | yes | Turn its last customers left. |
+| `held_feature` | FLOAT | yes | Incumbents only: the fixed feature score; F follows F_exp so the score stays here (§11.9). Null for products that develop. |
+| `first_customer_turn` | INTEGER | yes | First month with at least one paying customer (inbox note). |
+| `rotting` | BOOLEAN | no | The last phase 3 found no team working on it (output below a quarter of scope); the inbox notes the change. |
+
+### product_segment
+
+A segment a product sells to. Primary key `(product_id, segment)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `product_id` | INTEGER FK → product.id | no | Product. |
+| `segment` | VARCHAR(32) | no | `categories.yaml` segment key: `consumer`, `smb`, `mid_market`, or `enterprise`. |
+| `price_cents` | BIGINT | yes | Monthly price per customer (revenue per user for consumer apps); null until set. |
+| `customers` | FLOAT | no | Customers, stored as a float and shown rounded (§11.7). |
+| `capacity_limited` | BOOLEAN | no | Sales capacity bound new customers in the last phase 5 (sales segments only, §11.13). |
+| `added_turn` | INTEGER | no | Turn the segment was added. |
+
+### market_segment
+
+Addressable customers for one category and segment (§11.1). Primary key `(category, segment)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `category` | VARCHAR(32) | no | Category key. |
+| `segment` | VARCHAR(32) | no | Segment key. |
+| `addressable` | FLOAT | no | Addressable customers D; grows by (1 + g)^(1/12) in phase 9. |
+
+### product_month
+
+Month-end history per product and segment, append-only. Primary key `(product_id, segment, turn)`; index `ix_product_month_turn (turn)`.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `product_id` | INTEGER FK → product.id | no | Product. |
+| `segment` | VARCHAR(32) | no | Segment. |
+| `turn` | INTEGER | no | Turn closed. |
+| `quality` | FLOAT | no | Quality at month end. |
+| `feature_score` | FLOAT | no | Feature score against F_exp(turn). |
+| `brand` | FLOAT | no | Brand after phase 9. |
+| `appeal` | FLOAT | yes | Appeal at month end (§11.6); null while the segment has no price. |
+| `customers` | FLOAT | no | Customers after phase 5. |
+| `new` | FLOAT | no | Customers won this month. |
+| `churned` | FLOAT | no | Customers lost this month. |
+| `revenue_cents` | BIGINT | no | Revenue booked this month (0 for incumbents, who have no ledger until M5). |
 
 ## Inbox (migration `0004_inbox`, M1b)
 

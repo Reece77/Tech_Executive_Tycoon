@@ -1,7 +1,8 @@
 """Load live GameState from a save and write back only what changed.
 
 Live state only (M1b sweep rule 1): staff (active and notice employments), open candidates,
-open searches, pending offers, active org units, hiring plans that are not closed, and the
+open searches, pending offers, active org units, hiring plans that are not closed, products
+that are not retired with their segments, every market segment (M3), and the
 people and knowledge records they need (including whoever made a pending offer and every
 plan's owner, who may have left). Records that leave the live set keep their rows, with a
 status, in the database.
@@ -28,6 +29,8 @@ from tst.db.mappers import (
     employment_from_row,
     employment_to_row,
     game_state_from_rows,
+    market_from_row,
+    market_to_row,
     next_ids_from_meta,
     next_ids_to_meta,
     offer_from_row,
@@ -38,6 +41,10 @@ from tst.db.mappers import (
     person_to_rows,
     plan_from_row,
     plan_to_row,
+    product_from_row,
+    product_segment_from_row,
+    product_segment_to_row,
+    product_to_row,
     reveal_from_rows,
     reveal_to_rows,
     search_from_row,
@@ -50,6 +57,7 @@ from tst.db.models import (
     CompanyRow,
     EmploymentRow,
     HiringPlanRow,
+    MarketSegmentRow,
     OfferRow,
     OrgUnitRow,
     PersonHiddenRow,
@@ -62,6 +70,8 @@ from tst.db.models import (
     PersonStateRow,
     PersonTagRevealRow,
     PersonTagRow,
+    ProductRow,
+    ProductSegmentRow,
     SaveMetaRow,
     SearchRow,
 )
@@ -179,6 +189,13 @@ def load_state(session: Session) -> GameState:
     )
 
     state = game_state_from_rows(meta, companies, people, tuple(employments), reveals)
+    products = tuple(
+        product_from_row(r)
+        for r in session.scalars(
+            select(ProductRow).where(ProductRow.status != "retired").order_by(ProductRow.id)
+        )
+    )
+    product_ids = [p.id for p in products]
     return replace(
         state,
         searches=tuple(
@@ -196,6 +213,23 @@ def load_state(session: Session) -> GameState:
             )
         ),
         plans=tuple(plans),
+        products=products,
+        product_segments=tuple(
+            product_segment_from_row(r)
+            for r in session.scalars(
+                select(ProductSegmentRow)
+                .where(ProductSegmentRow.product_id.in_(product_ids))
+                .order_by(ProductSegmentRow.product_id, ProductSegmentRow.segment)
+            )
+        ),
+        markets=tuple(
+            market_from_row(r)
+            for r in session.scalars(
+                select(MarketSegmentRow).order_by(
+                    MarketSegmentRow.category, MarketSegmentRow.segment
+                )
+            )
+        ),
         person_states=tuple(
             person_state_from_row(r)
             for r in session.scalars(
@@ -253,6 +287,15 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     for company in _changed(old.companies, new.companies, lambda c: c.id):
         session.merge(company_to_row(company))
     session.flush()
+    for product in _changed(old.products, new.products, lambda p: p.id):
+        session.merge(product_to_row(product))
+    session.flush()
+    for seg in _changed(
+        old.product_segments, new.product_segments, lambda s: (s.product_id, s.segment)
+    ):
+        session.merge(product_segment_to_row(seg))
+    for market in _changed(old.markets, new.markets, lambda m: (m.category, m.segment)):
+        session.merge(market_to_row(market))
 
     old_people = {p.id: p for p in old.people}
     skill_updates: list[dict[str, Any]] = []

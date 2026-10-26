@@ -11,6 +11,7 @@ from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
 from tst.sim.org.models import HiringPlan, OrgUnit, WorkPolicy
 from tst.sim.people.models import Employment, Person, RevealState
+from tst.sim.products.models import MarketSegment, Product, ProductSegment
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,6 +31,8 @@ class CompanyState:
     founded_turn: int
     mission: tuple[str, ...] = ()  # two interests.yaml keys (formulas.md section 7)
     work_policy: WorkPolicy = "office"  # the company root's policy (formulas.md 13.9)
+    root_product_id: int | None = None  # the product the root's members work on (11.3, M3)
+    arr_milestone_cents: int = 0  # highest ARR milestone announced in the inbox (M3a)
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +49,9 @@ class GameState:
     person_states: tuple[PersonState, ...] = ()  # sorted by person id
     units: tuple[OrgUnit, ...] = ()  # active org units, sorted by id (M2)
     plans: tuple[HiringPlan, ...] = ()  # hiring plans that are not closed, sorted by id (M2)
+    products: tuple[Product, ...] = ()  # products that are not retired, sorted by id (M3)
+    product_segments: tuple[ProductSegment, ...] = ()  # sorted by (product_id, segment)
+    markets: tuple[MarketSegment, ...] = ()  # sorted by (category, segment)
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -148,6 +154,34 @@ class GameState:
     def live_plans(self, company_id: int) -> tuple[HiringPlan, ...]:
         return tuple(p for p in self.plans if p.company_id == company_id and p.status != "closed")
 
+    def product(self, product_id: int) -> Product | None:
+        for p in self.products:
+            if p.id == product_id:
+                return p
+        return None
+
+    def company_products(self, company_id: int) -> tuple[Product, ...]:
+        return tuple(p for p in self.products if p.company_id == company_id)
+
+    def segments_of(self, product_id: int) -> tuple[ProductSegment, ...]:
+        return tuple(s for s in self.product_segments if s.product_id == product_id)
+
+    def product_segment(self, product_id: int, segment: str) -> ProductSegment | None:
+        for s in self.product_segments:
+            if s.product_id == product_id and s.segment == segment:
+                return s
+        return None
+
+    def market(self, category: str, segment: str) -> MarketSegment | None:
+        for m in self.markets:
+            if m.category == category and m.segment == segment:
+                return m
+        return None
+
+    def ledger_companies(self) -> tuple[CompanyState, ...]:
+        """Companies with books: the player. Incumbents have no ledger until M5 (ADR-0017)."""
+        return tuple(c for c in self.companies if c.is_player)
+
     @property
     def player(self) -> CompanyState:
         for company in self.companies:
@@ -208,6 +242,23 @@ def with_unit(state: GameState, unit: OrgUnit) -> GameState:
 
 def with_plan(state: GameState, plan: HiringPlan) -> GameState:
     return replace(state, plans=_upsert(state.plans, plan, lambda p: p.id))
+
+
+def with_product(state: GameState, product: Product) -> GameState:
+    return replace(state, products=_upsert(state.products, product, lambda p: p.id))
+
+
+def with_product_segment(state: GameState, segment: ProductSegment) -> GameState:
+    return replace(
+        state,
+        product_segments=_upsert(
+            state.product_segments, segment, lambda s: (s.product_id, s.segment)
+        ),
+    )
+
+
+def with_market(state: GameState, market: MarketSegment) -> GameState:
+    return replace(state, markets=_upsert(state.markets, market, lambda m: (m.category, m.segment)))
 
 
 def with_person_state(state: GameState, person_state: PersonState) -> GameState:

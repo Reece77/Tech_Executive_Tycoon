@@ -11,6 +11,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.money import BP_DENOMINATOR
+
 
 class _Frozen(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -225,6 +227,16 @@ ENERGY_ACTIONS = (
     "give_raise",
     "promote",
     "hiring_plan",
+    # M3 product actions and founder scouting (formulas.md sections 6, 11)
+    "scout_search",
+    "create_product",
+    "assign_unit",
+    "unassign_unit",
+    "set_price",
+    "set_marketing",
+    "add_segment",
+    "launch_product",
+    "sunset_product",
 )
 CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
 HIRING_LEVELS = ("junior", "mid", "senior", "staff")
@@ -386,6 +398,77 @@ class DelegatesBalance(_Frozen):
     max_ratio_bp: int = Field(gt=0)
 
 
+# --- Products and markets (M3, formulas.md section 11) -------------------------------------
+
+PRODUCT_TAGS = ("quiet_genius", "toxic_high_performer", "perfectionist", "maverick")  # 11.10
+
+
+class TagOutput(_Frozen):
+    output: float = Field(gt=0)
+
+
+class ProductsBalance(_Frozen):
+    start_quality: float = Field(ge=0, le=100)
+    launch_min_quality: float = Field(ge=0, le=100)
+    launch_min_feature: float = Field(ge=0, le=100)
+    morale_factor_base: float = Field(ge=0)
+    morale_factor_slope: float
+    coord_free_builders: int = Field(ge=0)
+    coord_per_builder: float = Field(ge=0)
+    coord_floor: float = Field(ge=0, le=1)
+    dev_noise_sd: float = Field(ge=0)
+    maverick_noise_sd: float = Field(ge=0)
+    dev_noise_sd_cap: float = Field(ge=0)
+    seller_rate: dict[str, float]
+    marketer_mk: float = Field(ge=0)
+    budget_mk_unit_cents: int = Field(gt=0)
+    qcap_per_skill: float = Field(gt=0)
+    quality_rate: float = Field(ge=0, le=1)
+    overcap_decay: float = Field(ge=0, le=1)
+    rot_threshold: float = Field(ge=0)
+    rot_per_month: float = Field(ge=0)
+    brand_rate: float = Field(ge=0, le=1)
+    tag: dict[str, TagOutput]
+    perfectionist_qcap_bonus: float = Field(ge=0)
+    pace_bands: Span
+    arr_milestones_cents: tuple[int, ...]
+    growth_label_months: int = Field(gt=0)
+    growth_label_rate: float
+
+    @model_validator(mode="after")
+    def _check(self) -> ProductsBalance:
+        if sorted(self.tag) != sorted(PRODUCT_TAGS):
+            raise ValueError(f"tag must define exactly {list(PRODUCT_TAGS)}")
+        if any(r < 0 for r in self.seller_rate.values()):
+            raise ValueError("seller_rate values must be non-negative")
+        milestones = list(self.arr_milestones_cents)
+        if milestones != sorted(set(milestones)) or any(m <= 0 for m in milestones):
+            raise ValueError("arr_milestones_cents must be positive and strictly increasing")
+        return self
+
+
+class MarketBalance(_Frozen):
+    gamma: float = Field(gt=0)
+    awareness_floor: float = Field(ge=0)
+    awareness_scale: float = Field(ge=0, le=1)
+    demand_noise_sd: float = Field(ge=0)
+    gap_divisor: float = Field(gt=0)
+    low_quality_at: float = Field(ge=0, le=100)
+    low_quality_churn_mult: float = Field(ge=0)
+    sunset_churn_mult: float = Field(ge=0)
+
+
+class StagesBalance(_Frozen):
+    arr_cents: dict[int, int]
+
+    @model_validator(mode="after")
+    def _check(self) -> StagesBalance:
+        ordered = [self.arr_cents[k] for k in sorted(self.arr_cents)]
+        if ordered != sorted(ordered) or any(v <= 0 for v in ordered):
+            raise ValueError("arr_cents must be positive and rise with the stage")
+        return self
+
+
 class Balance(_Frozen):
     company: CompanyBalance
     scenario: dict[str, ScenarioBalance]
@@ -402,6 +485,9 @@ class Balance(_Frozen):
     tags: TagsBalance
     org: OrgBalance
     delegates: DelegatesBalance
+    products: ProductsBalance
+    market: MarketBalance
+    stages: StagesBalance
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -485,9 +571,13 @@ class RegionsFile(_Frozen):
     regions: tuple[Region, ...] = Field(min_length=1)
 
 
+type ProductFunction = Literal["builder", "seller", "marketer", "none"]  # formulas.md 11.3
+
+
 class Role(_Frozen):
     key: str = Field(pattern=_KEY)
     label: str = Field(min_length=1)
+    product_function: ProductFunction
     primary: tuple[str, ...] = Field(min_length=1)
     secondary: tuple[str, ...]
     work_style: str
@@ -579,6 +669,109 @@ class NamesFile(_Frozen):
     names: dict[str, NamePool]
 
 
+# --- Products and markets (M3): categories.yaml and incumbents.yaml -------------------------
+
+type Reach = Literal["self_serve", "sales"]
+SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
+WEIGHT_TOLERANCE = 1e-9  # tunable-exempt: float tolerance when checking that weights sum to 1
+
+
+def _sums_to_one(values: Iterable[float]) -> bool:
+    return abs(sum(values) - 1) < WEIGHT_TOLERANCE
+
+
+class AppealWeights(_Frozen):
+    quality: float = Field(ge=0)
+    price: float = Field(ge=0)
+    brand: float = Field(ge=0)
+    features: float = Field(ge=0)
+
+    @model_validator(mode="after")
+    def _check(self) -> AppealWeights:
+        if not _sums_to_one((self.quality, self.price, self.brand, self.features)):
+            raise ValueError("appeal weights must sum to 1")
+        return self
+
+
+class SegmentDef(_Frozen):
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+    weights: AppealWeights
+    outside_option: float = Field(gt=0)
+    base_churn: float = Field(ge=0, le=1)
+    adoption: float = Field(ge=0, le=1)
+    reach: Reach
+
+
+class MarketDef(_Frozen):
+    segment: str
+    addressable: float = Field(gt=0)  # D0: customers in January 2010
+    reference_price_cents: int = Field(gt=0)
+    hosting_cents: int = Field(ge=0)
+
+
+class CategoryDef(_Frozen):
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+    growth: float = Field(ge=0)
+    features_at_start: float = Field(gt=0)
+    features_per_month: float = Field(ge=0)
+    scope: float = Field(gt=0)
+    brand_constant: float = Field(gt=0)
+    dev_weights: dict[str, float]
+    markets: tuple[MarketDef, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _check(self) -> CategoryDef:
+        if any(w < 0 for w in self.dev_weights.values()) or not _sums_to_one(
+            self.dev_weights.values()
+        ):
+            raise ValueError(f"category {self.key!r}: dev_weights must be >= 0 and sum to 1")
+        if dupes := _dupes([m.segment for m in self.markets]):
+            raise ValueError(f"category {self.key!r}: segments listed twice {dupes}")
+        return self
+
+    @property
+    def segment_keys(self) -> tuple[str, ...]:
+        return tuple(m.segment for m in self.markets)
+
+    def market(self, segment: str) -> MarketDef:
+        for m in self.markets:
+            if m.segment == segment:
+                return m
+        raise KeyError(segment)
+
+
+class CategoriesFile(_Frozen):
+    segments: tuple[SegmentDef, ...] = Field(min_length=1)
+    categories: tuple[CategoryDef, ...] = Field(min_length=1)
+
+
+class IncumbentSegment(_Frozen):
+    price_cents: int = Field(gt=0)
+    share_bp: int = Field(ge=0, le=BP_DENOMINATOR)
+
+
+class IncumbentProduct(_Frozen):
+    name: str = Field(min_length=1, max_length=80)  # tunable-exempt: name column width
+    category: str
+    quality: float = Field(ge=0, le=SCORE_MAX)
+    features: float = Field(ge=0, le=SCORE_MAX)
+    brand: float = Field(ge=0, le=SCORE_MAX)
+    segments: dict[str, IncumbentSegment] = Field(min_length=1)
+
+
+class IncumbentCompany(_Frozen):
+    name: str = Field(min_length=1, max_length=80)  # tunable-exempt: name column width
+    stage: int = Field(ge=0)
+    founded_year: int
+    products: tuple[IncumbentProduct, ...] = Field(min_length=1)
+
+
+class IncumbentsFile(_Frozen):
+    companies: tuple[IncumbentCompany, ...]
+
+
 class InboxTemplate(_Frozen):
     title: str = Field(min_length=1)
     body: str = Field(min_length=1)
@@ -605,6 +798,12 @@ INBOX_TEMPLATE_KEYS = (
     "plan_paused",
     "plan_filled",
     "plan_activity",
+    # M3a
+    "product_launched",
+    "first_customer",
+    "arr_milestone",
+    "sales_capacity_limited",
+    "product_rotting",
 )
 
 
@@ -627,6 +826,9 @@ class GameData(_Frozen):
     personality_presets: tuple[PersonalityPreset, ...]
     names: dict[str, NamePool]
     inbox_templates: dict[str, InboxTemplate]
+    segments: tuple[SegmentDef, ...]
+    categories: tuple[CategoryDef, ...]
+    incumbents: tuple[IncumbentCompany, ...]
 
     @model_validator(mode="after")
     def _check_references(self) -> GameData:
@@ -644,6 +846,9 @@ class GameData(_Frozen):
             ("tags.yaml keys", [t.key for t in self.tags]),
             ("backgrounds.yaml keys", [b.key for b in self.backgrounds]),
             ("personality preset keys", [p.key for p in self.personality_presets]),
+            ("categories.yaml segment keys", [s.key for s in self.segments]),
+            ("categories.yaml category keys", [c.key for c in self.categories]),
+            ("incumbents.yaml company names", [c.name for c in self.incumbents]),
         ):
             if dupes := _dupes(keys):
                 problems.append(f"duplicate {label}: {dupes}")
@@ -701,6 +906,28 @@ class GameData(_Frozen):
 
         if set(self.names) != set(self.region_keys):
             problems.append(f"names.yaml: regions must be exactly {sorted(self.region_keys)}")
+
+        segment_keys = {s.key for s in self.segments}
+        categories = {c.key: c for c in self.categories}
+        for cat in self.categories:
+            where = f"categories.yaml {cat.key!r}"
+            unknown(where, cat.dev_weights, skills, "skills")
+            unknown(where, cat.segment_keys, segment_keys, "segments")
+        shares: dict[tuple[str, str], int] = {}
+        for company in self.incumbents:
+            for product in company.products:
+                where = f"incumbents.yaml {company.name!r} {product.name!r}"
+                found = categories.get(product.category)
+                if found is None:
+                    problems.append(f"{where}: unknown category {product.category!r}")
+                    continue
+                unknown(where, product.segments, set(found.segment_keys), "segments")
+                for seg, value in product.segments.items():
+                    key = (product.category, seg)
+                    shares[key] = shares.get(key, 0) + value.share_bp
+        for (cat_key, seg), total in sorted(shares.items()):
+            if total > BP_DENOMINATOR:
+                problems.append(f"incumbents.yaml: starting shares in {cat_key}/{seg} exceed 100%")
 
         missing = sorted(set(INBOX_TEMPLATE_KEYS) - set(self.inbox_templates))
         if missing:
@@ -762,6 +989,26 @@ class GameData(_Frozen):
             if bg.key == key:
                 return bg
         return None
+
+    def category(self, key: str) -> CategoryDef:
+        for cat in self.categories:
+            if cat.key == key:
+                return cat
+        raise KeyError(key)
+
+    def segment(self, key: str) -> SegmentDef:
+        for seg in self.segments:
+            if seg.key == key:
+                return seg
+        raise KeyError(key)
+
+    def category_index(self, key: str) -> int:
+        """Position in categories.yaml: the first part of the `market` stream key (ADR-0017)."""
+        return [c.key for c in self.categories].index(key)
+
+    def segment_index(self, key: str) -> int:
+        """Position in the categories.yaml segments: the second part of the `market` key."""
+        return [s.key for s in self.segments].index(key)
 
     def preset(self, key: str) -> PersonalityPreset | None:
         for preset in self.personality_presets:

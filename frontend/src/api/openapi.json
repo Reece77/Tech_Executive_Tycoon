@@ -3158,6 +3158,1196 @@
         }
       }
     },
+    "/api/saves/{save_id}/categories": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "List Categories",
+        "description": "Categories and their segments, with today's addressable demand.",
+        "operationId": "listCategories",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryOut"
+                  },
+                  "title": "Response Listcategories"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/markets/{category}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get Market",
+        "description": "Every product selling in the category: owner, public scores, appeal, customers and\nshare of served customers, per segment.",
+        "operationId": "getMarket",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "List Products",
+        "description": "The player's products that are not retired, by id.",
+        "operationId": "listProducts",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductOut"
+                  },
+                  "title": "Response Listproducts"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Create Product",
+        "operationId": "createProduct",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get Product",
+        "operationId": "getProduct",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/price": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Set Price",
+        "operationId": "setProductPrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/price-preview": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Preview Price",
+        "description": "Appeal and share* at a price against the current competitors. Nothing is saved.",
+        "operationId": "previewProductPrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricePreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/segments": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Add Segment",
+        "operationId": "addProductSegment",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SegmentIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/assign": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Assign Unit",
+        "description": "Put a unit (or, with a null unit, the company root) on the product.",
+        "operationId": "assignUnitToProduct",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/unassign": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Unassign Unit",
+        "operationId": "unassignUnitFromProduct",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/marketing": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Set Marketing",
+        "operationId": "setProductMarketing",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/launch": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Launch",
+        "description": "Refused with `launch_not_ready`, naming what is missing, below the thresholds.",
+        "operationId": "launchProduct",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/sunset": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Sunset",
+        "operationId": "sunsetProduct",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/searches/{search_id}/scout": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Scout Search",
+        "description": "The founder scouts every open candidate of the search (20 energy, formulas.md 11.12).",
+        "operationId": "scoutSearch",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "search_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Search Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/meta/scenarios": {
       "get": {
         "tags": [
@@ -3294,6 +4484,70 @@
   },
   "components": {
     "schemas": {
+      "ActionOut": {
+        "properties": {
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "ActionOut"
+      },
+      "AssignIn": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id",
+            "description": "Null for the company root"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id"
+        ],
+        "title": "AssignIn"
+      },
+      "AssignedUnitOut": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id",
+            "description": "Null for the company root"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "name"
+        ],
+        "title": "AssignedUnitOut"
+      },
       "AttributeOut": {
         "properties": {
           "key": {
@@ -3432,6 +4686,79 @@
         ],
         "title": "CandidacyOut"
       },
+      "CategoryOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "annual_growth": {
+            "type": "number",
+            "title": "Annual Growth",
+            "description": "Addressable demand growth per year (fraction)"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/CategorySegmentOut"
+            },
+            "type": "array",
+            "title": "Segments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "annual_growth",
+          "segments"
+        ],
+        "title": "CategoryOut"
+      },
+      "CategorySegmentOut": {
+        "properties": {
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "reach": {
+            "type": "string",
+            "title": "Reach",
+            "description": "self_serve (awareness) or sales (sales capacity)"
+          },
+          "addressable": {
+            "type": "integer",
+            "title": "Addressable",
+            "description": "Addressable customers now, rounded"
+          },
+          "reference_price_cents": {
+            "type": "integer",
+            "title": "Reference Price Cents"
+          },
+          "hosting_cents": {
+            "type": "integer",
+            "title": "Hosting Cents",
+            "description": "Hosting cost per customer per month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment",
+          "label",
+          "reach",
+          "addressable",
+          "reference_price_cents",
+          "hosting_cents"
+        ],
+        "title": "CategorySegmentOut"
+      },
       "ChangePreviewOut": {
         "properties": {
           "allowed": {
@@ -3549,6 +4876,35 @@
           "amount_cents"
         ],
         "title": "CostLineOut"
+      },
+      "CreateProductIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "segments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Segments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "segments"
+        ],
+        "title": "CreateProductIn"
       },
       "CreateSaveIn": {
         "properties": {
@@ -4572,6 +5928,28 @@
         ],
         "title": "LabelOut"
       },
+      "LaunchReadinessOut": {
+        "properties": {
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing",
+            "description": "What still stands between it and launch"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ready",
+          "missing"
+        ],
+        "title": "LaunchReadinessOut"
+      },
       "ManagerOut": {
         "properties": {
           "person_id": {
@@ -4634,6 +6012,174 @@
           "label"
         ],
         "title": "ManagerOut"
+      },
+      "MarketOut": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/MarketSegmentOut"
+            },
+            "type": "array",
+            "title": "Segments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "label",
+          "segments"
+        ],
+        "title": "MarketOut"
+      },
+      "MarketProductOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "is_player": {
+            "type": "boolean",
+            "title": "Is Player"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "feature_score": {
+            "type": "number",
+            "title": "Feature Score"
+          },
+          "brand": {
+            "type": "number",
+            "title": "Brand"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "appeal": {
+            "type": "number",
+            "title": "Appeal"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "share_of_served": {
+            "type": "number",
+            "title": "Share Of Served",
+            "description": "Share of the segment's served customers, 0-1"
+          },
+          "churn_rate": {
+            "type": "number",
+            "title": "Churn Rate",
+            "description": "Monthly churn at the current scores, 0-1"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents",
+            "description": "Customers x price this month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "company_id",
+          "company_name",
+          "is_player",
+          "status",
+          "quality",
+          "feature_score",
+          "brand",
+          "price_cents",
+          "appeal",
+          "customers",
+          "share_of_served",
+          "churn_rate",
+          "mrr_cents"
+        ],
+        "title": "MarketProductOut"
+      },
+      "MarketSegmentOut": {
+        "properties": {
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "reach": {
+            "type": "string",
+            "title": "Reach"
+          },
+          "addressable": {
+            "type": "integer",
+            "title": "Addressable"
+          },
+          "served": {
+            "type": "number",
+            "title": "Served",
+            "description": "Customers of every product in the segment"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/MarketProductOut"
+            },
+            "type": "array",
+            "title": "Products",
+            "description": "Most customers first"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment",
+          "label",
+          "reach",
+          "addressable",
+          "served",
+          "products"
+        ],
+        "title": "MarketSegmentOut"
+      },
+      "MarketingIn": {
+        "properties": {
+          "budget_cents": {
+            "type": "integer",
+            "title": "Budget Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "budget_cents"
+        ],
+        "title": "MarketingIn"
       },
       "MoraleBreakdownOut": {
         "properties": {
@@ -4808,6 +6354,24 @@
           "parent_id"
         ],
         "title": "MoveUnitIn"
+      },
+      "NamedOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name"
+        ],
+        "title": "NamedOut"
       },
       "NewGameMetaOut": {
         "properties": {
@@ -5499,6 +7063,18 @@
                 "type": "null"
               }
             ]
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents",
+            "description": "Revenue in the last closed month (M3a)",
+            "default": 0
+          },
+          "arr_cents": {
+            "type": "integer",
+            "title": "Arr Cents",
+            "description": "12 x MRR",
+            "default": 0
           }
         },
         "type": "object",
@@ -6202,6 +7778,409 @@
         ],
         "title": "PresetOut"
       },
+      "PriceIn": {
+        "properties": {
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment",
+          "price_cents"
+        ],
+        "title": "PriceIn"
+      },
+      "PricePreviewOut": {
+        "properties": {
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "price_score": {
+            "type": "number",
+            "title": "Price Score"
+          },
+          "appeal": {
+            "type": "number",
+            "title": "Appeal"
+          },
+          "choice_share": {
+            "type": "number",
+            "title": "Choice Share",
+            "description": "share* among live products and no purchase, 0-1"
+          },
+          "current_appeal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Appeal"
+          },
+          "current_choice_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Choice Share"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment",
+          "price_cents",
+          "price_score",
+          "appeal",
+          "choice_share",
+          "current_appeal",
+          "current_choice_share"
+        ],
+        "title": "PricePreviewOut",
+        "description": "Appeal and share* at a price against the current competitors; no customer numbers."
+      },
+      "ProductActionOut": {
+        "properties": {
+          "product": {
+            "$ref": "#/components/schemas/ProductOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "ProductActionOut"
+      },
+      "ProductMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "feature_score": {
+            "type": "number",
+            "title": "Feature Score"
+          },
+          "brand": {
+            "type": "number",
+            "title": "Brand"
+          },
+          "appeal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appeal"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "new": {
+            "type": "number",
+            "title": "New"
+          },
+          "churned": {
+            "type": "number",
+            "title": "Churned"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "segment",
+          "quality",
+          "feature_score",
+          "brand",
+          "appeal",
+          "customers",
+          "new",
+          "churned",
+          "revenue_cents"
+        ],
+        "title": "ProductMonthOut"
+      },
+      "ProductOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "category_label": {
+            "type": "string",
+            "title": "Category Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "lifecycle_label": {
+            "type": "string",
+            "title": "Lifecycle Label",
+            "description": "In development, Growth, Mature, or Sunset"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "feature_score": {
+            "type": "number",
+            "title": "Feature Score"
+          },
+          "brand": {
+            "type": "number",
+            "title": "Brand"
+          },
+          "marketing_budget_cents": {
+            "type": "integer",
+            "title": "Marketing Budget Cents"
+          },
+          "created_turn": {
+            "type": "integer",
+            "title": "Created Turn"
+          },
+          "launched_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Launched Turn"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSegmentOut"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "assigned_units": {
+            "items": {
+              "$ref": "#/components/schemas/AssignedUnitOut"
+            },
+            "type": "array",
+            "title": "Assigned Units"
+          },
+          "builders": {
+            "items": {
+              "$ref": "#/components/schemas/NamedOut"
+            },
+            "type": "array",
+            "title": "Builders"
+          },
+          "sellers": {
+            "items": {
+              "$ref": "#/components/schemas/NamedOut"
+            },
+            "type": "array",
+            "title": "Sellers"
+          },
+          "marketers": {
+            "items": {
+              "$ref": "#/components/schemas/NamedOut"
+            },
+            "type": "array",
+            "title": "Marketers"
+          },
+          "pace": {
+            "type": "string",
+            "title": "Pace",
+            "description": "fast | steady | slow"
+          },
+          "rotting": {
+            "type": "boolean",
+            "title": "Rotting",
+            "description": "Nobody works on it, so quality is falling"
+          },
+          "launch": {
+            "$ref": "#/components/schemas/LaunchReadinessOut"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ProductMonthOut"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "Last 12 months, oldest first"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category",
+          "category_label",
+          "status",
+          "lifecycle_label",
+          "quality",
+          "feature_score",
+          "brand",
+          "marketing_budget_cents",
+          "created_turn",
+          "launched_turn",
+          "mrr_cents",
+          "segments",
+          "assigned_units",
+          "builders",
+          "sellers",
+          "marketers",
+          "pace",
+          "rotting",
+          "launch",
+          "history"
+        ],
+        "title": "ProductOut"
+      },
+      "ProductSegmentOut": {
+        "properties": {
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "reach": {
+            "type": "string",
+            "title": "Reach"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "appeal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appeal",
+            "description": "Null until a price is set"
+          },
+          "share_of_served": {
+            "type": "number",
+            "title": "Share Of Served"
+          },
+          "churn_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Churn Rate",
+            "description": "Null unless the product is selling here"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "'Sales capacity limited new customers in <segment>' when it bound"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment",
+          "label",
+          "reach",
+          "price_cents",
+          "customers",
+          "appeal",
+          "share_of_served",
+          "churn_rate",
+          "mrr_cents",
+          "note"
+        ],
+        "title": "ProductSegmentOut"
+      },
       "RaiseIn": {
         "properties": {
           "salary_cents": {
@@ -6463,6 +8442,19 @@
         ],
         "title": "SearchOut"
       },
+      "SegmentIn": {
+        "properties": {
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment"
+        ],
+        "title": "SegmentIn"
+      },
       "SetLeaderIn": {
         "properties": {
           "person_id": {
@@ -6582,6 +8574,16 @@
               }
             ],
             "title": "Avg Morale"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents",
+            "default": 0
+          },
+          "arr_cents": {
+            "type": "integer",
+            "title": "Arr Cents",
+            "default": 0
           }
         },
         "type": "object",

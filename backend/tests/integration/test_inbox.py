@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import text
 
-from tests.helpers import fresh_game, make_person, mark_interviewed, with_employee
+from tests.helpers import fresh_game, make_person, mark_interviewed, with_employee, with_product
 from tests.unit.test_hiring_phases import Game, _staff_game
 from tst.db.inbox import (
     UnknownInboxItemError,
@@ -23,9 +23,11 @@ from tst.db.state_io import load_state, sync_state
 from tst.loader import LoadedData
 from tst.sim.actions import (
     CreatePlan,
+    CreateProduct,
     CreateUnit,
     Fire,
     Interview,
+    LaunchProduct,
     MakeOffer,
     MovePerson,
     OpenSearch,
@@ -110,7 +112,24 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     delegated.act(CreatePlan(1, 41, "software_engineer", 1, "job_post", 12_000))
     for _ in range(4):
         delegated.turn()  # activity summaries, then the plan fills
-    games = (sad, hiring, broke, org, delegated)
+    # M3a: a launch, first customers, an ARR milestone, sales capacity and a product nobody
+    # works on.
+    products = Game(loaded, fresh_game(loaded, 7))
+    products.state = with_product(
+        products.state,
+        status="in_development",
+        quality=30,
+        feature_points=40,
+        brand=30,
+        prices={"smb": 4000, "mid_market": 70_000},
+        root=False,
+    )
+    products.state = with_product(
+        products.state, name="Ledger", customers={"smb": 3000.0}, root=False
+    )
+    products.act(LaunchProduct(1, 13))
+    products.turn()
+    games = (sad, hiring, broke, org, delegated, products)
     items = [i for g in games for r in g.results for i in r.log_items]
     items += [i for g in games for i in g.action_logs]
     for item in items:
@@ -178,3 +197,17 @@ def test_fired_culture_carrier_is_stored_and_announced(tmp_path: Path, loaded: L
     assert newest.title == f"{name}'s departure hit the team"
     assert newest.body == f"The team took {name}'s departure hard; they held the team together."
     assert [tuple(t) for t in tags] == [("culture_carrier", 0)]
+
+
+def test_product_notes_reach_the_inbox(tmp_path: Path, loaded: LoadedData) -> None:
+    path = create_save(
+        "prodinbox", 6, "funded_spinout", company_name="Co", data=loaded, save_dir=tmp_path
+    )
+    run_action(path, loaded, CreateProduct(1, "Pipeline", "b2b_saas", ("smb",)))
+    run_turn(path, loaded)  # nobody works on it
+    with open_session(path) as session:
+        [message] = list_inbox(session, 1)
+    assert message.template == "product_rotting"
+    assert (message.link_kind, message.link_id) == ("product", 13)
+    assert message.title == "Pipeline is slipping"
+    assert "Assign a unit to it." in message.body

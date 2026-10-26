@@ -636,6 +636,250 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Categories
+         * @description Categories and their segments, with today's addressable demand.
+         */
+        get: operations["listCategories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/markets/{category}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Market
+         * @description Every product selling in the category: owner, public scores, appeal, customers and
+         *     share of served customers, per segment.
+         */
+        get: operations["getMarket"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Products
+         * @description The player's products that are not retired, by id.
+         */
+        get: operations["listProducts"];
+        put?: never;
+        /** Create Product */
+        post: operations["createProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Product */
+        get: operations["getProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Price */
+        post: operations["setProductPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/price-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Price
+         * @description Appeal and share* at a price against the current competitors. Nothing is saved.
+         */
+        post: operations["previewProductPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/segments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Segment */
+        post: operations["addProductSegment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign Unit
+         * @description Put a unit (or, with a null unit, the company root) on the product.
+         */
+        post: operations["assignUnitToProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/unassign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unassign Unit */
+        post: operations["unassignUnitFromProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/marketing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Marketing */
+        post: operations["setProductMarketing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/launch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Launch
+         * @description Refused with `launch_not_ready`, naming what is missing, below the thresholds.
+         */
+        post: operations["launchProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/sunset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sunset */
+        post: operations["sunsetProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/recruitment/searches/{search_id}/scout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Scout Search
+         * @description The founder scouts every open candidate of the search (20 energy, formulas.md 11.12).
+         */
+        post: operations["scoutSearch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/scenarios": {
         parameters: {
             query?: never;
@@ -737,6 +981,30 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActionOut */
+        ActionOut: {
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** AssignIn */
+        AssignIn: {
+            /**
+             * Unit Id
+             * @description Null for the company root
+             */
+            unit_id: number | null;
+        };
+        /** AssignedUnitOut */
+        AssignedUnitOut: {
+            /**
+             * Unit Id
+             * @description Null for the company root
+             */
+            unit_id: number | null;
+            /** Name */
+            name: string;
+        };
         /** AttributeOut */
         AttributeOut: {
             /** Key */
@@ -789,6 +1057,44 @@ export interface components {
              */
             offer_blocked_reason: string | null;
         };
+        /** CategoryOut */
+        CategoryOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Annual Growth
+             * @description Addressable demand growth per year (fraction)
+             */
+            annual_growth: number;
+            /** Segments */
+            segments: components["schemas"]["CategorySegmentOut"][];
+        };
+        /** CategorySegmentOut */
+        CategorySegmentOut: {
+            /** Segment */
+            segment: string;
+            /** Label */
+            label: string;
+            /**
+             * Reach
+             * @description self_serve (awareness) or sales (sales capacity)
+             */
+            reach: string;
+            /**
+             * Addressable
+             * @description Addressable customers now, rounded
+             */
+            addressable: number;
+            /** Reference Price Cents */
+            reference_price_cents: number;
+            /**
+             * Hosting Cents
+             * @description Hosting cost per customer per month
+             */
+            hosting_cents: number;
+        };
         /** ChangePreviewOut */
         ChangePreviewOut: {
             /** Allowed */
@@ -834,6 +1140,15 @@ export interface components {
             label: string;
             /** Amount Cents */
             amount_cents: number;
+        };
+        /** CreateProductIn */
+        CreateProductIn: {
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Segments */
+            segments: string[];
         };
         /** CreateSaveIn */
         CreateSaveIn: {
@@ -1213,6 +1528,16 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** LaunchReadinessOut */
+        LaunchReadinessOut: {
+            /** Ready */
+            ready: boolean;
+            /**
+             * Missing
+             * @description What still stands between it and launch
+             */
+            missing: string[];
+        };
         /** ManagerOut */
         ManagerOut: {
             /** Person Id */
@@ -1246,6 +1571,83 @@ export interface components {
              * @description strong | fine | stretched, from their manager morale term
              */
             label: string;
+        };
+        /** MarketOut */
+        MarketOut: {
+            /** Category */
+            category: string;
+            /** Label */
+            label: string;
+            /** Segments */
+            segments: components["schemas"]["MarketSegmentOut"][];
+        };
+        /** MarketProductOut */
+        MarketProductOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Company Id */
+            company_id: number;
+            /** Company Name */
+            company_name: string;
+            /** Is Player */
+            is_player: boolean;
+            /** Status */
+            status: string;
+            /** Quality */
+            quality: number;
+            /** Feature Score */
+            feature_score: number;
+            /** Brand */
+            brand: number;
+            /** Price Cents */
+            price_cents: number;
+            /** Appeal */
+            appeal: number;
+            /** Customers */
+            customers: number;
+            /**
+             * Share Of Served
+             * @description Share of the segment's served customers, 0-1
+             */
+            share_of_served: number;
+            /**
+             * Churn Rate
+             * @description Monthly churn at the current scores, 0-1
+             */
+            churn_rate: number;
+            /**
+             * Mrr Cents
+             * @description Customers x price this month
+             */
+            mrr_cents: number;
+        };
+        /** MarketSegmentOut */
+        MarketSegmentOut: {
+            /** Segment */
+            segment: string;
+            /** Label */
+            label: string;
+            /** Reach */
+            reach: string;
+            /** Addressable */
+            addressable: number;
+            /**
+             * Served
+             * @description Customers of every product in the segment
+             */
+            served: number;
+            /**
+             * Products
+             * @description Most customers first
+             */
+            products: components["schemas"]["MarketProductOut"][];
+        };
+        /** MarketingIn */
+        MarketingIn: {
+            /** Budget Cents */
+            budget_cents: number;
         };
         /**
          * MoraleBreakdownOut
@@ -1318,6 +1720,13 @@ export interface components {
              * @description A department, or null for the company root
              */
             parent_id: number | null;
+        };
+        /** NamedOut */
+        NamedOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
         };
         /** NewGameMetaOut */
         NewGameMetaOut: {
@@ -1605,6 +2014,18 @@ export interface components {
              */
             network_bonus_candidates?: number;
             org?: components["schemas"]["OrgTileOut"] | null;
+            /**
+             * Mrr Cents
+             * @description Revenue in the last closed month (M3a)
+             * @default 0
+             */
+            mrr_cents?: number;
+            /**
+             * Arr Cents
+             * @description 12 x MRR
+             * @default 0
+             */
+            arr_cents?: number;
         };
         /**
          * PayPreviewOut
@@ -1850,6 +2271,158 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** PriceIn */
+        PriceIn: {
+            /** Segment */
+            segment: string;
+            /** Price Cents */
+            price_cents: number;
+        };
+        /**
+         * PricePreviewOut
+         * @description Appeal and share* at a price against the current competitors; no customer numbers.
+         */
+        PricePreviewOut: {
+            /** Segment */
+            segment: string;
+            /** Price Cents */
+            price_cents: number;
+            /** Price Score */
+            price_score: number;
+            /** Appeal */
+            appeal: number;
+            /**
+             * Choice Share
+             * @description share* among live products and no purchase, 0-1
+             */
+            choice_share: number;
+            /** Current Appeal */
+            current_appeal: number | null;
+            /** Current Choice Share */
+            current_choice_share: number | null;
+        };
+        /** ProductActionOut */
+        ProductActionOut: {
+            product: components["schemas"]["ProductOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** ProductMonthOut */
+        ProductMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Segment */
+            segment: string;
+            /** Quality */
+            quality: number;
+            /** Feature Score */
+            feature_score: number;
+            /** Brand */
+            brand: number;
+            /** Appeal */
+            appeal: number | null;
+            /** Customers */
+            customers: number;
+            /** New */
+            new: number;
+            /** Churned */
+            churned: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+        };
+        /** ProductOut */
+        ProductOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Category Label */
+            category_label: string;
+            /** Status */
+            status: string;
+            /**
+             * Lifecycle Label
+             * @description In development, Growth, Mature, or Sunset
+             */
+            lifecycle_label: string;
+            /** Quality */
+            quality: number;
+            /** Feature Score */
+            feature_score: number;
+            /** Brand */
+            brand: number;
+            /** Marketing Budget Cents */
+            marketing_budget_cents: number;
+            /** Created Turn */
+            created_turn: number;
+            /** Launched Turn */
+            launched_turn: number | null;
+            /** Mrr Cents */
+            mrr_cents: number;
+            /** Segments */
+            segments: components["schemas"]["ProductSegmentOut"][];
+            /** Assigned Units */
+            assigned_units: components["schemas"]["AssignedUnitOut"][];
+            /** Builders */
+            builders: components["schemas"]["NamedOut"][];
+            /** Sellers */
+            sellers: components["schemas"]["NamedOut"][];
+            /** Marketers */
+            marketers: components["schemas"]["NamedOut"][];
+            /**
+             * Pace
+             * @description fast | steady | slow
+             */
+            pace: string;
+            /**
+             * Rotting
+             * @description Nobody works on it, so quality is falling
+             */
+            rotting: boolean;
+            launch: components["schemas"]["LaunchReadinessOut"];
+            /**
+             * History
+             * @description Last 12 months, oldest first
+             */
+            history: components["schemas"]["ProductMonthOut"][];
+        };
+        /** ProductSegmentOut */
+        ProductSegmentOut: {
+            /** Segment */
+            segment: string;
+            /** Label */
+            label: string;
+            /** Reach */
+            reach: string;
+            /** Price Cents */
+            price_cents: number | null;
+            /** Customers */
+            customers: number;
+            /**
+             * Appeal
+             * @description Null until a price is set
+             */
+            appeal: number | null;
+            /** Share Of Served */
+            share_of_served: number;
+            /**
+             * Churn Rate
+             * @description Null unless the product is selling here
+             */
+            churn_rate: number | null;
+            /** Mrr Cents */
+            mrr_cents: number;
+            /**
+             * Note
+             * @description 'Sales capacity limited new customers in <segment>' when it bound
+             */
+            note: string | null;
+        };
         /** RaiseIn */
         RaiseIn: {
             /** Salary Cents */
@@ -1947,6 +2520,11 @@ export interface components {
             /** Open Candidates */
             open_candidates: number;
         };
+        /** SegmentIn */
+        SegmentIn: {
+            /** Segment */
+            segment: string;
+        };
         /** SetLeaderIn */
         SetLeaderIn: {
             /**
@@ -1995,6 +2573,16 @@ export interface components {
             headcount: number;
             /** Avg Morale */
             avg_morale: number | null;
+            /**
+             * Mrr Cents
+             * @default 0
+             */
+            mrr_cents?: number;
+            /**
+             * Arr Cents
+             * @default 0
+             */
+            arr_cents?: number;
         };
         /** TagOut */
         TagOut: {
@@ -4358,6 +4946,857 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HiringPlanOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMarket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                category: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarketOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listProducts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    createProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProductIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setProductPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewProductPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PricePreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    addProductSegment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SegmentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    assignUnitToProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    unassignUnitFromProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setProductMarketing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarketingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    launchProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sunsetProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    scoutSearch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                search_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionOut"];
                 };
             };
             /** @description Bad Request */

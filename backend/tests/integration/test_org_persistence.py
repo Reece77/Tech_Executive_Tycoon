@@ -9,7 +9,7 @@ from sqlalchemy import select, text
 
 from tests.helpers import make_person, with_candidates, with_employee
 from tst.db import migrate
-from tst.db.models import DecisionLogRow, HiringPlanRow, OrgUnitRow
+from tst.db.models import SCHEMA_VERSION, DecisionLogRow, HiringPlanRow, OrgUnitRow
 from tst.db.repository import create_save, open_session, run_action
 from tst.db.session import make_engine
 from tst.db.state_io import load_state, sync_state
@@ -133,4 +133,4 @@ def test_upgrade_from_0004_backfills_interviews_and_keeps_everyone_in_the_root(
     with engine.connect() as conn:
         version = conn.execute(text("SELECT schema_version FROM save_meta")).scalar()
     engine.dispose()
-    assert version == 7
+    assert version == SCHEMA_VERSION

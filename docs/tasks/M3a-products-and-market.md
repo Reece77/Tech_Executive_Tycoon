@@ -62,8 +62,55 @@ Rival AI, rival people and rival ledgers (M5). Bankruptcy and financing (M4): ca
 
 ## Decisions made
 
-_(Agent fills in.)_
+**Incumbent starting shares (equilibrium check).** The §11.9 shares drifted up to 15 points of served customers in 24 turns (Evernote +15, Zoho SMB +15, Facebook −12, GitHub mid-market +8). Only the starting shares in `incumbents.yaml` changed: each segment keeps its §11.9 total, split in proportion to share\*/churn at the fixed scores (the steady state), rounded to 50 bp. Worst move over 24 turns: 1.14 points on seeds 1–10. New values (bp, was → now):
+
+| Segment | Changes |
+| --- | --- |
+| B2B SaaS SMB | Sales Cloud 1500 → 1000, Zoho CRM 1000 → 1500 |
+| B2B SaaS mid-market | Sales Cloud 3000 → 2150, CRM On Demand 1500 → 1600, Zoho CRM 1000 → 1750 |
+| B2B SaaS enterprise | Sales Cloud 3000 → 3650, CRM On Demand 3000 → 2350 |
+| Dev tools SMB | unchanged (JIRA 2000, GitHub 1500) |
+| Dev tools mid-market | JIRA 2500 → 1800, TFS 2500 → 2000, GitHub 1000 → 2200 |
+| Dev tools enterprise | JIRA 1500 → 2350, TFS 4000 → 3150 |
+| Consumer | Facebook 3000 → 2450, FarmVille 1000 → 800, Evernote 500 → 1250 |
+| Cybersecurity SMB | Norton 2000 → 1750, McAfee 1500 → 1750 |
+| Cybersecurity mid-market | Norton 2500 → 2450, McAfee 2000 (same), Check Point 1500 → 1550 |
+| Cybersecurity enterprise | Norton 2500 → 2850, McAfee 2000 → 2250, Check Point 2500 → 1900 |
+
+**Earn-and-burn run (printed by `tests/integration/test_market_balance.py`).** Founder, 3 builders (d = 11), 1 account executive and 1 marketer on mid-level market salaries, $10,000 a month marketing, SMB $40 and mid-market $700, launched when allowed:
+
+| Seed | Launch | First revenue | Break-even | ARR at turn 36 | Cash at turn 36 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 5 | 5 | 18 | $2,545,724 | $2,085,030 |
+| 2 | 6 | 6 | 18 | $2,557,954 | $2,050,248 |
+| 3 | 5 | 5 | 17 | $2,571,946 | $2,151,659 |
+
+Without the marketing budget (seed 1): $1,277,633. Both are inside the band and close to the §11.14 design check ($2.6M and $1.4M, first revenue around turn 5, break-even around turn 17). Nothing was tuned to it.
+
+**Rule readings** (formulas.md is silent or open to two readings; each is noted in code):
+
+1. *Above Q_cap* ("falls 1% a month toward Q_cap"): Q ← max(Q_cap, 0.99 Q).
+2. *Rot*: when o < 0.25σ the product loses 0.5 quality instead of climbing (the two rules do not stack); with no builders at all, Q_cap is undefined and the product rots.
+3. *In play is capped* at the customers who churned plus the unserved, so demand noise can never push a segment's customers above its addressable demand (the brief's property test). It binds only in near-saturated segments.
+4. *Displayed feature score* uses F_exp of the last turn whose phase 3 ran (`state.turn − 1`), as the §11.14 example does ("feature score after turn 8 … F_exp(8)"); the launch check uses the same value.
+5. *Incumbent feature score* is stored on the product (`held_feature`), and phase 3 sets F = held × F_exp(t) / 100 each month. Incumbents skip development and brand updates; in the market they are ordinary products with awareness 1 and no capacity limit.
+6. *Incumbents and the ledger*: companies with `is_player = false` get no payroll, overhead or snapshot rows (ADR-0017: no ledger until M5); `GameState.ledger_companies()` is the one place this is decided. This changed the M0 test that posted overhead for a second company.
+7. *Sunset and retirement*: only a live product can be sunset. A sunset product retires when every segment's customers round to 0 (< 0.5); the units and root on it are freed.
+8. *Segments without a price* do not sell (a segment added after launch starts selling once priced).
+9. *Revenue* is booked on customers after this month's churn and wins; hosting is charged on the same customers in phase 6. Hosting and marketing are lines in the monthly-costs entry, so the Overview projection and phase 6 stay identical (`monthly_costs` now takes the game data).
+10. *Inbox notes fire on the change*: "first paying customer" when a product first has ≥ 1 customer (rounded); the sales-capacity note when capacity starts binding in a segment (`product_segment.capacity_limited`); the slipping note when rot starts (`product.rotting`); the ARR note for the highest of $100k / $1M / $10M passed for the first time (`company.arr_milestone_cents`, thresholds in `balance.yaml`).
+11. *Growth / Mature label*: Growth if total customers rose more than 5% a month over the last 6 months of history, Mature otherwise, "Live" with under two months of history (`products.growth_label_months`, `products.growth_label_rate`).
+12. *Upgrade of older saves*: migration `0008_products` reads the current `categories.yaml` and `incumbents.yaml`, grows demand to the save's turn deterministically (no noise), and gives each incumbent its starting share of that demand. Incumbent company ids follow the highest existing id.
+13. *Founder scouting* is a new action `scout_search` (search id, 20 energy from `founder.energy_cost.scout_search`) sharing the delegates' scouting pass; a closed search whose candidates are still open can be scouted.
+14. *Incumbent companies* carry a stage (public companies 4, large private ones 3, GitHub and Evernote 2) and a founding year (shown as a negative `founded_turn`); neither changes a rule in M3.
+15. *Golden script*: in addition to the brief's steps, the M2a "Product" team (formed at turn 6, when the script empties the root) also works on the product from turn 7. Without it, seeds 5, 6 and 8 left the founder alone and never launched.
+
+**Engineering.** Product code lives in `tst/sim/products/` (formulas, models, team, phases, setup) and `tst/sim/actions/products.py`; API views in `tst/api/product_views.py`, routes in `tst/api/routers/products.py`. Customers are floats; money stays integer cents (`round(C × price)`).
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- formulas.md §11.9's table still shows the original starting shares; update it to the tuned values above (or note that `incumbents.yaml` holds them).
+- Sunsetting a product in development (cancelling it) is refused today; decide whether it should retire at once.
+- The 120-turn performance run (164 ms a turn) starts with 25 staff but, like the M2a run, loses some to resignations over ten years (11 left); a fixed-headcount variant would measure the stated load more strictly.
+- Sales capacity is shared in full by every sales segment (§11.3 simplification); v2 may split seller effort.
+- M3b screens can show the `launch.missing` list, the capacity `note`, and `rotting` directly; the inbox front end has no badge for the five new templates yet (they fall back to "Notice").

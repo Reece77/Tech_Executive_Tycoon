@@ -31,6 +31,7 @@ STREAM_IDS: Final = MappingProxyType(
         "retire": 12,  # key (person_id,): monthly retirement roll (M1b)
         "actions": 13,  # key (action_seq,): randomness inside a player action (M1b)
         "delegate": 14,  # key (person_id, n): randomness inside a delegate's action (M2a)
+        "product_dev": 15,  # key (product_id,): monthly development noise (M3, ADR-0017)
         "misc": 99,
     }
 )

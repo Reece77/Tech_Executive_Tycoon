@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from tst.api.routers import game, meta, org, saves
+from tst.api.routers import game, meta, org, products, saves
 from tst.api.schemas.common import ErrorOut
 from tst.sim.errors import (
     InterviewRequired,
@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
     app.include_router(saves.router)
     app.include_router(game.router)
     app.include_router(org.router)
+    app.include_router(products.router)
     app.include_router(meta.router)
 
     @app.exception_handler(SimError)

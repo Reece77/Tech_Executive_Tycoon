@@ -1,4 +1,5 @@
-"""Headless commands: new-game, advance, inspect, list, hiring (M1b), and the org (M2a).
+"""Headless commands: new-game, advance, inspect, list, hiring (M1b), the org (M2a), and
+products and markets (M3a).
 
 Hiring commands call the same action functions as the API, with the founder as actor.
 They show what the company knows (ranges), never true values; only `inspect --person`
@@ -13,7 +14,7 @@ from typing import Annotated, Any
 
 import typer
 
-from tst.api import org_views, views
+from tst.api import org_views, product_views, views
 from tst.config import Settings
 from tst.db import inbox as inbox_db
 from tst.db import repository
@@ -21,14 +22,18 @@ from tst.loader import DataLoadError, LoadedData, load_all
 from tst.sim.actions import (
     Action,
     ActionResult,
+    AddSegment,
+    AssignUnit,
     ClosePlan,
     CloseSearch,
     CreatePlan,
+    CreateProduct,
     CreateUnit,
     DissolveUnit,
     Fire,
     GiveRaise,
     Interview,
+    LaunchProduct,
     MakeOffer,
     MovePerson,
     MoveUnit,
@@ -36,10 +41,16 @@ from tst.sim.actions import (
     Promote,
     ReferenceCheck,
     RenameUnit,
+    ScoutSearch,
     SetLeader,
+    SetMarketing,
     SetPolicy,
+    SetPrice,
+    SunsetProduct,
+    UnassignUnit,
     UpdatePlan,
 )
+from tst.sim.actions.products import assignment_of, own_product
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.errors import SimError
@@ -147,7 +158,7 @@ def inspect(
                 state = repository.load_state(session)
                 _print_person(state, person, data)
                 return
-            ov = repository.player_overview(session, history=1, balance=data.balance)
+            ov = repository.player_overview(session, history=1, data=data)
     except SimError as exc:
         raise _fail(exc.message) from exc
     if ov.runway_months is None:
@@ -159,6 +170,8 @@ def inspect(
     typer.echo(f"Cash:    {format_money(ov.cash_cents)}")
     typer.echo(f"Burn:    {format_money(ov.monthly_burn_cents)} / month")
     typer.echo(f"Runway:  {runway} at this month's projected costs")
+    mrr = ov.history[-1][1].mrr_cents if ov.history else 0
+    typer.echo(f"MRR:     {format_money(mrr)} (ARR {format_money(12 * mrr)})")
 
 
 def _print_person(state: GameState, which: str, data: LoadedData) -> None:
@@ -765,7 +778,9 @@ def morale(save: SaveOpt, person: Annotated[int, typer.Option(help="Person id")]
     with repository.open_session(path) as session:
         state = repository.load_state(session)
         cash = company_cash(repository.ledger_balances(session), state.player.id)
-    projected = sum(a for _, _, a in monthly_costs(state, state.player.id, data.balance))
+    projected = sum(
+        a for _, _, a in monthly_costs(state, state.player.id, data.balance, data.game_data)
+    )
     try:
         b = org_views.morale_breakdown(state, state.player.id, person, data, cash, projected)
     except SimError as exc:
@@ -775,6 +790,238 @@ def morale(save: SaveOpt, person: Annotated[int, typer.Option(help="Person id")]
     typer.echo(f"{name}: morale {b.morale:.1f}, heading for {b.target:.1f}{manager}")
     for t in b.terms:
         typer.echo(f"  {t.label:<34} {t.value:+7.2f}")
+
+
+# --- Products and markets (M3a) -------------------------------------------------------------
+
+product_app = typer.Typer(no_args_is_help=True, help="Create, price, staff and launch products")
+app.add_typer(product_app, name="product")
+ProductOpt = Annotated[int, typer.Option("--product", help="Product id")]
+HISTORY_MONTHS = 12
+
+
+def _dollars(value: str) -> int:
+    try:
+        return cents(value)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+
+
+def _product_out(path: Path, state: GameState, data: LoadedData, product_id: int) -> Any:
+    try:
+        product = own_product(state, state.player.id, product_id)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    with repository.open_session(path) as session:
+        history = repository.product_history(session, product.id, state.turn - HISTORY_MONTHS)
+    return product_views.product_out(state, product, history, data)
+
+
+def _product_line(p: Any) -> str:
+    return (
+        f"{p.product_id:>3}  {p.name:<24} {p.category_label:<16} {p.lifecycle_label:<15} "
+        f"Q {p.quality:5.1f}  F {p.feature_score:5.1f}  brand {p.brand:5.1f}  "
+        f"MRR {format_money(p.mrr_cents)}"
+    )
+
+
+def _product_done(save: str, product_id: int, action: Action) -> None:
+    path, data, _ = _game(save)
+    result = _run(path, data, action)
+    out = _product_out(path, result.new_state, data, product_id)
+    typer.echo(_product_line(out))
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command()
+def products(save: SaveOpt) -> None:
+    """List your products."""
+    path, data, state = _game(save)
+    found = state.company_products(state.player.id)
+    if not found:
+        typer.echo("No products. Create one with `tst product create`.")
+    for product in found:
+        typer.echo(_product_line(_product_out(path, state, data, product.id)))
+
+
+@product_app.command("create")
+def product_create(
+    save: SaveOpt,
+    name: Annotated[str, typer.Option(help="Product name")],
+    category: Annotated[str, typer.Option(help="b2b_saas|dev_tools|consumer_apps|cybersecurity")],
+    segments: Annotated[str, typer.Option(help="Comma-separated, e.g. smb,mid_market")],
+) -> None:
+    """Create a product in development (quality 10, no features yet)."""
+    _, _, state = _game(save)
+    chosen = tuple(s.strip() for s in segments.split(",") if s.strip())
+    action = CreateProduct(_actor(state), name, category, chosen)
+    _product_done(save, state.next_ids.product, action)
+
+
+@product_app.command("show")
+def product_show(save: SaveOpt, product: ProductOpt) -> None:
+    """Scores, segments, team, launch readiness and recent history of one product."""
+    path, data, state = _game(save)
+    p = _product_out(path, state, data, product)
+    typer.echo(_product_line(p))
+    rot = "; nobody works on it, so quality is falling" if p.rotting else ""
+    typer.echo(f"  pace {p.pace}{rot}; marketing {format_money(p.marketing_budget_cents)}/month")
+    typer.echo(f"  units: {', '.join(u.name for u in p.assigned_units) or 'none'}")
+    for label, people in (
+        ("builders", p.builders),
+        ("sellers", p.sellers),
+        ("marketers", p.marketers),
+    ):
+        typer.echo(f"  {label}: {', '.join(x.name for x in people) or 'none'}")
+    for seg in p.segments:
+        price = "no price" if seg.price_cents is None else f"{format_money(seg.price_cents)}/mo"
+        appeal = "" if seg.appeal is None else f"  appeal {seg.appeal:.1f}"
+        churn = "" if seg.churn_rate is None else f"  churn {seg.churn_rate:.1%}"
+        typer.echo(
+            f"  {seg.label:<11} {price:<14} customers {seg.customers:,.0f}  "
+            f"share {seg.share_of_served:.1%}{appeal}{churn}  MRR {format_money(seg.mrr_cents)}"
+        )
+        if seg.note:
+            typer.echo(f"    {seg.note}")
+    if p.status == "in_development":
+        if p.launch.ready:
+            typer.echo("  Ready to launch: tst product launch")
+        else:
+            typer.echo(f"  Launch needs: {'; '.join(p.launch.missing)}")
+    for m in p.history[-6:]:
+        typer.echo(
+            f"    {m.date_label}  {m.segment:<11} Q {m.quality:5.1f}  F {m.feature_score:5.1f}  "
+            f"customers {m.customers:,.0f} (+{m.new:,.1f} / -{m.churned:,.1f})  "
+            f"revenue {format_money(m.revenue_cents)}"
+        )
+
+
+@product_app.command("price")
+def product_price(
+    save: SaveOpt,
+    product: ProductOpt,
+    segment: Annotated[str, typer.Option(help="Segment key, e.g. smb")],
+    price: Annotated[str, typer.Option(help="Monthly price in dollars, e.g. 40 or 0.35")],
+    preview: Annotated[bool, typer.Option(help="Show appeal and share* without saving")] = False,
+) -> None:
+    """Set a segment's monthly price, or preview it against today's competitors."""
+    _, data, state = _game(save)
+    price_cents = _dollars(price)
+    if preview:
+        try:
+            pv = product_views.price_preview(
+                state, own_product(state, state.player.id, product), segment, price_cents, data
+            )
+        except SimError as exc:
+            raise _fail(exc.message) from exc
+        now = ""
+        if pv.current_appeal is not None and pv.current_choice_share is not None:
+            now = f" (now {pv.current_appeal:.1f}, {pv.current_choice_share:.1%})"
+        typer.echo(
+            f"At {format_money(price_cents)}: price score {pv.price_score:.1f}, "
+            f"appeal {pv.appeal:.1f}, share* {pv.choice_share:.1%}{now}"
+        )
+        return
+    _product_done(save, product, SetPrice(_actor(state), product, segment, price_cents))
+
+
+@product_app.command("segment")
+def product_segment(
+    save: SaveOpt,
+    product: ProductOpt,
+    segment: Annotated[str, typer.Option(help="Segment key to add")],
+) -> None:
+    """Sell into another segment of the category (it needs a price before it sells)."""
+    _, _, state = _game(save)
+    _product_done(save, product, AddSegment(_actor(state), product, segment))
+
+
+@product_app.command("assign")
+def product_assign(
+    save: SaveOpt,
+    product: ProductOpt,
+    unit: Annotated[str | None, typer.Option(help="Unit id, or root for the company")] = None,
+) -> None:
+    """Put a unit (default: the company root, with the founder) on the product."""
+    _, _, state = _game(save)
+    _product_done(save, product, AssignUnit(_actor(state), product, _unit_arg(unit)))
+
+
+@product_app.command("unassign")
+def product_unassign(
+    save: SaveOpt,
+    product: ProductOpt,
+    unit: Annotated[str | None, typer.Option(help="Unit id, or root for the company")] = None,
+) -> None:
+    """Take a unit (default: the company root) off the product."""
+    _, _, state = _game(save)
+    unit_id = _unit_arg(unit)
+    if assignment_of(state, state.player.id, unit_id) != product:
+        raise _fail(f"that unit does not work on product {product}")
+    _product_done(save, product, UnassignUnit(_actor(state), unit_id))
+
+
+@product_app.command("marketing")
+def product_marketing(
+    save: SaveOpt,
+    product: ProductOpt,
+    budget: Annotated[str, typer.Option(help="Monthly budget in dollars, e.g. 10000")],
+) -> None:
+    """Set the monthly marketing budget (paid each month; builds brand)."""
+    _, _, state = _game(save)
+    _product_done(save, product, SetMarketing(_actor(state), product, _dollars(budget)))
+
+
+@product_app.command("launch")
+def product_launch(save: SaveOpt, product: ProductOpt) -> None:
+    """Launch (quality 25 and feature score 30 needed, and a price in every segment)."""
+    _, _, state = _game(save)
+    _product_done(save, product, LaunchProduct(_actor(state), product))
+
+
+@product_app.command("sunset")
+def product_sunset(save: SaveOpt, product: ProductOpt) -> None:
+    """Sunset a live product: no new customers, faster churn, retired when none remain."""
+    _, _, state = _game(save)
+    _product_done(save, product, SunsetProduct(_actor(state), product))
+
+
+@app.command()
+def market(
+    save: SaveOpt,
+    category: Annotated[str, typer.Option(help="b2b_saas|dev_tools|consumer_apps|cybersecurity")],
+) -> None:
+    """Every product in a category's market, segment by segment (* marks yours)."""
+    _, data, state = _game(save)
+    try:
+        out = product_views.market_out(state, category, data)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    typer.echo(out.label)
+    for seg in out.segments:
+        typer.echo(
+            f"  {seg.label}: {seg.addressable:,} addressable, "
+            f"{seg.served:,.0f} served ({seg.reach})"
+        )
+        for p in seg.products:
+            mine = "*" if p.is_player else " "
+            typer.echo(
+                f"   {mine} {p.name:<24} {p.company_name:<14} "
+                f"{format_money(p.price_cents):>11}/mo  "
+                f"Q {p.quality:3.0f} F {p.feature_score:3.0f} B {p.brand:3.0f}  "
+                f"appeal {p.appeal:5.1f}  customers {p.customers:>11,.0f} "
+                f"({p.share_of_served:5.1%})  churn {p.churn_rate:.1%}"
+            )
+
+
+@app.command()
+def scout(save: SaveOpt, search: Annotated[int, typer.Option(help="Search id")]) -> None:
+    """Scout every open candidate of a search yourself (20 energy)."""
+    path, data, state = _game(save)
+    result = _run(path, data, ScoutSearch(_actor(state), search))
+    company = state.player.id
+    scouted = sum(1 for c in result.new_state.open_candidates(company) if c.search_id == search)
+    typer.echo(f"Scouted {scouted} candidates; {_energy(result.new_state, data)}")
 
 
 if __name__ == "__main__":

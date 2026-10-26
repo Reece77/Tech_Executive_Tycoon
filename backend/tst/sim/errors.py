@@ -151,3 +151,22 @@ class ReplayMismatchError(SimError):
     """Replay recomputed different delegate actions than the save logged (ADR-0015)."""
 
     code = "replay_mismatch"
+
+
+# --- Products (M3a) -------------------------------------------------------------------------
+
+
+class UnknownProductError(NotFoundError):
+    code = "unknown_product"
+
+
+class ProductRuleError(SimError):
+    """A product action would break a rule of formulas.md 11.2 or 11.3."""
+
+    code = "product_rule"
+
+
+class LaunchNotReadyError(ProductRuleError):
+    """Launch refused below the thresholds; the message names what is missing (11.2)."""
+
+    code = "launch_not_ready"

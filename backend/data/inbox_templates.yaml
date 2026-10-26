@@ -46,3 +46,19 @@ templates:
   plan_activity:
     title: "{name} worked on the {role} plan"
     body: "{name} {activity}."
+  # --- Products and markets (M3a) ---
+  product_launched:
+    title: "{product} has launched"
+    body: "{product} is live in {segments}. Customers can find it from this month."
+  first_customer:
+    title: "{product} has its first paying customer"
+    body: "{product} now has paying customers in {segment}. Revenue this month: {revenue_cents}."
+  arr_milestone:
+    title: "ARR passed {milestone_cents}"
+    body: "Annual recurring revenue is now {arr_cents} ({mrr_cents} a month)."
+  sales_capacity_limited:
+    title: "Sales capacity limited {product}"
+    body: "Sales capacity limited new customers in {segment}. More sellers on the product would close more deals."
+  product_rotting:
+    title: "{product} is slipping"
+    body: "Nobody is working on {product}, so its quality is falling. Assign a unit to it."

@@ -283,7 +283,10 @@ def morale_breakdown(
     with repository.open_session(path) as session:
         state = repository.load_state(session)
         cash = company_cash(repository.ledger_balances(session), state.player.id)
-    projected = sum(amount for _, _, amount in monthly_costs(state, state.player.id, data.balance))
+    projected = sum(
+        amount
+        for _, _, amount in monthly_costs(state, state.player.id, data.balance, data.game_data)
+    )
     return org_views.morale_breakdown(state, state.player.id, person_id, data, cash, projected)
 
 

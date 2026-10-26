@@ -6,10 +6,13 @@
 # - salary_band_mid_cents: 2010 US mid-point by level, in cents (North America = 1.0x).
 # The founder is not a hireable role: the founder's employment uses the fixed role
 # "founder" and CA uses the best-fit role below (formulas.md section 1).
+# - product_function: what the role does on a product (formulas.md 11.3, M3): builder,
+#   seller, marketer or none. The founder always counts as a builder.
 # Drafted for M1a; M1a adds the schema and loads this file. Values are design defaults.
 roles:
   - key: software_engineer
     label: Software engineer
+    product_function: builder
     primary: [software_engineering, infrastructure]
     secondary: [data, security, communication, product]
     work_style: builder
@@ -19,6 +22,7 @@ roles:
 
   - key: data_scientist
     label: Data scientist
+    product_function: builder
     primary: [data, ml_research]
     secondary: [software_engineering, communication, product, strategy]
     work_style: researcher
@@ -28,6 +32,7 @@ roles:
 
   - key: devops_engineer
     label: DevOps engineer
+    product_function: builder
     primary: [infrastructure, security]
     secondary: [software_engineering, operations, data, communication]
     work_style: operator
@@ -37,6 +42,7 @@ roles:
 
   - key: security_engineer
     label: Security engineer
+    product_function: builder
     primary: [security, infrastructure]
     secondary: [software_engineering, legal, communication, data]
     work_style: builder
@@ -46,6 +52,7 @@ roles:
 
   - key: product_manager
     label: Product manager
+    product_function: builder
     primary: [product, strategy]
     secondary: [communication, design, data, leadership]
     work_style: operator
@@ -55,6 +62,7 @@ roles:
 
   - key: designer
     label: Designer
+    product_function: builder
     primary: [design, product]
     secondary: [communication, marketing, software_engineering]
     work_style: builder
@@ -64,6 +72,7 @@ roles:
 
   - key: sales_representative
     label: Sales representative
+    product_function: seller
     primary: [sales, negotiation]
     secondary: [communication, product, marketing]
     work_style: seller
@@ -73,6 +82,7 @@ roles:
 
   - key: account_executive
     label: Account executive
+    product_function: seller
     primary: [sales, negotiation]
     secondary: [communication, strategy, product, finance]
     work_style: seller
@@ -82,6 +92,7 @@ roles:
 
   - key: marketer
     label: Marketer
+    product_function: marketer
     primary: [marketing, communication]
     secondary: [design, data, product, sales]
     work_style: seller
@@ -91,6 +102,7 @@ roles:
 
   - key: finance_manager
     label: Finance manager
+    product_function: none
     primary: [finance, strategy]
     secondary: [legal, operations, data, negotiation]
     work_style: operator
@@ -100,6 +112,7 @@ roles:
 
   - key: recruiter
     label: Recruiter
+    product_function: none
     primary: [recruiting, judgment_of_talent]
     secondary: [communication, negotiation, sales]
     work_style: seller
@@ -109,6 +122,7 @@ roles:
 
   - key: operations_manager
     label: Operations manager
+    product_function: none
     primary: [operations, leadership]
     secondary: [finance, procurement, communication, strategy]
     work_style: operator

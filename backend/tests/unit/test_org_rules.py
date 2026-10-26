@@ -140,11 +140,15 @@ def test_policy_inherits_and_remote_staff_cost_no_office(loaded: LoadedData) -> 
     state = put(put(state, 2, 1), 3, 2)
     assert effective_policy(state, 1, 2) == "remote"
     assert effective_policy(state, 1, None) == "office"
-    office = dict((acc, amt) for _, acc, amt in monthly_costs(state, 1, loaded.balance))[RENT]
+    office = dict(
+        (acc, amt) for _, acc, amt in monthly_costs(state, 1, loaded.balance, loaded.game_data)
+    )[RENT]
     per_head = loaded.balance.payroll.office_cost_per_head_cents
     assert office == 2 * per_head  # the founder and person 4; persons 2 and 3 are remote
     state = with_company(state, replace(state.player, work_policy="remote"))
-    office = dict((acc, amt) for _, acc, amt in monthly_costs(state, 1, loaded.balance))[RENT]
+    office = dict(
+        (acc, amt) for _, acc, amt in monthly_costs(state, 1, loaded.balance, loaded.game_data)
+    )[RENT]
     assert office == 0
 
 

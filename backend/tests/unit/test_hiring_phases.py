@@ -321,7 +321,9 @@ def test_monthly_costs_project_phase_6(loaded: LoadedData) -> None:
     game.act(OpenSearch(1, "designer", "job_post"))
     projected = {
         account: amount
-        for _, account, amount in phases.monthly_costs(game.state, 1, loaded.balance)
+        for _, account, amount in phases.monthly_costs(
+            game.state, 1, loaded.balance, loaded.game_data
+        )
         if amount
     }
     (costs,) = [e for e in game.turn().ledger_entries if e.memo.startswith("Monthly costs")]

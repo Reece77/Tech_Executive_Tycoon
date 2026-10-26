@@ -14,6 +14,7 @@ from tst.db.models import (
     HiringPlanRow,
     LedgerEntryRow,
     LedgerLineRow,
+    MarketSegmentRow,
     OfferRow,
     OrgUnitRow,
     PersonHiddenRow,
@@ -26,6 +27,9 @@ from tst.db.models import (
     PersonStateRow,
     PersonTagRevealRow,
     PersonTagRow,
+    ProductMonthRow,
+    ProductRow,
+    ProductSegmentRow,
     SaveMetaRow,
     SearchRow,
     TurnLogRow,
@@ -68,6 +72,13 @@ from tst.sim.people.models import (
     RevealState,
     Skills,
 )
+from tst.sim.products.models import (
+    MarketSegment,
+    Product,
+    ProductMonth,
+    ProductSegment,
+    ProductStatus,
+)
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
 from tst.sim.state import CompanyState, GameState, SaveMeta
 
@@ -81,6 +92,8 @@ def company_to_state(row: CompanyRow) -> CompanyState:
         founded_turn=row.founded_turn,
         mission=tuple(row.mission or ()),
         work_policy=cast(WorkPolicy, row.work_policy),
+        root_product_id=row.root_product_id,
+        arr_milestone_cents=row.arr_milestone_cents,
     )
 
 
@@ -93,6 +106,8 @@ def company_to_row(company: CompanyState) -> CompanyRow:
         founded_turn=company.founded_turn,
         mission=list(company.mission),
         work_policy=company.work_policy,
+        root_product_id=company.root_product_id,
+        arr_milestone_cents=company.arr_milestone_cents,
     )
 
 
@@ -103,6 +118,8 @@ def update_company_row(row: CompanyRow, company: CompanyState) -> None:
     row.founded_turn = company.founded_turn
     row.mission = list(company.mission)
     row.work_policy = company.work_policy
+    row.root_product_id = company.root_product_id
+    row.arr_milestone_cents = company.arr_milestone_cents
 
 
 def game_state_from_rows(
@@ -163,6 +180,8 @@ def company_snapshot_from_row(row: TurnSnapshotRow) -> CompanySnapshot:
         headcount=int(kpis["headcount"]),
         payroll_cents=int(kpis.get("payroll_cents", 0)),
         avg_morale=kpis.get("avg_morale"),
+        mrr_cents=int(kpis.get("mrr_cents", 0)),
+        arr_cents=int(kpis.get("arr_cents", 0)),
     )
 
 
@@ -446,6 +465,7 @@ def next_ids_from_meta(meta: SaveMetaRow) -> NextIds:
         employment=meta.next_employment_id,
         unit=meta.next_unit_id,
         plan=meta.next_plan_id,
+        product=meta.next_product_id,
     )
 
 
@@ -456,6 +476,7 @@ def next_ids_to_meta(meta: SaveMetaRow, ids: NextIds) -> None:
     meta.next_employment_id = ids.employment
     meta.next_unit_id = ids.unit
     meta.next_plan_id = ids.plan
+    meta.next_product_id = ids.product
 
 
 # --- Organization (M2a) ---------------------------------------------------------------------
@@ -473,6 +494,7 @@ def unit_to_row(unit: OrgUnit) -> OrgUnitRow:
         created_turn=unit.created_turn,
         status=unit.status,
         dissolved_turn=unit.dissolved_turn,
+        product_id=unit.product_id,
     )
 
 
@@ -488,6 +510,7 @@ def unit_from_row(row: OrgUnitRow) -> OrgUnit:
         created_turn=row.created_turn,
         status=cast(UnitStatus, row.status),
         dissolved_turn=row.dissolved_turn,
+        product_id=row.product_id,
     )
 
 
@@ -529,4 +552,101 @@ def plan_from_row(row: HiringPlanRow) -> HiringPlan:
         closed_turn=row.closed_turn,
         last_activity=None if activity is None else PlanActivity(**activity),
         focus=cast(PlanFocus, row.focus),
+    )
+
+
+# --- Products and markets (M3a) -------------------------------------------------------------
+
+
+def product_to_row(product: Product) -> ProductRow:
+    return ProductRow(
+        id=product.id,
+        company_id=product.company_id,
+        category=product.category,
+        name=product.name,
+        status=product.status,
+        quality=product.quality,
+        feature_points=product.feature_points,
+        brand=product.brand,
+        marketing_budget_cents=product.marketing_budget_cents,
+        created_turn=product.created_turn,
+        launched_turn=product.launched_turn,
+        sunset_turn=product.sunset_turn,
+        retired_turn=product.retired_turn,
+        held_feature=product.held_feature,
+        first_customer_turn=product.first_customer_turn,
+        rotting=product.rotting,
+    )
+
+
+def product_from_row(row: ProductRow) -> Product:
+    return Product(
+        id=row.id,
+        company_id=row.company_id,
+        category=row.category,
+        name=row.name,
+        status=cast(ProductStatus, row.status),
+        quality=row.quality,
+        feature_points=row.feature_points,
+        brand=row.brand,
+        marketing_budget_cents=row.marketing_budget_cents,
+        created_turn=row.created_turn,
+        launched_turn=row.launched_turn,
+        sunset_turn=row.sunset_turn,
+        retired_turn=row.retired_turn,
+        held_feature=row.held_feature,
+        first_customer_turn=row.first_customer_turn,
+        rotting=row.rotting,
+    )
+
+
+def product_segment_to_row(seg: ProductSegment) -> ProductSegmentRow:
+    return ProductSegmentRow(
+        product_id=seg.product_id,
+        segment=seg.segment,
+        price_cents=seg.price_cents,
+        customers=seg.customers,
+        capacity_limited=seg.capacity_limited,
+        added_turn=seg.added_turn,
+    )
+
+
+def product_segment_from_row(row: ProductSegmentRow) -> ProductSegment:
+    return ProductSegment(
+        product_id=row.product_id,
+        segment=row.segment,
+        price_cents=row.price_cents,
+        customers=row.customers,
+        capacity_limited=row.capacity_limited,
+        added_turn=row.added_turn,
+    )
+
+
+def market_to_row(market: MarketSegment) -> MarketSegmentRow:
+    return MarketSegmentRow(
+        category=market.category, segment=market.segment, addressable=market.addressable
+    )
+
+
+def market_from_row(row: MarketSegmentRow) -> MarketSegment:
+    return MarketSegment(category=row.category, segment=row.segment, addressable=row.addressable)
+
+
+def product_month_to_row(month: ProductMonth) -> ProductMonthRow:
+    return ProductMonthRow(**asdict(month))
+
+
+def product_month_from_row(row: ProductMonthRow) -> ProductMonth:
+    return ProductMonth(
+        turn=row.turn,
+        product_id=row.product_id,
+        segment=row.segment,
+        quality=row.quality,
+        feature_score=row.feature_score,
+        brand=row.brand,
+        appeal=row.appeal,
+        customers=row.customers,
+        new=row.new,
+        churned=row.churned,
+        revenue_cents=row.revenue_cents,
     )

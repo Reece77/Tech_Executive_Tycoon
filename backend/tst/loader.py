@@ -19,8 +19,10 @@ from tst.sim.data_models import (
     Account,
     BackgroundsFile,
     Balance,
+    CategoriesFile,
     GameData,
     InboxTemplatesFile,
+    IncumbentsFile,
     InterestsFile,
     NamesFile,
     PersonalityFile,
@@ -44,11 +46,15 @@ TAGS_FILE = "tags.yaml"
 BACKGROUNDS_FILE = "backgrounds.yaml"
 NAMES_FILE = "names.yaml"
 INBOX_FILE = "inbox_templates.yaml"
+CATEGORIES_FILE = "categories.yaml"
+INCUMBENTS_FILE = "incumbents.yaml"
 DATA_FILES = (
     ACCOUNTS_FILE,
     BACKGROUNDS_FILE,
     BALANCE_FILE,
+    CATEGORIES_FILE,
     INBOX_FILE,
+    INCUMBENTS_FILE,
     INTERESTS_FILE,
     NAMES_FILE,
     PERSONALITY_FILE,
@@ -141,6 +147,14 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
     missing_tags = sorted({*ORG_TAGS, MENTOR_TAG} - tag_keys)
     if missing_tags:
         raise DataLoadError(f"{TAGS_FILE}: org rules need tags {missing_tags} (formulas.md 13)")
+    sales = sorted(s.key for s in data.segments if s.reach == "sales")
+    if sorted(balance.products.seller_rate) != sales:
+        raise DataLoadError(
+            f"{BALANCE_FILE}: products.seller_rate must cover exactly the sales segments {sales}"
+        )
+    missing_product_tags = sorted(set(balance.products.tag) - tag_keys)
+    if missing_product_tags:
+        raise DataLoadError(f"{TAGS_FILE}: product rules need tags {missing_product_tags} (11.10)")
     founder = balance.founder
     for bg in data.backgrounds:
         spent = sum(bg.default_allocation.values())
@@ -189,6 +203,8 @@ def load_all(path: Path) -> LoadedData:
     backgrounds = _validate(BackgroundsFile, parsed[BACKGROUNDS_FILE], BACKGROUNDS_FILE)
     names = _validate(NamesFile, parsed[NAMES_FILE], NAMES_FILE)
     inbox = _validate(InboxTemplatesFile, parsed[INBOX_FILE], INBOX_FILE)
+    categories = _validate(CategoriesFile, parsed[CATEGORIES_FILE], CATEGORIES_FILE)
+    incumbents = _validate(IncumbentsFile, parsed[INCUMBENTS_FILE], INCUMBENTS_FILE)
     game_data = _validate(
         GameData,
         {
@@ -206,6 +222,9 @@ def load_all(path: Path) -> LoadedData:
             "personality_presets": backgrounds.personality_presets,
             "names": names.names,
             "inbox_templates": inbox.templates,
+            "segments": categories.segments,
+            "categories": categories.categories,
+            "incumbents": incumbents.companies,
         },
         "seed data cross-check",
     )
