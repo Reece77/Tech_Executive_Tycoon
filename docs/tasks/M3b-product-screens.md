@@ -2,7 +2,7 @@
 
 **Goal:** run products from the browser: create and launch them, staff them with org units, set prices and marketing, and see how they stand against the incumbents.
 
-**Spec sections:** §7, §9, §13 · **ADRs:** 0007, 0009, 0014, 0017 · **Wireframes:** `docs/wireframes.md` (M3b section, added before this milestone starts) · **Depends on:** M3a (`m3a-done`)
+**Spec sections:** §7, §9, §13 · **ADRs:** 0007, 0009, 0014, 0017 · **Wireframes:** `docs/wireframes.md` (M3b screens) and `docs/wireframes/source/Products.dc.html`, `Product.dc.html`, `Market.dc.html` · **Depends on:** M3a (`m3a-done`)
 
 ## Context
 

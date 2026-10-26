@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Product profile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:16px 18px}
+.ptitle{margin:0 0 10px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+th{font-size:11px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:9px 10px;border-bottom:1px solid #2A3442;white-space:nowrap}
+td{font-size:14px;padding:9px 10px;border-bottom:1px solid #222B37;white-space:nowrap}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1F2A38;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.primary{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.ghost{font-family:inherit;font-size:14px;color:#C9D1DB;background:transparent;border:1px solid #2A3442;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:7px 9px;width:90px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.chip{font-size:13px;background:#1F2A38;border:1px solid #2A3442;border-radius:14px;padding:3px 10px}
+.seg{font-family:inherit;font-size:13px;border:0;padding:8px 14px;min-height:36px;cursor:pointer}
+.tile{flex:1 1 140px;background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:12px 16px}
+</style>
+</helmet>
+<div style="min-height: 1260px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Jun 2012</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$642,300</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px">16 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">74 / 100</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 74%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Main.dc.html"><span class="key">1</span>Inbox<span class="num" style="margin-left: auto; font-size: 12px; background: #5AA2FF; color: #0E1217; border-radius: 9px; padding: 0 7px">2</span></a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">6</span>Products</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">7</span>Finance<span class="soon">M4</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">8</span>Competitors<span class="soon">M5</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <a href="Products.dc.html" style="font-size: 13px; text-decoration: none">← Products</a>
+      <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px">
+        <h1 style="margin: 0; font-size: 26px; font-weight: 700">Pipeline</h1>
+        <span style="font-size: 14px; color: #C9D1DB">B2B SaaS · launched Sep 2010</span>
+        <span style="font-size: 12px; font-weight: 600; color: #6FCF8E; background: #16301F; border-radius: 4px; padding: 2px 8px">Live · growth</span>
+        <a href="Market.dc.html" style="font-size: 13px; margin-left: auto">See the B2B SaaS market</a>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+        <div class="tile"><div class="meta">MRR</div><div class="num" style="font-size: 22px; font-weight: 600">$151,000</div><div class="meta" style="font-size: 12px">+6.8% on May</div></div>
+        <div class="tile"><div class="meta">Customers</div><div class="num" style="font-size: 22px; font-weight: 600">2,950</div><div class="meta" style="font-size: 12px">+265 new, −91 lost</div></div>
+        <div class="tile"><div class="meta">Hosting</div><div class="num" style="font-size: 22px; font-weight: 600">$14,100</div><div class="meta" style="font-size: 12px">this month</div></div>
+        <div class="tile"><div class="meta">Development</div><div style="font-size: 22px; font-weight: 600">Steady</div><div class="meta" style="font-size: 12px">7 builders</div></div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <section class="panel" aria-label="Against the competition" style="flex: 3 1 520px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+            <h2 class="ptitle" style="margin: 0">Against the competition</h2>
+            <div role="group" aria-label="Segment" style="display: flex; border: 1px solid #2A3442; border-radius: 6px; overflow: hidden; margin-left: auto">
+              <button type="button" class="seg" aria-pressed="true" style="color: #E8ECF1; background: #1F2A38">SMB</button>
+              <button type="button" class="seg" aria-pressed="false" style="color: #C9D1DB; background: transparent; border-left: 1px solid #2A3442">Mid-market</button>
+            </div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: #C9D1DB">
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 2px; background: #5AA2FF"></span>Pipeline</span>
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 2px; background: #D5DBE3"></span>Salesforce Sales Cloud</span>
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 2px; background: #6B7686"></span>Zoho CRM</span>
+          </div>
+          <sc-for list="{{scores}}" as="s" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; padding: 6px 0; border-bottom: 1px solid #1F2732">
+              <span style="{{s.labelStyle}}">{{s.label}}</span>
+              <span style="display: flex; flex-direction: column; gap: 4px">
+                <sc-for list="{{s.bars}}" as="b" hint-placeholder-count="3">
+                  <span style="display: flex; align-items: center; gap: 8px"><span style="flex: 1; height: 8px; background: #1B232E; border-radius: 4px"><span style="{{b.style}}"></span></span><span class="num" style="width: 64px; font-size: 12px; color: #C9D1DB; text-align: right">{{b.text}}</span></span>
+                </sc-for>
+              </span>
+            </div>
+          </sc-for>
+          <p style="margin: 0; font-size: 12px; color: #9BA7B6">Appeal weighs quality 25%, price 35%, brand 15% and features 25% for small businesses. Price scores 50 at the segment's typical price ($50) and 100 at half of it.</p>
+        </section>
+        <section class="panel" aria-label="Team and marketing" style="flex: 2 1 340px; display: flex; flex-direction: column; gap: 12px">
+          <h2 class="ptitle" style="margin: 0">Who works on it</h2>
+          <div class="row"><span><a href="Org.dc.html">Platform</a> <span class="meta">in Engineering</span></span><button type="button" class="btn" style="min-height: 32px; font-size: 12px; padding: 5px 10px">Unassign · 2</button></div>
+          <div class="row"><span><a href="Org.dc.html">Go-to-market</a></span><button type="button" class="btn" style="min-height: 32px; font-size: 12px; padding: 5px 10px">Unassign · 2</button></div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span class="meta">Builders</span>
+            <span style="display: flex; flex-wrap: wrap; gap: 6px"><span class="chip">Marcus Ode</span><span class="chip">Kofi Mensah</span><span class="chip">Mei Chen</span><span class="chip">Ben Carter</span><span class="chip">Yuki Sato</span><span class="chip">Lucas Moreau</span><span class="chip">Tomás Rivera</span></span>
+            <span class="meta">Sellers</span>
+            <span style="display: flex; flex-wrap: wrap; gap: 6px"><span class="chip">Daniel Osei</span></span>
+            <span class="meta">Marketers</span>
+            <span style="display: flex; flex-wrap: wrap; gap: 6px"><span class="chip">Omar Haddad</span></span>
+          </div>
+          <button type="button" class="btn" style="align-self: flex-start">Assign a unit · 2</button>
+          <h2 class="ptitle" style="margin: 8px 0 0">Marketing</h2>
+          <label style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 14px">Monthly budget <input class="input" type="text" value="$10,000" style="width: 110px"><button type="button" class="btn">Save · 1</button></label>
+          <span class="meta" style="font-size: 12px">Brand 20 and rising. Brand decides how many small businesses hear of Pipeline.</span>
+        </section>
+      </div>
+      <section aria-label="Segments" style="display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">Segments</h2>
+        <div style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse">
+            <thead><tr><th>Segment</th><th>Price a month</th><th>Customers</th><th>Share of buyers</th><th>New</th><th>Lost</th><th>Churn</th><th>MRR</th><th></th></tr></thead>
+            <tbody>
+              <tr style="background: #172638">
+                <td style="font-weight: 600">SMB</td>
+                <td><input class="input" type="text" value="$35" aria-label="SMB price"></td>
+                <td class="num">2,900</td><td class="num">2.4%</td><td class="num" style="color: #6FCF8E">+262</td><td class="num" style="color: #F5A25D">−90</td><td class="num">3.2%</td><td class="num">$116,000</td>
+                <td class="meta" style="font-size: 12px">Editing: preview below</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600">Mid-market</td>
+                <td><input class="input" type="text" value="$700" aria-label="Mid-market price"></td>
+                <td class="num">50</td><td class="num">0.2%</td><td class="num" style="color: #6FCF8E">+2.5</td><td class="num" style="color: #F5A25D">−0.7</td><td class="num">1.4%</td><td class="num">$35,000</td>
+                <td style="font-size: 12px; color: #F5A25D">Sales capacity limited new customers</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="btn" style="align-self: flex-start">Add Enterprise · 2</button>
+      </section>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <section aria-label="Price preview" style="flex: 1 1 380px; background: #151B23; border: 1px solid #3B5A80; border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 12px 32px rgba(0,0,0,.45)">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 600">Change the SMB price to $35?</h2>
+          <div class="row"><span>Price score</span><span class="num">62.5 → 71.4</span></div>
+          <div class="row"><span>Appeal</span><span class="num">57.9 → 61.0</span></div>
+          <div class="row"><span>Chance a buyer in play picks Pipeline</span><span class="num" style="color: #6FCF8E">22.2% → 25.0%</span></div>
+          <div class="row"><span>Revenue per customer</span><span class="num" style="color: #F5A25D">−12.5%</span></div>
+          <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9BA7B6">Against this month's competitors, before brand awareness. How many customers you win depends on next month's market. Existing customers pay the new price from next month.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px"><button type="button" class="primary">Set $35 · 1 energy</button><button type="button" class="ghost">Cancel</button></div>
+        </section>
+        <section class="panel" aria-label="Last 12 months" style="flex: 1 1 380px; display: flex; flex-direction: column; gap: 8px">
+          <h2 class="ptitle" style="margin: 0">Last 12 months</h2>
+          <svg viewBox="0 0 360 120" role="img" aria-label="MRR rose from $62,000 in July 2011 to $151,000 in June 2012" style="width: 100%; height: 120px">
+            <line x1="0" y1="119" x2="360" y2="119" stroke="#2A3442" stroke-width="1"></line>
+            <polyline points="10,98 40,94 70,89 100,84 130,79 160,73 190,66 220,58 250,49 280,40 310,30 340,19" fill="none" stroke="#5AA2FF" stroke-width="2"></polyline>
+            <circle cx="340" cy="19" r="3" fill="#5AA2FF"></circle>
+          </svg>
+          <div class="num" style="display: flex; justify-content: space-between; font-size: 11px; color: #9BA7B6"><span>Jul 2011 $62,000</span><span>Jun 2012 $151,000</span></div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px">
+            <button type="button" class="btn" style="color: #F5A25D; border-color: #6A4426">Sunset Pipeline… · 3</button>
+          </div>
+          <p style="margin: 0; font-size: 12px; color: #9BA7B6">Asks to confirm: no new customers, existing ones leave three times faster, and it cannot be undone.</p>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1260}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const colors = ['#5AA2FF', '#D5DBE3', '#6B7686'];
+    const bars = (vals, texts) => vals.map((v, i) => ({ style: 'display: block; height: 8px; border-radius: 4px; background: ' + colors[i] + '; width: ' + v + '%', text: texts ? texts[i] : String(v) }));
+    const label = 'font-size: 14px; color: #C9D1DB';
+    const scores = [
+      { label: 'Quality', bars: bars([54, 70, 55]), labelStyle: label },
+      { label: 'Features', bars: bars([78, 80, 60]), labelStyle: label },
+      { label: 'Brand', bars: bars([20, 80, 40]), labelStyle: label },
+      { label: 'Price', bars: bars([62.5, 38.5, 100], ['$40 · 62', '$65 · 38', '$25 · 100']), labelStyle: label },
+      { label: 'Appeal', bars: bars([57.9, 63.0, 69.8], ['57.9', '63.0', '69.8']), labelStyle: 'font-size: 14px; font-weight: 600; color: #E8ECF1' }
+    ];
+    return { scores };
+  }
+}
+</script>
+</body>
+</html>

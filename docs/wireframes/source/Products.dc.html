@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Products</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:16px 18px}
+.meta{font-size:13px;color:#9BA7B6}
+th{font-size:11px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:10px 12px;border-bottom:1px solid #2A3442;white-space:nowrap}
+td{font-size:14px;padding:10px 12px;border-bottom:1px solid #222B37;white-space:nowrap}
+tbody tr:hover{background:#1B232E}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1F2A38;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.primary{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.ghost{font-family:inherit;font-size:14px;color:#C9D1DB;background:transparent;border:1px solid #2A3442;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.tile{flex:1 1 150px;background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:12px 16px}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Jun 2012</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$642,300</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px">16 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">74 / 100</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 74%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Main.dc.html"><span class="key">1</span>Inbox<span class="num" style="margin-left: auto; font-size: 12px; background: #5AA2FF; color: #0E1217; border-radius: 9px; padding: 0 7px">2</span></a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">6</span>Products</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">7</span>Finance<span class="soon">M4</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">8</span>Competitors<span class="soon">M5</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">Products</h1>
+        <a href="Market.dc.html" class="meta" style="color: #7DB6FF">Markets</a>
+        <button type="button" class="btn" style="margin-left: auto">New product · 4</button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+        <div class="tile"><div class="meta">Monthly revenue (MRR)</div><div class="num" style="font-size: 22px; font-weight: 600">$151,000</div><div class="meta" style="font-size: 12px">+6.8% on May</div></div>
+        <div class="tile"><div class="meta">Annual run rate (ARR)</div><div class="num" style="font-size: 22px; font-weight: 600">$1.81M</div><div class="meta" style="font-size: 12px">Passed $1M in Jan 2012: stage 2</div></div>
+        <div class="tile"><div class="meta">Paying customers</div><div class="num" style="font-size: 22px; font-weight: 600">2,950</div><div class="meta" style="font-size: 12px">plus 12,400 consumer users</div></div>
+        <div class="tile"><div class="meta">Hosting and marketing</div><div class="num" style="font-size: 22px; font-weight: 600">$24,600</div><div class="meta" style="font-size: 12px">this month</div></div>
+      </div>
+      <div style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow-x: auto">
+        <table style="width: 100%; border-collapse: collapse">
+          <thead><tr><th>Product</th><th>Category</th><th>Status</th><th>Quality</th><th>Features</th><th>Brand</th><th>Customers</th><th>MRR</th><th>Trend</th><th>Development</th></tr></thead>
+          <tbody>
+            <sc-for list="{{products}}" as="p" hint-placeholder-count="3">
+              <tr>
+                <td><a href="Product.dc.html" style="font-weight: 600; text-decoration: none">{{p.name}}</a></td>
+                <td style="color: #C9D1DB">{{p.category}}</td>
+                <td><span style="{{p.statusStyle}}">{{p.status}}</span></td>
+                <td><span style="display: flex; align-items: center; gap: 8px"><span class="num" style="width: 24px">{{p.quality}}</span><span style="width: 70px; height: 6px; background: #263040; border-radius: 3px"><span style="{{p.qBar}}"></span></span></span></td>
+                <td class="num">{{p.features}}</td>
+                <td class="num">{{p.brand}}</td>
+                <td class="num">{{p.customers}}</td>
+                <td class="num">{{p.mrr}}</td>
+                <td style="{{p.trendStyle}}">{{p.trend}}</td>
+                <td style="color: #C9D1DB">{{p.pace}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin: 0; font-size: 12px; color: #9BA7B6">Scores run 0–100. Development pace shows how fast the assigned team is working against the product's size: fast, steady or slow.</p>
+      <section aria-label="New product" style="align-self: flex-start; width: min(720px, 100%); background: #151B23; border: 1px solid #3B5A80; border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.45)">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">New product</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
+          <label class="field">Name
+            <input class="input" type="text" value="Sentinel">
+          </label>
+          <label class="field">Category
+            <select class="input"><option>B2B SaaS</option><option>Developer tools</option><option>Consumer apps</option><option selected>Cybersecurity</option></select>
+          </label>
+        </div>
+        <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+          <legend style="font-size: 13px; color: #C9D1DB; padding: 0 0 8px">Sell to</legend>
+          <sc-for list="{{segments}}" as="s" hint-placeholder-count="3">
+            <label style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid #2A3442; border-radius: 8px; font-size: 14px">
+              <input type="checkbox" checked="{{s.checked}}" style="accent-color: #5AA2FF; width: 16px; height: 16px">
+              <span style="font-weight: 600; min-width: 110px">{{s.name}}</span>
+              <span class="meta">{{s.reach}}</span>
+              <span class="num meta" style="margin-left: auto">{{s.detail}}</span>
+            </label>
+          </sc-for>
+        </fieldset>
+        <p style="margin: 0; font-size: 12px; color: #9BA7B6">It starts in development at quality 10 with no features. Assign a unit to build it from the product page; it can launch once quality reaches 25 and features 30. You set prices before launch.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px"><button type="button" class="primary">Create · 4 energy</button><button type="button" class="ghost">Cancel</button></div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const chip = (fg, bg) => 'font-size: 12px; font-weight: 600; color: ' + fg + '; background: ' + bg + '; border-radius: 4px; padding: 2px 8px';
+    const st = { 'Live · growth': chip('#6FCF8E', '#16301F'), 'In development': chip('#7DB6FF', '#172638'), Sunset: chip('#F5A25D', '#3A2A1C') };
+    const bar = (q) => 'display: block; height: 6px; border-radius: 3px; background: #5AA2FF; width: ' + q + '%';
+    const raw = [
+      { name: 'Pipeline', category: 'B2B SaaS', status: 'Live · growth', quality: 54, features: 78, brand: 20, customers: '2,950', mrr: '$151,000', trend: '+6.8% a month', up: true, pace: 'Steady' },
+      { name: 'Sentinel', category: 'Cybersecurity', status: 'In development', quality: 21, features: 18, brand: 0, customers: '—', mrr: '—', trend: 'Launch needs quality 25, features 30', pace: 'Fast' },
+      { name: 'Flock', category: 'Consumer apps', status: 'Sunset', quality: 31, features: 22, brand: 6, customers: '12,400 users', mrr: '$4,960', trend: '−17% a month', down: true, pace: 'No team' }
+    ];
+    const products = raw.map((p) => ({ ...p, statusStyle: st[p.status], qBar: bar(p.quality), trendStyle: p.up ? 'color: #6FCF8E' : p.down ? 'color: #F5A25D' : 'color: #9BA7B6; font-size: 13px' }));
+    const segments = [
+      { name: 'SMB', reach: 'Self-serve: brand brings customers', detail: '420,000 businesses · ~$40 a month', checked: false },
+      { name: 'Mid-market', reach: 'Needs salespeople', detail: '42,000 · ~$1,000 a month', checked: true },
+      { name: 'Enterprise', reach: 'Needs salespeople', detail: '7,000 · ~$12,000 a month', checked: true }
+    ];
+    return { products, segments };
+  }
+}
+</script>
+</body>
+</html>

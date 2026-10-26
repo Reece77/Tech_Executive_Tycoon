@@ -1,4 +1,4 @@
-# Wireframes (M1 and M2b)
+# Wireframes (M1, M2b and M3b)
 
 Six desktop screens, built in M1c: New-game setup, Inbox, Overview, People, Person profile, and Recruitment with the offer panel. The editable canvas is the Claude Design artifact "Tech Startup Tycoon M1b Wireframes" (ask Reece for the link). The artboard sources are copied in `docs/wireframes/source/` for reference; they use the design canvas's runtime and are not meant to run in the app.
 
@@ -68,10 +68,29 @@ Three more artboards on the same canvas, in its second row: **Org**, **Profile a
 - *Overview:* an Org tile showing units, managers over span, and the average manager label (strong, fine, stretched).
 - *Recruitment:* the Network channel card adds "+1 candidate: your founder is sociable" when it applies.
 
+## M3b screens
+
+Three artboards in the canvas's third row: **Products**, **Product profile**, and **Market view**. Example data is Kestrel Systems in June 2012 at stage 2, with a live B2B SaaS product (Pipeline), a cybersecurity product in development (Sentinel) and a consumer app being sunset (Flock). Appeal, price scores and share-of-choice numbers follow `docs/formulas.md` §11 exactly (checked); customer counts and money are illustrative.
+
+**Shell change.** Nav key 6, Products, is live. The top bar is unchanged (MRR and ARR live on Overview and Products).
+
+**Products.** Header with a Markets link and New product (energy 4). KPI tiles: MRR with change on last month, ARR (with the month stage 2 was reached), paying customers (consumer users counted separately), hosting and marketing this month. Portfolio table: product (links to its profile), category, status chip (Live with the growth or mature label, In development, Sunset), quality with a bar, features, brand, customers, MRR, trend (a month-on-month rate, or what launch still needs), development pace (fast, steady, slow, no team). New product dialog: name, category, and the category's segments as checkboxes, each with how it is reached (self-serve or needs salespeople), its addressable customers now and its typical price; a note that it starts in development at quality 10 and the launch thresholds; Create with energy cost.
+
+**Product profile.** Name, category, launch month, status chip, and a link to its market. KPI tiles: MRR, customers (new and lost last month), hosting, development pace with builder count. *Against the competition:* a segment toggle and, for each of quality, features, brand, price (shown as price and score) and appeal, one bar per product in that segment (the player's product in accent blue, competitors in greys), with a line explaining the segment's weights. *Who works on it:* assigned units with Unassign, builders, sellers and marketers by name, Assign a unit. *Marketing:* monthly budget with Save and a one-line brand trend (never the target brand). *Segments:* price (editable), customers, share of buyers, new, lost, churn, MRR, and the sales-capacity note when it applied; Add segment with energy cost. *Price preview* (opens when a price is edited): price score, appeal and chance a buyer in play picks the product, before and after, plus the change in revenue per customer, with a note that customer numbers depend on next month. *Last 12 months:* MRR line chart; Sunset with its confirm text. Products in development show a launch-readiness panel in place of the segment numbers: quality and feature score against 25 and 30, prices set or missing, and Launch (energy 3) enabled only when ready.
+
+**Market view.** Category toggle and the market's growth. One table per segment, sorted by appeal: product, company ("(you)" on the player's rows, highlighted), quality, features, brand, price, appeal, customers, and share of buyers with a bar. Each segment's summary line gives addressable businesses or users, how many use a product, the typical price, whether it is sales-led, and "you do not sell here" where it applies.
+
+**Not drawn (text only):**
+- *Org:* each unit shows the product it works on; the unit panel gains "Works on" with Assign or Unassign.
+- *Overview:* MRR and ARR tiles; revenue above costs in the month's breakdown; revenue added to the cash chart.
+- *Recruitment:* a Scout button on each search row for the founder ("Scout · 20"), which narrows every open candidate in that search.
+- *Inbox:* a **Product** kind badge (teal, `#5FD4C4` on `#123331`) for launches, first customers, ARR milestones and capacity notes; filters and the unread count apply across all pages.
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).
 - The offer hint uses only known values (`docs/formulas.md` §7).
 - Actions apply at once and spend energy; offers resolve at Continue (ADR-0014). An offer needs an interview first (ADR-0016).
+- Never show a product's quality cap, anyone's output or capacity numbers (`docs/formulas.md` §11.13).
 - The front end never computes a game value: spans, manager labels, morale terms and previews all come from the API (`CLAUDE.md` §7).
 - Touch targets at least 44 px for primary buttons; real buttons, links, and labelled inputs.

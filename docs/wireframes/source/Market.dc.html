@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Market</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.meta{font-size:13px;color:#9BA7B6}
+th{font-size:11px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:9px 12px;border-bottom:1px solid #2A3442;white-space:nowrap}
+td{font-size:14px;padding:9px 12px;border-bottom:1px solid #222B37;white-space:nowrap}
+.seg{font-family:inherit;font-size:13px;border:0;padding:8px 14px;min-height:36px;cursor:pointer}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Jun 2012</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$642,300</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px">16 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">74 / 100</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 74%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Main.dc.html"><span class="key">1</span>Inbox<span class="num" style="margin-left: auto; font-size: 12px; background: #5AA2FF; color: #0E1217; border-radius: 9px; padding: 0 7px">2</span></a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">6</span>Products</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">7</span>Finance<span class="soon">M4</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">8</span>Competitors<span class="soon">M5</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <a href="Products.dc.html" style="font-size: 13px; text-decoration: none">← Products</a>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">Markets</h1>
+        <div role="group" aria-label="Category" style="display: flex; flex-wrap: wrap; border: 1px solid #2A3442; border-radius: 6px; overflow: hidden">
+          <button type="button" class="seg" aria-pressed="true" style="color: #E8ECF1; background: #1F2A38">B2B SaaS</button>
+          <button type="button" class="seg" aria-pressed="false" style="color: #C9D1DB; background: transparent; border-left: 1px solid #2A3442">Developer tools</button>
+          <button type="button" class="seg" aria-pressed="false" style="color: #C9D1DB; background: transparent; border-left: 1px solid #2A3442">Consumer apps</button>
+          <button type="button" class="seg" aria-pressed="false" style="color: #C9D1DB; background: transparent; border-left: 1px solid #2A3442">Cybersecurity</button>
+        </div>
+        <span class="meta" style="margin-left: auto">Growing about 20% a year</span>
+      </div>
+      <sc-for list="{{segments}}" as="s" hint-placeholder-count="3">
+        <section aria-label="{{s.name}}" style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 600">{{s.name}}</h2>
+            <span class="meta">{{s.summary}}</span>
+          </div>
+          <div style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse">
+              <thead><tr><th>Product</th><th>Company</th><th>Quality</th><th>Features</th><th>Brand</th><th>Price a month</th><th>Appeal</th><th>Customers</th><th>Share of buyers</th></tr></thead>
+              <tbody>
+                <sc-for list="{{s.rows}}" as="r" hint-placeholder-count="3">
+                  <tr style="{{r.rowStyle}}">
+                    <td style="font-weight: 600">{{r.product}}</td>
+                    <td style="color: #C9D1DB">{{r.company}}</td>
+                    <td class="num">{{r.q}}</td>
+                    <td class="num">{{r.f}}</td>
+                    <td class="num">{{r.b}}</td>
+                    <td class="num">{{r.price}}</td>
+                    <td class="num" style="font-weight: 600">{{r.appeal}}</td>
+                    <td class="num">{{r.customers}}</td>
+                    <td><span style="display: flex; align-items: center; gap: 8px"><span class="num" style="width: 44px">{{r.share}}</span><span style="width: 90px; height: 6px; background: #263040; border-radius: 3px"><span style="{{r.bar}}"></span></span></span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </sc-for>
+      <p style="margin: 0; font-size: 12px; color: #9BA7B6">Share of buyers counts only customers who use a product in this segment. Competitors' scores are public. Until competitors start making decisions (M5) their products keep these scores.</p>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const fmt = (n) => n.toLocaleString('en-US');
+    const mk = (rows) => {
+      const total = rows.reduce((a, r) => a + r.c, 0);
+      return rows.map((r) => {
+        const pct = (100 * r.c) / total;
+        return { ...r, customers: fmt(r.c), share: pct.toFixed(1) + '%', bar: 'display: block; height: 6px; border-radius: 3px; background: ' + (r.mine ? '#5AA2FF' : '#6B7686') + '; width: ' + Math.max(pct, 1) + '%', rowStyle: r.mine ? 'background: #172638' : '' };
+      });
+    };
+    const segments = [
+      { name: 'SMB', summary: '621,600 businesses · 122,900 use a product, 498,700 do not yet · typical price $50', rows: mk([
+        { product: 'Zoho CRM', company: 'Zoho', q: 55, f: 60, b: 40, price: '$25', appeal: '69.8', c: 58000 },
+        { product: 'Sales Cloud', company: 'Salesforce', q: 70, f: 80, b: 80, price: '$65', appeal: '63.0', c: 62000 },
+        { product: 'Pipeline', company: 'Kestrel Systems (you)', q: 54, f: 78, b: 20, price: '$40', appeal: '57.9', c: 2900, mine: true }
+      ]) },
+      { name: 'Mid-market', summary: '62,160 businesses · 24,450 use a product · typical price $800 · sales-led', rows: mk([
+        { product: 'Sales Cloud', company: 'Salesforce', q: 70, f: 80, b: 80, price: '$900', appeal: '68.1', c: 13500 },
+        { product: 'Zoho CRM', company: 'Zoho', q: 55, f: 60, b: 40, price: '$400', appeal: '64.5', c: 4600 },
+        { product: 'CRM On Demand', company: 'Oracle', q: 60, f: 75, b: 70, price: '$800', appeal: '63.3', c: 6300 },
+        { product: 'Pipeline', company: 'Kestrel Systems (you)', q: 54, f: 78, b: 20, price: '$700', appeal: '54.0', c: 50, mine: true }
+      ]) },
+      { name: 'Enterprise', summary: '6,216 businesses · 2,950 use a product · typical price $8,000 · sales-led · you do not sell here', rows: mk([
+        { product: 'Sales Cloud', company: 'Salesforce', q: 70, f: 80, b: 80, price: '$9,000', appeal: '72.9', c: 1500 },
+        { product: 'CRM On Demand', company: 'Oracle', q: 60, f: 75, b: 70, price: '$8,000', appeal: '66.0', c: 1450 }
+      ]) }
+    ];
+    return { segments };
+  }
+}
+</script>
+</body>
+</html>
