@@ -59,6 +59,25 @@ describe('OrgNode', () => {
     expect(html).toContain('aria-pressed="true"');
   });
 
+  it('shows the product a unit works on (M3b)', () => {
+    const node = (product: string | null) =>
+      wrap(
+        <OrgNode
+          kind="team"
+          name="Platform"
+          leaderName={null}
+          leaderHref={null}
+          policy={null}
+          effectivePolicy="office"
+          headcount={3}
+          span={null}
+          product={product}
+        />,
+      );
+    expect(node('Pipeline')).toContain('Works on Pipeline');
+    expect(node(null)).not.toContain('Works on');
+  });
+
   it('handles a leaderless unit and its own policy', () => {
     const html = wrap(
       <OrgNode

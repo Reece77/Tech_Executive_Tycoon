@@ -3,7 +3,7 @@ import { CashChart } from '../components/CashChart';
 import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOverview, type Overview } from '../hooks/api';
-import { formatMoneyWhole, formatRunway, formatWhole } from '../lib/format';
+import { formatMoneyShort, formatMoneyWhole, formatRunway, formatWhole } from '../lib/format';
 import { MANAGER_LABELS } from '../lib/org';
 
 // Phase-6 memo labels (backend/tst/sim/hiring/phases.py) as the wireframe words them.
@@ -54,6 +54,19 @@ export function OverviewScreen() {
           testId="kpi-runway"
         />
         <KpiTile
+          label="MRR"
+          value={formatMoneyWhole(data.mrr_cents)}
+          note={lastMonth ? `Revenue in ${lastMonth.split(' ')[0]}` : 'No month closed yet'}
+          hint="Revenue in the last closed month"
+          testId="kpi-mrr"
+        />
+        <KpiTile
+          label="ARR"
+          value={formatMoneyShort(data.arr_cents)}
+          note="12 × MRR; stage 2 from $1M"
+          testId="kpi-arr"
+        />
+        <KpiTile
           label="Headcount"
           value={String(data.team.headcount)}
           note={data.team.on_notice ? `${data.team.on_notice} on notice` : 'Including you'}
@@ -88,7 +101,7 @@ export function OverviewScreen() {
         )}
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' }}>
-        <Panel title="Cash at month end" style={{ flex: '2 1 480px' }}>
+        <Panel title="Cash and revenue at month end" style={{ flex: '2 1 480px' }}>
           <CashChart history={data.history} />
         </Panel>
         <CostsPanel overview={data} month={month} />
@@ -135,10 +148,19 @@ function CostsPanel({ overview, month }: { overview: Overview; month: string }) 
       : (COST_LABELS[text] ?? text);
   return (
     <Panel
-      title={`${month} costs (projected)`}
+      title={`${month} revenue and costs (projected)`}
       label="This month's costs"
       style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column' }}
     >
+      <div className="tst-row" data-testid="month-revenue">
+        <span style={{ color: 'var(--tst-text-2)' }}>Revenue (at today&apos;s customers)</span>
+        <span className="tst-num" style={{ color: 'var(--tst-good)' }}>
+          {formatMoneyWhole(overview.month_revenue_cents)}
+        </span>
+      </div>
+      <h3 className="tst-ptitle" style={{ margin: '12px 0 0' }}>
+        Costs
+      </h3>
       {overview.month_costs.map((c) => (
         <div key={c.account} className="tst-row" data-testid={`cost-${c.account}`}>
           <span style={{ color: 'var(--tst-text-2)' }}>{label(c.label)}</span>
@@ -152,14 +174,16 @@ function CostsPanel({ overview, month }: { overview: Overview; month: string }) 
         </div>
       ))}
       <div className="tst-row" style={{ borderBottom: 0, fontWeight: 600 }}>
-        <span>Total</span>
+        <span>Total costs</span>
         <span className="tst-num" data-testid="cost-total">
           {formatMoneyWhole(overview.month_total_cents)}
         </span>
       </div>
-      <p className="tst-muted" style={{ margin: '8px 0 0', fontSize: 12 }}>
-        No revenue yet. Products arrive in M3.
-      </p>
+      {overview.month_revenue_cents === 0 && (
+        <p className="tst-muted" style={{ margin: '8px 0 0', fontSize: 12 }}>
+          No revenue yet: launch a product to start selling.
+        </p>
+      )}
     </Panel>
   );
 }

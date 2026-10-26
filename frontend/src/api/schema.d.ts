@@ -2124,21 +2124,18 @@ export interface components {
             /**
              * Mrr Cents
              * @description Revenue in the last closed month (M3a)
-             * @default 0
              */
-            mrr_cents?: number;
+            mrr_cents: number;
             /**
              * Arr Cents
              * @description 12 x MRR
-             * @default 0
              */
-            arr_cents?: number;
+            arr_cents: number;
             /**
              * Month Revenue Cents
              * @description This month's revenue at the current customers and prices (M3b)
-             * @default 0
              */
-            month_revenue_cents?: number;
+            month_revenue_cents: number;
         };
         /**
          * PayPreviewOut
@@ -2844,16 +2841,10 @@ export interface components {
             headcount: number;
             /** Avg Morale */
             avg_morale: number | null;
-            /**
-             * Mrr Cents
-             * @default 0
-             */
-            mrr_cents?: number;
-            /**
-             * Arr Cents
-             * @default 0
-             */
-            arr_cents?: number;
+            /** Mrr Cents */
+            mrr_cents: number;
+            /** Arr Cents */
+            arr_cents: number;
         };
         /** TagOut */
         TagOut: {

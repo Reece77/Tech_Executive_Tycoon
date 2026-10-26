@@ -38,6 +38,7 @@ export interface OrgNodeProps {
   effectivePolicy: string;
   headcount: number;
   span: { reports: number; limit: number; over: boolean } | null;
+  product?: string | null; // the product it works on (M3b)
   selected?: boolean;
   dropActive?: boolean;
   draggable?: boolean;
@@ -62,6 +63,7 @@ export function OrgNode(props: OrgNodeProps) {
     effectivePolicy,
     headcount,
     span,
+    product,
     selected,
     dropActive,
   } = props;
@@ -130,6 +132,11 @@ export function OrgNode(props: OrgNodeProps) {
       >
         {policyText(policy, effectivePolicy)}
       </span>
+      {product && (
+        <span className="tst-chip" style={{ fontSize: 12 }} data-testid="node-product">
+          Works on {product}
+        </span>
+      )}
       <span style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
         <span className="tst-num tst-muted" style={{ fontSize: 13 }}>
           {headcount} {headcount === 1 ? 'person' : 'people'}

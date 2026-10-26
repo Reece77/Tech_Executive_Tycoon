@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
+import { kindLabel, kindsFor } from '../lib/inbox';
+import { KindBadge } from './KindBadge';
 import type { MarketProduct, MarketSegment, ProductSegment } from '../hooks/api';
 import {
   formatFlow,
@@ -248,5 +250,25 @@ describe('MarketTable', () => {
     expect(segmentSummary({ ...SMB_MARKET, reach: 'sales', player_sells: false })).toMatch(
       /sales-led · you do not sell here$/,
     );
+  });
+});
+
+describe('Inbox product kinds (M3b)', () => {
+  it('labels product messages and filters by kind across pages', () => {
+    for (const kind of [
+      'product_launched',
+      'first_customer',
+      'arr_milestone',
+      'sales_capacity_limited',
+    ]) {
+      expect(kindLabel(kind)).toBe('Product');
+      expect(kindsFor('products')).toContain(kind);
+    }
+    expect(wrap(<KindBadge kind="first_customer" />)).toContain('>Product<');
+    expect(kindsFor('all')).toBeNull();
+    expect(kindsFor('unread')).toBeNull();
+    expect(kindsFor('hiring')).toContain('offer_accepted');
+    expect(kindsFor('hiring')).not.toContain('product_launched');
+    expect(kindsFor('people')).toContain('resigned');
   });
 });

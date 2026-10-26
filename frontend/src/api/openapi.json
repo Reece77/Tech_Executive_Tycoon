@@ -7340,20 +7340,17 @@
           "mrr_cents": {
             "type": "integer",
             "title": "Mrr Cents",
-            "description": "Revenue in the last closed month (M3a)",
-            "default": 0
+            "description": "Revenue in the last closed month (M3a)"
           },
           "arr_cents": {
             "type": "integer",
             "title": "Arr Cents",
-            "description": "12 x MRR",
-            "default": 0
+            "description": "12 x MRR"
           },
           "month_revenue_cents": {
             "type": "integer",
             "title": "Month Revenue Cents",
-            "description": "This month's revenue at the current customers and prices (M3b)",
-            "default": 0
+            "description": "This month's revenue at the current customers and prices (M3b)"
           }
         },
         "type": "object",
@@ -7380,7 +7377,10 @@
           "team",
           "month_costs",
           "month_paid",
-          "month_total_cents"
+          "month_total_cents",
+          "mrr_cents",
+          "arr_cents",
+          "month_revenue_cents"
         ],
         "title": "OverviewOut"
       },
@@ -9154,13 +9154,11 @@
           },
           "mrr_cents": {
             "type": "integer",
-            "title": "Mrr Cents",
-            "default": 0
+            "title": "Mrr Cents"
           },
           "arr_cents": {
             "type": "integer",
-            "title": "Arr Cents",
-            "default": 0
+            "title": "Arr Cents"
           }
         },
         "type": "object",
@@ -9171,7 +9169,9 @@
           "monthly_burn_cents",
           "payroll_cents",
           "headcount",
-          "avg_morale"
+          "avg_morale",
+          "mrr_cents",
+          "arr_cents"
         ],
         "title": "SnapshotPointOut"
       },

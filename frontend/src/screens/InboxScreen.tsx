@@ -12,7 +12,7 @@ import {
   type InboxItem,
 } from '../hooks/api';
 import { formatMoneyWhole, formatWhole, humanize } from '../lib/format';
-import { kindLabel, matchesFilter, pageRange, preview, type InboxFilter } from '../lib/inbox';
+import { kindLabel, kindsFor, pageRange, preview, type InboxFilter } from '../lib/inbox';
 import { moraleBand } from '../lib/attr';
 
 const FILTERS: { key: InboxFilter; label: string }[] = [
@@ -20,21 +20,23 @@ const FILTERS: { key: InboxFilter; label: string }[] = [
   { key: 'unread', label: 'Unread' },
   { key: 'people', label: 'People' },
   { key: 'hiring', label: 'Hiring' },
+  { key: 'products', label: 'Products' },
 ];
 
 export function InboxScreen() {
   const { saveId = '' } = useParams();
   const [offset, setOffset] = useState(0);
-  const inbox = useInbox(saveId, offset);
+  const [filter, setFilter] = useState<InboxFilter>('all');
+  // Filters run in the API, so they apply across every page, not only the one shown (M3b).
+  const inbox = useInbox(saveId, offset, kindsFor(filter), filter === 'unread');
   const overview = useOverview(saveId);
   const setRead = useSetRead(saveId);
   const [params, setParams] = useSearchParams();
-  const [filter, setFilter] = useState<InboxFilter>('all');
 
   if (inbox.isPending) return <Loading />;
   if (inbox.error) return <LoadError title="Could not load the inbox" error={inbox.error} />;
 
-  const items = inbox.data.items.filter((m) => matchesFilter(m, filter));
+  const items = inbox.data.items;
   const selectedId = Number(params.get('item'));
   const selected = items.find((m) => m.item_id === selectedId) ?? items[0];
 
@@ -70,7 +72,10 @@ export function InboxScreen() {
                     },
                   }}
                   aria-pressed={filter === f.key}
-                  onClick={() => setFilter(f.key)}
+                  onClick={() => {
+                    setFilter(f.key);
+                    setOffset(0);
+                  }}
                 >
                   {f.label}
                 </Button>
@@ -89,7 +94,7 @@ export function InboxScreen() {
         >
           {items.length === 0 ? (
             <p className="tst-muted" style={{ margin: 0, padding: 16 }}>
-              {inbox.data.items.length === 0
+              {filter === 'all'
                 ? 'No messages yet. Open a search on Recruitment, then press Continue.'
                 : 'No messages match this filter.'}
             </p>
@@ -275,6 +280,16 @@ function MessageDetail({
         {item.link_kind === 'search' && (
           <Button component={Link} to={`/game/${saveId}/recruitment?search=${item.link_id}`} h={44}>
             View candidates
+          </Button>
+        )}
+        {item.link_kind === 'product' && item.link_id !== null && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/products/${item.link_id}`}
+            h={44}
+            data-testid="view-product"
+          >
+            View product
           </Button>
         )}
         {item.read && (
