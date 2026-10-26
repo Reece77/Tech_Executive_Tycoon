@@ -1,0 +1,168 @@
+# 2010 incumbents (docs/formulas.md 11.9, ADR-0017). Real names, approximate 2010 values,
+# personal use (CLAUDE.md section 7). They diverge from reality after turn 0.
+#
+# Each company becomes a `company` row with is_player = false: no people, no ledger and no
+# decisions until M5. Company ids follow this file's order after the player (2, 3, ...);
+# product ids follow it too, so append new entries and never reorder.
+# - stage: company stage (spec section 3); founded_year: shown only.
+# - products: fixed quality, feature score and brand (0-100). The feature score is held
+#   constant: the product's feature points grow with the market's expectation.
+# - segments: monthly price in cents and starting share of D0 in basis points (of the
+#   category's addressable customers for that segment in January 2010).
+companies:
+  - name: Salesforce
+    stage: 4
+    founded_year: 1999
+    products:
+      - name: Sales Cloud
+        category: b2b_saas
+        quality: 70
+        features: 80
+        brand: 80
+        segments:
+          smb: { price_cents: 6500, share_bp: 1500 }
+          mid_market: { price_cents: 90000, share_bp: 3000 }
+          enterprise: { price_cents: 900000, share_bp: 3000 }
+
+  - name: Oracle
+    stage: 4
+    founded_year: 1977
+    products:
+      - name: CRM On Demand
+        category: b2b_saas
+        quality: 60
+        features: 75
+        brand: 70
+        segments:
+          mid_market: { price_cents: 80000, share_bp: 1500 }
+          enterprise: { price_cents: 800000, share_bp: 3000 }
+
+  - name: Zoho
+    stage: 3
+    founded_year: 1996
+    products:
+      - name: Zoho CRM
+        category: b2b_saas
+        quality: 55
+        features: 60
+        brand: 40
+        segments:
+          smb: { price_cents: 2500, share_bp: 1000 }
+          mid_market: { price_cents: 40000, share_bp: 1000 }
+
+  - name: Atlassian
+    stage: 3
+    founded_year: 2002
+    products:
+      - name: JIRA
+        category: dev_tools
+        quality: 70
+        features: 75
+        brand: 60
+        segments:
+          smb: { price_cents: 2500, share_bp: 2000 }
+          mid_market: { price_cents: 45000, share_bp: 2500 }
+          enterprise: { price_cents: 450000, share_bp: 1500 }
+
+  - name: Microsoft
+    stage: 4
+    founded_year: 1975
+    products:
+      - name: Team Foundation Server
+        category: dev_tools
+        quality: 65
+        features: 80
+        brand: 85
+        segments:
+          mid_market: { price_cents: 60000, share_bp: 2500 }
+          enterprise: { price_cents: 600000, share_bp: 4000 }
+
+  - name: GitHub
+    stage: 2
+    founded_year: 2008
+    products:
+      - name: GitHub
+        category: dev_tools
+        quality: 75
+        features: 60
+        brand: 50
+        segments:
+          smb: { price_cents: 2500, share_bp: 1500 }
+          mid_market: { price_cents: 30000, share_bp: 1000 }
+
+  - name: Facebook
+    stage: 3
+    founded_year: 2004
+    products:
+      - name: Facebook
+        category: consumer_apps
+        quality: 65
+        features: 80
+        brand: 95
+        segments:
+          consumer: { price_cents: 35, share_bp: 3000 }
+
+  - name: Zynga
+    stage: 3
+    founded_year: 2007
+    products:
+      - name: FarmVille
+        category: consumer_apps
+        quality: 55
+        features: 60
+        brand: 70
+        segments:
+          consumer: { price_cents: 50, share_bp: 1000 }
+
+  - name: Evernote
+    stage: 2
+    founded_year: 2007
+    products:
+      - name: Evernote
+        category: consumer_apps
+        quality: 70
+        features: 55
+        brand: 40
+        segments:
+          consumer: { price_cents: 20, share_bp: 500 }
+
+  - name: Symantec
+    stage: 4
+    founded_year: 1982
+    products:
+      - name: Norton
+        category: cybersecurity
+        quality: 60
+        features: 80
+        brand: 85
+        segments:
+          smb: { price_cents: 3500, share_bp: 2000 }
+          mid_market: { price_cents: 90000, share_bp: 2500 }
+          enterprise: { price_cents: 1100000, share_bp: 2500 }
+
+  - name: McAfee
+    stage: 4
+    founded_year: 1987
+    products:
+      - name: McAfee Total Protection
+        category: cybersecurity
+        quality: 55
+        features: 75
+        brand: 80
+        segments:
+          smb: { price_cents: 3000, share_bp: 1500 }
+          mid_market: { price_cents: 85000, share_bp: 2000 }
+          enterprise: { price_cents: 1000000, share_bp: 2000 }
+
+  - name: Check Point
+    stage: 4
+    founded_year: 1993
+    products:
+      - name: Check Point
+        category: cybersecurity
+        quality: 70
+        features: 70
+        brand: 60
+        segments:
+          mid_market: { price_cents: 110000, share_bp: 1500 }
+          enterprise: { price_cents: 1300000, share_bp: 2500 }
