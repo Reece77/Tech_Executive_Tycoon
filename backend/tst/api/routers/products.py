@@ -23,6 +23,7 @@ from tst.api.schemas.products import (
     CreateProductIn,
     MarketingIn,
     MarketOut,
+    PortfolioOut,
     PriceIn,
     PricePreviewOut,
     ProductActionOut,
@@ -100,6 +101,21 @@ def get_market(save_id: str, category: str, settings: SettingsDep, data: DataDep
 
 
 # --- The player's products ------------------------------------------------------------------
+
+
+@router.get(
+    "/portfolio", response_model=PortfolioOut, responses=ERRORS, operation_id="getPortfolio"
+)
+def get_portfolio(save_id: str, settings: SettingsDep, data: DataDep) -> PortfolioOut:
+    """The Products screen's tiles: MRR and its change, ARR, customers, hosting and
+    marketing this month."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session:
+        state = repository.load_state(session)
+        snapshots = repository.recent_snapshots(session, state.player.id, 2)
+    stage = state.player.stage
+    label = views.STAGE_LABELS.get(stage, f"Stage {stage}")
+    return product_views.portfolio_out(state, snapshots, label, data)
 
 
 @router.get(

@@ -85,6 +85,8 @@ def org_out(state: GameState, company_id: int, data: LoadedData) -> OrgOut:
     def unit_out(unit_id: int | None) -> UnitOut:
         leader = view.leader_of(unit_id)
         unit = view.units.get(unit_id) if unit_id is not None else None
+        product_id = company.root_product_id if unit is None else unit.product_id
+        product = None if product_id is None else state.product(product_id)
         return UnitOut(
             unit_id=unit_id,
             kind=ROOT_KIND if unit is None else unit.kind,
@@ -97,6 +99,8 @@ def org_out(state: GameState, company_id: int, data: LoadedData) -> OrgOut:
             members=[member(pid, unit_id) for pid in view.members.get(unit_id, ())],
             child_unit_ids=sorted(u.id for u in view.units.values() if u.parent_id == unit_id),
             headcount=_headcount(view, unit_id),
+            product_id=product_id,
+            product_name=None if product is None else product.name,
         )
 
     managers = []

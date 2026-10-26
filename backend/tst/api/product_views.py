@@ -7,10 +7,11 @@ only as names and a pace label, and a capacity limit only as a note.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 from tst.api.schemas.products import (
+    AppealWeightsOut,
     AssignedUnitOut,
     CategoryOut,
     CategorySegmentOut,
@@ -19,6 +20,7 @@ from tst.api.schemas.products import (
     MarketProductOut,
     MarketSegmentOut,
     NamedOut,
+    PortfolioOut,
     PricePreviewOut,
     ProductMonthOut,
     ProductOut,
@@ -28,15 +30,25 @@ from tst.api.views import person_name
 from tst.loader import LoadedData
 from tst.sim.actions.products import launch_problems
 from tst.sim.calendar import format_turn
+from tst.sim.data_models import SegmentDef
 from tst.sim.errors import ProductRuleError
 from tst.sim.org.rules import org_view
 from tst.sim.products import formulas as f
 from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegment
-from tst.sim.products.phases import current_feature, segment_appeal, shown_turn, team_of
+from tst.sim.products.phases import (
+    current_feature,
+    product_costs,
+    segment_appeal,
+    shown_turn,
+    team_of,
+)
+from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState
 
 STATUS_LABELS = {"in_development": "In development", "sunset": "Sunset", "retired": "Retired"}
 LIVE_LABEL, GROWTH_LABEL, MATURE_LABEL = "Live", "Growth", "Mature"
+CONSUMER_SEGMENT = "consumer"  # customers there are users, shown apart from businesses
+BRAND_STEADY = 0.05  # brand points a month below which the brand trend reads "steady"
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,6 +95,18 @@ def _mrr(seg: ProductSegment) -> int:
     return round(seg.customers * (seg.price_cents or 0))
 
 
+def _weights(seg_def: SegmentDef) -> AppealWeightsOut:
+    w = seg_def.weights
+    return AppealWeightsOut(quality=w.quality, price=w.price, brand=w.brand, features=w.features)
+
+
+def _price_score(product: Product, seg: ProductSegment, data: LoadedData) -> float | None:
+    if seg.price_cents is None:
+        return None
+    market = data.game_data.category(product.category).market(seg.segment)
+    return f.price_score(market.reference_price_cents, seg.price_cents)
+
+
 def _addressable(state: GameState, category: str, segment: str) -> int:
     market = state.market(category, segment)
     return round(market.addressable) if market else 0
@@ -102,6 +126,8 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
                     addressable=_addressable(state, cat.key, m.segment),
                     reference_price_cents=m.reference_price_cents,
                     hosting_cents=m.hosting_cents,
+                    weights=_weights(data.game_data.segment(m.segment)),
+                    counts_users=m.segment == CONSUMER_SEGMENT,
                 )
                 for m in cat.markets
             ],
@@ -132,6 +158,7 @@ def market_out(state: GameState, category: str, data: LoadedData) -> MarketOut:
                 feature_score=current_feature(r.product, data.game_data, turn),
                 brand=r.product.brand,
                 price_cents=r.seg.price_cents or 0,
+                price_score=_price_score(r.product, r.seg, data) or 0.0,
                 appeal=r.appeal,
                 customers=r.seg.customers,
                 share_of_served=r.seg.customers / served if served else 0.0,
@@ -140,17 +167,23 @@ def market_out(state: GameState, category: str, data: LoadedData) -> MarketOut:
             )
             for r in sorted(rows, key=lambda r: (-r.seg.customers, r.product.id))
         ]
+        addressable = _addressable(state, category, m.segment)
         segments.append(
             MarketSegmentOut(
                 segment=m.segment,
                 label=seg_def.label,
                 reach=seg_def.reach,
-                addressable=_addressable(state, category, m.segment),
+                addressable=addressable,
                 served=served,
+                unserved=max(0.0, addressable - served),
+                reference_price_cents=m.reference_price_cents,
+                weights=_weights(seg_def),
+                counts_users=m.segment == CONSUMER_SEGMENT,
+                player_sells=any(state.company(r.product.company_id).is_player for r in rows),
                 products=products,
             )
         )
-    return MarketOut(category=cat.key, label=cat.label, segments=segments)
+    return MarketOut(category=cat.key, label=cat.label, annual_growth=cat.growth, segments=segments)
 
 
 def lifecycle_label(product: Product, history: Sequence[ProductMonth], data: LoadedData) -> str:
@@ -183,6 +216,8 @@ def product_out(
     company = state.company(product.company_id)
     team = team_of(state, org_view(state, company.id), product, data.balance, game)
     category = game.category(product.category)
+    months = _months(history)
+    last = months[-1] if months else {}
     segments = []
     for seg in state.segments_of(product.id):
         seg_def = game.segment(seg.segment)
@@ -195,6 +230,7 @@ def product_out(
                 label=seg_def.label,
                 reach=seg_def.reach,
                 price_cents=seg.price_cents,
+                price_score=_price_score(product, seg, data),
                 customers=seg.customers,
                 appeal=segment_appeal(product, seg, game, shown_turn(state)),
                 share_of_served=seg.customers / served if served else 0.0,
@@ -205,6 +241,9 @@ def product_out(
                     if seg.capacity_limited
                     else None
                 ),
+                new_last_month=last[seg.segment].new if seg.segment in last else 0.0,
+                churned_last_month=last[seg.segment].churned if seg.segment in last else 0.0,
+                counts_users=seg.segment == CONSUMER_SEGMENT,
             )
         )
 
@@ -227,7 +266,18 @@ def product_out(
         marketing_budget_cents=product.marketing_budget_cents,
         created_turn=product.created_turn,
         launched_turn=product.launched_turn,
+        launched_label=None
+        if product.launched_turn is None
+        else format_turn(product.launched_turn),
         mrr_cents=sum(s.mrr_cents for s in segments),
+        mrr_change=_change(months, lambda m: sum(r.revenue_cents for r in m.values())),
+        customers=sum(s.customers for s in segments),
+        customer_trend=_change(months, lambda m: sum(r.customers for r in m.values())),
+        new_last_month=sum(s.new_last_month for s in segments),
+        churned_last_month=sum(s.churned_last_month for s in segments),
+        hosting_cents=_hosting(state, product, data),
+        brand_trend=_brand_trend(months),
+        counts_users=bool(segments) and all(s.counts_users for s in segments),
         segments=segments,
         assigned_units=[
             AssignedUnitOut(
@@ -262,6 +312,99 @@ def product_out(
             for m in recent
             if m.turn in last_turns
         ],
+    )
+
+
+def _months(history: Sequence[ProductMonth]) -> list[dict[str, ProductMonth]]:
+    """History rows grouped by month (oldest first), keyed by segment."""
+    by_turn: dict[int, dict[str, ProductMonth]] = {}
+    for row in history:
+        by_turn.setdefault(row.turn, {})[row.segment] = row
+    return [by_turn[t] for t in sorted(by_turn)]
+
+
+def _change(
+    months: Sequence[dict[str, ProductMonth]], total: Callable[[dict[str, ProductMonth]], float]
+) -> float | None:
+    """The last month against the one before, as a fraction; None without two months or with
+    nothing the month before."""
+    if len(months) < 2:
+        return None
+    before, now = total(months[-2]), total(months[-1])
+    return None if before <= 0 else now / before - 1
+
+
+def _brand_trend(months: Sequence[dict[str, ProductMonth]]) -> str:
+    """rising, falling or steady from the last two month ends (never the target brand)."""
+    if len(months) < 2:
+        return "steady"
+    before = next(iter(months[-2].values())).brand
+    now = next(iter(months[-1].values())).brand
+    if now - before > BRAND_STEADY:
+        return "rising"
+    if before - now > BRAND_STEADY:
+        return "falling"
+    return "steady"
+
+
+def _hosting(state: GameState, product: Product, data: LoadedData) -> int:
+    """round(C x h) per segment this month, as phase 6 will post it (11.8)."""
+    if product.status not in SELLING:
+        return 0
+    category = data.game_data.category(product.category)
+    return sum(
+        round(seg.customers * category.market(seg.segment).hosting_cents)
+        for seg in state.segments_of(product.id)
+    )
+
+
+def projected_revenue(state: GameState, company_id: int) -> int:
+    """This month's revenue at the current customers and prices (the Overview's line)."""
+    return sum(
+        _mrr(seg)
+        for product in state.company_products(company_id)
+        if product.status in SELLING
+        for seg in state.segments_of(product.id)
+    )
+
+
+def portfolio_out(
+    state: GameState,
+    snapshots: Sequence[tuple[int, CompanySnapshot]],
+    stage_label: str,
+    data: LoadedData,
+) -> PortfolioOut:
+    """The Products screen's tiles (M3b): MRR and ARR from the month-end snapshots, customers
+    and this month's hosting and marketing from the current state."""
+    company = state.player
+    latest = snapshots[-1][1] if snapshots else None
+    previous = snapshots[-2] if len(snapshots) >= 2 else None
+    mrr = latest.mrr_cents if latest else 0
+    change = None
+    if previous is not None and previous[1].mrr_cents > 0:
+        change = mrr / previous[1].mrr_cents - 1
+    users = 0.0
+    business = 0.0
+    for product in state.company_products(company.id):
+        if product.status not in SELLING:
+            continue
+        for seg in state.segments_of(product.id):
+            if seg.segment == CONSUMER_SEGMENT:
+                users += seg.customers
+            else:
+                business += seg.customers
+    hosting, marketing = product_costs(state, company.id, data.game_data)
+    return PortfolioOut(
+        mrr_cents=mrr,
+        mrr_change=change,
+        previous_label=None if previous is None else format_turn(previous[0]).split(" ")[0],
+        arr_cents=latest.arr_cents if latest else 0,
+        stage=company.stage,
+        stage_label=stage_label,
+        paying_customers=business,
+        consumer_users=users,
+        hosting_cents=hosting,
+        marketing_cents=marketing,
     )
 
 
@@ -308,6 +451,11 @@ def price_preview(
         price_score=score,
         appeal=appeal,
         choice_share=shares[0],
+        current_price_cents=seg.price_cents,
+        current_price_score=_price_score(product, seg, data),
         current_appeal=current,
         current_choice_share=current_share,
+        revenue_per_customer_change=(
+            None if seg.price_cents is None else price_cents / seg.price_cents - 1
+        ),
     )

@@ -136,10 +136,67 @@ def test_create_staff_launch_and_sunset_through_the_api(
     assert overview["mrr_cents"] > 0 and overview["arr_cents"] == 12 * overview["mrr_cents"]
     assert overview["history"][-1]["mrr_cents"] == overview["mrr_cents"]
     assert [p["product_id"] for p in api.get(f"{BASE}/products")] == [PRODUCT]
+    screens_get_what_they_show(api, product, overview)
 
     out = api.post(f"{BASE}/products/{PRODUCT}/sunset")
     assert out["product"]["status"] == "sunset" and out["product"]["lifecycle_label"] == "Sunset"
     api.post(f"{BASE}/products/{PRODUCT}/sunset", status=400)
+
+
+def screens_get_what_they_show(
+    api: Client, product: dict[str, Any], overview: dict[str, Any]
+) -> None:
+    """The M3b screens' values come from the API (CLAUDE.md 7): totals, trends, last month's
+    flows, price scores, hosting, the portfolio tiles, the unit's product, inbox kinds."""
+    segments = product["segments"]
+    assert product["customers"] == pytest.approx(sum(s["customers"] for s in segments))
+    assert product["new_last_month"] == pytest.approx(sum(s["new_last_month"] for s in segments))
+    last = max(m["turn"] for m in product["history"])
+    smb_last = next(m for m in product["history"] if m["turn"] == last and m["segment"] == "smb")
+    smb = next(s for s in segments if s["segment"] == "smb")
+    assert smb["new_last_month"] == pytest.approx(smb_last["new"])
+    assert smb["churned_last_month"] == pytest.approx(smb_last["churned"])
+    assert smb["price_score"] == pytest.approx(62.5) and smb["counts_users"] is False
+    assert product["launched_label"] is not None and product["hosting_cents"] > 0
+    assert product["brand_trend"] == "rising"  # $10,000 a month from brand 0
+    assert product["customer_trend"] is not None and product["mrr_change"] is not None
+
+    portfolio = api.get(f"{BASE}/portfolio")
+    assert portfolio["mrr_cents"] == overview["mrr_cents"]
+    assert portfolio["arr_cents"] == overview["arr_cents"]
+    assert portfolio["paying_customers"] == pytest.approx(product["customers"])
+    assert portfolio["consumer_users"] == 0
+    assert portfolio["hosting_cents"] == product["hosting_cents"]
+    assert portfolio["marketing_cents"] == 1_000_000
+    assert portfolio["previous_label"] is not None and portfolio["stage_label"]
+    assert overview["month_revenue_cents"] == product["mrr_cents"]
+
+    market = api.get(f"{BASE}/markets/b2b_saas")
+    assert market["annual_growth"] == pytest.approx(0.20)
+    by_key = {s["segment"]: s for s in market["segments"]}
+    assert by_key["smb"]["player_sells"] and not by_key["enterprise"]["player_sells"]
+    smb_market = by_key["smb"]
+    assert smb_market["unserved"] == pytest.approx(smb_market["addressable"] - smb_market["served"])
+    assert smb_market["reference_price_cents"] == 5000
+    assert smb_market["weights"] == {
+        "quality": 0.25,
+        "price": 0.35,
+        "brand": 0.15,
+        "features": 0.25,
+    }
+    zoho = next(p for p in smb_market["products"] if p["name"] == "Zoho CRM")
+    assert zoho["price_score"] == 100
+
+    root = api.get(f"{BASE}/org")["units"][0]
+    assert (root["unit_id"], root["product_id"], root["product_name"]) == (
+        None,
+        PRODUCT,
+        "Pipeline",
+    )
+    launched = api.get(f"{BASE}/inbox?kind=product_launched&kind=first_customer")
+    assert launched["total"] >= 1
+    assert {i["kind"] for i in launched["items"]} <= {"product_launched", "first_customer"}
+    assert api.get(f"{BASE}/inbox?kind=offer_accepted")["total"] == 0
 
 
 def test_cancel_a_product_in_development(setup: tuple[Client, Path]) -> None:
@@ -189,6 +246,12 @@ def test_price_preview_compares_against_current_competitors(setup: tuple[Client,
     assert at_25["price_score"] == 100
     assert at_25["choice_share"] > at_40["choice_share"]
     assert at_40["current_appeal"] == pytest.approx(at_40["appeal"])
+    assert at_25["current_price_cents"] == 4000
+    assert at_25["current_price_score"] == pytest.approx(62.5)
+    assert at_25["revenue_per_customer_change"] == pytest.approx(-0.375)
+    unpriced = api.post(url, {"segment": "mid_market", "price_cents": 70_000})
+    assert unpriced["current_price_cents"] is None
+    assert unpriced["revenue_per_customer_change"] is None
     assert "customers" not in at_25 and "new" not in at_25
     api.post(url, {"segment": "enterprise", "price_cents": 100}, status=400)
 
@@ -203,3 +266,25 @@ def test_founder_scouts_a_search(setup: tuple[Client, Path], loaded: LoadedData)
     out = api.post(f"{BASE}/recruitment/searches/{search['search_id']}/scout")
     assert out["energy"]["energy"] == before - 20
     api.post(f"{BASE}/recruitment/searches/999/scout", status=404)
+
+
+def test_products_meta(setup: tuple[Client, Path]) -> None:
+    api, _ = setup
+    meta = api.get("/api/meta/products")
+    assert meta["energy_costs"] == {
+        "create_product": 4,
+        "set_price": 1,
+        "add_segment": 2,
+        "assign_unit": 2,
+        "unassign_unit": 2,
+        "set_marketing": 1,
+        "launch_product": 3,
+        "sunset_product": 3,
+        "cancel_product": 3,
+        "scout_search": 20,
+    }
+    assert (meta["start_quality"], meta["launch_min_quality"], meta["launch_min_feature"]) == (
+        10,
+        25,
+        30,
+    )

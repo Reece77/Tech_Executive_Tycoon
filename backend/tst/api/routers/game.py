@@ -7,6 +7,7 @@ short transaction, logged to decision_log. Responses carry ranges, never true va
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Annotated
 
 from fastapi import APIRouter, Query
 from sqlalchemy import select
@@ -327,19 +328,21 @@ def get_inbox(
     save_id: str,
     settings: SettingsDep,
     unread_only: bool = False,
+    kind: Annotated[list[str] | None, Query()] = None,
     limit: int | None = Query(default=None, ge=1),
     offset: int = Query(default=0, ge=0),
 ) -> InboxOut:
-    """Newest first. `limit` and `offset` page through a long inbox (M2b)."""
+    """Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to
+    keep only those message kinds, across every page (M3b)."""
     path = _path(settings, save_id)
     with repository.open_session(path) as session:
         player = repository.load_state(session).player
         items = inbox.list_inbox(
-            session, player.id, unread_only=unread_only, limit=limit, offset=offset
+            session, player.id, unread_only=unread_only, kinds=kind, limit=limit, offset=offset
         )
         return InboxOut(
             unread=inbox.unread_count(session, player.id),
-            total=inbox.inbox_total(session, player.id, unread_only=unread_only),
+            total=inbox.inbox_total(session, player.id, unread_only=unread_only, kinds=kind),
             offset=offset,
             items=[views.inbox_item(m) for m in items],
         )

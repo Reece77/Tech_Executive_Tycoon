@@ -8,6 +8,7 @@ import {
   formatRatio,
   formatRunway,
   humanize,
+  parseDollars,
 } from './format';
 
 describe('display helpers', () => {
@@ -63,5 +64,19 @@ describe('formatRunway', () => {
     expect(formatRunway(24)).toBe('24 months');
     expect(formatRunway(1)).toBe('1 month');
     expect(formatRunway(null)).toBe('Not burning');
+  });
+});
+
+describe('parseDollars', () => {
+  it.each([
+    ['40', 4000],
+    ['$1,000.5', 100050],
+    ['0.35', 35],
+    [' 12 ', 1200],
+    ['abc', 0],
+    ['1.234', 0],
+    ['', 0],
+  ])('%s -> %i cents', (text, cents) => {
+    expect(parseDollars(text)).toBe(cents);
   });
 });

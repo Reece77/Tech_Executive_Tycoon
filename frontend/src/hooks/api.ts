@@ -26,6 +26,26 @@ export type HiringPlan = Schemas['HiringPlanOut'];
 export type HiringPlanIn = Schemas['HiringPlanIn'];
 export type HiringPlanPatch = Schemas['HiringPlanPatchIn'];
 export type MoraleBreakdown = Schemas['MoraleBreakdownOut'];
+export type Product = Schemas['ProductOut'];
+export type ProductSegment = Schemas['ProductSegmentOut'];
+export type Category = Schemas['CategoryOut'];
+export type Market = Schemas['MarketOut'];
+export type MarketSegment = Schemas['MarketSegmentOut'];
+export type MarketProduct = Schemas['MarketProductOut'];
+export type Portfolio = Schemas['PortfolioOut'];
+export type PricePreview = Schemas['PricePreviewOut'];
+export type ProductsMeta = Schemas['ProductsMetaOut'];
+
+/** One product action, as the product screens build it; maps to its route. */
+export type ProductAction =
+  | { action: 'price'; segment: string; price_cents: number }
+  | { action: 'segment'; segment: string }
+  | { action: 'assign'; unit_id: number | null }
+  | { action: 'unassign'; unit_id: number | null }
+  | { action: 'marketing'; budget_cents: number }
+  | { action: 'launch' }
+  | { action: 'sunset' }
+  | { action: 'cancel' };
 
 /** One reorganization, as the Org screen builds it; maps to the preview body and the action. */
 export type OrgChange =
@@ -58,7 +78,8 @@ export const keys = {
   saves: ['saves'] as const,
   save: (saveId: string) => ['saves', saveId] as const,
   overview: (saveId: string) => ['saves', saveId, 'overview'] as const,
-  inbox: (saveId: string, offset = 0) => ['saves', saveId, 'inbox', offset] as const,
+  inbox: (saveId: string, offset = 0, kinds: readonly string[] | null = null) =>
+    ['saves', saveId, 'inbox', offset, kinds] as const,
   people: (saveId: string) => ['saves', saveId, 'people'] as const,
   person: (saveId: string, personId: number) => ['saves', saveId, 'person', personId] as const,
   searches: (saveId: string) => ['saves', saveId, 'searches'] as const,
@@ -77,6 +98,14 @@ export const keys = {
   morale: (saveId: string, personId: number) => ['saves', saveId, 'morale', personId] as const,
   plans: (saveId: string) => ['saves', saveId, 'plans'] as const,
   founderPreview: (body: FounderIn) => ['meta', 'founder-preview', body] as const,
+  productsMeta: ['meta', 'products'] as const,
+  categories: (saveId: string) => ['saves', saveId, 'categories'] as const,
+  market: (saveId: string, category: string) => ['saves', saveId, 'market', category] as const,
+  products: (saveId: string) => ['saves', saveId, 'products'] as const,
+  product: (saveId: string, productId: number) => ['saves', saveId, 'product', productId] as const,
+  portfolio: (saveId: string) => ['saves', saveId, 'portfolio'] as const,
+  pricePreview: (saveId: string, productId: number, segment: string, price: number) =>
+    ['saves', saveId, 'price-preview', productId, segment, price] as const,
 };
 
 const path = (saveId: string) => ({ params: { path: { save_id: saveId } } });
@@ -166,13 +195,27 @@ export function useAdvance(saveId: string) {
 
 export const INBOX_PAGE = 50; // messages per inbox page (M2b)
 
-export function useInbox(saveId: string, offset = 0) {
+/** One inbox page; `kinds` keeps only those message kinds across every page (M3b). */
+export function useInbox(
+  saveId: string,
+  offset = 0,
+  kinds: readonly string[] | null = null,
+  unreadOnly = false,
+) {
   return useQuery({
-    queryKey: keys.inbox(saveId, offset),
+    queryKey: [...keys.inbox(saveId, offset, kinds), unreadOnly],
     queryFn: async () =>
       unwrap(
         await api.GET('/api/saves/{save_id}/inbox', {
-          params: { path: { save_id: saveId }, query: { limit: INBOX_PAGE, offset } },
+          params: {
+            path: { save_id: saveId },
+            query: {
+              limit: INBOX_PAGE,
+              offset,
+              unread_only: unreadOnly,
+              ...(kinds ? { kind: [...kinds] } : {}),
+            },
+          },
         }),
       ),
     placeholderData: keepPreviousData,
@@ -334,6 +377,20 @@ export function useMakeOffer(saveId: string) {
         await api.POST('/api/saves/{save_id}/recruitment/candidates/{candidate_id}/offer', {
           params: { path: { save_id: saveId, candidate_id: offer.candidateId } },
           body: { salary_cents: offer.salaryCents, equity_bp: offer.equityBp },
+        }),
+      ),
+    onSuccess: invalidate,
+  });
+}
+
+/** The founder scouts every open candidate of a search (20 energy, M3). */
+export function useScoutSearch(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (searchId: number) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/recruitment/searches/{search_id}/scout', {
+          params: { path: { save_id: saveId, search_id: searchId } },
         }),
       ),
     onSuccess: invalidate,
@@ -554,5 +611,160 @@ export function useClosePlan(saveId: string) {
         }),
       ),
     onSuccess: invalidate,
+  });
+}
+
+// --- Products and markets (M3b) ---------------------------------------------------------------
+
+export function useProductsMeta() {
+  return useQuery({
+    queryKey: keys.productsMeta,
+    queryFn: async () => unwrap(await api.GET('/api/meta/products')),
+    staleTime: Infinity,
+  });
+}
+
+export function useCategories(saveId: string) {
+  return useQuery({
+    queryKey: keys.categories(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/categories', path(saveId))),
+  });
+}
+
+export function useMarket(saveId: string, category: string) {
+  return useQuery({
+    queryKey: keys.market(saveId, category),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/markets/{category}', {
+          params: { path: { save_id: saveId, category } },
+        }),
+      ),
+    enabled: category !== '',
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useProducts(saveId: string) {
+  return useQuery({
+    queryKey: keys.products(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/products', path(saveId))),
+  });
+}
+
+export function useProduct(saveId: string, productId: number) {
+  return useQuery({
+    queryKey: keys.product(saveId, productId),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/products/{product_id}', {
+          params: { path: { save_id: saveId, product_id: productId } },
+        }),
+      ),
+    enabled: Number.isSafeInteger(productId) && productId > 0,
+  });
+}
+
+export function usePortfolio(saveId: string) {
+  return useQuery({
+    queryKey: keys.portfolio(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/portfolio', path(saveId))),
+  });
+}
+
+/** Price score, appeal and share* before and after; pass a debounced price. */
+export function usePricePreview(
+  saveId: string,
+  productId: number,
+  segment: string,
+  priceCents: number,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: keys.pricePreview(saveId, productId, segment, priceCents),
+    queryFn: async () =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/products/{product_id}/price-preview', {
+          params: { path: { save_id: saveId, product_id: productId } },
+          body: { segment, price_cents: priceCents },
+        }),
+      ),
+    enabled: enabled && priceCents > 0,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useCreateProduct(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (body: Schemas['CreateProductIn']) =>
+      unwrap(await api.POST('/api/saves/{save_id}/products', { ...path(saveId), body })),
+    onSuccess: invalidate,
+  });
+}
+
+async function applyProductAction(saveId: string, productId: number, a: ProductAction) {
+  const p = { params: { path: { save_id: saveId, product_id: productId } } };
+  switch (a.action) {
+    case 'price':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/products/{product_id}/price', {
+          ...p,
+          body: { segment: a.segment, price_cents: a.price_cents },
+        }),
+      );
+    case 'segment':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/products/{product_id}/segments', {
+          ...p,
+          body: { segment: a.segment },
+        }),
+      );
+    case 'assign':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/products/{product_id}/assign', {
+          ...p,
+          body: { unit_id: a.unit_id },
+        }),
+      );
+    case 'unassign':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/products/{product_id}/unassign', {
+          ...p,
+          body: { unit_id: a.unit_id },
+        }),
+      );
+    case 'marketing':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/products/{product_id}/marketing', {
+          ...p,
+          body: { budget_cents: a.budget_cents },
+        }),
+      );
+    case 'launch':
+      return unwrap(await api.POST('/api/saves/{save_id}/products/{product_id}/launch', p));
+    case 'sunset':
+      return unwrap(await api.POST('/api/saves/{save_id}/products/{product_id}/sunset', p));
+    case 'cancel':
+      return unwrap(await api.POST('/api/saves/{save_id}/products/{product_id}/cancel', p));
+  }
+}
+
+export function useProductAction(saveId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, action }: { productId: number; action: ProductAction }) =>
+      applyProductAction(saveId, productId, action),
+    // A cancelled product no longer exists: do not refetch its own page.
+    onSuccess: (_out, { productId, action }) =>
+      client.invalidateQueries({
+        queryKey: keys.save(saveId),
+        predicate: (q) =>
+          !(
+            action.action === 'cancel' &&
+            q.queryKey[2] === 'product' &&
+            q.queryKey[3] === productId
+          ),
+      }),
   });
 }

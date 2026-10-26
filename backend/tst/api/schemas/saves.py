@@ -138,3 +138,6 @@ class OverviewOut(BaseModel):
     org: OrgTileOut | None = None
     mrr_cents: int = Field(default=0, description="Revenue in the last closed month (M3a)")
     arr_cents: int = Field(default=0, description="12 x MRR")
+    month_revenue_cents: int = Field(
+        default=0, description="This month's revenue at the current customers and prices (M3b)"
+    )

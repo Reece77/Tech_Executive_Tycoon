@@ -272,7 +272,8 @@ export interface paths {
         };
         /**
          * Get Inbox
-         * @description Newest first. `limit` and `offset` page through a long inbox (M2b).
+         * @description Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to
+         *     keep only those message kinds, across every page (M3b).
          */
         get: operations["getInbox"];
         put?: never;
@@ -677,6 +678,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/portfolio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Portfolio
+         * @description The Products screen's tiles: MRR and its change, ARR, customers, hosting and
+         *     marketing this month.
+         */
+        get: operations["getPortfolio"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/products": {
         parameters: {
             query?: never;
@@ -997,6 +1019,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meta/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Products Meta
+         * @description Energy costs and launch thresholds for the product screens (formulas.md 6, 11.2).
+         */
+        get: operations["getProductsMeta"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1006,6 +1048,20 @@ export interface components {
             energy: components["schemas"]["EnergyOut"];
             /** Unread Inbox */
             unread_inbox: number;
+        };
+        /**
+         * AppealWeightsOut
+         * @description How a segment's buyers weigh the four scores (formulas.md 11.6); they sum to 1.
+         */
+        AppealWeightsOut: {
+            /** Quality */
+            quality: number;
+            /** Price */
+            price: number;
+            /** Brand */
+            brand: number;
+            /** Features */
+            features: number;
         };
         /** AssignIn */
         AssignIn: {
@@ -1114,6 +1170,12 @@ export interface components {
              * @description Hosting cost per customer per month
              */
             hosting_cents: number;
+            weights: components["schemas"]["AppealWeightsOut"];
+            /**
+             * Counts Users
+             * @description Customers are consumer users, not businesses
+             */
+            counts_users: boolean;
         };
         /** ChangePreviewOut */
         ChangePreviewOut: {
@@ -1598,6 +1660,11 @@ export interface components {
             category: string;
             /** Label */
             label: string;
+            /**
+             * Annual Growth
+             * @description Addressable demand growth per year (fraction)
+             */
+            annual_growth: number;
             /** Segments */
             segments: components["schemas"]["MarketSegmentOut"][];
         };
@@ -1623,6 +1690,8 @@ export interface components {
             brand: number;
             /** Price Cents */
             price_cents: number;
+            /** Price Score */
+            price_score: number;
             /** Appeal */
             appeal: number;
             /** Customers */
@@ -1658,6 +1727,24 @@ export interface components {
              * @description Customers of every product in the segment
              */
             served: number;
+            /**
+             * Unserved
+             * @description Addressable customers who use no product yet
+             */
+            unserved: number;
+            /**
+             * Reference Price Cents
+             * @description The segment's typical monthly price
+             */
+            reference_price_cents: number;
+            weights: components["schemas"]["AppealWeightsOut"];
+            /** Counts Users */
+            counts_users: boolean;
+            /**
+             * Player Sells
+             * @description The player has a product selling here
+             */
+            player_sells: boolean;
             /**
              * Products
              * @description Most customers first
@@ -2046,6 +2133,12 @@ export interface components {
              * @default 0
              */
             arr_cents?: number;
+            /**
+             * Month Revenue Cents
+             * @description This month's revenue at the current customers and prices (M3b)
+             * @default 0
+             */
+            month_revenue_cents?: number;
         };
         /**
          * PayPreviewOut
@@ -2278,6 +2371,53 @@ export interface components {
             /** Summary */
             summary: string;
         };
+        /**
+         * PortfolioOut
+         * @description The Products screen's tiles: the company's revenue and product costs.
+         */
+        PortfolioOut: {
+            /**
+             * Mrr Cents
+             * @description Revenue in the last closed month
+             */
+            mrr_cents: number;
+            /**
+             * Mrr Change
+             * @description Against the month before, as a fraction
+             */
+            mrr_change: number | null;
+            /**
+             * Previous Label
+             * @description The month compared against, e.g. 'May'
+             */
+            previous_label: string | null;
+            /** Arr Cents */
+            arr_cents: number;
+            /** Stage */
+            stage: number;
+            /** Stage Label */
+            stage_label: string;
+            /**
+             * Paying Customers
+             * @description Business customers across products now
+             */
+            paying_customers: number;
+            /**
+             * Consumer Users
+             * @description Consumer users across products now
+             */
+            consumer_users: number;
+            /**
+             * Hosting Cents
+             * @description Hosting this month at the current customers
+             */
+            hosting_cents: number;
+            /**
+             * Marketing Cents
+             * @description Marketing budgets this month
+             */
+            marketing_cents: number;
+        };
         /** PresetOut */
         PresetOut: {
             /** Key */
@@ -2316,10 +2456,19 @@ export interface components {
              * @description share* among live products and no purchase, 0-1
              */
             choice_share: number;
+            /** Current Price Cents */
+            current_price_cents: number | null;
+            /** Current Price Score */
+            current_price_score: number | null;
             /** Current Appeal */
             current_appeal: number | null;
             /** Current Choice Share */
             current_choice_share: number | null;
+            /**
+             * Revenue Per Customer Change
+             * @description New price against the current one, as a fraction; null without a price
+             */
+            revenue_per_customer_change: number | null;
         };
         /** ProductActionOut */
         ProductActionOut: {
@@ -2382,8 +2531,47 @@ export interface components {
             created_turn: number;
             /** Launched Turn */
             launched_turn: number | null;
+            /**
+             * Launched Label
+             * @description Launch month, e.g. 'Sep 2010'
+             */
+            launched_label: string | null;
             /** Mrr Cents */
             mrr_cents: number;
+            /**
+             * Mrr Change
+             * @description Revenue in the last closed month against the month before, as a fraction
+             */
+            mrr_change: number | null;
+            /**
+             * Customers
+             * @description Customers (or users) across its segments now
+             */
+            customers: number;
+            /**
+             * Customer Trend
+             * @description Month-on-month change in customers at the last month end, as a fraction
+             */
+            customer_trend: number | null;
+            /** New Last Month */
+            new_last_month: number;
+            /** Churned Last Month */
+            churned_last_month: number;
+            /**
+             * Hosting Cents
+             * @description Hosting this month at the current customers
+             */
+            hosting_cents: number;
+            /**
+             * Brand Trend
+             * @description rising | falling | steady, from the last two months
+             */
+            brand_trend: string;
+            /**
+             * Counts Users
+             * @description Every segment counts consumer users
+             */
+            counts_users: boolean;
             /** Segments */
             segments: components["schemas"]["ProductSegmentOut"][];
             /** Assigned Units */
@@ -2421,6 +2609,11 @@ export interface components {
             reach: string;
             /** Price Cents */
             price_cents: number | null;
+            /**
+             * Price Score
+             * @description Null until a price is set
+             */
+            price_score: number | null;
             /** Customers */
             customers: number;
             /**
@@ -2438,10 +2631,44 @@ export interface components {
             /** Mrr Cents */
             mrr_cents: number;
             /**
+             * New Last Month
+             * @description New customers in the last closed month
+             */
+            new_last_month: number;
+            /**
+             * Churned Last Month
+             * @description Customers lost in the last closed month
+             */
+            churned_last_month: number;
+            /** Counts Users */
+            counts_users: boolean;
+            /**
              * Note
              * @description 'Sales capacity limited new customers in <segment>' when it bound
              */
             note: string | null;
+        };
+        /**
+         * ProductsMetaOut
+         * @description Energy costs and launch thresholds for the product screens (formulas.md 6, 11.2).
+         */
+        ProductsMetaOut: {
+            /**
+             * Energy Costs
+             * @description By action key, e.g. create_product
+             */
+            energy_costs: {
+                [key: string]: number;
+            };
+            /**
+             * Start Quality
+             * @description A new product's quality
+             */
+            start_quality: number;
+            /** Launch Min Quality */
+            launch_min_quality: number;
+            /** Launch Min Feature */
+            launch_min_feature: number;
         };
         /** RaiseIn */
         RaiseIn: {
@@ -2675,6 +2902,13 @@ export interface components {
              * @description People in this unit and every unit below it
              */
             headcount: number;
+            /**
+             * Product Id
+             * @description The product it works on (M3)
+             */
+            product_id?: number | null;
+            /** Product Name */
+            product_name?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -3672,6 +3906,7 @@ export interface operations {
         parameters: {
             query?: {
                 unread_only?: boolean;
+                kind?: string[] | null;
                 limit?: number | null;
                 offset?: number;
             };
@@ -5123,6 +5358,64 @@ export interface operations {
             };
         };
     };
+    getPortfolio: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     listProducts: {
         parameters: {
             query?: never;
@@ -6025,6 +6318,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    getProductsMeta: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductsMetaOut"];
                 };
             };
         };
