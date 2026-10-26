@@ -2417,6 +2417,11 @@ export interface components {
              * @description Marketing budgets this month
              */
             marketing_cents: number;
+            /**
+             * Product Costs Cents
+             * @description Hosting plus marketing this month
+             */
+            product_costs_cents: number;
         };
         /** PresetOut */
         PresetOut: {

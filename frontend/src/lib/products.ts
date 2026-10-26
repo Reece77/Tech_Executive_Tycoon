@@ -1,5 +1,6 @@
 // Product display helpers: labels and number text for values the API sends (M3b).
 // No game value is computed here; fractions arrive from the API and are only formatted.
+import { formatMoneyWhole } from './format';
 
 const countFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 const MINUS = '−'; // U+2212, as the wireframes print negatives
@@ -97,3 +98,35 @@ export const BRAND_TREND_TEXT: Record<string, string> = {
   falling: 'and falling',
   steady: 'and holding',
 };
+
+// Score bars: the player's products in accent blue, competitors in greys.
+export const COMPETITOR_COLORS = ['#D5DBE3', '#6B7686', '#9BA7B6', '#4A5363', '#B8C0CC'];
+
+/** Bar colors in item order: accent for the player's, then the grey cycle for the rest. */
+export function barColors(items: readonly { mine: boolean }[]): string[] {
+  let other = 0;
+  return items.map((item) =>
+    item.mine ? 'var(--tst-accent)' : COMPETITOR_COLORS[other++ % COMPETITOR_COLORS.length],
+  );
+}
+
+/** "621,600 businesses · 122,900 use a product, 498,700 do not yet · typical price $50". */
+export function segmentSummary(s: {
+  addressable: number;
+  served: number;
+  unserved: number;
+  reference_price_cents: number;
+  reach: string;
+  player_sells: boolean;
+  counts_users: boolean;
+}): string {
+  const noun = s.counts_users ? 'users' : 'businesses';
+  const parts = [
+    `${formatCount(s.addressable)} ${noun}`,
+    `${formatCount(s.served)} use a product, ${formatCount(s.unserved)} do not yet`,
+    `typical price ${formatMoneyWhole(s.reference_price_cents)}`,
+  ];
+  if (s.reach === 'sales') parts.push('sales-led');
+  if (!s.player_sells) parts.push('you do not sell here');
+  return parts.join(' · ');
+}

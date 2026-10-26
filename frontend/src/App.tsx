@@ -8,6 +8,7 @@ import { OverviewScreen } from './screens/OverviewScreen';
 import { PeopleScreen } from './screens/PeopleScreen';
 import { PersonScreen } from './screens/PersonScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
+import { ProductsScreen } from './screens/ProductsScreen';
 import { RecruitmentScreen } from './screens/RecruitmentScreen';
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="people/:personId" element={<PersonScreen />} />
           <Route path="recruitment" element={<RecruitmentScreen />} />
           <Route path="org" element={<OrgScreen />} />
+          <Route path="products" element={<ProductsScreen />} />
           <Route path=":section" element={<PlaceholderScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

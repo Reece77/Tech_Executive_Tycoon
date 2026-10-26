@@ -8088,6 +8088,11 @@
             "type": "integer",
             "title": "Marketing Cents",
             "description": "Marketing budgets this month"
+          },
+          "product_costs_cents": {
+            "type": "integer",
+            "title": "Product Costs Cents",
+            "description": "Hosting plus marketing this month"
           }
         },
         "type": "object",
@@ -8101,7 +8106,8 @@
           "paying_customers",
           "consumer_users",
           "hosting_cents",
-          "marketing_cents"
+          "marketing_cents",
+          "product_costs_cents"
         ],
         "title": "PortfolioOut",
         "description": "The Products screen's tiles: the company's revenue and product costs."

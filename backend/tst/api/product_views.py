@@ -405,6 +405,7 @@ def portfolio_out(
         consumer_users=users,
         hosting_cents=hosting,
         marketing_cents=marketing,
+        product_costs_cents=hosting + marketing,
     )
 
 

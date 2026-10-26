@@ -1,7 +1,6 @@
 // One score (quality, features, brand, price or appeal) with a bar per product in a segment:
 // the player's products in accent blue, competitors in greys (Product profile wireframe).
-
-export const COMPETITOR_COLORS = ['#D5DBE3', '#6B7686', '#9BA7B6', '#4A5363', '#B8C0CC'];
+import { barColors } from '../lib/products';
 
 export interface ScoreBarItem {
   key: string;
@@ -9,14 +8,6 @@ export interface ScoreBarItem {
   value: number; // 0-100 from the API
   text: string; // what is printed beside the bar, e.g. "$40 · 62"
   mine: boolean;
-}
-
-/** Bar colors in item order: accent for the player's, then the grey cycle for the rest. */
-export function barColors(items: readonly { mine: boolean }[]): string[] {
-  let other = 0;
-  return items.map((item) =>
-    item.mine ? 'var(--tst-accent)' : COMPETITOR_COLORS[other++ % COMPETITOR_COLORS.length],
-  );
 }
 
 export function ScoreBar({

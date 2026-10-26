@@ -9,19 +9,6 @@ import { DataTable } from './DataTable';
 
 const helper = createColumnHelper<GameTableFeatures, MarketProduct>();
 
-/** "621,600 businesses · 122,900 use a product, 498,700 do not yet · typical price $50". */
-export function segmentSummary(s: MarketSegment): string {
-  const noun = s.counts_users ? 'users' : 'businesses';
-  const parts = [
-    `${formatCount(s.addressable)} ${noun}`,
-    `${formatCount(s.served)} use a product, ${formatCount(s.unserved)} do not yet`,
-    `typical price ${formatMoneyWhole(s.reference_price_cents)}`,
-  ];
-  if (s.reach === 'sales') parts.push('sales-led');
-  if (!s.player_sells) parts.push('you do not sell here');
-  return parts.join(' · ');
-}
-
 /** Every product selling in one segment, sorted by appeal; the player's rows highlighted. */
 export function MarketTable({
   segment,

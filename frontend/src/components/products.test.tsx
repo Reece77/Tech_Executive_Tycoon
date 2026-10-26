@@ -12,10 +12,12 @@ import {
   formatSignedPercent,
   lifecycleText,
   paceText,
+  barColors,
+  segmentSummary,
   weightsText,
 } from '../lib/products';
-import { MarketTable, segmentSummary } from './MarketTable';
-import { barColors, ScoreBar } from './ScoreBar';
+import { MarketTable } from './MarketTable';
+import { ScoreBar } from './ScoreBar';
 import { SegmentTable } from './SegmentTable';
 
 const wrap = (node: ReactNode) =>

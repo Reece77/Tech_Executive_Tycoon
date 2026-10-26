@@ -226,6 +226,7 @@ class PortfolioOut(BaseModel):
     consumer_users: float = Field(description="Consumer users across products now")
     hosting_cents: int = Field(description="Hosting this month at the current customers")
     marketing_cents: int = Field(description="Marketing budgets this month")
+    product_costs_cents: int = Field(description="Hosting plus marketing this month")
 
 
 class ProductsMetaOut(BaseModel):

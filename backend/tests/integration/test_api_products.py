@@ -168,6 +168,7 @@ def screens_get_what_they_show(
     assert portfolio["consumer_users"] == 0
     assert portfolio["hosting_cents"] == product["hosting_cents"]
     assert portfolio["marketing_cents"] == 1_000_000
+    assert portfolio["product_costs_cents"] == portfolio["hosting_cents"] + 1_000_000
     assert portfolio["previous_label"] is not None and portfolio["stage_label"]
     assert overview["month_revenue_cents"] == product["mrr_cents"]
 
