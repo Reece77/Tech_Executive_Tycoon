@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Board</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:16px 18px}
+.ptitle{margin:0 0 10px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.tab{font-family:inherit;font-size:14px;color:#C9D1DB;background:transparent;border:0;border-bottom:2px solid transparent;padding:10px 4px;min-height:44px;cursor:pointer}
+.tab[aria-selected="true"]{color:#E8ECF1;border-bottom-color:#5AA2FF;font-weight:600}
+th{font-size:11px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:9px 10px;border-bottom:1px solid #2A3442;white-space:nowrap}
+td{font-size:14px;padding:10px 10px;border-bottom:1px solid #1F2732;white-space:nowrap}
+.tile{flex:1 1 150px;background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:12px 16px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Mar 2013</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$4,120,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px">86 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">80 / 100</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 80%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Main.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">8</span>Competitors<span class="soon">M5</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Finance</h1>
+      <div role="tablist" aria-label="Finance" style="display: flex; flex-wrap: wrap; gap: 22px; border-bottom: 1px solid #2A3442">
+        <a role="tab" aria-selected="false" class="tab" href="Finance.dc.html" style="text-decoration: none">Statements</a>
+        <a role="tab" aria-selected="false" class="tab" href="CapTable.dc.html" style="text-decoration: none">Cap table</a>
+        <a role="tab" aria-selected="false" class="tab" href="Fundraising.dc.html" style="text-decoration: none">Fundraising</a>
+        <a role="tab" aria-selected="true" class="tab" href="Board.dc.html" style="text-decoration: none">Board</a>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+        <div class="tile"><div class="meta">Board confidence</div><div style="font-size: 22px; font-weight: 600">Steady <span class="num" style="font-size: 16px; color: #C9D1DB">62</span></div><div class="meta" style="font-size: 12px">Average of the investor directors · slipping</div></div>
+        <div class="tile"><div class="meta">Seats</div><div class="num" style="font-size: 22px; font-weight: 600">2 common · 2 investor</div><div class="meta" style="font-size: 12px">A tie keeps you in charge</div></div>
+        <div class="tile"><div class="meta">They expect</div><div class="num" style="font-size: 22px; font-weight: 600">150% a year</div><div class="meta" style="font-size: 12px">MRR growth after a Series A · you are at 99%</div></div>
+        <div class="tile"><div class="meta">Next meeting</div><div class="num" style="font-size: 22px; font-weight: 600">Jun 2013</div><div class="meta" style="font-size: 12px">Quarterly</div></div>
+      </div>
+      <section aria-label="Directors" style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">Directors</h2>
+        <div style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse">
+            <thead><tr><th>Director</th><th>Seat</th><th>Since</th><th>Confidence</th><th>Last 6 months</th><th>Months below 25</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight: 600">Jordan Hale (you)</td><td style="color: #C9D1DB">Common · founder</td><td class="num" style="color: #C9D1DB">Nov 2010</td><td class="meta">—</td><td class="meta">—</td><td class="meta">—</td></tr>
+              <tr><td style="font-weight: 600"><a href="ProfileOrg.dc.html" style="text-decoration: none">Priya Raman</a></td><td style="color: #C9D1DB">Common · your nominee</td><td class="num" style="color: #C9D1DB">Aug 2012</td><td class="meta">—</td><td class="meta">—</td><td class="meta">—</td></tr>
+              <sc-for list="{{directors}}" as="d" hint-placeholder-count="2">
+                <tr>
+                  <td style="font-weight: 600">{{d.name}}</td>
+                  <td style="color: #C9D1DB">{{d.seat}}</td>
+                  <td class="num" style="color: #C9D1DB">{{d.since}}</td>
+                  <td><span style="display: flex; align-items: center; gap: 8px"><span class="num" style="width: 24px">{{d.conf}}</span><span style="width: 90px; height: 6px; background: #263040; border-radius: 3px"><span style="{{d.bar}}"></span></span><span style="font-size: 13px; color: #C9D1DB">{{d.label}}</span></span></td>
+                  <td><svg viewBox="0 0 100 24" role="img" aria-label="{{d.trendLabel}}" style="width: 100px; height: 24px"><polyline points="{{d.points}}" fill="none" stroke="#5AA2FF" stroke-width="2"></polyline></svg></td>
+                  <td class="num">0</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin: 0; font-size: 12px; color: #9BA7B6">Confidence follows your growth against what the board expects and how much runway you have. If a majority of seats loses confidence (below 25 for three months), they can remove you. That is possible only once investors and an independent director outnumber the common seats, after a Series B.</p>
+      </section>
+      <section class="panel" aria-label="Last board meeting" style="display: flex; flex-direction: column; gap: 8px">
+        <h2 class="ptitle" style="margin: 0">Last board meeting · Mar 2013</h2>
+        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #E8ECF1">Revenue grew 19% over the quarter to $268,000 a month, a 99% annual pace against the 150% the board expects after a Series A. Runway is comfortable at 86 months. David Reyes asked for faster mid-market growth; Ellen Marsh is content to wait.</p>
+        <span class="meta">Confidence 64 → 62. No warning.</span>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const bar = (v) => 'display: block; height: 6px; border-radius: 3px; width: ' + v + '%; background: ' + (v < 25 ? '#F5A25D' : v < 40 ? '#F5C451' : '#5AA2FF');
+    const pts = (vals) => vals.map((v, i) => (5 + i * 18) + ',' + (22 - v * 0.2).toFixed(1)).join(' ');
+    const directors = [
+      { name: 'Ellen Marsh', seat: 'Investor · First Round Capital', since: 'Nov 2010', conf: 66, label: 'Steady', trend: [70, 69, 68, 67, 67, 66] },
+      { name: 'David Reyes', seat: 'Investor · Andreessen Horowitz', since: 'Aug 2012', conf: 58, label: 'Steady', trend: [70, 67, 64, 62, 60, 58] }
+    ].map((d) => ({ ...d, bar: bar(d.conf), points: pts(d.trend), trendLabel: d.name + "'s confidence went from " + d.trend[0] + ' to ' + d.conf }));
+    return { directors };
+  }
+}
+</script>
+</body>
+</html>

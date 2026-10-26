@@ -1,4 +1,4 @@
-# Wireframes (M1, M2b and M3b)
+# Wireframes (M1, M2b, M3b and M4b)
 
 Six desktop screens, built in M1c: New-game setup, Inbox, Overview, People, Person profile, and Recruitment with the offer panel. The editable canvas is the Claude Design artifact "Tech Startup Tycoon M1b Wireframes" (ask Reece for the link). The artboard sources are copied in `docs/wireframes/source/` for reference; they use the design canvas's runtime and are not meant to run in the app.
 
@@ -86,11 +86,34 @@ Three artboards in the canvas's third row: **Products**, **Product profile**, an
 - *Recruitment:* a Scout button on each search row for the founder ("Scout · 20"), which narrows every open candidate in that search.
 - *Inbox:* a **Product** kind badge (teal, `#5FD4C4` on `#123331`) for launches, first customers, ARR milestones and capacity notes; filters and the unread count apply across all pages.
 
+## M4b screens
+
+Five artboards in the canvas's fourth and fifth rows: the four **Finance** tabs (**Statements**, **Cap table**, **Fundraising**, **Board**) and the **Game over** screen. The Kestrel example follows `docs/formulas.md` §14.10: a $500,000 SAFE at a $5M cap (April 2010), a $2M seed at $6M pre from First Round Capital (November 2010), and a $5M Series A at $18.3M pre from Andreessen Horowitz (August 2012). Cap-table shares, percentages, the pool top-up, vesting and fees are exact; statement amounts are illustrative but add up.
+
+**Shell change.** Nav key 7, Finance, is live. The top bar's runway shows "Profitable" when the projection is positive, and an orange **Insolvent** badge while cash is negative (it links to an open bridge offer).
+
+**Statements.** Period toggle (month, quarter, year) and "in thousands of dollars". The P&L shows six periods side by side: revenue, hosting as cost of revenue, gross margin, each operating expense, operating expenses, and net result (negatives in orange with a minus sign). Below: the balance sheet at the period end (cash, total assets, SAFEs outstanding, total liabilities, common and preferred paid in, accumulated result, and liabilities plus equity equal to assets), the cash flow (operating, financing, change in cash, burn) with a note on how runway is computed, and a 12-month chart of cash and burn on separate scales.
+
+**Cap table.** Tiles: fully diluted shares, share price (last priced round), post-money valuation, and the founder's ownership. Holders table: holder, class, shares, percentage with a bar (founder in accent, investors in light grey, granted options in green, the unallocated pool in dark grey) and a total row. "Your ownership over time": each event with the founder's percentage. Employee options: granted, vested and unallocated totals and the vesting rule; per person the grant month, options, vested, unvested and the next vesting date (the cliff highlighted in gold).
+
+**Fundraising.** The open round: series, start month and when it lapses, ARR against the series gate, the typical raise, and how many firms answered. Term sheets table: firm, pre-money, amount, post-money, "you own after", board seat, expiry, and Preview. Selecting one opens the **dilution preview**: amount, price and new shares, then each holder's percentage now, after and the change, the pool top-up, the board after closing (with who controls a tie), legal fees, and Accept (energy 5) with the note that it closes at Continue. Beside it, **Raise on a SAFE**: amount, post-money cap, the hint band ("Likely", "Uncertain", "Unlikely") with one line on how SAFEs answer, and Raise (disabled with the reason while a priced round is open). "Past rounds and SAFEs" lists each with its terms and outcome. When no round can be started yet, the series gate says what is missing (for example "Series B needs ARR of $5M; you are at $3.2M").
+
+**Board.** Tiles: confidence as a label and number with its direction, seats by kind and who controls a tie, the growth the board expects against actual, and the next quarterly meeting. Directors table: founder and common nominee (no confidence), then each investor or independent director with seat, firm, start month, confidence (bar coloured by band: below 25 orange, 25–39 gold, 40+ accent) and label, a six-month sparkline, and months below 25. A paragraph explains how removal works and when it becomes possible. "Last board meeting" shows the quarterly summary and the confidence change, with any formal warning.
+
+**Game over.** No nav; the top bar shows the company, date, final cash, a Game over badge and New game. A headline with the reason and month (bankruptcy, or removal by the board), a sentence on what happened (including a lapsed bridge), tiles for how long the company lasted, final ARR, peak and final headcount and the founder's ownership, the last six months as a timeline, and links to read the save (Statements, Cap table, Inbox, People). For a removal the screen names the directors who voted and shows their confidence.
+
+**Not drawn (text only):**
+- *Offer dialog:* equity shows options and percentage of fully diluted shares, and what is left in the pool.
+- *Profile:* the contract panel gains granted, vested and unvested options and the next vesting date.
+- *Overview:* a Funding tile (last round, post-money, founder ownership, board confidence label).
+- *Inbox:* a **Finance** kind badge (gold, `#F5C451` on `#3A2F16`) for SAFE answers, term sheets, closings, board meetings, warnings, insolvency and bridges.
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).
 - The offer hint uses only known values (`docs/formulas.md` §7).
 - Actions apply at once and spend energy; offers resolve at Continue (ADR-0014). An offer needs an interview first (ADR-0016).
 - Never show a product's quality cap, anyone's output or capacity numbers (`docs/formulas.md` §11.13).
+- Never show investors' base value, a firm's bias or noise, or a SAFE's acceptance probability (`docs/formulas.md` §14.9).
 - The front end never computes a game value: spans, manager labels, morale terms and previews all come from the API (`CLAUDE.md` §7).
 - Touch targets at least 44 px for primary buttons; real buttons, links, and labelled inputs.

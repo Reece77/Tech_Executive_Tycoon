@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cap table</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:16px 18px}
+.ptitle{margin:0 0 10px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.tab{font-family:inherit;font-size:14px;color:#C9D1DB;background:transparent;border:0;border-bottom:2px solid transparent;padding:10px 4px;min-height:44px;cursor:pointer}
+.tab[aria-selected="true"]{color:#E8ECF1;border-bottom-color:#5AA2FF;font-weight:600}
+th{font-size:11px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:9px 10px;border-bottom:1px solid #2A3442;white-space:nowrap}
+td{font-size:14px;padding:8px 10px;border-bottom:1px solid #1F2732;white-space:nowrap}
+.r{text-align:right}
+.tile{flex:1 1 150px;background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:12px 16px}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Mar 2013</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$4,120,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px">86 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">80 / 100</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 80%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Main.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">8</span>Competitors<span class="soon">M5</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Finance</h1>
+      <div role="tablist" aria-label="Finance" style="display: flex; flex-wrap: wrap; gap: 22px; border-bottom: 1px solid #2A3442">
+        <a role="tab" aria-selected="false" class="tab" href="Finance.dc.html" style="text-decoration: none">Statements</a>
+        <a role="tab" aria-selected="true" class="tab" href="CapTable.dc.html" style="text-decoration: none">Cap table</a>
+        <a role="tab" aria-selected="false" class="tab" href="Fundraising.dc.html" style="text-decoration: none">Fundraising</a>
+        <a role="tab" aria-selected="false" class="tab" href="Board.dc.html" style="text-decoration: none">Board</a>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+        <div class="tile"><div class="meta">Fully diluted shares</div><div class="num" style="font-size: 22px; font-weight: 600">22,633,308</div></div>
+        <div class="tile"><div class="meta">Share price (Series A)</div><div class="num" style="font-size: 22px; font-weight: 600">$1.0295</div></div>
+        <div class="tile"><div class="meta">Post-money valuation</div><div class="num" style="font-size: 22px; font-weight: 600">$23.3M</div><div class="meta" style="font-size: 12px">Series A, Aug 2012</div></div>
+        <div class="tile"><div class="meta">You own</div><div class="num" style="font-size: 22px; font-weight: 600">39.76%</div><div class="meta" style="font-size: 12px">9,000,000 common shares</div></div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <section aria-label="Holders" style="flex: 3 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 600">Holders</h2>
+          <div style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse">
+              <thead><tr><th>Holder</th><th>Class</th><th class="r">Shares</th><th class="r">Fully diluted</th><th style="width: 160px"></th></tr></thead>
+              <tbody>
+                <sc-for list="{{holders}}" as="h" hint-placeholder-count="6">
+                  <tr><td style="font-weight: 600">{{h.name}}</td><td style="color: #C9D1DB">{{h.cls}}</td><td class="num r">{{h.shares}}</td><td class="num r">{{h.pct}}</td><td><span style="display: block; height: 8px; background: #1B232E; border-radius: 4px"><span style="{{h.bar}}"></span></span></td></tr>
+                </sc-for>
+                <tr><td style="font-weight: 700">Total</td><td></td><td class="num r" style="font-weight: 700">22,633,308</td><td class="num r" style="font-weight: 700">100.00%</td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin: 0; font-size: 12px; color: #9BA7B6">The SAFE converted at the seed round: its holders own 10% of the company as it stood just before the seed money came in. Each priced round tops the unallocated pool back up to 10%.</p>
+        </section>
+        <section class="panel" aria-label="Dilution history" style="flex: 2 1 320px">
+          <h2 class="ptitle">Your ownership over time</h2>
+          <sc-for list="{{history}}" as="e" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: 1fr 70px; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid #1F2732">
+              <span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 14px">{{e.event}}</span><span style="display: block; height: 6px; background: #1B232E; border-radius: 3px"><span style="{{e.bar}}"></span></span></span>
+              <span class="num" style="text-align: right">{{e.pct}}</span>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+      <section aria-label="Employee options" style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 600">Employee options</h2>
+          <span class="meta">1,200,000 granted · 412,500 vested · 2,263,331 unallocated · 4-year vesting with a 1-year cliff</span>
+        </div>
+        <div style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse">
+            <thead><tr><th>Person</th><th>Granted</th><th class="r">Options</th><th class="r">Vested</th><th class="r">Unvested</th><th>Next vesting</th></tr></thead>
+            <tbody>
+              <sc-for list="{{grants}}" as="g" hint-placeholder-count="4">
+                <tr><td><a href="ProfileOrg.dc.html" style="font-weight: 600; text-decoration: none">{{g.name}}</a></td><td class="num" style="color: #C9D1DB">{{g.when}}</td><td class="num r">{{g.options}}</td><td class="num r">{{g.vested}}</td><td class="num r">{{g.unvested}}</td><td style="{{g.nextStyle}}">{{g.next}}</td></tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin: 0; font-size: 12px; color: #9BA7B6">Unvested options are worth staying for: at the current share price they make people less likely to resign. Showing 4 of 22 holders.</p>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const bar = (p, c) => 'display: block; height: 8px; border-radius: 4px; background: ' + c + '; width: ' + p + '%';
+    const raw = [
+      { name: 'Jordan Hale (you)', cls: 'Common', shares: '9,000,000', p: 39.76, c: '#5AA2FF' },
+      { name: 'Andreessen Horowitz', cls: 'Series A preferred', shares: '4,856,933', p: 21.46, c: '#D5DBE3' },
+      { name: 'First Round Capital', cls: 'Seed preferred', shares: '4,086,957', p: 18.06, c: '#D5DBE3' },
+      { name: 'SAFE holders (angels)', cls: 'Seed preferred (converted SAFE)', shares: '1,226,087', p: 5.42, c: '#D5DBE3' },
+      { name: 'Employees', cls: 'Options granted', shares: '1,200,000', p: 5.30, c: '#6FCF8E' },
+      { name: 'Option pool', cls: 'Unallocated', shares: '2,263,331', p: 10.00, c: '#6B7686' }
+    ];
+    const holders = raw.map((h) => ({ ...h, pct: h.p.toFixed(2) + '%', bar: bar(h.p, h.c) }));
+    const history = [
+      { event: 'Founded, Jan 2010', p: 90.0 },
+      { event: 'SAFE, $500,000 at a $5M cap, Apr 2010 (converts later)', p: 90.0 },
+      { event: 'Seed, $2M at $6M pre, Nov 2010', p: 55.05 },
+      { event: 'Series A, $5M at $18.3M pre, Aug 2012', p: 39.76 }
+    ].map((e) => ({ ...e, pct: e.p.toFixed(2) + '%', bar: 'display: block; height: 6px; border-radius: 3px; background: #5AA2FF; width: ' + e.p + '%' }));
+    const grants = [
+      { name: 'Priya Raman', when: 'Feb 2010', options: '250,000', vested: '192,708', unvested: '57,292', next: 'Apr 2013 · 5,208', soon: true },
+      { name: 'Marcus Ode', when: 'Mar 2010', options: '150,000', vested: '112,500', unvested: '37,500', next: 'Apr 2013 · 3,125' },
+      { name: 'Kofi Mensah', when: 'Jul 2010', options: '50,000', vested: '33,333', unvested: '16,667', next: 'Apr 2013 · 1,042' },
+      { name: 'Nadia Karim', when: 'Jun 2012', options: '40,000', vested: '0', unvested: '40,000', next: 'Cliff in Jun 2013 · 10,000', cliff: true }
+    ].map((g) => ({ ...g, nextStyle: g.cliff ? 'color: #F5C451; font-size: 13px' : 'color: #C9D1DB; font-size: 13px' }));
+    return { holders, history, grants };
+  }
+}
+</script>
+</body>
+</html>

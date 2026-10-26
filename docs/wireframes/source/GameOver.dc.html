@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Game over</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.meta{font-size:13px;color:#9BA7B6}
+.tile{flex:1 1 160px;background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:14px 18px}
+.link{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:#151B23;border:1px solid #2A3442;border-radius:8px;text-decoration:none;color:#E8ECF1;font-size:15px;min-height:44px;box-sizing:border-box}
+.link:hover{background:#1B232E}
+.row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Harrier Labs</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 1 · Garage startup</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Sep 2011</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; color: #F5A25D">−$61,200</span></div>
+      <span style="font-size: 12px; font-weight: 700; color: #0E1217; background: #F5A25D; border-radius: 4px; padding: 4px 10px">Game over</span>
+      <a href="Setup.dc.html" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border-radius: 8px; padding: 12px 24px; min-height: 44px; box-sizing: border-box; text-decoration: none; display: inline-flex; align-items: center">New game</a>
+    </div>
+  </header>
+  <main style="flex: 1; width: 100%; max-width: 980px; margin: 0 auto; padding: 40px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 13px; font-weight: 600; color: #F5A25D; text-transform: uppercase; letter-spacing: .08em">Bankrupt · September 2011</span>
+      <h1 style="margin: 0; font-size: 34px; font-weight: 700; line-height: 1.2">Harrier Labs ran out of money</h1>
+      <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #C9D1DB">Cash stayed below zero at three month-ends in a row, July to September 2011. Your seed investor offered a $150,000 bridge in July; it lapsed in August without an answer.</p>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 12px">
+      <div class="tile"><div class="meta">Lasted</div><div class="num" style="font-size: 24px; font-weight: 600">21 months</div><div class="meta" style="font-size: 12px">Jan 2010 to Sep 2011</div></div>
+      <div class="tile"><div class="meta">ARR at the end</div><div class="num" style="font-size: 24px; font-weight: 600">$84,000</div><div class="meta" style="font-size: 12px">1 product, 140 customers</div></div>
+      <div class="tile"><div class="meta">Peak headcount</div><div class="num" style="font-size: 24px; font-weight: 600">11</div><div class="meta" style="font-size: 12px">9 at the end</div></div>
+      <div class="tile"><div class="meta">You owned</div><div class="num" style="font-size: 24px; font-weight: 600">61.4%</div><div class="meta" style="font-size: 12px">after a SAFE and a seed</div></div>
+    </div>
+    <section style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; padding: 16px 18px" aria-label="Last six months">
+      <h2 style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">The last six months</h2>
+      <div class="row"><span>Apr 2011</span><span style="color: #C9D1DB">Hired 3 engineers; monthly burn passed $70,000</span></div>
+      <div class="row"><span>Jun 2011</span><span style="color: #C9D1DB">A $400,000 SAFE at a $6M cap was declined</span></div>
+      <div class="row"><span>Jul 2011</span><span style="color: #F5A25D">Insolvent: cash −$9,800 · bridge offered</span></div>
+      <div class="row"><span>Aug 2011</span><span style="color: #F5A25D">Insolvent: cash −$36,500 · bridge lapsed</span></div>
+      <div class="row" style="border-bottom: 0"><span>Sep 2011</span><span style="color: #F5A25D">Bankrupt: cash −$61,200</span></div>
+    </section>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span class="meta">The save is kept and stays readable.</span>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px">
+        <a class="link" href="Finance.dc.html">Statements <span aria-hidden="true">→</span></a>
+        <a class="link" href="CapTable.dc.html">Cap table <span aria-hidden="true">→</span></a>
+        <a class="link" href="Main.dc.html">Inbox <span aria-hidden="true">→</span></a>
+        <a class="link" href="People.dc.html">People <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+    <p style="margin: 0; font-size: 12px; color: #9BA7B6">If the board removes you, this screen says so instead, names the directors who voted, and shows their confidence over the last six months.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

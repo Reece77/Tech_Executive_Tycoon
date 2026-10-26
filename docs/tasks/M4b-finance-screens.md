@@ -2,7 +2,7 @@
 
 **Goal:** run the company's money from the browser: read the statements, see the cap table, raise SAFEs and priced rounds with a clear view of dilution, watch the board, and see how a game ends.
 
-**Spec sections:** §10, §13 · **ADRs:** 0007, 0009, 0014, 0018 · **Wireframes:** `docs/wireframes.md` (M4b section, added before this milestone starts) · **Depends on:** M4a (`m4a-done`)
+**Spec sections:** §10, §13 · **ADRs:** 0007, 0009, 0014, 0018 · **Wireframes:** `docs/wireframes.md` (M4b screens) and `docs/wireframes/source/Finance.dc.html`, `CapTable.dc.html`, `Fundraising.dc.html`, `Board.dc.html`, `GameOver.dc.html` · **Depends on:** M4a (`m4a-done`)
 
 ## Context
 

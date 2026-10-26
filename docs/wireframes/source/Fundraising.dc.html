@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fundraising</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:16px 18px}
+.ptitle{margin:0 0 10px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.tab{font-family:inherit;font-size:14px;color:#C9D1DB;background:transparent;border:0;border-bottom:2px solid transparent;padding:10px 4px;min-height:44px;cursor:pointer}
+.tab[aria-selected="true"]{color:#E8ECF1;border-bottom-color:#5AA2FF;font-weight:600}
+th{font-size:11px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:9px 10px;border-bottom:1px solid #2A3442;white-space:nowrap}
+td{font-size:14px;padding:9px 10px;border-bottom:1px solid #1F2732;white-space:nowrap}
+.r{text-align:right}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1F2A38;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.primary{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.ghost{font-family:inherit;font-size:14px;color:#C9D1DB;background:transparent;border:1px solid #2A3442;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.pos{color:#6FCF8E}.neg{color:#F5A25D}
+</style>
+</helmet>
+<div style="min-height: 1200px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Jul 2012</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$418,200</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; color: #F5A25D">6 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">85 / 100</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 85%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Main.dc.html"><span class="key">1</span>Inbox<span class="num" style="margin-left: auto; font-size: 12px; background: #5AA2FF; color: #0E1217; border-radius: 9px; padding: 0 7px">3</span></a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">8</span>Competitors<span class="soon">M5</span></a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Finance</h1>
+      <div role="tablist" aria-label="Finance" style="display: flex; flex-wrap: wrap; gap: 22px; border-bottom: 1px solid #2A3442">
+        <a role="tab" aria-selected="false" class="tab" href="Finance.dc.html" style="text-decoration: none">Statements</a>
+        <a role="tab" aria-selected="false" class="tab" href="CapTable.dc.html" style="text-decoration: none">Cap table</a>
+        <a role="tab" aria-selected="true" class="tab" href="Fundraising.dc.html" style="text-decoration: none">Fundraising</a>
+        <a role="tab" aria-selected="false" class="tab" href="Board.dc.html" style="text-decoration: none">Board</a>
+      </div>
+      <section class="panel" aria-label="Open round" style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center">
+        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 260px">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 600">Series A · open</h2>
+          <span class="meta">Started Jun 2012 with a $5M target · closes without a deal at the end of Aug 2012</span>
+        </div>
+        <div><div class="meta">ARR</div><div class="num" style="font-size: 17px">$1.93M <span style="font-size: 12px; color: #6FCF8E">gate $1M met</span></div></div>
+        <div><div class="meta">Typical Series A</div><div class="num" style="font-size: 17px">$3M–$10M</div></div>
+        <div><div class="meta">Term sheets</div><div class="num" style="font-size: 17px">3 of 7 firms</div></div>
+      </section>
+      <section aria-label="Term sheets" style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">Term sheets</h2>
+        <div style="background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse">
+            <thead><tr><th>Firm</th><th class="r">Pre-money</th><th class="r">Amount</th><th class="r">Post-money</th><th class="r">You own after</th><th>Board seat</th><th>Expires</th><th></th></tr></thead>
+            <tbody>
+              <sc-for list="{{sheets}}" as="s" hint-placeholder-count="3">
+                <tr style="{{s.rowStyle}}"><td style="font-weight: 600">{{s.firm}}</td><td class="num r">{{s.pre}}</td><td class="num r">{{s.amount}}</td><td class="num r">{{s.post}}</td><td class="num r">{{s.own}}</td><td style="color: #C9D1DB">Yes, one</td><td class="num" style="color: #C9D1DB">{{s.expires}}</td><td><button type="button" class="btn" style="min-height: 32px; font-size: 12px; padding: 5px 10px">{{s.action}}</button></td></tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin: 0; font-size: 12px; color: #9BA7B6">Standard terms for every sheet: 1× non-participating liquidation preference, pro rata rights, one board seat for the lead, and an option pool top-up to 10% after the round.</p>
+      </section>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <section aria-label="Dilution preview" style="flex: 3 1 520px; background: #151B23; border: 1px solid #3B5A80; border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.45)">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 600">Accept Andreessen Horowitz's term sheet?</h2>
+          <span class="meta">$5,000,000 at $18.3M pre-money. 4,856,933 new Series A shares at $1.0295.</span>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse">
+              <thead><tr><th>Holder</th><th class="r">Now</th><th class="r">After</th><th class="r">Change</th></tr></thead>
+              <tbody>
+                <sc-for list="{{preview}}" as="p" hint-placeholder-count="6">
+                  <tr><td>{{p.holder}}</td><td class="num r">{{p.now}}</td><td class="num r" style="font-weight: 600">{{p.after}}</td><td class="num r {{p.cls}}">{{p.change}}</td></tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div class="row"><span>Option pool top-up</span><span class="num">1,428,548 new options</span></div>
+          <div class="row"><span>Board after closing</span><span>2 common · 2 investor (you keep control on a tie)</span></div>
+          <div class="row"><span>Legal fees</span><span class="num">$25,000</span></div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center"><button type="button" class="primary">Accept · 5 energy</button><button type="button" class="ghost">Cancel</button><span class="meta">The round closes and the money arrives when you press Continue. The other sheets lapse.</span></div>
+        </section>
+        <section class="panel" aria-label="Raise on a SAFE" style="flex: 2 1 320px; display: flex; flex-direction: column; gap: 12px">
+          <h2 class="ptitle" style="margin: 0">Raise on a SAFE</h2>
+          <label class="field">Amount
+            <input class="input" type="text" value="$500,000">
+            <span style="font-size: 12px; color: #9BA7B6">$25,000 to $2,000,000</span>
+          </label>
+          <label class="field">Post-money valuation cap
+            <input class="input" type="text" value="$20,000,000">
+          </label>
+          <div style="background: #3A2F16; border: 1px solid #5A4A20; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px">
+            <span style="font-size: 12px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Your read</span>
+            <span style="font-size: 16px; font-weight: 700; color: #F5C451">Uncertain</span>
+            <span style="font-size: 13px; color: #C9D1DB">Angels answer once at Continue: all of it or nothing. A lower cap is likelier to fill and gives them more of the company.</span>
+          </div>
+          <button type="button" class="btn" style="align-self: flex-start" disabled aria-disabled="true">Raise · 10 energy</button>
+          <span class="meta" style="font-size: 12px">Not while a priced round is open.</span>
+        </section>
+      </div>
+      <section class="panel" aria-label="Past rounds">
+        <h2 class="ptitle">Past rounds and SAFEs</h2>
+        <div class="row"><span>SAFE · $500,000 at a $5M post-money cap · Apr 2010</span><span class="meta">Converted at the seed: 1,226,087 shares</span></div>
+        <div class="row" style="border-bottom: 0"><span>Seed · $2,000,000 at $6M pre · First Round Capital · Nov 2010</span><span class="meta">$0.4894 a share · 1 board seat</span></div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sheets = [
+      { firm: 'Andreessen Horowitz', pre: '$18.3M', amount: '$5.0M', post: '$23.3M', own: '39.76%', expires: 'Aug 2012', action: 'Previewing', selected: true },
+      { firm: 'Benchmark', pre: '$16.0M', amount: '$5.0M', post: '$21.0M', own: '38.40%', expires: 'Aug 2012', action: 'Preview' },
+      { firm: 'Accel Partners', pre: '$15.6M', amount: '$6.0M', post: '$21.6M', own: '36.10%', expires: 'Aug 2012', action: 'Preview' }
+    ].map((s) => ({ ...s, rowStyle: s.selected ? 'background: #172638' : '' }));
+    const p = (holder, now, after) => {
+      const d = after - now;
+      return { holder, now: now === null ? '—' : now.toFixed(2) + '%', after: after.toFixed(2) + '%', change: now === null ? 'new' : (d > 0 ? '+' : '−') + Math.abs(d).toFixed(2), cls: now === null || d > 0 ? 'pos' : 'neg' };
+    };
+    const preview = [
+      p('Jordan Hale (you)', 55.05, 39.76),
+      p('First Round Capital (Seed)', 25.00, 18.06),
+      p('SAFE holders', 7.50, 5.42),
+      p('Employee options granted', 7.34, 5.30),
+      p('Option pool, unallocated', 5.11, 10.00),
+      p('Andreessen Horowitz (Series A)', null, 21.46)
+    ];
+    return { sheets, preview };
+  }
+}
+</script>
+</body>
+</html>
