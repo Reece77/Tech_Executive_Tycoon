@@ -50,8 +50,27 @@ Play a `funded_spinout` game for 24 months with one B2B SaaS product. Note wheth
 
 ## Decisions made
 
-_(Agent fills in.)_
+- **Cancel (sub-task 0).** `cancel_product` retires the product with `retired_turn` = the current turn and frees its units through the same `release_assignments` the sunset path uses. Its route (`POST /products/{id}/cancel`) returns the energy and unread count only, since the product no longer exists. Sunsetting a product in development is refused with "cancel its development instead"; the M3a test that expected the old wording now expects the new one (the behaviour change is the brief's).
+- **E2E fix (sub-task 0).** Search rows carry `data-search-id` and their select button a `select-search` test id; the ten-hires test collects ids first and re-finds each row by id, skipping one that has gone.
+- **Values the screens needed, added to the API** (CLAUDE.md §7: the front end only formats):
+  - Products: `price_score` per segment and per market row; last closed month's `new_last_month` and `churned_last_month` per segment and in total; total `customers`; `customer_trend` and `mrr_change` (last month end against the one before, from `product_month`); `hosting_cents` this month; `launched_label`; `brand_trend` (rising, falling or steady from the last two month ends, steady within 0.05 points; never the target brand); `counts_users`; `monthly` totals for the 12-month chart.
+  - Markets: `annual_growth`, and per segment `unserved`, `reference_price_cents`, appeal `weights`, `counts_users` and `player_sells`. Categories gain the same `weights` and `counts_users`.
+  - Price preview: the current price and price score, and `revenue_per_customer_change`.
+  - `GET /portfolio` for the Products tiles (MRR and its change from the snapshots, ARR, stage label, business customers and consumer users apart, hosting, marketing and their total). `GET /meta/products` for energy costs and launch thresholds, so no screen hard-codes them.
+  - Overview: `month_revenue_cents`, this month's revenue at today's customers and prices (the same projection as hosting). Its `mrr_cents` and `arr_cents`, and the snapshot points', are now required in the schema (always set), so the client types are not optional.
+  - Org units: `product_id` and `product_name`.
+  - Inbox: a repeatable `kind` query parameter filters across every page; the front end maps its People, Hiring and new Products filters to template keys (`lib/inbox.ts`), and Unread uses `unread_only`.
+- **"Consumer users".** The `consumer` segment's customers are users; the API flags them with `counts_users` (the segment key is the only marker in the data).
+- **ARR tile note.** The wireframe's "Passed $1M in Jan 2012" needs the month a stage was reached, which is not stored; the tile shows the stage label instead.
+- **Immediate actions.** Assign, Unassign, Add segment and the marketing budget apply at once with their energy on the button, like the M1 actions: there is no preview endpoint for them and nothing to preview. Price changes open the API preview first; Launch is enabled only when the readiness check passes; Sunset and Cancel development ask to confirm.
+- **Routes.** `/products`, `/products/markets/:category?` and `/products/:productId`, so the Products nav item stays highlighted on all three.
+- **Price boxes keep focus.** The segment table's columns are built once per mode; the price text and the editing segment reach the cells through context (rebuilding the columns remounted the inputs on every keystroke).
+- **E2E setup.** The M3b flows hire three engineers through the API (setup the tests are not about), then drive every product step through the screens. Locally the run used `PLAYWRIGHT_CHANNEL=msedge` because Playwright's Chromium is not downloaded on this machine.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- Store the turn each stage is reached (or log it), so the ARR tile can say when stage 2 arrived as the wireframe does.
+- A preview for assigning a unit (the development pace it would give) would make staffing a clearer lever; it needs a rule-side preview of team output that shows only the pace label.
+- The product page loads the whole category market for its competition panel; fine at v1 sizes, worth a narrower endpoint if markets grow.
+- Vite on the OneDrive-synced checkout once served a stale module after an edit (fixed by restarting the dev server); if it recurs, `server.watch.usePolling` in `vite.config.ts` is the usual fix.
+- Reece's manual check (24 months of `funded_spinout` with one B2B SaaS product) is still to do.
