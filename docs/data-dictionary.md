@@ -368,7 +368,7 @@ A product of the player or an incumbent (formulas.md §11.2, §11.9). Index `ix_
 | `company_id` | INTEGER FK → company.id | no | Owner. |
 | `category` | VARCHAR(32) | no | `categories.yaml` category key, e.g. `b2b_saas`. |
 | `name` | VARCHAR(80) | no | Display name. |
-| `status` | VARCHAR(16) | no | `in_development`, `live`, `sunset`, or `retired` (a sunset product with no customers left). |
+| `status` | VARCHAR(16) | no | `in_development`, `live`, `sunset`, or `retired` (a sunset product with no customers left, or one cancelled in development, M3b). |
 | `quality` | FLOAT | no | Quality, 0–100 (§11.4). |
 | `feature_points` | FLOAT | no | Accumulated feature points F; the feature score is 100 × F / F_exp(t), clamped to 0–100. |
 | `brand` | FLOAT | no | Brand, 0–100 (§11.5). |
@@ -376,7 +376,7 @@ A product of the player or an incumbent (formulas.md §11.2, §11.9). Index `ix_
 | `created_turn` | INTEGER | no | Turn created. |
 | `launched_turn` | INTEGER | yes | Turn launched. |
 | `sunset_turn` | INTEGER | yes | Turn sunset. |
-| `retired_turn` | INTEGER | yes | Turn its last customers left. |
+| `retired_turn` | INTEGER | yes | Turn its last customers left, or the turn it was cancelled. |
 | `held_feature` | FLOAT | yes | Incumbents only: the fixed feature score; F follows F_exp so the score stays here (§11.9). Null for products that develop. |
 | `first_customer_turn` | INTEGER | yes | First month with at least one paying customer (inbox note). |
 | `rotting` | BOOLEAN | no | The last phase 3 found no team working on it (output below a quarter of scope); the inbox notes the change. |

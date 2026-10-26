@@ -35,6 +35,7 @@ from tst.sim.actions import (
     Action,
     AddSegment,
     AssignUnit,
+    CancelProduct,
     CreateProduct,
     LaunchProduct,
     ScoutSearch,
@@ -253,6 +254,19 @@ def sunset(save_id: str, product_id: int, settings: SettingsDep, data: DataDep) 
     return _product_act(
         path, data, SunsetProduct(_founder_id(_state(path)), product_id), product_id
     )
+
+
+@router.post(
+    "/products/{product_id}/cancel",
+    response_model=ActionOut,
+    responses=ERRORS,
+    operation_id="cancelProduct",
+)
+def cancel(save_id: str, product_id: int, settings: SettingsDep, data: DataDep) -> ActionOut:
+    """Cancel a product in development: it retires at once and its units are freed."""
+    path = _path(settings, save_id)
+    _, out = _act(path, data, CancelProduct(_founder_id(_state(path)), product_id))
+    return out
 
 
 # --- Founder scouting -----------------------------------------------------------------------

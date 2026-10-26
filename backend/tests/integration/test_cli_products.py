@@ -82,6 +82,20 @@ def test_manual_check_flow(save_dir: Path) -> None:
     assert "Sunset" in run("product", "sunset", "--save", SAVE, "--product", "13")
 
 
+def test_cancel_a_product_in_development(save_dir: Path) -> None:
+    run(
+        "product", "create", "--save", SAVE, "--name", "Sentinel",
+        "--category", "cybersecurity", "--segments", "smb",
+    )  # fmt: skip
+    run("product", "assign", "--save", SAVE, "--product", "13")
+    out = run("product", "sunset", "--save", SAVE, "--product", "13", code=1)
+    assert "cancel its development instead" in out
+    out = run("product", "cancel", "--save", SAVE, "--product", "13")
+    assert "Cancelled Sentinel; energy 91/100" in out
+    assert "No products" in run("products", "--save", SAVE)
+    assert "no product 13" in run("product", "cancel", "--save", SAVE, "--product", "13", code=1)
+
+
 def test_scout_a_search(save_dir: Path) -> None:
     run("search", "open", "--save", SAVE, "--role", "designer", "--channel", "network")
     run("advance", "--save", SAVE)

@@ -142,6 +142,22 @@ def test_create_staff_launch_and_sunset_through_the_api(
     api.post(f"{BASE}/products/{PRODUCT}/sunset", status=400)
 
 
+def test_cancel_a_product_in_development(setup: tuple[Client, Path]) -> None:
+    api, _ = setup
+    create(api)
+    api.post(f"{BASE}/products/{PRODUCT}/assign", {"unit_id": None})
+    refused = api.post(f"{BASE}/products/{PRODUCT}/sunset", status=400)
+    assert "cancel its development instead" in refused["message"]
+    out = api.post(f"{BASE}/products/{PRODUCT}/cancel")
+    assert set(out) == {"energy", "unread_inbox"}
+    assert out["energy"]["energy"] == 100 - 4 - 2 - 3
+    assert api.get(f"{BASE}/products") == []
+    api.get(f"{BASE}/products/{PRODUCT}", status=404)
+    api.post(f"{BASE}/products/{PRODUCT}/cancel", status=404)
+    again = create(api)["product"]["product_id"]  # the root is free for the next product
+    api.post(f"{BASE}/products/{again}/assign", {"unit_id": None})
+
+
 def test_segments_unassign_and_errors(setup: tuple[Client, Path]) -> None:
     api, _ = setup
     create(api)

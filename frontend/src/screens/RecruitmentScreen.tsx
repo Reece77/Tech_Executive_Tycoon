@@ -495,6 +495,7 @@ function SearchRow({
   return (
     <div
       data-testid="search-row"
+      data-search-id={search.search_id}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -507,6 +508,7 @@ function SearchRow({
     >
       <button
         type="button"
+        data-testid="select-search"
         onClick={onSelect}
         aria-pressed={selected}
         style={{
