@@ -20,10 +20,12 @@ from tst.sim.data_models import (
     BackgroundsFile,
     Balance,
     CategoriesFile,
+    ClimateFile,
     GameData,
     InboxTemplatesFile,
     IncumbentsFile,
     InterestsFile,
+    InvestorsFile,
     NamesFile,
     PersonalityFile,
     RegionsFile,
@@ -48,13 +50,17 @@ NAMES_FILE = "names.yaml"
 INBOX_FILE = "inbox_templates.yaml"
 CATEGORIES_FILE = "categories.yaml"
 INCUMBENTS_FILE = "incumbents.yaml"
+INVESTORS_FILE = "investors.yaml"
+CLIMATE_FILE = "climate.yaml"
 DATA_FILES = (
     ACCOUNTS_FILE,
     BACKGROUNDS_FILE,
     BALANCE_FILE,
     CATEGORIES_FILE,
+    CLIMATE_FILE,
     INBOX_FILE,
     INCUMBENTS_FILE,
+    INVESTORS_FILE,
     INTERESTS_FILE,
     NAMES_FILE,
     PERSONALITY_FILE,
@@ -155,6 +161,18 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
     missing_product_tags = sorted(set(balance.products.tag) - tag_keys)
     if missing_product_tags:
         raise DataLoadError(f"{TAGS_FILE}: product rules need tags {missing_product_tags} (11.10)")
+    for scenario in data.scenarios:
+        total = scenario.cap_table.total
+        if total != balance.finance.initial_fd_shares:
+            raise DataLoadError(
+                f"{SCENARIOS_FILE}: {scenario.id!r} cap_table holds {total} shares, expected "
+                f"finance.initial_fd_shares = {balance.finance.initial_fd_shares}"
+            )
+    if balance.board.director_role not in {r.key for r in data.roles}:
+        raise DataLoadError(
+            f"{BALANCE_FILE}: board.director_role {balance.board.director_role!r} "
+            "is not in roles.yaml"
+        )
     founder = balance.founder
     for bg in data.backgrounds:
         spent = sum(bg.default_allocation.values())
@@ -205,6 +223,8 @@ def load_all(path: Path) -> LoadedData:
     inbox = _validate(InboxTemplatesFile, parsed[INBOX_FILE], INBOX_FILE)
     categories = _validate(CategoriesFile, parsed[CATEGORIES_FILE], CATEGORIES_FILE)
     incumbents = _validate(IncumbentsFile, parsed[INCUMBENTS_FILE], INCUMBENTS_FILE)
+    investors = _validate(InvestorsFile, parsed[INVESTORS_FILE], INVESTORS_FILE)
+    climate = _validate(ClimateFile, parsed[CLIMATE_FILE], CLIMATE_FILE)
     game_data = _validate(
         GameData,
         {
@@ -225,6 +245,8 @@ def load_all(path: Path) -> LoadedData:
             "segments": categories.segments,
             "categories": categories.categories,
             "incumbents": incumbents.companies,
+            "investors": investors.firms,
+            "climate": climate,
         },
         "seed data cross-check",
     )

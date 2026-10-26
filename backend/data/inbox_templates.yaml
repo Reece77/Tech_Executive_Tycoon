@@ -62,3 +62,49 @@ templates:
   product_rotting:
     title: "{product} is slipping"
     body: "Nobody is working on {product}, so its quality is falling. Assign a unit to it."
+  # M4a finance (formulas.md 14)
+  safe_filled:
+    title: "SAFE filled: {amount_cents} at a {cap_cents} cap"
+    body: "Angels and seed funds put {amount_cents} into your SAFE at a {cap_cents} post-money cap. The money is in the bank; the holders get {pct} of the company at your next priced round."
+  safe_declined:
+    title: "Nobody took your SAFE at a {cap_cents} cap"
+    body: "Angels and seed funds passed on raising {amount_cents} at a {cap_cents} post-money cap. A lower cap is likelier to fill; you can try again."
+  term_sheets_arrived:
+    title: "{count} term sheets for your {series}"
+    body: "Investors answered your {series} for {target_cents}. Compare the term sheets on Finance and accept one by {deadline}; the round closes at the Continue after you accept."
+  no_term_sheets:
+    title: "No investor answered your {series}"
+    body: "No firm sent a term sheet for your {series}, so the round has closed. You can start it again next month."
+  round_lapsed:
+    title: "Your {series} lapsed"
+    body: "You did not accept a term sheet in time, so your {series} closed without money."
+  round_closed:
+    title: "{series} closed: {amount_cents} from {lead}"
+    body: "{lead} led your {series} with {amount_cents} at a {pre_cents} pre-money valuation ({price} a share). You own {founder_pct} of the company; {lead} takes a board seat."
+  board_meeting:
+    title: "Board meeting: confidence {confidence}"
+    body: "Your board met for the quarter. Average confidence is {confidence} ({label})."
+  board_warning:
+    title: "Formal warning from your board"
+    body: "Average board confidence has fallen to {confidence}. The board expects growth closer to plan and a safer runway. Directors who stay below {removal} for {months} months will vote to remove you."
+  founder_removed:
+    title: "The board has removed you as CEO"
+    body: "{votes} of {seats} directors voted to remove you. The game is over; your save stays open to look back on."
+  insolvent:
+    title: "Insolvent: {needed_cents} needed"
+    body: "Cash is {cash_cents} after this month's costs. You need {needed_cents} to get back to zero. Three months in a row below zero means bankruptcy; this is month {month}."
+  bridge_offered:
+    title: "Your investors offer a {amount_cents} bridge"
+    body: "Existing investors will bridge you with {amount_cents} on a SAFE at a {cap_cents} post-money cap. Accept by {deadline}; the money arrives at that month's Continue."
+  bridge_lapsed:
+    title: "The bridge offer lapsed"
+    body: "You did not accept your investors' {amount_cents} bridge in time."
+  bridge_funded:
+    title: "Bridge funded: {amount_cents}"
+    body: "Your investors' {amount_cents} bridge SAFE at a {cap_cents} cap is in the bank."
+  bankrupt:
+    title: "Bankrupt"
+    body: "Cash stayed below zero for {months} month ends in a row. The company is bankrupt and the game is over; your save stays open to look back on."
+  stage_from_funding:
+    title: "Now {stage_label}"
+    body: "Closing your {series} makes {company} a {stage_label} company."

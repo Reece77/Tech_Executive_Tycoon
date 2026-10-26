@@ -154,6 +154,10 @@ founder: # founder build (formulas.md section 5)
     launch_product: 3 # launch a product (M3, section 11.2)
     sunset_product: 3 # sunset a product (M3, section 11.2)
     cancel_product: 3 # cancel a product still in development (M3b, section 11.2)
+    raise_safe: 10 # raise money on a SAFE (M4, section 14.4)
+    start_round: 15 # start a priced round (M4, section 14.5)
+    accept_term_sheet: 5 # accept a term sheet (M4, section 14.5)
+    accept_bridge: 5 # accept a bridge SAFE from existing investors (M4, section 14.7)
 
 # --- Hiring (formulas.md section 7) -----------------------------------------------------
 hiring:
@@ -322,3 +326,78 @@ stages:
   arr_cents: # cents of ARR that put a company in a stage; stages only rise (11.11)
     2: 100000000 # $1M ARR: venture-backed
     3: 2000000000 # $20M ARR: scale-up
+  funding: # a closed priced round of this series also puts a company at stage 1 or above in the stage (14.8)
+    2: seed
+    3: b
+
+# --- Finance (formulas.md section 14, ADR-0018) ------------------------------------------
+finance:
+  initial_fd_shares: 10000000 # shares; fully diluted shares at game start (14.2)
+  pool_target_bp: 1000 # bp of post-money FD; the unallocated pool after every priced round (14.5)
+  vesting_months: 48 # months over which options vest (14.2)
+  cliff_months: 12 # months before anything vests (14.2)
+  retention_slope: 0.5 # resignation multiplier falls by this per unit of unvested value / salary (14.2)
+  retention_floor: 0.5 # lowest resignation multiplier from unvested options (14.2)
+  growth_window_months: 6 # months behind g_6; the ratio is annualized with exponent 12 / this (14.3)
+  new_revenue_growth: 3 # g_6 when MRR six months ago was 0 and is now positive (14.3)
+  multiple_base: 4 # ARR multiple at zero growth (14.3)
+  multiple_per_growth: 4 # ARR multiple added per unit of annual growth g_6 (14.3)
+  multiple_min: 3 # lowest ARR multiple before the climate (14.3)
+  multiple_max: 20 # highest ARR multiple before the climate (14.3)
+  floor_cents: # cents; the value floor for a young company (14.3)
+    no_product: 200000000 # $2M without a live product
+    live: 400000000 # $4M with a live product
+  floor_per_head_cents: 10000000 # cents added to the floor per person on staff (14.3)
+  floor_head_cap: 30 # people; headcount counted in the floor at most (14.3)
+  safe:
+    min_cents: 2500000 # cents; smallest SAFE raise, $25,000 (14.4)
+    max_cents: 200000000 # cents; largest SAFE raise, $2M (14.4)
+    optimism: 1.2 # multiplier on V_base; a cap at this times V_base fills half the time (14.4)
+    steepness: 6 # slope of the SAFE acceptance logistic (14.4)
+    fee_cents: 200000 # cents; legal fee on a SAFE that fills, $2,000 (14.4)
+    hint_bands: [0.9, 1.15] # optimism x V_base / cap: below the first unlikely, from the second likely (14.9)
+  round:
+    open_turns: 3 # turns a priced round stays open, counting the turn it starts (14.5)
+    valuation_noise_sd: 0.15 # sd of the log noise on each firm's quoted pre-money (14.5)
+    max_amount_of_pre: 0.5 # fraction; a firm invests at most this share of its quoted pre-money (14.5)
+    max_response: 0.95 # probability; cap on a firm's response x climate (14.5)
+    gate_arr_cents: # cents of ARR a series needs, besides the previous round (14.5)
+      a: 100000000 # $1M
+      b: 500000000 # $5M
+    fee_min_cents: 1500000 # cents; smallest legal fee on a priced round, $15,000 (14.5)
+    fee_bp: 50 # bp of the amount raised; legal fee on a priced round (14.5)
+
+board:
+  start: 70 # confidence of a new director (14.6)
+  rate: 0.2 # fraction of the gap to the target closed each month (14.6)
+  target_base: 50 # confidence target before the growth, runway and patience terms (14.6)
+  growth_weight: 20 # points for growth from half to double the expectation (14.6)
+  expected_growth: # annual MRR growth expected after the last priced round (14.6)
+    seed: 2.0
+    a: 1.5
+    b: 1.0
+  runway_terms: # months of runway from the top: points added to the target (14.6)
+    - { min_months: 12, points: 10 }
+    - { min_months: 6, points: 0 }
+    - { min_months: 3, points: -15 }
+    - { min_months: 0, points: -30 }
+  no_product_penalty: -20 # points while revenue history is short, once this long after the last round with no live product (14.6)
+  no_product_after_turns: 12 # turns after the last priced round (14.6)
+  down_round_hit: -15 # points off every director's confidence, once, on a down round (14.6)
+  warning_below: 40 # average confidence below this brings a formal warning at a board meeting (14.6)
+  removal_below: 25 # a director below this for removal_months votes to remove the founder (14.6)
+  removal_months: 3 # consecutive months (14.6)
+  meeting_months: [3, 6, 9, 12] # calendar months whose month end has a board meeting (14.6)
+  seats: # board seats after each series (14.6)
+    seed: { common: 1, investor: 1, independent: 0 }
+    a: { common: 2, investor: 2, independent: 0 }
+    b: { common: 2, investor: 3, independent: 1 }
+  director_role: operations_manager # roles.yaml key used only to generate directors' skills (not employees)
+  director_level: exec # level used to generate directors
+
+bankruptcy:
+  months: 3 # consecutive month ends with negative cash after phase 7 that end the game (14.7)
+  bridge_burn_months: 3 # bridge amount in months of the last month's net burn (14.7)
+  bridge_cap_of_post: 0.8 # bridge post-money cap as a fraction of the last post-money valuation (14.7)
+  bridge_min_confidence: 40 # average board confidence needed for existing investors to offer a bridge (14.7)
+  bridge_open_turns: 2 # turns a bridge offer stays open after it is made (14.7)

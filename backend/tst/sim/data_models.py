@@ -11,7 +11,10 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.money import BP_DENOMINATOR
+
+SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
 
 
 class _Frozen(BaseModel):
@@ -238,6 +241,11 @@ ENERGY_ACTIONS = (
     "launch_product",
     "sunset_product",
     "cancel_product",
+    # M4 finance (formulas.md sections 6, 14)
+    "raise_safe",
+    "start_round",
+    "accept_term_sheet",
+    "accept_bridge",
 )
 CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
 HIRING_LEVELS = ("junior", "mid", "senior", "staff")
@@ -459,8 +467,13 @@ class MarketBalance(_Frozen):
     sunset_churn_mult: float = Field(ge=0)
 
 
+SERIES = ("seed", "a", "b")  # priced rounds in v1, in order (formulas.md 14.5)
+type Series = Literal["seed", "a", "b"]
+
+
 class StagesBalance(_Frozen):
     arr_cents: dict[int, int]
+    funding: dict[int, Series] = Field(default_factory=dict)  # M4: a closed round's stage (14.8)
 
     @model_validator(mode="after")
     def _check(self) -> StagesBalance:
@@ -468,6 +481,115 @@ class StagesBalance(_Frozen):
         if ordered != sorted(ordered) or any(v <= 0 for v in ordered):
             raise ValueError("arr_cents must be positive and rise with the stage")
         return self
+
+
+class FloorCents(_Frozen):
+    no_product: int = Field(gt=0)
+    live: int = Field(gt=0)
+
+
+class SafeBalance(_Frozen):
+    min_cents: int = Field(gt=0)
+    max_cents: int = Field(gt=0)
+    optimism: float = Field(gt=0)
+    steepness: float = Field(gt=0)
+    fee_cents: int = Field(ge=0)
+    hint_bands: Span
+
+    @model_validator(mode="after")
+    def _check(self) -> SafeBalance:
+        if self.min_cents > self.max_cents:
+            raise ValueError("safe.min_cents must not exceed safe.max_cents")
+        return self
+
+
+class RoundBalance(_Frozen):
+    open_turns: int = Field(gt=0)
+    valuation_noise_sd: float = Field(ge=0)
+    max_amount_of_pre: float = Field(gt=0, le=1)
+    max_response: float = Field(gt=0, le=1)
+    gate_arr_cents: dict[Series, int]
+    fee_min_cents: int = Field(ge=0)
+    fee_bp: int = Field(ge=0, le=BP_DENOMINATOR)
+
+
+class FinanceBalance(_Frozen):
+    initial_fd_shares: int = Field(gt=0)
+    pool_target_bp: int = Field(ge=0, lt=BP_DENOMINATOR)
+    vesting_months: int = Field(gt=0)
+    cliff_months: int = Field(ge=0)
+    retention_slope: float = Field(ge=0)
+    retention_floor: float = Field(ge=0, le=1)
+    growth_window_months: int = Field(gt=0)
+    new_revenue_growth: float = Field(ge=0)
+    multiple_base: float = Field(ge=0)
+    multiple_per_growth: float = Field(ge=0)
+    multiple_min: float = Field(ge=0)
+    multiple_max: float = Field(gt=0)
+    floor_cents: FloorCents
+    floor_per_head_cents: int = Field(ge=0)
+    floor_head_cap: int = Field(ge=0)
+    safe: SafeBalance
+    round: RoundBalance
+
+    @model_validator(mode="after")
+    def _check(self) -> FinanceBalance:
+        if self.cliff_months > self.vesting_months:
+            raise ValueError("cliff_months must not exceed vesting_months")
+        if self.multiple_min > self.multiple_max:
+            raise ValueError("multiple_min must not exceed multiple_max")
+        return self
+
+
+class RunwayTerm(_Frozen):
+    min_months: float = Field(ge=0)
+    points: float
+
+
+class SeatCounts(_Frozen):
+    common: int = Field(ge=1)
+    investor: int = Field(ge=0)
+    independent: int = Field(ge=0)
+
+
+class BoardBalance(_Frozen):
+    start: float = Field(ge=0, le=SCORE_MAX)
+    rate: float = Field(gt=0, le=1)
+    target_base: float
+    growth_weight: float = Field(ge=0)
+    expected_growth: dict[Series, float]
+    runway_terms: tuple[RunwayTerm, ...] = Field(min_length=1)
+    no_product_penalty: float
+    no_product_after_turns: int = Field(ge=0)
+    down_round_hit: float
+    warning_below: float = Field(ge=0, le=SCORE_MAX)
+    removal_below: float = Field(ge=0, le=SCORE_MAX)
+    removal_months: int = Field(gt=0)
+    meeting_months: tuple[int, ...]
+    seats: dict[Series, SeatCounts]
+    director_role: str
+    director_level: str
+
+    @model_validator(mode="after")
+    def _check(self) -> BoardBalance:
+        mins = [t.min_months for t in self.runway_terms]
+        if mins != sorted(mins, reverse=True) or mins[-1] != 0:
+            raise ValueError("runway_terms must run from the most months down to 0")
+        if any(not 1 <= m <= MONTHS_PER_YEAR for m in self.meeting_months):
+            raise ValueError("meeting_months must be calendar months 1..12")
+        if sorted(self.expected_growth) != sorted(SERIES) or sorted(self.seats) != sorted(SERIES):
+            raise ValueError(f"expected_growth and seats must cover {list(SERIES)}")
+        if self.director_level not in LEVELS:
+            raise ValueError(f"director_level must be one of {list(LEVELS)}")
+        return self
+
+
+class BankruptcyBalance(_Frozen):
+    months: int = Field(gt=0)
+    bridge_burn_months: float = Field(gt=0)
+    bridge_cap_of_post: float = Field(gt=0)
+    bridge_min_confidence: float = Field(ge=0, le=SCORE_MAX)
+    bridge_open_turns: int = Field(gt=0)
 
 
 class Balance(_Frozen):
@@ -489,6 +611,9 @@ class Balance(_Frozen):
     products: ProductsBalance
     market: MarketBalance
     stages: StagesBalance
+    finance: FinanceBalance
+    board: BoardBalance
+    bankruptcy: BankruptcyBalance
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -513,12 +638,38 @@ class Account(_Frozen):
     type: AccountType
 
 
+class CapTableGroup(_Frozen):
+    name: str = Field(min_length=1, max_length=80)  # tunable-exempt: holder name column width
+    shares: int = Field(gt=0)
+
+
+class ScenarioSeed(_Frozen):
+    lead: str  # investors.yaml firm key
+    amount_cents: int = Field(gt=0)
+    shares: int = Field(gt=0)
+
+
+class ScenarioCapTable(_Frozen):
+    """Shares at game start (formulas.md 14.2); the total is checked against FD at load."""
+
+    founder: int = Field(gt=0)
+    pool: int = Field(ge=0)
+    others: tuple[CapTableGroup, ...] = ()
+    seed: ScenarioSeed | None = None
+
+    @property
+    def total(self) -> int:
+        seed = self.seed.shares if self.seed else 0
+        return self.founder + self.pool + sum(g.shares for g in self.others) + seed
+
+
 class Scenario(_Frozen):
     id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     name: str = Field(min_length=1)
     description: str = Field(min_length=1)
     available_in: Literal["v1", "v3"]
     starting_equity_account: str  # credited when starting cash is posted on turn 0
+    cap_table: ScenarioCapTable  # M4 (formulas.md 14.2)
 
     @property
     def selectable(self) -> bool:
@@ -673,7 +824,6 @@ class NamesFile(_Frozen):
 # --- Products and markets (M3): categories.yaml and incumbents.yaml -------------------------
 
 type Reach = Literal["self_serve", "sales"]
-SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
 WEIGHT_TOLERANCE = 1e-9  # tunable-exempt: float tolerance when checking that weights sum to 1
 
 
@@ -773,6 +923,39 @@ class IncumbentsFile(_Frozen):
     companies: tuple[IncumbentCompany, ...]
 
 
+class InvestorFirm(_Frozen):
+    """One firm in investors.yaml (formulas.md 14.5). Its list index is its RNG key."""
+
+    key: str = Field(pattern=_KEY)
+    name: str = Field(min_length=1, max_length=80)  # tunable-exempt: name column width
+    series: tuple[Series, ...] = Field(min_length=1)
+    check_min_cents: int = Field(gt=0)
+    check_max_cents: int = Field(gt=0)
+    bias: float = Field(gt=0)
+    response: float = Field(ge=0, le=1)
+    patience: float
+
+    @model_validator(mode="after")
+    def _check(self) -> InvestorFirm:
+        if self.check_min_cents > self.check_max_cents:
+            raise ValueError(f"{self.key}: check_min_cents exceeds check_max_cents")
+        return self
+
+
+class InvestorsFile(_Frozen):
+    firms: tuple[InvestorFirm, ...] = Field(min_length=1)
+
+
+class ClimateFile(_Frozen):
+    """Funding climate by calendar year (formulas.md 14.3)."""
+
+    default: float = Field(gt=0)
+    years: dict[int, float]
+
+    def of(self, year: int) -> float:
+        return self.years.get(year, self.default)
+
+
 class InboxTemplate(_Frozen):
     title: str = Field(min_length=1)
     body: str = Field(min_length=1)
@@ -830,6 +1013,8 @@ class GameData(_Frozen):
     segments: tuple[SegmentDef, ...]
     categories: tuple[CategoryDef, ...]
     incumbents: tuple[IncumbentCompany, ...]
+    investors: tuple[InvestorFirm, ...] = ()  # M4
+    climate: ClimateFile = ClimateFile(default=1.0, years={})  # M4
 
     @model_validator(mode="after")
     def _check_references(self) -> GameData:
@@ -850,6 +1035,7 @@ class GameData(_Frozen):
             ("categories.yaml segment keys", [s.key for s in self.segments]),
             ("categories.yaml category keys", [c.key for c in self.categories]),
             ("incumbents.yaml company names", [c.name for c in self.incumbents]),
+            ("investors.yaml firm keys", [f.key for f in self.investors]),
         ):
             if dupes := _dupes(keys):
                 problems.append(f"duplicate {label}: {dupes}")
@@ -930,6 +1116,15 @@ class GameData(_Frozen):
             if total > BP_DENOMINATOR:
                 problems.append(f"incumbents.yaml: starting shares in {cat_key}/{seg} exceed 100%")
 
+        firm_keys = {f.key for f in self.investors}
+        for scenario in self.scenarios:
+            seed = scenario.cap_table.seed
+            if seed is not None and seed.lead not in firm_keys:
+                problems.append(
+                    f"scenarios.yaml {scenario.id!r}: seed lead {seed.lead!r} "
+                    "is not in investors.yaml"
+                )
+
         missing = sorted(set(INBOX_TEMPLATE_KEYS) - set(self.inbox_templates))
         if missing:
             problems.append(f"inbox_templates.yaml: missing templates {missing}")
@@ -990,6 +1185,19 @@ class GameData(_Frozen):
             if bg.key == key:
                 return bg
         return None
+
+    def firm(self, key: str) -> InvestorFirm:
+        for firm in self.investors:
+            if firm.key == key:
+                return firm
+        raise KeyError(key)
+
+    def firm_index(self, key: str) -> int:
+        """The firm's position in investors.yaml: its key in the finance stream (ADR-0018)."""
+        for i, firm in enumerate(self.investors):
+            if firm.key == key:
+                return i
+        raise KeyError(key)
 
     def category(self, key: str) -> CategoryDef:
         for cat in self.categories:
