@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from fractions import Fraction
 
 from tst.sim.data_models import Balance, GameData, HiringBalance
+from tst.sim.finance.captable import unallocated
+from tst.sim.finance.options import offer_shares, pending_offer_shares
 from tst.sim.hiring.formulas import HintBand, hint_band, is_lowball, offer_score
 from tst.sim.hiring.models import Candidate
 from tst.sim.org.formulas import pitch
@@ -26,13 +28,6 @@ def matching_interests(person: Person, mission: tuple[str, ...]) -> int:
     return len(set(person.interests) & set(mission))
 
 
-def equity_committed(state: GameState, company_id: int) -> int:
-    """Equity held by staff plus pending offers, in basis points (the option pool)."""
-    staff = sum(e.equity_bp for e in state.staff(company_id))
-    pending = sum(o.equity_bp for o in state.pending_offers(company_id))
-    return staff + pending
-
-
 def offer_problems(
     state: GameState, company_id: int, equity_bp: int, balance: Balance, *, replacing: int = 0
 ) -> tuple[str, ...]:
@@ -43,12 +38,15 @@ def offer_problems(
         problems.append("equity cannot be negative")
     if equity_bp > hiring.max_offer_equity_bp:
         problems.append(f"an offer may carry at most {hiring.max_offer_equity_bp} bp of equity")
-    committed = equity_committed(state, company_id) - replacing
-    if committed + equity_bp > hiring.option_pool_bp:
-        left = max(hiring.option_pool_bp - committed, 0)
+    # M4 (14.2): pending offers plus this one may not exceed the unallocated pool.
+    pool = unallocated(state, company_id)
+    promised = pending_offer_shares(state, company_id, excluding=replacing)
+    wanted = offer_shares(state, company_id, max(equity_bp, 0))
+    if promised + wanted > pool:
+        left = max(pool - promised, 0)
         problems.append(
-            f"the option pool has {left} bp left of {hiring.option_pool_bp} bp "
-            "(staff plus pending offers)"
+            f"the option pool has {left:,} unallocated options left after pending offers; "
+            f"this offer needs {wanted:,}"
         )
     return tuple(problems)
 

@@ -19,9 +19,9 @@ from tst.api.schemas.saves import (
 )
 from tst.db import inbox, repository
 from tst.sim.calendar import format_turn
+from tst.sim.finance.options import pool_left_bp
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
-from tst.sim.hiring.rules import equity_committed
 from tst.sim.org.rules import is_remote
 from tst.sim.products.phases import projected_revenue
 from tst.sim.setup import DEFAULT_FOUNDER
@@ -130,9 +130,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         month_paid=month_paid,
         month_total_cents=sum(c.amount_cents for c in projected)
         + sum(c.amount_cents for c in month_paid),
-        option_pool_left_bp=max(
-            data.balance.hiring.option_pool_bp - equity_committed(state, player.id), 0
-        ),
+        option_pool_left_bp=pool_left_bp(state, player.id),
         network_bonus_candidates=network_bonus(state, player.id, data),
         org=org_views.org_tile(state, player.id, data),
         mrr_cents=latest.mrr_cents if latest else 0,

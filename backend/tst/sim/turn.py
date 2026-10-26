@@ -15,6 +15,7 @@ from tst.sim.actions import Action
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
+from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -100,6 +101,7 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     Player actions themselves were applied at once between turns; Decisions stays empty in M1.
     """
     state, ended = phases.end_notices(ctx.state)
+    state = settle_leavers(state)  # leavers' unvested options return to the pool (14.2)
     state, detached = detach_departed(state, ctx.data)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
     return replace(ctx, state=state).post(*entries).log(*ended, *detached, *resolved)
@@ -138,8 +140,9 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
     return replace(ctx, payroll=payroll).post(*entries)
 
 
-def financing(ctx: TurnContext) -> TurnContext:  # M4
-    return ctx
+def financing(ctx: TurnContext) -> TurnContext:
+    """Phase 7 (M4): options vest for the month just ending (14.2)."""
+    return replace(ctx, state=vest(ctx.state, ctx.balance))
 
 
 def people_updates(ctx: TurnContext) -> TurnContext:
