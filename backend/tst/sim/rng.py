@@ -32,6 +32,8 @@ STREAM_IDS: Final = MappingProxyType(
         "actions": 13,  # key (action_seq,): randomness inside a player action (M1b)
         "delegate": 14,  # key (person_id, n): randomness inside a delegate's action (M2a)
         "product_dev": 15,  # key (product_id,): monthly development noise (M3, ADR-0017)
+        "finance": 16,  # key (safe_id,) or (round_id, firm_index): investors' answers (M4)
+        "board": 17,  # key (seat_id,): generating a director (M4)
         "misc": 99,
     }
 )

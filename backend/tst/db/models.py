@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 
 class Base(DeclarativeBase):
@@ -38,6 +38,15 @@ class SaveMetaRow(Base):
     next_unit_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_plan_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_product_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    # M4 (ADR-0018): how the game stands, and the finance id counters
+    game_state: Mapped[str] = mapped_column(String(16), nullable=False, server_default="active")
+    ended_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    next_cap_entry_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_grant_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_safe_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_round_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_term_sheet_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_seat_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
 
 
 class CompanyRow(Base):
@@ -52,6 +61,8 @@ class CompanyRow(Base):
     work_policy: Mapped[str] = mapped_column(String(16), nullable=False, server_default="office")
     root_product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # product (no FK)
     arr_milestone_cents: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    mrr_history: Mapped[list[int]] = mapped_column(JSON, nullable=False, server_default="[]")
+    insolvent_months: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
 
 
 class AccountRow(Base):
@@ -439,3 +450,100 @@ class ProductMonthRow(Base):
     new: Mapped[float] = mapped_column(Float, nullable=False)
     churned: Mapped[float] = mapped_column(Float, nullable=False)
     revenue_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+
+# --- Finance (M4, ADR-0018) -------------------------------------------------------------------
+
+
+class CapTableEntryRow(Base):
+    __tablename__ = "cap_table_entry"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    holder_kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    share_class: Mapped[str] = mapped_column(String(24), nullable=False)
+    shares: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    acquired_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    person_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    firm: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    name: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    round_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class OptionGrantRow(Base):
+    __tablename__ = "option_grant"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), nullable=False)
+    employment_id: Mapped[int] = mapped_column(ForeignKey("employment.id"), nullable=False)
+    granted: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    start_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    vested: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    forfeited: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class SafeRow(Base):
+    __tablename__ = "safe"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    amount_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    cap_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    raised_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    expires_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    converted_round_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class FundingRoundRow(Base):
+    __tablename__ = "funding_round"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    series: Mapped[str] = mapped_column(String(8), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    target_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    opened_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    expires_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    accepted_sheet_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    lead_firm: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    pre_money_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    amount_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    fd_before: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    pool_shares: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    safe_shares: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    new_shares: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    fd_pre: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    down_round: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+
+
+class TermSheetRow(Base):
+    __tablename__ = "term_sheet"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    round_id: Mapped[int] = mapped_column(ForeignKey("funding_round.id"), nullable=False)
+    firm: Mapped[str] = mapped_column(String(32), nullable=False)
+    pre_money_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    amount_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    offered_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    expires_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class BoardSeatRow(Base):
+    __tablename__ = "board_seat"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), nullable=False)
+    seated_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    firm: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    round_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    months_below: Mapped[int] = mapped_column(Integer, nullable=False)

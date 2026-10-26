@@ -8,7 +8,14 @@ from pathlib import Path
 import pytest
 from sqlalchemy import text
 
-from tests.helpers import fresh_game, make_person, mark_interviewed, with_employee, with_product
+from tests.helpers import (
+    fresh_game,
+    make_person,
+    mark_interviewed,
+    move_save_directors,
+    with_employee,
+    with_product,
+)
 from tests.unit.test_hiring_phases import Game, _staff_game
 from tst.db.inbox import (
     UnknownInboxItemError,
@@ -183,6 +190,7 @@ def test_fired_culture_carrier_is_stored_and_announced(tmp_path: Path, loaded: L
     path = create_save(
         "carrier", 2, "funded_spinout", company_name="Co", data=loaded, save_dir=tmp_path
     )
+    move_save_directors(path)
     with open_session(path) as session, session.begin():
         before = load_state(session)
         carrier = replace(make_person(loaded, 2), tags=("culture_carrier",))

@@ -6,6 +6,15 @@ from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from typing import Any
 
+from tst.sim.finance.models import (
+    BoardSeat,
+    CapEntry,
+    FundingRound,
+    GameOutcome,
+    OptionGrant,
+    Safe,
+    TermSheet,
+)
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
@@ -20,6 +29,8 @@ class SaveMeta:
     master_seed: int
     scenario_id: str
     difficulty: str
+    game_state: GameOutcome = "active"  # ADR-0018 section 4
+    ended_turn: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +44,8 @@ class CompanyState:
     work_policy: WorkPolicy = "office"  # the company root's policy (formulas.md 13.9)
     root_product_id: int | None = None  # the product the root's members work on (11.3, M3)
     arr_milestone_cents: int = 0  # highest ARR milestone announced in the inbox (M3a)
+    mrr_history: tuple[int, ...] = ()  # MRR at the last month ends, oldest first (M4, 14.3)
+    insolvent_months: int = 0  # consecutive month ends with cash < 0 after phase 7 (14.7)
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,6 +65,12 @@ class GameState:
     products: tuple[Product, ...] = ()  # products that are not retired, sorted by id (M3)
     product_segments: tuple[ProductSegment, ...] = ()  # sorted by (product_id, segment)
     markets: tuple[MarketSegment, ...] = ()  # sorted by (category, segment)
+    cap_entries: tuple[CapEntry, ...] = ()  # sorted by id (M4)
+    grants: tuple[OptionGrant, ...] = ()  # every option grant, sorted by id (M4)
+    safes: tuple[Safe, ...] = ()  # every SAFE and bridge, sorted by id (M4)
+    rounds: tuple[FundingRound, ...] = ()  # every priced round, sorted by id (M4)
+    term_sheets: tuple[TermSheet, ...] = ()  # every term sheet, sorted by id (M4)
+    seats: tuple[BoardSeat, ...] = ()  # board seats, sorted by id (M4)
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -178,6 +197,55 @@ class GameState:
                 return m
         return None
 
+    # --- Finance (M4) ----------------------------------------------------------------------
+
+    @property
+    def ended(self) -> bool:
+        """The game is over (ADR-0018 section 4)."""
+        return self.save_meta.game_state != "active"
+
+    def company_cap(self, company_id: int) -> tuple[CapEntry, ...]:
+        return tuple(e for e in self.cap_entries if e.company_id == company_id)
+
+    def company_grants(self, company_id: int) -> tuple[OptionGrant, ...]:
+        return tuple(g for g in self.grants if g.company_id == company_id)
+
+    def grant_for(self, employment_id: int) -> OptionGrant | None:
+        for g in self.grants:
+            if g.employment_id == employment_id:
+                return g
+        return None
+
+    def company_safes(self, company_id: int) -> tuple[Safe, ...]:
+        return tuple(s for s in self.safes if s.company_id == company_id)
+
+    def safe(self, safe_id: int) -> Safe | None:
+        for s in self.safes:
+            if s.id == safe_id:
+                return s
+        return None
+
+    def company_rounds(self, company_id: int) -> tuple[FundingRound, ...]:
+        return tuple(r for r in self.rounds if r.company_id == company_id)
+
+    def funding_round(self, round_id: int) -> FundingRound | None:
+        for r in self.rounds:
+            if r.id == round_id:
+                return r
+        return None
+
+    def sheets_of(self, round_id: int) -> tuple[TermSheet, ...]:
+        return tuple(t for t in self.term_sheets if t.round_id == round_id)
+
+    def term_sheet(self, sheet_id: int) -> TermSheet | None:
+        for t in self.term_sheets:
+            if t.id == sheet_id:
+                return t
+        return None
+
+    def board(self, company_id: int) -> tuple[BoardSeat, ...]:
+        return tuple(s for s in self.seats if s.company_id == company_id)
+
     def ledger_companies(self) -> tuple[CompanyState, ...]:
         """Companies with books: the player. Incumbents have no ledger until M5 (ADR-0017)."""
         return tuple(c for c in self.companies if c.is_player)
@@ -259,6 +327,30 @@ def with_product_segment(state: GameState, segment: ProductSegment) -> GameState
 
 def with_market(state: GameState, market: MarketSegment) -> GameState:
     return replace(state, markets=_upsert(state.markets, market, lambda m: (m.category, m.segment)))
+
+
+def with_cap_entry(state: GameState, entry: CapEntry) -> GameState:
+    return replace(state, cap_entries=_upsert(state.cap_entries, entry, lambda e: e.id))
+
+
+def with_grant(state: GameState, grant: OptionGrant) -> GameState:
+    return replace(state, grants=_upsert(state.grants, grant, lambda g: g.id))
+
+
+def with_safe(state: GameState, safe: Safe) -> GameState:
+    return replace(state, safes=_upsert(state.safes, safe, lambda s: s.id))
+
+
+def with_round(state: GameState, funding_round: FundingRound) -> GameState:
+    return replace(state, rounds=_upsert(state.rounds, funding_round, lambda r: r.id))
+
+
+def with_term_sheet(state: GameState, sheet: TermSheet) -> GameState:
+    return replace(state, term_sheets=_upsert(state.term_sheets, sheet, lambda t: t.id))
+
+
+def with_seat(state: GameState, seat: BoardSeat) -> GameState:
+    return replace(state, seats=_upsert(state.seats, seat, lambda s: s.id))
 
 
 def with_person_state(state: GameState, person_state: PersonState) -> GameState:

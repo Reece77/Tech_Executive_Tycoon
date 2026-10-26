@@ -28,6 +28,9 @@ One row describing the save. Current-state table (updated in place each turn).
 | `next_unit_id` | INTEGER | no | Next org unit id (M2a). |
 | `next_plan_id` | INTEGER | no | Next hiring plan id (M2a). |
 | `next_product_id` | INTEGER | no | Next product id (M3a). The 12 incumbent products take 1..12 in a new game. |
+| `game_state` | VARCHAR(16) | no | `active`, `bankrupt` or `founder_removed` (ADR-0018 §4). Once ended, turns and actions are refused (HTTP 409); reads still work (M4a). |
+| `ended_turn` | INTEGER | yes | Turn the game ended; null while active (M4a). |
+| `next_cap_entry_id` / `next_grant_id` / `next_safe_id` / `next_round_id` / `next_term_sheet_id` / `next_seat_id` | INTEGER | no | Next ids for the finance tables (M4a). |
 
 ## company
 
@@ -44,6 +47,8 @@ The player company, the 2010 incumbents (M3a, ADR-0017: `is_player` false, no pe
 | `work_policy` | VARCHAR(16) | no | The company root's work-location policy, `office` (default) or `remote` (formulas.md §13.9, M2a). Units without their own policy inherit it. |
 | `root_product_id` | INTEGER | yes | Product the company root's members (the founder included) work on (formulas.md §11.3, M3a); null = none. No FK (added by `0008_products`). |
 | `arr_milestone_cents` | BIGINT | no | Highest ARR milestone (`products.arr_milestones_cents`) already announced in the inbox; 0 = none (M3a). |
+| `mrr_history` | JSON | no | MRR in cents at the last 13 month ends, oldest first: the sim's input to `g_6` (formulas.md 14.3) and board confidence (M4a). |
+| `insolvent_months` | INTEGER | no | Consecutive month ends with cash below zero after phase 7; 3 is bankruptcy (14.7, M4a). |
 
 Cash is not stored here; it is the `1000_cash` ledger balance (ADR-0003).
 
@@ -421,6 +426,100 @@ Month-end history per product and segment, append-only. Primary key `(product_id
 | `new` | FLOAT | no | Customers won this month. |
 | `churned` | FLOAT | no | Customers lost this month. |
 | `revenue_cents` | BIGINT | no | Revenue booked this month (0 for incumbents, who have no ledger until M5). |
+
+## Finance (migration `0009_finance`, M4a)
+
+Shares are integer counts (ADR-0018). Fully diluted shares (FD) = every `cap_table_entry` (the unallocated pool included) + every grant's `granted - forfeited`. On upgrade an existing save gets its scenario's cap table; each employment's `equity_bp` becomes a grant of `equity_bp x 1000` options from the pool at its `start_turn`, vested to the save's turn; a funded spinout also gets its closed seed round and the lead's board seat with a generated director.
+
+### cap_table_entry
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Entry id (`save_meta.next_cap_entry_id`). |
+| `company_id` | INTEGER FK → company.id | no | Company. |
+| `holder_kind` | VARCHAR(16) | no | `person` (the founder), `firm` (an investor in `investors.yaml`), `group` (e.g. "Former colleagues", "SAFE holders") or `pool` (the unallocated option pool, one per company). |
+| `share_class` | VARCHAR(24) | no | `common`, `preferred_seed`, `preferred_a`, `preferred_b`, `safe_conversion` or `option_pool`. |
+| `shares` | BIGINT | no | Shares held. |
+| `acquired_turn` | INTEGER | no | Turn the shares were issued. |
+| `person_id` | INTEGER | yes | Holder when `holder_kind` is `person`. |
+| `firm` | VARCHAR(32) | yes | `investors.yaml` key when `holder_kind` is `firm`. |
+| `name` | VARCHAR(80) | yes | Holder name when `holder_kind` is `group` or `pool`. |
+| `round_id` | INTEGER | yes | The priced round that issued the shares. |
+
+### option_grant
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Grant id (`save_meta.next_grant_id`). |
+| `company_id` | INTEGER FK → company.id | no | Company. |
+| `person_id` | INTEGER FK → person.id | no | Holder. |
+| `employment_id` | INTEGER FK → employment.id | no | The hire the grant came with (one grant per employment). |
+| `granted` | BIGINT | no | Options granted: `round(offer bp x FD / 10000)` at hire (14.2). |
+| `start_turn` | INTEGER | no | Hire turn; vesting counts from here. |
+| `vested` | BIGINT | no | Vested options: 0 before the 12-month cliff, then `floor(granted x min(48, months) / 48)`. |
+| `forfeited` | BIGINT | no | Unvested options returned to the pool when the person left. |
+| `status` | VARCHAR(16) | no | `active` or `ended` (the person left; vested options stay theirs). |
+
+### safe
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | SAFE id (`save_meta.next_safe_id`). |
+| `company_id` | INTEGER FK → company.id | no | Company. |
+| `kind` | VARCHAR(16) | no | `safe` (raised by the founder) or `bridge` (offered by existing investors while insolvent, 14.7). |
+| `amount_cents` | BIGINT | no | Money raised. |
+| `cap_cents` | BIGINT | no | Post-money valuation cap (ADR-0018 §2). |
+| `status` | VARCHAR(16) | no | SAFE: `pending` → `outstanding` or `declined`. Bridge: `offered` → `accepted` → `outstanding`, or `lapsed`. An outstanding SAFE becomes `converted` at the next priced round. |
+| `raised_turn` | INTEGER | no | Turn raised (or offered). |
+| `resolved_turn` | INTEGER | yes | Turn answered, funded or lapsed. |
+| `expires_turn` | INTEGER | yes | Bridge: last turn it can be accepted. |
+| `converted_round_id` | INTEGER | yes | The round it converted in. |
+
+### funding_round
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Round id (`save_meta.next_round_id`). |
+| `company_id` | INTEGER FK → company.id | no | Company. |
+| `series` | VARCHAR(8) | no | `seed`, `a` or `b`. |
+| `status` | VARCHAR(16) | no | `open` → `accepted` (a term sheet accepted) → `closed`; or `failed` (no term sheets) or `lapsed` (none accepted in time). |
+| `target_cents` | BIGINT | no | The amount the founder asked for. |
+| `opened_turn` | INTEGER | no | Turn started. |
+| `expires_turn` | INTEGER | no | Last turn a term sheet can be accepted. |
+| `accepted_sheet_id` | INTEGER | yes | The accepted term sheet. |
+| `closed_turn` | INTEGER | yes | Turn it closed (phase 1). |
+| `lead_firm` | VARCHAR(32) | yes | The lead investor. |
+| `pre_money_cents` / `amount_cents` | BIGINT | yes | Agreed pre-money valuation and new money. |
+| `fd_before` | BIGINT | yes | `E`: FD before the round. |
+| `pool_shares` / `safe_shares` / `new_shares` | BIGINT | yes | `X` (pool top-up), `C` (SAFE conversion), `N` (new preferred), 14.5. |
+| `fd_pre` | BIGINT | yes | `E + X + C`; the price is `pre_money_cents / fd_pre` cents a share. |
+| `down_round` | BOOLEAN | no | The price was below the previous round's. |
+
+### term_sheet
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Term sheet id (`save_meta.next_term_sheet_id`). |
+| `round_id` | INTEGER FK → funding_round.id | no | Round. |
+| `firm` | VARCHAR(32) | no | `investors.yaml` key. |
+| `pre_money_cents` | BIGINT | no | The firm's quoted pre-money valuation. |
+| `amount_cents` | BIGINT | no | What the firm offers to invest. |
+| `status` | VARCHAR(16) | no | `offered`, `accepted` or `lapsed`. |
+| `offered_turn` / `expires_turn` | INTEGER | no | Turn it arrived and the last turn it can be accepted. |
+
+### board_seat
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Seat id (`save_meta.next_seat_id`; the `board` stream key for generating its director). |
+| `company_id` | INTEGER FK → company.id | no | Company. |
+| `kind` | VARCHAR(16) | no | `common` (the founder or their nominee), `investor` or `independent` (14.6). |
+| `person_id` | INTEGER FK → person.id | no | Director: the founder, or a generated person with role `board_member` and no employment. |
+| `seated_turn` | INTEGER | no | Turn the seat was created. |
+| `firm` | VARCHAR(32) | yes | Investor seats: the firm. |
+| `round_id` | INTEGER | yes | The round that created the seat. |
+| `confidence` | FLOAT | yes | Investor and independent seats: confidence 0–100 (starts at 70). Null for common seats, which always back the founder. |
+| `months_below` | INTEGER | no | Consecutive month ends below the removal threshold (25). |
 
 ## Inbox (migration `0004_inbox`, M1b)
 

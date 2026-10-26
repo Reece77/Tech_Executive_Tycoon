@@ -13,7 +13,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.helpers import make_person, with_employee
+from tests.helpers import make_person, move_save_directors, with_employee
 from tests.integration.test_api_hiring import Client
 from tst.api.app import create_app
 from tst.config import Settings, get_settings
@@ -32,6 +32,7 @@ def seed_staff(
 ) -> None:
     """Put `count` employees (ids 2..) on the books. `leaders` get leadership 14,
     communication 12, mentoring 10; `tags` maps "p<id>" to one true tag."""
+    move_save_directors(path)
     with open_session(path) as session, session.begin():
         before = load_state(session)
         state = before

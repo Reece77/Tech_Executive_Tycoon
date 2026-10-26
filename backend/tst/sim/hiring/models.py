@@ -81,10 +81,30 @@ class NextIds:
     unit: int = 1
     plan: int = 1
     product: int = 1  # M3
+    cap_entry: int = 1  # M4
+    grant: int = 1
+    safe: int = 1
+    round: int = 1
+    term_sheet: int = 1
+    seat: int = 1
 
     def take(
         self,
-        kind: Literal["person", "search", "offer", "employment", "unit", "plan", "product"],
+        kind: Literal[
+            "person",
+            "search",
+            "offer",
+            "employment",
+            "unit",
+            "plan",
+            "product",
+            "cap_entry",
+            "grant",
+            "safe",
+            "round",
+            "term_sheet",
+            "seat",
+        ],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)
         return value, replace(self, **{kind: value + 1})

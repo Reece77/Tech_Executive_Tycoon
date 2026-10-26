@@ -71,8 +71,11 @@ def test_new_game_mission_invalid(
 def test_new_game_energy_and_counters(loaded: LoadedData) -> None:
     state = fresh(loaded)
     assert state.person_state(1) == PersonState(person_id=1, energy=100)
-    # The 12 incumbent products (M3, ADR-0017) take product ids 1..12.
-    assert state.next_ids == NextIds(person=2, search=1, offer=1, employment=2, product=13)
+    # The 12 incumbent products (M3, ADR-0017) take product ids 1..12; the founder, pool and
+    # former colleagues take cap-table entries 1..3 (M4, 14.2).
+    assert state.next_ids == NextIds(
+        person=2, search=1, offer=1, employment=2, product=13, cap_entry=4
+    )
 
 
 def _with_hiring(loaded: LoadedData, state: GameState) -> GameState:
@@ -167,6 +170,9 @@ def test_upgrade_from_0002_sets_counters_mission_and_energy(
     with open_session(path) as session:
         state = load_state(session)
     assert state.player.mission == ()
-    # 0008_products adds the 12 incumbent products (ids 1..12) on upgrade.
-    assert state.next_ids == NextIds(person=2, search=1, offer=1, employment=2, product=13)
+    # 0008_products adds the 12 incumbent products (ids 1..12) on upgrade; 0009_finance the
+    # founder's and the pool's cap-table entries.
+    assert state.next_ids == NextIds(
+        person=2, search=1, offer=1, employment=2, product=13, cap_entry=3
+    )
     assert state.person_state(1).energy == 100

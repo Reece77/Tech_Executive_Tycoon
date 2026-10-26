@@ -2,20 +2,24 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, fields
 from typing import Any, cast
 
 from tst.db.models import (
     Base,
+    BoardSeatRow,
     CandidateRow,
+    CapTableEntryRow,
     CompanyRow,
     DecisionLogRow,
     EmploymentRow,
+    FundingRoundRow,
     HiringPlanRow,
     LedgerEntryRow,
     LedgerLineRow,
     MarketSegmentRow,
     OfferRow,
+    OptionGrantRow,
     OrgUnitRow,
     PersonHiddenRow,
     PersonInterestRow,
@@ -30,12 +34,23 @@ from tst.db.models import (
     ProductMonthRow,
     ProductRow,
     ProductSegmentRow,
+    SafeRow,
     SaveMetaRow,
     SearchRow,
+    TermSheetRow,
     TurnLogRow,
     TurnSnapshotRow,
 )
 from tst.sim.decisions import Decisions
+from tst.sim.finance.models import (
+    BoardSeat,
+    CapEntry,
+    FundingRound,
+    GameOutcome,
+    OptionGrant,
+    Safe,
+    TermSheet,
+)
 from tst.sim.hiring.models import (
     Candidate,
     CandidateStatus,
@@ -94,6 +109,8 @@ def company_to_state(row: CompanyRow) -> CompanyState:
         work_policy=cast(WorkPolicy, row.work_policy),
         root_product_id=row.root_product_id,
         arr_milestone_cents=row.arr_milestone_cents,
+        mrr_history=tuple(row.mrr_history or ()),
+        insolvent_months=row.insolvent_months,
     )
 
 
@@ -108,6 +125,8 @@ def company_to_row(company: CompanyState) -> CompanyRow:
         work_policy=company.work_policy,
         root_product_id=company.root_product_id,
         arr_milestone_cents=company.arr_milestone_cents,
+        mrr_history=list(company.mrr_history),
+        insolvent_months=company.insolvent_months,
     )
 
 
@@ -120,6 +139,8 @@ def update_company_row(row: CompanyRow, company: CompanyState) -> None:
     row.work_policy = company.work_policy
     row.root_product_id = company.root_product_id
     row.arr_milestone_cents = company.arr_milestone_cents
+    row.mrr_history = list(company.mrr_history)
+    row.insolvent_months = company.insolvent_months
 
 
 def game_state_from_rows(
@@ -135,6 +156,8 @@ def game_state_from_rows(
             master_seed=meta.master_seed,
             scenario_id=meta.scenario_id,
             difficulty=meta.difficulty,
+            game_state=cast(GameOutcome, meta.game_state),
+            ended_turn=meta.ended_turn,
         ),
         turn=meta.current_turn,
         companies=tuple(company_to_state(r) for r in sorted(companies, key=lambda r: r.id)),
@@ -466,6 +489,12 @@ def next_ids_from_meta(meta: SaveMetaRow) -> NextIds:
         unit=meta.next_unit_id,
         plan=meta.next_plan_id,
         product=meta.next_product_id,
+        cap_entry=meta.next_cap_entry_id,
+        grant=meta.next_grant_id,
+        safe=meta.next_safe_id,
+        round=meta.next_round_id,
+        term_sheet=meta.next_term_sheet_id,
+        seat=meta.next_seat_id,
     )
 
 
@@ -477,6 +506,12 @@ def next_ids_to_meta(meta: SaveMetaRow, ids: NextIds) -> None:
     meta.next_unit_id = ids.unit
     meta.next_plan_id = ids.plan
     meta.next_product_id = ids.product
+    meta.next_cap_entry_id = ids.cap_entry
+    meta.next_grant_id = ids.grant
+    meta.next_safe_id = ids.safe
+    meta.next_round_id = ids.round
+    meta.next_term_sheet_id = ids.term_sheet
+    meta.next_seat_id = ids.seat
 
 
 # --- Organization (M2a) ---------------------------------------------------------------------
@@ -650,3 +685,25 @@ def product_month_from_row(row: ProductMonthRow) -> ProductMonth:
         churned=row.churned,
         revenue_cents=row.revenue_cents,
     )
+
+
+# --- Finance (M4): column names match the dataclass fields ------------------------------------
+
+FINANCE_ROWS: dict[type[Any], type[Any]] = {
+    CapEntry: CapTableEntryRow,
+    OptionGrant: OptionGrantRow,
+    Safe: SafeRow,
+    FundingRound: FundingRoundRow,
+    TermSheet: TermSheetRow,
+    BoardSeat: BoardSeatRow,
+}
+
+
+def finance_to_row(item: Any) -> Any:
+    """Any finance dataclass as its row."""
+    return FINANCE_ROWS[type(item)](**asdict(item))
+
+
+def finance_from_row[T](cls: type[T], row: Any) -> T:
+    """A finance dataclass from its row (status-like strings are trusted: the sim wrote them)."""
+    return cls(**{f.name: getattr(row, f.name) for f in fields(cls)})  # type: ignore[arg-type]

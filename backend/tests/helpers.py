@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 
 from tst.loader import LoadedData
 from tst.sim.hiring.models import Candidate, PersonState, Search
@@ -45,7 +46,48 @@ def fresh_game(
         data=loaded.game_data,
         mission=mission,
     )
-    return state
+    return move_directors(state)
+
+
+DIRECTOR_IDS_FROM = 900  # test fixtures put employees at ids 2.., so directors move out of the way
+
+
+def move_directors(state: GameState) -> GameState:
+    """Re-id generated board directors (the funded spinout's seed director) to 900.. so test
+    fixtures can put employees at fixed ids from 2. Real games never need this: every id
+    comes from next_ids."""
+    directors = sorted({s.person_id for s in state.seats if s.kind != "common"})
+    if not directors:
+        return state
+    new_id = {old: DIRECTOR_IDS_FROM + i for i, old in enumerate(directors)}
+    people = tuple(
+        sorted((replace(p, id=new_id.get(p.id, p.id)) for p in state.people), key=lambda p: p.id)
+    )
+    seats = tuple(replace(s, person_id=new_id.get(s.person_id, s.person_id)) for s in state.seats)
+    return replace(state, people=people, seats=seats)
+
+
+def move_save_directors(path: Path) -> None:
+    """move_directors for a save file: the same re-id in every table keyed by person id."""
+    from sqlalchemy import text
+
+    from tst.db.models import Base
+    from tst.db.repository import open_session
+
+    with open_session(path) as session, session.begin():
+        rows = session.execute(
+            text("SELECT person_id FROM board_seat WHERE kind != 'common' ORDER BY person_id")
+        ).all()
+        session.execute(text("PRAGMA defer_foreign_keys = ON"))
+        for i, (old,) in enumerate(rows):
+            new = DIRECTOR_IDS_FROM + i
+            for table in Base.metadata.sorted_tables:
+                if "person_id" in table.c and table.name != "decision_log":
+                    session.execute(
+                        text(f"UPDATE {table.name} SET person_id = :n WHERE person_id = :o"),
+                        {"n": new, "o": old},
+                    )
+            session.execute(text("UPDATE person SET id = :n WHERE id = :o"), {"n": new, "o": old})
 
 
 def make_person(
