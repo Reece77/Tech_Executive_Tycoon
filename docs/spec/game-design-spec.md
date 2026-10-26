@@ -207,7 +207,7 @@ Demand is segmented, and market share is split each turn by relative appeal amon
 
 The finance model keeps real double-entry books, so the P&L, balance sheet, cash flow statement, and cap table always reconcile.
 
-**Until M4:** cash may go negative without ending the game, and runway is reported at this month's projected costs. M4 adds financing, statements and the bankruptcy rule.
+**Until M4:** cash may go negative without ending the game, and runway is reported at this month's projected costs. M4 (\`docs/formulas.md\` §14) adds statements derived from the ledger, a cap table in shares with 4-year vesting options, post-money SAFEs, priced Seed, Series A and Series B rounds from ten real investor firms with valuation from ARR, growth and a yearly funding climate, a board whose confidence can remove the founder after Series B, and bankruptcy after three month-ends of negative cash (with a bridge offer from existing investors). Debt, Series C onward and exits are v2.
 
 | Instrument | Available from | Mechanics |
 | --- | --- | --- |
@@ -379,7 +379,7 @@ Each milestone ends in something playable and a green test suite; nothing from a
 | M1 People (done: M1a, M1b, M1c) | Person generator, attributes, personality, interests, hidden traits with reveal, hiring, payroll, morale | Hire 10 people via UI; profiles render; payroll hits ledger; morale moves with pay and fit | v1 |
 | M2 Org (done: M2a, M2b) | Departments, teams, reporting lines, span of control, remote policy, raises and promotions, delegated hiring | Build a 3-level org chart; span penalty visible; reorg costs morale; a recruiter's plan hires without founder energy | v1 |
 | M3 Products and market (M3a rules and API, M3b screens) | 4 software categories, lifecycle, ratings, segments, share formula, revenue and churn | A company can earn and burn (bankruptcy arrives with M4); share responds to price and quality | v1 |
-| M4 Finance | Double-entry ledger, statements, SAFEs, priced rounds, cap table, board | Statements reconcile every turn; dilution correct across 3 rounds | v1 |
+| M4 Finance | Statements, cap table and options, SAFEs, Seed to Series B rounds, board, bankruptcy (M4a rules and API, M4b screens) | Statements reconcile every turn; dilution correct across 3 rounds | v1 |
 | M5 Rivals | 8 agent rivals with personalities and utility AI, poaching | Rivals launch, price, hire, and die across 120 turns; balance runner passes targets | v1 |
 | M6 Events | Director, templates, LLM adapter, validator, storylines, crisis windows | 200 LLM events with zero invalid state writes; offline mode works | v1 |
 | M7 v1 polish | History screen, saves manager, tooltips, balance pass | Reece plays a full 10-year run without a blocking bug | v1 |
@@ -452,6 +452,8 @@ All design questions but one are settled, and each answer is recorded in an ADR 
 | Judgment of talent | Its main job is spotting potential: potential narrows much faster for good scouts, and hiring plans can favour potential (juniors and mids) | formulas.md §4, §13.10 |
 | Competitors before M5 | Real 2010 incumbents with fixed product scores and starting customers; the same companies get people, ledgers and AI in M5 | ADR-0017 |
 | Founder scouting | The founder can scout a search for 20 energy, the same action delegates use | formulas.md §11.12 |
+| Equity and SAFEs | Ownership in shares (10M at start); offers in bp become options; SAFEs are post-money with a cap and no discount | ADR-0018 |
+| How a game ends | Bankruptcy after 3 month-ends of negative cash, or board removal (possible only once investors and the independent outvote common seats, after Series B); the save stays readable | ADR-0018 |
 
 ## 21. Pre-Build Artifacts to Generate
 
@@ -474,4 +476,4 @@ Twelve artifacts should exist before the first line of game code; the first five
 
 **Recommended order:** 1, 2, 5 in one sitting (so Claude Code can start M0), then 3 and 4, then 8 and 9 in parallel with M0.
 
-**Status:** items 1, 2, 4, and 5 are in the GitHub repository (`Reece77/Tech_Executive_Tycoon`): rules files, 17 ADRs, `docs/formulas.md` (final through M3: §11 products and markets, §13 organization), and briefs for M0 through M3b. Item 3 (data dictionary) is kept current with each migration. M0, M1 and M2 are complete; M3a is next, and M3b follows once its product wireframes are drawn.
+**Status:** items 1, 2, 4, and 5 are in the GitHub repository (`Reece77/Tech_Executive_Tycoon`): rules files, 18 ADRs, `docs/formulas.md` (final through M4: §11 products and markets, §13 organization, §14 finance), and briefs for M0 through M4b. Item 3 (data dictionary) is kept current with each migration. M0, M1 and M2 are complete; M3a is next, and M3b follows once its product wireframes are drawn.
