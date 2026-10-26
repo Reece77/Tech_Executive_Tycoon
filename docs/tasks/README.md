@@ -22,6 +22,8 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M2b-org-screens.md](M2b-org-screens.md) | Org screen and the profile, people, recruitment, inbox and overview additions | M2a |
 | [M3a-products-and-market.md](M3a-products-and-market.md) | Products, development, markets with 2010 incumbents, revenue, founder scouting: rules, API, CLI | M2b |
 | [M3b-product-screens.md](M3b-product-screens.md) | Products screen, product profile, market view, and the org, overview, recruitment and inbox additions | M3a |
+| [M4a-finance-rules-and-api.md](M4a-finance-rules-and-api.md) | Statements, cap table and options, SAFEs, priced rounds, board, bankruptcy: rules, API, CLI | M3b |
+| [M4b-finance-screens.md](M4b-finance-screens.md) | Finance screen (statements, cap table, fundraising, board), game over screen and additions | M4a |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

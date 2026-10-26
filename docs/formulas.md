@@ -2,7 +2,7 @@
 
 This is the authoritative source for game math. Task briefs summarize these formulas; when a brief and this file differ, this file wins. Every number below is a default that lives in `backend/data/balance.yaml` under the key shown in §12, never as a literal in code (ADR-0008).
 
-Status: §1–§10 are final for M1. §13 (organization) is final for M2 and adds terms to §3, §6, §7 and §9, each marked "M2". §11 (products and markets) is final for M3 and adds rows to §6, each marked "M3".
+Status: §1–§10 are final for M1. §13 (organization) is final for M2 and adds terms to §3, §6, §7 and §9, each marked "M2". §11 (products and markets) is final for M3 and adds rows to §6, each marked "M3". §14 (finance) is final for M4 and changes §7 (equity in options), §8 and §10 (retention), each marked "M4".
 
 ## 0. Conventions
 
@@ -208,6 +208,9 @@ and each action's PA strength is `reveal.pa_strength.<action>`. This is what mak
 | **M3:** Set a price or a marketing budget | 1 |
 | **M3:** Add a segment | 2 |
 | **M3:** Launch or sunset a product | 3 |
+| **M4:** Raise on a SAFE | 10 |
+| **M4:** Start a priced round | 15 |
+| **M4:** Accept a term sheet or a bridge | 5 |
 
 Delegates (§13.10) have their own energy and never spend the founder's.
 
@@ -248,7 +251,7 @@ p = \frac{1}{1 + e^{-3\,(score - 0)}}
 
 - **M2a: an offer requires an interview** (ADR-0016). The offering company must have interviewed the candidate (the founder or one of its delegates); a network intro or reference check does not count. Otherwise the action fails with `InterviewRequired`.
 - If `R < 0.85`, the candidate always declines.
-- **Option pool:** an offer may carry at most 200 bp of equity, and equity held by staff plus pending offers may not exceed 1,000 bp (a 10% pool). The founder's ownership is outside the pool and arrives with the cap table in M4.
+- **Option pool:** an offer may carry at most 200 bp of equity, and equity held by staff plus pending offers may not exceed 1,000 bp (a 10% pool). **M4:** equity is granted as options from the pool's unallocated shares (§14.2); the limit becomes the unallocated pool. The founder's ownership is outside the pool and arrives with the cap table in M4.
 - An accepted offer moves the company from stage 0 to stage 1 ("first hire", spec §3) in phase 10.
 - **Withdrawing an offer** removes only the pending offer. The candidate stays open and can receive a new offer the same turn: nothing is decided until Continue. **Closing a job post** stops new batches; its existing candidates stay until they expire. The candidate status `withdrawn` is reserved for M2 (a candidate or a delegate pulling out) and is unused in M1.
 - **Company mission:** two interests from `interests.yaml`, chosen at new game. If none are given, the mission is the founder's first two interests, ordered as in `interests.yaml`. When given, they must be exactly two distinct valid interests. Saves created before M1b keep an empty mission.
@@ -280,7 +283,7 @@ The gap between 1.10× and 0.95× is 39 percentage points, which satisfies the M
 
 All are credited to 1000_cash.
 
-**Negative cash (M1 only):** there is no insolvency until M4. Cash may fall below zero; payroll and offers are never blocked, but opening a job post requires cash of at least its first month's fee. The inbox warns the first month cash is negative and every month it stays negative. For morale's runway term, zero or negative cash counts as under 3 months.
+**Negative cash (M1–M3):** there is no insolvency until M4, which adds insolvency, bridges and bankruptcy (§14.7). Cash may fall below zero; payroll and offers are never blocked, but opening a job post requires cash of at least its first month's fee. The inbox warns the first month cash is negative and every month it stays negative. For morale's runway term, zero or negative cash counts as under 3 months.
 
 **Worked example.** A senior engineer at $115,000: salary 958,333 cents + benefits 191,667 cents + office 60,000 cents = **$12,100.00 per month**.
 
@@ -345,6 +348,8 @@ p_{bp} = 50 \times \left(1 + \frac{\max(0,\,40 - morale)}{20}\right) \times \fra
 | Morale 70, loyalty 12 | 45 bp (0.45%) |
 | Morale 25, loyalty 6 | 131 bp (1.3%) |
 | Morale 25, loyalty 6, job hopper | 263 bp (2.6%) |
+
+**M4:** the chance is then multiplied by the retention factor for unvested options, `max(0.5, 1 − 0.5 u)` (§14.2), before the cap.
 
 A resignation sets employment status to `notice` with `end_turn = turn + 1`. A notice employment is still paid that month; in phase 1 of `end_turn` it becomes `ended` (`end_reason` = `resigned`). Firing ends it at once (`end_reason` = `fired`); retirement works like a resignation (`end_reason` = `retired`).
 
@@ -687,6 +692,22 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `stages.arr_cents.<stage>` | 2: 100000000, 3: 2000000000 | cents | §11.11 |
 | Category, segment and incumbent values | see §11.1, §11.9 | — | data: `categories.yaml`, `incumbents.yaml` |
 
+| `finance.initial_fd_shares` / `.pool_target_bp` | 10000000 / 1000 | shares / bp of post-money FD | §14.2, §14.5 |
+| `finance.vesting_months` / `.cliff_months` | 48 / 12 | months | §14.2 |
+| `finance.retention_slope` / `.retention_floor` | 0.5 / 0.5 | multiplier | §14.2 |
+| `finance.multiple_base` / `.multiple_per_growth` / `.multiple_min` / `.multiple_max` | 4 / 4 / 3 / 20 | ARR multiple | §14.3 |
+| `finance.floor_cents.<no_product\|live>` / `.floor_per_head_cents` / `.floor_head_cap` | 200000000 / 400000000 / 10000000 / 30 | cents / people | §14.3 |
+| `finance.safe.min_cents` / `.max_cents` / `.optimism` / `.steepness` / `.fee_cents` | 2500000 / 200000000 / 1.2 / 6 / 200000 | cents / multiplier / slope / cents | §14.4 |
+| `finance.round.open_turns` / `.valuation_noise_sd` / `.max_amount_of_pre` / `.max_response` | 3 / 0.15 / 0.5 / 0.95 | turns / log sd / fraction / probability | §14.5 |
+| `finance.round.gate_arr_cents.<series>` | a: 100000000, b: 500000000 | cents | §14.5 |
+| `finance.round.fee_min_cents` / `.fee_bp` | 1500000 / 50 | cents / bp | §14.5 |
+| `board.start` / `.rate` / `.growth_weight` / `.expected_growth.<series>` | 70 / 0.2 / 20 / seed 2.0, a 1.5, b 1.0 | confidence / fraction / points / annual growth | §14.6 |
+| `board.runway_terms` | ≥12: +10, 6–12: 0, 3–6: −15, <3: −30 | months / points | §14.6 |
+| `board.no_product_penalty` / `.no_product_after_turns` / `.down_round_hit` | −20 / 12 / −15 | points / turns / points | §14.6 |
+| `board.warning_below` / `.removal_below` / `.removal_months` | 40 / 25 / 3 | confidence / confidence / months | §14.6 |
+| `bankruptcy.months` / `.bridge_burn_months` / `.bridge_cap_of_post` / `.bridge_min_confidence` / `.bridge_open_turns` | 3 / 3 / 0.8 / 40 / 2 | months / months / fraction / confidence / turns | §14.7 |
+| Investor firms, scenario cap tables, funding climate | see §14.2, §14.3, §14.5 | — | data: `investors.yaml`, `scenarios.yaml`, `climate.yaml` |
+
 ## 13. Organization (M2)
 
 The org is a tree of units under the company. Every effect below works through things M1 already has: morale (§9), growth (§3), offers (§7) and founder energy (§6). Productivity, coordination cost and decision latency arrive with products in M3.
@@ -800,3 +821,169 @@ A person's morale breakdown may show pay, fit (revealed interests only), runway,
 | Offer pitch | recruiting 7 / 15 | **−0.09** / **+0.15** |
 
 A flat company run by the founder loses about 4 morale per person once it passes 7 staff; two capable leads remove the penalty. Building the org is the M2 answer to M1's growing team.
+
+## 14. Finance (M4)
+
+M4 gives the company a cap table in shares, real statements, SAFEs and priced rounds (Seed, Series A, Series B) from investor firms, a board whose confidence can end the founder's run, and bankruptcy. Venture debt, bank loans, Series C onward, liquidation waterfalls, IPO and M&A are v2. ADR-0018 records the game-over states and the share model.
+
+### 14.1 Statements (derived from the ledger)
+
+Statements are views over `ledger_line`; they add no state.
+
+- **Profit and loss** for a month, quarter or year: revenue (`4xxx`), cost of revenue (`6300_compute` hosting, shown under gross margin), operating expenses (`6000`–`6900` except `6300`), operating result, interest (`7000`, zero in v1), tax (`8000`, zero in v1), net result.
+- **Balance sheet** at a month end: assets (`1xxx`), liabilities (`2xxx`, including `2600_safes`), paid-in equity (`3xxx`) and **accumulated result** (the sum of every past net result; there are no closing entries). Invariant, tested every turn: assets = liabilities + paid-in equity + accumulated result.
+- **Cash flow** for a period: operating (net result; there are no accruals in v1), financing (SAFE money, priced rounds, fees on rounds are operating), and the change in cash, which must equal the cash account's movement.
+- **Burn** = −(operating cash flow) when negative; **runway** = cash ÷ this month's projected net burn (projected costs − this month's revenue), shown as "profitable" when the projection is positive.
+
+### 14.2 Shares and the cap table
+
+- At game start the company has **10,000,000 fully diluted shares** (FD). Holdings by scenario (data: `scenarios.yaml`):
+
+| Scenario | Founder | Option pool | Others |
+| --- | --- | --- | --- |
+| `garage_bootstrap` | 9,000,000 | 1,000,000 | — |
+| `ex_big_tech_founders` | 8,500,000 | 1,000,000 | 500,000 common, "Former colleagues" (the angel money in the starting cash) |
+| `funded_spinout` | 7,000,000 | 1,000,000 | 2,000,000 Seed preferred at $0.75, led by a seed firm with one board seat (the $1.5M starting cash; post-money $7.5M) |
+
+- The **option pool** has granted and unallocated shares. An offer still states equity in basis points of the current FD (§7); on hire it becomes a grant of `round(bp × FD / 10000)` options from the unallocated pool. The M1 rule "equity held by staff plus pending offers may not exceed 1,000 bp" becomes: pending offers plus grants may not exceed the unallocated pool. Saves from before M4 convert each employee's `equity_bp` to options at 1,000 shares per bp.
+- **Vesting:** 48 months with a 12-month cliff, from the hire turn: vested = 0 before 12 months, then `floor(granted × min(48, months) / 48)`. When someone leaves, unvested options return to the unallocated pool; vested options stay with them (they remain on the cap table as former employees).
+- **Share price** for display and retention: the price of the latest priced round, or $0 before any.
+- **Retention:** unvested value `u = unvested × share price ÷ annual salary`; the monthly resignation chance (§10) is multiplied by `max(0.5, 1 − 0.5 u)`.
+- Rounding: share counts are integers, rounded half-to-even; money stays integer cents.
+
+### 14.3 Investors' view of value
+
+Every investor starts from the same base value, then applies their own bias and noise (§14.5).
+
+```latex
+g_6 = \left(\frac{MRR_t}{MRR_{t-6}}\right)^{2} - 1 \qquad (g_6 = 3 \text{ if } MRR_{t-6} = 0 < MRR_t;\ g_6 = 0 \text{ if } MRR_t = 0)
+```
+
+```latex
+multiple = clamp(4 + 4\,g_6,\; 3,\; 20) \times climate(year), \qquad V_{traction} = ARR \times multiple
+```
+
+```latex
+V_{floor} = \begin{cases} \$2{,}000{,}000 & \text{no live product} \\ \$4{,}000{,}000 & \text{a live product} \end{cases} + \$100{,}000 \times \min(headcount, 30)
+```
+
+```latex
+V_{base} = \max(V_{floor},\; V_{traction})
+```
+
+**Funding climate** by calendar year (data: `climate.yaml`; years after the table use 1.0 until the v2 macro layer):
+
+| 2010 | 2011 | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.90 | 1.00 | 1.00 | 1.10 | 1.20 | 1.25 | 1.00 | 1.10 | 1.20 | 1.20 | 1.30 | 1.60 | 0.90 | 0.75 | 0.90 | 1.00 |
+
+### 14.4 SAFEs (immediate action; resolved in phase 7)
+
+- **Raise on a SAFE** (energy 10): an amount ($25,000 to $2,000,000) and a **post-money valuation cap**. No discount in v1. At most one SAFE raise open at a time.
+- In phase 7 of the next turn, angels and seed funds answer once, all or nothing (stream `finance`, key `(safe_id,)`):
+
+```latex
+p = \frac{1}{1 + e^{-6\,(1.2\,V_{base} / cap - 1)}}
+```
+
+  A cap at 1.2 × `V_base` gets 50%; a lower cap is likelier to fill.
+- Money: debit `1000_cash`, credit `2600_safes`; a $2,000 legal fee to `6900_general_admin`. The SAFE holders own `amount / cap` of the company at the next priced round (post-money SAFE), before the new money.
+
+### 14.5 Priced rounds
+
+**Series and gates** (the round's name follows the company's last priced round):
+
+| Series | Allowed when | Typical raise (shown as guidance) |
+| --- | --- | --- |
+| Seed | No priced round yet | $1M–$3M |
+| Series A | After a seed (or the scenario's) and ARR ≥ $1M | $3M–$10M |
+| Series B | After a Series A and ARR ≥ $5M | $10M–$30M |
+
+**Starting a round** (energy 15): choose the series and a target amount. At most one round open at a time; it stays open for 3 turns.
+
+**Term sheets** arrive in phase 7 of the next turn (stream `finance`, key `(round_id, firm_index)`). Each firm in `investors.yaml` that invests in that series answers with probability `response × climate` (at most 0.95), with:
+
+```latex
+V_{pre} = V_{base} \times bias \times e^{N(0,\, 0.15)}, \qquad amount = clamp(target,\; check_{min},\; \min(check_{max},\; 0.5\,V_{pre}))
+```
+
+- Standard terms in v1: 1× non-participating liquidation preference (recorded; it matters only at exits, v2), pro rata rights (recorded), the lead takes **one board seat**, and an **option pool top-up** so the unallocated pool is 10% of the post-money FD.
+- If no firm answers, the inbox says so and the round closes; the player may start again next turn.
+
+**Accepting** a term sheet (energy 5, while the round is open) closes the round in phase 1 of the next turn; the others lapse. **Closing** (`E` = FD before the round, `f` = Σ SAFE amount / cap, `u` = unallocated pool, `V_post = V_pre + amount`):
+
+```latex
+k = \frac{0.10\, V_{post}}{V_{pre}\,(1 - f)}, \qquad X = \max\left(0,\; \frac{k E - u}{1 - k}\right)
+```
+
+```latex
+C = \frac{f}{1 - f}\,(E + X), \qquad FD_{pre} = E + X + C, \qquad price = \frac{V_{pre}}{FD_{pre}}, \qquad N = \frac{amount}{price}
+```
+
+`X` new pool shares, `C` SAFE conversion shares, `N` new preferred shares (each rounded half-to-even). Ledger: debit cash, credit `3100_preferred_equity` (the new money); debit `2600_safes`, credit `3100_preferred_equity` (the converted SAFEs); legal fees `max($15,000, 0.5% of amount)` to `6900_general_admin`. A price below the previous round's is a **down round**.
+
+**Investor firms** (data: `investors.yaml`; real names, personal use, CLAUDE.md §7):
+
+| Firm | Series | Check size | Bias | Response | Patience |
+| --- | --- | --- | --- | --- | --- |
+| SV Angel | Seed | $250k–$1M | 1.05 | 0.6 | +5 |
+| First Round Capital | Seed | $500k–$2M | 1.00 | 0.5 | +5 |
+| Union Square Ventures | Seed, A | $1M–$5M | 0.95 | 0.4 | 0 |
+| Founders Fund | Seed, A, B | $1M–$15M | 1.10 | 0.3 | +5 |
+| Accel Partners | A, B | $3M–$20M | 1.00 | 0.4 | 0 |
+| Benchmark | A | $4M–$12M | 1.05 | 0.3 | 0 |
+| Sequoia Capital | A, B | $5M–$30M | 0.95 | 0.35 | −5 |
+| Andreessen Horowitz | A, B | $5M–$30M | 1.15 | 0.35 | 0 |
+| Kleiner Perkins | B | $10M–$30M | 0.90 | 0.4 | −5 |
+| Greylock Partners | A, B | $5M–$25M | 1.00 | 0.35 | 0 |
+
+`patience` shifts the board-confidence target of the firm's seat (§14.6). The funded-spinout scenario's seed is led by First Round Capital.
+
+### 14.6 The board
+
+- **Seats:** before any priced round there is no board. After the seed: 1 common seat (the founder) and 1 investor seat (the seed lead). After Series A: 2 common, 2 investor. After Series B: 2 common, 3 investor, 1 independent. The second common seat is the founder's nominee; investor directors and the independent are generated people (role `board_member`, not employees) so events can name them.
+- **Confidence** `B` (0–100, starts at 70 when the first board forms; each director has their own, shown as the average) moves each month in phase 10:
+
+```latex
+B \leftarrow B + 0.2\,(T - B), \qquad T = 50 + 20\cdot clamp\left(\frac{g_6}{g_{exp}} - 1,\; -1,\; 1\right) + R + patience
+```
+
+  with `g_exp` the expected annual MRR growth for the last round (Seed 2.0, Series A 1.5, Series B 1.0) and the runway term `R`: ≥ 12 months +10, 6–12 months 0, 3–6 months −15, under 3 months −30. Before the company has 6 months of revenue history the growth term is 0, or −20 if 12 months have passed since the last round without a live product. A down round lowers every director's `B` by 15 once.
+- **Warnings:** each quarter-end (March, June, September, December) the inbox carries a board meeting summary; average `B` below 40 adds a formal warning.
+- **Removal:** when an investor or independent director's `B` has been below 25 for 3 consecutive months they vote to remove the founder; common seats vote no. If the votes to remove are a majority of all seats, the founder is removed: **game over** (ADR-0018). A tie keeps the founder, so removal is possible only after Series B.
+
+### 14.7 Bankruptcy and bridges (phase 7)
+
+- Each month, after phase 6, if cash < 0 the company is **insolvent**: a critical inbox item names how much is needed. If the company has a board and the average `B` ≥ 40, existing investors offer a **bridge SAFE** once per insolvency: amount = 3 × last month's net burn, post-money cap = 0.8 × the last post-money valuation, accepted with an immediate action (energy 5) within 2 turns; it posts like §14.4 in phase 7 of the turn it is accepted.
+- Cash below zero at the end of phase 7 for **3 consecutive months** is **bankruptcy: game over**. The M1 rule "opening a job post requires cash for its first month" stays; nothing else is blocked while insolvent.
+
+### 14.8 Stages from funding
+
+Stage 2 is entered once the company is at stage 1 and has closed a seed (the funded spinout's counts) or reached $1M ARR; stage 3 once it has closed a Series B or reached $20M ARR (§11.11).
+
+### 14.9 What the API may show
+
+Statements, the full cap table (holders, classes, shares, percentages, vesting per employee), rounds and their terms, term sheets with each firm's quoted valuation, board seats and directors, average and per-director confidence as a label and number, and the runway. Never `V_base`, a firm's bias or noise, or the SAFE acceptance probability; a SAFE dialog may show a hint band ("likely", "uncertain", "unlikely") from `1.2 V_base / cap` (≥ 1.15, 0.9–1.15, below 0.9).
+
+### 14.10 Worked examples
+
+**Dilution through a SAFE and three rounds** (garage start: founder 9,000,000, pool 1,000,000 with 400,000 granted):
+
+| Event | Terms | X (pool top-up) | C (SAFE) | Price | New shares | FD after | Founder |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| SAFE | $500,000 at a $5M post-money cap (`f` = 0.10) | — | — | — | — | 10,000,000 | 90.00% |
+| Seed | $2M at $6M pre | 1,034,783 | 1,226,087 | $0.48936 | 4,086,957 | 16,347,827 | 55.05% |
+| 800,000 more options granted | | | | | | | |
+| Series A | $5M at $16M pre | 1,508,914 | — | $0.89602 | 5,580,232 | 23,436,973 | 38.40% |
+| 1,000,000 more options granted | | | | | | | |
+| Series B | $15M at $60M pre | 1,812,485 | — | $2.37629 | 6,312,364 | 31,561,822 | 28.52% |
+
+After each round the unallocated pool is exactly 10.00% of FD; after the seed the SAFE holders own 7.50% and the seed investor 25.00%; after Series B the Series B investor owns 20.00%.
+
+**Investors' base value.** ARR $1.81M with MRR growing 6.8% a month for 6 months: `MRR_t / MRR_{t−6}` = 1.4840, `g_6` = 1.2022, multiple = 8.809 (climate 1.0 in 2012), `V_traction` = **$15.94M**, above the floor.
+
+**SAFE acceptance.** With `V_base` = $4.5M: a cap of $5.4M gives p = 50%; $4.5M gives 76.9%; $7M gives 20.2%.
+
+**Board confidence.** From 70, with growth at half of expected (`g_6 / g_exp` = 0.5) and 4 months of runway: T = 50 − 10 − 15 = 25, and B is 36.8 after 6 months (warning). With under 3 months of runway: T = 10, B falls below 25 in month 7 (22.6); a removal vote follows in month 9 if it stays there.
+
+**Retention.** 75,000 unvested options at $0.896 for someone paid $95,000: u = 0.707, so their resignation chance is multiplied by 0.646.

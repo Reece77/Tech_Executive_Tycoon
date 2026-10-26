@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs (M4 prep): formulas.md §14 finance (statements, shares and the cap table, vesting and retention, investors' view of value, funding climate, SAFEs, priced rounds and the closing math, investor firms, the board, bankruptcy and bridges, stage gates, worked examples including a three-round dilution table); M4 rows in §6, §7, §8, §10 and §12; ADR-0018 (shares, post-money SAFEs, game over); `finance` stream in ADR-0013; M4a and M4b briefs.
 - Docs (after M3a): formulas.md §11.9 starting shares updated to M3a's steady-state values; §11.4 and §11.7 record M3a's rule readings (quality above the cap, rot, the in-play cap); §11.2 adds cancelling a product in development (M3b); the M3b brief gains a backend slice and a fix for a flaky e2e test.
 - Docs (M3 prep): formulas.md §11 products and markets is final (categories, segments, development, quality and features, brand, appeal, customer flow, revenue and costs, 2010 incumbents, tag effects, ARR stages, founder scouting, worked examples and a design check); §6 M3 energy rows; ADR-0017 (static incumbents until M5, product phases, `product_dev` stream); M3a and M3b briefs.
 - Docs (M2b tuning): potential target lowered to +3 PA; a stranger's PA range (`reveal.initial_hw.pa`, 60–120) joins the tuning keys; the founder's own PA range stays at 40 (`reveal.founder_pa_hw`).
