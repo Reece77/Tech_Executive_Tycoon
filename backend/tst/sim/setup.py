@@ -18,6 +18,7 @@ from tst.sim.money import Cents, pct_of
 from tst.sim.people.founder import FounderSpec, build_founder
 from tst.sim.people.models import FOUNDER_ROLE, Employment, Person
 from tst.sim.people.reveal import new_reveal_state
+from tst.sim.products.setup import initial_market
 from tst.sim.rng import RngFactory
 from tst.sim.state import CompanyState, GameState, SaveMeta
 
@@ -29,6 +30,7 @@ MISSION_SIZE: Final = 2  # interests in a company mission (formulas.md section 7
 DEFAULT_FOUNDER: Final = FounderSpec(background="engineer")  # CLI and API default
 START_TURN: Final = 0
 START_STAGE: Final = 0  # solo founder (spec section 3)
+FIRST_PRODUCT_ID: Final = 1  # incumbents' products take the first ids (ADR-0017)
 MAX_COMPANY_NAME: Final = 80  # tunable-exempt: column width of company.name
 
 
@@ -76,8 +78,8 @@ def new_game(
     """Return the turn-0 state and the opening ledger entries. The caller persists both.
 
     The state holds the player company, its founder (formulas.md section 5), the founder's
-    employment (role founder, level exec, salary 0, equity 0) and the company's exact
-    knowledge of its founder.
+    employment (role founder, level exec, salary 0, equity 0), the company's exact
+    knowledge of its founder, and the 2010 market with its incumbents (11.1, 11.9).
     """
     if not scenario.selectable:
         raise ScenarioUnavailableError(
@@ -111,6 +113,12 @@ def new_game(
         balance=balance,
         knows_exactly=True,
     )
+    market = initial_market(
+        data,
+        turn=START_TURN,
+        first_company_id=PLAYER_COMPANY_ID + 1,
+        first_product_id=FIRST_PRODUCT_ID,
+    )
     state = GameState(
         save_meta=SaveMeta(
             name=save_name,
@@ -128,13 +136,21 @@ def new_game(
                 founded_turn=START_TURN,
                 mission=company_mission(mission, person, data),
             ),
+            *market.companies,
         ),
         people=(person,),
         employments=(employment,),
         reveals=(reveal,),
         person_states=(PersonState(person_id=person.id, energy=balance.founder.energy_per_month),),
+        products=market.products,
+        product_segments=market.product_segments,
+        markets=market.markets,
         next_ids=NextIds(
-            person=FOUNDER_PERSON_ID + 1, search=1, offer=1, employment=FOUNDER_EMPLOYMENT_ID + 1
+            person=FOUNDER_PERSON_ID + 1,
+            search=1,
+            offer=1,
+            employment=FOUNDER_EMPLOYMENT_ID + 1,
+            product=market.next_product_id,
         ),
     )
     entries: tuple[LedgerEntry, ...] = ()

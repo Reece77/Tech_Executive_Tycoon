@@ -54,7 +54,7 @@ def _save_out(summary: repository.SaveSummary) -> SaveOut:
 def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
     path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
     with repository.open_session(path) as session:
-        ov = repository.player_overview(session, history=HISTORY_TURNS, balance=data.balance)
+        ov = repository.player_overview(session, history=HISTORY_TURNS, data=data)
         state = repository.load_state(session)
         player = state.player
         latest = ov.history[-1][1] if ov.history else None
@@ -67,7 +67,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
     morale = [m for e in employees if (m := state.person_state(e.person_id).morale) is not None]
     projected = [
         CostLineOut(account=account, label=label, amount_cents=amount)
-        for label, account, amount in monthly_costs(state, player.id, data.balance)
+        for label, account, amount in monthly_costs(state, player.id, data.balance, data.game_data)
         if amount
     ]
     month_paid = [

@@ -30,7 +30,9 @@ from tst.sim.hiring.rules import matching_interests, offer_pitch
 from tst.sim.ledger import (
     BENEFITS,
     CASH,
+    COMPUTE,
     GENERAL_ADMIN,
+    MARKETING,
     RECRUITING,
     RENT,
     SALARIES,
@@ -46,6 +48,7 @@ from tst.sim.org.rules import is_remote, org_view
 from tst.sim.people.generator import generate_pool
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
+from tst.sim.products.phases import product_costs
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -239,13 +242,14 @@ def resolve_offers(
 
 
 def monthly_costs(
-    state: GameState, company_id: int, balance: Balance
+    state: GameState, company_id: int, balance: Balance, data: GameData
 ) -> tuple[tuple[str, AccountCode, Cents], ...]:
     """(memo label, account, amount) of one company's phase-6 costs for the current state.
 
-    Phase 6 posts exactly these; the Overview shows them as this month's projection. Remote
-    staff cost no office fee (formulas.md 13.9).
+    Phase 6 posts exactly these; the Overview shows them as this month's projection (hosting
+    at the current customers). Remote staff cost no office fee (formulas.md 13.9).
     """
+    hosting, marketing = product_costs(state, company_id, data)
     staff = state.staff(company_id)
     salaries = sum(monthly_salary_cents(e.salary_cents) for e in staff)
     benefits = sum(
@@ -261,6 +265,8 @@ def monthly_costs(
         ("Office", RENT, office),
         ("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents),
         ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts)),
+        ("Hosting", COMPUTE, hosting),  # M3 (11.8)
+        ("Marketing", MARKETING, marketing),
     )
 
 
@@ -276,15 +282,18 @@ def employment_monthly_cost_cents(
     return salary + benefits_cents(salary, balance.payroll) + office
 
 
-def payroll(state: GameState, balance: Balance) -> tuple[tuple[LedgerEntry, ...], dict[int, Cents]]:
-    """Salaries, benefits, office, base overhead and job-post fees (formulas.md section 8).
+def payroll(
+    state: GameState, balance: Balance, data: GameData
+) -> tuple[tuple[LedgerEntry, ...], dict[int, Cents]]:
+    """Salaries, benefits, office, base overhead, job-post fees, hosting and marketing
+    (formulas.md sections 8 and 11.8).
 
     Returns the entries and, per company, payroll (salaries plus benefits) for the snapshot.
     """
     entries: list[LedgerEntry] = []
     payroll_by_company: dict[int, Cents] = {}
-    for company in sorted(state.companies, key=lambda c: c.id):
-        costs = monthly_costs(state, company.id, balance)
+    for company in state.ledger_companies():  # incumbents have no ledger until M5
+        costs = monthly_costs(state, company.id, balance, data)
         payroll_by_company[company.id] = sum(
             amount for _, account, amount in costs if account in (SALARIES, BENEFITS)
         )

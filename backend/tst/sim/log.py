@@ -6,7 +6,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-type LinkKind = Literal["person", "candidate", "search"]
+type LinkKind = Literal["person", "candidate", "search", "product"]
 type ParamValue = str | int
 
 

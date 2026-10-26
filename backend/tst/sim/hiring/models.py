@@ -80,9 +80,11 @@ class NextIds:
     employment: int = 1
     unit: int = 1
     plan: int = 1
+    product: int = 1  # M3
 
     def take(
-        self, kind: Literal["person", "search", "offer", "employment", "unit", "plan"]
+        self,
+        kind: Literal["person", "search", "offer", "employment", "unit", "plan", "product"],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)
         return value, replace(self, **{kind: value + 1})

@@ -22,6 +22,7 @@ from tst.db.mappers import (
     decisions_to_row,
     entry_to_row,
     log_item_to_row,
+    product_month_to_row,
     snapshot_to_rows,
 )
 from tst.db.models import (
@@ -46,7 +47,7 @@ from tst.sim.actions import (
     apply_action,
 )
 from tst.sim.calendar import format_turn
-from tst.sim.data_models import DEFAULT_DIFFICULTY, Balance
+from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.decisions import Decisions
 from tst.sim.errors import (
     InvalidSaveNameError,
@@ -171,6 +172,7 @@ def create_save(
                     next_employment_id=state.next_ids.employment,
                     next_unit_id=state.next_ids.unit,
                     next_plan_id=state.next_ids.plan,
+                    next_product_id=state.next_ids.product,
                 )
             )
             session.add_all(
@@ -300,7 +302,7 @@ class Overview:
     history: list[tuple[int, CompanySnapshot]]  # last N snapshots, oldest first
 
 
-def player_overview(session: Session, history: int, balance: Balance) -> Overview:
+def player_overview(session: Session, history: int, data: LoadedData) -> Overview:
     """What the player sees on the Overview screen and in `tst inspect`."""
     meta = read_meta(session)
     state = load_state(session)
@@ -317,7 +319,11 @@ def player_overview(session: Session, history: int, balance: Balance) -> Overvie
         cash_cents=cash,
         monthly_burn_cents=burn,
         runway_months=runway_months(
-            cash, sum(amount for _, _, amount in monthly_costs(state, player.id, balance))
+            cash,
+            sum(
+                amount
+                for _, _, amount in monthly_costs(state, player.id, data.balance, data.game_data)
+            ),
         ),
         history=snaps,
     )
@@ -367,6 +373,7 @@ def apply_turn_result(
     )
     session.add_all(entry_to_row(e) for e in result.ledger_entries)
     session.add_all(snapshot_to_rows(result.snapshot))
+    session.add_all(product_month_to_row(m) for m in result.product_months)
     session.add_all(log_item_to_row(i) for i in result.log_items)
     session.add_all(
         inbox_rows(result.log_items, result.new_state.player.id, data.game_data.inbox_templates)

@@ -37,6 +37,7 @@ class OrgUnit:
     created_turn: int
     status: UnitStatus = "active"
     dissolved_turn: int | None = None
+    product_id: int | None = None  # the product its members work on (formulas.md 11.3, M3)
 
 
 @dataclass(frozen=True, slots=True)

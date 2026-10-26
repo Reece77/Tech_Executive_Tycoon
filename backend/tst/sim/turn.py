@@ -30,6 +30,8 @@ from tst.sim.org.delegates import run_delegates
 from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
+from tst.sim.products import phases as products
+from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
 from tst.sim.state import GameState
@@ -49,6 +51,7 @@ class TurnResult:
     event_requests: tuple[EventRequest, ...]
     # Phase 2's delegate actions as (company id, action), in the order taken (ADR-0015).
     delegate_actions: tuple[tuple[int, Action], ...] = ()
+    product_months: tuple[ProductMonth, ...] = ()  # month-end history per product and segment
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,6 +69,9 @@ class TurnContext:
     event_requests: tuple[EventRequest, ...] = ()
     payroll: Mapping[int, Cents] = field(default_factory=dict)  # per company, phase 6
     delegate_actions: tuple[tuple[int, Action], ...] = ()  # phase 2
+    revenue: Mapping[int, Cents] = field(default_factory=dict)  # MRR per company, phase 5
+    flows: Mapping[products.FlowKey, products.Flow] = field(default_factory=dict)  # phase 5
+    product_months: tuple[ProductMonth, ...] = ()  # phase 11
 
     @property
     def turn(self) -> int:
@@ -107,21 +113,28 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
     return replace(ctx, state=state, delegate_actions=taken).post(*entries).log(*logs)
 
 
-def research_progress(ctx: TurnContext) -> TurnContext:  # v2
-    return ctx
+def research_progress(ctx: TurnContext) -> TurnContext:
+    """Product development: quality and features (formulas.md 11.4, ADR-0017). The v2
+    technology tree joins this phase later."""
+    state, logs = products.develop(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    return replace(ctx, state=state).log(*logs)
 
 
 def production_and_capacity(ctx: TurnContext) -> TurnContext:  # v2
     return ctx
 
 
-def sales_revenue_churn(ctx: TurnContext) -> TurnContext:  # M3
-    return ctx
+def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
+    """Appeal, churn, customers won, and revenue for every market segment (11.6-11.8)."""
+    out = products.run_markets(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
+    return ctx.post(*out.entries).log(*out.logs)
 
 
 def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
-    """Salaries, benefits, office, base overhead and job-post fees (formulas.md section 8)."""
-    entries, payroll = phases.payroll(ctx.state, ctx.balance)
+    """Salaries, benefits, office, base overhead, job-post fees, hosting and marketing
+    (formulas.md sections 8 and 11.8)."""
+    entries, payroll = phases.payroll(ctx.state, ctx.balance, ctx.data)
     return replace(ctx, payroll=payroll).post(*entries)
 
 
@@ -156,19 +169,23 @@ def people_updates(ctx: TurnContext) -> TurnContext:
     return replace(ctx, state=state).log(*departures, *reveals)
 
 
-def market_and_macro_update(ctx: TurnContext) -> TurnContext:  # M3
-    return ctx
+def market_and_macro_update(ctx: TurnContext) -> TurnContext:
+    """Brand toward its marketing target and addressable demand growth (11.1, 11.5); the
+    macro layer joins later."""
+    return replace(ctx, state=products.brand_and_demand(ctx.state, ctx.balance, ctx.data))
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:
-    """Stage 0 -> 1 on the first hire (formulas.md section 7)."""
-    return replace(ctx, state=phases.first_hire_stage(ctx.state))
+    """Stage 0 -> 1 on the first hire (formulas.md section 7); stages 2 and 3 from ARR (11.11)."""
+    state = phases.first_hire_stage(ctx.state)
+    state, logs = products.arr_stages(state, ctx.revenue, ctx.balance)
+    return replace(ctx, state=state).log(*logs)
 
 
 def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     snaps = []
     items = []
-    for company in sorted(ctx.state.companies, key=lambda c: c.id):
+    for company in ctx.state.ledger_companies():  # incumbents have no books until M5
         opening = account_balance(ctx.opening_balances, company.id, CASH)
         closing = account_balance(ctx.balances, company.id, CASH)
         morale = [
@@ -185,6 +202,8 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
                 headcount=len(ctx.state.staff(company.id)),
                 payroll_cents=ctx.payroll.get(company.id, 0),
                 avg_morale=sum(known) / len(known) if known else None,
+                mrr_cents=ctx.revenue.get(company.id, 0),
+                arr_cents=products.arr_of(ctx.revenue.get(company.id, 0)),
             )
         )
         if closing < 0:  # M1 has no insolvency: warn every month cash is negative
@@ -197,7 +216,11 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
                 message=f"{format_turn(ctx.turn)} closed for {company.name}",
             )
         )
-    ctx = replace(ctx, snapshot=TurnSnapshot(turn=ctx.turn, companies=tuple(snaps)))
+    ctx = replace(
+        ctx,
+        snapshot=TurnSnapshot(turn=ctx.turn, companies=tuple(snaps)),
+        product_months=products.month_history(ctx.state, ctx.flows, ctx.data),
+    )
     return ctx.log(*items)
 
 
@@ -258,4 +281,5 @@ def advance_turn(
         snapshot=ctx.snapshot,
         event_requests=ctx.event_requests,
         delegate_actions=ctx.delegate_actions,
+        product_months=ctx.product_months,
     )

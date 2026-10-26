@@ -22,6 +22,9 @@ SALARIES: Final = "6000_salaries"
 BENEFITS: Final = "6010_benefits"
 RENT: Final = "6100_rent"
 RECRUITING: Final = "6200_recruiting"
+REVENUE_SUBSCRIPTIONS: Final = "4000_revenue_subscriptions"  # M3
+COMPUTE: Final = "6300_compute"  # hosting (M3)
+MARKETING: Final = "6400_marketing"  # M3
 ENGINE_ACCOUNTS: Final = (
     CASH,
     COMMON_EQUITY,
@@ -31,6 +34,9 @@ ENGINE_ACCOUNTS: Final = (
     BENEFITS,
     RENT,
     RECRUITING,
+    REVENUE_SUBSCRIPTIONS,
+    COMPUTE,
+    MARKETING,
 )
 
 

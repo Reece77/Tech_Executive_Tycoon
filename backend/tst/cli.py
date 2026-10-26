@@ -147,7 +147,7 @@ def inspect(
                 state = repository.load_state(session)
                 _print_person(state, person, data)
                 return
-            ov = repository.player_overview(session, history=1, balance=data.balance)
+            ov = repository.player_overview(session, history=1, data=data)
     except SimError as exc:
         raise _fail(exc.message) from exc
     if ov.runway_months is None:
@@ -765,7 +765,9 @@ def morale(save: SaveOpt, person: Annotated[int, typer.Option(help="Person id")]
     with repository.open_session(path) as session:
         state = repository.load_state(session)
         cash = company_cash(repository.ledger_balances(session), state.player.id)
-    projected = sum(a for _, _, a in monthly_costs(state, state.player.id, data.balance))
+    projected = sum(
+        a for _, _, a in monthly_costs(state, state.player.id, data.balance, data.game_data)
+    )
     try:
         b = org_views.morale_breakdown(state, state.player.id, person, data, cash, projected)
     except SimError as exc:
