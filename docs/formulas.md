@@ -392,7 +392,7 @@ Addressable customers grow every month in phase 9: `D ← D × (1 + g)^(1/12)`.
 - **Create** (immediate action, energy 4): name, category, and one or more of the category's segments. The product starts `in_development` with quality 10, features 0, brand 0, no customers. A price must be set for each segment before launch (immediate action, energy 1 per change; any positive amount in cents).
 - **Launch** (energy 3): allowed when quality ≥ 25 and feature score ≥ 30 (§11.4). From the next phase 5 the product can win customers.
 - **Add a segment** (energy 2) at any time; customers start at 0 there.
-- **Sunset** (energy 3): no new customers; existing customers churn at 3× the normal rate; when none remain the product is retired. A sunset cannot be undone.
+- **Sunset** (energy 3): no new customers; existing customers churn at 3× the normal rate; when none remain the product is retired. A sunset cannot be undone. **M3b:** a product still in development can be **cancelled** instead (energy 3): it retires at once and its units are freed.
 - **Lifecycle labels** shown in the UI: In development, Live, Sunset. "Growth" and "maturity" are display labels the API derives from the 6-month customer trend (rising more than 5% a month: growth; otherwise mature); they change no rule.
 - A company may have any number of products.
 
@@ -441,8 +441,8 @@ Phase 3 (named "R&D progress" in ADR-0006) now runs product development; the tec
 Q \leftarrow Q + 0.15 \cdot \min\left(1, \frac{o}{\sigma}\right) \cdot (Q_{cap} - Q) \quad \text{when } Q < Q_{cap}
 ```
 
-- If `Q ≥ Q_cap` (a weaker team took over), quality falls 1% a month toward `Q_cap`.
-- If `o < 0.25 σ` (no or a token team), quality falls 0.5 points a month: unmaintained software rots.
+- If `Q ≥ Q_cap` (a weaker team took over), `Q ← max(Q_cap, 0.99 Q)`.
+- If `o < 0.25 σ` (no or a token team), quality falls 0.5 points a month instead of climbing: unmaintained software rots. With no builders at all the product only rots.
 - Quality is kept in [0, 100]. A perfectionist builder raises `Q_cap` (§11.10).
 
 **Features.** Accumulated feature points `F` grow by `o` each month. The market expects `F_exp(t) = F₀ + ΔF × t` (t = turn). The feature score is
@@ -489,7 +489,7 @@ churn_j = base_s \cdot \left(1 + \frac{\max(0,\; best_s - appeal_j)}{50}\right) 
 
 and `best_s` is the highest appeal of any live product in the segment.
 
-2. **In play.** `P = (Σ_j C_j × churn_j + adoption_s × U) × η`, where `U = max(0, D − Σ_j C_j)` is unserved demand and `η = max(0, 1 + N(0, 0.05))` is monthly demand noise.
+2. **In play.** `P = min(churned + U, (Σ_j C_j × churn_j + adoption_s × U) × η)` (the cap keeps a segment within its demand), where `U = max(0, D − Σ_j C_j)` is unserved demand and `η = max(0, 1 + N(0, 0.05))` is monthly demand noise.
 
 3. **Choice.** Among live products and the outside option:
 
@@ -515,20 +515,20 @@ Companies with `is_player = false`, no people and no AI. Each product has fixed 
 
 | Company | Product (category) | Q / features / brand | Price and starting share of D₀ by segment |
 | --- | --- | --- | --- |
-| Salesforce | Sales Cloud (B2B SaaS) | 70 / 80 / 80 | SMB $65, 15% · mid $900, 30% · ent $9,000, 30% |
-| Oracle | CRM On Demand (B2B SaaS) | 60 / 75 / 70 | mid $800, 15% · ent $8,000, 30% |
-| Zoho | Zoho CRM (B2B SaaS) | 55 / 60 / 40 | SMB $25, 10% · mid $400, 10% |
-| Atlassian | JIRA (developer tools) | 70 / 75 / 60 | SMB $25, 20% · mid $450, 25% · ent $4,500, 15% |
-| Microsoft | Team Foundation Server (developer tools) | 65 / 80 / 85 | mid $600, 25% · ent $6,000, 40% |
-| GitHub | GitHub (developer tools) | 75 / 60 / 50 | SMB $25, 15% · mid $300, 10% |
-| Facebook | Facebook (consumer apps) | 65 / 80 / 95 | consumer $0.35, 30% |
-| Zynga | FarmVille (consumer apps) | 55 / 60 / 70 | consumer $0.50, 10% |
-| Evernote | Evernote (consumer apps) | 70 / 55 / 40 | consumer $0.20, 5% |
-| Symantec | Norton (cybersecurity) | 60 / 80 / 85 | SMB $35, 20% · mid $900, 25% · ent $11,000, 25% |
-| McAfee | McAfee Total Protection (cybersecurity) | 55 / 75 / 80 | SMB $30, 15% · mid $850, 20% · ent $10,000, 20% |
-| Check Point | Check Point (cybersecurity) | 70 / 70 / 60 | mid $1,100, 15% · ent $13,000, 25% |
+| Salesforce | Sales Cloud (B2B SaaS) | 70 / 80 / 80 | SMB $65, 10% · mid $900, 21.5% · ent $9,000, 36.5% |
+| Oracle | CRM On Demand (B2B SaaS) | 60 / 75 / 70 | mid $800, 16% · ent $8,000, 23.5% |
+| Zoho | Zoho CRM (B2B SaaS) | 55 / 60 / 40 | SMB $25, 15% · mid $400, 17.5% |
+| Atlassian | JIRA (developer tools) | 70 / 75 / 60 | SMB $25, 20% · mid $450, 18% · ent $4,500, 23.5% |
+| Microsoft | Team Foundation Server (developer tools) | 65 / 80 / 85 | mid $600, 20% · ent $6,000, 31.5% |
+| GitHub | GitHub (developer tools) | 75 / 60 / 50 | SMB $25, 15% · mid $300, 22% |
+| Facebook | Facebook (consumer apps) | 65 / 80 / 95 | consumer $0.35, 24.5% |
+| Zynga | FarmVille (consumer apps) | 55 / 60 / 70 | consumer $0.50, 8% |
+| Evernote | Evernote (consumer apps) | 70 / 55 / 40 | consumer $0.20, 12.5% |
+| Symantec | Norton (cybersecurity) | 60 / 80 / 85 | SMB $35, 17.5% · mid $900, 24.5% · ent $11,000, 28.5% |
+| McAfee | McAfee Total Protection (cybersecurity) | 55 / 75 / 80 | SMB $30, 17.5% · mid $850, 20% · ent $10,000, 22.5% |
+| Check Point | Check Point (cybersecurity) | 70 / 70 / 60 | mid $1,100, 15.5% · ent $13,000, 19% |
 
-Starting shares within a segment sum to at most 90%; the rest is unserved. Real names, approximate 2010 values, personal use (CLAUDE.md §7).
+Starting shares within a segment sum to at most 90%; the rest is unserved. **M3a tuning:** the shares above are the fixed-score steady state (each segment's total kept, split in proportion to share* / churn, rounded to 0.5%), so with no player product no incumbent's share of served customers drifts more than about a point in 24 turns. Real names, approximate 2010 values, personal use (CLAUDE.md §7).
 
 ### 11.10 Behavior tags on products
 

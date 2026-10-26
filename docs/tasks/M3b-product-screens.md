@@ -10,7 +10,13 @@ M3a provides every rule, endpoint and preview. This milestone is front end only:
 
 ## Out of scope
 
-Any new rule. Finance, Competitors and History screens.
+Any new rule beyond the backend slice. Finance, Competitors and History screens.
+
+## Backend slice (sub-task 0)
+
+`cancel_product` for a product in development (`docs/formulas.md` §11.2: energy 3, retires at once, frees its units), with API, CLI (`tst product cancel`) and tests. The M3a follow-up: sunsetting a product in development was refused.
+
+Also make the M1c Playwright test "ten hires within six turns using all three channels" robust: it takes `search-row` locators once with `.all()` and clicks the n-th row's first button while the list can change, so it can wait forever on a row that no longer exists. Re-read the rows on each step (or iterate by search id) so the test never depends on the list's order or length.
 
 ## Screens
 
@@ -24,6 +30,7 @@ Any new rule. Finance, Competitors and History screens.
 
 ## Sub-tasks (commit after each)
 
+0. Backend slice (above).
 1. Regenerate the client; shared `ScoreBar`, `SegmentTable` and `MarketTable` components with tests.
 2. Products screen and New product dialog.
 3. Product profile and market view.
