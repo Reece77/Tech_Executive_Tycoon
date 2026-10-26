@@ -7,7 +7,9 @@
     "monthly_burn_cents": 160000,
     "headcount": 1,
     "payroll_cents": 0,
-    "avg_morale": null
+    "avg_morale": null,
+    "mrr_cents": 0,
+    "arr_cents": 0
   },
   {
     "turn": 1,
@@ -17,7 +19,9 @@
     "monthly_burn_cents": 2155500,
     "headcount": 3,
     "payroll_cents": 1083500,
-    "avg_morale": 61.41783717798752
+    "avg_morale": 61.41783717798752,
+    "mrr_cents": 0,
+    "arr_cents": 0
   },
   {
     "turn": 2,
@@ -27,7 +31,9 @@
     "monthly_burn_cents": 7300500,
     "headcount": 6,
     "payroll_cents": 3826500,
-    "avg_morale": 56.26127609538397
+    "avg_morale": 56.26127609538397,
+    "mrr_cents": 0,
+    "arr_cents": 0
   },
   {
     "turn": 3,
@@ -37,7 +43,9 @@
     "monthly_burn_cents": 5034000,
     "headcount": 7,
     "payroll_cents": 4514000,
-    "avg_morale": 50.32066738231046
+    "avg_morale": 50.32066738231046,
+    "mrr_cents": 0,
+    "arr_cents": 0
   },
   {
     "turn": 4,
@@ -47,7 +55,9 @@
     "monthly_burn_cents": 7540000,
     "headcount": 10,
     "payroll_cents": 6840000,
-    "avg_morale": 46.66318411485981
+    "avg_morale": 46.66318411485981,
+    "mrr_cents": 0,
+    "arr_cents": 0
   },
   {
     "turn": 5,
@@ -57,7 +67,9 @@
     "monthly_burn_cents": 8524000,
     "headcount": 11,
     "payroll_cents": 7764000,
-    "avg_morale": 41.31043207613253
+    "avg_morale": 41.31043207613253,
+    "mrr_cents": 0,
+    "arr_cents": 0
   },
   {
     "turn": 6,
@@ -67,7 +79,9 @@
     "monthly_burn_cents": 8474000,
     "headcount": 11,
     "payroll_cents": 7764000,
-    "avg_morale": 33.95019653563173
+    "avg_morale": 33.95019653563173,
+    "mrr_cents": 0,
+    "arr_cents": 0
   },
   {
     "turn": 7,
@@ -77,166 +91,200 @@
     "monthly_burn_cents": 8474000,
     "headcount": 11,
     "payroll_cents": 7764000,
-    "avg_morale": 30.35669001489567
+    "avg_morale": 30.35669001489567,
+    "mrr_cents": 0,
+    "arr_cents": 0
   },
   {
     "turn": 8,
     "date": "Sep 2010",
     "company_id": 1,
-    "cash_cents": -16136000,
-    "monthly_burn_cents": 8474000,
+    "cash_cents": -16075216,
+    "monthly_burn_cents": 8413216,
     "headcount": 11,
     "payroll_cents": 7764000,
-    "avg_morale": 28.77697434733964
+    "avg_morale": 28.77697434733964,
+    "mrr_cents": 67538,
+    "arr_cents": 810456
   },
   {
     "turn": 9,
     "date": "Oct 2010",
     "company_id": 1,
-    "cash_cents": -24610000,
-    "monthly_burn_cents": 8474000,
-    "headcount": 11,
-    "payroll_cents": 7764000,
-    "avg_morale": 27.31305652953865
+    "cash_cents": -26292828,
+    "monthly_burn_cents": 10217612,
+    "headcount": 13,
+    "payroll_cents": 9648000,
+    "avg_morale": 32.571660211832615,
+    "mrr_cents": 284499,
+    "arr_cents": 3413988
   },
   {
     "turn": 10,
     "date": "Nov 2010",
     "company_id": 1,
-    "cash_cents": -33084000,
-    "monthly_burn_cents": 8474000,
-    "headcount": 11,
-    "payroll_cents": 7764000,
-    "avg_morale": 25.47014811683205
+    "cash_cents": -36314857,
+    "monthly_burn_cents": 10022029,
+    "headcount": 13,
+    "payroll_cents": 9648000,
+    "avg_morale": 30.185359253534603,
+    "mrr_cents": 497292,
+    "arr_cents": 5967504
   },
   {
     "turn": 11,
     "date": "Dec 2010",
     "company_id": 1,
-    "cash_cents": -41558000,
-    "monthly_burn_cents": 8474000,
-    "headcount": 11,
-    "payroll_cents": 7764000,
-    "avg_morale": 24.861966648859735
+    "cash_cents": -46151070,
+    "monthly_burn_cents": 9836213,
+    "headcount": 13,
+    "payroll_cents": 9648000,
+    "avg_morale": 29.19762478769486,
+    "mrr_cents": 699507,
+    "arr_cents": 8394084
   },
   {
     "turn": 12,
     "date": "Jan 2011",
     "company_id": 1,
-    "cash_cents": -50032000,
-    "monthly_burn_cents": 8474000,
-    "headcount": 11,
-    "payroll_cents": 7764000,
-    "avg_morale": 23.755918403342882
+    "cash_cents": -55808689,
+    "monthly_burn_cents": 9657619,
+    "headcount": 13,
+    "payroll_cents": 9648000,
+    "avg_morale": 27.764228611971415,
+    "mrr_cents": 893905,
+    "arr_cents": 10726860
   },
   {
     "turn": 13,
     "date": "Feb 2011",
     "company_id": 1,
-    "cash_cents": -58506000,
-    "monthly_burn_cents": 8474000,
-    "headcount": 11,
-    "payroll_cents": 7764000,
-    "avg_morale": 23.472294025284263
+    "cash_cents": -65285595,
+    "monthly_burn_cents": 9476906,
+    "headcount": 13,
+    "payroll_cents": 9648000,
+    "avg_morale": 27.53767864200009,
+    "mrr_cents": 1090888,
+    "arr_cents": 13090656
   },
   {
     "turn": 14,
     "date": "Mar 2011",
     "company_id": 1,
-    "cash_cents": -66980000,
-    "monthly_burn_cents": 8474000,
-    "headcount": 11,
-    "payroll_cents": 7764000,
-    "avg_morale": 23.399613555877604
+    "cash_cents": -74589750,
+    "monthly_burn_cents": 9304155,
+    "headcount": 13,
+    "payroll_cents": 9648000,
+    "avg_morale": 27.165324186814704,
+    "mrr_cents": 1279120,
+    "arr_cents": 15349440
   },
   {
     "turn": 15,
     "date": "Apr 2011",
     "company_id": 1,
-    "cash_cents": -75454000,
-    "monthly_burn_cents": 8474000,
-    "headcount": 11,
-    "payroll_cents": 7764000,
-    "avg_morale": 23.517810823186743
+    "cash_cents": -83730258,
+    "monthly_burn_cents": 9140508,
+    "headcount": 13,
+    "payroll_cents": 9648000,
+    "avg_morale": 27.223586729178678,
+    "mrr_cents": 1457409,
+    "arr_cents": 17488908
   },
   {
     "turn": 16,
     "date": "May 2011",
     "company_id": 1,
-    "cash_cents": -83928000,
-    "monthly_burn_cents": 8474000,
-    "headcount": 11,
-    "payroll_cents": 7764000,
-    "avg_morale": 23.62382738483098
+    "cash_cents": -92697451,
+    "monthly_burn_cents": 8967193,
+    "headcount": 13,
+    "payroll_cents": 9648000,
+    "avg_morale": 27.466304642905502,
+    "mrr_cents": 1646550,
+    "arr_cents": 19758600
   },
   {
     "turn": 17,
     "date": "Jun 2011",
     "company_id": 1,
-    "cash_cents": -91572500,
-    "monthly_burn_cents": 7644500,
-    "headcount": 10,
-    "payroll_cents": 6994500,
-    "avg_morale": 25.141343699819387
+    "cash_cents": -100672204,
+    "monthly_burn_cents": 7974753,
+    "headcount": 12,
+    "payroll_cents": 8878500,
+    "avg_morale": 28.875007931360827,
+    "mrr_cents": 1824216,
+    "arr_cents": 21890592
   },
   {
     "turn": 18,
     "date": "Jul 2011",
     "company_id": 1,
-    "cash_cents": -99217000,
-    "monthly_burn_cents": 7644500,
-    "headcount": 10,
-    "payroll_cents": 6994500,
-    "avg_morale": 24.512401984071296
+    "cash_cents": -108557085,
+    "monthly_burn_cents": 7884881,
+    "headcount": 12,
+    "payroll_cents": 8878500,
+    "avg_morale": 28.598487407927067,
+    "mrr_cents": 1932155,
+    "arr_cents": 23185860
   },
   {
     "turn": 19,
     "date": "Aug 2011",
     "company_id": 1,
-    "cash_cents": -106861500,
-    "monthly_burn_cents": 7644500,
-    "headcount": 10,
-    "payroll_cents": 6994500,
-    "avg_morale": 24.592890588062566
+    "cash_cents": -116270581,
+    "monthly_burn_cents": 7713496,
+    "headcount": 12,
+    "payroll_cents": 8878500,
+    "avg_morale": 28.392413279572768,
+    "mrr_cents": 2120782,
+    "arr_cents": 25449384
   },
   {
     "turn": 20,
     "date": "Sep 2011",
     "company_id": 1,
-    "cash_cents": -114506000,
-    "monthly_burn_cents": 7644500,
-    "headcount": 10,
-    "payroll_cents": 6994500,
-    "avg_morale": 24.23827562046889
+    "cash_cents": -123801700,
+    "monthly_burn_cents": 7531119,
+    "headcount": 12,
+    "payroll_cents": 8878500,
+    "avg_morale": 28.175209785394046,
+    "mrr_cents": 2322075,
+    "arr_cents": 27864900
   },
   {
     "turn": 21,
     "date": "Oct 2011",
     "company_id": 1,
-    "cash_cents": -122150500,
-    "monthly_burn_cents": 7644500,
-    "headcount": 10,
-    "payroll_cents": 6994500,
-    "avg_morale": 24.07105544420235
+    "cash_cents": -131120263,
+    "monthly_burn_cents": 7318563,
+    "headcount": 12,
+    "payroll_cents": 8878500,
+    "avg_morale": 28.0252118614159,
+    "mrr_cents": 2556760,
+    "arr_cents": 30681120
   },
   {
     "turn": 22,
     "date": "Nov 2011",
     "company_id": 1,
-    "cash_cents": -129047500,
-    "monthly_burn_cents": 6897000,
-    "headcount": 9,
-    "payroll_cents": 6307000,
-    "avg_morale": 23.825042978496334
+    "cash_cents": -137475044,
+    "monthly_burn_cents": 6354781,
+    "headcount": 11,
+    "payroll_cents": 8191000,
+    "avg_morale": 28.023999707594857,
+    "mrr_cents": 2795751,
+    "arr_cents": 33549012
   },
   {
     "turn": 23,
     "date": "Dec 2011",
     "company_id": 1,
-    "cash_cents": -135944500,
-    "monthly_burn_cents": 6897000,
-    "headcount": 9,
-    "payroll_cents": 6307000,
-    "avg_morale": 23.8733232627098
+    "cash_cents": -143605462,
+    "monthly_burn_cents": 6130418,
+    "headcount": 11,
+    "payroll_cents": 8191000,
+    "avg_morale": 28.248969269077975,
+    "mrr_cents": 3044022,
+    "arr_cents": 36528264
   }
 ]

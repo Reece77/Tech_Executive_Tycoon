@@ -3,7 +3,10 @@
 Seeds 1..10 are played for 24 turns through the full persistence path, as an
 ex_big_tech_founders game following a scripted plan (M1b hiring; M2a interviews before every
 offer, two teams with leads at turn 6, a department once there are 10 staff, and a
-recruiter-led hiring plan), and their per-turn snapshots are compared with
+recruiter-led hiring plan; M3a a B2B SaaS product built by the company root from turn 2
+and the Product team from turn 7, launched when allowed, an account executive and a
+marketer sought from turn 8, and a price cut at turn 18), and their per-turn snapshots are
+compared with
 tests/golden/snapshots/seed_NN.json. The founder's current
 ability after each turn goes to seed_NN.founder_ca.json instead: CA is hidden (ADR-0007), so
 it never enters turn_snapshot, which the API returns. Never edit these files by hand:
@@ -23,16 +26,21 @@ from tst.db.models import LedgerEntryRow, TurnSnapshotRow
 from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
 from tst.loader import LoadedData
 from tst.sim.actions import (
+    AssignUnit,
     CloseSearch,
     CreatePlan,
+    CreateProduct,
     CreateUnit,
     Interview,
+    LaunchProduct,
     MakeOffer,
     MovePerson,
     OpenSearch,
     SetLeader,
+    SetPrice,
 )
 from tst.sim.actions.org import departments_unlocked
+from tst.sim.actions.products import launch_problems
 from tst.sim.calendar import format_turn
 from tst.sim.people.models import current_ability
 from tst.sim.state import GameState
@@ -49,6 +57,13 @@ INTERVIEW_ENERGY = 6
 PLAN_ROLE = "software_engineer"  # the recruiter-led plan (M2a)
 PLAN_TARGET = 2
 PLAN_RATIO_BP = 11_000
+PRODUCT_TURN = 2  # M3a: the root starts building a B2B SaaS product
+PRODUCT_PRICES = {"smb": 4000, "mid_market": 70_000}  # $40 and $700 a month
+GO_TO_MARKET_TURN = 8  # network searches for an account executive and a marketer
+GO_TO_MARKET_ROLES = ("account_executive", "marketer")
+GO_TO_MARKET_RATIO = 1.2  # offers at 1.2x the ask, whatever the headcount
+PRICE_CUT_TURN = 18
+PRICE_CUT_CENTS = 3500  # SMB to $35
 
 
 def _state(path: Path) -> GameState:
@@ -108,6 +123,57 @@ def org_plan(path: Path, data: LoadedData, state: GameState) -> None:
         )
 
 
+def product_plan(path: Path, data: LoadedData) -> None:
+    """M3a: one B2B SaaS product (SMB and mid-market) built by the company root from turn 2,
+    and by the Product team (formed at turn 6) from turn 7, launched as soon as it is
+    allowed; network searches for an account executive and a
+    marketer at turn 8, each offered 1.2x the ask (after an interview) until one is on staff;
+    a price cut to $35 in SMB at turn 18. Runs before the hiring steps, so their energy use
+    comes after these."""
+    actor = 1
+    state = _state(path)
+    product = next(iter(state.company_products(1)), None)
+    if state.turn == PRODUCT_TURN and product is None:
+        product_id = state.next_ids.product
+        run_action(
+            path, data, CreateProduct(actor, "Golden CRM", "b2b_saas", tuple(PRODUCT_PRICES))
+        )
+        for segment, price in PRODUCT_PRICES.items():
+            run_action(path, data, SetPrice(actor, product_id, segment, price))
+        run_action(path, data, AssignUnit(actor, product_id, None))
+        state = _state(path)
+        product = state.product(product_id)
+    ready = product is not None and not launch_problems(
+        state, product, data.balance, data.game_data
+    )
+    if product is not None and product.status == "in_development" and ready:
+        run_action(path, data, LaunchProduct(actor, product.id))
+    if product is not None and state.turn == PRICE_CUT_TURN:
+        run_action(path, data, SetPrice(actor, product.id, "smb", PRICE_CUT_CENTS))
+    team = next((u for u in state.units if u.name == "Product"), None)
+    if product is not None and team is not None and team.product_id is None:
+        run_action(path, data, AssignUnit(actor, product.id, team.id))
+    if state.turn == GO_TO_MARKET_TURN:
+        for role in GO_TO_MARKET_ROLES:
+            run_action(path, data, OpenSearch(actor, role, "network"))
+    state = _state(path)
+    for role in GO_TO_MARKET_ROLES:
+        if any(_role_of(state, p) == role for p in _employees(state)):
+            continue
+        pool = [c for c in state.candidates if state.person(c.person_id).role == role]
+        if any(state.pending_offer_for(c.person_id) for c in pool):
+            continue
+        for candidate in pool:
+            if candidate.interviewed_turn is None:
+                if (state.person_state(actor).energy or 0) < INTERVIEW_ENERGY:
+                    break
+                run_action(path, data, Interview(actor, candidate.person_id))
+            ask = state.person(candidate.person_id).salary_expectation_cents or 0
+            offer = MakeOffer(actor, candidate.person_id, round(ask * GO_TO_MARKET_RATIO), 0)
+            run_action(path, data, offer)
+            break
+
+
 def hiring_plan(path: Path, data: LoadedData) -> None:
     """Scripted player actions between turns, exercising payroll, morale and departures.
 
@@ -161,6 +227,7 @@ def play(
     )
     founder_ca = []
     for _ in range(TURNS):
+        product_plan(path, data)
         hiring_plan(path, data)
         result = run_turn(path, data)
         with open_session(path) as session:
