@@ -65,7 +65,18 @@ def test_incumbents_match_formulas_table(loaded: LoadedData) -> None:
     sales_cloud = companies[0].products[0]
     assert (sales_cloud.quality, sales_cloud.features, sales_cloud.brand) == (70, 80, 80)
     assert sales_cloud.segments["smb"].price_cents == 6500
-    assert sales_cloud.segments["smb"].share_bp == 1500
+    # Starting shares were tuned for the incumbent equilibrium (M3a brief, Decisions made);
+    # each segment keeps the 11.9 total.
+    assert sales_cloud.segments["smb"].share_bp == 1000
+    totals: dict[tuple[str, str], int] = {}
+    for company in companies:
+        for product in company.products:
+            for seg, value in product.segments.items():
+                key = (product.category, seg)
+                totals[key] = totals.get(key, 0) + value.share_bp
+    assert totals[("b2b_saas", "smb")] == 2500 and totals[("b2b_saas", "mid_market")] == 5500
+    assert totals[("consumer_apps", "consumer")] == 4500
+    assert max(totals.values()) <= 9000  # at most 90% served at the start (11.9)
 
 
 def test_team_output_and_quality(loaded: LoadedData) -> None:

@@ -9,6 +9,10 @@
 #   constant: the product's feature points grow with the market's expectation.
 # - segments: monthly price in cents and starting share of D0 in basis points (of the
 #   category's addressable customers for that segment in January 2010).
+# Starting shares (M3a tuning, recorded in the M3a brief): each segment keeps the total of
+# the formulas.md 11.9 table, split in proportion to share* / churn, the steady state of
+# the fixed scores, so no incumbent's share of served customers drifts by more than about
+# a point over the first 24 turns.
 companies:
   - name: Salesforce
     stage: 4
@@ -20,9 +24,9 @@ companies:
         features: 80
         brand: 80
         segments:
-          smb: { price_cents: 6500, share_bp: 1500 }
-          mid_market: { price_cents: 90000, share_bp: 3000 }
-          enterprise: { price_cents: 900000, share_bp: 3000 }
+          smb: { price_cents: 6500, share_bp: 1000 }
+          mid_market: { price_cents: 90000, share_bp: 2150 }
+          enterprise: { price_cents: 900000, share_bp: 3650 }
 
   - name: Oracle
     stage: 4
@@ -34,8 +38,8 @@ companies:
         features: 75
         brand: 70
         segments:
-          mid_market: { price_cents: 80000, share_bp: 1500 }
-          enterprise: { price_cents: 800000, share_bp: 3000 }
+          mid_market: { price_cents: 80000, share_bp: 1600 }
+          enterprise: { price_cents: 800000, share_bp: 2350 }
 
   - name: Zoho
     stage: 3
@@ -47,8 +51,8 @@ companies:
         features: 60
         brand: 40
         segments:
-          smb: { price_cents: 2500, share_bp: 1000 }
-          mid_market: { price_cents: 40000, share_bp: 1000 }
+          smb: { price_cents: 2500, share_bp: 1500 }
+          mid_market: { price_cents: 40000, share_bp: 1750 }
 
   - name: Atlassian
     stage: 3
@@ -61,8 +65,8 @@ companies:
         brand: 60
         segments:
           smb: { price_cents: 2500, share_bp: 2000 }
-          mid_market: { price_cents: 45000, share_bp: 2500 }
-          enterprise: { price_cents: 450000, share_bp: 1500 }
+          mid_market: { price_cents: 45000, share_bp: 1800 }
+          enterprise: { price_cents: 450000, share_bp: 2350 }
 
   - name: Microsoft
     stage: 4
@@ -74,8 +78,8 @@ companies:
         features: 80
         brand: 85
         segments:
-          mid_market: { price_cents: 60000, share_bp: 2500 }
-          enterprise: { price_cents: 600000, share_bp: 4000 }
+          mid_market: { price_cents: 60000, share_bp: 2000 }
+          enterprise: { price_cents: 600000, share_bp: 3150 }
 
   - name: GitHub
     stage: 2
@@ -88,7 +92,7 @@ companies:
         brand: 50
         segments:
           smb: { price_cents: 2500, share_bp: 1500 }
-          mid_market: { price_cents: 30000, share_bp: 1000 }
+          mid_market: { price_cents: 30000, share_bp: 2200 }
 
   - name: Facebook
     stage: 3
@@ -100,7 +104,7 @@ companies:
         features: 80
         brand: 95
         segments:
-          consumer: { price_cents: 35, share_bp: 3000 }
+          consumer: { price_cents: 35, share_bp: 2450 }
 
   - name: Zynga
     stage: 3
@@ -112,7 +116,7 @@ companies:
         features: 60
         brand: 70
         segments:
-          consumer: { price_cents: 50, share_bp: 1000 }
+          consumer: { price_cents: 50, share_bp: 800 }
 
   - name: Evernote
     stage: 2
@@ -124,7 +128,7 @@ companies:
         features: 55
         brand: 40
         segments:
-          consumer: { price_cents: 20, share_bp: 500 }
+          consumer: { price_cents: 20, share_bp: 1250 }
 
   - name: Symantec
     stage: 4
@@ -136,9 +140,9 @@ companies:
         features: 80
         brand: 85
         segments:
-          smb: { price_cents: 3500, share_bp: 2000 }
-          mid_market: { price_cents: 90000, share_bp: 2500 }
-          enterprise: { price_cents: 1100000, share_bp: 2500 }
+          smb: { price_cents: 3500, share_bp: 1750 }
+          mid_market: { price_cents: 90000, share_bp: 2450 }
+          enterprise: { price_cents: 1100000, share_bp: 2850 }
 
   - name: McAfee
     stage: 4
@@ -150,9 +154,9 @@ companies:
         features: 75
         brand: 80
         segments:
-          smb: { price_cents: 3000, share_bp: 1500 }
+          smb: { price_cents: 3000, share_bp: 1750 }
           mid_market: { price_cents: 85000, share_bp: 2000 }
-          enterprise: { price_cents: 1000000, share_bp: 2000 }
+          enterprise: { price_cents: 1000000, share_bp: 2250 }
 
   - name: Check Point
     stage: 4
@@ -164,5 +168,5 @@ companies:
         features: 70
         brand: 60
         segments:
-          mid_market: { price_cents: 110000, share_bp: 1500 }
-          enterprise: { price_cents: 1300000, share_bp: 2500 }
+          mid_market: { price_cents: 110000, share_bp: 1550 }
+          enterprise: { price_cents: 1300000, share_bp: 1900 }

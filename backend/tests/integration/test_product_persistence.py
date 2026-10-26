@@ -40,7 +40,7 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
     sales_cloud = state.products[0]
     assert (sales_cloud.name, sales_cloud.held_feature) == ("Sales Cloud", 80)
     seg = state.product_segment(sales_cloud.id, "smb")
-    assert seg is not None and seg.customers == pytest.approx(60_000)
+    assert seg is not None and seg.customers == pytest.approx(40_000)  # 10% (tuned)
     assert state.next_ids.product == 13
     assert state.ledger_companies() == (state.player,)
 
@@ -116,7 +116,7 @@ def test_upgrade_from_0007_adds_the_market_at_the_saves_turn(
     assert smb.addressable == pytest.approx(addressable_at(loaded.game_data, "b2b_saas", "smb", 3))
     assert smb.addressable > 400_000
     seg = state.product_segment(1, "smb")
-    assert seg is not None and seg.customers == pytest.approx(0.15 * smb.addressable)
+    assert seg is not None and seg.customers == pytest.approx(0.10 * smb.addressable)
     engine = make_engine(path)
     with engine.connect() as conn:
         version = conn.execute(text("SELECT schema_version FROM save_meta")).scalar()
