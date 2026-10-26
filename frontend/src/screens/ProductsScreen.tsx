@@ -322,7 +322,7 @@ function NewProductDialog({
             value={name}
             maxLength={80}
             onChange={(e) => setName(e.currentTarget.value)}
-            data-testid="product-name"
+            data-testid="new-product-name"
           />
           <NativeSelect
             label="Category"
