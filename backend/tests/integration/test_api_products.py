@@ -160,6 +160,14 @@ def screens_get_what_they_show(
     assert product["launched_label"] is not None and product["hosting_cents"] > 0
     assert product["brand_trend"] == "rising"  # $10,000 a month from brand 0
     assert product["customer_trend"] is not None and product["mrr_change"] is not None
+    month = product["monthly"][-1]
+    assert month["turn"] == last
+    assert month["customers"] == pytest.approx(
+        sum(m["customers"] for m in product["history"] if m["turn"] == last)
+    )
+    assert month["revenue_cents"] == sum(
+        m["revenue_cents"] for m in product["history"] if m["turn"] == last
+    )
 
     portfolio = api.get(f"{BASE}/portfolio")
     assert portfolio["mrr_cents"] == overview["mrr_cents"]

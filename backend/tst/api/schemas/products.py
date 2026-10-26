@@ -124,6 +124,15 @@ class ProductMonthOut(BaseModel):
     revenue_cents: int
 
 
+class ProductTotalMonthOut(BaseModel):
+    """One month end across every segment of a product (the 12-month chart)."""
+
+    turn: int
+    date_label: str
+    customers: float
+    revenue_cents: int
+
+
 class LaunchReadinessOut(BaseModel):
     ready: bool
     missing: list[str] = Field(description="What still stands between it and launch")
@@ -165,6 +174,9 @@ class ProductOut(BaseModel):
     rotting: bool = Field(description="Nobody works on it, so quality is falling")
     launch: LaunchReadinessOut
     history: list[ProductMonthOut] = Field(description="Last 12 months, oldest first")
+    monthly: list[ProductTotalMonthOut] = Field(
+        description="Last 12 months summed over segments, oldest first"
+    )
 
 
 class ProductActionOut(BaseModel):

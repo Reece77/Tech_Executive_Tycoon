@@ -25,6 +25,7 @@ from tst.api.schemas.products import (
     ProductMonthOut,
     ProductOut,
     ProductSegmentOut,
+    ProductTotalMonthOut,
 )
 from tst.api.views import person_name
 from tst.loader import LoadedData
@@ -311,6 +312,16 @@ def product_out(
             )
             for m in recent
             if m.turn in last_turns
+        ],
+        monthly=[
+            ProductTotalMonthOut(
+                turn=turn,
+                date_label=format_turn(turn),
+                customers=sum(r.customers for r in rows.values()),
+                revenue_cents=sum(r.revenue_cents for r in rows.values()),
+            )
+            for rows in months
+            if (turn := next(iter(rows.values())).turn) in last_turns
         ],
     )
 

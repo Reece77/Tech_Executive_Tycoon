@@ -1,6 +1,6 @@
 import { TextInput } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
-import { useMemo } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import type { ProductSegment } from '../hooks/api';
 import { formatMoneyWhole } from '../lib/format';
 import { formatCount, formatFlow, formatPercent, REACH_TEXT } from '../lib/products';
@@ -15,6 +15,49 @@ export interface PriceEditing {
   onChange: (segment: string, text: string) => void;
 }
 
+// Price boxes read the editing state from context, so the columns stay stable and a box keeps
+// its focus while the player types (new cell functions would remount the inputs).
+const PriceContext = createContext<PriceEditing>({
+  prices: {},
+  editing: null,
+  onChange: () => undefined,
+});
+
+function PriceCell({ segment: s }: { segment: ProductSegment }) {
+  const { prices, onChange } = useContext(PriceContext);
+  return (
+    <TextInput
+      size="xs"
+      w={110}
+      value={prices[s.segment] ?? ''}
+      placeholder="Set a price"
+      aria-label={`${s.label} price`}
+      data-testid={`price-input-${s.segment}`}
+      onChange={(e) => onChange(s.segment, e.currentTarget.value)}
+      styles={{ input: { fontFamily: 'var(--tst-font-mono)' } }}
+    />
+  );
+}
+
+function NoteCell({ segment: s }: { segment: ProductSegment }) {
+  const { editing } = useContext(PriceContext);
+  if (s.segment === editing) {
+    return (
+      <span className="tst-muted" style={{ fontSize: 12 }}>
+        Editing: preview below
+      </span>
+    );
+  }
+  if (s.note) {
+    return (
+      <span style={{ fontSize: 12, color: 'var(--tst-warn)' }} data-testid="capacity-note">
+        {s.note}
+      </span>
+    );
+  }
+  return null;
+}
+
 /** A product's segments: the editable price and, once it sells, last month's numbers. */
 export function SegmentTable({
   segments,
@@ -25,7 +68,6 @@ export function SegmentTable({
   price: PriceEditing;
   selling: boolean; // false in development: price and reach only
 }) {
-  const { prices, editing, onChange } = price;
   const columns = useMemo(() => {
     const segment = helper.accessor('label', {
       header: 'Segment',
@@ -37,40 +79,12 @@ export function SegmentTable({
       header: 'Price a month',
       sortFn: 'basic',
       sortUndefined: 'last',
-      cell: ({ row }) => (
-        <TextInput
-          size="xs"
-          w={110}
-          value={prices[row.original.segment] ?? ''}
-          placeholder="Set a price"
-          aria-label={`${row.original.label} price`}
-          data-testid={`price-input-${row.original.segment}`}
-          onChange={(e) => onChange(row.original.segment, e.currentTarget.value)}
-          styles={{ input: { fontFamily: 'var(--tst-font-mono)' } }}
-        />
-      ),
+      cell: ({ row }) => <PriceCell segment={row.original} />,
     });
     const note = helper.display({
       id: 'note',
       header: '',
-      cell: ({ row }) => {
-        const s = row.original;
-        if (s.segment === editing) {
-          return (
-            <span className="tst-muted" style={{ fontSize: 12 }}>
-              Editing: preview below
-            </span>
-          );
-        }
-        if (s.note) {
-          return (
-            <span style={{ fontSize: 12, color: 'var(--tst-warn)' }} data-testid="capacity-note">
-              {s.note}
-            </span>
-          );
-        }
-        return null;
-      },
+      cell: ({ row }) => <NoteCell segment={row.original} />,
     });
     if (!selling) {
       return helper.columns([
@@ -151,7 +165,7 @@ export function SegmentTable({
       }),
       note,
     ]);
-  }, [selling, prices, editing, onChange]);
+  }, [selling]);
 
   const table = useTable({
     features: gameTableFeatures,
@@ -160,11 +174,13 @@ export function SegmentTable({
     getRowId: (s) => s.segment,
   });
   return (
-    <DataTable
-      table={table}
-      label="Segments"
-      rowTestId="segment-row"
-      selectedRowId={editing ?? undefined}
-    />
+    <PriceContext.Provider value={price}>
+      <DataTable
+        table={table}
+        label="Segments"
+        rowTestId="segment-row"
+        selectedRowId={price.editing ?? undefined}
+      />
+    </PriceContext.Provider>
   );
 }

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { KpiTile } from '../components/KpiTile';
+import { LifecycleChip } from '../components/LifecycleChip';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import {
   useCategories,
@@ -21,8 +22,6 @@ import {
   formatCount,
   formatScore,
   formatSignedPercent,
-  lifecycleStyle,
-  lifecycleText,
   paceText,
   REACH_TEXT,
 } from '../lib/products';
@@ -149,24 +148,6 @@ function trend(p: Product) {
   return (
     <span className="tst-num" style={{ color }}>
       {formatSignedPercent(p.customer_trend)} a month
-    </span>
-  );
-}
-
-export function LifecycleChip({ product }: { product: Product }) {
-  return (
-    <span
-      data-testid="product-status"
-      data-status={product.status}
-      style={{
-        ...lifecycleStyle(product.status),
-        fontSize: 12,
-        fontWeight: 600,
-        borderRadius: 4,
-        padding: '2px 8px',
-      }}
-    >
-      {lifecycleText(product)}
     </span>
   );
 }

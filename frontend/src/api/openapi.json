@@ -8529,6 +8529,14 @@
             "type": "array",
             "title": "History",
             "description": "Last 12 months, oldest first"
+          },
+          "monthly": {
+            "items": {
+              "$ref": "#/components/schemas/ProductTotalMonthOut"
+            },
+            "type": "array",
+            "title": "Monthly",
+            "description": "Last 12 months summed over segments, oldest first"
           }
         },
         "type": "object",
@@ -8563,7 +8571,8 @@
           "pace",
           "rotting",
           "launch",
-          "history"
+          "history",
+          "monthly"
         ],
         "title": "ProductOut"
       },
@@ -8685,6 +8694,35 @@
           "note"
         ],
         "title": "ProductSegmentOut"
+      },
+      "ProductTotalMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "customers",
+          "revenue_cents"
+        ],
+        "title": "ProductTotalMonthOut",
+        "description": "One month end across every segment of a product (the 12-month chart)."
       },
       "ProductsMetaOut": {
         "properties": {

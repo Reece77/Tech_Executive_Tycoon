@@ -2603,6 +2603,11 @@ export interface components {
              * @description Last 12 months, oldest first
              */
             history: components["schemas"]["ProductMonthOut"][];
+            /**
+             * Monthly
+             * @description Last 12 months summed over segments, oldest first
+             */
+            monthly: components["schemas"]["ProductTotalMonthOut"][];
         };
         /** ProductSegmentOut */
         ProductSegmentOut: {
@@ -2652,6 +2657,20 @@ export interface components {
              * @description 'Sales capacity limited new customers in <segment>' when it bound
              */
             note: string | null;
+        };
+        /**
+         * ProductTotalMonthOut
+         * @description One month end across every segment of a product (the 12-month chart).
+         */
+        ProductTotalMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Customers */
+            customers: number;
+            /** Revenue Cents */
+            revenue_cents: number;
         };
         /**
          * ProductsMetaOut
