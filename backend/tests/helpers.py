@@ -1,4 +1,4 @@
-"""Shared builders for M1b tests: a fresh game with candidates and employees."""
+"""Shared builders for tests: a fresh game with candidates, employees and products."""
 
 from __future__ import annotations
 
@@ -9,17 +9,21 @@ from tst.sim.hiring.models import Candidate, PersonState, Search
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import new_reveal_state
+from tst.sim.products.models import Product, ProductSegment
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.state import (
     GameState,
     with_candidate,
+    with_company,
     with_employment,
     with_person,
     with_person_state,
+    with_product_segment,
     with_reveal,
     with_search,
 )
+from tst.sim.state import with_product as put_product
 
 
 def fresh_game(
@@ -162,3 +166,44 @@ def with_employee(
             balance=loaded.balance,
         ),
     )
+
+
+def with_product(
+    state: GameState,
+    *,
+    product_id: int | None = None,
+    category: str = "b2b_saas",
+    prices: dict[str, int | None] | None = None,
+    status: str = "live",
+    quality: float = 40.0,
+    feature_points: float = 0.0,
+    brand: float = 10.0,
+    budget_cents: int = 0,
+    customers: dict[str, float] | None = None,
+    root: bool = True,
+    name: str = "Pipeline",
+) -> GameState:
+    """A player product (default: live B2B SaaS in SMB at $40), worked on by the root."""
+    pid, ids = (product_id, state.next_ids) if product_id else state.next_ids.take("product")
+    prices = {"smb": 4000} if prices is None else prices
+    product = Product(
+        id=pid,
+        company_id=1,
+        category=category,
+        name=name,
+        status=status,  # type: ignore[arg-type]
+        quality=quality,
+        feature_points=feature_points,
+        brand=brand,
+        marketing_budget_cents=budget_cents,
+        created_turn=state.turn,
+        launched_turn=state.turn if status != "in_development" else None,
+    )
+    state = replace(put_product(state, product), next_ids=ids)
+    for seg, price in prices.items():
+        held = (customers or {}).get(seg, 0.0)
+        segment = ProductSegment(pid, seg, price, held, False, state.turn)
+        state = with_product_segment(state, segment)
+    if root:
+        state = with_company(state, replace(state.player, root_product_id=pid))
+    return state
