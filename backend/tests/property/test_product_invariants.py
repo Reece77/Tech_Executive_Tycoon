@@ -1,7 +1,9 @@
-"""Product invariants over random teams and products (formulas.md 11.3-11.5).
+"""Product invariants over random teams and products (formulas.md 11.3-11.8).
 
 Development: quality and brand stay in [0, 100], output is never negative (feature points
-never fall), and a product nobody works on only loses quality.
+never fall), and a product nobody works on only loses quality. Market: customers are never
+negative, a segment's customers never exceed its addressable demand, and every ledger entry
+balances in integer cents.
 """
 
 from __future__ import annotations
@@ -14,9 +16,12 @@ from hypothesis import strategies as st
 from tests.conftest import DATA_DIR
 from tests.helpers import fresh_game, make_person, with_employee, with_product
 from tst.loader import load_all
+from tst.sim.decisions import Decisions
+from tst.sim.ledger import CASH, apply_entries
 from tst.sim.products.phases import brand_and_demand, develop
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_person
+from tst.sim.turn import advance_turn
 
 LOADED = load_all(DATA_DIR)
 BASE = fresh_game(LOADED)
@@ -92,3 +97,57 @@ def test_a_product_with_no_units_only_loses_quality(state: GameState, seed: int)
         assert product is not None
         assert product.quality <= quality and product.feature_points == points
         quality = product.quality
+
+
+# --- Market (11.7, 11.8) --------------------------------------------------------------------
+
+
+@st.composite
+def markets(draw: st.DrawFn) -> GameState:
+    """One to three player products with random scores, prices and customers."""
+    state = draw(teams())
+    for i in range(draw(st.integers(min_value=0, max_value=2))):
+        category = draw(st.sampled_from([c.key for c in LOADED.game_data.categories]))
+        cat = LOADED.game_data.category(category)
+        segs = draw(st.lists(st.sampled_from(cat.segment_keys), min_size=1, unique=True))
+        prices = {s: draw(st.integers(min_value=1, max_value=2_000_000)) for s in segs}
+        demand = {s: cat.market(s).addressable for s in segs}
+        state = with_product(
+            state,
+            category=category,
+            prices=prices,  # type: ignore[arg-type]
+            status=draw(st.sampled_from(["live", "sunset", "in_development"])),
+            quality=draw(st.floats(min_value=0, max_value=100)),
+            brand=draw(st.floats(min_value=0, max_value=100)),
+            feature_points=draw(st.floats(min_value=0, max_value=500)),
+            customers={s: draw(st.floats(min_value=0, max_value=0.1)) * demand[s] for s in segs},
+            root=False,
+            name=f"P{i}",
+        )
+    return state
+
+
+@settings(max_examples=40, deadline=None)
+@given(markets(), st.integers(min_value=0, max_value=2**32))
+def test_customers_stay_within_demand_and_entries_balance(state: GameState, seed: int) -> None:
+    balances = {(1, CASH): 10_000_000}
+    for _ in range(4):
+        result = advance_turn(
+            state, Decisions(), RngFactory(seed), LOADED.balance, LOADED.game_data, balances
+        )
+        state = result.new_state
+        for entry in result.ledger_entries:
+            assert sum(line.amount for line in entry.lines) == 0
+            assert all(isinstance(line.amount, int) for line in entry.lines)
+        balances = dict(apply_entries(balances, result.ledger_entries))
+        products = {p.id: p for p in state.products}
+        totals: dict[tuple[str, str], float] = {}
+        for seg in state.product_segments:
+            assert seg.customers >= 0
+            product = products[seg.product_id]
+            key = (product.category, seg.segment)
+            totals[key] = totals.get(key, 0.0) + seg.customers
+        for (category, segment), total in totals.items():
+            market = state.market(category, segment)
+            assert market is not None
+            assert total <= market.addressable * (1 + 1e-9)
