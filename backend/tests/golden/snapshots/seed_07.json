@@ -9,7 +9,9 @@
     "payroll_cents": 0,
     "avg_morale": null,
     "mrr_cents": 0,
-    "arr_cents": 0
+    "arr_cents": 0,
+    "founder_bp": 8500,
+    "board_confidence": null
   },
   {
     "turn": 1,
@@ -21,7 +23,9 @@
     "payroll_cents": 2865500,
     "avg_morale": 58.88490302218327,
     "mrr_cents": 0,
-    "arr_cents": 0
+    "arr_cents": 0,
+    "founder_bp": 8500,
+    "board_confidence": null
   },
   {
     "turn": 2,
@@ -33,7 +37,9 @@
     "payroll_cents": 6746500,
     "avg_morale": 53.476400009297244,
     "mrr_cents": 0,
-    "arr_cents": 0
+    "arr_cents": 0,
+    "founder_bp": 8500,
+    "board_confidence": null
   },
   {
     "turn": 3,
@@ -45,7 +51,9 @@
     "payroll_cents": 8524000,
     "avg_morale": 50.357154390473674,
     "mrr_cents": 0,
-    "arr_cents": 0
+    "arr_cents": 0,
+    "founder_bp": 8500,
+    "board_confidence": null
   },
   {
     "turn": 4,
@@ -57,7 +65,9 @@
     "payroll_cents": 9695500,
     "avg_morale": 52.661922733553155,
     "mrr_cents": 0,
-    "arr_cents": 0
+    "arr_cents": 0,
+    "founder_bp": 8500,
+    "board_confidence": null
   },
   {
     "turn": 5,
@@ -69,7 +79,9 @@
     "payroll_cents": 9211500,
     "avg_morale": 53.35638185777559,
     "mrr_cents": 0,
-    "arr_cents": 0
+    "arr_cents": 0,
+    "founder_bp": 8500,
+    "board_confidence": null
   },
   {
     "turn": 6,
@@ -81,7 +93,9 @@
     "payroll_cents": 9211500,
     "avg_morale": 50.88886396971082,
     "mrr_cents": 71032,
-    "arr_cents": 852384
+    "arr_cents": 852384,
+    "founder_bp": 8500,
+    "board_confidence": null
   },
   {
     "turn": 7,
@@ -93,7 +107,9 @@
     "payroll_cents": 9211500,
     "avg_morale": 51.317003858061284,
     "mrr_cents": 146002,
-    "arr_cents": 1752024
+    "arr_cents": 1752024,
+    "founder_bp": 8500,
+    "board_confidence": null
   },
   {
     "turn": 8,
@@ -105,7 +121,9 @@
     "payroll_cents": 9211500,
     "avg_morale": 52.04270405040138,
     "mrr_cents": 219624,
-    "arr_cents": 2635488
+    "arr_cents": 2635488,
+    "founder_bp": 3777,
+    "board_confidence": 68.0
   },
   {
     "turn": 9,
@@ -117,7 +135,9 @@
     "payroll_cents": 10585500,
     "avg_morale": 54.165142130521694,
     "mrr_cents": 471446,
-    "arr_cents": 5657352
+    "arr_cents": 5657352,
+    "founder_bp": 3777,
+    "board_confidence": 66.4
   },
   {
     "turn": 10,
@@ -129,7 +149,9 @@
     "payroll_cents": 10585500,
     "avg_morale": 54.499911031424574,
     "mrr_cents": 726022,
-    "arr_cents": 8712264
+    "arr_cents": 8712264,
+    "founder_bp": 3777,
+    "board_confidence": 65.12
   },
   {
     "turn": 11,
@@ -141,7 +163,9 @@
     "payroll_cents": 10585500,
     "avg_morale": 54.456471585181326,
     "mrr_cents": 980599,
-    "arr_cents": 11767188
+    "arr_cents": 11767188,
+    "founder_bp": 3777,
+    "board_confidence": 64.096
   },
   {
     "turn": 12,
@@ -153,7 +177,9 @@
     "payroll_cents": 10585500,
     "avg_morale": 54.619577137706365,
     "mrr_cents": 1223418,
-    "arr_cents": 14681016
+    "arr_cents": 14681016,
+    "founder_bp": 3777,
+    "board_confidence": 63.2768
   },
   {
     "turn": 13,
@@ -165,7 +191,9 @@
     "payroll_cents": 9304000,
     "avg_morale": 54.37015124552068,
     "mrr_cents": 1481161,
-    "arr_cents": 17773932
+    "arr_cents": 17773932,
+    "founder_bp": 3777,
+    "board_confidence": 66.62144
   },
   {
     "turn": 14,
@@ -177,7 +205,9 @@
     "payroll_cents": 9304000,
     "avg_morale": 54.947961398833286,
     "mrr_cents": 1750460,
-    "arr_cents": 21005520
+    "arr_cents": 21005520,
+    "founder_bp": 3777,
+    "board_confidence": 69.29715200000001
   },
   {
     "turn": 15,
@@ -189,7 +219,9 @@
     "payroll_cents": 8424000,
     "avg_morale": 54.23702750301065,
     "mrr_cents": 2016820,
-    "arr_cents": 24201840
+    "arr_cents": 24201840,
+    "founder_bp": 3777,
+    "board_confidence": 71.4377216
   },
   {
     "turn": 16,
@@ -201,7 +233,9 @@
     "payroll_cents": 8424000,
     "avg_morale": 54.162226994221385,
     "mrr_cents": 2298982,
-    "arr_cents": 27587784
+    "arr_cents": 27587784,
+    "founder_bp": 3777,
+    "board_confidence": 73.15017728000001
   },
   {
     "turn": 17,
@@ -213,7 +247,9 @@
     "payroll_cents": 7456000,
     "avg_morale": 54.443097271639466,
     "mrr_cents": 2569890,
-    "arr_cents": 30838680
+    "arr_cents": 30838680,
+    "founder_bp": 3777,
+    "board_confidence": 74.520141824
   },
   {
     "turn": 18,
@@ -225,7 +261,9 @@
     "payroll_cents": 7456000,
     "avg_morale": 53.45361168468126,
     "mrr_cents": 2713154,
-    "arr_cents": 32557848
+    "arr_cents": 32557848,
+    "founder_bp": 3777,
+    "board_confidence": 75.61611345920001
   },
   {
     "turn": 19,
@@ -237,7 +275,9 @@
     "payroll_cents": 7456000,
     "avg_morale": 54.09161236641202,
     "mrr_cents": 2978831,
-    "arr_cents": 35745972
+    "arr_cents": 35745972,
+    "founder_bp": 3777,
+    "board_confidence": 76.3291316163012
   },
   {
     "turn": 20,
@@ -249,7 +289,9 @@
     "payroll_cents": 7456000,
     "avg_morale": 53.35039600564859,
     "mrr_cents": 3254112,
-    "arr_cents": 39049344
+    "arr_cents": 39049344,
+    "founder_bp": 3777,
+    "board_confidence": 75.15272164829935
   },
   {
     "turn": 21,
@@ -261,7 +303,9 @@
     "payroll_cents": 7456000,
     "avg_morale": 52.967515909084945,
     "mrr_cents": 3526942,
-    "arr_cents": 42323304
+    "arr_cents": 42323304,
+    "founder_bp": 3777,
+    "board_confidence": 73.03396846013015
   },
   {
     "turn": 22,
@@ -273,7 +317,9 @@
     "payroll_cents": 7456000,
     "avg_morale": 52.28051150014552,
     "mrr_cents": 3801798,
-    "arr_cents": 45621576
+    "arr_cents": 45621576,
+    "founder_bp": 3777,
+    "board_confidence": 70.54352509347592
   },
   {
     "turn": 23,
@@ -285,6 +331,8 @@
     "payroll_cents": 7456000,
     "avg_morale": 52.03496930552381,
     "mrr_cents": 4083608,
-    "arr_cents": 49003296
+    "arr_cents": 49003296,
+    "founder_bp": 3777,
+    "board_confidence": 67.90418535669295
   }
 ]

@@ -205,6 +205,8 @@ def company_snapshot_from_row(row: TurnSnapshotRow) -> CompanySnapshot:
         avg_morale=kpis.get("avg_morale"),
         mrr_cents=int(kpis.get("mrr_cents", 0)),
         arr_cents=int(kpis.get("arr_cents", 0)),
+        founder_bp=int(kpis.get("founder_bp", 0)),
+        board_confidence=kpis.get("board_confidence"),
     )
 
 

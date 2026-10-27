@@ -63,8 +63,74 @@ Venture debt and bank loans, interest and covenants, Series C onward, convertibl
 
 ## Decisions made
 
-_(Agent fills in.)_
+**Timing.** "The next turn" means the Continue of the month the action was taken, as with offers (ADR-0014): a SAFE raised in March is answered at March's Continue; a round started in March gets its term sheets then and stays open for 3 turns counting March, so a sheet can be accepted in April or May and the round closes in phase 1 of that month's Continue. A bridge offered at March's Continue can be accepted in April or May and pays out at that month's Continue.
+
+**Shares.**
+- Share arithmetic is exact (`fractions.Fraction`), rounding half-to-even only where a count is stored: X first, then C from `E + X`, then N. This reproduces the 14.10 table to the share, both as formulas and through the game's actions and turns (`test_three_round_dilution`).
+- FD = every cap-table entry (the unallocated pool is one entry) + every grant's `granted - forfeited`. Grants of people who left stay on the cap table with their vested options.
+- Vesting counts months served at the end of each month, the hire month included (`turn - start + 1` in phase 7); the migration uses `current_turn - start_turn`, the same count.
+- The pool limit on offers: options promised by pending offers (bp converted at today's FD) plus the new offer may not exceed the unallocated pool. `hiring.option_pool_bp` is no longer used by the rules; the hiring meta endpoint still returns it (see Follow-ups).
+- Share prices are fractions of a cent, so the API sends them as decimal dollar strings (`"0.48936"`).
+
+**Valuation, SAFEs and term sheets.**
+- V_base uses MRR at the last month end and six month ends before (13 month ends kept on `company.mrr_history`), the funding climate of the current calendar year, any live product, and staff headcount including the founder. The SAFE hint and its answer use the same inputs.
+- Only the founder can raise money; one SAFE raise may be pending at a time.
+- New balance key `finance.safe.max_fraction` (0.5): a SAFE is refused if outstanding SAFEs would claim half the company, which keeps the 14.5 close defined (`k < 1`).
+- New balance key `finance.round.typical_cents`: the 14.5 table's typical raise per series, shown as guidance.
+- Each firm draws its answer and its valuation noise from its own `(round_id, firm_index)` key whether or not it answers. ADR-0013's one-call-site rule and ADR-0018's two key shapes for `finance` meet in one helper, `finance_stream`.
+- When half the quoted pre-money is below a firm's minimum check, the firm offers its minimum check.
+
+**Board.**
+- Directors other than the founder are generated `Person` rows with role `board_member` and no employment, using stream `board` (id 17, key `(seat_id,)`, recorded in ADR-0013) and `board.director_role` / `board.director_level` for skills.
+- Common seats hold no confidence and always vote no; the board's average is over investor and independent directors. Every new director starts at 70, including those added by Series A and B.
+- A down round's −15 applies to sitting directors before the new seats are added.
+- Investor seats beyond the lead's go to other firms on the cap table, largest holding first.
+- "Six months of revenue history" means MRR six month ends ago was above zero.
+- The runway term uses the 14.1 runway (cash over this month's projected net burn); "profitable" counts as 12 or more months.
+
+**Insolvency.**
+- The bridge amount is 3 × this month's net cash fall; if cash did not fall this month, the projected net burn; at least what brings cash back to zero.
+- The bridge cap is 0.8 × the last priced round's post-money. The bridge posts like a SAFE, its $2,000 fee included.
+- "Once per insolvency" means no bridge has been offered since this run of negative month ends began.
+- The insolvency note replaces M1's `out_of_cash` warning; the template stays for old saves' messages.
+
+**Game over.** `GameOverError` (HTTP 409, code `game_over`) is raised by `apply_action` and `advance_turn` once `game_state` is not `active`; every read works.
+
+**Scenarios.**
+- The funded spinout's cap table is in shares whatever the difficulty, so on easy its $2.25M cash sits beside a $1.5M seed (2,000,000 shares at $0.75).
+- Its seed is stored as a closed round at turn 0, and First Round's director is generated at game start.
+- Existing saves get all of this from migration `0009_finance` (which, like 0008, uses the current sim code to build it).
+
+**Tests.**
+- Test fixtures that place employees at fixed person ids 2.. first move generated directors to ids 900+ (`move_directors`, `move_save_directors`); real games always take ids from the counter.
+- Timing and flow tests that let cash run out get test funding (`fund_save`).
+- Two M1 tests were updated because their rules were replaced in M4: the 1,000 bp pool sum, and the out-of-cash warning. They now check the M4 rules.
+
+**Golden.** The golden script raises a $1M SAFE from turn 3 at 1.2 × V_base (again if declined), a $2M seed once the product is live, and a Series A once ARR passes $1M, accepting the best term sheet and any bridge. All ten seeds survive 24 turns: the SAFE fills by turns 3–5, the seed closes at turns 8–11, and none reaches $1M ARR. Snapshots gain `founder_bp` and `board_confidence`; the statements reconcile on every turn of every seed.
+
+**Performance.** 120 turns with 25 staff, 3 products, the funded spinout's board, a SAFE and all incumbents: 235 ms per turn.
+
+**Funding diagnostics** (`tests/integration/test_funding_diagnostics.py -s`). Setup: funded spinout, the M3a earn-and-burn script; the extra hires cycle engineer, account executive, marketer.
+
+| Seed | (a) no raise, survives 36 | (b) 15 staff by turn 12, bankrupt turn | (c) Series A turn | Pre-money | Amount | Founder after | Survives 60 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | yes | none | 15 | $21.00M | $5.00M | 55.0% | yes |
+| 2 | yes | none | 15 | $22.07M | $6.00M | 53.4% | yes |
+| 3 | yes | none | 15 | $21.54M | $6.00M | 53.0% | yes |
+| 4 | yes | none | 15 | $28.64M | $6.00M | 56.5% | yes |
+| 5 | yes | none | 17 | $32.05M | $5.00M | 59.5% | yes |
+| 6 | yes | none | 16 | $26.15M | $6.00M | 55.5% | yes |
+| 7 | yes | none | 15 | $22.69M | $6.00M | 53.7% | yes |
+| 8 | yes | none | 15 | $29.04M | $6.00M | 56.7% | yes |
+| 9 | yes | none | 17 | $32.38M | $6.00M | 57.8% | yes |
+| 10 | yes | none | 15 | $25.65M | $6.00M | 55.2% | yes |
+
+In (b) the extra builders and sellers bring revenue forward. Seed 1's cash bottoms out at about $325,000 around turn 19, then the company is profitable. Not tuned to.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Front end.** Label the M4 inbox kinds (they show as "Notice" until M4b). Use `option_pool_left_bp` in place of `hiring.option_pool_bp`, then retire that balance key.
+- **Balance.** In the diagnostics a funded spinout that hires to 15 staff never needs to raise: funding is optional in that scenario. Worth a look in the balance pass, alongside Reece's manual check.
+- **Migrations.** `0009_finance`, like `0008_products`, builds old saves' data with the current sim and ORM models. A future migration that changes those models could break upgrading a pre-M4 save; snapshot the needed code into the migration if that happens.
+- **Board events (M6).** The founder's nominee (second common seat) is a generated person with no role beyond voting no.
+- **Stages.** Store the turn each stage is reached (also an M3b follow-up).

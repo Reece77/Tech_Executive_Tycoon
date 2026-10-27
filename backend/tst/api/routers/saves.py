@@ -95,6 +95,8 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
                 avg_morale=snap.avg_morale,
                 mrr_cents=snap.mrr_cents,
                 arr_cents=snap.arr_cents,
+                founder_bp=snap.founder_bp,
+                board_confidence=snap.board_confidence,
             )
             for turn, snap in ov.history
         ],

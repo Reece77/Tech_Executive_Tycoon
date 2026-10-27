@@ -73,6 +73,8 @@ class SnapshotPointOut(BaseModel):
     avg_morale: float | None
     mrr_cents: int
     arr_cents: int
+    founder_bp: int = Field(description="The founder's shares in bp of FD (M4a)")
+    board_confidence: float | None = Field(description="Average director confidence (M4a)")
 
 
 class CostLineOut(BaseModel):

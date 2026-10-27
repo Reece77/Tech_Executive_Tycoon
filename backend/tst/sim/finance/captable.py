@@ -7,7 +7,7 @@ from fractions import Fraction
 
 from tst.sim.data_models import Balance
 from tst.sim.finance.models import CapEntry, FundingRound
-from tst.sim.money import Cents
+from tst.sim.money import BP_DENOMINATOR, Cents
 from tst.sim.state import GameState
 
 
@@ -71,3 +71,12 @@ def mrr_now_and_then(state: GameState, company_id: int, balance: Balance) -> tup
     now = history[-1] if history else 0
     then = history[-1 - window] if len(history) > window else 0
     return now, then
+
+
+def founder_bp(state: GameState, company_id: int) -> int:
+    """The founder's shares in bp of fully diluted shares, rounded down."""
+    founder = state.founder_of(company_id)
+    fd = fd_shares(state, company_id)
+    if founder is None or not fd:
+        return 0
+    return person_shares(state, company_id, founder.id) * BP_DENOMINATOR // fd

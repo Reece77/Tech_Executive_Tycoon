@@ -17,7 +17,8 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.errors import GameOverError
 from tst.sim.finance import fundraising, insolvency
-from tst.sim.finance.board import board_month
+from tst.sim.finance.board import average_confidence, board_month
+from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
@@ -228,6 +229,8 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
                 avg_morale=sum(known) / len(known) if known else None,
                 mrr_cents=ctx.revenue.get(company.id, 0),
                 arr_cents=products.arr_of(ctx.revenue.get(company.id, 0)),
+                founder_bp=founder_bp(ctx.state, company.id),
+                board_confidence=average_confidence(ctx.state, company.id),
             )
         )
         items.append(

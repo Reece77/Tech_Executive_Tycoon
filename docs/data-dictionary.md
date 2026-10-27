@@ -97,7 +97,7 @@ Month-end KPIs per company per turn, written by phase 11. Append-only history.
 | `id` | INTEGER PK | no | Row id. |
 | `turn` | INTEGER | no | Turn the snapshot closes. |
 | `company_id` | INTEGER FK → company.id | no | Company. |
-| `kpis` | JSON | no | `{cash_cents, monthly_burn_cents, headcount, payroll_cents, avg_morale, mrr_cents, arr_cents}`. Only companies with a ledger (the player until M5) get a row. `mrr_cents` is this month's subscription revenue and `arr_cents` 12 × MRR (formulas.md §11.8, M3a). `cash_cents` equals the `1000_cash` balance through this turn; `monthly_burn_cents` is the net cash decrease this month (0 if cash did not fall); `headcount` counts the company's `active` and `notice` employments (1 for the founder from turn 0). |
+| `kpis` | JSON | no | `{cash_cents, monthly_burn_cents, headcount, payroll_cents, avg_morale, mrr_cents, arr_cents, founder_bp, board_confidence}`. `founder_bp` is the founder's shares in bp of fully diluted shares, rounded down, and `board_confidence` the average investor and independent director confidence, null without a board (M4a). Only companies with a ledger (the player until M5) get a row. `mrr_cents` is this month's subscription revenue and `arr_cents` 12 × MRR (formulas.md §11.8, M3a). `cash_cents` equals the `1000_cash` balance through this turn; `monthly_burn_cents` is the net cash decrease this month (0 if cash did not fall); `headcount` counts the company's `active` and `notice` employments (1 for the founder from turn 0). |
 
 Unique index `ux_turn_snapshot_turn_company (turn, company_id)`.
 

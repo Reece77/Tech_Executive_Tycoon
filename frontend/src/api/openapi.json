@@ -11293,6 +11293,23 @@
           "arr_cents": {
             "type": "integer",
             "title": "Arr Cents"
+          },
+          "founder_bp": {
+            "type": "integer",
+            "title": "Founder Bp",
+            "description": "The founder's shares in bp of FD (M4a)"
+          },
+          "board_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Board Confidence",
+            "description": "Average director confidence (M4a)"
           }
         },
         "type": "object",
@@ -11305,7 +11322,9 @@
           "headcount",
           "avg_morale",
           "mrr_cents",
-          "arr_cents"
+          "arr_cents",
+          "founder_bp",
+          "board_confidence"
         ],
         "title": "SnapshotPointOut"
       },

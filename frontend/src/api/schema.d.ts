@@ -3523,6 +3523,16 @@ export interface components {
             mrr_cents: number;
             /** Arr Cents */
             arr_cents: number;
+            /**
+             * Founder Bp
+             * @description The founder's shares in bp of FD (M4a)
+             */
+            founder_bp: number;
+            /**
+             * Board Confidence
+             * @description Average director confidence (M4a)
+             */
+            board_confidence: number | null;
         };
         /** StatementLineOut */
         StatementLineOut: {
