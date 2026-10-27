@@ -168,11 +168,34 @@ PRODUCT_FORBIDDEN_NAMES = frozenset(
 )
 
 
+# formulas.md 14.9: never V_base, a firm's bias or noise, or the SAFE acceptance probability
+# (M4a); the SAFE dialog gets a hint band only.
+FINANCE_FORBIDDEN_NAMES = frozenset(
+    {
+        "v_base",
+        "base_value",
+        "base_value_cents",
+        "bias",
+        "noise",
+        "valuation_noise",
+        "valuation_noise_sd",
+        "z",
+        "probability",
+        "acceptance_probability",
+        "safe_probability",
+        "p",
+        "response",
+        "response_chance",
+    }
+)
+
+
 def forbidden(name: str) -> bool:
     """ADR-0007 exact-name rule (potential_phrase is allowed), plus the 11.13 names."""
     return (
         name in FORBIDDEN_NAMES
         or name in PRODUCT_FORBIDDEN_NAMES
+        or name in FINANCE_FORBIDDEN_NAMES
         or name.startswith(FORBIDDEN_PREFIXES)
     )
 
@@ -193,6 +216,8 @@ def test_no_hidden_fields_in_api_models(client: TestClient) -> None:
     assert forbidden("hidden_traits") and forbidden("true_skill")
     assert "ProductOut" in components and "MarketProductOut" in components
     assert forbidden("q_cap") and forbidden("contribution") and not forbidden("pace")
+    assert "CapTableOut" in components and "SafeHintOut" in components
+    assert forbidden("v_base") and forbidden("bias") and not forbidden("hint")
 
 
 def find_forbidden_keys(value: Any, path: str = "$") -> list[str]:

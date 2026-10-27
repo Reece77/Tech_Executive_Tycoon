@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -34,6 +34,7 @@ from tst.db.models import (
     LedgerEntryRow,
     LedgerLineRow,
     PersonMoraleLogRow,
+    PersonRow,
     ProductMonthRow,
     SaveMetaRow,
     TurnSnapshotRow,
@@ -290,6 +291,28 @@ def expenses_by_memo(session: Session, company_id: int, turn: int) -> list[tuple
         .order_by(LedgerEntryRow.id, LedgerLineRow.id)
     )
     return [(memo.split(":")[0], code, int(amount)) for memo, code, amount in session.execute(stmt)]
+
+
+def ledger_lines(session: Session, company_id: int) -> list[tuple[int, str, Cents]]:
+    """Every ledger line of a company as (turn, account, amount): the statements' input."""
+    stmt = (
+        select(LedgerEntryRow.turn, LedgerLineRow.account_code, LedgerLineRow.amount_cents)
+        .join(LedgerLineRow.entry)
+        .where(LedgerEntryRow.company_id == company_id)
+        .order_by(LedgerEntryRow.id, LedgerLineRow.id)
+    )
+    return [(int(t), str(a), int(c)) for t, a, c in session.execute(stmt)]
+
+
+def person_names(session: Session, person_ids: Iterable[int]) -> dict[int, str]:
+    """First and last names by id, including people who have left (not in the live state)."""
+    ids = sorted(set(person_ids))
+    if not ids:
+        return {}
+    rows = session.execute(
+        select(PersonRow.id, PersonRow.first_name, PersonRow.last_name).where(PersonRow.id.in_(ids))
+    )
+    return {int(i): f"{first} {last}" for i, first, last in rows}
 
 
 def product_history(session: Session, product_id: int, since_turn: int) -> list[ProductMonth]:

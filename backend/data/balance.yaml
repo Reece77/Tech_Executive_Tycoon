@@ -367,6 +367,10 @@ finance:
       b: 500000000 # $5M
     fee_min_cents: 1500000 # cents; smallest legal fee on a priced round, $15,000 (14.5)
     fee_bp: 50 # bp of the amount raised; legal fee on a priced round (14.5)
+    typical_cents: # cents [min, max]; the typical raise per series, shown as guidance only (14.5)
+      seed: [100000000, 300000000]
+      a: [300000000, 1000000000]
+      b: [1000000000, 3000000000]
 
 board:
   start: 70 # confidence of a new director (14.6)

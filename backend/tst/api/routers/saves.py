@@ -136,6 +136,8 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         mrr_cents=latest.mrr_cents if latest else 0,
         arr_cents=latest.arr_cents if latest else 0,
         month_revenue_cents=projected_revenue(state, player.id),
+        game_state=state.save_meta.game_state,
+        ended_turn=state.save_meta.ended_turn,
     )
 
 

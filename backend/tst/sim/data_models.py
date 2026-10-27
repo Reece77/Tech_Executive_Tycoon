@@ -512,6 +512,7 @@ class RoundBalance(_Frozen):
     gate_arr_cents: dict[Series, int]
     fee_min_cents: int = Field(ge=0)
     fee_bp: int = Field(ge=0, le=BP_DENOMINATOR)
+    typical_cents: dict[Series, Span]  # guidance only (14.5 table)
 
 
 class FinanceBalance(_Frozen):

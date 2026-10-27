@@ -141,3 +141,5 @@ class OverviewOut(BaseModel):
     month_revenue_cents: int = Field(
         description="This month's revenue at the current customers and prices (M3b)"
     )
+    game_state: str = Field(description="active | bankrupt | founder_removed (M4a)")
+    ended_turn: int | None = Field(description="Turn the game ended; null while active")

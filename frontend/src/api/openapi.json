@@ -4522,6 +4522,948 @@
         }
       }
     },
+    "/api/saves/{save_id}/finance/statements": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Get Statements",
+        "description": "P&L, balance sheet and cash flow for every closed month, quarter or year (14.1).",
+        "operationId": "getStatements",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "month",
+                "quarter",
+                "year"
+              ],
+              "type": "string",
+              "default": "month",
+              "title": "Period"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatementsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/summary": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Get Summary",
+        "description": "Cash, the projected net burn and runway (\"profitable\" when null), insolvency and the\ngame state (ADR-0018).",
+        "operationId": "getFinanceSummary",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceSummaryOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/captable": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Get Captable",
+        "description": "Holders, classes, shares and percentages; every grant with vested and unvested.",
+        "operationId": "getCapTable",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapTableOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/board": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Get Board",
+        "operationId": "getBoard",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoardOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/safes": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "List Safes",
+        "operationId": "listSafes",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SafesOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Raise Safe",
+        "description": "Investors answer at the next Continue, all or nothing (14.4).",
+        "operationId": "raiseSafe",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SafeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/safes/hint": {
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Preview Safe",
+        "description": "The hint band (likely, uncertain, unlikely) and the rule checks. Nothing is saved.",
+        "operationId": "previewSafe",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SafeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SafeHintOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/bridges/{safe_id}/accept": {
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Accept Bridge",
+        "description": "The bridge's money arrives at this month's Continue (14.7).",
+        "operationId": "acceptBridge",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "safe_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Safe Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/rounds": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "List Rounds",
+        "description": "Every round with its term sheets, and whether the next series is allowed (14.5).",
+        "operationId": "listRounds",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoundsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Start Round",
+        "description": "Term sheets arrive at the next Continue.",
+        "operationId": "startRound",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoundIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/term-sheets/{sheet_id}/preview": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Preview Term Sheet",
+        "description": "Every holder before and after accepting: the pool top-up, SAFE conversion and the\nnew preferred, computed with the closing function. Nothing is saved.",
+        "operationId": "previewTermSheet",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "sheet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Sheet Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoundPreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/term-sheets/{sheet_id}/accept": {
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Accept Term Sheet",
+        "description": "The round closes at the next Continue; the other term sheets lapse.",
+        "operationId": "acceptTermSheet",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "sheet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Sheet Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/meta/scenarios": {
       "get": {
         "tags": [
@@ -4854,6 +5796,120 @@
         ],
         "title": "BackgroundOut"
       },
+      "BalanceSheetOut": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLineOut"
+            },
+            "type": "array",
+            "title": "Assets"
+          },
+          "total_assets_cents": {
+            "type": "integer",
+            "title": "Total Assets Cents"
+          },
+          "liabilities": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLineOut"
+            },
+            "type": "array",
+            "title": "Liabilities"
+          },
+          "paid_in_equity": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLineOut"
+            },
+            "type": "array",
+            "title": "Paid In Equity"
+          },
+          "accumulated_result_cents": {
+            "type": "integer",
+            "title": "Accumulated Result Cents",
+            "description": "Every past net result; no closing entries"
+          },
+          "total_liabilities_and_equity_cents": {
+            "type": "integer",
+            "title": "Total Liabilities And Equity Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "assets",
+          "total_assets_cents",
+          "liabilities",
+          "paid_in_equity",
+          "accumulated_result_cents",
+          "total_liabilities_and_equity_cents"
+        ],
+        "title": "BalanceSheetOut"
+      },
+      "BoardOut": {
+        "properties": {
+          "directors": {
+            "items": {
+              "$ref": "#/components/schemas/DirectorOut"
+            },
+            "type": "array",
+            "title": "Directors"
+          },
+          "average_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Confidence"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "warning_below": {
+            "type": "number",
+            "title": "Warning Below"
+          },
+          "removal_below": {
+            "type": "number",
+            "title": "Removal Below"
+          },
+          "removal_months": {
+            "type": "integer",
+            "title": "Removal Months"
+          },
+          "votes_to_remove": {
+            "type": "integer",
+            "title": "Votes To Remove",
+            "description": "Directors below the threshold long enough"
+          },
+          "seats": {
+            "type": "integer",
+            "title": "Seats"
+          }
+        },
+        "type": "object",
+        "required": [
+          "directors",
+          "average_confidence",
+          "label",
+          "warning_below",
+          "removal_below",
+          "removal_months",
+          "votes_to_remove",
+          "seats"
+        ],
+        "title": "BoardOut"
+      },
       "CandidacyOut": {
         "properties": {
           "search_id": {
@@ -4910,6 +5966,94 @@
           "offer_blocked_reason"
         ],
         "title": "CandidacyOut"
+      },
+      "CapTableOut": {
+        "properties": {
+          "fd_shares": {
+            "type": "integer",
+            "title": "Fd Shares"
+          },
+          "share_price_dollars": {
+            "type": "string",
+            "title": "Share Price Dollars",
+            "description": "Latest priced round's price; '0' before any"
+          },
+          "holders": {
+            "items": {
+              "$ref": "#/components/schemas/HolderOut"
+            },
+            "type": "array",
+            "title": "Holders",
+            "description": "Largest first; options as one line"
+          },
+          "granted_options": {
+            "type": "integer",
+            "title": "Granted Options",
+            "description": "Options held by staff and former staff"
+          },
+          "vested_options": {
+            "type": "integer",
+            "title": "Vested Options"
+          },
+          "unallocated_options": {
+            "type": "integer",
+            "title": "Unallocated Options"
+          },
+          "pool_left_bp": {
+            "type": "integer",
+            "title": "Pool Left Bp",
+            "description": "Unallocated less pending offers, in bp of FD"
+          },
+          "grants": {
+            "items": {
+              "$ref": "#/components/schemas/GrantOut"
+            },
+            "type": "array",
+            "title": "Grants"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fd_shares",
+          "share_price_dollars",
+          "holders",
+          "granted_options",
+          "vested_options",
+          "unallocated_options",
+          "pool_left_bp",
+          "grants"
+        ],
+        "title": "CapTableOut"
+      },
+      "CashFlowOut": {
+        "properties": {
+          "operating_cents": {
+            "type": "integer",
+            "title": "Operating Cents",
+            "description": "The net result: no accruals in v1"
+          },
+          "investing_cents": {
+            "type": "integer",
+            "title": "Investing Cents"
+          },
+          "financing_cents": {
+            "type": "integer",
+            "title": "Financing Cents",
+            "description": "SAFEs and priced rounds"
+          },
+          "change_in_cash_cents": {
+            "type": "integer",
+            "title": "Change In Cash Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operating_cents",
+          "investing_cents",
+          "financing_cents",
+          "change_in_cash_cents"
+        ],
+        "title": "CashFlowOut"
       },
       "CategoryOut": {
         "properties": {
@@ -5244,6 +6388,133 @@
         ],
         "title": "CreateUnitIn"
       },
+      "DilutionLineOut": {
+        "properties": {
+          "holder": {
+            "type": "string",
+            "title": "Holder"
+          },
+          "share_class": {
+            "type": "string",
+            "title": "Share Class"
+          },
+          "shares_before": {
+            "type": "integer",
+            "title": "Shares Before"
+          },
+          "shares_after": {
+            "type": "integer",
+            "title": "Shares After"
+          },
+          "fraction_before": {
+            "type": "number",
+            "title": "Fraction Before"
+          },
+          "fraction_after": {
+            "type": "number",
+            "title": "Fraction After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holder",
+          "share_class",
+          "shares_before",
+          "shares_after",
+          "fraction_before",
+          "fraction_after"
+        ],
+        "title": "DilutionLineOut"
+      },
+      "DirectorOut": {
+        "properties": {
+          "seat_id": {
+            "type": "integer",
+            "title": "Seat Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "common | investor | independent"
+          },
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "firm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Firm"
+          },
+          "firm_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Firm Name"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence",
+            "description": "Null for common seats, which back the founder"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "confident | watchful | losing patience"
+          },
+          "months_below": {
+            "type": "integer",
+            "title": "Months Below"
+          },
+          "seated_label": {
+            "type": "string",
+            "title": "Seated Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seat_id",
+          "kind",
+          "person_id",
+          "name",
+          "firm",
+          "firm_name",
+          "confidence",
+          "label",
+          "months_below",
+          "seated_label"
+        ],
+        "title": "DirectorOut"
+      },
       "EmploymentOut": {
         "properties": {
           "employment_id": {
@@ -5386,6 +6657,93 @@
         ],
         "title": "ErrorOut",
         "description": "Stable error body for every 4xx response."
+      },
+      "FinanceActionOut": {
+        "properties": {
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "FinanceActionOut"
+      },
+      "FinanceSummaryOut": {
+        "properties": {
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "projected_net_burn_cents": {
+            "type": "integer",
+            "title": "Projected Net Burn Cents",
+            "description": "This month's costs minus revenue"
+          },
+          "runway_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runway Months",
+            "description": "Null means profitable"
+          },
+          "profitable": {
+            "type": "boolean",
+            "title": "Profitable"
+          },
+          "insolvent_months": {
+            "type": "integer",
+            "title": "Insolvent Months"
+          },
+          "game_state": {
+            "type": "string",
+            "title": "Game State",
+            "description": "active | bankrupt | founder_removed"
+          },
+          "ended_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Turn"
+          },
+          "stage": {
+            "type": "integer",
+            "title": "Stage"
+          },
+          "stage_label": {
+            "type": "string",
+            "title": "Stage Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cash_cents",
+          "projected_net_burn_cents",
+          "runway_months",
+          "profitable",
+          "insolvent_months",
+          "game_state",
+          "ended_turn",
+          "stage",
+          "stage_label"
+        ],
+        "title": "FinanceSummaryOut"
       },
       "FireOut": {
         "properties": {
@@ -5626,6 +6984,65 @@
           "value"
         ],
         "title": "FounderSkillOut"
+      },
+      "GrantOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "on_staff": {
+            "type": "boolean",
+            "title": "On Staff"
+          },
+          "granted": {
+            "type": "integer",
+            "title": "Granted"
+          },
+          "vested": {
+            "type": "integer",
+            "title": "Vested"
+          },
+          "unvested": {
+            "type": "integer",
+            "title": "Unvested"
+          },
+          "forfeited": {
+            "type": "integer",
+            "title": "Forfeited"
+          },
+          "start_turn": {
+            "type": "integer",
+            "title": "Start Turn"
+          },
+          "start_label": {
+            "type": "string",
+            "title": "Start Label"
+          },
+          "fraction": {
+            "type": "number",
+            "title": "Fraction",
+            "description": "Options held (granted - forfeited) over FD"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "on_staff",
+          "granted",
+          "vested",
+          "unvested",
+          "forfeited",
+          "start_turn",
+          "start_label",
+          "fraction"
+        ],
+        "title": "GrantOut"
       },
       "HTTPValidationError": {
         "properties": {
@@ -5995,6 +7412,64 @@
         "type": "object",
         "title": "HiringPlanPatchIn",
         "description": "Fields to change; omitted fields keep their value. `unit_id: null` means the root."
+      },
+      "HolderOut": {
+        "properties": {
+          "holder": {
+            "type": "string",
+            "title": "Holder",
+            "description": "Who holds the shares, by name"
+          },
+          "holder_kind": {
+            "type": "string",
+            "title": "Holder Kind",
+            "description": "person | firm | group | pool | options"
+          },
+          "share_class": {
+            "type": "string",
+            "title": "Share Class"
+          },
+          "shares": {
+            "type": "integer",
+            "title": "Shares"
+          },
+          "fraction": {
+            "type": "number",
+            "title": "Fraction",
+            "description": "Share of fully diluted shares, 0-1"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "firm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Firm"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holder",
+          "holder_kind",
+          "share_class",
+          "shares",
+          "fraction"
+        ],
+        "title": "HolderOut"
       },
       "InboxItemOut": {
         "properties": {
@@ -7351,6 +8826,23 @@
             "type": "integer",
             "title": "Month Revenue Cents",
             "description": "This month's revenue at the current customers and prices (M3b)"
+          },
+          "game_state": {
+            "type": "string",
+            "title": "Game State",
+            "description": "active | bankrupt | founder_removed (M4a)"
+          },
+          "ended_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Turn",
+            "description": "Turn the game ended; null while active"
           }
         },
         "type": "object",
@@ -7380,7 +8872,9 @@
           "month_total_cents",
           "mrr_cents",
           "arr_cents",
-          "month_revenue_cents"
+          "month_revenue_cents",
+          "game_state",
+          "ended_turn"
         ],
         "title": "OverviewOut"
       },
@@ -8758,6 +10252,69 @@
         "title": "ProductsMetaOut",
         "description": "Energy costs and launch thresholds for the product screens (formulas.md 6, 11.2)."
       },
+      "ProfitAndLossOut": {
+        "properties": {
+          "revenue": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLineOut"
+            },
+            "type": "array",
+            "title": "Revenue"
+          },
+          "total_revenue_cents": {
+            "type": "integer",
+            "title": "Total Revenue Cents"
+          },
+          "cost_of_revenue": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLineOut"
+            },
+            "type": "array",
+            "title": "Cost Of Revenue",
+            "description": "Hosting (6300) sits here"
+          },
+          "gross_margin_cents": {
+            "type": "integer",
+            "title": "Gross Margin Cents"
+          },
+          "operating_expenses": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLineOut"
+            },
+            "type": "array",
+            "title": "Operating Expenses"
+          },
+          "operating_result_cents": {
+            "type": "integer",
+            "title": "Operating Result Cents"
+          },
+          "interest_cents": {
+            "type": "integer",
+            "title": "Interest Cents"
+          },
+          "tax_cents": {
+            "type": "integer",
+            "title": "Tax Cents"
+          },
+          "net_result_cents": {
+            "type": "integer",
+            "title": "Net Result Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revenue",
+          "total_revenue_cents",
+          "cost_of_revenue",
+          "gross_margin_cents",
+          "operating_expenses",
+          "operating_result_cents",
+          "interest_cents",
+          "tax_cents",
+          "net_result_cents"
+        ],
+        "title": "ProfitAndLossOut"
+      },
       "RaiseIn": {
         "properties": {
           "salary_cents": {
@@ -8838,6 +10395,497 @@
           "secondary_skills"
         ],
         "title": "RoleOut"
+      },
+      "RoundIn": {
+        "properties": {
+          "series": {
+            "type": "string",
+            "title": "Series"
+          },
+          "target_cents": {
+            "type": "integer",
+            "title": "Target Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "series",
+          "target_cents"
+        ],
+        "title": "RoundIn"
+      },
+      "RoundOut": {
+        "properties": {
+          "round_id": {
+            "type": "integer",
+            "title": "Round Id"
+          },
+          "series": {
+            "type": "string",
+            "title": "Series"
+          },
+          "series_label": {
+            "type": "string",
+            "title": "Series Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "target_cents": {
+            "type": "integer",
+            "title": "Target Cents"
+          },
+          "opened_turn": {
+            "type": "integer",
+            "title": "Opened Turn"
+          },
+          "opened_label": {
+            "type": "string",
+            "title": "Opened Label"
+          },
+          "expires_turn": {
+            "type": "integer",
+            "title": "Expires Turn"
+          },
+          "expires_label": {
+            "type": "string",
+            "title": "Expires Label"
+          },
+          "lead_firm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Firm"
+          },
+          "lead_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Name"
+          },
+          "pre_money_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pre Money Cents"
+          },
+          "amount_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Cents"
+          },
+          "post_money_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Post Money Cents"
+          },
+          "share_price_dollars": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Price Dollars"
+          },
+          "pool_shares": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pool Shares"
+          },
+          "safe_shares": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Safe Shares"
+          },
+          "new_shares": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Shares"
+          },
+          "down_round": {
+            "type": "boolean",
+            "title": "Down Round"
+          },
+          "closed_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Turn"
+          },
+          "closed_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Label"
+          },
+          "term_sheets": {
+            "items": {
+              "$ref": "#/components/schemas/TermSheetOut"
+            },
+            "type": "array",
+            "title": "Term Sheets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "round_id",
+          "series",
+          "series_label",
+          "status",
+          "target_cents",
+          "opened_turn",
+          "opened_label",
+          "expires_turn",
+          "expires_label",
+          "lead_firm",
+          "lead_name",
+          "pre_money_cents",
+          "amount_cents",
+          "post_money_cents",
+          "share_price_dollars",
+          "pool_shares",
+          "safe_shares",
+          "new_shares",
+          "down_round",
+          "closed_turn",
+          "closed_label",
+          "term_sheets"
+        ],
+        "title": "RoundOut"
+      },
+      "RoundPreviewOut": {
+        "properties": {
+          "sheet_id": {
+            "type": "integer",
+            "title": "Sheet Id"
+          },
+          "firm_name": {
+            "type": "string",
+            "title": "Firm Name"
+          },
+          "pre_money_cents": {
+            "type": "integer",
+            "title": "Pre Money Cents"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "post_money_cents": {
+            "type": "integer",
+            "title": "Post Money Cents"
+          },
+          "share_price_dollars": {
+            "type": "string",
+            "title": "Share Price Dollars"
+          },
+          "pool_top_up": {
+            "type": "integer",
+            "title": "Pool Top Up",
+            "description": "X: new pool shares"
+          },
+          "safe_conversion": {
+            "type": "integer",
+            "title": "Safe Conversion",
+            "description": "C: shares the SAFE holders receive"
+          },
+          "new_shares": {
+            "type": "integer",
+            "title": "New Shares",
+            "description": "N: the investor's new preferred shares"
+          },
+          "fd_before": {
+            "type": "integer",
+            "title": "Fd Before"
+          },
+          "fd_after": {
+            "type": "integer",
+            "title": "Fd After"
+          },
+          "fees_cents": {
+            "type": "integer",
+            "title": "Fees Cents"
+          },
+          "down_round": {
+            "type": "boolean",
+            "title": "Down Round"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/DilutionLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "board_after": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Board After",
+            "description": "Seats by kind after the close"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sheet_id",
+          "firm_name",
+          "pre_money_cents",
+          "amount_cents",
+          "post_money_cents",
+          "share_price_dollars",
+          "pool_top_up",
+          "safe_conversion",
+          "new_shares",
+          "fd_before",
+          "fd_after",
+          "fees_cents",
+          "down_round",
+          "lines",
+          "board_after"
+        ],
+        "title": "RoundPreviewOut",
+        "description": "Accepting this term sheet: every holder before and after the close (14.5)."
+      },
+      "RoundsOut": {
+        "properties": {
+          "rounds": {
+            "items": {
+              "$ref": "#/components/schemas/RoundOut"
+            },
+            "type": "array",
+            "title": "Rounds",
+            "description": "Newest first"
+          },
+          "next": {
+            "$ref": "#/components/schemas/SeriesGuideOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rounds",
+          "next"
+        ],
+        "title": "RoundsOut"
+      },
+      "SafeHintOut": {
+        "properties": {
+          "hint": {
+            "type": "string",
+            "title": "Hint",
+            "description": "likely | uncertain | unlikely"
+          },
+          "fraction": {
+            "type": "number",
+            "title": "Fraction",
+            "description": "amount / cap of the company the holders would get"
+          },
+          "problems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Problems"
+          },
+          "energy_cost": {
+            "type": "integer",
+            "title": "Energy Cost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hint",
+          "fraction",
+          "problems",
+          "energy_cost"
+        ],
+        "title": "SafeHintOut",
+        "description": "The SAFE dialog's band (14.9); never the probability."
+      },
+      "SafeIn": {
+        "properties": {
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "cap_cents": {
+            "type": "integer",
+            "title": "Cap Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount_cents",
+          "cap_cents"
+        ],
+        "title": "SafeIn"
+      },
+      "SafeOut": {
+        "properties": {
+          "safe_id": {
+            "type": "integer",
+            "title": "Safe Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "safe | bridge"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "cap_cents": {
+            "type": "integer",
+            "title": "Cap Cents",
+            "description": "Post-money valuation cap"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "raised_turn": {
+            "type": "integer",
+            "title": "Raised Turn"
+          },
+          "raised_label": {
+            "type": "string",
+            "title": "Raised Label"
+          },
+          "expires_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires Turn"
+          },
+          "expires_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires Label"
+          },
+          "fraction": {
+            "type": "number",
+            "title": "Fraction",
+            "description": "amount / cap: what the holders get at the next round"
+          }
+        },
+        "type": "object",
+        "required": [
+          "safe_id",
+          "kind",
+          "amount_cents",
+          "cap_cents",
+          "status",
+          "raised_turn",
+          "raised_label",
+          "expires_turn",
+          "expires_label",
+          "fraction"
+        ],
+        "title": "SafeOut"
+      },
+      "SafesOut": {
+        "properties": {
+          "safes": {
+            "items": {
+              "$ref": "#/components/schemas/SafeOut"
+            },
+            "type": "array",
+            "title": "Safes",
+            "description": "Newest first"
+          },
+          "min_cents": {
+            "type": "integer",
+            "title": "Min Cents"
+          },
+          "max_cents": {
+            "type": "integer",
+            "title": "Max Cents"
+          },
+          "open": {
+            "type": "boolean",
+            "title": "Open",
+            "description": "A SAFE raise is waiting for investors' answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "safes",
+          "min_cents",
+          "max_cents",
+          "open"
+        ],
+        "title": "SafesOut"
       },
       "SaveOut": {
         "properties": {
@@ -9032,6 +11080,92 @@
         ],
         "title": "SegmentIn"
       },
+      "SeriesGuideOut": {
+        "properties": {
+          "series": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series",
+            "description": "Null after Series B (Series C is v2)"
+          },
+          "series_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Label"
+          },
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem"
+          },
+          "typical_min_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Typical Min Cents"
+          },
+          "typical_max_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Typical Max Cents"
+          },
+          "arr_cents": {
+            "type": "integer",
+            "title": "Arr Cents",
+            "description": "ARR at the last month end"
+          },
+          "open_turns": {
+            "type": "integer",
+            "title": "Open Turns"
+          }
+        },
+        "type": "object",
+        "required": [
+          "series",
+          "series_label",
+          "allowed",
+          "problem",
+          "typical_min_cents",
+          "typical_max_cents",
+          "arr_cents",
+          "open_turns"
+        ],
+        "title": "SeriesGuideOut",
+        "description": "The next round and whether it is allowed (14.5)."
+      },
       "SetLeaderIn": {
         "properties": {
           "person_id": {
@@ -9175,6 +11309,95 @@
         ],
         "title": "SnapshotPointOut"
       },
+      "StatementLineOut": {
+        "properties": {
+          "account": {
+            "type": "string",
+            "title": "Account"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account",
+          "label",
+          "amount_cents"
+        ],
+        "title": "StatementLineOut"
+      },
+      "StatementPeriodOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Jan 2010, Q1 2010 or 2010"
+          },
+          "first_turn": {
+            "type": "integer",
+            "title": "First Turn"
+          },
+          "last_turn": {
+            "type": "integer",
+            "title": "Last Turn"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete",
+            "description": "False for a period still in progress"
+          },
+          "profit_and_loss": {
+            "$ref": "#/components/schemas/ProfitAndLossOut"
+          },
+          "cash_flow": {
+            "$ref": "#/components/schemas/CashFlowOut"
+          },
+          "balance_sheet": {
+            "$ref": "#/components/schemas/BalanceSheetOut",
+            "description": "At the period's last closed month end"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "first_turn",
+          "last_turn",
+          "complete",
+          "profit_and_loss",
+          "cash_flow",
+          "balance_sheet"
+        ],
+        "title": "StatementPeriodOut"
+      },
+      "StatementsOut": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "title": "Period",
+            "description": "month | quarter | year"
+          },
+          "periods": {
+            "items": {
+              "$ref": "#/components/schemas/StatementPeriodOut"
+            },
+            "type": "array",
+            "title": "Periods",
+            "description": "Oldest first"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "periods"
+        ],
+        "title": "StatementsOut"
+      },
       "TagOut": {
         "properties": {
           "key": {
@@ -9251,6 +11474,65 @@
         ],
         "title": "TeamOut",
         "description": "The team as it stands now (not at the last month end)."
+      },
+      "TermSheetOut": {
+        "properties": {
+          "sheet_id": {
+            "type": "integer",
+            "title": "Sheet Id"
+          },
+          "round_id": {
+            "type": "integer",
+            "title": "Round Id"
+          },
+          "firm": {
+            "type": "string",
+            "title": "Firm"
+          },
+          "firm_name": {
+            "type": "string",
+            "title": "Firm Name"
+          },
+          "pre_money_cents": {
+            "type": "integer",
+            "title": "Pre Money Cents",
+            "description": "The firm's quoted pre-money valuation"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "post_money_cents": {
+            "type": "integer",
+            "title": "Post Money Cents"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "expires_turn": {
+            "type": "integer",
+            "title": "Expires Turn"
+          },
+          "expires_label": {
+            "type": "string",
+            "title": "Expires Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sheet_id",
+          "round_id",
+          "firm",
+          "firm_name",
+          "pre_money_cents",
+          "amount_cents",
+          "post_money_cents",
+          "status",
+          "expires_turn",
+          "expires_label"
+        ],
+        "title": "TermSheetOut"
       },
       "UnitOut": {
         "properties": {
