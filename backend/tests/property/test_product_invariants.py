@@ -130,7 +130,7 @@ def markets(draw: st.DrawFn) -> GameState:
 @settings(max_examples=40, deadline=None)
 @given(markets(), st.integers(min_value=0, max_value=2**32))
 def test_customers_stay_within_demand_and_entries_balance(state: GameState, seed: int) -> None:
-    balances = {(1, CASH): 10_000_000}
+    balances = {(1, CASH): 10**12}  # flows, not solvency (bankruptcy since M4, 14.7)
     for _ in range(4):
         result = advance_turn(
             state, Decisions(), RngFactory(seed), LOADED.balance, LOADED.game_data, balances

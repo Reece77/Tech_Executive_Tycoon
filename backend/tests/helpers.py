@@ -249,3 +249,17 @@ def with_product(
     if root:
         state = with_company(state, replace(state.player, root_product_id=pid))
     return state
+
+
+def fund_save(path: Path, cents: int) -> None:
+    """Extra owner's money on turn 0, for tests about speed or flows rather than solvency:
+    since M4 three months of negative cash end the game (formulas.md 14.7)."""
+    from tst.db.mappers import entry_to_row
+    from tst.db.repository import open_session
+    from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
+
+    entry = LedgerEntry.transfer(
+        turn=0, company_id=1, memo="Test funding", debit=CASH, credit=COMMON_EQUITY, amount=cents
+    )
+    with open_session(path) as session, session.begin():
+        session.add(entry_to_row(entry))

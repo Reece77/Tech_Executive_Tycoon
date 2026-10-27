@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
+from tests.helpers import fund_save
 from tests.integration.test_api_org import seed_staff
 from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
 from tst.loader import LoadedData
@@ -18,6 +19,7 @@ def test_org_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
     path = create_save(
         "orgperf", 3, "funded_spinout", company_name="Perf Co", data=loaded, save_dir=tmp_path
     )
+    fund_save(path, 10**11)  # timing, not solvency: keep the long run out of bankruptcy
     seed_staff(path, loaded, STAFF)
     founder = 1
     run_action(path, loaded, CreateUnit(founder, "department", "Engineering"))

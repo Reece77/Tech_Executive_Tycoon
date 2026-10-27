@@ -470,7 +470,7 @@ def test_runway_term_uses_cash_this_month(loaded: LoadedData) -> None:
         assert (broke.state.person_state(pid).morale or 0) < (
             rich.state.person_state(pid).morale or 0
         )
-    assert any(i.template == "out_of_cash" for i in broke.results[-1].log_items)
+    assert any(i.template == "insolvent" for i in broke.results[-1].log_items)  # M4 (14.7)
 
 
 def test_score_helpers_match_formula(loaded: LoadedData) -> None:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import pytest
@@ -12,6 +12,7 @@ from tests.helpers import (
     fresh_game,
     make_person,
     mark_interviewed,
+    move_directors,
     move_save_directors,
     with_employee,
     with_product,
@@ -41,7 +42,8 @@ from tst.sim.actions import (
     SetLeader,
 )
 from tst.sim.data_models import INBOX_TEMPLATE_KEYS
-from tst.sim.log import inbox_item
+from tst.sim.ledger import CASH
+from tst.sim.log import LogItem, inbox_item
 
 
 def test_render_formats_money(loaded: LoadedData) -> None:
@@ -73,6 +75,63 @@ def test_render_uses_an_before_vowel_sounds(loaded: LoadedData) -> None:
     )
     _, body = render(item, loaded.game_data.inbox_templates)
     assert body.startswith("Your job post search for an Account executive turned up 3")
+
+
+@dataclass
+class FinanceGames:
+    games: tuple[Game, ...]
+    extra: list[LogItem]
+
+
+def finance_games(loaded: LoadedData) -> FinanceGames:
+    from tests.unit.test_board import board_after
+    from tests.unit.test_fundraising import garage
+    from tests.unit.test_insolvency import broke_game
+    from tst.sim.actions import AcceptBridge, AcceptTermSheet, RaiseSafe, StartRound
+    from tst.sim.finance.board import board_month
+
+    raised = garage(loaded)  # seed 16: investors answer its seed
+    raised.act(RaiseSafe(1, 30_000_000, 100_000_000))  # fills
+    raised.turn()
+    raised.act(RaiseSafe(1, 30_000_000, 5_000_000_000))  # does not
+    raised.act(StartRound(1, "seed", 150_000_000))
+    raised.turn()
+    best = max(raised.state.term_sheets, key=lambda t: t.pre_money_cents)
+    raised.act(AcceptTermSheet(1, best.id))
+    raised.turn()  # closes
+    lapsed = garage(loaded)
+    lapsed.act(StartRound(1, "seed", 150_000_000))
+    for _ in range(3):
+        lapsed.turn()
+    nobody = garage(loaded, seed=2)  # no firm answers this seed's round
+    nobody.act(StartRound(1, "seed", 150_000_000))
+    nobody.turn()
+    bankrupt = broke_game(loaded, "garage_bootstrap")
+    for _ in range(3):
+        bankrupt.turn()
+    bridged = broke_game(loaded, "funded_spinout")
+    bridged.turn()
+    bridged.act(AcceptBridge(1, bridged.state.safes[0].id))
+    bridged.turn()
+    unbridged = broke_game(loaded, "funded_spinout")
+    unbridged.turn()
+    unbridged.balances = {**unbridged.balances, (1, CASH): 100_000_000}
+    for _ in range(3):
+        unbridged.turn()
+    spinout = move_directors(fresh_game(loaded, scenario="funded_spinout"))
+    seeded = Game(
+        loaded, with_employee(loaded, spinout, make_person(loaded, 2), 9_000_000), 150_000_000
+    )
+    seeded.turn()  # the first hire, then stage 2 from the seed
+    extra: list[LogItem] = []
+    state = replace(board_after(loaded, "b"), turn=2)  # March: a meeting
+    for _ in range(12):  # no cash, no growth: a warning, then the removal vote
+        state, logs = board_month(state, {1: -1}, loaded.balance, loaded.game_data)
+        extra += logs
+        if state.ended:
+            break
+        state = replace(state, turn=state.turn + 1)
+    return FinanceGames((raised, lapsed, nobody, bankrupt, bridged, unbridged, seeded), extra)
 
 
 def test_every_emitted_template_renders(loaded: LoadedData) -> None:
@@ -136,9 +195,12 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     )
     products.act(LaunchProduct(1, 13))
     products.turn()
-    games = (sad, hiring, broke, org, delegated, products)
+    # M4a: SAFEs that fill and do not, rounds that close, find no investor or lapse, the
+    # board's meetings, warnings and removal vote, insolvency, bridges and bankruptcy.
+    finance = finance_games(loaded)
+    games = (sad, hiring, broke, org, delegated, products, *finance.games)
     items = [i for g in games for r in g.results for i in r.log_items]
-    items += [i for g in games for i in g.action_logs]
+    items += [i for g in games for i in g.action_logs] + finance.extra
     for item in items:
         if item.template is None:
             continue

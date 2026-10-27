@@ -977,7 +977,7 @@ INBOX_TEMPLATE_KEYS = (
     "fired",
     "culture_carrier_left",
     "tag_revealed",
-    "out_of_cash",
+    # "out_of_cash" (M1-M3) is no longer emitted: M4's "insolvent" replaces it (14.7).
     # M2a
     "unit_leader_left",
     "plan_paused",
@@ -989,6 +989,22 @@ INBOX_TEMPLATE_KEYS = (
     "arr_milestone",
     "sales_capacity_limited",
     "product_rotting",
+    # M4a (formulas.md 14)
+    "safe_filled",
+    "safe_declined",
+    "term_sheets_arrived",
+    "no_term_sheets",
+    "round_lapsed",
+    "round_closed",
+    "board_meeting",
+    "board_warning",
+    "founder_removed",
+    "insolvent",
+    "bridge_offered",
+    "bridge_lapsed",
+    "bridge_funded",
+    "bankrupt",
+    "stage_from_funding",
 )
 
 

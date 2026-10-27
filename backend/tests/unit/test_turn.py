@@ -101,11 +101,14 @@ def test_month_end_log() -> None:
     ]
 
 
-def test_negative_cash_warns_every_month() -> None:
-    """M1 has no insolvency: the inbox warns each month cash ends below zero."""
+def test_negative_cash_is_insolvency() -> None:
+    """M4 (formulas.md 14.7) replaces M1's out-of-cash warning with an insolvency note."""
     result = advance_turn(make_state(1), Decisions(), RngFactory(1), make_balance(), _BASE_DATA, {})
-    warnings = [i for i in result.log_items if i.template == "out_of_cash"]
-    assert [dict(i.params) for i in warnings] == [{"cash_cents": -OVERHEAD}]
+    warnings = [i for i in result.log_items if i.template == "insolvent"]
+    assert [dict(i.params) for i in warnings] == [
+        {"cash_cents": -OVERHEAD, "needed_cents": OVERHEAD, "month": 1}
+    ]
+    assert result.new_state.player.insolvent_months == 1
 
 
 @pytest.mark.parametrize(

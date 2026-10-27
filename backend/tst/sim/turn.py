@@ -16,7 +16,7 @@ from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.errors import GameOverError
-from tst.sim.finance import fundraising
+from tst.sim.finance import fundraising, insolvency
 from tst.sim.finance.board import board_month
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.hiring import phases
@@ -28,7 +28,7 @@ from tst.sim.ledger import (
     account_balance,
     apply_entries,
 )
-from tst.sim.log import LogItem, inbox_item
+from tst.sim.log import LogItem
 from tst.sim.money import Cents
 from tst.sim.org.delegates import run_delegates
 from tst.sim.org.rules import manager_terms, org_view
@@ -147,12 +147,18 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
 
 def financing(ctx: TurnContext) -> TurnContext:
     """Phase 7 (M4): SAFEs are answered, a new round's term sheets arrive, unaccepted rounds
-    lapse (14.4, 14.5), and options vest for the month just ending (14.2)."""
+    lapse (14.4, 14.5), options vest for the month just ending (14.2), accepted bridges post,
+    and cash below zero is insolvency, possibly a bridge offer, or bankruptcy (14.7)."""
     state, entries, answered = fundraising.answer_safes(ctx.state, ctx.rng, ctx.balance, ctx.data)
     state, sheets = fundraising.deliver_term_sheets(state, ctx.rng, ctx.balance, ctx.data)
     state, lapsed = fundraising.lapse_rounds(state)
+    state, bridging, bridges = insolvency.post_bridges(state, ctx.balance)
     state = vest(state, ctx.balance)
-    return replace(ctx, state=state).post(*entries).log(*answered, *sheets, *lapsed)
+    ctx = replace(ctx, state=state).post(*entries, *bridging)
+    state, insolvent = insolvency.insolvency(
+        ctx.state, ctx.opening_balances, ctx.balances, ctx.balance, ctx.data
+    )
+    return replace(ctx, state=state).log(*answered, *sheets, *lapsed, *bridges, *insolvent)
 
 
 def people_updates(ctx: TurnContext) -> TurnContext:
@@ -193,6 +199,8 @@ def stage_checks(ctx: TurnContext) -> TurnContext:
     the board's monthly confidence, meetings and removal vote (14.6)."""
     state = phases.first_hire_stage(ctx.state)
     state, logs = products.arr_stages(state, ctx.revenue, ctx.balance)
+    state, funded = insolvency.funding_stages(state, ctx.balance)  # M4 (14.8)
+    logs = (*logs, *funded)
     cash = {c.id: account_balance(ctx.balances, c.id, CASH) for c in state.ledger_companies()}
     state, board = board_month(state, cash, ctx.balance, ctx.data)  # M4 (14.6)
     return replace(ctx, state=state).log(*logs, *board)
@@ -222,8 +230,6 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
                 arr_cents=products.arr_of(ctx.revenue.get(company.id, 0)),
             )
         )
-        if closing < 0:  # M1 has no insolvency: warn every month cash is negative
-            items.append(inbox_item(ctx.turn, company.id, "out_of_cash", cash_cents=closing))
         items.append(
             LogItem(
                 turn=ctx.turn,
