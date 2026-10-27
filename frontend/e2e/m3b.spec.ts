@@ -17,6 +17,19 @@ type Candidate = {
   candidacy: { salary_expectation_cents: number; pending_offer: unknown } | null;
 };
 
+type SafeList = { safes: { status: string }[] };
+
+/** Since M4a three month ends below zero are bankruptcy, and this team burns through its
+ * starting cash before Pipeline can launch: raise a $1M SAFE (again if it is declined). */
+async function fundRunway(request: APIRequestContext) {
+  const { safes } = await api<SafeList>(request, 'GET', `${BASE}/finance/safes`);
+  if (safes.some((s) => s.status === 'pending' || s.status === 'outstanding')) return;
+  await api(request, 'POST', `${BASE}/finance/safes`, {
+    amount_cents: 100_000_000,
+    cap_cents: 250_000_000,
+  });
+}
+
 /** A founder plus engineers, hired through the API: the setup these tests are not about. */
 async function staffUp(request: APIRequestContext) {
   await api(request, 'POST', '/saves', {
@@ -31,6 +44,7 @@ async function staffUp(request: APIRequestContext) {
     channel: 'job_post',
   });
   for (let month = 0; month < 4; month++) {
+    await fundRunway(request);
     await api(request, 'POST', `${BASE}/advance`);
     const people = await api<unknown[]>(request, 'GET', `${BASE}/people`);
     if (people.length > BUILDERS) break;
