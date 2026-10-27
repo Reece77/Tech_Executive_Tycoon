@@ -147,6 +147,12 @@ a {
   background: var(--tst-accent-bg);
 }
 
+/* Statement subtotals and table totals (M4b). */
+.tst-table tr.tst-subtotal td {
+  font-weight: 600;
+  border-top: 1px solid var(--tst-border);
+}
+
 /* Shell: nav and content wrap to one column on narrow windows. */
 .tst-shell-body {
   display: flex;
@@ -310,4 +316,30 @@ a {
 .tst-toggle button[aria-pressed='true'] {
   color: var(--tst-text);
   background: var(--tst-panel-active);
+}
+
+/* Finance tabs (M4b): links styled as tabs, the selected one underlined in accent. */
+.tst-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  border-bottom: 1px solid var(--tst-border);
+}
+
+.tst-tab {
+  font-size: 14px;
+  color: var(--tst-text-2);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 4px;
+  min-height: 44px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tst-tab[aria-selected='true'] {
+  color: var(--tst-text);
+  border-bottom-color: var(--tst-accent);
+  font-weight: 600;
 }

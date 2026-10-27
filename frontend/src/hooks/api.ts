@@ -35,6 +35,25 @@ export type MarketProduct = Schemas['MarketProductOut'];
 export type Portfolio = Schemas['PortfolioOut'];
 export type PricePreview = Schemas['PricePreviewOut'];
 export type ProductsMeta = Schemas['ProductsMetaOut'];
+export type Statements = Schemas['StatementsOut'];
+export type StatementPeriod = Schemas['StatementPeriodOut'];
+export type CapTable = Schemas['CapTableOut'];
+export type Holder = Schemas['HolderOut'];
+export type Grant = Schemas['GrantOut'];
+export type OwnershipEvent = Schemas['OwnershipEventOut'];
+export type Rounds = Schemas['RoundsOut'];
+export type Round = Schemas['RoundOut'];
+export type TermSheet = Schemas['TermSheetOut'];
+export type Safes = Schemas['SafesOut'];
+export type Safe = Schemas['SafeOut'];
+export type SafeHint = Schemas['SafeHintOut'];
+export type RoundPreview = Schemas['RoundPreviewOut'];
+export type DilutionLine = Schemas['DilutionLineOut'];
+export type Board = Schemas['BoardOut'];
+export type Director = Schemas['DirectorOut'];
+export type FinanceSummary = Schemas['FinanceSummaryOut'];
+export type GameOver = Schemas['GameOverOut'];
+export type StatementPeriodKind = 'month' | 'quarter' | 'year';
 
 /** One product action, as the product screens build it; maps to its route. */
 export type ProductAction =
@@ -106,6 +125,18 @@ export const keys = {
   portfolio: (saveId: string) => ['saves', saveId, 'portfolio'] as const,
   pricePreview: (saveId: string, productId: number, segment: string, price: number) =>
     ['saves', saveId, 'price-preview', productId, segment, price] as const,
+  statements: (saveId: string, period: StatementPeriodKind) =>
+    ['saves', saveId, 'statements', period] as const,
+  financeSummary: (saveId: string) => ['saves', saveId, 'finance-summary'] as const,
+  capTable: (saveId: string) => ['saves', saveId, 'captable'] as const,
+  board: (saveId: string) => ['saves', saveId, 'board'] as const,
+  safes: (saveId: string) => ['saves', saveId, 'safes'] as const,
+  safeHint: (saveId: string, amount: number, cap: number) =>
+    ['saves', saveId, 'safe-hint', amount, cap] as const,
+  rounds: (saveId: string) => ['saves', saveId, 'rounds'] as const,
+  sheetPreview: (saveId: string, sheetId: number) =>
+    ['saves', saveId, 'sheet-preview', sheetId] as const,
+  gameOver: (saveId: string) => ['saves', saveId, 'game-over'] as const,
 };
 
 const path = (saveId: string) => ({ params: { path: { save_id: saveId } } });
@@ -766,5 +797,140 @@ export function useProductAction(saveId: string) {
             q.queryKey[3] === productId
           ),
       }),
+  });
+}
+
+// --- Finance (M4b) ----------------------------------------------------------------------------
+
+export function useStatements(saveId: string, period: StatementPeriodKind) {
+  return useQuery({
+    queryKey: keys.statements(saveId, period),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/finance/statements', {
+          params: { path: { save_id: saveId }, query: { period } },
+        }),
+      ),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useFinanceSummary(saveId: string) {
+  return useQuery({
+    queryKey: keys.financeSummary(saveId),
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/finance/summary', path(saveId))),
+  });
+}
+
+export function useCapTable(saveId: string) {
+  return useQuery({
+    queryKey: keys.capTable(saveId),
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/finance/captable', path(saveId))),
+  });
+}
+
+export function useBoard(saveId: string) {
+  return useQuery({
+    queryKey: keys.board(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/finance/board', path(saveId))),
+  });
+}
+
+export function useSafes(saveId: string) {
+  return useQuery({
+    queryKey: keys.safes(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/finance/safes', path(saveId))),
+  });
+}
+
+/** The SAFE dialog's hint band and rule checks; pass debounced values. */
+export function useSafeHint(saveId: string, amountCents: number, capCents: number) {
+  return useQuery({
+    queryKey: keys.safeHint(saveId, amountCents, capCents),
+    queryFn: async () =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/finance/safes/hint', {
+          ...path(saveId),
+          body: { amount_cents: amountCents, cap_cents: capCents },
+        }),
+      ),
+    enabled: amountCents > 0 && capCents > 0,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useRaiseSafe(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (body: Schemas['SafeIn']) =>
+      unwrap(await api.POST('/api/saves/{save_id}/finance/safes', { ...path(saveId), body })),
+    onSuccess: invalidate,
+  });
+}
+
+export function useAcceptBridge(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (safeId: number) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/finance/bridges/{safe_id}/accept', {
+          params: { path: { save_id: saveId, safe_id: safeId } },
+        }),
+      ),
+    onSuccess: invalidate,
+  });
+}
+
+export function useRounds(saveId: string) {
+  return useQuery({
+    queryKey: keys.rounds(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/finance/rounds', path(saveId))),
+  });
+}
+
+export function useStartRound(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (body: Schemas['RoundIn']) =>
+      unwrap(await api.POST('/api/saves/{save_id}/finance/rounds', { ...path(saveId), body })),
+    onSuccess: invalidate,
+  });
+}
+
+/** Every holder before and after accepting a term sheet; nothing is saved. */
+export function useTermSheetPreview(saveId: string, sheetId: number | null) {
+  return useQuery({
+    queryKey: keys.sheetPreview(saveId, sheetId ?? 0),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/finance/term-sheets/{sheet_id}/preview', {
+          params: { path: { save_id: saveId, sheet_id: sheetId ?? 0 } },
+        }),
+      ),
+    enabled: sheetId !== null,
+  });
+}
+
+export function useAcceptTermSheet(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (sheetId: number) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/finance/term-sheets/{sheet_id}/accept', {
+          params: { path: { save_id: saveId, sheet_id: sheetId } },
+        }),
+      ),
+    onSuccess: invalidate,
+  });
+}
+
+export function useGameOver(saveId: string, enabled = true) {
+  return useQuery({
+    queryKey: keys.gameOver(saveId),
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/finance/game-over', path(saveId))),
+    enabled,
   });
 }
