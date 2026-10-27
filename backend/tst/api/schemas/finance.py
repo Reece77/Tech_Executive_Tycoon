@@ -374,7 +374,7 @@ class GameOverOut(BaseModel):
     funding_summary: str | None = Field(description="e.g. 'after a SAFE and a seed'")
     insolvent_from_label: str | None = Field(description="First month of the last insolvency")
     bridge_offered_cents: int | None = Field(description="A bridge offered in that insolvency")
-    bridge_lapsed: bool
+    bridge_lapsed: bool = Field(description="That bridge was never accepted")
     timeline: list[TimelineItemOut] = Field(description="Finance news of the last six months")
     directors: list[GameOverDirectorOut] = Field(description="The board at the end")
 

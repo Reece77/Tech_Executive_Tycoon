@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { FinanceScreen } from './screens/FinanceScreen';
 import { GameLayout } from './screens/GameLayout';
+import { GameOverScreen } from './screens/GameOverScreen';
 import { InboxScreen } from './screens/InboxScreen';
 import { MainMenu } from './screens/MainMenu';
 import { MarketScreen } from './screens/MarketScreen';
@@ -20,6 +21,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainMenu />} />
         <Route path="/new" element={<NewGameScreen />} />
+        <Route path="/game/:saveId/over" element={<GameOverScreen />} />
         <Route path="/game/:saveId" element={<GameLayout />}>
           <Route index element={<Navigate to="inbox" replace />} />
           <Route path="inbox" element={<InboxScreen />} />

@@ -2,35 +2,15 @@ import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { DataTable } from '../../components/DataTable';
+import { Sparkline } from '../../components/Sparkline';
 import { KpiTile } from '../../components/KpiTile';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import { useBoard, type Board, type Director } from '../../hooks/api';
-import {
-  confidenceColor,
-  formatGrowth,
-  labelText,
-  seatsText,
-  sparkPoints,
-} from '../../lib/finance';
+import { confidenceColor, formatGrowth, labelText, seatsText } from '../../lib/finance';
 import { formatWhole } from '../../lib/format';
 import { gameTableFeatures, type GameTableFeatures } from '../../lib/table';
 
 const helper = createColumnHelper<GameTableFeatures, Director>();
-
-/** A director's confidence over the last month ends (0-100). */
-export function Sparkline({ values, label }: { values: readonly number[]; label: string }) {
-  if (values.length < 2) return <span className="tst-muted">—</span>;
-  return (
-    <svg viewBox="0 0 100 24" role="img" aria-label={label} style={{ width: 100, height: 24 }}>
-      <polyline
-        points={sparkPoints(values)}
-        fill="none"
-        stroke="var(--tst-accent)"
-        strokeWidth={2}
-      />
-    </svg>
-  );
-}
 
 function seatText(d: Director): string {
   if (d.kind === 'common') return d.is_founder ? 'Common · founder' : 'Common · your nominee';

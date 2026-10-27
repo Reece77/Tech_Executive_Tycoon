@@ -4,6 +4,7 @@ import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOverview, type Overview } from '../hooks/api';
 import { formatMoneyShort, formatMoneyWhole, formatRunway, formatWhole } from '../lib/format';
+import { formatFraction } from '../lib/finance';
 import { MANAGER_LABELS } from '../lib/org';
 
 // Phase-6 memo labels (backend/tst/sim/hiring/phases.py) as the wireframe words them.
@@ -11,6 +12,38 @@ const COST_LABELS: Record<string, string> = {
   'Base overhead': 'Overhead',
   'Job posts': 'Job posts',
 };
+
+/** Last round, post-money, the founder's ownership and the board's mood (M4b). */
+function FundingTile({ saveId, funding: f }: { saveId: string; funding: Overview['funding'] }) {
+  const parts = [
+    f.post_money_cents === null ? null : `${formatMoneyShort(f.post_money_cents)} post-money`,
+    `you own ${formatFraction(f.founder_fraction)}`,
+    f.board_label ? `board ${f.board_label}` : null,
+    f.safes_outstanding > 0
+      ? `${f.safes_outstanding} SAFE${f.safes_outstanding === 1 ? '' : 's'} to convert`
+      : null,
+  ].filter(Boolean);
+  return (
+    <Link
+      to={`/game/${saveId}/finance/captable`}
+      style={{ display: 'flex', textDecoration: 'none', color: 'inherit' }}
+      data-testid="kpi-funding-link"
+    >
+      <KpiTile
+        label="Funding"
+        value={
+          f.last_round_label
+            ? `${f.last_round_label}, ${f.last_round_date_label ?? ''}`
+            : 'No priced round'
+        }
+        small
+        note={parts.join(' · ')}
+        hint="Your last priced round, its post-money valuation, your share of the company and the board's confidence"
+        testId="kpi-funding"
+      />
+    </Link>
+  );
+}
 
 export function OverviewScreen() {
   const { saveId = '' } = useParams();
@@ -63,7 +96,12 @@ export function OverviewScreen() {
         <KpiTile
           label="ARR"
           value={formatMoneyShort(data.arr_cents)}
-          note="12 × MRR; stage 2 from $1M"
+          note={
+            data.stage_since_label
+              ? `Stage ${data.stage} since ${data.stage_since_label}`
+              : '12 × MRR; stage 2 from $1M'
+          }
+          hint="12 × MRR; stage 2 from $1M ARR or a closed seed"
           testId="kpi-arr"
         />
         <KpiTile
@@ -85,6 +123,7 @@ export function OverviewScreen() {
           note="Employees, not the founder"
           testId="kpi-morale"
         />
+        <FundingTile saveId={saveId} funding={data.funding} />
         {data.org && (
           <KpiTile
             label="Org"

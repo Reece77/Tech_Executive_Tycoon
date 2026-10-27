@@ -816,7 +816,8 @@ def game_over_out(
         funding_summary=funding_summary(state),
         insolvent_from_label=format_turn(since) if since is not None else None,
         bridge_offered_cents=bridge.amount_cents if bridge else None,
-        bridge_lapsed=bridge is not None and bridge.status == "lapsed",
+        # Not accepted by the last turn it was open (at bankruptcy it has not formally lapsed yet).
+        bridge_lapsed=bridge is not None and bridge.status in ("offered", "lapsed"),
         timeline=[
             TimelineItemOut(
                 turn=m.turn,

@@ -2042,7 +2042,10 @@ export interface components {
              * @description A bridge offered in that insolvency
              */
             bridge_offered_cents: number | null;
-            /** Bridge Lapsed */
+            /**
+             * Bridge Lapsed
+             * @description That bridge was never accepted
+             */
             bridge_lapsed: boolean;
             /**
              * Timeline

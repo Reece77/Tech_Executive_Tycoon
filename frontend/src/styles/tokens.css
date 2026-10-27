@@ -34,6 +34,7 @@
   --tst-purple-bg: #262040;
   --tst-teal: #5fd4c4; /* the Product inbox badge (M3b) */
   --tst-teal-bg: #123331;
+  --tst-finance-bg: #3a2f16; /* the Finance inbox badge and SAFE hint (M4b) */
 
   --tst-radius: 10px;
   --tst-font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;

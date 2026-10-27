@@ -7625,7 +7625,8 @@
           },
           "bridge_lapsed": {
             "type": "boolean",
-            "title": "Bridge Lapsed"
+            "title": "Bridge Lapsed",
+            "description": "That bridge was never accepted"
           },
           "timeline": {
             "items": {

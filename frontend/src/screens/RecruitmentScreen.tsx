@@ -27,6 +27,7 @@ import {
   type Search,
 } from '../hooks/api';
 import { formatBpPercent, formatMoneyWhole, formatRatio, humanize } from '../lib/format';
+import { formatFraction, formatShares } from '../lib/finance';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 
 type Channel = HiringMeta['channels'][number];
@@ -660,7 +661,11 @@ function OfferPanel({
         onChange={(v) => setEquityBp(typeof v === 'number' ? v : 0)}
         classNames={{ input: 'tst-num' }}
         data-testid="offer-equity"
-        description={`${equityBp} bp = ${formatBpPercent(equityBp)} of the company${p ? ` · ${p.option_pool_left_bp} bp left in the pool` : ''}`}
+        description={
+          p
+            ? `${formatShares(p.options)} options = ${formatFraction(p.fraction)} of fully diluted shares · ${formatShares(p.options_left)} options left in the pool`
+            : `${equityBp} bp = ${formatBpPercent(equityBp)} of the company`
+        }
         inputWrapperOrder={['label', 'input', 'description', 'error']}
       />
       {hint && p && (

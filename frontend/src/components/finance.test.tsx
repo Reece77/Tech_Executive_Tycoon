@@ -15,7 +15,9 @@ import {
   seatsText,
   sparkPoints,
 } from '../lib/finance';
+import { financeTab, kindLabel, kindsFor } from '../lib/inbox';
 import { CapTable } from './CapTable';
+import { KindBadge } from './KindBadge';
 import { DilutionPreview } from './DilutionPreview';
 import { StatementTable } from './StatementTable';
 
@@ -215,5 +217,24 @@ describe('DilutionPreview', () => {
     expect(html).toContain('Down round');
     expect(html).toContain('investors can outvote you');
     expect(html).not.toContain('Accept ·');
+  });
+});
+
+describe('Finance inbox kind', () => {
+  it.each([
+    ['safe_filled', 'fundraising'],
+    ['bridge_offered', 'fundraising'],
+    ['board_warning', 'board'],
+    ['round_closed', 'captable'],
+    ['bankrupt', 'statements'],
+  ])('%s is a Finance message opening %s', (kind, tab) => {
+    expect(kindLabel(kind)).toBe('Finance');
+    expect(financeTab(kind)).toBe(tab);
+    expect(wrap(<KindBadge kind={kind} />)).toContain('>Finance<');
+  });
+
+  it('filters Finance messages in the API', () => {
+    expect(kindsFor('finance')).toContain('term_sheets_arrived');
+    expect(kindsFor('finance')).not.toContain('offer_accepted');
   });
 });
