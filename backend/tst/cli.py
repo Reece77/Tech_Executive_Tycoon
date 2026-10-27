@@ -14,12 +14,14 @@ from typing import Annotated, Any
 
 import typer
 
-from tst.api import org_views, product_views, views
+from tst.api import finance_views, org_views, product_views, views
 from tst.config import Settings
 from tst.db import inbox as inbox_db
 from tst.db import repository
 from tst.loader import DataLoadError, LoadedData, load_all
 from tst.sim.actions import (
+    AcceptBridge,
+    AcceptTermSheet,
     Action,
     ActionResult,
     AddSegment,
@@ -40,6 +42,7 @@ from tst.sim.actions import (
     MoveUnit,
     OpenSearch,
     Promote,
+    RaiseSafe,
     ReferenceCheck,
     RenameUnit,
     ScoutSearch,
@@ -47,6 +50,7 @@ from tst.sim.actions import (
     SetMarketing,
     SetPolicy,
     SetPrice,
+    StartRound,
     SunsetProduct,
     UnassignUnit,
     UpdatePlan,
@@ -55,6 +59,7 @@ from tst.sim.actions.products import assignment_of, own_product
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.errors import SimError
+from tst.sim.finance import statements as fs
 from tst.sim.hiring.phases import monthly_costs
 from tst.sim.hiring.rules import offer_preview
 from tst.sim.money import cents, format_money
@@ -1033,6 +1038,180 @@ def scout(save: SaveOpt, search: Annotated[int, typer.Option(help="Search id")])
     company = state.player.id
     scouted = sum(1 for c in result.new_state.open_candidates(company) if c.search_id == search)
     typer.echo(f"Scouted {scouted} candidates; {_energy(result.new_state, data)}")
+
+
+# --- Finance (M4a) --------------------------------------------------------------------------
+
+round_app = typer.Typer(no_args_is_help=True, help="Priced rounds: start, term sheets, accept")
+app.add_typer(round_app, name="round")
+bridge_app = typer.Typer(no_args_is_help=True, help="Bridge SAFEs from existing investors")
+app.add_typer(bridge_app, name="bridge")
+
+
+def _pct(fraction: float) -> str:
+    return f"{fraction * 100:.2f}%"
+
+
+@app.command()
+def statements(
+    save: SaveOpt,
+    period: Annotated[str, typer.Option(help="month|quarter|year")] = "month",
+) -> None:
+    """Profit and loss, cash flow and the balance sheet by closed period (formulas.md 14.1)."""
+    path, data, state = _game(save)
+    if period not in fs.PERIODS:
+        raise _fail(f"period must be one of {', '.join(fs.PERIODS)}")
+    with repository.open_session(path) as session:
+        lines = repository.ledger_lines(session, state.player.id)
+    out = finance_views.statements_out(state, lines, period, data)
+    if not out.periods:
+        typer.echo("No month has closed yet.")
+    for p in out.periods:
+        pnl, flow, sheet = p.profit_and_loss, p.cash_flow, p.balance_sheet
+        partial = "" if p.complete else " (so far)"
+        typer.echo(f"{p.label}{partial}")
+        typer.echo(
+            f"  revenue {format_money(pnl.total_revenue_cents)}  gross margin "
+            f"{format_money(pnl.gross_margin_cents)}  operating result "
+            f"{format_money(pnl.operating_result_cents)}  net {format_money(pnl.net_result_cents)}"
+        )
+        typer.echo(
+            f"  cash flow: operating {format_money(flow.operating_cents)}  financing "
+            f"{format_money(flow.financing_cents)}  "
+            f"change {format_money(flow.change_in_cash_cents)}"
+        )
+        typer.echo(
+            f"  balance sheet: assets {format_money(sheet.total_assets_cents)} = liabilities "
+            f"and equity {format_money(sheet.total_liabilities_and_equity_cents)} "
+            f"(accumulated result {format_money(sheet.accumulated_result_cents)})"
+        )
+
+
+@app.command()
+def captable(save: SaveOpt) -> None:
+    """Holders, classes, shares and percentages, and every option grant (14.2)."""
+    path, data, state = _game(save)
+    with repository.open_session(path) as session:
+        names = repository.person_names(session, [g.person_id for g in state.grants])
+    out = finance_views.captable_out(state, names, data)
+    typer.echo(f"Fully diluted: {out.fd_shares:,} shares at ${out.share_price_dollars} a share")
+    for h in out.holders:
+        typer.echo(f"  {h.holder:<28} {h.share_class:<16} {h.shares:>12,}  {_pct(h.fraction):>7}")
+    typer.echo(
+        f"Options: {out.granted_options:,} granted ({out.vested_options:,} vested), "
+        f"{out.unallocated_options:,} unallocated ({out.pool_left_bp} bp left for offers)"
+    )
+    for g in out.grants:
+        staff = "" if g.on_staff else " (left)"
+        typer.echo(
+            f"  {g.name}{staff}: {g.granted:,} from {g.start_label}, {g.vested:,} vested, "
+            f"{g.unvested:,} unvested"
+        )
+
+
+@app.command()
+def safe(
+    save: SaveOpt,
+    amount: Annotated[str, typer.Option(help="Dollars, e.g. 300000")],
+    cap: Annotated[str, typer.Option(help="Post-money valuation cap in dollars")],
+    preview: Annotated[bool, typer.Option(help="Show the hint band without raising")] = False,
+) -> None:
+    """Raise money on a SAFE; investors answer at the next advance (14.4)."""
+    path, data, state = _game(save)
+    amount_cents, cap_cents = _dollars(amount), _dollars(cap)
+    hint = finance_views.safe_hint_out(state, amount_cents, cap_cents, data)
+    typer.echo(f"Hint: {hint.hint}; the holders would get {_pct(hint.fraction)} at the next round")
+    if preview:
+        for problem in hint.problems:
+            typer.echo(f"  cannot: {problem}")
+        return
+    result = _run(path, data, RaiseSafe(_actor(state), amount_cents, cap_cents))
+    typer.echo(f"SAFE raised for {format_money(amount_cents)}; {_energy(result.new_state, data)}")
+
+
+@round_app.command("start")
+def round_start(
+    save: SaveOpt,
+    series: Annotated[str, typer.Option(help="seed|a|b")],
+    target: Annotated[str, typer.Option(help="Target amount in dollars")],
+) -> None:
+    """Start a priced round; term sheets arrive at the next advance (14.5)."""
+    path, data, state = _game(save)
+    result = _run(path, data, StartRound(_actor(state), series, _dollars(target)))
+    typer.echo(f"Round started; {_energy(result.new_state, data)}")
+
+
+@round_app.command("sheets")
+def round_sheets(save: SaveOpt) -> None:
+    """The open round's term sheets, with the founder's ownership after each."""
+    _, data, state = _game(save)
+    out = finance_views.rounds_out(state, data)
+    current = next((r for r in out.rounds if r.status in ("open", "accepted")), None)
+    guide = out.next
+    if current is None:
+        why = "allowed" if guide.allowed else (guide.problem or "")
+        typer.echo(f"No round is open. Next: {guide.series_label or 'none'} ({why})")
+        return
+    typer.echo(f"{current.series_label}: {current.status}, open until {current.expires_label}")
+    founder = state.founder_of(state.player.id)
+    for t in current.term_sheets:
+        sheet = state.term_sheet(t.sheet_id)
+        mine = ""
+        if sheet is not None and t.status == "offered" and founder is not None:
+            pv = finance_views.round_preview_out(state, sheet, data)
+            line = next((x for x in pv.lines if x.holder == views.person_name(founder)), None)
+            mine = f"; you own {_pct(line.fraction_after)} after" if line else ""
+        typer.echo(
+            f"  sheet {t.sheet_id}: {t.firm_name} {format_money(t.amount_cents)} at "
+            f"{format_money(t.pre_money_cents)} pre-money ({t.status}){mine}"
+        )
+
+
+@round_app.command("accept")
+def round_accept(save: SaveOpt, sheet: Annotated[int, typer.Option(help="Term sheet id")]) -> None:
+    """Accept a term sheet; the round closes at the next advance."""
+    path, data, state = _game(save)
+    result = _run(path, data, AcceptTermSheet(_actor(state), sheet))
+    typer.echo(f"Accepted sheet {sheet}; {_energy(result.new_state, data)}")
+
+
+@bridge_app.command("accept")
+def bridge_accept(save: SaveOpt) -> None:
+    """Accept the open bridge offer; its money arrives at the next advance (14.7)."""
+    path, data, state = _game(save)
+    offers = [
+        s
+        for s in state.company_safes(state.player.id)
+        if s.kind == "bridge" and s.status == "offered"
+    ]
+    if not offers:
+        raise _fail("there is no bridge offer to accept")
+    offer = offers[-1]
+    result = _run(path, data, AcceptBridge(_actor(state), offer.id))
+    typer.echo(
+        f"Bridge of {format_money(offer.amount_cents)} accepted; {_energy(result.new_state, data)}"
+    )
+
+
+@app.command()
+def board(save: SaveOpt) -> None:
+    """Directors, their confidence, and how close a removal vote is (14.6)."""
+    _, data, state = _game(save)
+    out = finance_views.board_out(state, data)
+    if not out.directors:
+        typer.echo("No board yet: it forms with the first priced round.")
+        return
+    avg = "n/a" if out.average_confidence is None else f"{out.average_confidence:.0f}"
+    typer.echo(
+        f"Board confidence {avg} ({out.label}); "
+        f"{out.votes_to_remove} of {out.seats} would vote to remove you"
+    )
+    for d in out.directors:
+        conf = "backs you" if d.confidence is None else f"{d.confidence:.0f} ({d.label})"
+        firm = f", {d.firm_name}" if d.firm_name else ""
+        typer.echo(f"  {d.kind:<12} {d.name}{firm}: {conf}")
+    if state.ended:
+        typer.echo(f"Game over: {state.save_meta.game_state.replace('_', ' ')}")
 
 
 if __name__ == "__main__":
