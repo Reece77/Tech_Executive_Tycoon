@@ -17,6 +17,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.errors import GameOverError
 from tst.sim.finance import fundraising
+from tst.sim.finance.board import board_month
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
@@ -188,10 +189,13 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:
-    """Stage 0 -> 1 on the first hire (formulas.md section 7); stages 2 and 3 from ARR (11.11)."""
+    """Stage 0 -> 1 on the first hire (formulas.md section 7); stages 2 and 3 from ARR (11.11);
+    the board's monthly confidence, meetings and removal vote (14.6)."""
     state = phases.first_hire_stage(ctx.state)
     state, logs = products.arr_stages(state, ctx.revenue, ctx.balance)
-    return replace(ctx, state=state).log(*logs)
+    cash = {c.id: account_balance(ctx.balances, c.id, CASH) for c in state.ledger_companies()}
+    state, board = board_month(state, cash, ctx.balance, ctx.data)  # M4 (14.6)
+    return replace(ctx, state=state).log(*logs, *board)
 
 
 def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:

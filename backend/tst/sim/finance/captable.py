@@ -5,7 +5,9 @@ from __future__ import annotations
 
 from fractions import Fraction
 
+from tst.sim.data_models import Balance
 from tst.sim.finance.models import CapEntry, FundingRound
+from tst.sim.money import Cents
 from tst.sim.state import GameState
 
 
@@ -60,3 +62,12 @@ def open_round(state: GameState, company_id: int) -> FundingRound | None:
         if r.status in ("open", "accepted"):
             return r
     return None
+
+
+def mrr_now_and_then(state: GameState, company_id: int, balance: Balance) -> tuple[Cents, Cents]:
+    """MRR at the last month end, and growth_window_months before it (0 if younger)."""
+    history = state.company(company_id).mrr_history
+    window = balance.finance.growth_window_months
+    now = history[-1] if history else 0
+    then = history[-1 - window] if len(history) > window else 0
+    return now, then

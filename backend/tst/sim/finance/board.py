@@ -9,8 +9,13 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Final
 
+from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData, Series
+from tst.sim.finance import formulas as f
+from tst.sim.finance.captable import last_round, mrr_now_and_then
 from tst.sim.finance.models import BoardSeat, SeatKind
+from tst.sim.finance.statements import projected_runway
+from tst.sim.log import LogItem, inbox_item
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Person
 from tst.sim.rng import RngFactory
@@ -108,3 +113,99 @@ def seat_board(
         state = _add_seat(state, company_id, "independent", rng, balance, data, round_id=round_id)
         seats = state.board(company_id)
     return state
+
+
+# --- Monthly confidence (phase 10) -----------------------------------------------------------
+
+
+def growth_term(state: GameState, company_id: int, balance: Balance) -> float:
+    """growth_weight x clamp(g6 / g_exp - 1, -1, 1); 0 while there are fewer than 6 months
+    of revenue, or the no-product penalty once a year has passed since the last round with
+    nothing live (14.6)."""
+    bb = balance.board
+    latest = last_round(state, company_id)
+    if latest is None:
+        return 0.0
+    now, then = mrr_now_and_then(state, company_id, balance)
+    if then <= 0:
+        live = any(p.status == "live" for p in state.company_products(company_id))
+        waited = state.turn - (latest.closed_turn or 0) >= bb.no_product_after_turns
+        return bb.no_product_penalty if waited and not live else 0.0
+    g6 = f.growth_6(now, then, balance.finance)
+    return f.growth_points(g6, bb.expected_growth[latest.series], bb)
+
+
+def average_confidence(state: GameState, company_id: int) -> float | None:
+    """The board's mood: the mean of the voting directors' confidence (common seats hold none)."""
+    values = [s.confidence for s in state.board(company_id) if s.confidence is not None]
+    return sum(values) / len(values) if values else None
+
+
+def board_month(
+    state: GameState, cash_cents: dict[int, int], balance: Balance, data: GameData
+) -> tuple[GameState, tuple[LogItem, ...]]:
+    """Phase 10: every director's confidence moves toward its target; quarter ends bring a
+    meeting summary (and a warning below 40); a majority voting to remove ends the game."""
+    bb = balance.board
+    logs: list[LogItem] = []
+    for company in state.ledger_companies():
+        seats = state.board(company.id)
+        if not any(s.votes for s in seats):
+            continue
+        runway = projected_runway(state, company.id, cash_cents.get(company.id, 0), balance, data)
+        growth = growth_term(state, company.id, balance)
+        runway_pts = f.runway_points(runway, bb)
+        for seat in seats:
+            if seat.confidence is None:
+                continue
+            patience = data.firm(seat.firm).patience if seat.firm else 0.0
+            target = f.confidence_target(growth, runway_pts, patience, bb)
+            b = f.next_confidence(seat.confidence, target, bb)
+            below = seat.months_below + 1 if b < bb.removal_below else 0
+            state = with_seat(state, replace(seat, confidence=b, months_below=below))
+        avg = average_confidence(state, company.id)
+        _, month = turn_to_ym(state.turn)
+        if avg is not None and month in bb.meeting_months:
+            confidence = f"{avg:.0f}"
+            logs.append(
+                inbox_item(
+                    state.turn,
+                    company.id,
+                    "board_meeting",
+                    link_kind="finance",
+                    confidence=confidence,
+                    label=f.confidence_label(avg, bb),
+                )
+            )
+            if avg < bb.warning_below:
+                logs.append(
+                    inbox_item(
+                        state.turn,
+                        company.id,
+                        "board_warning",
+                        link_kind="finance",
+                        confidence=confidence,
+                        removal=f"{bb.removal_below:.0f}",
+                        months=bb.removal_months,
+                    )
+                )
+        seats = state.board(company.id)
+        votes = sum(1 for s in seats if s.votes and s.months_below >= bb.removal_months)
+        if 2 * votes > len(seats):  # a majority of all seats; a tie keeps the founder
+            state = replace(
+                state,
+                save_meta=replace(
+                    state.save_meta, game_state="founder_removed", ended_turn=state.turn
+                ),
+            )
+            logs.append(
+                inbox_item(
+                    state.turn,
+                    company.id,
+                    "founder_removed",
+                    link_kind="finance",
+                    votes=votes,
+                    seats=len(seats),
+                )
+            )
+    return state, tuple(logs)

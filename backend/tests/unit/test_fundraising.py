@@ -120,10 +120,11 @@ def test_seed_round_closes_with_the_14_5_math(loaded: LoadedData) -> None:
         best.amount_cents + 30_000_000
     )
     assert account_balance(game.balances, 1, CASH) > cash_before + best.amount_cents - 10_000_000
-    # The board forms: the founder and the lead's director at 70.
+    # The board forms in phase 1 (the founder and the lead's director at 70), then phase 10
+    # moves it one month toward T = 50 + 0 (no revenue yet) + 10 (a long runway) = 60.
     assert [(s.kind, s.firm, s.confidence) for s in state.board(1)] == [
         ("common", None, None),
-        ("investor", best.firm, 70),
+        ("investor", best.firm, pytest.approx(68)),
     ]
     assert any(i.template == "round_closed" for i in result.log_items)
     with pytest.raises(FinanceRuleError, match="needs ARR of at least"):

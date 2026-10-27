@@ -17,6 +17,7 @@ from tst.sim.finance.board import seat_board
 from tst.sim.finance.captable import (
     fd_shares,
     last_round,
+    mrr_now_and_then,
     person_shares,
     pool_entry,
     unallocated,
@@ -52,15 +53,6 @@ def finance_stream(rng: RngFactory, turn: int, *key: int) -> np.random.Generator
 
 
 # --- 14.3 Investors' view of value -----------------------------------------------------------
-
-
-def mrr_now_and_then(state: GameState, company_id: int, balance: Balance) -> tuple[Cents, Cents]:
-    """MRR at the last month end, and growth_window_months before it (0 if younger)."""
-    history = state.company(company_id).mrr_history
-    window = balance.finance.growth_window_months
-    now = history[-1] if history else 0
-    then = history[-1 - window] if len(history) > window else 0
-    return now, then
 
 
 def company_growth(state: GameState, company_id: int, balance: Balance) -> float:
