@@ -285,7 +285,7 @@ def apply_action(
         case ScoutSearch():
             out = scout_search(state, action, balance, data)
         case RaiseSafe() | StartRound() | AcceptTermSheet() | AcceptBridge():
-            out = apply_finance(state, action, balance, data)
+            out = apply_finance(state, action, balance, data, ledger_balances)
     return ActionResult(new_state=out.state, ledger_entries=out.entries, log_items=out.log)
 
 

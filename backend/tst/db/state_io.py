@@ -51,10 +51,12 @@ from tst.db.mappers import (
     reveal_to_rows,
     search_from_row,
     search_to_row,
+    seat_history_row,
     unit_from_row,
     unit_to_row,
 )
 from tst.db.models import (
+    BoardSeatHistoryRow,
     BoardSeatRow,
     CandidateRow,
     CapTableEntryRow,
@@ -145,8 +147,12 @@ def load_state(session: Session) -> GameState:
             select(HiringPlanRow).where(HiringPlanRow.status != "closed").order_by(HiringPlanRow.id)
         )
     ]
+    histories = {
+        r.seat_id: tuple(float(v) for v in r.history)
+        for r in session.scalars(select(BoardSeatHistoryRow))
+    }
     seats = tuple(
-        finance_from_row(BoardSeat, r)
+        finance_from_row(BoardSeat, r, history=histories.get(r.id, ()))
         for r in session.scalars(select(BoardSeatRow).order_by(BoardSeatRow.id))
     )
     live_ids = sorted(
@@ -386,6 +392,8 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         for item in items:
             session.merge(finance_to_row(item))
         session.flush()
+    for seat in _changed(old.seats, new.seats, lambda s: s.id):
+        session.merge(seat_history_row(seat))
 
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)

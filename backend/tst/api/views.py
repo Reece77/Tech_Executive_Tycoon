@@ -18,6 +18,7 @@ from tst.api.schemas.people import (
     InboxItemOut,
     KnowledgeOut,
     MoralePointOut,
+    OptionsOut,
     PendingOfferOut,
     PersonOrgOut,
     PersonProfileOut,
@@ -31,6 +32,8 @@ from tst.db.models import DecisionLogRow, PersonMoraleLogRow
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.errors import UnknownPersonError
+from tst.sim.finance.captable import fd_shares
+from tst.sim.finance.options import at_cliff, next_vesting
 from tst.sim.hiring.formulas import market_mid_cents, severance_cents
 from tst.sim.hiring.models import Search
 from tst.sim.hiring.phases import employment_monthly_cost_cents
@@ -39,6 +42,26 @@ from tst.sim.people.formulas import potential_phrase
 from tst.sim.people.models import PA_KEY, Person, RevealState
 from tst.sim.people.reveal import revealed_range
 from tst.sim.state import GameState
+
+
+def options_out(state: GameState, employment_id: int, data: LoadedData) -> OptionsOut | None:
+    """Granted, vested and unvested options and the next vesting (M4b)."""
+    grant = state.grant_for(employment_id)
+    if grant is None:
+        return None
+    fb = data.balance.finance
+    fd = fd_shares(state, grant.company_id)
+    nxt = next_vesting(grant, state.turn, fb)
+    return OptionsOut(
+        granted=grant.granted,
+        vested=grant.vested,
+        unvested=grant.unvested,
+        fraction=grant.outstanding / fd if fd else 0.0,
+        next_vest_label=format_turn(nxt[0]) if nxt else None,
+        next_vest_shares=nxt[1] if nxt else 0,
+        next_vest_is_cliff=nxt is not None and at_cliff(grant, nxt[0], fb),
+    )
+
 
 HISTORY_TURNS = 12
 PERSONALITY_GROUP = "personality"
@@ -254,6 +277,7 @@ def person_summary(
             monthly_cost_cents=employment_monthly_cost_cents(
                 employment, data.balance, remote=is_remote(state, employment)
             ),
+            options=options_out(state, employment.id, data),
         ),
         candidacy=None
         if candidate is None

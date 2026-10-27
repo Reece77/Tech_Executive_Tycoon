@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from tst.sim.data_models import Balance
+from tst.sim.data_models import Balance, FinanceBalance
 from tst.sim.finance import formulas as f
 from tst.sim.finance.captable import fd_shares, pool_entry, share_price, unallocated
 from tst.sim.finance.models import OptionGrant
@@ -92,6 +92,23 @@ def vest(state: GameState, balance: Balance) -> GameState:
         if vested != grant.vested:
             state = with_grant(state, replace(grant, vested=vested))
     return state
+
+
+def next_vesting(grant: OptionGrant, turn: int, fb: FinanceBalance) -> tuple[int, int] | None:
+    """The first turn from `turn` whose month end vests more of an active grant, and how
+    many options vest then (M4b: the profile and cap table show it); None once fully vested."""
+    if grant.status != "active":
+        return None
+    for t in range(max(turn, grant.start_turn), grant.start_turn + fb.vesting_months):
+        vested = f.vested_shares(grant.granted, months_served(grant, t), fb)
+        if vested > grant.vested:
+            return t, vested - grant.vested
+    return None
+
+
+def at_cliff(grant: OptionGrant, turn: int, fb: FinanceBalance) -> bool:
+    """`turn`'s month end is the grant's cliff (the first options vest)."""
+    return months_served(grant, turn) == fb.cliff_months
 
 
 def retention(state: GameState, employment: Employment, balance: Balance) -> float:

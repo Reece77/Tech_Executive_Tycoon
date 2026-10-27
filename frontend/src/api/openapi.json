@@ -4762,6 +4762,7 @@
           "finance"
         ],
         "summary": "Get Board",
+        "description": "Seats, each director's confidence and trend, and the last quarterly meeting (14.6).",
         "operationId": "getBoard",
         "parameters": [
           {
@@ -4828,12 +4829,86 @@
         }
       }
     },
+    "/api/saves/{save_id}/finance/game-over": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Get Game Over",
+        "description": "How the game ended: the reason, the turn, the last numbers and the last six months'\nfinance news (ADR-0018). Works on an active save too (game_state \"active\").",
+        "operationId": "getGameOver",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameOverOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/finance/safes": {
       "get": {
         "tags": [
           "finance"
         ],
         "summary": "List Safes",
+        "description": "Every SAFE and bridge; an open bridge offer shows today's amount (14.7).",
         "operationId": "listSafes",
         "parameters": [
           {
@@ -5816,6 +5891,10 @@
             "type": "array",
             "title": "Liabilities"
           },
+          "total_liabilities_cents": {
+            "type": "integer",
+            "title": "Total Liabilities Cents"
+          },
           "paid_in_equity": {
             "items": {
               "$ref": "#/components/schemas/StatementLineOut"
@@ -5838,11 +5917,67 @@
           "assets",
           "total_assets_cents",
           "liabilities",
+          "total_liabilities_cents",
           "paid_in_equity",
           "accumulated_result_cents",
           "total_liabilities_and_equity_cents"
         ],
         "title": "BalanceSheetOut"
+      },
+      "BoardMeetingOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "previous_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Title",
+            "description": "The meeting before, for the change"
+          },
+          "warning_body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning Body",
+            "description": "The formal warning given at this meeting"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "title",
+          "body",
+          "previous_title",
+          "warning_body"
+        ],
+        "title": "BoardMeetingOut",
+        "description": "The last quarterly board meeting, from the inbox (14.6)."
       },
       "BoardOut": {
         "properties": {
@@ -5895,6 +6030,98 @@
           "seats": {
             "type": "integer",
             "title": "Seats"
+          },
+          "seats_by_kind": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Seats By Kind"
+          },
+          "removal_possible": {
+            "type": "boolean",
+            "title": "Removal Possible",
+            "description": "Investor and independent seats are a majority (after Series B)"
+          },
+          "trend": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend",
+            "description": "rising | steady | slipping: the average over the last month ends"
+          },
+          "trend_from": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend From",
+            "description": "The average confidence the trend starts at"
+          },
+          "expected_growth": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Growth",
+            "description": "Annual MRR growth the board expects after the last round"
+          },
+          "actual_growth": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Growth",
+            "description": "Annualized 6-month MRR growth; null with under 6 months of revenue"
+          },
+          "last_round_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Round Label"
+          },
+          "next_meeting_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Meeting Label"
+          },
+          "last_meeting": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BoardMeetingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -5906,7 +6133,16 @@
           "removal_below",
           "removal_months",
           "votes_to_remove",
-          "seats"
+          "seats",
+          "seats_by_kind",
+          "removal_possible",
+          "trend",
+          "trend_from",
+          "expected_growth",
+          "actual_growth",
+          "last_round_label",
+          "next_meeting_label",
+          "last_meeting"
         ],
         "title": "BoardOut"
       },
@@ -6010,6 +6246,65 @@
             },
             "type": "array",
             "title": "Grants"
+          },
+          "vesting_months": {
+            "type": "integer",
+            "title": "Vesting Months"
+          },
+          "cliff_months": {
+            "type": "integer",
+            "title": "Cliff Months"
+          },
+          "founder_shares": {
+            "type": "integer",
+            "title": "Founder Shares"
+          },
+          "founder_fraction": {
+            "type": "number",
+            "title": "Founder Fraction"
+          },
+          "last_round_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Round Label",
+            "description": "Series of the latest priced round"
+          },
+          "last_round_date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Round Date Label"
+          },
+          "post_money_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Post Money Cents",
+            "description": "The latest priced round's post-money"
+          },
+          "ownership_history": {
+            "items": {
+              "$ref": "#/components/schemas/OwnershipEventOut"
+            },
+            "type": "array",
+            "title": "Ownership History",
+            "description": "Oldest first"
           }
         },
         "type": "object",
@@ -6021,7 +6316,15 @@
           "vested_options",
           "unallocated_options",
           "pool_left_bp",
-          "grants"
+          "grants",
+          "vesting_months",
+          "cliff_months",
+          "founder_shares",
+          "founder_fraction",
+          "last_round_label",
+          "last_round_date_label",
+          "post_money_cents",
+          "ownership_history"
         ],
         "title": "CapTableOut"
       },
@@ -6044,6 +6347,11 @@
           "change_in_cash_cents": {
             "type": "integer",
             "title": "Change In Cash Cents"
+          },
+          "burn_cents": {
+            "type": "integer",
+            "title": "Burn Cents",
+            "description": "-(operating) when negative, else 0 (14.1)"
           }
         },
         "type": "object",
@@ -6051,7 +6359,8 @@
           "operating_cents",
           "investing_cents",
           "financing_cents",
-          "change_in_cash_cents"
+          "change_in_cash_cents",
+          "burn_cents"
         ],
         "title": "CashFlowOut"
       },
@@ -6413,6 +6722,22 @@
           "fraction_after": {
             "type": "number",
             "title": "Fraction After"
+          },
+          "holder_kind": {
+            "type": "string",
+            "title": "Holder Kind",
+            "description": "person | firm | group | pool | options"
+          },
+          "is_founder": {
+            "type": "boolean",
+            "title": "Is Founder",
+            "default": false
+          },
+          "new": {
+            "type": "boolean",
+            "title": "New",
+            "description": "A holder this round adds",
+            "default": false
           }
         },
         "type": "object",
@@ -6422,7 +6747,8 @@
           "shares_before",
           "shares_after",
           "fraction_before",
-          "fraction_after"
+          "fraction_after",
+          "holder_kind"
         ],
         "title": "DilutionLineOut"
       },
@@ -6498,6 +6824,19 @@
           "seated_label": {
             "type": "string",
             "title": "Seated Label"
+          },
+          "is_founder": {
+            "type": "boolean",
+            "title": "Is Founder",
+            "default": false
+          },
+          "history": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "Confidence at the last month ends, oldest first"
           }
         },
         "type": "object",
@@ -6511,7 +6850,8 @@
           "confidence",
           "label",
           "months_below",
-          "seated_label"
+          "seated_label",
+          "history"
         ],
         "title": "DirectorOut"
       },
@@ -6599,6 +6939,17 @@
             "type": "integer",
             "title": "Monthly Cost Cents",
             "description": "Salary, benefits and office per month"
+          },
+          "options": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OptionsOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null without a grant"
           }
         },
         "type": "object",
@@ -6729,6 +7080,45 @@
           "stage_label": {
             "type": "string",
             "title": "Stage Label"
+          },
+          "open_bridge_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Bridge Id",
+            "description": "A bridge offer that can still be accepted"
+          },
+          "open_bridge_amount_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Bridge Amount Cents",
+            "description": "What the open bridge would raise if accepted now"
+          },
+          "open_bridge_expires_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Bridge Expires Label"
+          },
+          "bridge_energy": {
+            "type": "integer",
+            "title": "Bridge Energy"
           }
         },
         "type": "object",
@@ -6741,7 +7131,11 @@
           "game_state",
           "ended_turn",
           "stage",
-          "stage_label"
+          "stage_label",
+          "open_bridge_id",
+          "open_bridge_amount_cents",
+          "open_bridge_expires_label",
+          "bridge_energy"
         ],
         "title": "FinanceSummaryOut"
       },
@@ -6985,6 +7379,296 @@
         ],
         "title": "FounderSkillOut"
       },
+      "FundingTileOut": {
+        "properties": {
+          "last_round_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Round Label",
+            "description": "Series of the latest priced round"
+          },
+          "last_round_date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Round Date Label"
+          },
+          "post_money_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Post Money Cents"
+          },
+          "founder_fraction": {
+            "type": "number",
+            "title": "Founder Fraction",
+            "description": "The founder's share of fully diluted shares"
+          },
+          "board_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Board Label",
+            "description": "confident | watchful | losing patience"
+          },
+          "board_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Board Confidence"
+          },
+          "safes_outstanding": {
+            "type": "integer",
+            "title": "Safes Outstanding",
+            "description": "SAFEs that convert at the next priced round"
+          }
+        },
+        "type": "object",
+        "required": [
+          "last_round_label",
+          "last_round_date_label",
+          "post_money_cents",
+          "founder_fraction",
+          "board_label",
+          "board_confidence",
+          "safes_outstanding"
+        ],
+        "title": "FundingTileOut",
+        "description": "The Overview's funding tile (M4b)."
+      },
+      "GameOverDirectorOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "firm_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Firm Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "history": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "voted": {
+            "type": "boolean",
+            "title": "Voted",
+            "description": "Below the threshold long enough to vote for removal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "firm_name",
+          "kind",
+          "confidence",
+          "history",
+          "voted"
+        ],
+        "title": "GameOverDirectorOut"
+      },
+      "GameOverOut": {
+        "properties": {
+          "game_state": {
+            "type": "string",
+            "title": "Game State",
+            "description": "active | bankrupt | founder_removed"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "ended_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Turn"
+          },
+          "ended_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Label"
+          },
+          "founded_label": {
+            "type": "string",
+            "title": "Founded Label"
+          },
+          "months_lasted": {
+            "type": "integer",
+            "title": "Months Lasted"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "arr_cents": {
+            "type": "integer",
+            "title": "Arr Cents"
+          },
+          "live_products": {
+            "type": "integer",
+            "title": "Live Products"
+          },
+          "customers": {
+            "type": "integer",
+            "title": "Customers"
+          },
+          "peak_headcount": {
+            "type": "integer",
+            "title": "Peak Headcount"
+          },
+          "final_headcount": {
+            "type": "integer",
+            "title": "Final Headcount"
+          },
+          "founder_fraction": {
+            "type": "number",
+            "title": "Founder Fraction"
+          },
+          "funding_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Funding Summary",
+            "description": "e.g. 'after a SAFE and a seed'"
+          },
+          "insolvent_from_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insolvent From Label",
+            "description": "First month of the last insolvency"
+          },
+          "bridge_offered_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bridge Offered Cents",
+            "description": "A bridge offered in that insolvency"
+          },
+          "bridge_lapsed": {
+            "type": "boolean",
+            "title": "Bridge Lapsed"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemOut"
+            },
+            "type": "array",
+            "title": "Timeline",
+            "description": "Finance news of the last six months"
+          },
+          "directors": {
+            "items": {
+              "$ref": "#/components/schemas/GameOverDirectorOut"
+            },
+            "type": "array",
+            "title": "Directors",
+            "description": "The board at the end"
+          }
+        },
+        "type": "object",
+        "required": [
+          "game_state",
+          "company_name",
+          "ended_turn",
+          "ended_label",
+          "founded_label",
+          "months_lasted",
+          "cash_cents",
+          "arr_cents",
+          "live_products",
+          "customers",
+          "peak_headcount",
+          "final_headcount",
+          "founder_fraction",
+          "funding_summary",
+          "insolvent_from_label",
+          "bridge_offered_cents",
+          "bridge_lapsed",
+          "timeline",
+          "directors"
+        ],
+        "title": "GameOverOut",
+        "description": "How the game ended (ADR-0018), for the game over screen."
+      },
       "GrantOut": {
         "properties": {
           "person_id": {
@@ -7027,6 +7711,40 @@
             "type": "number",
             "title": "Fraction",
             "description": "Options held (granted - forfeited) over FD"
+          },
+          "next_vest_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Vest Turn",
+            "description": "Month end that next vests more; null once fully vested"
+          },
+          "next_vest_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Vest Label"
+          },
+          "next_vest_shares": {
+            "type": "integer",
+            "title": "Next Vest Shares",
+            "default": 0
+          },
+          "next_vest_is_cliff": {
+            "type": "boolean",
+            "title": "Next Vest Is Cliff",
+            "description": "The next vesting is the cliff",
+            "default": false
           }
         },
         "type": "object",
@@ -7089,10 +7807,6 @@
             "type": "integer",
             "title": "Max Offer Equity Bp"
           },
-          "option_pool_bp": {
-            "type": "integer",
-            "title": "Option Pool Bp"
-          },
           "lowball_ratio": {
             "type": "number",
             "title": "Lowball Ratio"
@@ -7118,7 +7832,6 @@
           "reference_check_energy",
           "offer_energy",
           "max_offer_equity_bp",
-          "option_pool_bp",
           "lowball_ratio",
           "candidate_shelf_turns",
           "fire_morale_penalty_min",
@@ -7459,6 +8172,11 @@
               }
             ],
             "title": "Firm"
+          },
+          "is_founder": {
+            "type": "boolean",
+            "title": "Is Founder",
+            "default": false
           }
         },
         "type": "object",
@@ -8292,6 +9010,25 @@
             "type": "integer",
             "title": "Option Pool Left Bp"
           },
+          "options": {
+            "type": "integer",
+            "title": "Options",
+            "description": "The offer's equity as options at today's FD (14.2)"
+          },
+          "fraction": {
+            "type": "number",
+            "title": "Fraction",
+            "description": "Those options over fully diluted shares"
+          },
+          "options_left": {
+            "type": "integer",
+            "title": "Options Left",
+            "description": "Unallocated pool less other pending offers"
+          },
+          "fd_shares": {
+            "type": "integer",
+            "title": "Fd Shares"
+          },
           "reasons": {
             "items": {
               "type": "string"
@@ -8309,9 +9046,66 @@
           "expectation_cents",
           "problems",
           "option_pool_left_bp",
+          "options",
+          "fraction",
+          "options_left",
+          "fd_shares",
           "reasons"
         ],
         "title": "OfferPreviewOut"
+      },
+      "OptionsOut": {
+        "properties": {
+          "granted": {
+            "type": "integer",
+            "title": "Granted"
+          },
+          "vested": {
+            "type": "integer",
+            "title": "Vested"
+          },
+          "unvested": {
+            "type": "integer",
+            "title": "Unvested"
+          },
+          "fraction": {
+            "type": "number",
+            "title": "Fraction",
+            "description": "Options held over fully diluted shares"
+          },
+          "next_vest_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Vest Label",
+            "description": "Month end that next vests; null when done"
+          },
+          "next_vest_shares": {
+            "type": "integer",
+            "title": "Next Vest Shares"
+          },
+          "next_vest_is_cliff": {
+            "type": "boolean",
+            "title": "Next Vest Is Cliff"
+          }
+        },
+        "type": "object",
+        "required": [
+          "granted",
+          "vested",
+          "unvested",
+          "fraction",
+          "next_vest_label",
+          "next_vest_shares",
+          "next_vest_is_cliff"
+        ],
+        "title": "OptionsOut",
+        "description": "An employee's option grant for the contract panel (M4b, formulas.md 14.2)."
       },
       "OrgActionOut": {
         "properties": {
@@ -8843,6 +9637,40 @@
             ],
             "title": "Ended Turn",
             "description": "Turn the game ended; null while active"
+          },
+          "stage_since_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage Since Turn",
+            "description": "Turn the current stage was reached; null if a pre-M4b save lacks it"
+          },
+          "stage_since_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage Since Label"
+          },
+          "stage_history": {
+            "items": {
+              "$ref": "#/components/schemas/StageReachedOut"
+            },
+            "type": "array",
+            "title": "Stage History",
+            "description": "Each stage reached, oldest first"
+          },
+          "funding": {
+            "$ref": "#/components/schemas/FundingTileOut"
           }
         },
         "type": "object",
@@ -8874,9 +9702,56 @@
           "arr_cents",
           "month_revenue_cents",
           "game_state",
-          "ended_turn"
+          "ended_turn",
+          "stage_since_turn",
+          "stage_since_label",
+          "stage_history",
+          "funding"
         ],
         "title": "OverviewOut"
+      },
+      "OwnershipEventOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "event": {
+            "type": "string",
+            "title": "Event",
+            "description": "founded | safe | round"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "e.g. 'Seed, $2M at $6M pre'"
+          },
+          "founder_fraction": {
+            "type": "number",
+            "title": "Founder Fraction",
+            "description": "The founder's share of FD after the event"
+          },
+          "pending": {
+            "type": "boolean",
+            "title": "Pending",
+            "description": "A SAFE not yet converted: it dilutes at the next round",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "event",
+          "label",
+          "founder_fraction"
+        ],
+        "title": "OwnershipEventOut",
+        "description": "One step of \"your ownership over time\" (M4b)."
       },
       "PayPreviewOut": {
         "properties": {
@@ -10273,6 +11148,10 @@
             "title": "Cost Of Revenue",
             "description": "Hosting (6300) sits here"
           },
+          "total_cost_of_revenue_cents": {
+            "type": "integer",
+            "title": "Total Cost Of Revenue Cents"
+          },
           "gross_margin_cents": {
             "type": "integer",
             "title": "Gross Margin Cents"
@@ -10283,6 +11162,10 @@
             },
             "type": "array",
             "title": "Operating Expenses"
+          },
+          "total_operating_expenses_cents": {
+            "type": "integer",
+            "title": "Total Operating Expenses Cents"
           },
           "operating_result_cents": {
             "type": "integer",
@@ -10306,8 +11189,10 @@
           "revenue",
           "total_revenue_cents",
           "cost_of_revenue",
+          "total_cost_of_revenue_cents",
           "gross_margin_cents",
           "operating_expenses",
+          "total_operating_expenses_cents",
           "operating_result_cents",
           "interest_cents",
           "tax_cents",
@@ -10583,6 +11468,11 @@
             },
             "type": "array",
             "title": "Term Sheets"
+          },
+          "firms_asked": {
+            "type": "integer",
+            "title": "Firms Asked",
+            "description": "Firms in investors.yaml that invest in this series"
           }
         },
         "type": "object",
@@ -10608,7 +11498,8 @@
           "down_round",
           "closed_turn",
           "closed_label",
-          "term_sheets"
+          "term_sheets",
+          "firms_asked"
         ],
         "title": "RoundOut"
       },
@@ -10683,6 +11574,19 @@
             "type": "object",
             "title": "Board After",
             "description": "Seats by kind after the close"
+          },
+          "founder_keeps_tie": {
+            "type": "boolean",
+            "title": "Founder Keeps Tie",
+            "description": "After the close the common seats are at least half: the founder cannot be removed (14.6)"
+          },
+          "energy_cost": {
+            "type": "integer",
+            "title": "Energy Cost"
+          },
+          "series_label": {
+            "type": "string",
+            "title": "Series Label"
           }
         },
         "type": "object",
@@ -10701,7 +11605,10 @@
           "fees_cents",
           "down_round",
           "lines",
-          "board_after"
+          "board_after",
+          "founder_keeps_tie",
+          "energy_cost",
+          "series_label"
         ],
         "title": "RoundPreviewOut",
         "description": "Accepting this term sheet: every holder before and after the close (14.5)."
@@ -10837,6 +11744,17 @@
             "type": "number",
             "title": "Fraction",
             "description": "amount / cap: what the holders get at the next round"
+          },
+          "converted_round_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Converted Round Id"
           }
         },
         "type": "object",
@@ -10876,6 +11794,22 @@
             "type": "boolean",
             "title": "Open",
             "description": "A SAFE raise is waiting for investors' answers"
+          },
+          "blocked": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocked",
+            "description": "Why a SAFE cannot be raised now (a priced round is open)"
+          },
+          "energy_cost": {
+            "type": "integer",
+            "title": "Energy Cost"
           }
         },
         "type": "object",
@@ -10883,7 +11817,8 @@
           "safes",
           "min_cents",
           "max_cents",
-          "open"
+          "open",
+          "energy_cost"
         ],
         "title": "SafesOut"
       },
@@ -11147,9 +12082,25 @@
             "title": "Arr Cents",
             "description": "ARR at the last month end"
           },
+          "gate_arr_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate Arr Cents",
+            "description": "ARR the series needs; null for a seed"
+          },
           "open_turns": {
             "type": "integer",
             "title": "Open Turns"
+          },
+          "energy_cost": {
+            "type": "integer",
+            "title": "Energy Cost"
           }
         },
         "type": "object",
@@ -11161,7 +12112,9 @@
           "typical_min_cents",
           "typical_max_cents",
           "arr_cents",
-          "open_turns"
+          "gate_arr_cents",
+          "open_turns",
+          "energy_cost"
         ],
         "title": "SeriesGuideOut",
         "description": "The next round and whether it is allowed (14.5)."
@@ -11327,6 +12280,34 @@
           "board_confidence"
         ],
         "title": "SnapshotPointOut"
+      },
+      "StageReachedOut": {
+        "properties": {
+          "stage": {
+            "type": "integer",
+            "title": "Stage"
+          },
+          "stage_label": {
+            "type": "string",
+            "title": "Stage Label"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "stage_label",
+          "turn",
+          "date_label"
+        ],
+        "title": "StageReachedOut"
       },
       "StatementLineOut": {
         "properties": {
@@ -11536,6 +12517,18 @@
           "expires_label": {
             "type": "string",
             "title": "Expires Label"
+          },
+          "founder_fraction_after": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Founder Fraction After",
+            "description": "The founder's share of FD if this sheet closes (open sheets)"
           }
         },
         "type": "object",
@@ -11552,6 +12545,40 @@
           "expires_label"
         ],
         "title": "TermSheetOut"
+      },
+      "TimelineItemOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "template": {
+            "type": "string",
+            "title": "Template"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "critical": {
+            "type": "boolean",
+            "title": "Critical",
+            "description": "Insolvency, bankruptcy, removal and warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "template",
+          "title",
+          "critical"
+        ],
+        "title": "TimelineItemOut"
       },
       "UnitOut": {
         "properties": {

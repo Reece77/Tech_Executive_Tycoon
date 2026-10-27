@@ -106,7 +106,7 @@ def test_section_7_lowball_and_hints(loaded: LoadedData) -> None:
 
 def test_section_7_option_pool_numbers(loaded: LoadedData) -> None:
     hiring = loaded.balance.hiring
-    assert (hiring.max_offer_equity_bp, hiring.option_pool_bp) == (200, 1000)
+    assert hiring.max_offer_equity_bp == 200  # the pool itself is the cap table's (M4b)
     assert hiring.candidate_shelf_turns == 3
     assert loaded.balance.morale.new_hire == 65
 

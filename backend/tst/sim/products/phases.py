@@ -27,6 +27,7 @@ from tst.sim.products.team import Team, product_team
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
+    reach_stage,
     with_company,
     with_market,
     with_product,
@@ -410,7 +411,8 @@ def arr_stages(
             )
         if (stage, milestone) != (company.stage, company.arr_milestone_cents):
             state = with_company(
-                state, replace(company, stage=stage, arr_milestone_cents=milestone)
+                state,
+                replace(reach_stage(company, stage, state.turn), arr_milestone_cents=milestone),
             )
     return state, tuple(logs)
 

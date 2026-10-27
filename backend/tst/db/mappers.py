@@ -7,6 +7,7 @@ from typing import Any, cast
 
 from tst.db.models import (
     Base,
+    BoardSeatHistoryRow,
     BoardSeatRow,
     CandidateRow,
     CapTableEntryRow,
@@ -111,6 +112,7 @@ def company_to_state(row: CompanyRow) -> CompanyState:
         arr_milestone_cents=row.arr_milestone_cents,
         mrr_history=tuple(row.mrr_history or ()),
         insolvent_months=row.insolvent_months,
+        stage_history=tuple((int(s), int(t)) for s, t in row.stage_history or ()),
     )
 
 
@@ -127,6 +129,7 @@ def company_to_row(company: CompanyState) -> CompanyRow:
         arr_milestone_cents=company.arr_milestone_cents,
         mrr_history=list(company.mrr_history),
         insolvent_months=company.insolvent_months,
+        stage_history=[list(p) for p in company.stage_history],
     )
 
 
@@ -141,6 +144,7 @@ def update_company_row(row: CompanyRow, company: CompanyState) -> None:
     row.arr_milestone_cents = company.arr_milestone_cents
     row.mrr_history = list(company.mrr_history)
     row.insolvent_months = company.insolvent_months
+    row.stage_history = [list(p) for p in company.stage_history]
 
 
 def game_state_from_rows(
@@ -702,10 +706,19 @@ FINANCE_ROWS: dict[type[Any], type[Any]] = {
 
 
 def finance_to_row(item: Any) -> Any:
-    """Any finance dataclass as its row."""
-    return FINANCE_ROWS[type(item)](**asdict(item))
+    """Any finance dataclass as its row (a seat's history goes to seat_history_row)."""
+    values = asdict(item)
+    if isinstance(item, BoardSeat):
+        del values["history"]
+    return FINANCE_ROWS[type(item)](**values)
 
 
-def finance_from_row[T](cls: type[T], row: Any) -> T:
-    """A finance dataclass from its row (status-like strings are trusted: the sim wrote them)."""
-    return cls(**{f.name: getattr(row, f.name) for f in fields(cls)})  # type: ignore[arg-type]
+def finance_from_row[T](cls: type[T], row: Any, **extra: Any) -> T:
+    """A finance dataclass from its row (status-like strings are trusted: the sim wrote them).
+    `extra` fills fields stored elsewhere (a seat's history)."""
+    names = [f.name for f in fields(cls) if f.name not in extra]  # type: ignore[arg-type]
+    return cls(**{n: getattr(row, n) for n in names}, **extra)
+
+
+def seat_history_row(seat: BoardSeat) -> BoardSeatHistoryRow:
+    return BoardSeatHistoryRow(seat_id=seat.id, history=list(seat.history))

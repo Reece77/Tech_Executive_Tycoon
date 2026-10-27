@@ -6,7 +6,7 @@ import secrets
 
 from fastapi import APIRouter, status
 
-from tst.api import org_views, views
+from tst.api import finance_views, org_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.schemas.common import ErrorOut
 from tst.api.schemas.saves import (
@@ -15,6 +15,7 @@ from tst.api.schemas.saves import (
     OverviewOut,
     SaveOut,
     SnapshotPointOut,
+    StageReachedOut,
     TeamOut,
 )
 from tst.db import inbox, repository
@@ -25,7 +26,7 @@ from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
 from tst.sim.org.rules import is_remote
 from tst.sim.products.phases import projected_revenue
 from tst.sim.setup import DEFAULT_FOUNDER
-from tst.sim.state import GameState
+from tst.sim.state import GameState, stage_since
 
 router = APIRouter(prefix="/api/saves", tags=["saves"])
 
@@ -75,6 +76,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         CostLineOut(account=code, label=label, amount_cents=amount) for label, code, amount in paid
     ]
     runway = ov.runway_months  # at this month's projected phase-6 costs (M1c decision)
+    since = stage_since(player)
     runway_warn = data.balance.morale.runway_warn_months
     return OverviewOut(
         save_id=save_id,
@@ -140,6 +142,18 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         month_revenue_cents=projected_revenue(state, player.id),
         game_state=state.save_meta.game_state,
         ended_turn=state.save_meta.ended_turn,
+        stage_since_turn=since,
+        stage_since_label=format_turn(since) if since is not None else None,
+        stage_history=[
+            StageReachedOut(
+                stage=stage,
+                stage_label=views.STAGE_LABELS.get(stage, f"Stage {stage}"),
+                turn=turn,
+                date_label=format_turn(turn),
+            )
+            for stage, turn in player.stage_history
+        ],
+        funding=finance_views.funding_tile(state, data),
     )
 
 

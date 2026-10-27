@@ -36,6 +36,18 @@ class MoralePointOut(BaseModel):
     morale: float
 
 
+class OptionsOut(BaseModel):
+    """An employee's option grant for the contract panel (M4b, formulas.md 14.2)."""
+
+    granted: int
+    vested: int
+    unvested: int
+    fraction: float = Field(description="Options held over fully diluted shares")
+    next_vest_label: str | None = Field(description="Month end that next vests; null when done")
+    next_vest_shares: int
+    next_vest_is_cliff: bool
+
+
 class EmploymentOut(BaseModel):
     employment_id: int
     role: str
@@ -52,6 +64,7 @@ class EmploymentOut(BaseModel):
     tenure_months: int
     market_rate_cents: int | None = Field(description="Role and level band mid for the region")
     monthly_cost_cents: int = Field(description="Salary, benefits and office per month")
+    options: OptionsOut | None = Field(default=None, description="Null without a grant")
 
 
 class PendingOfferOut(BaseModel):
@@ -165,6 +178,10 @@ class OfferPreviewOut(BaseModel):
     expectation_cents: int
     problems: list[str]  # rules the offer would break (option pool, per-offer cap)
     option_pool_left_bp: int
+    options: int = Field(description="The offer's equity as options at today's FD (14.2)")
+    fraction: float = Field(description="Those options over fully diluted shares")
+    options_left: int = Field(description="Unallocated pool less other pending offers")
+    fd_shares: int
     reasons: list[str] = Field(description="Why the hint reads as it does, from known values only")
 
 

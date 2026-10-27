@@ -156,9 +156,7 @@ def financing(ctx: TurnContext) -> TurnContext:
     state, bridging, bridges = insolvency.post_bridges(state, ctx.balance)
     state = vest(state, ctx.balance)
     ctx = replace(ctx, state=state).post(*entries, *bridging)
-    state, insolvent = insolvency.insolvency(
-        ctx.state, ctx.opening_balances, ctx.balances, ctx.balance, ctx.data
-    )
+    state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
     return replace(ctx, state=state).log(*answered, *sheets, *lapsed, *bridges, *insolvent)
 
 

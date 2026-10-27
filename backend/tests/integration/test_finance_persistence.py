@@ -10,6 +10,7 @@ from sqlalchemy import text
 
 from tests.helpers import make_person, move_save_directors, with_employee
 from tst.db import migrate
+from tst.db.models import SCHEMA_VERSION
 from tst.db.repository import create_save, load_state, open_session, run_turn
 from tst.db.state_io import sync_state
 from tst.loader import LoadedData
@@ -105,7 +106,7 @@ def test_upgrade_from_0008_converts_equity_to_options(tmp_path: Path, loaded: Lo
     with open_session(path) as session:
         state = load_state(session)
         version = session.execute(text("SELECT schema_version FROM save_meta")).scalar()
-    assert version == 9
+    assert version == SCHEMA_VERSION  # upgraded through 0009 to the head
     (grant,) = state.grants
     assert (grant.person_id, grant.granted, grant.start_turn) == (2, 50_000, 0)
     assert grant.vested == 50_000 * 13 // 48  # 13 months served

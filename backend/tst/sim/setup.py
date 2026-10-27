@@ -135,6 +135,7 @@ def new_game(
                 is_player=True,
                 stage=START_STAGE,
                 founded_turn=START_TURN,
+                stage_history=((START_STAGE, START_TURN),),
                 mission=company_mission(mission, person, data),
             ),
             *market.companies,

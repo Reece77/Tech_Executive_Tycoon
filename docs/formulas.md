@@ -640,7 +640,7 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `hiring.offer.stage_appeal.<stage>` / `.stage_equity_mult.<stage>` | see §7 | score / multiplier | §7 |
 | `hiring.offer.k` / `.threshold` | 3.0 / 0.0 | — | §7 |
 | `hiring.lowball_ratio` | 0.85 | ratio | §7 |
-| `hiring.max_offer_equity_bp` / `hiring.option_pool_bp` | 200 / 1000 | bp | §7 |
+| `hiring.max_offer_equity_bp` | 200 | bp | §7 (the pool limit is the unallocated option pool, §14.2; `hiring.option_pool_bp` retired in M4b) |
 | `morale.new_hire` | 65 | morale points | §7 |
 | `payroll.benefits_bp` | 2000 | bp of salary | §8 |
 | `payroll.office_cost_per_head_cents` | 60000 | cents per month | §8 |
@@ -707,6 +707,7 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `board.runway_terms` | ≥12: +10, 6–12: 0, 3–6: −15, <3: −30 | months / points | §14.6 |
 | `board.no_product_penalty` / `.no_product_after_turns` / `.down_round_hit` | −20 / 12 / −15 | points / turns / points | §14.6 |
 | `board.warning_below` / `.removal_below` / `.removal_months` | 40 / 25 / 3 | confidence / confidence / months | §14.6 |
+| `board.history_months` / `.trend_points` | 6 / 2 | month ends / confidence points | §14.6 (M4b: each director's recent confidence for the Board tab, and how far the average must move to read as rising or slipping) |
 | `bankruptcy.months` / `.bridge_burn_months` / `.bridge_cap_of_post` / `.bridge_min_confidence` / `.bridge_open_turns` | 3 / 3 / 0.8 / 40 / 2 | months / months / fraction / confidence / turns | §14.7 |
 | Investor firms, scenario cap tables, funding climate | see §14.2, §14.3, §14.5 | — | data: `investors.yaml`, `scenarios.yaml`, `climate.yaml` |
 

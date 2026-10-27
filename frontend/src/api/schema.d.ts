@@ -990,8 +990,32 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Board */
+        /**
+         * Get Board
+         * @description Seats, each director's confidence and trend, and the last quarterly meeting (14.6).
+         */
         get: operations["getBoard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/game-over": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Game Over
+         * @description How the game ended: the reason, the turn, the last numbers and the last six months'
+         *     finance news (ADR-0018). Works on an active save too (game_state "active").
+         */
+        get: operations["getGameOver"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1007,7 +1031,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Safes */
+        /**
+         * List Safes
+         * @description Every SAFE and bridge; an open bridge offer shows today's amount (14.7).
+         */
         get: operations["listSafes"];
         put?: never;
         /**
@@ -1326,6 +1353,8 @@ export interface components {
             total_assets_cents: number;
             /** Liabilities */
             liabilities: components["schemas"]["StatementLineOut"][];
+            /** Total Liabilities Cents */
+            total_liabilities_cents: number;
             /** Paid In Equity */
             paid_in_equity: components["schemas"]["StatementLineOut"][];
             /**
@@ -1335,6 +1364,30 @@ export interface components {
             accumulated_result_cents: number;
             /** Total Liabilities And Equity Cents */
             total_liabilities_and_equity_cents: number;
+        };
+        /**
+         * BoardMeetingOut
+         * @description The last quarterly board meeting, from the inbox (14.6).
+         */
+        BoardMeetingOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+            /**
+             * Previous Title
+             * @description The meeting before, for the change
+             */
+            previous_title: string | null;
+            /**
+             * Warning Body
+             * @description The formal warning given at this meeting
+             */
+            warning_body: string | null;
         };
         /** BoardOut */
         BoardOut: {
@@ -1357,6 +1410,40 @@ export interface components {
             votes_to_remove: number;
             /** Seats */
             seats: number;
+            /** Seats By Kind */
+            seats_by_kind: {
+                [key: string]: number;
+            };
+            /**
+             * Removal Possible
+             * @description Investor and independent seats are a majority (after Series B)
+             */
+            removal_possible: boolean;
+            /**
+             * Trend
+             * @description rising | steady | slipping: the average over the last month ends
+             */
+            trend: string | null;
+            /**
+             * Trend From
+             * @description The average confidence the trend starts at
+             */
+            trend_from: number | null;
+            /**
+             * Expected Growth
+             * @description Annual MRR growth the board expects after the last round
+             */
+            expected_growth: number | null;
+            /**
+             * Actual Growth
+             * @description Annualized 6-month MRR growth; null with under 6 months of revenue
+             */
+            actual_growth: number | null;
+            /** Last Round Label */
+            last_round_label: string | null;
+            /** Next Meeting Label */
+            next_meeting_label: string | null;
+            last_meeting: components["schemas"]["BoardMeetingOut"] | null;
         };
         /** CandidacyOut */
         CandidacyOut: {
@@ -1407,6 +1494,31 @@ export interface components {
             pool_left_bp: number;
             /** Grants */
             grants: components["schemas"]["GrantOut"][];
+            /** Vesting Months */
+            vesting_months: number;
+            /** Cliff Months */
+            cliff_months: number;
+            /** Founder Shares */
+            founder_shares: number;
+            /** Founder Fraction */
+            founder_fraction: number;
+            /**
+             * Last Round Label
+             * @description Series of the latest priced round
+             */
+            last_round_label: string | null;
+            /** Last Round Date Label */
+            last_round_date_label: string | null;
+            /**
+             * Post Money Cents
+             * @description The latest priced round's post-money
+             */
+            post_money_cents: number | null;
+            /**
+             * Ownership History
+             * @description Oldest first
+             */
+            ownership_history: components["schemas"]["OwnershipEventOut"][];
         };
         /** CashFlowOut */
         CashFlowOut: {
@@ -1424,6 +1536,11 @@ export interface components {
             financing_cents: number;
             /** Change In Cash Cents */
             change_in_cash_cents: number;
+            /**
+             * Burn Cents
+             * @description -(operating) when negative, else 0 (14.1)
+             */
+            burn_cents: number;
         };
         /** CategoryOut */
         CategoryOut: {
@@ -1575,6 +1692,22 @@ export interface components {
             fraction_before: number;
             /** Fraction After */
             fraction_after: number;
+            /**
+             * Holder Kind
+             * @description person | firm | group | pool | options
+             */
+            holder_kind: string;
+            /**
+             * Is Founder
+             * @default false
+             */
+            is_founder?: boolean;
+            /**
+             * New
+             * @description A holder this round adds
+             * @default false
+             */
+            new?: boolean;
         };
         /** DirectorOut */
         DirectorOut: {
@@ -1607,6 +1740,16 @@ export interface components {
             months_below: number;
             /** Seated Label */
             seated_label: string;
+            /**
+             * Is Founder
+             * @default false
+             */
+            is_founder?: boolean;
+            /**
+             * History
+             * @description Confidence at the last month ends, oldest first
+             */
+            history: number[];
         };
         /** EmploymentOut */
         EmploymentOut: {
@@ -1646,6 +1789,8 @@ export interface components {
              * @description Salary, benefits and office per month
              */
             monthly_cost_cents: number;
+            /** @description Null without a grant */
+            options?: components["schemas"]["OptionsOut"] | null;
         };
         /** EnergyOut */
         EnergyOut: {
@@ -1699,6 +1844,20 @@ export interface components {
             stage: number;
             /** Stage Label */
             stage_label: string;
+            /**
+             * Open Bridge Id
+             * @description A bridge offer that can still be accepted
+             */
+            open_bridge_id: number | null;
+            /**
+             * Open Bridge Amount Cents
+             * @description What the open bridge would raise if accepted now
+             */
+            open_bridge_amount_cents: number | null;
+            /** Open Bridge Expires Label */
+            open_bridge_expires_label: string | null;
+            /** Bridge Energy */
+            bridge_energy: number;
         };
         /** FireOut */
         FireOut: {
@@ -1784,6 +1943,118 @@ export interface components {
             /** Value */
             value: number;
         };
+        /**
+         * FundingTileOut
+         * @description The Overview's funding tile (M4b).
+         */
+        FundingTileOut: {
+            /**
+             * Last Round Label
+             * @description Series of the latest priced round
+             */
+            last_round_label: string | null;
+            /** Last Round Date Label */
+            last_round_date_label: string | null;
+            /** Post Money Cents */
+            post_money_cents: number | null;
+            /**
+             * Founder Fraction
+             * @description The founder's share of fully diluted shares
+             */
+            founder_fraction: number;
+            /**
+             * Board Label
+             * @description confident | watchful | losing patience
+             */
+            board_label: string | null;
+            /** Board Confidence */
+            board_confidence: number | null;
+            /**
+             * Safes Outstanding
+             * @description SAFEs that convert at the next priced round
+             */
+            safes_outstanding: number;
+        };
+        /** GameOverDirectorOut */
+        GameOverDirectorOut: {
+            /** Name */
+            name: string;
+            /** Firm Name */
+            firm_name: string | null;
+            /** Kind */
+            kind: string;
+            /** Confidence */
+            confidence: number | null;
+            /** History */
+            history: number[];
+            /**
+             * Voted
+             * @description Below the threshold long enough to vote for removal
+             */
+            voted: boolean;
+        };
+        /**
+         * GameOverOut
+         * @description How the game ended (ADR-0018), for the game over screen.
+         */
+        GameOverOut: {
+            /**
+             * Game State
+             * @description active | bankrupt | founder_removed
+             */
+            game_state: string;
+            /** Company Name */
+            company_name: string;
+            /** Ended Turn */
+            ended_turn: number | null;
+            /** Ended Label */
+            ended_label: string | null;
+            /** Founded Label */
+            founded_label: string;
+            /** Months Lasted */
+            months_lasted: number;
+            /** Cash Cents */
+            cash_cents: number;
+            /** Arr Cents */
+            arr_cents: number;
+            /** Live Products */
+            live_products: number;
+            /** Customers */
+            customers: number;
+            /** Peak Headcount */
+            peak_headcount: number;
+            /** Final Headcount */
+            final_headcount: number;
+            /** Founder Fraction */
+            founder_fraction: number;
+            /**
+             * Funding Summary
+             * @description e.g. 'after a SAFE and a seed'
+             */
+            funding_summary: string | null;
+            /**
+             * Insolvent From Label
+             * @description First month of the last insolvency
+             */
+            insolvent_from_label: string | null;
+            /**
+             * Bridge Offered Cents
+             * @description A bridge offered in that insolvency
+             */
+            bridge_offered_cents: number | null;
+            /** Bridge Lapsed */
+            bridge_lapsed: boolean;
+            /**
+             * Timeline
+             * @description Finance news of the last six months
+             */
+            timeline: components["schemas"]["TimelineItemOut"][];
+            /**
+             * Directors
+             * @description The board at the end
+             */
+            directors: components["schemas"]["GameOverDirectorOut"][];
+        };
         /** GrantOut */
         GrantOut: {
             /** Person Id */
@@ -1809,6 +2080,24 @@ export interface components {
              * @description Options held (granted - forfeited) over FD
              */
             fraction: number;
+            /**
+             * Next Vest Turn
+             * @description Month end that next vests more; null once fully vested
+             */
+            next_vest_turn?: number | null;
+            /** Next Vest Label */
+            next_vest_label?: string | null;
+            /**
+             * Next Vest Shares
+             * @default 0
+             */
+            next_vest_shares?: number;
+            /**
+             * Next Vest Is Cliff
+             * @description The next vesting is the cliff
+             * @default false
+             */
+            next_vest_is_cliff?: boolean;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1832,8 +2121,6 @@ export interface components {
             offer_energy: number;
             /** Max Offer Equity Bp */
             max_offer_equity_bp: number;
-            /** Option Pool Bp */
-            option_pool_bp: number;
             /** Lowball Ratio */
             lowball_ratio: number;
             /** Candidate Shelf Turns */
@@ -1969,6 +2256,11 @@ export interface components {
             person_id?: number | null;
             /** Firm */
             firm?: string | null;
+            /**
+             * Is Founder
+             * @default false
+             */
+            is_founder?: boolean;
         };
         /** InboxItemOut */
         InboxItemOut: {
@@ -2324,10 +2616,53 @@ export interface components {
             /** Option Pool Left Bp */
             option_pool_left_bp: number;
             /**
+             * Options
+             * @description The offer's equity as options at today's FD (14.2)
+             */
+            options: number;
+            /**
+             * Fraction
+             * @description Those options over fully diluted shares
+             */
+            fraction: number;
+            /**
+             * Options Left
+             * @description Unallocated pool less other pending offers
+             */
+            options_left: number;
+            /** Fd Shares */
+            fd_shares: number;
+            /**
              * Reasons
              * @description Why the hint reads as it does, from known values only
              */
             reasons: string[];
+        };
+        /**
+         * OptionsOut
+         * @description An employee's option grant for the contract panel (M4b, formulas.md 14.2).
+         */
+        OptionsOut: {
+            /** Granted */
+            granted: number;
+            /** Vested */
+            vested: number;
+            /** Unvested */
+            unvested: number;
+            /**
+             * Fraction
+             * @description Options held over fully diluted shares
+             */
+            fraction: number;
+            /**
+             * Next Vest Label
+             * @description Month end that next vests; null when done
+             */
+            next_vest_label: string | null;
+            /** Next Vest Shares */
+            next_vest_shares: number;
+            /** Next Vest Is Cliff */
+            next_vest_is_cliff: boolean;
         };
         /** OrgActionOut */
         OrgActionOut: {
@@ -2573,6 +2908,50 @@ export interface components {
              * @description Turn the game ended; null while active
              */
             ended_turn: number | null;
+            /**
+             * Stage Since Turn
+             * @description Turn the current stage was reached; null if a pre-M4b save lacks it
+             */
+            stage_since_turn: number | null;
+            /** Stage Since Label */
+            stage_since_label: string | null;
+            /**
+             * Stage History
+             * @description Each stage reached, oldest first
+             */
+            stage_history: components["schemas"]["StageReachedOut"][];
+            funding: components["schemas"]["FundingTileOut"];
+        };
+        /**
+         * OwnershipEventOut
+         * @description One step of "your ownership over time" (M4b).
+         */
+        OwnershipEventOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Event
+             * @description founded | safe | round
+             */
+            event: string;
+            /**
+             * Label
+             * @description e.g. 'Seed, $2M at $6M pre'
+             */
+            label: string;
+            /**
+             * Founder Fraction
+             * @description The founder's share of FD after the event
+             */
+            founder_fraction: number;
+            /**
+             * Pending
+             * @description A SAFE not yet converted: it dilutes at the next round
+             * @default false
+             */
+            pending?: boolean;
         };
         /**
          * PayPreviewOut
@@ -3139,10 +3518,14 @@ export interface components {
              * @description Hosting (6300) sits here
              */
             cost_of_revenue: components["schemas"]["StatementLineOut"][];
+            /** Total Cost Of Revenue Cents */
+            total_cost_of_revenue_cents: number;
             /** Gross Margin Cents */
             gross_margin_cents: number;
             /** Operating Expenses */
             operating_expenses: components["schemas"]["StatementLineOut"][];
+            /** Total Operating Expenses Cents */
+            total_operating_expenses_cents: number;
             /** Operating Result Cents */
             operating_result_cents: number;
             /** Interest Cents */
@@ -3233,6 +3616,11 @@ export interface components {
             closed_label: string | null;
             /** Term Sheets */
             term_sheets: components["schemas"]["TermSheetOut"][];
+            /**
+             * Firms Asked
+             * @description Firms in investors.yaml that invest in this series
+             */
+            firms_asked: number;
         };
         /**
          * RoundPreviewOut
@@ -3283,6 +3671,15 @@ export interface components {
             board_after: {
                 [key: string]: number;
             };
+            /**
+             * Founder Keeps Tie
+             * @description After the close the common seats are at least half: the founder cannot be removed (14.6)
+             */
+            founder_keeps_tie: boolean;
+            /** Energy Cost */
+            energy_cost: number;
+            /** Series Label */
+            series_label: string;
         };
         /** RoundsOut */
         RoundsOut: {
@@ -3351,6 +3748,8 @@ export interface components {
              * @description amount / cap: what the holders get at the next round
              */
             fraction: number;
+            /** Converted Round Id */
+            converted_round_id?: number | null;
         };
         /** SafesOut */
         SafesOut: {
@@ -3368,6 +3767,13 @@ export interface components {
              * @description A SAFE raise is waiting for investors' answers
              */
             open: boolean;
+            /**
+             * Blocked
+             * @description Why a SAFE cannot be raised now (a priced round is open)
+             */
+            blocked?: string | null;
+            /** Energy Cost */
+            energy_cost: number;
         };
         /** SaveOut */
         SaveOut: {
@@ -3468,8 +3874,15 @@ export interface components {
              * @description ARR at the last month end
              */
             arr_cents: number;
+            /**
+             * Gate Arr Cents
+             * @description ARR the series needs; null for a seed
+             */
+            gate_arr_cents: number | null;
             /** Open Turns */
             open_turns: number;
+            /** Energy Cost */
+            energy_cost: number;
         };
         /** SetLeaderIn */
         SetLeaderIn: {
@@ -3533,6 +3946,17 @@ export interface components {
              * @description Average director confidence (M4a)
              */
             board_confidence: number | null;
+        };
+        /** StageReachedOut */
+        StageReachedOut: {
+            /** Stage */
+            stage: number;
+            /** Stage Label */
+            stage_label: string;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
         };
         /** StatementLineOut */
         StatementLineOut: {
@@ -3640,6 +4064,27 @@ export interface components {
             expires_turn: number;
             /** Expires Label */
             expires_label: string;
+            /**
+             * Founder Fraction After
+             * @description The founder's share of FD if this sheet closes (open sheets)
+             */
+            founder_fraction_after?: number | null;
+        };
+        /** TimelineItemOut */
+        TimelineItemOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Template */
+            template: string;
+            /** Title */
+            title: string;
+            /**
+             * Critical
+             * @description Insolvency, bankruptcy, removal and warnings
+             */
+            critical: boolean;
         };
         /** UnitOut */
         UnitOut: {
@@ -7175,6 +7620,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BoardOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getGameOver: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameOverOut"];
                 };
             };
             /** @description Bad Request */

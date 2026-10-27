@@ -160,6 +160,7 @@ class BoardSeat:
     round_id: int | None = None  # the round that created the seat
     confidence: float | None = None  # investor and independent seats, 0..100
     months_below: int = 0  # consecutive month ends below the removal threshold
+    history: tuple[float, ...] = ()  # confidence at the last month ends, oldest first (M4b)
 
     @property
     def votes(self) -> bool:

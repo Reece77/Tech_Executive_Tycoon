@@ -12,7 +12,14 @@ from tests.helpers import fresh_game, make_person, move_directors, with_employee
 from tst.loader import LoadedData
 from tst.sim.data_models import Series
 from tst.sim.finance import formulas as f
-from tst.sim.finance.board import average_confidence, board_month, growth_term, seat_board
+from tst.sim.finance.board import (
+    actual_growth,
+    average_confidence,
+    board_month,
+    growth_term,
+    next_meeting_turn,
+    seat_board,
+)
 from tst.sim.finance.models import FundingRound
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_company, with_round
@@ -114,3 +121,21 @@ def test_the_same_collapse_after_series_a_does_not(loaded: LoadedData) -> None:
     assert not state.ended and "founder_removed" not in templates
     seats = state.board(1)
     assert all(s.months_below >= 3 for s in seats if s.votes)  # both investors vote: a tie
+
+
+def test_each_director_keeps_six_month_ends_of_confidence(loaded: LoadedData) -> None:
+    """M4b: the Board tab's trend; the oldest value drops off after history_months."""
+    state, _ = months(loaded, board_after(loaded, "seed"), 8, 10**12)
+    seat = state.board(1)[1]
+    assert len(seat.history) == loaded.balance.board.history_months == 6
+    assert seat.history[-1] == seat.confidence
+    assert list(seat.history) == sorted(seat.history, reverse=True)  # falling toward 45
+
+
+def test_next_meeting_and_actual_growth(loaded: LoadedData) -> None:
+    bb = loaded.balance.board
+    assert [next_meeting_turn(t, bb) for t in (0, 2, 3, 11)] == [2, 2, 5, 11]
+    state = board_after(loaded, "seed")
+    assert actual_growth(state, 1, loaded.balance) == 0.0  # flat MRR
+    young = with_company(state, replace(state.player, mrr_history=(5, 6)))
+    assert actual_growth(young, 1, loaded.balance) is None  # under 6 months of revenue

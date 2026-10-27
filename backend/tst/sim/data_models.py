@@ -295,7 +295,6 @@ class HiringBalance(_Frozen):
     candidate_shelf_turns: int = Field(gt=0)
     lowball_ratio: float = Field(ge=0)
     max_offer_equity_bp: int = Field(ge=0)
-    option_pool_bp: int = Field(ge=0)
     pitch_per_recruiting: float
     pitch_neutral: float
     offer: OfferBalance
@@ -304,8 +303,6 @@ class HiringBalance(_Frozen):
     def _check(self) -> HiringBalance:
         if sorted(self.channel) != sorted(CHANNELS):
             raise ValueError(f"channel must define exactly {list(CHANNELS)}")
-        if self.max_offer_equity_bp > self.option_pool_bp:
-            raise ValueError("max_offer_equity_bp must not exceed option_pool_bp")
         return self
 
 
@@ -568,6 +565,8 @@ class BoardBalance(_Frozen):
     removal_below: float = Field(ge=0, le=SCORE_MAX)
     removal_months: int = Field(gt=0)
     meeting_months: tuple[int, ...]
+    history_months: int = Field(gt=0)
+    trend_points: float = Field(ge=0)
     seats: dict[Series, SeatCounts]
     director_role: str
     director_level: str

@@ -188,7 +188,6 @@ hiring:
   max_offer_equity_bp: 200 # bp; most equity one offer may carry
   pitch_per_recruiting: 0.3 # score per 10 points of the offer maker's recruiting above neutral (M2, 7)
   pitch_neutral: 10 # attribute points; recruiting at which the pitch term is 0 (M2, 7)
-  option_pool_bp: 1000 # bp; equity held by staff plus pending offers may not exceed this
   offer: # acceptance score and probability (7)
     w_salary: 4.0 # score per unit of (offer / expectation - 1)
     w_equity: 1.0 # weight on equity value
@@ -393,6 +392,8 @@ board:
   removal_below: 25 # a director below this for removal_months votes to remove the founder (14.6)
   removal_months: 3 # consecutive months (14.6)
   meeting_months: [3, 6, 9, 12] # calendar months whose month end has a board meeting (14.6)
+  history_months: 6 # month ends of each director's confidence kept for the Board tab's trend (M4b)
+  trend_points: 2 # confidence points over that history that read as rising or slipping, not steady (M4b)
   seats: # board seats after each series (14.6)
     seed: { common: 1, investor: 1, independent: 0 }
     a: { common: 2, investor: 2, independent: 0 }
@@ -402,7 +403,7 @@ board:
 
 bankruptcy:
   months: 3 # consecutive month ends with negative cash after phase 7 that end the game (14.7)
-  bridge_burn_months: 3 # bridge amount in months of the last month's net burn (14.7)
+  bridge_burn_months: 3 # bridge amount in months of the projected net burn when accepted, plus any deficit (14.7, M4b)
   bridge_cap_of_post: 0.8 # bridge post-money cap as a fraction of the last post-money valuation (14.7)
   bridge_min_confidence: 40 # average board confidence needed for existing investors to offer a bridge (14.7)
   bridge_open_turns: 2 # turns a bridge offer stays open after it is made (14.7)

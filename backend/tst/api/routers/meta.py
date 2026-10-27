@@ -135,7 +135,6 @@ def hiring_meta(data: DataDep) -> HiringMetaOut:
         reference_check_energy=energy_cost("reference_check", data.balance),
         offer_energy=energy_cost("offer", data.balance),
         max_offer_equity_bp=hiring.max_offer_equity_bp,
-        option_pool_bp=hiring.option_pool_bp,
         lowball_ratio=hiring.lowball_ratio,
         candidate_shelf_turns=hiring.candidate_shelf_turns,
         fire_morale_penalty_min=int(

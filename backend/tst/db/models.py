@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 
 
 class Base(DeclarativeBase):
@@ -63,6 +63,9 @@ class CompanyRow(Base):
     arr_milestone_cents: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
     mrr_history: Mapped[list[int]] = mapped_column(JSON, nullable=False, server_default="[]")
     insolvent_months: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    stage_history: Mapped[list[list[int]]] = mapped_column(
+        JSON, nullable=False, server_default="[]"
+    )
 
 
 class AccountRow(Base):
@@ -547,3 +550,13 @@ class BoardSeatRow(Base):
     round_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     months_below: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class BoardSeatHistoryRow(Base):
+    """A director's confidence at the last month ends (M4b). Its own table, not a column on
+    board_seat: migration 0009 builds board_seat rows from the current models."""
+
+    __tablename__ = "board_seat_history"
+
+    seat_id: Mapped[int] = mapped_column(ForeignKey("board_seat.id"), primary_key=True)
+    history: Mapped[list[float]] = mapped_column(JSON, nullable=False)
