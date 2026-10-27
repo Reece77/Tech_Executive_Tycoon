@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
+import { FinanceScreen } from './screens/FinanceScreen';
 import { GameLayout } from './screens/GameLayout';
 import { InboxScreen } from './screens/InboxScreen';
 import { MainMenu } from './screens/MainMenu';
@@ -31,6 +32,8 @@ export default function App() {
           <Route path="products/markets" element={<MarketScreen />} />
           <Route path="products/markets/:category" element={<MarketScreen />} />
           <Route path="products/:productId" element={<ProductScreen />} />
+          <Route path="finance" element={<FinanceScreen />} />
+          <Route path="finance/:tab" element={<FinanceScreen />} />
           <Route path=":section" element={<PlaceholderScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
