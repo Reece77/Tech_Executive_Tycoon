@@ -10,7 +10,13 @@ M4a provides every rule, endpoint and preview. This milestone is front end only:
 
 ## Out of scope
 
-Any new rule. Competitors and History screens.
+Any new rule beyond the backend slice. Competitors and History screens.
+
+## Backend slice (sub-task 0)
+
+1. **Bridge amount at acceptance** (`docs/formulas.md` §14.7): `3 × projected net burn + max(0, −cash)`, computed when the bridge is accepted; the offer and the API show today's amount. Test: a bridge accepted in the third month of insolvency leaves cash positive.
+2. **Option pool in the screens:** the offer dialog and hiring meta use `option_pool_left_bp`; retire `hiring.option_pool_bp` from `balance.yaml`, `formulas.md` §12 and the API (M4a follow-up).
+3. **Stage history:** store the turn each stage is reached (M3b and M4a follow-up) and expose it, so tiles can say "Stage 2 since Jan 2012".
 
 ## Screens
 
@@ -27,6 +33,7 @@ Any new rule. Competitors and History screens.
 
 ## Sub-tasks (commit after each)
 
+0. Backend slice (above).
 1. Regenerate the client; shared `StatementTable`, `CapTable` and `DilutionPreview` components with tests.
 2. Finance screen: Statements and Cap table tabs.
 3. Finance screen: Fundraising and Board tabs.

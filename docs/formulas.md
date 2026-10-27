@@ -698,6 +698,8 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `finance.multiple_base` / `.multiple_per_growth` / `.multiple_min` / `.multiple_max` | 4 / 4 / 3 / 20 | ARR multiple | §14.3 |
 | `finance.floor_cents.<no_product\|live>` / `.floor_per_head_cents` / `.floor_head_cap` | 200000000 / 400000000 / 10000000 / 30 | cents / people | §14.3 |
 | `finance.safe.min_cents` / `.max_cents` / `.optimism` / `.steepness` / `.fee_cents` | 2500000 / 200000000 / 1.2 / 6 / 200000 | cents / multiplier / slope / cents | §14.4 |
+| `finance.safe.max_fraction` | 0.5 | fraction of the company | §14.4 (M4a: a SAFE is refused if outstanding SAFEs would claim this much, which keeps the §14.5 close defined) |
+| `finance.round.typical_cents.<series>` | seed 100000000–300000000, a 300000000–1000000000, b 1000000000–3000000000 | cents | §14.5 guidance |
 | `finance.round.open_turns` / `.valuation_noise_sd` / `.max_amount_of_pre` / `.max_response` | 3 / 0.15 / 0.5 / 0.95 | turns / log sd / fraction / probability | §14.5 |
 | `finance.round.gate_arr_cents.<series>` | a: 100000000, b: 500000000 | cents | §14.5 |
 | `finance.round.fee_min_cents` / `.fee_bp` | 1500000 / 50 | cents / bp | §14.5 |
@@ -941,7 +943,7 @@ C = \frac{f}{1 - f}\,(E + X), \qquad FD_{pre} = E + X + C, \qquad price = \frac{
 
 ### 14.6 The board
 
-- **Seats:** before any priced round there is no board. After the seed: 1 common seat (the founder) and 1 investor seat (the seed lead). After Series A: 2 common, 2 investor. After Series B: 2 common, 3 investor, 1 independent. The second common seat is the founder's nominee; investor directors and the independent are generated people (role `board_member`, not employees) so events can name them.
+- **Seats:** before any priced round there is no board. Directors other than the founder are generated people (stream `board`, id 17, key `(seat_id,)`; M4a); every new director starts at `board.start`. After the seed: 1 common seat (the founder) and 1 investor seat (the seed lead). After Series A: 2 common, 2 investor. After Series B: 2 common, 3 investor, 1 independent. The second common seat is the founder's nominee; investor directors and the independent are generated people (role `board_member`, not employees) so events can name them.
 - **Confidence** `B` (0–100, starts at 70 when the first board forms; each director has their own, shown as the average) moves each month in phase 10:
 
 ```latex
@@ -954,7 +956,7 @@ B \leftarrow B + 0.2\,(T - B), \qquad T = 50 + 20\cdot clamp\left(\frac{g_6}{g_{
 
 ### 14.7 Bankruptcy and bridges (phase 7)
 
-- Each month, after phase 6, if cash < 0 the company is **insolvent**: a critical inbox item names how much is needed. If the company has a board and the average `B` ≥ 40, existing investors offer a **bridge SAFE** once per insolvency: amount = 3 × last month's net burn, post-money cap = 0.8 × the last post-money valuation, accepted with an immediate action (energy 5) within 2 turns; it posts like §14.4 in phase 7 of the turn it is accepted.
+- Each month, after phase 6, if cash < 0 the company is **insolvent**: a critical inbox item names how much is needed. If the company has a board and the average `B` ≥ 40, existing investors offer a **bridge SAFE** once per insolvency: post-money cap = 0.8 × the last priced round's post-money valuation, accepted with an immediate action (energy 5) within 2 turns; it posts like §14.4 (fee included) in phase 7 of the turn it is accepted. **Amount (M4b fix):** computed when it is accepted, not when offered: `3 × this month's projected net burn + max(0, −cash)`, so a bridge taken in the last month of grace still clears the deficit and buys three months. The offer shows the amount it would be today.
 - Cash below zero at the end of phase 7 for **3 consecutive months** is **bankruptcy: game over**. The M1 rule "opening a job post requires cash for its first month" stays; nothing else is blocked while insolvent.
 
 ### 14.8 Stages from funding
