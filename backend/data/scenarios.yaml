@@ -1,7 +1,12 @@
-# Scenario starts (ADR-0011). Descriptive data only; numbers live in balance.yaml under
-# scenario.<id>. The loader fails if a scenario here has no balance block.
+# Scenario starts (ADR-0011). Starting cash lives in balance.yaml under scenario.<id>; the
+# loader fails if a scenario here has no balance block.
 # starting_equity_account: the equity account credited when starting cash is posted on
 # turn 0 (formulas.md section 8a).
+# cap_table (M4, formulas.md 14.2): shares held at game start, summing to
+# finance.initial_fd_shares. founder and pool (the unallocated option pool) are share counts;
+# others are named groups holding common shares; seed is a priced seed round already closed
+# at game start (lead firm key from investors.yaml, the money in cents, and the shares it
+# bought), which seats the lead on the board.
 
 scenarios:
   - id: garage_bootstrap
@@ -11,6 +16,7 @@ scenarios:
       the runway is short.
     available_in: v1
     starting_equity_account: 3000_common_equity
+    cap_table: { founder: 9000000, pool: 1000000 }
 
   - id: ex_big_tech_founders
     name: Ex-Big-Tech Founders
@@ -19,6 +25,10 @@ scenarios:
       colleagues. More runway, higher expectations.
     available_in: v1
     starting_equity_account: 3000_common_equity
+    cap_table:
+      founder: 8500000
+      pool: 1000000
+      others: [{ name: Former colleagues, shares: 500000 }] # the angel money in the starting cash
 
   - id: funded_spinout
     name: Funded Spinout
@@ -26,6 +36,10 @@ scenarios:
       A seed round has already closed. Investors are watching and the clock is running.
     available_in: v1
     starting_equity_account: 3100_preferred_equity
+    cap_table:
+      founder: 7000000
+      pool: 1000000
+      seed: { lead: first_round, amount_cents: 150000000, shares: 2000000 } # $0.75 a share, $7.5M post-money
 
   - id: mineral_first_prospector
     name: Mineral-First Prospector
@@ -34,3 +48,4 @@ scenarios:
       and software.
     available_in: v3
     starting_equity_account: 3000_common_equity
+    cap_table: { founder: 9000000, pool: 1000000 }

@@ -121,5 +121,5 @@ def test_upgrade_from_0007_adds_the_market_at_the_saves_turn(
     with engine.connect() as conn:
         version = conn.execute(text("SELECT schema_version FROM save_meta")).scalar()
     engine.dispose()
-    assert version == SCHEMA_VERSION == 8
+    assert version == SCHEMA_VERSION
     run_turn(path, loaded)  # the upgraded save keeps playing

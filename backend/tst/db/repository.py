@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -34,6 +34,7 @@ from tst.db.models import (
     LedgerEntryRow,
     LedgerLineRow,
     PersonMoraleLogRow,
+    PersonRow,
     ProductMonthRow,
     SaveMetaRow,
     TurnSnapshotRow,
@@ -59,14 +60,14 @@ from tst.sim.errors import (
     SaveNotFoundError,
     UnknownScenarioError,
 )
-from tst.sim.hiring.phases import monthly_costs
+from tst.sim.finance.statements import projected_runway
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
 from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
-from tst.sim.snapshot import CompanySnapshot, runway_months
+from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState, company_cash
 from tst.sim.turn import TurnResult, advance_turn
 
@@ -292,6 +293,28 @@ def expenses_by_memo(session: Session, company_id: int, turn: int) -> list[tuple
     return [(memo.split(":")[0], code, int(amount)) for memo, code, amount in session.execute(stmt)]
 
 
+def ledger_lines(session: Session, company_id: int) -> list[tuple[int, str, Cents]]:
+    """Every ledger line of a company as (turn, account, amount): the statements' input."""
+    stmt = (
+        select(LedgerEntryRow.turn, LedgerLineRow.account_code, LedgerLineRow.amount_cents)
+        .join(LedgerLineRow.entry)
+        .where(LedgerEntryRow.company_id == company_id)
+        .order_by(LedgerEntryRow.id, LedgerLineRow.id)
+    )
+    return [(int(t), str(a), int(c)) for t, a, c in session.execute(stmt)]
+
+
+def person_names(session: Session, person_ids: Iterable[int]) -> dict[int, str]:
+    """First and last names by id, including people who have left (not in the live state)."""
+    ids = sorted(set(person_ids))
+    if not ids:
+        return {}
+    rows = session.execute(
+        select(PersonRow.id, PersonRow.first_name, PersonRow.last_name).where(PersonRow.id.in_(ids))
+    )
+    return {int(i): f"{first} {last}" for i, first, last in rows}
+
+
 def product_history(session: Session, product_id: int, since_turn: int) -> list[ProductMonth]:
     """A product's month-end rows from `since_turn` on, oldest first, by segment."""
     rows = session.scalars(
@@ -331,13 +354,8 @@ def player_overview(session: Session, history: int, data: LoadedData) -> Overvie
         date_label=format_turn(state.turn),
         cash_cents=cash,
         monthly_burn_cents=burn,
-        runway_months=runway_months(
-            cash,
-            sum(
-                amount
-                for _, _, amount in monthly_costs(state, player.id, data.balance, data.game_data)
-            ),
-        ),
+        # Cash over this month's projected net burn; None = profitable (formulas.md 14.1).
+        runway_months=projected_runway(state, player.id, cash, data.balance, data.game_data),
         history=snaps,
     )
 

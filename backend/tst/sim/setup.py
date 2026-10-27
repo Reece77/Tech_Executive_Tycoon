@@ -12,6 +12,7 @@ from tst.sim.errors import (
     UnknownDifficultyError,
     UnknownScenarioError,
 )
+from tst.sim.finance.setup import initial_cap_table
 from tst.sim.hiring.models import NextIds, PersonState
 from tst.sim.ledger import CASH, LedgerEntry
 from tst.sim.money import Cents, pct_of
@@ -153,6 +154,7 @@ def new_game(
             product=market.next_product_id,
         ),
     )
+    state = initial_cap_table(state, PLAYER_COMPANY_ID, person.id, scenario, rng, balance, data)
     entries: tuple[LedgerEntry, ...] = ()
     if cash:
         entries = (

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from sqlalchemy import text
 
+from tests.helpers import fund_save
 from tst.db.repository import create_save, open_session, replay_save, run_action, run_turn
 from tst.db.state_io import load_state
 from tst.loader import LoadedData
@@ -122,6 +123,7 @@ def test_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
     path = create_save(
         "perf", 3, "funded_spinout", company_name="Perf Co", data=loaded, save_dir=tmp_path
     )
+    fund_save(path, 10**11)  # timing, not solvency: keep the long run out of bankruptcy
     run_action(path, loaded, OpenSearch(1, "software_engineer", "job_post"))
     run_action(path, loaded, OpenSearch(1, "designer", "recruiter"))
     while staff_count(path) < 10 and state_of(path).turn < 12:

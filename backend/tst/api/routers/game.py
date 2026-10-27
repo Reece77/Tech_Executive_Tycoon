@@ -45,7 +45,8 @@ from tst.sim.actions import (
     WithdrawOffer,
 )
 from tst.sim.errors import InvalidActionError, UnknownCandidateError, UnknownOfferError
-from tst.sim.hiring.rules import equity_committed, offer_preview
+from tst.sim.finance.options import pool_left_bp
+from tst.sim.hiring.rules import offer_preview
 from tst.sim.state import GameState
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["game"])
@@ -278,7 +279,7 @@ def preview_offer(
         data.game_data,
         actor_id=_founder_id(state),
     )
-    pool_left = data.balance.hiring.option_pool_bp - equity_committed(state, state.player.id)
+    pool_left = pool_left_bp(state, state.player.id)
     pending = state.pending_offer_for(candidate_id)
     return OfferPreviewOut(
         hint=preview.hint,

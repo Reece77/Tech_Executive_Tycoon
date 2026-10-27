@@ -15,6 +15,11 @@ from tst.sim.actions import Action
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
+from tst.sim.errors import GameOverError
+from tst.sim.finance import fundraising, insolvency
+from tst.sim.finance.board import average_confidence, board_month
+from tst.sim.finance.captable import founder_bp
+from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -24,7 +29,7 @@ from tst.sim.ledger import (
     account_balance,
     apply_entries,
 )
-from tst.sim.log import LogItem, inbox_item
+from tst.sim.log import LogItem
 from tst.sim.money import Cents
 from tst.sim.org.delegates import run_delegates
 from tst.sim.org.rules import manager_terms, org_view
@@ -34,7 +39,7 @@ from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
-from tst.sim.state import GameState
+from tst.sim.state import GameState, with_company
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,9 +105,12 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     Player actions themselves were applied at once between turns; Decisions stays empty in M1.
     """
     state, ended = phases.end_notices(ctx.state)
+    state = settle_leavers(state)  # leavers' unvested options return to the pool (14.2)
     state, detached = detach_departed(state, ctx.data)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
-    return replace(ctx, state=state).post(*entries).log(*ended, *detached, *resolved)
+    state, closing, closed = fundraising.close_rounds(state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*entries, *closing)
+    return ctx.log(*ended, *detached, *resolved, *closed)
 
 
 def rival_decisions(ctx: TurnContext) -> TurnContext:
@@ -138,8 +146,20 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
     return replace(ctx, payroll=payroll).post(*entries)
 
 
-def financing(ctx: TurnContext) -> TurnContext:  # M4
-    return ctx
+def financing(ctx: TurnContext) -> TurnContext:
+    """Phase 7 (M4): SAFEs are answered, a new round's term sheets arrive, unaccepted rounds
+    lapse (14.4, 14.5), options vest for the month just ending (14.2), accepted bridges post,
+    and cash below zero is insolvency, possibly a bridge offer, or bankruptcy (14.7)."""
+    state, entries, answered = fundraising.answer_safes(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    state, sheets = fundraising.deliver_term_sheets(state, ctx.rng, ctx.balance, ctx.data)
+    state, lapsed = fundraising.lapse_rounds(state)
+    state, bridging, bridges = insolvency.post_bridges(state, ctx.balance)
+    state = vest(state, ctx.balance)
+    ctx = replace(ctx, state=state).post(*entries, *bridging)
+    state, insolvent = insolvency.insolvency(
+        ctx.state, ctx.opening_balances, ctx.balances, ctx.balance, ctx.data
+    )
+    return replace(ctx, state=state).log(*answered, *sheets, *lapsed, *bridges, *insolvent)
 
 
 def people_updates(ctx: TurnContext) -> TurnContext:
@@ -176,10 +196,15 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:
-    """Stage 0 -> 1 on the first hire (formulas.md section 7); stages 2 and 3 from ARR (11.11)."""
+    """Stage 0 -> 1 on the first hire (formulas.md section 7); stages 2 and 3 from ARR (11.11);
+    the board's monthly confidence, meetings and removal vote (14.6)."""
     state = phases.first_hire_stage(ctx.state)
     state, logs = products.arr_stages(state, ctx.revenue, ctx.balance)
-    return replace(ctx, state=state).log(*logs)
+    state, funded = insolvency.funding_stages(state, ctx.balance)  # M4 (14.8)
+    logs = (*logs, *funded)
+    cash = {c.id: account_balance(ctx.balances, c.id, CASH) for c in state.ledger_companies()}
+    state, board = board_month(state, cash, ctx.balance, ctx.data)  # M4 (14.6)
+    return replace(ctx, state=state).log(*logs, *board)
 
 
 def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
@@ -204,10 +229,10 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
                 avg_morale=sum(known) / len(known) if known else None,
                 mrr_cents=ctx.revenue.get(company.id, 0),
                 arr_cents=products.arr_of(ctx.revenue.get(company.id, 0)),
+                founder_bp=founder_bp(ctx.state, company.id),
+                board_confidence=average_confidence(ctx.state, company.id),
             )
         )
-        if closing < 0:  # M1 has no insolvency: warn every month cash is negative
-            items.append(inbox_item(ctx.turn, company.id, "out_of_cash", cash_cents=closing))
         items.append(
             LogItem(
                 turn=ctx.turn,
@@ -216,8 +241,15 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
                 message=f"{format_turn(ctx.turn)} closed for {company.name}",
             )
         )
+    # MRR at each month end feeds investors' growth and the board (M4, 14.3).
+    state = ctx.state
+    keep = 2 * ctx.balance.finance.growth_window_months + 1
+    for company in state.ledger_companies():
+        history = (*company.mrr_history, ctx.revenue.get(company.id, 0))[-keep:]
+        state = with_company(state, replace(company, mrr_history=history))
     ctx = replace(
         ctx,
+        state=state,
         snapshot=TurnSnapshot(turn=ctx.turn, companies=tuple(snaps)),
         product_months=products.month_history(ctx.state, ctx.flows, ctx.data),
     )
@@ -259,6 +291,8 @@ def advance_turn(
     ledger_balances: LedgerBalances,
 ) -> TurnResult:
     """Resolve turn `state.turn` and return the next state plus everything to persist."""
+    if state.ended:
+        raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
     ctx = TurnContext(
         state=state,
         decisions=decisions,

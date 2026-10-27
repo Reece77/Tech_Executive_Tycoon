@@ -12,7 +12,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.helpers import make_person, with_employee
+from tests.helpers import make_person, move_save_directors, with_employee
 from tests.integration.test_api_hiring import Client
 from tst.api.app import create_app
 from tst.config import Settings, get_settings
@@ -28,6 +28,7 @@ PRODUCT = 13
 
 def staff(path: Path, loaded: LoadedData, roles: tuple[str, ...]) -> None:
     """Employees 2.. in the given roles, skills at 11, in the company root."""
+    move_save_directors(path)
     with open_session(path) as session, session.begin():
         before = load_state(session)
         state = before

@@ -157,14 +157,23 @@ def morale_step(current: float, target: float, noise: float, morale: MoraleBalan
 # --- Section 10 (and 3): resignation and retirement -----------------------------------------
 
 
-def resignation_bp(morale: float, loyalty: float, job_hopper: bool, resign: ResignBalance) -> float:
-    """50 x (1 + max(0, 40 - morale) / 20) x (21 - loyalty) / 10 x (2 if job hopper), capped."""
+def resignation_bp(
+    morale: float,
+    loyalty: float,
+    job_hopper: bool,
+    resign: ResignBalance,
+    *,
+    retention: float = 1.0,
+) -> float:
+    """50 x (1 + max(0, 40 - morale) / 20) x (21 - loyalty) / 10 x (2 if job hopper), times
+    the M4 retention factor for unvested options (14.2), then capped."""
     chance = (
         resign.base_bp
         * (1 + max(0.0, resign.morale_floor - morale) / resign.morale_divisor)
         * (ATTR_MAX + 1 - loyalty)
         / resign.loyalty_divisor
         * (resign.job_hopper_mult if job_hopper else 1)
+        * retention
     )
     return min(chance, resign.cap_bp)
 

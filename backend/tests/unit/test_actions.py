@@ -31,6 +31,8 @@ from tst.sim.errors import (
     UnknownRoleError,
     UnknownSearchError,
 )
+from tst.sim.finance.captable import unallocated
+from tst.sim.finance.options import grant_on_hire
 from tst.sim.hiring.models import PersonState
 from tst.sim.ledger import CASH
 from tst.sim.people.models import PA_KEY
@@ -173,15 +175,18 @@ def test_option_pool_and_per_offer_cap(loaded: LoadedData) -> None:
     state = with_candidates(loaded, fresh_game(loaded), 6, interviewed=True)
     with pytest.raises(OptionPoolError, match="at most 200 bp"):
         act(loaded, state, MakeOffer(1, 2, 9_000_000, 201))
-    # Staff equity counts: an employee already holds 300 bp.
+    # M4 (14.2): an employee's 300 bp is a grant of 300,000 options out of the 1,000,000 pool;
+    # pending offers may not exceed the 700,000 left.
     state = with_employee(loaded, state, make_person(loaded, 50), 9_000_000, equity_bp=300)
+    state = grant_on_hire(state, state.employments[-1])
+    assert unallocated(state, 1) == 700_000
     for i, pid in enumerate((2, 3, 4)):
         state = act(loaded, state, MakeOffer(1, pid, 9_000_000, 200), seq=i + 1).new_state
-    # 300 + 600 committed: 100 bp left.
-    with pytest.raises(OptionPoolError, match="100 bp left of 1000 bp"):
+    # 600,000 options promised: 100,000 left.
+    with pytest.raises(OptionPoolError, match="100,000 unallocated options left"):
         act(loaded, state, MakeOffer(1, 5, 9_000_000, 101))
     state = act(loaded, state, MakeOffer(1, 5, 9_000_000, 100)).new_state
-    with pytest.raises(OptionPoolError, match="0 bp left"):
+    with pytest.raises(OptionPoolError, match=" 0 unallocated options left"):
         act(loaded, state, MakeOffer(1, 6, 9_000_000, 1))
 
 

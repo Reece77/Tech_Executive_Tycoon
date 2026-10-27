@@ -25,6 +25,7 @@ RECRUITING: Final = "6200_recruiting"
 REVENUE_SUBSCRIPTIONS: Final = "4000_revenue_subscriptions"  # M3
 COMPUTE: Final = "6300_compute"  # hosting (M3)
 MARKETING: Final = "6400_marketing"  # M3
+SAFES: Final = "2600_safes"  # SAFEs until they convert (M4)
 ENGINE_ACCOUNTS: Final = (
     CASH,
     COMMON_EQUITY,
@@ -37,6 +38,7 @@ ENGINE_ACCOUNTS: Final = (
     REVENUE_SUBSCRIPTIONS,
     COMPUTE,
     MARKETING,
+    SAFES,
 )
 
 

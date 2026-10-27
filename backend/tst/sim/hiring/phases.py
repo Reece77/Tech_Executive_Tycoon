@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from dataclasses import replace
 
 from tst.sim.data_models import LEVELS, Balance, GameData
+from tst.sim.finance.options import grant_on_hire, retention
 from tst.sim.hiring.formulas import (
     ROLL_RANGE,
     acceptance_probability,
@@ -184,22 +185,20 @@ def resolve_offers(
         emp_id, ids = state.next_ids.take("employment")
         state = replace(state, next_ids=ids)
         joins = state.unit(offer.unit_id) if offer.unit_id is not None else None
-        state = with_employment(
-            state,
-            Employment(
-                id=emp_id,
-                person_id=person.id,
-                company_id=company.id,
-                role=person.role or "",
-                level=person.level or "",
-                salary_cents=offer.salary_cents,
-                equity_bp=offer.equity_bp,
-                start_turn=state.turn,
-                end_turn=None,
-                status="active",
-                unit_id=joins.id if joins is not None and joins.status == "active" else None,
-            ),
+        hire = Employment(
+            id=emp_id,
+            person_id=person.id,
+            company_id=company.id,
+            role=person.role or "",
+            level=person.level or "",
+            salary_cents=offer.salary_cents,
+            equity_bp=offer.equity_bp,
+            start_turn=state.turn,
+            end_turn=None,
+            status="active",
+            unit_id=joins.id if joins is not None and joins.status == "active" else None,
         )
+        state = grant_on_hire(with_employment(state, hire), hire)  # options from the pool (14.2)
         state, filled = _count_plan_hire(state, offer.plan_id, data)
         state = with_person_state(
             state, PersonState(person_id=person.id, morale=balance.morale.new_hire)
@@ -359,6 +358,7 @@ def morale_and_departures(
             person.personality["loyalty"],
             JOB_HOPPER in person.tags,
             balance.resign,
+            retention=retention(state, employment, balance),  # unvested options (M4, 14.2)
         )
         reason: str | None = None
         if roll_succeeds(int(resign_gen.integers(0, ROLL_RANGE)), chance):

@@ -6,7 +6,7 @@ import secrets
 
 from fastapi import APIRouter, status
 
-from tst.api import org_views, product_views, views
+from tst.api import org_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.schemas.common import ErrorOut
 from tst.api.schemas.saves import (
@@ -19,10 +19,11 @@ from tst.api.schemas.saves import (
 )
 from tst.db import inbox, repository
 from tst.sim.calendar import format_turn
+from tst.sim.finance.options import pool_left_bp
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
-from tst.sim.hiring.rules import equity_committed
 from tst.sim.org.rules import is_remote
+from tst.sim.products.phases import projected_revenue
 from tst.sim.setup import DEFAULT_FOUNDER
 from tst.sim.state import GameState
 
@@ -94,6 +95,8 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
                 avg_morale=snap.avg_morale,
                 mrr_cents=snap.mrr_cents,
                 arr_cents=snap.arr_cents,
+                founder_bp=snap.founder_bp,
+                board_confidence=snap.board_confidence,
             )
             for turn, snap in ov.history
         ],
@@ -129,14 +132,14 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         month_paid=month_paid,
         month_total_cents=sum(c.amount_cents for c in projected)
         + sum(c.amount_cents for c in month_paid),
-        option_pool_left_bp=max(
-            data.balance.hiring.option_pool_bp - equity_committed(state, player.id), 0
-        ),
+        option_pool_left_bp=pool_left_bp(state, player.id),
         network_bonus_candidates=network_bonus(state, player.id, data),
         org=org_views.org_tile(state, player.id, data),
         mrr_cents=latest.mrr_cents if latest else 0,
         arr_cents=latest.arr_cents if latest else 0,
-        month_revenue_cents=product_views.projected_revenue(state, player.id),
+        month_revenue_cents=projected_revenue(state, player.id),
+        game_state=state.save_meta.game_state,
+        ended_turn=state.save_meta.ended_turn,
     )
 
 

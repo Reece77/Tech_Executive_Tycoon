@@ -1,0 +1,21 @@
+# Funding climate by calendar year (docs/formulas.md 14.3): a multiplier on the ARR multiple
+# investors pay, and on each firm's chance of answering a round (14.5). Years after the
+# table use `default` until the v2 macro layer.
+default: 1.0
+years:
+  2010: 0.90
+  2011: 1.00
+  2012: 1.00
+  2013: 1.10
+  2014: 1.20
+  2015: 1.25
+  2016: 1.00
+  2017: 1.10
+  2018: 1.20
+  2019: 1.20
+  2020: 1.30
+  2021: 1.60
+  2022: 0.90
+  2023: 0.75
+  2024: 0.90
+  2025: 1.00

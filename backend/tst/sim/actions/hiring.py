@@ -28,6 +28,7 @@ from tst.sim.errors import (
     UnknownRoleError,
     UnknownSearchError,
 )
+from tst.sim.finance.options import settle_leavers
 from tst.sim.hiring.formulas import ROLL_RANGE, energy_cost, roll_succeeds, severance_cents
 from tst.sim.hiring.models import Candidate, Channel, Offer, Search
 from tst.sim.hiring.rules import offer_problems
@@ -351,6 +352,7 @@ def fire(state: GameState, action: Fire, balance: Balance, data: GameData) -> Ou
     state = with_employment(
         state, replace(employment, status="ended", end_turn=state.turn, end_reason="fired")
     )
+    state = settle_leavers(state)  # unvested options return to the pool (14.2)
     severance = severance_cents(employment.salary_cents, balance.payroll)
     entries: tuple[LedgerEntry, ...] = ()
     if severance:

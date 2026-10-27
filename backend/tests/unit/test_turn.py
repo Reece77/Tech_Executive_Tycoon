@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from tests.conftest import DATA_DIR
@@ -73,7 +75,11 @@ def test_turn_increments_and_inputs_not_mutated() -> None:
     assert result.new_state.turn == 1
     assert state.turn == 0
     assert balances == {(1, CASH): 5_000_000}
-    assert result.new_state.companies == state.companies
+    # The only company change: this month's MRR joins its history (M4, formulas.md 14.3).
+    assert state.companies[0].mrr_history == ()  # the input is not mutated
+    assert result.new_state.companies == tuple(
+        replace(c, mrr_history=(0,)) for c in state.companies
+    )
     assert result.event_requests == ()
 
 
@@ -95,11 +101,14 @@ def test_month_end_log() -> None:
     ]
 
 
-def test_negative_cash_warns_every_month() -> None:
-    """M1 has no insolvency: the inbox warns each month cash ends below zero."""
+def test_negative_cash_is_insolvency() -> None:
+    """M4 (formulas.md 14.7) replaces M1's out-of-cash warning with an insolvency note."""
     result = advance_turn(make_state(1), Decisions(), RngFactory(1), make_balance(), _BASE_DATA, {})
-    warnings = [i for i in result.log_items if i.template == "out_of_cash"]
-    assert [dict(i.params) for i in warnings] == [{"cash_cents": -OVERHEAD}]
+    warnings = [i for i in result.log_items if i.template == "insolvent"]
+    assert [dict(i.params) for i in warnings] == [
+        {"cash_cents": -OVERHEAD, "needed_cents": OVERHEAD, "month": 1}
+    ]
+    assert result.new_state.player.insolvent_months == 1
 
 
 @pytest.mark.parametrize(

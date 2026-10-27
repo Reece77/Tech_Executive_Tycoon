@@ -28,6 +28,8 @@ from tst.db.mappers import (
     company_to_row,
     employment_from_row,
     employment_to_row,
+    finance_from_row,
+    finance_to_row,
     game_state_from_rows,
     market_from_row,
     market_to_row,
@@ -53,12 +55,16 @@ from tst.db.mappers import (
     unit_to_row,
 )
 from tst.db.models import (
+    BoardSeatRow,
     CandidateRow,
+    CapTableEntryRow,
     CompanyRow,
     EmploymentRow,
+    FundingRoundRow,
     HiringPlanRow,
     MarketSegmentRow,
     OfferRow,
+    OptionGrantRow,
     OrgUnitRow,
     PersonHiddenRow,
     PersonInterestRow,
@@ -72,10 +78,20 @@ from tst.db.models import (
     PersonTagRow,
     ProductRow,
     ProductSegmentRow,
+    SafeRow,
     SaveMetaRow,
     SearchRow,
+    TermSheetRow,
 )
 from tst.sim.errors import SaveNotFoundError
+from tst.sim.finance.models import (
+    BoardSeat,
+    CapEntry,
+    FundingRound,
+    OptionGrant,
+    Safe,
+    TermSheet,
+)
 from tst.sim.people.models import RevealState
 from tst.sim.state import GameState
 
@@ -129,11 +145,16 @@ def load_state(session: Session) -> GameState:
             select(HiringPlanRow).where(HiringPlanRow.status != "closed").order_by(HiringPlanRow.id)
         )
     ]
+    seats = tuple(
+        finance_from_row(BoardSeat, r)
+        for r in session.scalars(select(BoardSeatRow).order_by(BoardSeatRow.id))
+    )
     live_ids = sorted(
         {e.person_id for e in employments}
         | {c.person_id for c in candidates}
         | {o.actor_id for o in offers}
         | {p.owner_id for p in plans}
+        | {s.person_id for s in seats}
     )
 
     def in_live(column: Any) -> Any:
@@ -238,8 +259,19 @@ def load_state(session: Session) -> GameState:
                 .order_by(PersonStateRow.person_id)
             )
         ),
+        cap_entries=_all(session, CapEntry, CapTableEntryRow),
+        grants=_all(session, OptionGrant, OptionGrantRow),
+        safes=_all(session, Safe, SafeRow),
+        rounds=_all(session, FundingRound, FundingRoundRow),
+        term_sheets=_all(session, TermSheet, TermSheetRow),
+        seats=seats,
         next_ids=next_ids_from_meta(meta),
     )
+
+
+def _all[T](session: Session, cls: type[T], row: Any) -> tuple[T, ...]:
+    """Every row of a small finance table (M4), by id."""
+    return tuple(finance_from_row(cls, r) for r in session.scalars(select(row).order_by(row.id)))
 
 
 # --- Writing --------------------------------------------------------------------------------
@@ -342,6 +374,26 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         if known != reveal:
             _sync_reveal(session, known, reveal)
 
+    # Finance (M4): rounds before their term sheets.
+    for items in (
+        _changed(old.cap_entries, new.cap_entries, lambda e: e.id),
+        _changed(old.grants, new.grants, lambda g: g.id),
+        _changed(old.safes, new.safes, lambda s: s.id),
+        _changed(old.rounds, new.rounds, lambda r: r.id),
+        _changed(old.term_sheets, new.term_sheets, lambda t: t.id),
+        _changed(old.seats, new.seats, lambda s: s.id),
+    ):
+        for item in items:
+            session.merge(finance_to_row(item))
+        session.flush()
+
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)
+    if (old.save_meta.game_state, old.save_meta.ended_turn) != (
+        new.save_meta.game_state,
+        new.save_meta.ended_turn,
+    ):
+        meta = read_meta(session)
+        meta.game_state = new.save_meta.game_state
+        meta.ended_turn = new.save_meta.ended_turn
     session.flush()

@@ -5,7 +5,9 @@ ex_big_tech_founders game following a scripted plan (M1b hiring; M2a interviews 
 offer, two teams with leads at turn 6, a department once there are 10 staff, and a
 recruiter-led hiring plan; M3a a B2B SaaS product built by the company root from turn 2
 and the Product team from turn 7, launched when allowed, an account executive and a
-marketer sought from turn 8, and a price cut at turn 18), and their per-turn snapshots are
+marketer sought from turn 8, and a price cut at turn 18; M4a a $1M SAFE from turn 3 at a
+cap of 1.2 x V_base, a $2M seed once the product is live and a Series A once ARR passes $1M),
+and their per-turn snapshots are
 compared with
 tests/golden/snapshots/seed_NN.json. The founder's current
 ability after each turn goes to seed_NN.founder_ca.json instead: CA is hidden (ADR-0007), so
@@ -26,6 +28,8 @@ from tst.db.models import LedgerEntryRow, TurnSnapshotRow
 from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
 from tst.loader import LoadedData
 from tst.sim.actions import (
+    AcceptBridge,
+    AcceptTermSheet,
     AssignUnit,
     CloseSearch,
     CreatePlan,
@@ -36,12 +40,17 @@ from tst.sim.actions import (
     MakeOffer,
     MovePerson,
     OpenSearch,
+    RaiseSafe,
     SetLeader,
     SetPrice,
+    StartRound,
 )
 from tst.sim.actions.org import departments_unlocked
 from tst.sim.actions.products import launch_problems
 from tst.sim.calendar import format_turn
+from tst.sim.finance import statements as fs
+from tst.sim.finance.captable import last_round, open_round
+from tst.sim.finance.fundraising import base_value, next_series, series_problem
 from tst.sim.people.models import current_ability
 from tst.sim.state import GameState
 
@@ -64,6 +73,10 @@ GO_TO_MARKET_ROLES = ("account_executive", "marketer")
 GO_TO_MARKET_RATIO = 1.2  # offers at 1.2x the ask, whatever the headcount
 PRICE_CUT_TURN = 18
 PRICE_CUT_CENTS = 3500  # SMB to $35
+SAFE_TURN = 3  # M4a: a SAFE from this turn until one fills
+SAFE_AMOUNT = 100_000_000  # $1M
+SAFE_OPTIMISM = 1.2  # cap = 1.2 x V_base: an even chance (formulas.md 14.4)
+ROUND_TARGETS = {"seed": 200_000_000, "a": 600_000_000}  # $2M seed, $6M Series A
 
 
 def _state(path: Path) -> GameState:
@@ -174,6 +187,36 @@ def product_plan(path: Path, data: LoadedData) -> None:
             break
 
 
+def funding_plan(path: Path, data: LoadedData) -> None:
+    """M4a: a $1M SAFE from turn 3 at a cap of 1.2 x V_base, raised again until one fills;
+    a $2M seed once the product is live and a $6M Series A once ARR passes $1M, accepting
+    the highest pre-money term sheet (and starting again if a round fails or lapses); any
+    bridge offer accepted. Runs first each turn, before the energy goes on hiring."""
+    actor = 1
+    state = _state(path)
+    safes = state.company_safes(1)
+    raised = any(
+        s.kind == "safe" and s.status in ("pending", "outstanding", "converted") for s in safes
+    )
+    if state.turn >= SAFE_TURN and not raised and not last_round(state, 1):
+        cap = round(SAFE_OPTIMISM * base_value(state, 1, data.balance, data.game_data))
+        run_action(path, data, RaiseSafe(actor, SAFE_AMOUNT, cap))
+    for safe in safes:
+        if safe.kind == "bridge" and safe.status == "offered":
+            run_action(path, data, AcceptBridge(actor, safe.id))
+    current = open_round(state, 1)
+    if current is not None:
+        sheets = [t for t in state.sheets_of(current.id) if t.status == "offered"]
+        if current.status == "open" and sheets:
+            best = max(sheets, key=lambda t: (t.pre_money_cents, -t.id))
+            run_action(path, data, AcceptTermSheet(actor, best.id))
+        return
+    series = next_series(state, 1)
+    live = any(p.status == "live" for p in state.company_products(1))
+    if series in ROUND_TARGETS and live and series_problem(state, 1, series, data.balance) is None:
+        run_action(path, data, StartRound(actor, series, ROUND_TARGETS[series]))
+
+
 def hiring_plan(path: Path, data: LoadedData) -> None:
     """Scripted player actions between turns, exercising payroll, morale and departures.
 
@@ -227,6 +270,7 @@ def play(
     )
     founder_ca = []
     for _ in range(TURNS):
+        funding_plan(path, data)
         product_plan(path, data)
         hiring_plan(path, data)
         result = run_turn(path, data)
@@ -276,6 +320,27 @@ def ledger_rows(path: Path) -> list[tuple[Any, ...]]:
         ]
 
 
+def assert_statements_reconcile(path: Path, loaded: LoadedData) -> None:
+    """formulas.md 14.1 on every turn: the balance sheet balances, cash flow's parts add up
+    to the cash account's movement, and month-end cash matches turn_snapshot."""
+    types = {a.code: a.type for a in loaded.game_data.accounts}
+    lines = [
+        (turn, account, amount)
+        for _, turn, company, _, _, account, amount in ledger_rows(path)
+        if company == 1
+    ]
+    cash_at = {row["turn"]: row["cash_cents"] for row in snapshots(path)}
+    for turn in range(TURNS):
+        sheet = fs.balance_sheet(lines, types, turn)
+        assert sheet.total_assets == sheet.total_liabilities_and_equity, turn
+        assert sheet.assets.get("1000_cash", 0) == cash_at[turn], turn
+        flow = fs.cash_flow(lines, types, turn, turn)
+        assert flow.reconciles, turn
+    for period in fs.PERIODS:
+        for first, last in fs.period_bounds(period, TURNS - 1):
+            assert fs.cash_flow(lines, types, first, last).reconciles
+
+
 @pytest.mark.parametrize("seed", SEEDS)
 def test_golden_seed(
     seed: int, tmp_path: Path, loaded: LoadedData, request: pytest.FixtureRequest
@@ -288,6 +353,7 @@ def test_golden_seed(
     update = bool(request.config.getoption("--update-golden"))
     _check_golden(f"seed_{seed:02d}.json", actual, update)
     _check_golden(f"seed_{seed:02d}.founder_ca.json", founder_ca, update)
+    assert_statements_reconcile(path, loaded)
 
 
 def test_same_seed_twice_is_identical(tmp_path: Path, loaded: LoadedData) -> None:

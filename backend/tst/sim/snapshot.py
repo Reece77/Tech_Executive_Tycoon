@@ -17,6 +17,8 @@ class CompanySnapshot:
     avg_morale: float | None = None  # employees excluding the founder; None if there are none
     mrr_cents: Cents = 0  # this month's revenue (formulas.md 11.8, M3)
     arr_cents: Cents = 0  # 12 x MRR
+    founder_bp: int = 0  # the founder's shares in bp of fully diluted shares (M4, 14.2)
+    board_confidence: float | None = None  # average director confidence; None without a board
 
     def kpis(self) -> dict[str, int | float | None]:
         return {
@@ -27,6 +29,8 @@ class CompanySnapshot:
             "avg_morale": self.avg_morale,
             "mrr_cents": self.mrr_cents,
             "arr_cents": self.arr_cents,
+            "founder_bp": self.founder_bp,
+            "board_confidence": self.board_confidence,
         }
 
 

@@ -369,16 +369,6 @@ def _hosting(state: GameState, product: Product, data: LoadedData) -> int:
     )
 
 
-def projected_revenue(state: GameState, company_id: int) -> int:
-    """This month's revenue at the current customers and prices (the Overview's line)."""
-    return sum(
-        _mrr(seg)
-        for product in state.company_products(company_id)
-        if product.status in SELLING
-        for seg in state.segments_of(product.id)
-    )
-
-
 def portfolio_out(
     state: GameState,
     snapshots: Sequence[tuple[int, CompanySnapshot]],

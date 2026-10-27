@@ -73,6 +73,8 @@ class SnapshotPointOut(BaseModel):
     avg_morale: float | None
     mrr_cents: int
     arr_cents: int
+    founder_bp: int = Field(description="The founder's shares in bp of FD (M4a)")
+    board_confidence: float | None = Field(description="Average director confidence (M4a)")
 
 
 class CostLineOut(BaseModel):
@@ -141,3 +143,5 @@ class OverviewOut(BaseModel):
     month_revenue_cents: int = Field(
         description="This month's revenue at the current customers and prices (M3b)"
     )
+    game_state: str = Field(description="active | bankrupt | founder_removed (M4a)")
+    ended_turn: int | None = Field(description="Turn the game ended; null while active")

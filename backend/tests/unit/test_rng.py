@@ -68,6 +68,8 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "actions": 13,
         "delegate": 14,
         "product_dev": 15,
+        "finance": 16,
+        "board": 17,
         "misc": 99,
     }
 

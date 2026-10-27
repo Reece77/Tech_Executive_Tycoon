@@ -922,6 +922,210 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/finance/statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Statements
+         * @description P&L, balance sheet and cash flow for every closed month, quarter or year (14.1).
+         */
+        get: operations["getStatements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Summary
+         * @description Cash, the projected net burn and runway ("profitable" when null), insolvency and the
+         *     game state (ADR-0018).
+         */
+        get: operations["getFinanceSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/captable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Captable
+         * @description Holders, classes, shares and percentages; every grant with vested and unvested.
+         */
+        get: operations["getCapTable"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Board */
+        get: operations["getBoard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/safes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Safes */
+        get: operations["listSafes"];
+        put?: never;
+        /**
+         * Raise Safe
+         * @description Investors answer at the next Continue, all or nothing (14.4).
+         */
+        post: operations["raiseSafe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/safes/hint": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Safe
+         * @description The hint band (likely, uncertain, unlikely) and the rule checks. Nothing is saved.
+         */
+        post: operations["previewSafe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/bridges/{safe_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Bridge
+         * @description The bridge's money arrives at this month's Continue (14.7).
+         */
+        post: operations["acceptBridge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/rounds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Rounds
+         * @description Every round with its term sheets, and whether the next series is allowed (14.5).
+         */
+        get: operations["listRounds"];
+        put?: never;
+        /**
+         * Start Round
+         * @description Term sheets arrive at the next Continue.
+         */
+        post: operations["startRound"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/term-sheets/{sheet_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Term Sheet
+         * @description Every holder before and after accepting: the pool top-up, SAFE conversion and the
+         *     new preferred, computed with the closing function. Nothing is saved.
+         */
+        get: operations["previewTermSheet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/term-sheets/{sheet_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Term Sheet
+         * @description The round closes at the next Continue; the other term sheets lapse.
+         */
+        post: operations["acceptTermSheet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/scenarios": {
         parameters: {
             query?: never;
@@ -1114,6 +1318,46 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** BalanceSheetOut */
+        BalanceSheetOut: {
+            /** Assets */
+            assets: components["schemas"]["StatementLineOut"][];
+            /** Total Assets Cents */
+            total_assets_cents: number;
+            /** Liabilities */
+            liabilities: components["schemas"]["StatementLineOut"][];
+            /** Paid In Equity */
+            paid_in_equity: components["schemas"]["StatementLineOut"][];
+            /**
+             * Accumulated Result Cents
+             * @description Every past net result; no closing entries
+             */
+            accumulated_result_cents: number;
+            /** Total Liabilities And Equity Cents */
+            total_liabilities_and_equity_cents: number;
+        };
+        /** BoardOut */
+        BoardOut: {
+            /** Directors */
+            directors: components["schemas"]["DirectorOut"][];
+            /** Average Confidence */
+            average_confidence: number | null;
+            /** Label */
+            label: string | null;
+            /** Warning Below */
+            warning_below: number;
+            /** Removal Below */
+            removal_below: number;
+            /** Removal Months */
+            removal_months: number;
+            /**
+             * Votes To Remove
+             * @description Directors below the threshold long enough
+             */
+            votes_to_remove: number;
+            /** Seats */
+            seats: number;
+        };
         /** CandidacyOut */
         CandidacyOut: {
             /** Search Id */
@@ -1132,6 +1376,54 @@ export interface components {
              * @description Why an offer is not allowed yet: null or "interview_required" (ADR-0016)
              */
             offer_blocked_reason: string | null;
+        };
+        /** CapTableOut */
+        CapTableOut: {
+            /** Fd Shares */
+            fd_shares: number;
+            /**
+             * Share Price Dollars
+             * @description Latest priced round's price; '0' before any
+             */
+            share_price_dollars: string;
+            /**
+             * Holders
+             * @description Largest first; options as one line
+             */
+            holders: components["schemas"]["HolderOut"][];
+            /**
+             * Granted Options
+             * @description Options held by staff and former staff
+             */
+            granted_options: number;
+            /** Vested Options */
+            vested_options: number;
+            /** Unallocated Options */
+            unallocated_options: number;
+            /**
+             * Pool Left Bp
+             * @description Unallocated less pending offers, in bp of FD
+             */
+            pool_left_bp: number;
+            /** Grants */
+            grants: components["schemas"]["GrantOut"][];
+        };
+        /** CashFlowOut */
+        CashFlowOut: {
+            /**
+             * Operating Cents
+             * @description The net result: no accruals in v1
+             */
+            operating_cents: number;
+            /** Investing Cents */
+            investing_cents: number;
+            /**
+             * Financing Cents
+             * @description SAFEs and priced rounds
+             */
+            financing_cents: number;
+            /** Change In Cash Cents */
+            change_in_cash_cents: number;
         };
         /** CategoryOut */
         CategoryOut: {
@@ -1269,6 +1561,53 @@ export interface components {
             /** Parent Id */
             parent_id?: number | null;
         };
+        /** DilutionLineOut */
+        DilutionLineOut: {
+            /** Holder */
+            holder: string;
+            /** Share Class */
+            share_class: string;
+            /** Shares Before */
+            shares_before: number;
+            /** Shares After */
+            shares_after: number;
+            /** Fraction Before */
+            fraction_before: number;
+            /** Fraction After */
+            fraction_after: number;
+        };
+        /** DirectorOut */
+        DirectorOut: {
+            /** Seat Id */
+            seat_id: number;
+            /**
+             * Kind
+             * @description common | investor | independent
+             */
+            kind: string;
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Firm */
+            firm: string | null;
+            /** Firm Name */
+            firm_name: string | null;
+            /**
+             * Confidence
+             * @description Null for common seats, which back the founder
+             */
+            confidence: number | null;
+            /**
+             * Label
+             * @description confident | watchful | losing patience
+             */
+            label: string | null;
+            /** Months Below */
+            months_below: number;
+            /** Seated Label */
+            seated_label: string;
+        };
         /** EmploymentOut */
         EmploymentOut: {
             /** Employment Id */
@@ -1324,6 +1663,42 @@ export interface components {
             code: string;
             /** Message */
             message: string;
+        };
+        /** FinanceActionOut */
+        FinanceActionOut: {
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** FinanceSummaryOut */
+        FinanceSummaryOut: {
+            /** Cash Cents */
+            cash_cents: number;
+            /**
+             * Projected Net Burn Cents
+             * @description This month's costs minus revenue
+             */
+            projected_net_burn_cents: number;
+            /**
+             * Runway Months
+             * @description Null means profitable
+             */
+            runway_months: number | null;
+            /** Profitable */
+            profitable: boolean;
+            /** Insolvent Months */
+            insolvent_months: number;
+            /**
+             * Game State
+             * @description active | bankrupt | founder_removed
+             */
+            game_state: string;
+            /** Ended Turn */
+            ended_turn: number | null;
+            /** Stage */
+            stage: number;
+            /** Stage Label */
+            stage_label: string;
         };
         /** FireOut */
         FireOut: {
@@ -1408,6 +1783,32 @@ export interface components {
             group: string;
             /** Value */
             value: number;
+        };
+        /** GrantOut */
+        GrantOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** On Staff */
+            on_staff: boolean;
+            /** Granted */
+            granted: number;
+            /** Vested */
+            vested: number;
+            /** Unvested */
+            unvested: number;
+            /** Forfeited */
+            forfeited: number;
+            /** Start Turn */
+            start_turn: number;
+            /** Start Label */
+            start_label: string;
+            /**
+             * Fraction
+             * @description Options held (granted - forfeited) over FD
+             */
+            fraction: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1542,6 +1943,32 @@ export interface components {
             unit_id?: number | null;
             /** Focus */
             focus?: string | null;
+        };
+        /** HolderOut */
+        HolderOut: {
+            /**
+             * Holder
+             * @description Who holds the shares, by name
+             */
+            holder: string;
+            /**
+             * Holder Kind
+             * @description person | firm | group | pool | options
+             */
+            holder_kind: string;
+            /** Share Class */
+            share_class: string;
+            /** Shares */
+            shares: number;
+            /**
+             * Fraction
+             * @description Share of fully diluted shares, 0-1
+             */
+            fraction: number;
+            /** Person Id */
+            person_id?: number | null;
+            /** Firm */
+            firm?: string | null;
         };
         /** InboxItemOut */
         InboxItemOut: {
@@ -2136,6 +2563,16 @@ export interface components {
              * @description This month's revenue at the current customers and prices (M3b)
              */
             month_revenue_cents: number;
+            /**
+             * Game State
+             * @description active | bankrupt | founder_removed (M4a)
+             */
+            game_state: string;
+            /**
+             * Ended Turn
+             * @description Turn the game ended; null while active
+             */
+            ended_turn: number | null;
         };
         /**
          * PayPreviewOut
@@ -2691,6 +3128,30 @@ export interface components {
             /** Launch Min Feature */
             launch_min_feature: number;
         };
+        /** ProfitAndLossOut */
+        ProfitAndLossOut: {
+            /** Revenue */
+            revenue: components["schemas"]["StatementLineOut"][];
+            /** Total Revenue Cents */
+            total_revenue_cents: number;
+            /**
+             * Cost Of Revenue
+             * @description Hosting (6300) sits here
+             */
+            cost_of_revenue: components["schemas"]["StatementLineOut"][];
+            /** Gross Margin Cents */
+            gross_margin_cents: number;
+            /** Operating Expenses */
+            operating_expenses: components["schemas"]["StatementLineOut"][];
+            /** Operating Result Cents */
+            operating_result_cents: number;
+            /** Interest Cents */
+            interest_cents: number;
+            /** Tax Cents */
+            tax_cents: number;
+            /** Net Result Cents */
+            net_result_cents: number;
+        };
         /** RaiseIn */
         RaiseIn: {
             /** Salary Cents */
@@ -2718,6 +3179,195 @@ export interface components {
             primary_skills: string[];
             /** Secondary Skills */
             secondary_skills: string[];
+        };
+        /** RoundIn */
+        RoundIn: {
+            /** Series */
+            series: string;
+            /** Target Cents */
+            target_cents: number;
+        };
+        /** RoundOut */
+        RoundOut: {
+            /** Round Id */
+            round_id: number;
+            /** Series */
+            series: string;
+            /** Series Label */
+            series_label: string;
+            /** Status */
+            status: string;
+            /** Target Cents */
+            target_cents: number;
+            /** Opened Turn */
+            opened_turn: number;
+            /** Opened Label */
+            opened_label: string;
+            /** Expires Turn */
+            expires_turn: number;
+            /** Expires Label */
+            expires_label: string;
+            /** Lead Firm */
+            lead_firm: string | null;
+            /** Lead Name */
+            lead_name: string | null;
+            /** Pre Money Cents */
+            pre_money_cents: number | null;
+            /** Amount Cents */
+            amount_cents: number | null;
+            /** Post Money Cents */
+            post_money_cents: number | null;
+            /** Share Price Dollars */
+            share_price_dollars: string | null;
+            /** Pool Shares */
+            pool_shares: number | null;
+            /** Safe Shares */
+            safe_shares: number | null;
+            /** New Shares */
+            new_shares: number | null;
+            /** Down Round */
+            down_round: boolean;
+            /** Closed Turn */
+            closed_turn: number | null;
+            /** Closed Label */
+            closed_label: string | null;
+            /** Term Sheets */
+            term_sheets: components["schemas"]["TermSheetOut"][];
+        };
+        /**
+         * RoundPreviewOut
+         * @description Accepting this term sheet: every holder before and after the close (14.5).
+         */
+        RoundPreviewOut: {
+            /** Sheet Id */
+            sheet_id: number;
+            /** Firm Name */
+            firm_name: string;
+            /** Pre Money Cents */
+            pre_money_cents: number;
+            /** Amount Cents */
+            amount_cents: number;
+            /** Post Money Cents */
+            post_money_cents: number;
+            /** Share Price Dollars */
+            share_price_dollars: string;
+            /**
+             * Pool Top Up
+             * @description X: new pool shares
+             */
+            pool_top_up: number;
+            /**
+             * Safe Conversion
+             * @description C: shares the SAFE holders receive
+             */
+            safe_conversion: number;
+            /**
+             * New Shares
+             * @description N: the investor's new preferred shares
+             */
+            new_shares: number;
+            /** Fd Before */
+            fd_before: number;
+            /** Fd After */
+            fd_after: number;
+            /** Fees Cents */
+            fees_cents: number;
+            /** Down Round */
+            down_round: boolean;
+            /** Lines */
+            lines: components["schemas"]["DilutionLineOut"][];
+            /**
+             * Board After
+             * @description Seats by kind after the close
+             */
+            board_after: {
+                [key: string]: number;
+            };
+        };
+        /** RoundsOut */
+        RoundsOut: {
+            /**
+             * Rounds
+             * @description Newest first
+             */
+            rounds: components["schemas"]["RoundOut"][];
+            next: components["schemas"]["SeriesGuideOut"];
+        };
+        /**
+         * SafeHintOut
+         * @description The SAFE dialog's band (14.9); never the probability.
+         */
+        SafeHintOut: {
+            /**
+             * Hint
+             * @description likely | uncertain | unlikely
+             */
+            hint: string;
+            /**
+             * Fraction
+             * @description amount / cap of the company the holders would get
+             */
+            fraction: number;
+            /** Problems */
+            problems: string[];
+            /** Energy Cost */
+            energy_cost: number;
+        };
+        /** SafeIn */
+        SafeIn: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** Cap Cents */
+            cap_cents: number;
+        };
+        /** SafeOut */
+        SafeOut: {
+            /** Safe Id */
+            safe_id: number;
+            /**
+             * Kind
+             * @description safe | bridge
+             */
+            kind: string;
+            /** Amount Cents */
+            amount_cents: number;
+            /**
+             * Cap Cents
+             * @description Post-money valuation cap
+             */
+            cap_cents: number;
+            /** Status */
+            status: string;
+            /** Raised Turn */
+            raised_turn: number;
+            /** Raised Label */
+            raised_label: string;
+            /** Expires Turn */
+            expires_turn: number | null;
+            /** Expires Label */
+            expires_label: string | null;
+            /**
+             * Fraction
+             * @description amount / cap: what the holders get at the next round
+             */
+            fraction: number;
+        };
+        /** SafesOut */
+        SafesOut: {
+            /**
+             * Safes
+             * @description Newest first
+             */
+            safes: components["schemas"]["SafeOut"][];
+            /** Min Cents */
+            min_cents: number;
+            /** Max Cents */
+            max_cents: number;
+            /**
+             * Open
+             * @description A SAFE raise is waiting for investors' answers
+             */
+            open: boolean;
         };
         /** SaveOut */
         SaveOut: {
@@ -2793,6 +3443,34 @@ export interface components {
             /** Segment */
             segment: string;
         };
+        /**
+         * SeriesGuideOut
+         * @description The next round and whether it is allowed (14.5).
+         */
+        SeriesGuideOut: {
+            /**
+             * Series
+             * @description Null after Series B (Series C is v2)
+             */
+            series: string | null;
+            /** Series Label */
+            series_label: string | null;
+            /** Allowed */
+            allowed: boolean;
+            /** Problem */
+            problem: string | null;
+            /** Typical Min Cents */
+            typical_min_cents: number | null;
+            /** Typical Max Cents */
+            typical_max_cents: number | null;
+            /**
+             * Arr Cents
+             * @description ARR at the last month end
+             */
+            arr_cents: number;
+            /** Open Turns */
+            open_turns: number;
+        };
         /** SetLeaderIn */
         SetLeaderIn: {
             /**
@@ -2845,6 +3523,59 @@ export interface components {
             mrr_cents: number;
             /** Arr Cents */
             arr_cents: number;
+            /**
+             * Founder Bp
+             * @description The founder's shares in bp of FD (M4a)
+             */
+            founder_bp: number;
+            /**
+             * Board Confidence
+             * @description Average director confidence (M4a)
+             */
+            board_confidence: number | null;
+        };
+        /** StatementLineOut */
+        StatementLineOut: {
+            /** Account */
+            account: string;
+            /** Label */
+            label: string;
+            /** Amount Cents */
+            amount_cents: number;
+        };
+        /** StatementPeriodOut */
+        StatementPeriodOut: {
+            /**
+             * Label
+             * @description Jan 2010, Q1 2010 or 2010
+             */
+            label: string;
+            /** First Turn */
+            first_turn: number;
+            /** Last Turn */
+            last_turn: number;
+            /**
+             * Complete
+             * @description False for a period still in progress
+             */
+            complete: boolean;
+            profit_and_loss: components["schemas"]["ProfitAndLossOut"];
+            cash_flow: components["schemas"]["CashFlowOut"];
+            /** @description At the period's last closed month end */
+            balance_sheet: components["schemas"]["BalanceSheetOut"];
+        };
+        /** StatementsOut */
+        StatementsOut: {
+            /**
+             * Period
+             * @description month | quarter | year
+             */
+            period: string;
+            /**
+             * Periods
+             * @description Oldest first
+             */
+            periods: components["schemas"]["StatementPeriodOut"][];
         };
         /** TagOut */
         TagOut: {
@@ -2883,6 +3614,32 @@ export interface components {
              * @description Employees, not the founder; null if none
              */
             avg_morale: number | null;
+        };
+        /** TermSheetOut */
+        TermSheetOut: {
+            /** Sheet Id */
+            sheet_id: number;
+            /** Round Id */
+            round_id: number;
+            /** Firm */
+            firm: string;
+            /** Firm Name */
+            firm_name: string;
+            /**
+             * Pre Money Cents
+             * @description The firm's quoted pre-money valuation
+             */
+            pre_money_cents: number;
+            /** Amount Cents */
+            amount_cents: number;
+            /** Post Money Cents */
+            post_money_cents: number;
+            /** Status */
+            status: string;
+            /** Expires Turn */
+            expires_turn: number;
+            /** Expires Label */
+            expires_label: string;
         };
         /** UnitOut */
         UnitOut: {
@@ -6184,6 +6941,719 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getStatements: {
+        parameters: {
+            query?: {
+                period?: "month" | "quarter" | "year";
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getFinanceSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceSummaryOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getCapTable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapTableOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getBoard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoardOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listSafes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SafesOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    raiseSafe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SafeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewSafe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SafeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SafeHintOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    acceptBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                safe_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listRounds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoundsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startRound: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoundIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewTermSheet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                sheet_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoundPreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    acceptTermSheet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                sheet_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceActionOut"];
                 };
             };
             /** @description Bad Request */
