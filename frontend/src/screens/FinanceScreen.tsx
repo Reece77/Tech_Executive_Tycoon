@@ -1,6 +1,8 @@
 import { Link, Navigate, useParams } from 'react-router';
 import { ScreenTitle } from '../components/ScreenState';
+import { BoardTab } from './finance/BoardTab';
 import { CapTableTab } from './finance/CapTableTab';
+import { FundraisingTab } from './finance/FundraisingTab';
 import { StatementsTab } from './finance/StatementsTab';
 
 const FINANCE_TABS = [
@@ -45,7 +47,8 @@ function TabBody({ tab, saveId }: { tab: TabKey; saveId: string }) {
     case 'captable':
       return <CapTableTab saveId={saveId} />;
     case 'fundraising':
+      return <FundraisingTab saveId={saveId} />;
     case 'board':
-      return <p className="tst-muted">Arrives in the next M4b sub-task.</p>;
+      return <BoardTab saveId={saveId} />;
   }
 }
