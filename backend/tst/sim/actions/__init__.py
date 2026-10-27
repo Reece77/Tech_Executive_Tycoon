@@ -14,6 +14,14 @@ from typing import Any
 
 import numpy as np
 
+from tst.sim.actions.finance import (
+    AcceptBridge,
+    AcceptTermSheet,
+    FinanceAction,
+    RaiseSafe,
+    StartRound,
+    apply_finance,
+)
 from tst.sim.actions.hiring import (
     CloseSearch,
     Draws,
@@ -84,13 +92,13 @@ from tst.sim.actions.products import (
     unassign_unit,
 )
 from tst.sim.data_models import Balance, GameData
-from tst.sim.errors import InvalidActionError
+from tst.sim.errors import GameOverError, InvalidActionError
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
-type Action = HiringAction | OrgAction | ProductAction
+type Action = HiringAction | OrgAction | ProductAction | FinanceAction
 
 ACTION_TYPES: dict[str, type[Any]] = {
     "open_search": OpenSearch,
@@ -123,10 +131,16 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "sunset_product": SunsetProduct,
     "cancel_product": CancelProduct,
     "scout_search": ScoutSearch,
+    "raise_safe": RaiseSafe,
+    "start_round": StartRound,
+    "accept_term_sheet": AcceptTermSheet,
+    "accept_bridge": AcceptBridge,
 }
 
 __all__ = [
     "ACTION_TYPES",
+    "AcceptBridge",
+    "AcceptTermSheet",
     "Action",
     "ActionResult",
     "AddSegment",
@@ -148,6 +162,7 @@ __all__ = [
     "MoveUnit",
     "OpenSearch",
     "Promote",
+    "RaiseSafe",
     "ReferenceCheck",
     "RenameUnit",
     "Scout",
@@ -156,6 +171,7 @@ __all__ = [
     "SetMarketing",
     "SetPolicy",
     "SetPrice",
+    "StartRound",
     "SunsetProduct",
     "UnassignUnit",
     "UpdatePlan",
@@ -189,6 +205,8 @@ def apply_action(
     `draws` makes the generator for any randomness inside the action; by default it is
     stream `actions` keyed by `seq` (player actions).
     """
+    if state.ended:
+        raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
     if draws is None:
         turn = state.turn
 
@@ -266,6 +284,8 @@ def apply_action(
             out = cancel_product(state, action, balance)
         case ScoutSearch():
             out = scout_search(state, action, balance, data)
+        case RaiseSafe() | StartRound() | AcceptTermSheet() | AcceptBridge():
+            out = apply_finance(state, action, balance, data)
     return ActionResult(new_state=out.state, ledger_entries=out.entries, log_items=out.log)
 
 

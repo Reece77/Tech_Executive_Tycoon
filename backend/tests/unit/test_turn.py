@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from tests.conftest import DATA_DIR
@@ -73,7 +75,11 @@ def test_turn_increments_and_inputs_not_mutated() -> None:
     assert result.new_state.turn == 1
     assert state.turn == 0
     assert balances == {(1, CASH): 5_000_000}
-    assert result.new_state.companies == state.companies
+    # The only company change: this month's MRR joins its history (M4, formulas.md 14.3).
+    assert state.companies[0].mrr_history == ()  # the input is not mutated
+    assert result.new_state.companies == tuple(
+        replace(c, mrr_history=(0,)) for c in state.companies
+    )
     assert result.event_requests == ()
 
 

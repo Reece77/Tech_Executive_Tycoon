@@ -495,6 +495,7 @@ class SafeBalance(_Frozen):
     steepness: float = Field(gt=0)
     fee_cents: int = Field(ge=0)
     hint_bands: Span
+    max_fraction: float = Field(gt=0, lt=1)
 
     @model_validator(mode="after")
     def _check(self) -> SafeBalance:

@@ -356,6 +356,7 @@ finance:
     steepness: 6 # slope of the SAFE acceptance logistic (14.4)
     fee_cents: 200000 # cents; legal fee on a SAFE that fills, $2,000 (14.4)
     hint_bands: [0.9, 1.15] # optimism x V_base / cap: below the first unlikely, from the second likely (14.9)
+    max_fraction: 0.5 # fraction; outstanding SAFEs may claim less than this share of the company (keeps the 14.5 close defined)
   round:
     open_turns: 3 # turns a priced round stays open, counting the turn it starts (14.5)
     valuation_noise_sd: 0.15 # sd of the log noise on each firm's quoted pre-money (14.5)

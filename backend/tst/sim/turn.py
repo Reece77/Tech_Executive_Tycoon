@@ -15,6 +15,8 @@ from tst.sim.actions import Action
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
+from tst.sim.errors import GameOverError
+from tst.sim.finance import fundraising
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
@@ -35,7 +37,7 @@ from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
-from tst.sim.state import GameState
+from tst.sim.state import GameState, with_company
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,7 +106,9 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     state = settle_leavers(state)  # leavers' unvested options return to the pool (14.2)
     state, detached = detach_departed(state, ctx.data)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
-    return replace(ctx, state=state).post(*entries).log(*ended, *detached, *resolved)
+    state, closing, closed = fundraising.close_rounds(state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*entries, *closing)
+    return ctx.log(*ended, *detached, *resolved, *closed)
 
 
 def rival_decisions(ctx: TurnContext) -> TurnContext:
@@ -141,8 +145,13 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
 
 
 def financing(ctx: TurnContext) -> TurnContext:
-    """Phase 7 (M4): options vest for the month just ending (14.2)."""
-    return replace(ctx, state=vest(ctx.state, ctx.balance))
+    """Phase 7 (M4): SAFEs are answered, a new round's term sheets arrive, unaccepted rounds
+    lapse (14.4, 14.5), and options vest for the month just ending (14.2)."""
+    state, entries, answered = fundraising.answer_safes(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    state, sheets = fundraising.deliver_term_sheets(state, ctx.rng, ctx.balance, ctx.data)
+    state, lapsed = fundraising.lapse_rounds(state)
+    state = vest(state, ctx.balance)
+    return replace(ctx, state=state).post(*entries).log(*answered, *sheets, *lapsed)
 
 
 def people_updates(ctx: TurnContext) -> TurnContext:
@@ -219,8 +228,15 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
                 message=f"{format_turn(ctx.turn)} closed for {company.name}",
             )
         )
+    # MRR at each month end feeds investors' growth and the board (M4, 14.3).
+    state = ctx.state
+    keep = 2 * ctx.balance.finance.growth_window_months + 1
+    for company in state.ledger_companies():
+        history = (*company.mrr_history, ctx.revenue.get(company.id, 0))[-keep:]
+        state = with_company(state, replace(company, mrr_history=history))
     ctx = replace(
         ctx,
+        state=state,
         snapshot=TurnSnapshot(turn=ctx.turn, companies=tuple(snaps)),
         product_months=products.month_history(ctx.state, ctx.flows, ctx.data),
     )
@@ -262,6 +278,8 @@ def advance_turn(
     ledger_balances: LedgerBalances,
 ) -> TurnResult:
     """Resolve turn `state.turn` and return the next state plus everything to persist."""
+    if state.ended:
+        raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
     ctx = TurnContext(
         state=state,
         decisions=decisions,

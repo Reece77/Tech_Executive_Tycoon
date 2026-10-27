@@ -170,3 +170,23 @@ class LaunchNotReadyError(ProductRuleError):
     """Launch refused below the thresholds; the message names what is missing (11.2)."""
 
     code = "launch_not_ready"
+
+
+class FinanceRuleError(SimError):
+    """A finance action would break a rule of formulas.md 14.4-14.7."""
+
+    code = "finance_rule"
+
+
+class UnknownTermSheetError(NotFoundError):
+    code = "unknown_term_sheet"
+
+
+class UnknownSafeError(NotFoundError):
+    code = "unknown_safe"
+
+
+class GameOverError(SimError):
+    """The game has ended (bankruptcy or the founder's removal); ADR-0018 section 4."""
+
+    code = "game_over"

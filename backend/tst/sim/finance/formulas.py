@@ -199,9 +199,13 @@ def confidence_target(growth: float, runway: float, patience: float, bb: BoardBa
     return bb.target_base + growth + runway + patience
 
 
+def clamp_confidence(confidence: float) -> float:
+    return min(max(confidence, 0.0), 100.0)
+
+
 def next_confidence(confidence: float, target: float, bb: BoardBalance) -> float:
     """B <- B + rate (T - B), kept in 0..100."""
-    return min(max(confidence + bb.rate * (target - confidence), 0.0), 100.0)
+    return clamp_confidence(confidence + bb.rate * (target - confidence))
 
 
 def confidence_label(confidence: float, bb: BoardBalance) -> str:
