@@ -39,6 +39,7 @@ from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
 from tst.sim.rivals.models import RivalMove
+from tst.sim.rivals.startups import found_startups, launch_ready, record_failures
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
 from tst.sim.state import GameState, with_company
@@ -125,8 +126,10 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
     )
     ctx = replace(ctx, state=state, delegate_actions=taken).post(*entries).log(*logs)
-    state, moves, approached = rival_month(ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data)
-    ctx = replace(ctx, state=state, rival_moves=ctx.rival_moves + moves)
+    state, moves, approached, raised = rival_month(
+        ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state, rival_moves=ctx.rival_moves + moves).post(*raised)
     return ctx.log(*approached)
 
 
@@ -167,6 +170,8 @@ def financing(ctx: TurnContext) -> TurnContext:
     state = vest(state, ctx.balance)
     ctx = replace(ctx, state=state).post(*entries, *bridging)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
+    state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
+    ctx = replace(ctx, rival_moves=ctx.rival_moves + failed)
     return replace(ctx, state=state).log(*answered, *sheets, *lapsed, *bridges, *insolvent)
 
 
@@ -200,7 +205,11 @@ def people_updates(ctx: TurnContext) -> TurnContext:
 def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     """Brand toward its marketing target and addressable demand growth (11.1, 11.5); the
     macro layer joins later."""
-    return replace(ctx, state=products.brand_and_demand(ctx.state, ctx.balance, ctx.data))
+    state = products.brand_and_demand(ctx.state, ctx.balance, ctx.data)
+    state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
+    state, founding, founded = found_startups(state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state, rival_moves=ctx.rival_moves + launched + founded)
+    return ctx.post(*founding)
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:

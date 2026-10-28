@@ -11,14 +11,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+import numpy as np
+
 from tst.sim.data_models import RIVAL_ACTIONS, SCORE_MAX, Balance, GameData
-from tst.sim.ledger import CASH, LedgerBalances, account_balance
+from tst.sim.ledger import CASH, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.people.models import current_ability
 from tst.sim.products import formulas as pf
 from tst.sim.products.models import SELLING, Product, ProductSegment
 from tst.sim.rivals import formulas as f
 from tst.sim.rivals.models import PoachApproach, RivalEffect, RivalMove, SegmentShare
+from tst.sim.rivals.startups import startup_funding
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     CompanyState,
@@ -280,7 +283,7 @@ def _cooling(state: GameState, company_id: int, c: Candidate, balance: Balance) 
 def choose(
     state: GameState,
     company: CompanyState,
-    rng: RngFactory,
+    gen: np.random.Generator,
     balances: LedgerBalances,
     balance: Balance,
     data: GameData,
@@ -288,7 +291,6 @@ def choose(
     """The best action by utility, if at least act_threshold (15.3)."""
     rv = balance.rivals
     weights = rv.weights[company.personality or "fast_follower"]
-    gen = rng.stream(state.turn, "rivals", company.id)
     best: tuple[Candidate, float] | None = None
     for c in candidates(state, company, balances, balance, data):
         noise = float(gen.normal(0.0, rv.noise_sd))
@@ -428,14 +430,29 @@ def rival_month(
     balances: LedgerBalances,
     balance: Balance,
     data: GameData,
-) -> tuple[GameState, tuple[RivalMove, ...], tuple[LogItem, ...]]:
-    """Each rival still in business decides once, by company id (15.3)."""
+) -> tuple[GameState, tuple[RivalMove, ...], tuple[LogItem, ...], tuple[LedgerEntry, ...]]:
+    """Each rival still in business decides once, by company id (15.3); a startup short of
+    cash tries to raise first, and cuts costs if that fails (15.4)."""
     moves: list[RivalMove] = []
     logs: list[LogItem] = []
+    entries: list[LedgerEntry] = []
     for company in state.rivals():
         if company.personality is None:
             continue
-        chosen = choose(state, company, rng, balances, balance, data)
+        gen = rng.stream(state.turn, "rivals", company.id)
+        chosen = choose(state, company, gen, balances, balance, data)
+        if company.is_startup:
+            months = cash_months(state, company.id, balances, balance, data)
+            cost = monthly_cost_cents(state, company.id, balance, data)
+            state, raised, funded, failed = startup_funding(
+                state, company, float(gen.random()), months, cost, balance, data
+            )
+            entries += raised
+            if funded is not None:
+                moves.append(funded)
+            if failed:
+                chosen = (Candidate("cut_costs", 1.0), 1.0)
+            company = state.company(company.id)
         if chosen is None:
             continue
         c, _ = chosen
@@ -471,7 +488,7 @@ def rival_month(
                     salary_cents=employment.salary_cents if employment else 0,
                 )
             )
-    return state, tuple(moves), tuple(logs)
+    return state, tuple(moves), tuple(logs), tuple(entries)
 
 
 def apply_effects(state: GameState, balance: Balance, data: GameData) -> GameState:

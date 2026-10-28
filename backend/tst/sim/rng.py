@@ -34,6 +34,8 @@ STREAM_IDS: Final = MappingProxyType(
         "product_dev": 15,  # key (product_id,): monthly development noise (M3, ADR-0017)
         "finance": 16,  # key (safe_id,) or (round_id, firm_index): investors' answers (M4)
         "board": 17,  # key (seat_id,): generating a director (M4)
+        "rival_spawn": 18,  # key (category_index,): founding rival startups (M5, 15.4)
+        "poach": 19,  # key (approach_id,): an employee's answer to a rival approach (M5, 15.6)
         "misc": 99,
     }
 )

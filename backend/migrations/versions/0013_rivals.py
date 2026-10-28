@@ -168,6 +168,13 @@ def downgrade() -> None:
     op.execute(
         "DELETE FROM ledger_entry WHERE company_id IN (SELECT id FROM company WHERE is_player = 0)"
     )
+    # Rival moves in decision_log, and startups with their products and history.
+    op.execute("DELETE FROM decision_log WHERE source = 'rival'")
+    startups = "SELECT id FROM company WHERE is_startup = 1"
+    products = f"SELECT id FROM product WHERE company_id IN ({startups})"
+    for table in ("product_month", "product_segment"):
+        op.execute(f"DELETE FROM {table} WHERE product_id IN ({products})")
+    op.execute(f"DELETE FROM product WHERE company_id IN ({startups})")
     for table in ("turn_log", "turn_snapshot"):
         op.execute(
             f"DELETE FROM {table} WHERE company_id IN (SELECT id FROM company WHERE is_player = 0)"
@@ -182,6 +189,7 @@ def downgrade() -> None:
     op.drop_table("rival_move")
     op.drop_table("rival_effect")
     op.drop_table("workforce_pool")
+    op.execute(f"DELETE FROM company WHERE id IN ({startups})")
     # Native DROP COLUMN (SQLite 3.35+): a batch rebuild of company would break the foreign
     # keys that point at it.
     for name in (*COUNTERS, *RIVAL_COUNTERS):

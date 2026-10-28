@@ -18,6 +18,7 @@ from tst.sim.finance.captable import closed_rounds, last_round
 from tst.sim.finance.fundraising import FINANCE_LINK, safe_entries
 from tst.sim.finance.models import SERIES_LABELS, Safe
 from tst.sim.finance.statements import projected_net_burn
+from tst.sim.hiring.models import Candidate
 from tst.sim.ledger import CASH, AccountCode, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
@@ -25,6 +26,7 @@ from tst.sim.state import (
     CompanyState,
     GameState,
     reach_stage,
+    with_candidate,
     with_company,
     with_employment,
     with_pool,
@@ -94,7 +96,9 @@ def insolvency(
         state = with_company(state, replace(company, insolvent_months=months))
         if not company.is_player:  # a rival fails after the same months; no bridges (15.1)
             if months >= bk.months:
-                state, failed = fail_rival(state, state.company(company.id))
+                state, failed = fail_rival(
+                    state, state.company(company.id), balance.hiring.candidate_shelf_turns
+                )
                 logs += failed
             continue
         logs.append(
@@ -186,7 +190,9 @@ def funding_stages(state: GameState, balance: Balance) -> tuple[GameState, tuple
     return state, tuple(logs)
 
 
-def fail_rival(state: GameState, company: CompanyState) -> tuple[GameState, list[LogItem]]:
+def fail_rival(
+    state: GameState, company: CompanyState, shelf_turns: int
+) -> tuple[GameState, list[LogItem]]:
     """A rival bankrupt for bankruptcy.months month ends (15.1): its products retire and their
     customers return to the unserved pool, its staff are released, its pools empty."""
     state = with_company(state, replace(company, failed_turn=state.turn))
@@ -196,10 +202,28 @@ def fail_rival(state: GameState, company: CompanyState) -> tuple[GameState, list
         for seg in state.segments_of(product.id):
             state = with_product_segment(state, replace(seg, customers=0.0))
         state = with_product(state, replace(product, status="retired", retired_turn=state.turn))
+    player_searches = {
+        search.role: search
+        for search in sorted(state.open_searches(state.player.id), key=lambda x: -x.id)
+    }
     for e in state.staff(company.id):
         state = with_employment(
             state, replace(e, status="ended", end_turn=state.turn, end_reason="company_failed")
         )
+        # A failed rival's people join the player's open search for their role (15.4).
+        search = player_searches.get(e.role)
+        if search is not None and state.candidate(e.person_id) is None:
+            state = with_candidate(
+                state,
+                Candidate(
+                    person_id=e.person_id,
+                    company_id=state.player.id,
+                    search_id=search.id,
+                    channel=search.channel,
+                    created_turn=state.turn,
+                    expires_turn=state.turn + shelf_turns,
+                ),
+            )
     for pool in state.company_pools(company.id):
         state = with_pool(state, replace(pool, headcount=0.0))
     return state, [inbox_item(state.turn, company.id, "rival_failed", company=company.name)]

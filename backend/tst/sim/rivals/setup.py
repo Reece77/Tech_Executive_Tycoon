@@ -116,12 +116,13 @@ def hire_key_people(
     *,
     stream_part: int,
     salary_mult: float = 1.0,
+    levels: list[str] | None = None,
 ) -> GameState:
     """Generated individuals employed by the rival, strangers to the player (15.1, 15.5)."""
     gen = people_gen_stream(rng, state.turn, company.id, stream_part)
     for index, function in enumerate(functions):
         role = data.role(balance.rivals.function_roles[function])
-        level = _level_for(index, len(functions), balance)
+        level = levels[index] if levels else _level_for(index, len(functions), balance)
         person_id, ids = state.next_ids.take("rival_person")
         (person,) = generate_pool(
             gen, data, balance, state.turn, role, [level], first_person_id=person_id
