@@ -68,7 +68,7 @@ Backend (from `backend/`):
 
 ```bash
 uv sync                                       # install
-uv run pytest -q                              # all tests
+uv run pytest -q -n auto                      # all tests, in parallel (pytest-xdist, added in M5 sub-task 0)
 uv run pytest tests/golden -q                 # determinism and golden seeds
 uv run ruff check . && uv run ruff format --check .
 uv run mypy tst
@@ -105,6 +105,16 @@ make dev       # run API and front end together
 - [ ] New tunable numbers live in `backend/data/balance.yaml` with a comment (unit + intent), not in code.
 - [ ] Any design decision the spec and ADRs did not cover is written down (a new ADR, or the brief's "Decisions made" section).
 - [ ] Final message: summary, files touched, how each criterion was verified, follow-ups.
+
+### Merging (from 2026-10-27, Reece's decision)
+
+When every box above is ticked, `make e2e` passes, and the GitHub Actions `check` run on your pushed branch is green:
+
+1. Merge the branch into `main` with `git merge --no-ff` (resolve `CHANGELOG.md` conflicts by keeping both sides' lines), push `main`, and wait for the `check` run on `main` to go green. If it fails, fix it on `main` at once.
+2. Tag the merge commit `mX-done` (the milestone id) and push the tag.
+3. If the instructions name a next brief, start it on a new branch from the updated `main`; otherwise stop and report.
+
+Never force-push, rewrite `main`'s history, or merge with a red check. The product manager reviews after the merge and sends any fixes as a follow-up brief.
 
 ## 7. Conventions
 

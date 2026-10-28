@@ -2,7 +2,7 @@
 
 This is the authoritative source for game math. Task briefs summarize these formulas; when a brief and this file differ, this file wins. Every number below is a default that lives in `backend/data/balance.yaml` under the key shown in §12, never as a literal in code (ADR-0008).
 
-Status: §1–§10 are final for M1. §13 (organization) is final for M2 and adds terms to §3, §6, §7 and §9, each marked "M2". §11 (products and markets) is final for M3 and adds rows to §6, each marked "M3". §14 (finance) is final for M4 and changes §7 (equity in options), §8 and §10 (retention), each marked "M4".
+Status: §1–§10 are final for M1. §13 (organization) is final for M2 and adds terms to §3, §6, §7 and §9, each marked "M2". §11 (products and markets) is final for M3 and adds rows to §6, each marked "M3". §15 (rivals) is final for M5. §14 (finance) is final for M4 and changes §7 (equity in options), §8 and §10 (retention), each marked "M4".
 
 ## 0. Conventions
 
@@ -715,6 +715,17 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `bankruptcy.months` / `.bridge_burn_months` / `.bridge_cap_of_post` / `.bridge_min_confidence` / `.bridge_open_turns` | 3 / 3 / 0.8 / 40 / 2 | months / months / fraction / confidence / turns | §14.7 |
 | Investor firms, scenario cap tables, funding climate | see §14.2, §14.3, §14.5 | — | data: `investors.yaml`, `scenarios.yaml`, `climate.yaml` |
 
+| `rivals.act_threshold` / `.noise_sd` / `.cooldown_turns` / `.push_turns` | 0.5 / 0.1 / 6 / 6 | utility / utility / turns / turns | §15.3 |
+| `rivals.need.<action>` | see §15.3 | divisors | §15.3 |
+| `rivals.weights.<personality>.<action>` / `.price_factor.<personality>` | see §15.3 | multiplier | §15.3 |
+| `rivals.price_cut` / `.price_rise` / `.push_pool_growth` / `.brand_push_marketing` / `.cut_costs_pools` / `.cut_costs_marketing` | 0.90 / 1.05 / 0.10 / 0.50 / 0.15 / 0.30 | multiplier / fraction | §15.3 |
+| `rivals.function_mix.<category>` / `.pool_morale` / `.pool_skill_other` / `.start_marketing_share` / `.key_people` | see §15.1 / 60 / 12 / 0.08 / 8 | fraction / morale / attribute / fraction / people | §15.1 |
+| `rivals.startup.found_rate` / `.max_alive` / `.team` / `.cash_cents` / `.raise_months` / `.raise_chance` | 0.01 / 8 / [3, 8] / [100000000, 300000000] / 18 / 0.6 | probability / companies / people / cents / months / probability | §15.4 |
+| `rivals.poach.offer_mult` / `.top_fraction` / `.ask_mult` / `.leave_penalty` / `.key_builder_quality_hit` | 1.25 / 0.30 / 1.3 / −0.5 / 2 | multiplier / fraction / multiplier / score / quality | §15.6 |
+| `founder.energy_cost.poach_search` | 10 | energy | §15.6 |
+| `rivals.poach.bands` / `rivals.money_bands_months` | [0.20, 0.50] / [12, 36] | probability / months | §15.5, §15.6 |
+| Incumbent personalities, skills, margins and cash | see §15.1 | — | data: `incumbents.yaml` |
+
 ## 13. Organization (M2)
 
 The org is a tree of units under the company. Every effect below works through things M1 already has: morale (§9), growth (§3), offers (§7) and founder energy (§6). Productivity, coordination cost and decision latency arrive with products in M3.
@@ -994,3 +1005,111 @@ After each round the unallocated pool is exactly 10.00% of FD; after the seed th
 **Board confidence.** From 70, with growth at half of expected (`g_6 / g_exp` = 0.5) and 4 months of runway: T = 50 − 10 − 15 = 25, and B is 36.8 after 6 months (warning). With under 3 months of runway: T = 10, B falls below 25 in month 7 (22.6); a removal vote follows in month 9 if it stays there.
 
 **Retention.** 75,000 unvested options at $0.896 for someone paid $95,000: u = 0.707, so their resignation chance is multiplied by 0.646.
+
+## 15. Rivals (M5)
+
+M5 turns the 2010 incumbents into companies that act, and adds rival startups that are founded, grow and die. Rivals use the same market (§11), finance rules for cash and bankruptcy (§14.7) and people rules (§2–§10) as the player; only their decisions differ (ADR-0010, ADR-0015: rivals act in phase 2).
+
+### 15.1 Incumbent companies (data: `incumbents.yaml`)
+
+Each incumbent gains a **personality**, a **workforce pool** per function, **8 key people**, cash and a ledger.
+
+| Company | Personality | Builder skill `d` | Target margin | Cash (months of revenue) |
+| --- | --- | --- | --- | --- |
+| Salesforce | premium | 14 | 15% | 24 |
+| Oracle | fast_follower | 12 | 25% | 60 |
+| Zoho | cost_leader | 11 | 15% | 18 |
+| Atlassian | fast_follower | 14 | 20% | 24 |
+| Microsoft | aggressive | 13 | 30% | 60 |
+| GitHub | aggressive | 15 | 0% | 12 |
+| Facebook | aggressive | 13 | 20% | 36 |
+| Zynga | aggressive | 11 | 15% | 18 |
+| Evernote | premium | 14 | 0% | 12 |
+| Symantec | premium | 12 | 25% | 36 |
+| McAfee | cost_leader | 11 | 20% | 24 |
+| Check Point | premium | 14 | 30% | 48 |
+
+- **Pools are sized from revenue**, so each incumbent starts near its target margin in the modelled market: monthly cost budget = revenue × (1 − margin) − hosting − marketing; headcount = budget ÷ the loaded cost per head (salary at the role's mid-level market rate, benefits, office, `costs.tools_per_head_cents`), split by the category's function mix: B2B SaaS and cybersecurity 45% builders, 40% sellers, 15% marketers; developer tools 70 / 15 / 15; consumer apps 75 / 0 / 25. Pool morale is 60; pool skill is the table's `d` for builders and 12 for sellers and marketers.
+- **Marketing budget** at start: 8% of each product's revenue.
+- **Key people:** 8 generated individuals per incumbent (senior to principal, in its pool roles, stream `people_gen`), included in the headcount. They grow, age, resign and retire like anyone, and they are the people the player can poach (§15.6). The rest of the staff stay as pools (ADR-0010).
+- **Ledgers:** from M5 each rival posts revenue (phase 5), payroll, hosting and marketing (phase 6) like the player. A rival whose cash is below zero for 3 consecutive month ends goes bankrupt (§14.7); its products are retired and their customers return to the unserved pool.
+
+### 15.2 How rival products change
+
+Rival products keep the M3 held feature score and fixed quality except through the actions below; their brand changes only through actions. This keeps the M3 equilibrium (§11.9) stable until a rival chooses to move.
+
+| Effect | Rule |
+| --- | --- |
+| Quality | moves toward `5 d` at 1 point a month while a quality push runs (§15.3), and back toward its starting value at 0.2 a month after a key builder leaves for the player |
+| Feature score | +1 a month during a feature push; −0.5 a month for 6 months after a cost cut |
+| Brand | +1 a month during a brand push; −0.5 a month for 6 months after a cost cut |
+| Price | changed by price actions |
+
+### 15.3 Decisions: one action a month (phase 2, stream `rivals`, key `(company_id,)`)
+
+Each month each rival scores every action it could take and takes the best one if its utility is at least 0.5:
+
+```latex
+U(a) = need(a) \times w_{personality}(a) + N(0,\, 0.1)
+```
+
+| Action | `need` (each clamped to 0–1) | Effect |
+| --- | --- | --- |
+| `price_cut` (product, segment) | its share of the segment's served customers fell by `drop` over 6 months: `drop / 0.05` | price × 0.90 |
+| `price_rise` | appeal leads the next best product by `lead`, share not falling: `(lead − 5) / 10` | price × 1.05 |
+| `feature_push` | `(best feature in segment − own) / 15` | +1 feature a month for 6 months; builder pool +10% |
+| `quality_push` | `(best quality in segment − own) / 15` | toward `5 d` for 6 months; builder pool +10% |
+| `brand_push` | `(best brand in segment − own) / 30` | +1 brand a month for 6 months; marketing budget +50% for 6 months |
+| `enter_segment` | a category segment it does not serve, with `unserved / D ≥ 0.4` and cash ≥ 12 months of costs: `(unserved / D − 0.4) / 0.4` | sells there at `p_ref × price_factor` |
+| `cut_costs` | cash covers fewer than 12 months of costs: `(12 − months) / 6` | every pool −15%; marketing −30% |
+| `poach` | the player gained `gain` share points over 6 months in a segment they share: `gain / 0.05`, and the player has an employee in the top 30% of its CA | approach the player's best such employee (§15.6) |
+
+| Personality | price_cut | price_rise | feature | quality | brand | enter | cut_costs | poach | `price_factor` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| aggressive | 1.3 | 0.6 | 1.2 | 0.9 | 1.1 | 1.3 | 0.9 | 1.4 | 0.9 |
+| fast_follower | 1.0 | 0.8 | 1.3 | 1.0 | 0.9 | 1.0 | 1.0 | 1.0 | 1.0 |
+| premium | 0.6 | 1.2 | 1.0 | 1.3 | 1.2 | 0.8 | 1.0 | 0.9 | 1.3 |
+| cost_leader | 1.4 | 0.5 | 0.9 | 0.8 | 0.8 | 1.1 | 1.2 | 0.8 | 0.7 |
+
+- **Cooldown:** the same action on the same product and segment is not chosen again within 6 months; a push runs its 6 months before another of the same kind.
+- Actions are written to `decision_log` with `source = "rival"` and replayed by recomputation (ADR-0015 §5).
+
+### 15.4 Rival startups (phase 9, stream `rival_spawn`, key `(category_index,)`)
+
+- Each month, each category founds a startup with probability `0.01 × climate × (1 + g)` (`g` = the category's annual growth), while fewer than 8 rival startups are alive.
+- A startup: a generated name (`names.yaml` company pool), a founder and 3 to 8 individual employees (stream `people_gen`), $1M to $3M cash, one product in development in that category for one or two segments, and a random personality other than premium. It develops, launches and prices like the player's products (§11, using its individuals' output) and decides with §15.3.
+- **Funding:** when its cash covers fewer than 6 months, it raises 18 months of costs with probability `0.6 × climate` once a quarter; otherwise it cuts costs. Bankruptcy follows §14.7. A dead startup's people become candidates in the player's next searches for their roles.
+
+### 15.5 What the player sees
+
+A monthly **Market news** inbox item lists every rival action and every startup founded, launched, funded or failed that month ("Zoho cut SMB prices 10%", "Northwind launched in Developer tools"). Prices, quality, features, brand and customers of every product stay public (§11.13). A rival's personality is shown as a label, its money as "deep pockets" (cash covers 36 months of costs or more), "comfortable" (12–36) or "tight" (under 12), and its stance toward the player as "responding" (it took an action in a segment the player sells to within the last 6 months), "watching" (it shares a segment with the player) or "not competing". Pools are shown as estimated headcount (rounded to the nearest 10 above 100). Key people are shown with the player's revealed ranges (they start as strangers).
+
+### 15.6 Poaching
+
+**Rivals approach the player's people.** A `poach` action picks the player's employee with the highest true CA in the top 30% (ties by id) and offers `1.25 ×` their role and level's market rate. The approach arrives as an inbox item; the player may counter with a raise (§13.8) before Continue. In phase 1 of the next turn the employee decides (stream `poach`, key `(approach_id,)`):
+
+```latex
+s = 4\,(R - 1) + \frac{55 - morale}{20} - \frac{loyalty - 10}{10} - 2u, \qquad p = \frac{1}{1 + e^{-2s}}
+```
+
+`R` = offer ÷ current salary (after any counter), `u` = unvested option value ÷ annual salary (§14.2). Accepting is a resignation with one month's notice; the person joins the rival as a key person. The screens show a band, never `p`, computed from what the player knows (true salary, offer and options; displayed midpoints for loyalty; morale exactly): below 20% "likely to stay", 20–50% "might go", above 50% "likely to go".
+
+**The player poaches from rivals.** A new search channel, **Poach from a rival** (energy 10, one rival): candidates are 2 to 4 of that rival's key people, shown as strangers. The interview rule (§7) applies; asks are `1.3 ×` their current salary; the offer score (§7) gets `−0.5` for leaving an employer. A hire removes the person from the rival; if they were a builder, each of that rival's products in their category loses 2 quality over the next 6 months (§15.2).
+
+### 15.7 Balance targets (M5 acceptance, printed)
+
+1. **Living market:** with no player product, over 120 turns on 10 seeds, no incumbent's share of a segment's served customers falls below half or rises above double its starting share, and on average at least one rival startup per category launches a product.
+2. **Rivals respond:** in the M3a earn-and-burn script, at least one incumbent cuts a price or starts a push in a segment the player sells to within 24 turns of launch, on at least 7 of 10 seeds.
+3. **Still winnable:** the earn-and-burn script's ARR at turn 36 stays within $500,000 to $4M on at least 8 of 10 seeds.
+4. **Poaching felt, not crushing:** in the fast-growth script, 1 to 4 approaches a year on average, and 20% to 60% of uncountered approaches accepted.
+5. **Speed:** 120 turns with 25 player staff, all incumbents and up to 8 startups under 1 second per turn on average.
+
+Tune only `rivals.*` keys and the personality weights to meet them; record the values.
+
+### 15.8 Worked examples
+
+**A cost leader answers a price war.** Zoho's SMB share of served customers fell from 47% to 41% in 6 months (`drop` = 0.06): `need` = 1, `U` = 1 × 1.4 = 1.4 (noise off), so it cuts its SMB price from $25 to $22.50.
+
+**A premium incumbent ignores a small threat.** Salesforce's SMB share fell 1 point: `need` = 0.2, `U` = 0.2 × 0.6 = 0.12, below 0.5: no action.
+
+**Poaching Priya** (salary $118,000, morale 62, loyalty 12, 52,084 unvested options at $1.0295): Salesforce offers $143,750 (`R` = 1.218, `u` = 0.454): `s` = −0.586, **p = 23.7%**. If the player counters with a raise to $135,000 (`R` = 1.065, `u` = 0.397): `s` = −1.085, **p = 10.2%**. An underpaid, unhappy employee with no options (`R` = 1.218, morale 40, loyalty 8, `u` = 0): `s` = 1.823, **p = 97.5%**.

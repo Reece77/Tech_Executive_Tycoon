@@ -23,7 +23,7 @@ Backend (Python 3.12, managed with `uv`):
 | Seed data | `pyyaml` |
 | CLI | `typer` |
 | LLM | `anthropic` (used only inside `tst/llm/`) |
-| Dev | `pytest`, `hypothesis`, `ruff`, `mypy`, `pre-commit`, `httpx2` (FastAPI test client; pinned so tests do not depend on `anthropic`'s dependencies) |
+| Dev | `pytest`, `pytest-xdist` (parallel test runs; approved by Reece 2026-10-27), `hypothesis`, `ruff`, `mypy`, `pre-commit`, `httpx2` (FastAPI test client; pinned so tests do not depend on `anthropic`'s dependencies) |
 
 Front end (Node 22 LTS, managed with `pnpm`):
 

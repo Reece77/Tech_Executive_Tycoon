@@ -23,7 +23,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `hiring` | 2 | `(offer_id,)` | Offer acceptance roll | M1b |
 | `morale` | 3 | `(person_id,)` | Monthly morale noise | M1b |
 | `market` | 4 | `(category_index, segment_index)` | Monthly demand noise per market segment (ADR-0017) | M3 |
-| `rivals` | 5 | — | Reserved (M5) | — |
+| `rivals` | 5 | `(company_id,)` | Monthly utility noise for a rival's decision (formulas.md §15.3) | M5 |
 | `events` | 6 | — | Reserved (M6) | — |
 | `founder` | 7 | none | Founder hidden traits, PA, random personality (turn 0) | M1a |
 | `growth` | 8 | `(person_id,)` | Monthly skill growth noise | M1a |
@@ -36,6 +36,8 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `product_dev` | 15 | `(product_id,)` | Monthly development noise per product (ADR-0017) | M3 |
 | `finance` | 16 | `(safe_id,)` or `(round_id, firm_index)` | SAFE answers and term sheets (ADR-0018); one call site, a helper both use | M4 |
 | `board` | 17 | `(seat_id,)` | Generating a board director (formulas.md 14.6) | M4 |
+| `rival_spawn` | 18 | `(category_index,)` | Founding rival startups (§15.4) | M5 |
+| `poach` | 19 | `(approach_id,)` | An employee's answer to a rival's approach (§15.6) | M5 |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).

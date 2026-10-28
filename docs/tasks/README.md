@@ -6,9 +6,9 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 
 1. Start a fresh Claude Code session in the repo root (it reads `CLAUDE.md` automatically).
 2. Paste: `Read docs/tasks/<brief>.md and implement it. Follow CLAUDE.md. Work through the sub-tasks in order, committing after each. Stop and ask if anything in the brief conflicts with the spec or ADRs.`
-3. When it finishes, run `make check` yourself, then play through the brief's "Manual check" steps.
+3. When it finishes, the agent merges its own branch once `make check`, `make e2e` and the GitHub check are green (CLAUDE.md §6, Merging), tags it and pushes. Play the brief's "Manual check" every two or three milestones.
 4. Optional second opinion: give ChatGPT (or a fresh Claude session) `AGENTS.md`, the brief, and `git diff <start>..HEAD`, and ask for a review per the "reviewer" section of `AGENTS.md`.
-5. Tag the release: `git tag m0-done` (and so on).
+5. The agent tags each merge `mX-done`.
 
 ## Order
 
@@ -25,6 +25,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M4a-finance-rules-and-api.md](M4a-finance-rules-and-api.md) | Statements, cap table and options, SAFEs, priced rounds, board, bankruptcy: rules, API, CLI | M3b |
 | [M4b-finance-screens.md](M4b-finance-screens.md) | Finance screen (statements, cap table, fundraising, board), game over screen and additions | M4a |
 | [M4c-playtest-fixes.md](M4c-playtest-fixes.md) | Fixes from Reece's first playtest: energy, "what you learned", interview potential, investor heat, board nominee, inbox cleanup | M4b |
+| [M5-rivals.md](M5-rivals.md) | Rival AI for incumbents, rival startups, poaching both ways, Competitors screen (one milestone) | M4c |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 
