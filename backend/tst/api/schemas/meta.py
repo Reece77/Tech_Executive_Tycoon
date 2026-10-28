@@ -108,7 +108,6 @@ class HiringMetaOut(BaseModel):
     reference_check_energy: int
     offer_energy: int
     max_offer_equity_bp: int
-    option_pool_bp: int
     lowball_ratio: float
     candidate_shelf_turns: int
     fire_morale_penalty_min: int  # morale points everyone else loses at least

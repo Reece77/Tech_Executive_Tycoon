@@ -12,7 +12,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { path: 'recruitment', label: 'Recruitment', arrivesIn: null },
   { path: 'org', label: 'Org', arrivesIn: null },
   { path: 'products', label: 'Products', arrivesIn: null },
-  { path: 'finance', label: 'Finance', arrivesIn: 'M4' },
+  { path: 'finance', label: 'Finance', arrivesIn: null },
   { path: 'competitors', label: 'Competitors', arrivesIn: 'M5' },
   { path: 'history', label: 'History', arrivesIn: 'M7' },
 ];

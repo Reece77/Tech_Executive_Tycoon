@@ -482,7 +482,7 @@ function PlanDialog({
             data-testid="plan-equity"
             onChange={(v) => setEquity(typeof v === 'number' ? v : 0)}
             description={`Up to ${meta.max_offer_equity_bp}${
-              pool === undefined ? '' : ` · ${pool} bp left in the ${hiring.option_pool_bp} bp pool`
+              pool === undefined ? '' : ` · ${pool} bp left in the option pool`
             }`}
           />
         </div>

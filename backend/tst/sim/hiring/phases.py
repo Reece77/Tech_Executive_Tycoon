@@ -53,6 +53,7 @@ from tst.sim.products.phases import product_costs
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
+    reach_stage,
     with_candidate,
     with_company,
     with_employment,
@@ -473,7 +474,7 @@ def first_hire_stage(state: GameState) -> GameState:
             for e in state.employments
         )
         if hired:
-            state = with_company(state, replace(company, stage=1))
+            state = with_company(state, reach_stage(company, 1, state.turn))
     return state
 
 

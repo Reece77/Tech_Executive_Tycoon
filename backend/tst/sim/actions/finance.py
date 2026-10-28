@@ -16,7 +16,9 @@ from tst.sim.data_models import SERIES, Balance, GameData
 from tst.sim.errors import FinanceRuleError, UnknownSafeError, UnknownTermSheetError
 from tst.sim.finance.captable import open_round
 from tst.sim.finance.fundraising import safe_fraction, series_problem
+from tst.sim.finance.insolvency import bridge_amount
 from tst.sim.finance.models import FundingRound, Safe, SheetStatus
+from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.state import GameState, with_round, with_safe, with_term_sheet
 
 # --- Action types ---------------------------------------------------------------------------
@@ -146,8 +148,15 @@ def accept_term_sheet(state: GameState, action: AcceptTermSheet, balance: Balanc
     return Outcome(state)
 
 
-def accept_bridge(state: GameState, action: AcceptBridge, balance: Balance) -> Outcome:
-    """The bridge's money arrives in phase 7 of this turn (14.7)."""
+def accept_bridge(
+    state: GameState,
+    action: AcceptBridge,
+    balance: Balance,
+    data: GameData,
+    ledger_balances: LedgerBalances,
+) -> Outcome:
+    """The bridge's money arrives in phase 7 of this turn (14.7), sized now: three months of
+    this month's projected burn plus today's deficit (M4b)."""
     company = _founder_company(state, action.actor_id)
     safe = state.safe(action.safe_id)
     if safe is None or safe.company_id != company or safe.kind != "bridge":
@@ -157,11 +166,17 @@ def accept_bridge(state: GameState, action: AcceptBridge, balance: Balance) -> O
     ):
         raise FinanceRuleError("that bridge offer is no longer open")
     state = spend_energy(state, action.actor_id, "accept_bridge", balance)
-    return Outcome(with_safe(state, replace(safe, status="accepted")))
+    cash = account_balance(ledger_balances, company, CASH)
+    amount = bridge_amount(state, company, cash, balance, data)
+    return Outcome(with_safe(state, replace(safe, status="accepted", amount_cents=amount)))
 
 
 def apply_finance(
-    state: GameState, action: FinanceAction, balance: Balance, data: GameData
+    state: GameState,
+    action: FinanceAction,
+    balance: Balance,
+    data: GameData,
+    ledger_balances: LedgerBalances,
 ) -> Outcome:
     match action:
         case RaiseSafe():
@@ -171,4 +186,4 @@ def apply_finance(
         case AcceptTermSheet():
             return accept_term_sheet(state, action, balance)
         case AcceptBridge():
-            return accept_bridge(state, action, balance)
+            return accept_bridge(state, action, balance, data, ledger_balances)

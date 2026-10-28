@@ -103,6 +103,25 @@ class OrgTileOut(BaseModel):
     )
 
 
+class FundingTileOut(BaseModel):
+    """The Overview's funding tile (M4b)."""
+
+    last_round_label: str | None = Field(description="Series of the latest priced round")
+    last_round_date_label: str | None
+    post_money_cents: int | None
+    founder_fraction: float = Field(description="The founder's share of fully diluted shares")
+    board_label: str | None = Field(description="confident | watchful | losing patience")
+    board_confidence: float | None
+    safes_outstanding: int = Field(description="SAFEs that convert at the next priced round")
+
+
+class StageReachedOut(BaseModel):
+    stage: int
+    stage_label: str
+    turn: int
+    date_label: str
+
+
 class OverviewOut(BaseModel):
     save_id: str
     company_name: str
@@ -145,3 +164,9 @@ class OverviewOut(BaseModel):
     )
     game_state: str = Field(description="active | bankrupt | founder_removed (M4a)")
     ended_turn: int | None = Field(description="Turn the game ended; null while active")
+    stage_since_turn: int | None = Field(
+        description="Turn the current stage was reached; null if a pre-M4b save lacks it"
+    )
+    stage_since_label: str | None
+    stage_history: list[StageReachedOut] = Field(description="Each stage reached, oldest first")
+    funding: FundingTileOut

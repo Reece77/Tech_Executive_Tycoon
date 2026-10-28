@@ -21,7 +21,7 @@ from tst.sim.finance.statements import projected_net_burn
 from tst.sim.ledger import CASH, AccountCode, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
-from tst.sim.state import GameState, with_company, with_safe
+from tst.sim.state import GameState, reach_stage, with_company, with_safe
 
 STAGE_LABELS = {2: "venture-backed", 3: "scale-up"}  # tunable-exempt: spec section 3 names
 
@@ -55,26 +55,18 @@ def post_bridges(
     return state, tuple(entries), tuple(logs)
 
 
-def _bridge_amount(
-    state: GameState,
-    company_id: int,
-    opening: Mapping[tuple[int, AccountCode], Cents],
-    cash: Cents,
-    balance: Balance,
-    data: GameData,
+def bridge_amount(
+    state: GameState, company_id: int, cash: Cents, balance: Balance, data: GameData
 ) -> Cents:
-    """burn_months x this month's net burn; the projected burn if cash did not fall this
-    month, and at least what gets cash back to zero."""
-    burn = account_balance(opening, company_id, CASH) - cash
-    if burn <= 0:
-        burn = projected_net_burn(state, company_id, balance, data)
-    amount = round(balance.bankruptcy.bridge_burn_months * max(burn, 0))
-    return max(amount, -cash)
+    """M4b (14.7): burn_months x this month's projected net burn, plus whatever gets cash back
+    to zero. Computed when the bridge is accepted, so one taken in the last month of grace
+    still clears the deficit; an offer shows what it would be today."""
+    burn = projected_net_burn(state, company_id, balance, data)
+    return round(balance.bankruptcy.bridge_burn_months * max(burn, 0)) + max(0, -cash)
 
 
 def insolvency(
     state: GameState,
-    opening: Mapping[tuple[int, AccountCode], Cents],
     balances: Mapping[tuple[int, AccountCode], Cents],
     balance: Balance,
     data: GameData,
@@ -117,7 +109,7 @@ def insolvency(
         post = latest.post_money_cents if latest is not None else None
         if avg is None or avg < bk.bridge_min_confidence or offered or post is None:
             continue
-        amount = _bridge_amount(state, company.id, opening, cash, balance, data)
+        amount = bridge_amount(state, company.id, cash, balance, data)
         cap = round(bk.bridge_cap_of_post * post)
         safe_id, ids = state.next_ids.take("safe")
         expires = state.turn + bk.bridge_open_turns
@@ -165,7 +157,7 @@ def funding_stages(state: GameState, balance: Balance) -> tuple[GameState, tuple
                 stage, reached = gate, series
         if reached is None:
             continue
-        state = with_company(state, replace(company, stage=stage))
+        state = with_company(state, reach_stage(company, stage, state.turn))
         logs.append(
             inbox_item(
                 state.turn,

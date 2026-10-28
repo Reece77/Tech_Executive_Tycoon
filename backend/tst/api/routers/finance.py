@@ -22,6 +22,7 @@ from tst.api.schemas.finance import (
     CapTableOut,
     FinanceActionOut,
     FinanceSummaryOut,
+    GameOverOut,
     RoundIn,
     RoundPreviewOut,
     RoundsOut,
@@ -30,12 +31,14 @@ from tst.api.schemas.finance import (
     SafesOut,
     StatementsOut,
 )
-from tst.db import repository
+from tst.db import inbox, repository
 from tst.sim.actions import AcceptBridge, AcceptTermSheet, RaiseSafe, StartRound
 from tst.sim.errors import UnknownTermSheetError
 from tst.sim.state import company_cash
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["finance"])
+
+NEWS_LIMIT = 60  # finance inbox items read for the game over timeline (six months is fewer)
 
 
 @router.get(
@@ -85,7 +88,30 @@ def get_captable(save_id: str, settings: SettingsDep, data: DataDep) -> CapTable
 
 @router.get("/finance/board", response_model=BoardOut, responses=ERRORS, operation_id="getBoard")
 def get_board(save_id: str, settings: SettingsDep, data: DataDep) -> BoardOut:
-    return finance_views.board_out(_state(_path(settings, save_id)), data)
+    """Seats, each director's confidence and trend, and the last quarterly meeting (14.6)."""
+    with repository.open_session(_path(settings, save_id)) as session:
+        state = repository.load_state(session)
+        player = state.player.id
+        meetings = inbox.list_inbox(session, player, kinds=["board_meeting"], limit=2)
+        warnings = inbox.list_inbox(session, player, kinds=["board_warning"], limit=1)
+    return finance_views.board_out(state, data, meetings, warnings)
+
+
+@router.get(
+    "/finance/game-over", response_model=GameOverOut, responses=ERRORS, operation_id="getGameOver"
+)
+def get_game_over(save_id: str, settings: SettingsDep, data: DataDep) -> GameOverOut:
+    """How the game ended: the reason, the turn, the last numbers and the last six months'
+    finance news (ADR-0018). Works on an active save too (game_state "active")."""
+    with repository.open_session(_path(settings, save_id)) as session:
+        state = repository.load_state(session)
+        player = state.player.id
+        cash = company_cash(repository.ledger_balances(session), player)
+        snaps = repository.recent_snapshots(session, player, max(state.turn, 1))
+        news = inbox.list_inbox(
+            session, player, kinds=list(finance_views.FINANCE_TEMPLATES), limit=NEWS_LIMIT
+        )
+    return finance_views.game_over_out(state, cash, snaps, news, data)
 
 
 # --- SAFEs -----------------------------------------------------------------------------------
@@ -93,7 +119,11 @@ def get_board(save_id: str, settings: SettingsDep, data: DataDep) -> BoardOut:
 
 @router.get("/finance/safes", response_model=SafesOut, responses=ERRORS, operation_id="listSafes")
 def list_safes(save_id: str, settings: SettingsDep, data: DataDep) -> SafesOut:
-    return finance_views.safes_out(_state(_path(settings, save_id)), data)
+    """Every SAFE and bridge; an open bridge offer shows today's amount (14.7)."""
+    with repository.open_session(_path(settings, save_id)) as session:
+        state = repository.load_state(session)
+        cash = company_cash(repository.ledger_balances(session), state.player.id)
+    return finance_views.safes_out(state, cash, data)
 
 
 @router.post(

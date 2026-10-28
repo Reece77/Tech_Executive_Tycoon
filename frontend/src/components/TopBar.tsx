@@ -1,13 +1,43 @@
 import { Button, Loader } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import type { Overview } from '../hooks/api';
+import type { FinanceSummary, Overview } from '../hooks/api';
 import { formatMoneyWhole, formatRunway } from '../lib/format';
 
 interface Props {
   overview: Overview | undefined;
+  summary?: FinanceSummary;
   advancing: boolean;
   onContinue: () => void;
+}
+
+const BADGE = {
+  fontSize: 12,
+  fontWeight: 700,
+  color: 'var(--tst-bg)',
+  background: 'var(--tst-warn)',
+  borderRadius: 4,
+  padding: '4px 10px',
+  textDecoration: 'none',
+} as const;
+
+/** Orange while cash is negative (M4b); links to the bridge offer when one is open. */
+function InsolventBadge({ saveId, summary }: { saveId: string; summary?: FinanceSummary }) {
+  const bridge = summary?.open_bridge_id != null;
+  const months = summary?.insolvent_months ?? 0;
+  const title = bridge
+    ? 'Cash is below zero. Your investors offer a bridge: open it on Fundraising.'
+    : `Cash is below zero${months ? ` at ${months} month end${months === 1 ? '' : 's'} in a row` : ''}. Three in a row is bankruptcy.`;
+  return (
+    <Link
+      to={`/game/${saveId}/finance/fundraising`}
+      style={BADGE}
+      title={title}
+      data-testid="insolvent-badge"
+    >
+      Insolvent{bridge ? ' · bridge offered' : ''}
+    </Link>
+  );
 }
 
 function Stat({ label, children }: { label: string; children: ReactNode }) {
@@ -52,7 +82,8 @@ export function EnergyMeter({ energy, max }: { energy: number; max: number }) {
   );
 }
 
-export function TopBar({ overview, advancing, onContinue }: Props) {
+export function TopBar({ overview, summary, advancing, onContinue }: Props) {
+  const ended = overview !== undefined && overview.game_state !== 'active';
   return (
     <header
       style={{
@@ -98,10 +129,20 @@ export function TopBar({ overview, advancing, onContinue }: Props) {
           </span>
         </Stat>
         <Stat label="Cash">
-          <span className="tst-num" style={{ fontSize: 15 }} data-testid="top-cash">
+          <span
+            className="tst-num"
+            style={{
+              fontSize: 15,
+              color: overview && overview.cash_cents < 0 ? 'var(--tst-warn)' : undefined,
+            }}
+            data-testid="top-cash"
+          >
             {overview ? formatMoneyWhole(overview.cash_cents) : '…'}
           </span>
         </Stat>
+        {overview && !ended && overview.cash_cents < 0 && (
+          <InsolventBadge saveId={overview.save_id} summary={summary} />
+        )}
         <Stat label="Runway">
           <span
             className="tst-num"
@@ -114,14 +155,21 @@ export function TopBar({ overview, advancing, onContinue }: Props) {
             {overview ? formatRunway(overview.runway_months) : '…'}
           </span>
         </Stat>
-        {overview && <EnergyMeter energy={overview.energy.energy} max={overview.energy.max} />}
+        {overview && !ended && (
+          <EnergyMeter energy={overview.energy.energy} max={overview.energy.max} />
+        )}
+        {ended && overview && (
+          <Link to={`/game/${overview.save_id}/over`} style={BADGE} data-testid="game-over-badge">
+            Game over
+          </Link>
+        )}
         <Button
           size="md"
           radius="md"
           h={44}
           px={28}
           onClick={onContinue}
-          disabled={!overview || advancing}
+          disabled={!overview || advancing || ended}
           leftSection={advancing ? <Loader size="xs" color="dark" /> : undefined}
           data-testid="continue"
         >

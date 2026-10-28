@@ -95,7 +95,7 @@ templates:
     body: "Cash is {cash_cents} after this month's costs. You need {needed_cents} to get back to zero. Three months in a row below zero means bankruptcy; this is month {month}."
   bridge_offered:
     title: "Your investors offer a {amount_cents} bridge"
-    body: "Existing investors will bridge you with {amount_cents} on a SAFE at a {cap_cents} post-money cap. Accept by {deadline}; the money arrives at that month's Continue."
+    body: "Existing investors will bridge you on a SAFE at a {cap_cents} post-money cap: {amount_cents} if you accept today. The amount is set when you accept (three months of burn plus any deficit). Accept by {deadline}; the money arrives at that month's Continue."
   bridge_lapsed:
     title: "The bridge offer lapsed"
     body: "You did not accept your investors' {amount_cents} bridge in time."

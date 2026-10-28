@@ -2,9 +2,9 @@
 // wireframe's text labels (no icons) and to the People/Hiring/Products filters.
 
 export type KindLabel =
-  'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined' | 'Delegate' | 'Product';
-export type InboxFilter = 'all' | 'unread' | 'people' | 'hiring' | 'products';
-type Group = 'people' | 'hiring' | 'company' | 'products';
+  'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined' | 'Delegate' | 'Product' | 'Finance';
+export type InboxFilter = 'all' | 'unread' | 'people' | 'hiring' | 'products' | 'finance';
+type Group = 'people' | 'hiring' | 'company' | 'products' | 'finance';
 
 const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   candidates_arrived: { label: 'Search', group: 'hiring' },
@@ -28,7 +28,37 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   arr_milestone: { label: 'Product', group: 'products' },
   sales_capacity_limited: { label: 'Product', group: 'products' },
   product_rotting: { label: 'Product', group: 'products' },
+  // M4: finance (SAFE answers, term sheets, closings, the board, insolvency and bridges)
+  safe_filled: { label: 'Finance', group: 'finance' },
+  safe_declined: { label: 'Finance', group: 'finance' },
+  term_sheets_arrived: { label: 'Finance', group: 'finance' },
+  no_term_sheets: { label: 'Finance', group: 'finance' },
+  round_lapsed: { label: 'Finance', group: 'finance' },
+  round_closed: { label: 'Finance', group: 'finance' },
+  board_meeting: { label: 'Finance', group: 'finance' },
+  board_warning: { label: 'Finance', group: 'finance' },
+  founder_removed: { label: 'Finance', group: 'finance' },
+  insolvent: { label: 'Finance', group: 'finance' },
+  bridge_offered: { label: 'Finance', group: 'finance' },
+  bridge_lapsed: { label: 'Finance', group: 'finance' },
+  bridge_funded: { label: 'Finance', group: 'finance' },
+  bankrupt: { label: 'Finance', group: 'finance' },
+  stage_from_funding: { label: 'Finance', group: 'finance' },
 };
+
+/** The Finance tab a finance message opens (M4b). */
+const FINANCE_TAB: Record<string, string> = {
+  board_meeting: 'board',
+  board_warning: 'board',
+  founder_removed: 'board',
+  round_closed: 'captable',
+  stage_from_funding: 'captable',
+  bankrupt: 'statements',
+};
+
+export function financeTab(kind: string): string {
+  return FINANCE_TAB[kind] ?? 'fundraising';
+}
 
 /** The message kinds a filter keeps, for the API (across every page); null keeps all. */
 export function kindsFor(filter: InboxFilter): string[] | null {

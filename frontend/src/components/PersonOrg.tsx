@@ -341,7 +341,11 @@ function termNote(
       p.employment.market_rate_cents,
     )} market rate`;
   }
-  if (key === 'runway') return `${formatRunway(overview.runway_months)} of cash`;
+  if (key === 'runway') {
+    return overview.runway_months === null
+      ? 'Profitable'
+      : `${formatRunway(overview.runway_months)} of cash`;
+  }
   if (key === 'manager' && b.manager_id !== null) {
     const m = org?.managers.find((x) => x.person_id === b.manager_id);
     if (!m) return b.manager_name ?? '';

@@ -63,7 +63,7 @@ describe('formatRunway', () => {
   it('formats months', () => {
     expect(formatRunway(24)).toBe('24 months');
     expect(formatRunway(1)).toBe('1 month');
-    expect(formatRunway(null)).toBe('Not burning');
+    expect(formatRunway(null)).toBe('Profitable'); // M4b: formulas.md 14.1
   });
 });
 

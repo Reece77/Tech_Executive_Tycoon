@@ -12,7 +12,14 @@ import {
   type InboxItem,
 } from '../hooks/api';
 import { formatMoneyWhole, formatWhole, humanize } from '../lib/format';
-import { kindLabel, kindsFor, pageRange, preview, type InboxFilter } from '../lib/inbox';
+import {
+  financeTab,
+  kindLabel,
+  kindsFor,
+  pageRange,
+  preview,
+  type InboxFilter,
+} from '../lib/inbox';
 import { moraleBand } from '../lib/attr';
 
 const FILTERS: { key: InboxFilter; label: string }[] = [
@@ -21,6 +28,7 @@ const FILTERS: { key: InboxFilter; label: string }[] = [
   { key: 'people', label: 'People' },
   { key: 'hiring', label: 'Hiring' },
   { key: 'products', label: 'Products' },
+  { key: 'finance', label: 'Finance' },
 ];
 
 export function InboxScreen() {
@@ -290,6 +298,16 @@ function MessageDetail({
             data-testid="view-product"
           >
             View product
+          </Button>
+        )}
+        {kindLabel(item.kind) === 'Finance' && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/finance/${financeTab(item.kind)}`}
+            h={44}
+            data-testid="view-finance"
+          >
+            {item.kind === 'bridge_offered' ? 'View the bridge offer' : 'Open Finance'}
           </Button>
         )}
         {item.read && (

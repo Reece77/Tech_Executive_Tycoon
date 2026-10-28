@@ -51,6 +51,14 @@ def test_statements_reconcile_by_period(setup: tuple[Client, Path], loaded: Load
             == (flow["change_in_cash_cents"])
         )
         assert flow["operating_cents"] == p["profit_and_loss"]["net_result_cents"]
+        pnl = p["profit_and_loss"]  # M4b totals: the front end never sums
+        opex = sum(x["amount_cents"] for x in pnl["operating_expenses"])
+        assert pnl["total_operating_expenses_cents"] == opex
+        assert pnl["gross_margin_cents"] - opex == pnl["operating_result_cents"]
+        assert flow["burn_cents"] == max(0, -flow["operating_cents"])
+        assert sheet["total_liabilities_cents"] == sum(
+            x["amount_cents"] for x in sheet["liabilities"]
+        )
     quarters = api.get(f"{BASE}/finance/statements?period=quarter")["periods"]
     assert [(q["label"], q["complete"]) for q in quarters] == [
         ("Q1 2010", True),
@@ -105,6 +113,13 @@ def test_safe_round_and_preview_through_the_api(
     preview = api.get(f"{BASE}/finance/term-sheets/{best['sheet_id']}/preview")
     assert preview["safe_conversion"] > 0 and preview["pool_top_up"] > 0
     assert preview["board_after"] == {"common": 1, "investor": 1, "independent": 0}
+    # M4b: each open sheet says what the founder would own; the preview flags holders.
+    (you,) = [line for line in preview["lines"] if line["is_founder"]]
+    assert best["founder_fraction_after"] == pytest.approx(you["fraction_after"])
+    assert [line["new"] for line in preview["lines"]][-2:] == [True, True]  # SAFE, the firm
+    assert preview["founder_keeps_tie"] and preview["energy_cost"] == 5
+    assert rnd["firms_asked"] == 4  # the seed firms in investors.yaml
+    assert api.get(f"{BASE}/finance/safes")["blocked"] is not None  # a priced round is open
     api.post(f"{BASE}/finance/term-sheets/{best['sheet_id']}/accept")
     api.get(f"{BASE}/finance/term-sheets/999/preview", status=404)
     run_turn(path, loaded)
@@ -128,6 +143,30 @@ def test_safe_round_and_preview_through_the_api(
     summary = api.get(f"{BASE}/finance/summary")
     assert summary["game_state"] == "active" and summary["runway_months"] is not None
     assert summary["stage"] == 0  # no hire yet: funding lifts stage 1, not 0 (14.8)
+    assert summary["open_bridge_id"] is None
+
+    # M4b: ownership over time, the board's trend inputs and the Overview's funding tile.
+    history = after["ownership_history"]
+    assert [e["event"] for e in history] == ["founded", "safe", "round"]
+    assert history[0]["founder_fraction"] == 0.9 and history[1]["founder_fraction"] == 0.9
+    assert history[2]["founder_fraction"] == pytest.approx(after["founder_fraction"])
+    assert (
+        after["last_round_label"] == "Seed"
+        and after["post_money_cents"] == (best["post_money_cents"])
+    )
+    assert (after["vesting_months"], after["cliff_months"]) == (48, 12)
+    assert board["seats_by_kind"] == {"common": 1, "investor": 1, "independent": 0}
+    assert not board["removal_possible"] and board["expected_growth"] == 2.0
+    # The seed closed in March: that month end moved confidence and held a meeting.
+    assert board["last_meeting"]["date_label"] == "Mar 2010"
+    assert board["next_meeting_label"] == "Jun 2010"
+    assert len(board["directors"][1]["history"]) == 1
+    run_turn(path, loaded)
+    board = api.get(f"{BASE}/finance/board")
+    assert len(board["directors"][1]["history"]) == 2 and board["trend"] is not None
+    tile = api.get(f"{BASE}/overview")["funding"]
+    assert tile["last_round_label"] == "Seed" and tile["board_label"] == board["label"]
+    assert tile["founder_fraction"] == pytest.approx(after["founder_fraction"])
 
 
 def test_game_over_refuses_turns_and_actions(setup: tuple[Client, Path]) -> None:
@@ -148,3 +187,20 @@ def test_game_over_refuses_turns_and_actions(setup: tuple[Client, Path]) -> None
     assert api.get(f"{BASE}/finance/summary")["game_state"] == "bankrupt"
     api.get(f"{BASE}/finance/captable")
     api.get(f"{BASE}/finance/statements")
+    over = api.get(f"{BASE}/finance/game-over")
+    assert (over["game_state"], over["ended_label"], over["company_name"]) == (
+        "bankrupt",
+        "Jan 2010",
+        "Fin Co",
+    )
+    assert over["founder_fraction"] == 0.9 and over["funding_summary"] is None
+    assert over["directors"] == [] and over["months_lasted"] == 1
+
+
+def test_stage_history_and_since(setup: tuple[Client, Path], loaded: LoadedData) -> None:
+    api, _ = setup
+    overview = api.get(f"{BASE}/overview")
+    assert overview["stage_since_label"] == "Jan 2010"
+    assert overview["stage_history"] == [
+        {"stage": 0, "stage_label": overview["stage_label"], "turn": 0, "date_label": "Jan 2010"}
+    ]

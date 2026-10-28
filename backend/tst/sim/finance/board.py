@@ -10,7 +10,7 @@ from dataclasses import replace
 from typing import Final
 
 from tst.sim.calendar import turn_to_ym
-from tst.sim.data_models import Balance, GameData, Series
+from tst.sim.data_models import Balance, BoardBalance, GameData, Series
 from tst.sim.finance import formulas as f
 from tst.sim.finance.captable import last_round, mrr_now_and_then
 from tst.sim.finance.models import BoardSeat, SeatKind
@@ -135,6 +135,21 @@ def growth_term(state: GameState, company_id: int, balance: Balance) -> float:
     return f.growth_points(g6, bb.expected_growth[latest.series], bb)
 
 
+def actual_growth(state: GameState, company_id: int, balance: Balance) -> float | None:
+    """The annualized 6-month MRR growth the board compares with its expectation; None while
+    there are fewer than 6 months of revenue (14.6)."""
+    now, then = mrr_now_and_then(state, company_id, balance)
+    return f.growth_6(now, then, balance.finance) if then > 0 else None
+
+
+def next_meeting_turn(turn: int, bb: BoardBalance) -> int:
+    """The first turn from `turn` whose month end has a quarterly board meeting."""
+    t = turn
+    while turn_to_ym(t)[1] not in bb.meeting_months:
+        t += 1
+    return t
+
+
 def average_confidence(state: GameState, company_id: int) -> float | None:
     """The board's mood: the mean of the voting directors' confidence (common seats hold none)."""
     values = [s.confidence for s in state.board(company_id) if s.confidence is not None]
@@ -162,7 +177,10 @@ def board_month(
             target = f.confidence_target(growth, runway_pts, patience, bb)
             b = f.next_confidence(seat.confidence, target, bb)
             below = seat.months_below + 1 if b < bb.removal_below else 0
-            state = with_seat(state, replace(seat, confidence=b, months_below=below))
+            history = (*seat.history, b)[-bb.history_months :]
+            state = with_seat(
+                state, replace(seat, confidence=b, months_below=below, history=history)
+            )
         avg = average_confidence(state, company.id)
         _, month = turn_to_ym(state.turn)
         if avg is not None and month in bb.meeting_months:

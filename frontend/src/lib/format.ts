@@ -27,9 +27,10 @@ function trim(value: number): string {
   return value.toFixed(1).replace(/\.0$/, '');
 }
 
-/** Runway in months from the API; null means the company is not burning cash. */
+/** Runway in months from the API; null means profitable: this month's revenue covers
+ * its projected costs (formulas.md 14.1). */
 export function formatRunway(months: number | null): string {
-  if (months === null) return 'Not burning';
+  if (months === null) return 'Profitable';
   return `${months} month${months === 1 ? '' : 's'}`;
 }
 

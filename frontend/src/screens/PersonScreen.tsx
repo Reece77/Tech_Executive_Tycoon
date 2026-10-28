@@ -19,13 +19,8 @@ import {
   type Overview,
   type Profile,
 } from '../hooks/api';
-import {
-  formatBpPercent,
-  formatMoneyWhole,
-  formatMonths,
-  formatWhole,
-  humanize,
-} from '../lib/format';
+import { formatMoneyWhole, formatMonths, formatWhole, humanize } from '../lib/format';
+import { formatFraction, formatShares } from '../lib/finance';
 import { statusOf } from '../lib/status';
 
 const SPARK_MONTHS = 5;
@@ -306,10 +301,31 @@ function ProfileBody({
               {emp.market_rate_cents !== null && (
                 <Row label="Market rate" value={formatMoneyWhole(emp.market_rate_cents)} />
               )}
-              <Row
-                label="Equity"
-                value={`${emp.equity_bp} bp (${formatBpPercent(emp.equity_bp)})`}
-              />
+              {emp.options ? (
+                <>
+                  <Row
+                    label="Options"
+                    value={`${formatShares(emp.options.granted)} (${formatFraction(emp.options.fraction)})`}
+                    testId="options-granted"
+                  />
+                  <Row
+                    label="Vested · unvested"
+                    value={`${formatShares(emp.options.vested)} · ${formatShares(emp.options.unvested)}`}
+                    testId="options-vested"
+                  />
+                  <Row
+                    label={emp.options.next_vest_is_cliff ? 'Cliff' : 'Next vesting'}
+                    value={
+                      emp.options.next_vest_label
+                        ? `${emp.options.next_vest_label} · ${formatShares(emp.options.next_vest_shares)}`
+                        : 'Fully vested'
+                    }
+                    testId="options-next"
+                  />
+                </>
+              ) : (
+                !p.is_founder && <Row label="Options" value="None" testId="options-granted" />
+              )}
               <Row label="Joined" value={emp.start_date_label} />
               {emp.end_date_label && <Row label="Leaves" value={emp.end_date_label} warn />}
               <Row

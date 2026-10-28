@@ -10,7 +10,9 @@ from tests.unit.test_hiring_phases import Game
 from tst.loader import LoadedData
 from tst.sim.actions import AcceptBridge
 from tst.sim.errors import FinanceRuleError, GameOverError
+from tst.sim.finance.statements import projected_net_burn
 from tst.sim.ledger import CASH, account_balance
+from tst.sim.state import stage_since
 
 FOUNDER = 1
 SALARY = 12_000_000  # $10,000 a month
@@ -58,6 +60,23 @@ def test_a_bridge_accepted_in_time_prevents_bankruptcy(loaded: LoadedData) -> No
     assert not game.state.ended  # three months of burn covered the gap
 
 
+def test_a_bridge_accepted_in_the_third_month_leaves_cash_positive(loaded: LoadedData) -> None:
+    """M4b (14.7): the amount is set at acceptance, 3 x projected burn plus the deficit."""
+    game = broke_game(loaded, "funded_spinout")
+    game.turn()
+    game.turn()  # two month ends below zero; this month's end would be the third
+    (bridge,) = game.state.safes
+    assert game.state.player.insolvent_months == 2 and game.state.turn == bridge.expires_turn
+    cash = account_balance(game.balances, 1, CASH)
+    burn = projected_net_burn(game.state, 1, loaded.balance, loaded.game_data)
+    game.act(AcceptBridge(FOUNDER, bridge.id))
+    assert game.state.safes[0].amount_cents == 3 * burn - cash  # cash is negative
+    assert game.state.safes[0].amount_cents > bridge.amount_cents  # more than at the offer
+    game.turn()
+    assert not game.state.ended and game.state.player.insolvent_months == 0
+    assert account_balance(game.balances, 1, CASH) > 0
+
+
 def test_one_bridge_offer_per_insolvency(loaded: LoadedData) -> None:
     game = broke_game(loaded, "funded_spinout")
     game.turn()
@@ -84,4 +103,6 @@ def test_a_closed_seed_lifts_stage_1_to_2(loaded: LoadedData) -> None:
     game = Game(loaded, state, cash=150_000_000)
     game.turn()
     assert game.state.player.stage == 2  # stage 1 from the hire, then 2 from the seed
+    assert game.state.player.stage_history == ((0, 0), (1, 0), (2, 0))  # M4b
+    assert stage_since(game.state.player) == 0
     assert "stage_from_funding" in templates(game)

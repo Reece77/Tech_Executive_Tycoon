@@ -27,8 +27,10 @@ class ProfitAndLossOut(BaseModel):
     revenue: list[StatementLineOut]
     total_revenue_cents: int
     cost_of_revenue: list[StatementLineOut] = Field(description="Hosting (6300) sits here")
+    total_cost_of_revenue_cents: int
     gross_margin_cents: int
     operating_expenses: list[StatementLineOut]
+    total_operating_expenses_cents: int
     operating_result_cents: int
     interest_cents: int
     tax_cents: int
@@ -39,6 +41,7 @@ class BalanceSheetOut(BaseModel):
     assets: list[StatementLineOut]
     total_assets_cents: int
     liabilities: list[StatementLineOut]
+    total_liabilities_cents: int
     paid_in_equity: list[StatementLineOut]
     accumulated_result_cents: int = Field(description="Every past net result; no closing entries")
     total_liabilities_and_equity_cents: int
@@ -49,6 +52,7 @@ class CashFlowOut(BaseModel):
     investing_cents: int
     financing_cents: int = Field(description="SAFEs and priced rounds")
     change_in_cash_cents: int
+    burn_cents: int = Field(description="-(operating) when negative, else 0 (14.1)")
 
 
 class StatementPeriodOut(BaseModel):
@@ -74,6 +78,20 @@ class HolderOut(BaseModel):
     fraction: float = Field(description="Share of fully diluted shares, 0-1")
     person_id: int | None = None
     firm: str | None = None
+    is_founder: bool = False
+
+
+class OwnershipEventOut(BaseModel):
+    """One step of "your ownership over time" (M4b)."""
+
+    turn: int
+    date_label: str
+    event: str = Field(description="founded | safe | round")
+    label: str = Field(description="e.g. 'Seed, $2M at $6M pre'")
+    founder_fraction: float = Field(description="The founder's share of FD after the event")
+    pending: bool = Field(
+        default=False, description="A SAFE not yet converted: it dilutes at the next round"
+    )
 
 
 class GrantOut(BaseModel):
@@ -87,6 +105,12 @@ class GrantOut(BaseModel):
     start_turn: int
     start_label: str
     fraction: float = Field(description="Options held (granted - forfeited) over FD")
+    next_vest_turn: int | None = Field(
+        default=None, description="Month end that next vests more; null once fully vested"
+    )
+    next_vest_label: str | None = None
+    next_vest_shares: int = 0
+    next_vest_is_cliff: bool = Field(default=False, description="The next vesting is the cliff")
 
 
 class CapTableOut(BaseModel):
@@ -98,6 +122,14 @@ class CapTableOut(BaseModel):
     unallocated_options: int
     pool_left_bp: int = Field(description="Unallocated less pending offers, in bp of FD")
     grants: list[GrantOut]
+    vesting_months: int
+    cliff_months: int
+    founder_shares: int
+    founder_fraction: float
+    last_round_label: str | None = Field(description="Series of the latest priced round")
+    last_round_date_label: str | None
+    post_money_cents: int | None = Field(description="The latest priced round's post-money")
+    ownership_history: list[OwnershipEventOut] = Field(description="Oldest first")
 
 
 class TermSheetOut(BaseModel):
@@ -111,6 +143,9 @@ class TermSheetOut(BaseModel):
     status: str
     expires_turn: int
     expires_label: str
+    founder_fraction_after: float | None = Field(
+        default=None, description="The founder's share of FD if this sheet closes (open sheets)"
+    )
 
 
 class RoundOut(BaseModel):
@@ -136,6 +171,7 @@ class RoundOut(BaseModel):
     closed_turn: int | None
     closed_label: str | None
     term_sheets: list[TermSheetOut]
+    firms_asked: int = Field(description="Firms in investors.yaml that invest in this series")
 
 
 class SeriesGuideOut(BaseModel):
@@ -148,7 +184,9 @@ class SeriesGuideOut(BaseModel):
     typical_min_cents: int | None
     typical_max_cents: int | None
     arr_cents: int = Field(description="ARR at the last month end")
+    gate_arr_cents: int | None = Field(description="ARR the series needs; null for a seed")
     open_turns: int
+    energy_cost: int
 
 
 class RoundsOut(BaseModel):
@@ -167,6 +205,7 @@ class SafeOut(BaseModel):
     expires_turn: int | None
     expires_label: str | None
     fraction: float = Field(description="amount / cap: what the holders get at the next round")
+    converted_round_id: int | None = None
 
 
 class SafesOut(BaseModel):
@@ -174,6 +213,10 @@ class SafesOut(BaseModel):
     min_cents: int
     max_cents: int
     open: bool = Field(description="A SAFE raise is waiting for investors' answers")
+    blocked: str | None = Field(
+        default=None, description="Why a SAFE cannot be raised now (a priced round is open)"
+    )
+    energy_cost: int
 
 
 class SafeHintOut(BaseModel):
@@ -192,6 +235,9 @@ class DilutionLineOut(BaseModel):
     shares_after: int
     fraction_before: float
     fraction_after: float
+    holder_kind: str = Field(description="person | firm | group | pool | options")
+    is_founder: bool = False
+    new: bool = Field(default=False, description="A holder this round adds")
 
 
 class RoundPreviewOut(BaseModel):
@@ -212,6 +258,12 @@ class RoundPreviewOut(BaseModel):
     down_round: bool
     lines: list[DilutionLineOut]
     board_after: dict[str, int] = Field(description="Seats by kind after the close")
+    founder_keeps_tie: bool = Field(
+        description="After the close the common seats are at least half: the founder cannot"
+        " be removed (14.6)"
+    )
+    energy_cost: int
+    series_label: str
 
 
 class DirectorOut(BaseModel):
@@ -225,6 +277,19 @@ class DirectorOut(BaseModel):
     label: str | None = Field(description="confident | watchful | losing patience")
     months_below: int
     seated_label: str
+    is_founder: bool = False
+    history: list[float] = Field(description="Confidence at the last month ends, oldest first")
+
+
+class BoardMeetingOut(BaseModel):
+    """The last quarterly board meeting, from the inbox (14.6)."""
+
+    turn: int
+    date_label: str
+    title: str
+    body: str
+    previous_title: str | None = Field(description="The meeting before, for the change")
+    warning_body: str | None = Field(description="The formal warning given at this meeting")
 
 
 class BoardOut(BaseModel):
@@ -236,6 +301,31 @@ class BoardOut(BaseModel):
     removal_months: int
     votes_to_remove: int = Field(description="Directors below the threshold long enough")
     seats: int
+    seats_by_kind: dict[str, int]
+    removal_possible: bool = Field(
+        description="Investor and independent seats are a majority (after Series B)"
+    )
+    trend: str | None = Field(
+        description="rising | steady | slipping: the average over the last month ends"
+    )
+    trend_from: float | None = Field(description="The average confidence the trend starts at")
+    expected_growth: float | None = Field(
+        description="Annual MRR growth the board expects after the last round"
+    )
+    actual_growth: float | None = Field(
+        description="Annualized 6-month MRR growth; null with under 6 months of revenue"
+    )
+    last_round_label: str | None
+    next_meeting_label: str | None
+    last_meeting: BoardMeetingOut | None
+
+
+class TimelineItemOut(BaseModel):
+    turn: int
+    date_label: str
+    template: str
+    title: str
+    critical: bool = Field(description="Insolvency, bankruptcy, removal and warnings")
 
 
 class FinanceSummaryOut(BaseModel):
@@ -248,6 +338,45 @@ class FinanceSummaryOut(BaseModel):
     ended_turn: int | None
     stage: int
     stage_label: str
+    open_bridge_id: int | None = Field(description="A bridge offer that can still be accepted")
+    open_bridge_amount_cents: int | None = Field(
+        description="What the open bridge would raise if accepted now"
+    )
+    open_bridge_expires_label: str | None
+    bridge_energy: int
+
+
+class GameOverDirectorOut(BaseModel):
+    name: str
+    firm_name: str | None
+    kind: str
+    confidence: float | None
+    history: list[float]
+    voted: bool = Field(description="Below the threshold long enough to vote for removal")
+
+
+class GameOverOut(BaseModel):
+    """How the game ended (ADR-0018), for the game over screen."""
+
+    game_state: str = Field(description="active | bankrupt | founder_removed")
+    company_name: str
+    ended_turn: int | None
+    ended_label: str | None
+    founded_label: str
+    months_lasted: int
+    cash_cents: int
+    arr_cents: int
+    live_products: int
+    customers: int
+    peak_headcount: int
+    final_headcount: int
+    founder_fraction: float
+    funding_summary: str | None = Field(description="e.g. 'after a SAFE and a seed'")
+    insolvent_from_label: str | None = Field(description="First month of the last insolvency")
+    bridge_offered_cents: int | None = Field(description="A bridge offered in that insolvency")
+    bridge_lapsed: bool = Field(description="That bridge was never accepted")
+    timeline: list[TimelineItemOut] = Field(description="Finance news of the last six months")
+    directors: list[GameOverDirectorOut] = Field(description="The board at the end")
 
 
 class SafeIn(BaseModel):

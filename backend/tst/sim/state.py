@@ -46,6 +46,24 @@ class CompanyState:
     arr_milestone_cents: int = 0  # highest ARR milestone announced in the inbox (M3a)
     mrr_history: tuple[int, ...] = ()  # MRR at the last month ends, oldest first (M4, 14.3)
     insolvent_months: int = 0  # consecutive month ends with cash < 0 after phase 7 (14.7)
+    # (stage, turn) each time a stage was reached, oldest first; new games start with the
+    # starting stage at the founding turn; saves from before M4b may lack earlier stages (M4b)
+    stage_history: tuple[tuple[int, int], ...] = ()
+
+
+def reach_stage(company: CompanyState, stage: int, turn: int) -> CompanyState:
+    """The company at `stage`, recording the turn it got there (M4b)."""
+    if stage == company.stage:
+        return company
+    return replace(company, stage=stage, stage_history=(*company.stage_history, (stage, turn)))
+
+
+def stage_since(company: CompanyState) -> int | None:
+    """The turn the current stage was reached; None when a pre-M4b save did not record it."""
+    for stage, turn in reversed(company.stage_history):
+        if stage == company.stage:
+            return turn
+    return None
 
 
 @dataclass(frozen=True, slots=True)

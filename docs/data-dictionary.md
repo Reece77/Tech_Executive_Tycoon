@@ -49,6 +49,7 @@ The player company, the 2010 incumbents (M3a, ADR-0017: `is_player` false, no pe
 | `arr_milestone_cents` | BIGINT | no | Highest ARR milestone (`products.arr_milestones_cents`) already announced in the inbox; 0 = none (M3a). |
 | `mrr_history` | JSON | no | MRR in cents at the last 13 month ends, oldest first: the sim's input to `g_6` (formulas.md 14.3) and board confidence (M4a). |
 | `insolvent_months` | INTEGER | no | Consecutive month ends with cash below zero after phase 7; 3 is bankruptcy (14.7, M4a). |
+| `stage_history` | JSON | no | `[stage, turn]` each time a stage was reached, oldest first; a new game starts with `[0, 0]`. Empty for saves from before M4b (migration `0010_stage_board_history`), whose "since" date is unknown. |
 
 Cash is not stored here; it is the `1000_cash` ledger balance (ADR-0003).
 
@@ -467,7 +468,7 @@ Shares are integer counts (ADR-0018). Fully diluted shares (FD) = every `cap_tab
 | `id` | INTEGER PK | no | SAFE id (`save_meta.next_safe_id`). |
 | `company_id` | INTEGER FK → company.id | no | Company. |
 | `kind` | VARCHAR(16) | no | `safe` (raised by the founder) or `bridge` (offered by existing investors while insolvent, 14.7). |
-| `amount_cents` | BIGINT | no | Money raised. |
+| `amount_cents` | BIGINT | no | Money raised. A bridge's amount is set again when it is accepted: 3 × that month's projected net burn plus any deficit (14.7, M4b); while offered it holds the amount at the offer. |
 | `cap_cents` | BIGINT | no | Post-money valuation cap (ADR-0018 §2). |
 | `status` | VARCHAR(16) | no | SAFE: `pending` → `outstanding` or `declined`. Bridge: `offered` → `accepted` → `outstanding`, or `lapsed`. An outstanding SAFE becomes `converted` at the next priced round. |
 | `raised_turn` | INTEGER | no | Turn raised (or offered). |
@@ -520,6 +521,15 @@ Shares are integer counts (ADR-0018). Fully diluted shares (FD) = every `cap_tab
 | `round_id` | INTEGER | yes | The round that created the seat. |
 | `confidence` | FLOAT | yes | Investor and independent seats: confidence 0–100 (starts at 70). Null for common seats, which always back the founder. |
 | `months_below` | INTEGER | no | Consecutive month ends below the removal threshold (25). |
+
+### board_seat_history (migration `0010_stage_board_history`, M4b)
+
+One row per seat. A table of its own rather than a column on `board_seat`, because migration `0009_finance` builds `board_seat` rows from the current models.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `seat_id` | INTEGER PK, FK → board_seat.id | no | The seat. |
+| `history` | JSON | no | The director's confidence at the last `board.history_months` (6) month ends, oldest first; empty for common seats. Upgraded saves start with the current confidence. |
 
 ## Inbox (migration `0004_inbox`, M1b)
 

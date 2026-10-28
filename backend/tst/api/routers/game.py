@@ -45,7 +45,8 @@ from tst.sim.actions import (
     WithdrawOffer,
 )
 from tst.sim.errors import InvalidActionError, UnknownCandidateError, UnknownOfferError
-from tst.sim.finance.options import pool_left_bp
+from tst.sim.finance.captable import fd_shares
+from tst.sim.finance.options import offer_shares, pool_left_bp, pool_left_shares
 from tst.sim.hiring.rules import offer_preview
 from tst.sim.state import GameState
 
@@ -279,8 +280,12 @@ def preview_offer(
         data.game_data,
         actor_id=_founder_id(state),
     )
-    pool_left = pool_left_bp(state, state.player.id)
+    company = state.player.id
+    pool_left = pool_left_bp(state, company)
     pending = state.pending_offer_for(candidate_id)
+    options = offer_shares(state, company, body.equity_bp)
+    fd = fd_shares(state, company)
+    replaced = offer_shares(state, company, pending.equity_bp) if pending else 0
     return OfferPreviewOut(
         hint=preview.hint,
         ratio=preview.ratio,
@@ -288,6 +293,10 @@ def preview_offer(
         expectation_cents=preview.expectation_cents,
         problems=list(preview.problems),
         option_pool_left_bp=max(pool_left + (pending.equity_bp if pending else 0), 0),
+        options=options,
+        fraction=options / fd if fd else 0.0,
+        options_left=pool_left_shares(state, company) + replaced,
+        fd_shares=fd,
         reasons=views.offer_reasons(
             state,
             state.person(candidate.person_id),
