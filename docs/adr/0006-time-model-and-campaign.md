@@ -12,7 +12,7 @@ Reece chose a 2010 start (with a 2026 scenario later) and a 360-turn standard ca
 
 - **Turn 0 = January 2010.** `tst.sim.calendar.turn_to_ym(turn) -> (year, month)` and `ym_to_turn(year, month)`. A standard campaign ends after turn 359 (December 2039). Sandbox has no end.
 - **Base turn = one calendar month.**
-- **Crisis window:** a critical event opens up to 4 weekly sub-turns within the current month. Sub-turns are numbered `(turn, sub)` with `sub` in 1..4; only the crisis-relevant phases run in sub-turns (decisions, the crisis resolution, morale, cash). The remaining monthly phases run once when the window closes. Crisis windows arrive in M6; until then all turns are monthly and `sub` is always 0.
+- **Crisis window:** a critical event opens up to 4 weekly sub-turns within the current month. Sub-turns are numbered `(turn, sub)` with `sub` in 1..4; only the crisis-relevant phases run in sub-turns (decisions, the crisis resolution, morale, cash). The remaining monthly phases run once when the window closes. Crisis windows arrive in M6; until then all turns are monthly and `sub` is always 0. **Amended (Reece, 2026-10-27): v1 has no weekly sub-turns.** In M6 a critical event blocks Continue until the player decides, and may carry one follow-up decision into the next month; `sub` stays 0 throughout v1. Weekly sub-turns are reconsidered in v2.
 - **Turn pipeline order** (fixed, tested in `tests/unit/test_turn_order.py`):
   1. apply player decisions
   2. rival decisions (M5+)

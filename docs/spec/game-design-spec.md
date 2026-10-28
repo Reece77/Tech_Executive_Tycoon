@@ -430,7 +430,7 @@ All design questions are settled, and each answer is recorded in an ADR in the r
 | World and names | Real-world company and commodity names; personal use only; fictional-name toggle later | ADR-0011 |
 | Start year | January 2010; a 2026 scenario later as a separate seed pack | ADR-0006, ADR-0011 |
 | Campaign length | 360 turns (30 years) for a standard run; Sandbox unlimited | ADR-0006 |
-| Turn granularity | Monthly turns, with weekly crisis sub-turns triggered by severity | ADR-0006 |
+| Turn granularity | Monthly turns. Critical events block Continue until decided and may carry a follow-up into the next month; weekly crisis sub-turns deferred to v2 | ADR-0006 |
 | Founder | Playable person with stats; can be fired by the board outside Sandbox | ADR-0011 |
 | Delegation | Everything delegable; outcome quality depends on the delegate's attributes | ADR-0011 |
 | Geography | Abstract regions in v1; named cities with offices in v2 | ADR-0011 |
