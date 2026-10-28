@@ -13,6 +13,7 @@ export type HiringMeta = Schemas['HiringMetaOut'];
 export type Person = Schemas['PersonSummaryOut'];
 export type Profile = Schemas['PersonProfileOut'];
 export type Attribute = Schemas['AttributeOut'];
+export type Learned = Schemas['LearnedOut'];
 export type InboxItem = Schemas['InboxItemOut'];
 export type Search = Schemas['SearchOut'];
 export type OfferPreview = Schemas['OfferPreviewOut'];

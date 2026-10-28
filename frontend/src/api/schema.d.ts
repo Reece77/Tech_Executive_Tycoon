@@ -184,7 +184,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Interview */
+        /**
+         * Interview
+         * @description Interview a candidate; the response says what it taught (M4c).
+         */
         post: operations["interviewCandidate"];
         delete?: never;
         options?: never;
@@ -201,7 +204,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Reference Check */
+        /**
+         * Reference Check
+         * @description Check a candidate's references; the response says what it taught (M4c).
+         */
         post: operations["referenceCheck"];
         delete?: never;
         options?: never;
@@ -913,7 +919,8 @@ export interface paths {
         put?: never;
         /**
          * Scout Search
-         * @description The founder scouts every open candidate of the search (20 energy, formulas.md 11.12).
+         * @description The founder scouts every open candidate of the search (20 energy, formulas.md 11.12);
+         *     the response says what it taught about each (M4c).
          */
         post: operations["scoutSearch"];
         delete?: never;
@@ -1622,6 +1629,72 @@ export interface components {
             level_mix: {
                 [key: string]: number;
             };
+        };
+        /**
+         * CheckOut
+         * @description An interview or reference check: the candidate's profile now, and what it taught.
+         */
+        CheckOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Age */
+            age: number;
+            /** Region */
+            region: string;
+            /** Role */
+            role: string | null;
+            /** Role Label */
+            role_label: string | null;
+            /** Level */
+            level: string | null;
+            /** Is Founder */
+            is_founder: boolean;
+            /** Morale */
+            morale: number | null;
+            /** Potential Phrase */
+            potential_phrase: string;
+            /** Skills */
+            skills: components["schemas"]["AttributeOut"][];
+            /**
+             * Personality
+             * @description Personality ranges (in the summary from M4c, for the candidate table)
+             */
+            personality: components["schemas"]["AttributeOut"][];
+            employment: components["schemas"]["EmploymentOut"] | null;
+            candidacy: components["schemas"]["CandidacyOut"] | null;
+            /** Noticed Tags */
+            noticed_tags: components["schemas"]["TagOut"][];
+            knowledge: components["schemas"]["KnowledgeOut"];
+            /**
+             * Interests
+             * @description Null until an interview or network intro
+             */
+            interests: string[] | null;
+            /** @description Staff only (M2b) */
+            org?: components["schemas"]["PersonOrgOut"] | null;
+            /**
+             * Energy
+             * @description Energy left this month: the founder and delegates only
+             */
+            energy?: number | null;
+            /**
+             * Work Style
+             * @description Null until an interview or network intro
+             */
+            work_style: string | null;
+            /**
+             * Work Style Matches Role
+             * @description Null while work style is unknown
+             */
+            work_style_matches_role: boolean | null;
+            /**
+             * Morale History
+             * @description Last 12 months, oldest first
+             */
+            morale_history: components["schemas"]["MoralePointOut"][];
+            learned: components["schemas"]["LearnedOut"];
         };
         /** CostLineOut */
         CostLineOut: {
@@ -2341,6 +2414,46 @@ export interface components {
              * @description What still stands between it and launch
              */
             missing: string[];
+        };
+        /**
+         * LearnedOut
+         * @description What one interview, reference check or scout taught about a person (M4c). Built from
+         *     displayed ranges before and after the action, never from true values (ADR-0007).
+         */
+        LearnedOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Action
+             * @description interview | reference_check | scout
+             */
+            action: string;
+            /**
+             * Ranges
+             * @description Ranges that narrowed, skills first
+             */
+            ranges: components["schemas"]["RangeChangeOut"][];
+            /** Potential Before */
+            potential_before: string;
+            /** Potential After */
+            potential_after: string;
+            /**
+             * Interests
+             * @description Set when this action revealed them
+             */
+            interests: string[] | null;
+            /**
+             * Work Style
+             * @description Set when this action revealed it
+             */
+            work_style: string | null;
+            /**
+             * Tags
+             * @description Behavior tags this action noticed
+             */
+            tags: components["schemas"]["TagOut"][];
         };
         /** ManagerOut */
         ManagerOut: {
@@ -3093,6 +3206,11 @@ export interface components {
             potential_phrase: string;
             /** Skills */
             skills: components["schemas"]["AttributeOut"][];
+            /**
+             * Personality
+             * @description Personality ranges (in the summary from M4c, for the candidate table)
+             */
+            personality: components["schemas"]["AttributeOut"][];
             employment: components["schemas"]["EmploymentOut"] | null;
             candidacy: components["schemas"]["CandidacyOut"] | null;
             /** Noticed Tags */
@@ -3110,8 +3228,6 @@ export interface components {
              * @description Energy left this month: the founder and delegates only
              */
             energy?: number | null;
-            /** Personality */
-            personality: components["schemas"]["AttributeOut"][];
             /**
              * Work Style
              * @description Null until an interview or network intro
@@ -3152,6 +3268,11 @@ export interface components {
             potential_phrase: string;
             /** Skills */
             skills: components["schemas"]["AttributeOut"][];
+            /**
+             * Personality
+             * @description Personality ranges (in the summary from M4c, for the candidate table)
+             */
+            personality: components["schemas"]["AttributeOut"][];
             employment: components["schemas"]["EmploymentOut"] | null;
             candidacy: components["schemas"]["CandidacyOut"] | null;
             /** Noticed Tags */
@@ -3543,6 +3664,20 @@ export interface components {
             /** Salary Cents */
             salary_cents: number;
         };
+        /**
+         * RangeChangeOut
+         * @description One displayed range an action narrowed (M4c): what the viewer saw before and after.
+         */
+        RangeChangeOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Group */
+            group: string;
+            before: components["schemas"]["RangeOut"];
+            after: components["schemas"]["RangeOut"];
+        };
         /** RangeOut */
         RangeOut: {
             /** Min */
@@ -3811,6 +3946,17 @@ export interface components {
             starting_cash_by_difficulty: {
                 [key: string]: number;
             };
+        };
+        /** ScoutOut */
+        ScoutOut: {
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+            /**
+             * Learned
+             * @description What the scouting taught, per candidate
+             */
+            learned: components["schemas"]["LearnedOut"][];
         };
         /** SearchIn */
         SearchIn: {
@@ -4837,7 +4983,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PersonProfileOut"];
+                    "application/json": components["schemas"]["CheckOut"];
                 };
             };
             /** @description Bad Request */
@@ -4896,7 +5042,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PersonProfileOut"];
+                    "application/json": components["schemas"]["CheckOut"];
                 };
             };
             /** @description Bad Request */
@@ -7388,7 +7534,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActionOut"];
+                    "application/json": components["schemas"]["ScoutOut"];
                 };
             };
             /** @description Bad Request */

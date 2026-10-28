@@ -17,6 +17,7 @@ from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.people import (
     ActionOut,
+    CheckOut,
     EnergyOut,
     FireOut,
     InboxItemOut,
@@ -194,9 +195,10 @@ def list_candidates(save_id: str, settings: SettingsDep, data: DataDep) -> list[
 
 def _check(
     save_id: str, candidate_id: int, settings: SettingsDep, data: DataDep, kind: str
-) -> PersonProfileOut:
+) -> CheckOut:
     path = _path(settings, save_id)
-    actor = _founder_id(_state(path))
+    before = _state(path)
+    actor = _founder_id(before)
     action = (
         Interview(actor, candidate_id)
         if kind == "interview"
@@ -205,30 +207,33 @@ def _check(
     repository.run_action(path, data, action)
     with repository.open_session(path) as session:
         state = repository.load_state(session)
-        return views.person_profile(session, state, state.player.id, candidate_id, data)
+        company = state.player.id
+        profile = views.person_profile(session, state, company, candidate_id, data)
+    learned = views.learned(before, state, company, candidate_id, kind, data)
+    return CheckOut(**profile.model_dump(), learned=learned)
 
 
 @router.post(
     "/recruitment/candidates/{candidate_id}/interview",
-    response_model=PersonProfileOut,
+    response_model=CheckOut,
     responses=ERRORS,
     operation_id="interviewCandidate",
 )
-def interview(
-    save_id: str, candidate_id: int, settings: SettingsDep, data: DataDep
-) -> PersonProfileOut:
+def interview(save_id: str, candidate_id: int, settings: SettingsDep, data: DataDep) -> CheckOut:
+    """Interview a candidate; the response says what it taught (M4c)."""
     return _check(save_id, candidate_id, settings, data, "interview")
 
 
 @router.post(
     "/recruitment/candidates/{candidate_id}/reference-check",
-    response_model=PersonProfileOut,
+    response_model=CheckOut,
     responses=ERRORS,
     operation_id="referenceCheck",
 )
 def reference_check(
     save_id: str, candidate_id: int, settings: SettingsDep, data: DataDep
-) -> PersonProfileOut:
+) -> CheckOut:
+    """Check a candidate's references; the response says what it taught (M4c)."""
     return _check(save_id, candidate_id, settings, data, "reference_check")
 
 

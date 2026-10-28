@@ -16,7 +16,7 @@ from tst.api import product_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _act, _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
-from tst.api.schemas.people import ActionOut
+from tst.api.schemas.people import ActionOut, ScoutOut
 from tst.api.schemas.products import (
     AssignIn,
     CategoryOut,
@@ -290,12 +290,19 @@ def cancel(save_id: str, product_id: int, settings: SettingsDep, data: DataDep) 
 
 @router.post(
     "/recruitment/searches/{search_id}/scout",
-    response_model=ActionOut,
+    response_model=ScoutOut,
     responses=ERRORS,
     operation_id="scoutSearch",
 )
-def scout_search(save_id: str, search_id: int, settings: SettingsDep, data: DataDep) -> ActionOut:
-    """The founder scouts every open candidate of the search (20 energy, formulas.md 11.12)."""
+def scout_search(save_id: str, search_id: int, settings: SettingsDep, data: DataDep) -> ScoutOut:
+    """The founder scouts every open candidate of the search (20 energy, formulas.md 11.12);
+    the response says what it taught about each (M4c)."""
     path = _path(settings, save_id)
-    _, out = _act(path, data, ScoutSearch(_founder_id(_state(path)), search_id))
-    return out
+    before = _state(path)
+    company = before.player.id
+    targets = [c.person_id for c in before.open_candidates(company) if c.search_id == search_id]
+    result, out = _act(path, data, ScoutSearch(_founder_id(before), search_id))
+    learned = [
+        views.learned(before, result.new_state, company, pid, "scout", data) for pid in targets
+    ]
+    return ScoutOut(**out.model_dump(), learned=learned)

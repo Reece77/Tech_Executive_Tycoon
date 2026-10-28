@@ -17,12 +17,14 @@ from tst.api.schemas.people import (
     EnergyOut,
     InboxItemOut,
     KnowledgeOut,
+    LearnedOut,
     MoralePointOut,
     OptionsOut,
     PendingOfferOut,
     PersonOrgOut,
     PersonProfileOut,
     PersonSummaryOut,
+    RangeChangeOut,
     RangeOut,
     SearchOut,
     TagOut,
@@ -253,6 +255,7 @@ def person_summary(
         morale=state.person_state(person.id).morale if employment else None,
         potential_phrase=potential_phrase(pa_lo, pa_hi, data.balance.reveal.pa_phrase_bounds),
         skills=_skills(person, reveal, data),
+        personality=_personality(person, reveal, data),
         employment=None
         if employment is None
         else EmploymentOut(
@@ -329,7 +332,6 @@ def person_profile(
     ).all()
     return PersonProfileOut(
         **summary.model_dump(),
-        personality=_personality(person, reveal, data),
         work_style=person.work_style if known else None,
         work_style_matches_role=None
         if not known or role is None
@@ -338,6 +340,55 @@ def person_profile(
             MoralePointOut(turn=r.turn, date_label=format_turn(r.turn), morale=r.morale)
             for r in reversed(rows)
         ],
+    )
+
+
+def learned(
+    before: GameState,
+    after: GameState,
+    company_id: int,
+    person_id: int,
+    action: str,
+    data: LoadedData,
+) -> LearnedOut:
+    """What an action taught the company about a person (M4c): every displayed range that
+    narrowed, the potential phrase before and after, and interests, work style and tags that
+    became known. Both sides are displayed values, so nothing hidden leaves (ADR-0007)."""
+    person = after.person(person_id)
+    old = _knowledge(before, company_id, before.person(person_id))
+    new = _knowledge(after, company_id, person)
+    bounds = data.balance.reveal.pa_phrase_bounds
+    attrs = [(s.key, s.label, s.group) for s in data.game_data.skills] + [
+        (t.key, t.label, PERSONALITY_GROUP) for t in data.game_data.personality
+    ]
+    ranges = []
+    for key, label, group in attrs:
+        lo0, hi0 = revealed_range(before.person(person_id), old, key)
+        lo1, hi1 = revealed_range(person, new, key)
+        if (lo0, hi0) != (lo1, hi1):
+            ranges.append(
+                RangeChangeOut(
+                    key=key,
+                    label=label,
+                    group=group,
+                    before=RangeOut(min=lo0, max=hi0),
+                    after=RangeOut(min=lo1, max=hi1),
+                )
+            )
+    revealed = old.profile_revealed_turn is None and new.profile_revealed_turn is not None
+    known_tags = {t for t, _ in old.revealed_tags}
+    return LearnedOut(
+        person_id=person_id,
+        name=person_name(person),
+        action=action,
+        ranges=ranges,
+        potential_before=potential_phrase(
+            *revealed_range(before.person(person_id), old, PA_KEY), bounds
+        ),
+        potential_after=potential_phrase(*revealed_range(person, new, PA_KEY), bounds),
+        interests=list(person.interests) if revealed else None,
+        work_style=person.work_style if revealed else None,
+        tags=[t for t in _tags(new, data) if t.key not in known_tags],
     )
 
 
