@@ -139,14 +139,16 @@ scout\_factor_{PA} = clamp\left(\frac{judgment\_of\_talent}{20},\; 0.1,\; 1.0\ri
 
 and each action's PA strength is `reveal.pa_strength.<action>`. This is what makes a good scout worth having: current skills show themselves quickly; potential does not. `reveal.initial_hw.pa`, `reveal.pa_scout_divisor` and `reveal.pa_strength.*` are tuned to the §13.10 target. **Tuned in M2b:** stranger PA `hw` 67, `pa_scout_divisor` 16 (a judgment-6 scout learns potential at 0.375 of the full rate, judgment 16 and above at 1.0, against 0.65 and 0.9 for skills), and PA strengths job-post screen 0.05, interview 0.10, scouting month 0.60, network intro 0.30, reference check 0.30, employed month 0.08. **M4c (Reece's playtest: interviews felt pointless for potential):** interview PA strength rises to 0.20, and `reveal.initial_hw.pa` is re-tuned within 60–120 (smallest value that holds) so the §13.10 +3 PA target still passes; every interview and reference check now shows what it taught (§4 feedback in the M4c brief).
 
-**PA worked example (M2b values).** True PA 140, offset +0.2, scout judgment 12 (PA scout factor 0.75):
+**PA worked example (M4c values: stranger `hw` 66, interview PA strength 0.20).** True PA 140, offset +0.2, scout judgment 12 (PA scout factor 0.75):
 
 | Step | hw | Displayed | Phrase |
 | --- | --- | --- | --- |
-| Stranger | 67.00 | 59–194 | limited to outstanding |
-| After job-post screen | 64.49 | 62–192 | limited to outstanding |
-| After interview | 59.65 | 68–188 | limited to outstanding |
-| After 6 months employed | 41.15 | 90–173 | decent to outstanding |
+| Stranger | 66.00 | 60–193 | limited to outstanding |
+| After job-post screen | 63.52 | 63–191 | limited to outstanding |
+| After interview | 54.00 | 75–184 | decent to outstanding |
+| After 6 months employed | 37.25 | 95–170 | decent to outstanding |
+
+(M2b values, for comparison: 67.00, 64.49, 59.65 after the interview (68–188, still "limited to outstanding"), 41.15.) **M4c result:** `reveal.initial_hw.pa` = **66**, the smallest value in 60–120 that holds the §13.10 target (judgment 16 over judgment 6: +3.05 PA over 400 seeds; 65 gives +2.74). For a typical mid-level candidate (true PA 113, centred) seen by a judgment-10 founder, a job post plus one interview now shows 57–169 ("limited to outstanding"; M2b: 52–174): one interview takes 12% off the PA range instead of 6%, but the phrase usually needs a reference check or a second look to move.
 
 **Interests and work style** are not ranges: they are hidden until the first interview or network intro, then shown exactly.
 
@@ -617,11 +619,11 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `growth.noise_rel_sd` | 0.25 | fraction of the growth term | §3 |
 | `people.retire_bp_per_year_over_60` | 600 | bp | §3 |
 | `people.retire_from_age` | 60 | years | §3 |
-| `reveal.initial_hw.skill` / `.personality` / `.pa` | 5.0 / 7.0 / 67.0 (40.0 before M2b) | attribute or CA points | §4 |
+| `reveal.initial_hw.skill` / `.personality` / `.pa` | 5.0 / 7.0 / 66.0 (40.0 before M2b, 67.0 in M2b–M4b) | attribute or CA points | §4 |
 | `reveal.strength.<action>` | see §4 | fraction | §4 |
 | `reveal.scout_base` / `reveal.scout_divisor` | 0.5 / 40 | — | §4 |
 | `reveal.pa_phrase_bounds` | [70, 100, 130, 160] | CA points | §4 |
-| `reveal.pa_scout_divisor` / `reveal.pa_strength.<action>` | 16 / see §4 (tuned) | attribute points / fraction | §4, tuned in M2b |
+| `reveal.pa_scout_divisor` / `reveal.pa_strength.<action>` | 16 / see §4 (tuned; interview 0.20 from M4c) | attribute points / fraction | §4, tuned in M2b |
 | `reveal.pa_scout_clamp` | [0.1, 1.0] | multiplier [min, max] | §4 (M2b) |
 | `reveal.founder_pa_hw` | 40 | CA points | §4, §5 (M2b) |
 | `founder.skill_base` / `.skill_points` / `.skill_cap` | 5 / 70 / 18 | attribute points | §5 |
