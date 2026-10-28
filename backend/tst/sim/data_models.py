@@ -1136,6 +1136,8 @@ INBOX_TEMPLATE_KEYS = (
     "rival_failed",  # M5: a rival went bankrupt (15.1); shown via market news, not the inbox
     "market_news",  # M5: the month's rival moves (15.5)
     "rival_approach",  # M5: a rival approached one of the player's people (15.6)
+    "poach_accepted",  # M5: the employee took the rival's offer (15.6)
+    "poach_declined",  # M5: the employee stayed (15.6)
     "insolvent",
     "bridge_offered",
     "bridge_lapsed",

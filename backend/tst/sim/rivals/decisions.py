@@ -421,6 +421,23 @@ def approach(
     )
 
 
+def approach_note(state: GameState, made: PoachApproach) -> LogItem:
+    """The player's inbox item for a rival's approach (15.6)."""
+    person = state.person(made.person_id)
+    employment = state.employment_of(person.id)
+    return inbox_item(
+        state.turn,
+        state.player.id,
+        "rival_approach",
+        link_kind="person",
+        link_id=person.id,
+        rival=state.company(made.rival_id).name,
+        name=f"{person.first_name} {person.last_name}",
+        offer_cents=made.offer_cents,
+        salary_cents=employment.salary_cents if employment else 0,
+    )
+
+
 # --- Phase 2 ----------------------------------------------------------------------------------
 
 
@@ -472,22 +489,7 @@ def rival_month(
         state = with_rival_move(replace(state, next_ids=ids), move)
         moves.append(move)
         if c.action == "poach":
-            pending = max(state.approaches, key=lambda a: a.id)
-            person = state.person(pending.person_id)
-            employment = state.employment_of(person.id)
-            logs.append(
-                inbox_item(
-                    state.turn,
-                    state.player.id,
-                    "rival_approach",
-                    link_kind="person",
-                    link_id=person.id,
-                    rival=company.name,
-                    name=f"{person.first_name} {person.last_name}",
-                    offer_cents=pending.offer_cents,
-                    salary_cents=employment.salary_cents if employment else 0,
-                )
-            )
+            logs.append(approach_note(state, max(state.approaches, key=lambda a: a.id)))
     return state, tuple(moves), tuple(logs), tuple(entries)
 
 

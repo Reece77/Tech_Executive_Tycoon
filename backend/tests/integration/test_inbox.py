@@ -150,8 +150,38 @@ def finance_games(loaded: LoadedData) -> FinanceGames:
     starved.balances = {(1, CASH): 400_000_000}
     for _ in range(3):
         starved.turn()
+    # M5: a rival approaches; one person stays, another (offered a fortune) goes.
+    from tests.unit.test_rivals import _by_name, _with_staff
+    from tst.sim.rivals.decisions import approach, approach_note
+    from tst.sim.state import with_approach
+
+    poached, pid = _with_staff(loaded)
+    rival = poached.state.company(_by_name(poached.state, "Salesforce"))
+    poached.state = approach(poached.state, rival, pid, loaded.balance, loaded.game_data)
+    extra.append(approach_note(poached.state, poached.state.approaches[0]))
+    poached.turn()
+    poached.turn()
+    loyal, kept = _with_staff(loaded)
+    loyal.state = approach(loyal.state, rival, kept, loaded.balance, loaded.game_data)
+    made = loyal.state.approaches[0]
+    loyal.state = with_approach(loyal.state, replace(made, offer_cents=1))
+    loyal.turn()
+    loyal.turn()
     return FinanceGames(
-        (raised, lapsed, nobody, bankrupt, bridged, unbridged, seeded, empty, nominee, starved),
+        (
+            raised,
+            lapsed,
+            nobody,
+            bankrupt,
+            bridged,
+            unbridged,
+            seeded,
+            empty,
+            nominee,
+            starved,
+            poached,
+            loyal,
+        ),
         extra,
     )
 

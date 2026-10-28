@@ -39,6 +39,7 @@ from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
 from tst.sim.rivals.models import RivalMove
+from tst.sim.rivals.poaching import answer_approaches, join_rivals
 from tst.sim.rivals.startups import found_startups, launch_ready, record_failures
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
@@ -110,13 +111,15 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     Player actions themselves were applied at once between turns; Decisions stays empty in M1.
     """
     state, ended = phases.end_notices(ctx.state)
+    state = join_rivals(state)  # people who took a rival's offer join it (M5, 15.6)
+    state, answered = answer_approaches(state, ctx.rng, ctx.balance)  # M5 (15.6)
     state = settle_leavers(state)  # leavers' unvested options return to the pool (14.2)
     state, detached = detach_departed(state, ctx.data)
     state, vacated = vacate_departed(state)  # a departed nominee's seat empties (14.6, M4c)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
     state, closing, closed = fundraising.close_rounds(state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*entries, *closing)
-    return ctx.log(*ended, *detached, *vacated, *resolved, *closed)
+    return ctx.log(*ended, *answered, *detached, *vacated, *resolved, *closed)
 
 
 def rival_decisions(ctx: TurnContext) -> TurnContext:

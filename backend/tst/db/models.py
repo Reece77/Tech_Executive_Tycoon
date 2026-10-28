@@ -297,6 +297,7 @@ class SearchRow(Base):
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
     plan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # hiring_plan id (0006)
+    rival_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # poach search (0013)
 
 
 class CandidateRow(Base):

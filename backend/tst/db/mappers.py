@@ -422,6 +422,7 @@ def search_to_row(search: Search) -> SearchRow:
         status=search.status,
         closed_turn=search.closed_turn,
         plan_id=search.plan_id,
+        rival_id=search.rival_id,
     )
 
 
@@ -436,6 +437,7 @@ def search_from_row(row: SearchRow) -> Search:
         status=cast(SearchStatus, row.status),
         closed_turn=row.closed_turn,
         plan_id=row.plan_id,
+        rival_id=row.rival_id,
     )
 
 

@@ -54,6 +54,7 @@ CHANNEL_ENERGY: dict[str, str] = {
     "network": "network",
     "job_post": "job_post",
     "recruiter": "recruiter",
+    "poach": "poach_search",  # M5 (15.6)
 }
 
 
@@ -66,6 +67,7 @@ class OpenSearch:
     role: str
     channel: Channel
     plan_id: int | None = None  # set by a delegate opening it for a hiring plan (13.10)
+    rival_id: int | None = None  # the rival of a "Poach from a rival" search (M5, 15.6)
     kind: Literal["open_search"] = "open_search"
 
 
@@ -190,6 +192,12 @@ def open_search(
         plan = state.plan(action.plan_id)
         if plan is None or plan.company_id != company or plan.status == "closed":
             raise UnknownPlanError(f"no hiring plan {action.plan_id}")
+    if action.channel == "poach":
+        rival = next((c for c in state.rivals() if c.id == action.rival_id), None)
+        if rival is None or rival.id == company:
+            raise InvalidActionError("a poach search needs a rival still in business")
+    elif action.rival_id is not None:
+        raise InvalidActionError("only a poach search names a rival")
     state = spend_energy(state, action.actor_id, CHANNEL_ENERGY[action.channel], balance)
     search_id, ids = state.next_ids.take("search")
     search = Search(
@@ -200,6 +208,7 @@ def open_search(
         actor_id=action.actor_id,
         opened_turn=state.turn,
         plan_id=action.plan_id,
+        rival_id=action.rival_id,
     )
     return Outcome(replace(with_search(state, search), next_ids=ids))
 

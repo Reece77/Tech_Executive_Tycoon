@@ -11,7 +11,7 @@ from typing import Literal
 
 type Function = Literal["builder", "seller", "marketer"]
 type EffectKind = Literal["feature_push", "quality_push", "brand_push", "cut_costs", "builder_left"]
-type ApproachStatus = Literal["pending", "accepted", "declined", "lapsed"]
+type ApproachStatus = Literal["pending", "accepted", "declined", "lapsed", "joined"]
 
 
 @dataclass(frozen=True, slots=True)

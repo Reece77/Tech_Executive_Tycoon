@@ -51,6 +51,7 @@ from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
 from tst.sim.products.phases import product_costs
+from tst.sim.rivals.poaching import leave_rival, poach_batch
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -67,7 +68,7 @@ from tst.sim.state import (
 )
 
 JOB_HOPPER = "job_hopper"
-ONE_BATCH = frozenset({"network", "recruiter"})  # these searches close after one batch
+ONE_BATCH = frozenset({"network", "recruiter", "poach"})  # these close after one batch
 
 
 def _name(person: Person) -> str:
@@ -163,6 +164,8 @@ def resolve_offers(
                 offer=hiring.offer,
                 pitch=offer_pitch(state, offer.actor_id, hiring),
             )
+            if candidate.channel == "poach":  # leaving an employer (M5, 15.6)
+                score += balance.rivals.poach.leave_penalty
             accepted = draw < acceptance_probability(score, hiring.offer)
         status: OfferStatus = "accepted" if accepted else "declined"
         state = with_offer(state, replace(offer, status=status, resolved_turn=state.turn))
@@ -184,6 +187,8 @@ def resolve_offers(
                 )
             )
             continue
+        if candidate is not None and candidate.channel == "poach":
+            state = leave_rival(state, person.id, balance, data)  # M5 (15.6)
         emp_id, ids = state.next_ids.take("employment")
         state = replace(state, next_ids=ids)
         joins = state.unit(offer.unit_id) if offer.unit_id is not None else None
@@ -528,8 +533,25 @@ def candidate_batches(
     for search in sorted(state.searches, key=lambda s: s.id):
         if search.status != "open":
             continue
-        channel = balance.hiring.channel[search.channel]
         gen = people_gen_stream(rng, state.turn, search.id)
+        if search.channel == "poach":  # a rival's key people, not generated (M5, 15.6)
+            state, count = poach_batch(state, search, gen, balance, data)
+            state = with_search(state, replace(search, status="closed", closed_turn=state.turn))
+            logs.append(
+                inbox_item(
+                    state.turn,
+                    search.company_id,
+                    "candidates_arrived",
+                    link_kind="search",
+                    link_id=search.id,
+                    count=count,
+                    role=data.role(search.role).label,
+                    channel=f"poach from {state.company(search.rival_id or 0).name}",
+                    shelf=balance.hiring.candidate_shelf_turns,
+                )
+            )
+            continue
+        channel = balance.hiring.channel[search.channel]
         count = int(gen.integers(int(channel.size.lo), int(channel.size.hi), endpoint=True))
         actor = _actor(state, search)
         if (

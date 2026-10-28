@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Literal
 
-type Channel = Literal["network", "job_post", "recruiter"]
+type Channel = Literal["network", "job_post", "recruiter", "poach"]  # poach: M5 (15.6)
 type SearchStatus = Literal["open", "closed"]
 # "withdrawn" is unused in M1: M2 uses it when a candidate or a delegate pulls out.
 type CandidateStatus = Literal["open", "hired", "declined", "expired", "withdrawn"]
@@ -28,6 +28,7 @@ class Search:
     status: SearchStatus = "open"
     closed_turn: int | None = None
     plan_id: int | None = None  # the hiring plan it serves (opened by its delegate, M2a)
+    rival_id: int | None = None  # a "Poach from a rival" search: the rival (M5, 15.6)
 
 
 @dataclass(frozen=True, slots=True)

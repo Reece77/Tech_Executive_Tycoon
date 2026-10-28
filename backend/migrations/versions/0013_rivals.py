@@ -44,6 +44,7 @@ RIVAL_COUNTERS = ("rival_person", "rival_employment")  # rivals' own ids count f
 def upgrade() -> None:
     for column in _company_columns():
         op.add_column("company", column)
+    op.add_column("search", sa.Column("rival_id", sa.Integer(), nullable=True))
     for name in COUNTERS:
         op.add_column(
             "save_meta",
@@ -196,3 +197,6 @@ def downgrade() -> None:
         op.execute(f"ALTER TABLE save_meta DROP COLUMN next_{name}_id")
     for column in _company_columns():
         op.execute(f"ALTER TABLE company DROP COLUMN {column.name}")
+    op.execute("DELETE FROM candidate WHERE channel = 'poach'")
+    op.execute("DELETE FROM search WHERE channel = 'poach'")
+    op.execute("ALTER TABLE search DROP COLUMN rival_id")

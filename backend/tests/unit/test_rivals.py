@@ -4,11 +4,14 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from tests.helpers import fresh_game, rival_cash
+from tests.helpers import fresh_game, mark_interviewed, rival_cash
+from tests.unit.test_hiring_phases import Game
 from tst.loader import LoadedData
+from tst.sim.actions import MakeOffer, OpenSearch
 from tst.sim.ledger import CASH
 from tst.sim.rivals.decisions import (
     apply_effects,
+    approach,
     candidates,
     choose,
     market_news,
@@ -17,7 +20,13 @@ from tst.sim.rivals.decisions import (
 from tst.sim.rivals.models import SegmentShare
 from tst.sim.rivals.startups import found_startups
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, with_product, with_segment_share
+from tst.sim.state import (
+    GameState,
+    with_approach,
+    with_person,
+    with_product,
+    with_segment_share,
+)
 
 
 def _by_name(state: GameState, name: str) -> int:
@@ -162,8 +171,6 @@ def test_a_startup_out_of_money_fails_and_releases_its_people(loaded: LoadedData
     state = fresh_game(eager)
     state, _, _ = found_startups(state, RngFactory(5), eager.balance, eager.game_data)
     startup = next(c for c in state.companies if c.is_startup)
-    from tests.unit.test_hiring_phases import Game
-
     game = Game(eager, state, 40_000_000)  # the startup's money was never posted: cash 0
     for _ in range(3):
         game.turn()
@@ -173,3 +180,67 @@ def test_a_startup_out_of_money_fails_and_releases_its_people(loaded: LoadedData
     assert game.state.staff(startup.id) == ()
     news = [i for r in game.results for i in r.log_items if i.template == "market_news"]
     assert any("ran out of money" in dict(i.params)["lines"] for i in news)
+
+
+# --- Poaching (15.6) ---------------------------------------------------------------------------
+
+
+def _with_staff(loaded: LoadedData) -> tuple[Game, int]:
+    from tests.helpers import make_person, with_employee
+
+    state = fresh_game(loaded)
+    person = replace(make_person(loaded, 2, "software_engineer", "senior"), tags=())
+    state = with_employee(loaded, state, person, 9_000_000)
+    return Game(loaded, state, 400_000_000), person.id
+
+
+def test_an_approach_is_answered_and_an_accepted_one_joins_the_rival(loaded: LoadedData) -> None:
+    game, pid = _with_staff(loaded)
+    salesforce = game.state.company(_by_name(game.state, "Salesforce"))
+    state = approach(game.state, salesforce, pid, loaded.balance, loaded.game_data)
+    (made,) = state.approaches
+    assert made.offer_cents > 9_000_000  # 1.25x the market rate for a senior engineer
+    # A huge offer to an unhappy, disloyal person: they go.
+    person = state.person(pid)
+    unhappy = replace(person, personality=person.personality.updated({"loyalty": 1.0}))
+    state = with_person(state, unhappy)
+    state = with_approach(state, replace(made, offer_cents=40_000_000))
+    game.state = state
+    game.turn()  # turn 0: made this month (as in phase 2); answered next month
+    first = game.turn()
+    notes = [i.template for i in first.log_items if (i.template or "").startswith("poach_")]
+    assert notes == ["poach_accepted"]
+    assert game.state.employment_of(pid).end_reason == "poached"  # type: ignore[union-attr]
+    game.turn()  # the notice ends in phase 1; they join the rival
+    joined = game.state.employment_of(pid)
+    assert joined is not None and joined.company_id == salesforce.id
+    assert joined.salary_cents == 40_000_000
+    assert [a.status for a in game.state.approaches] == ["joined"]
+
+
+def test_the_player_poaches_a_key_builder_and_the_rival_loses_quality(loaded: LoadedData) -> None:
+    game, _ = _with_staff(loaded)
+    salesforce = _by_name(game.state, "Salesforce")
+    game.act(OpenSearch(1, "software_engineer", "poach", rival_id=salesforce))
+    game.turn()
+    pool = [c for c in game.state.candidates if c.channel == "poach"]
+    assert 2 <= len(pool) <= 4 or len(pool) == len(
+        [e for e in game.state.staff(salesforce) if e.role == "software_engineer"]
+    )
+    target = pool[0]
+    rival_job = game.state.employment_of(target.person_id)
+    assert rival_job is not None and rival_job.company_id == salesforce
+    ask = game.state.person(target.person_id).salary_expectation_cents
+    assert ask == round(rival_job.salary_cents * 1.3)
+    product = _product_of(game.state, salesforce)
+    before = game.state.product(product).quality  # type: ignore[union-attr]
+    game.state = mark_interviewed(game.state)
+    game.act(MakeOffer(1, target.person_id, round((ask or 0) * 3), 0))
+    game.turn()
+    hired = game.state.employment_of(target.person_id)
+    assert hired is not None and hired.company_id == 1
+    assert any(e.kind == "builder_left" for e in game.state.rival_effects)
+    for _ in range(6):
+        game.turn()
+    after = game.state.product(product).quality  # type: ignore[union-attr]
+    assert after <= before - 2 + 1.0  # 2 quality over six months, pushes aside

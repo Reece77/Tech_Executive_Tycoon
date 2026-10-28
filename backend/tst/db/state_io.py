@@ -320,7 +320,7 @@ def load_state(session: Session) -> GameState:
             rival_from_row(PoachApproach, r)
             for r in session.scalars(
                 select(PoachApproachRow)
-                .where(PoachApproachRow.status == "pending")
+                .where(PoachApproachRow.status.in_(("pending", "accepted")))
                 .order_by(PoachApproachRow.id)
             )
         ),

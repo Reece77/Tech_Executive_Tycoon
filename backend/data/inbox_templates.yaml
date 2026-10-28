@@ -123,3 +123,9 @@ templates:
   rival_approach:
     title: "{rival} is trying to hire {name}"
     body: "{rival} has offered {name} {offer_cents} a year (they earn {salary_cents}). They will decide when you press Continue. You can counter with a raise first, or let them decide."
+  poach_accepted:
+    title: "{name} is leaving for {rival}"
+    body: "{name} accepted {rival}'s offer and leaves at the end of next month."
+  poach_declined:
+    title: "{name} stays"
+    body: "{name} turned down {rival}'s offer."
