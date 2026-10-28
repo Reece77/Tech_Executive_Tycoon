@@ -423,7 +423,7 @@ The largest risk is scope: this design describes three games' worth of systems, 
 
 ## 20. Settled Decisions
 
-All design questions but one are settled, and each answer is recorded in an ADR in the repository so coding agents do not re-ask. The LLM budget remains open, with a configurable cap as the default.
+All design questions are settled, and each answer is recorded in an ADR in the repository so coding agents do not re-ask.
 
 | Topic | Decision | Recorded in |
 | --- | --- | --- |
@@ -439,7 +439,7 @@ All design questions but one are settled, and each answer is recorded in an ADR 
 | Rivals | Agent-based full entities; utility AI, no LLM; reduced-fidelity staff beyond each rival's top 20 | ADR-0010 |
 | Stack | Python, FastAPI, SQLite, React with Mantine | ADR-0001 |
 | Scenarios and difficulty | Four starts and four difficulties; mineral-first start unlocks in v3 | ADR-0011 |
-| LLM budget | Open: configurable monthly token cap with an on-screen meter until Reece sets a number | ADR-0005 |
+| LLM budget | $10 a calendar month, counted in dollars from token use and configurable prices, with an on-screen meter; templates take over when it runs out | ADR-0005 |
 | Randomness | One stream name per call site, keyed by entity id, so draws never collide or depend on iteration order | ADR-0013 |
 | Action timing | Player actions apply immediately between turns; offers are answered at Continue | ADR-0014 |
 | Delegates | Act in the advance step through the player's own actions, with their own energy and random stream | ADR-0015 |

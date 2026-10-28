@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Decision (Reece, 2026-10-27): LLM budget $10 a calendar month, in dollars from token counts and configurable prices (ADR-0005 §6).
 - Workflow (Reece, 2026-10-27): agents merge their own branch on a green check and tag it (CLAUDE.md §6, Merging); `pytest-xdist` approved (ADR-0001).
 - Docs (M5 prep): formulas.md §15 rivals (incumbent pools, ledgers and key people; utility decisions and personalities; rival startups; poaching both ways; balance targets; worked examples) and §12 rows; `rivals`, `rival_spawn` and `poach` streams in ADR-0013; M5 brief (one milestone); M5 wireframes (Competitors, rival profile).
 - Docs (Reece's first playtest): M4c brief, including a balance pass so fast growth needs outside money; formulas.md §4 (interview PA strength 0.20), §6 (energy 60, higher hiring costs), §14.5 (investor heat), §14.6 (chosen board nominee), §12 keys.
