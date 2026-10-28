@@ -1,10 +1,15 @@
 # 2010 incumbents (docs/formulas.md 11.9, ADR-0017). Real names, approximate 2010 values,
 # personal use (CLAUDE.md section 7). They diverge from reality after turn 0.
 #
-# Each company becomes a `company` row with is_player = false: no people, no ledger and no
-# decisions until M5. Company ids follow this file's order after the player (2, 3, ...);
-# product ids follow it too, so append new entries and never reorder.
+# Each company becomes a `company` row with is_player = false; from M5 it has workforce
+# pools, key people, a ledger and decisions (formulas.md 15). Company ids follow this
+# file's order after the player (2, 3, ...); product ids follow it too, so append new
+# entries and never reorder.
 # - stage: company stage (spec section 3); founded_year: shown only.
+# - M5 (formulas.md 15.1): personality (aggressive, fast_follower, premium, cost_leader),
+#   builder_skill (the builder pool's skill d, attribute points), target_margin_bp (the
+#   margin its staff is sized for, bp of revenue) and cash_months (starting cash in months
+#   of revenue).
 # - products: fixed quality, feature score and brand (0-100). The feature score is held
 #   constant: the product's feature points grow with the market's expectation.
 # - segments: monthly price in cents and starting share of D0 in basis points (of the
@@ -17,6 +22,10 @@ companies:
   - name: Salesforce
     stage: 4
     founded_year: 1999
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 24
     products:
       - name: Sales Cloud
         category: b2b_saas
@@ -31,6 +40,10 @@ companies:
   - name: Oracle
     stage: 4
     founded_year: 1977
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 2500
+    cash_months: 60
     products:
       - name: CRM On Demand
         category: b2b_saas
@@ -44,6 +57,10 @@ companies:
   - name: Zoho
     stage: 3
     founded_year: 1996
+    personality: cost_leader
+    builder_skill: 11
+    target_margin_bp: 1500
+    cash_months: 18
     products:
       - name: Zoho CRM
         category: b2b_saas
@@ -57,6 +74,10 @@ companies:
   - name: Atlassian
     stage: 3
     founded_year: 2002
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2000
+    cash_months: 24
     products:
       - name: JIRA
         category: dev_tools
@@ -71,6 +92,10 @@ companies:
   - name: Microsoft
     stage: 4
     founded_year: 1975
+    personality: aggressive
+    builder_skill: 13
+    target_margin_bp: 3000
+    cash_months: 60
     products:
       - name: Team Foundation Server
         category: dev_tools
@@ -84,6 +109,10 @@ companies:
   - name: GitHub
     stage: 2
     founded_year: 2008
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 0
+    cash_months: 12
     products:
       - name: GitHub
         category: dev_tools
@@ -97,6 +126,10 @@ companies:
   - name: Facebook
     stage: 3
     founded_year: 2004
+    personality: aggressive
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 36
     products:
       - name: Facebook
         category: consumer_apps
@@ -109,6 +142,10 @@ companies:
   - name: Zynga
     stage: 3
     founded_year: 2007
+    personality: aggressive
+    builder_skill: 11
+    target_margin_bp: 1500
+    cash_months: 18
     products:
       - name: FarmVille
         category: consumer_apps
@@ -121,6 +158,10 @@ companies:
   - name: Evernote
     stage: 2
     founded_year: 2007
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 0
+    cash_months: 12
     products:
       - name: Evernote
         category: consumer_apps
@@ -133,6 +174,10 @@ companies:
   - name: Symantec
     stage: 4
     founded_year: 1982
+    personality: premium
+    builder_skill: 12
+    target_margin_bp: 2500
+    cash_months: 36
     products:
       - name: Norton
         category: cybersecurity
@@ -147,6 +192,10 @@ companies:
   - name: McAfee
     stage: 4
     founded_year: 1987
+    personality: cost_leader
+    builder_skill: 11
+    target_margin_bp: 2000
+    cash_months: 24
     products:
       - name: McAfee Total Protection
         category: cybersecurity
@@ -161,6 +210,10 @@ companies:
   - name: Check Point
     stage: 4
     founded_year: 1993
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 3000
+    cash_months: 48
     products:
       - name: Check Point
         category: cybersecurity

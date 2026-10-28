@@ -251,6 +251,8 @@ ENERGY_ACTIONS = (
     "accept_term_sheet",
     "accept_bridge",
     "name_nominee",
+    # M5 rivals (formulas.md 15.6)
+    "poach_search",
 )
 CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
 HIRING_LEVELS = ("junior", "mid", "senior", "staff")
@@ -600,6 +602,122 @@ class BankruptcyBalance(_Frozen):
     bridge_open_turns: int = Field(gt=0)
 
 
+# --- Rivals (formulas.md section 15, M5) -----------------------------------------------------
+
+PERSONALITIES = ("aggressive", "fast_follower", "premium", "cost_leader")  # 15.3 (acquirer: v2)
+RIVAL_ACTIONS = (
+    "price_cut",
+    "price_rise",
+    "feature_push",
+    "quality_push",
+    "brand_push",
+    "enter_segment",
+    "cut_costs",
+    "poach",
+)  # formulas.md 15.3, in scoring order (ties go to the earlier action)
+FUNCTIONS = ("builder", "seller", "marketer")  # 15.1 workforce pool functions
+
+
+class RivalNeedBalance(_Frozen):
+    price_cut_drop: float = Field(gt=0)
+    price_rise_lead: float
+    price_rise_span: float = Field(gt=0)
+    feature_gap: float = Field(gt=0)
+    quality_gap: float = Field(gt=0)
+    brand_gap: float = Field(gt=0)
+    enter_unserved: float = Field(ge=0, le=1)
+    enter_span: float = Field(gt=0)
+    enter_cash_months: float = Field(ge=0)
+    cut_costs_months: float = Field(ge=0)
+    cut_costs_span: float = Field(gt=0)
+    poach_gain: float = Field(gt=0)
+
+
+class StartupBalance(_Frozen):
+    found_rate: float = Field(ge=0, le=1)
+    max_alive: int = Field(ge=0)
+    team: Span
+    cash_cents: Span
+    raise_months: float = Field(gt=0)
+    raise_chance: float = Field(ge=0, le=1)
+    low_cash_months: float = Field(ge=0)
+    salary_mult: float = Field(gt=0)
+    personalities: tuple[str, ...] = Field(min_length=1)
+
+
+class PoachBalance(_Frozen):
+    offer_mult: float = Field(gt=0)
+    top_fraction: float = Field(gt=0, le=1)
+    ask_mult: float = Field(gt=0)
+    leave_penalty: float
+    key_builder_quality_hit: float = Field(ge=0)
+    bands: Span
+    candidates: Span
+    salary_weight: float
+    morale_mid: float
+    morale_divisor: float = Field(gt=0)
+    loyalty_mid: float
+    loyalty_divisor: float = Field(gt=0)
+    options_weight: float
+    steepness: float = Field(gt=0)
+
+
+class RivalsBalance(_Frozen):
+    act_threshold: float
+    noise_sd: float = Field(ge=0)
+    cooldown_turns: int = Field(ge=0)
+    push_turns: int = Field(gt=0)
+    window_turns: int = Field(gt=0)
+    need: RivalNeedBalance
+    weights: dict[str, dict[str, float]]
+    price_factor: dict[str, float]
+    price_cut: float = Field(gt=0)
+    price_rise: float = Field(gt=0)
+    push_pool_growth: float = Field(ge=0)
+    brand_push_marketing: float = Field(ge=0)
+    cut_costs_pools: float = Field(ge=0, lt=1)
+    cut_costs_marketing: float = Field(ge=0, le=1)
+    feature_push_rate: float = Field(ge=0)
+    quality_push_rate: float = Field(ge=0)
+    brand_push_rate: float = Field(ge=0)
+    cut_costs_drag: float = Field(ge=0)
+    qcap_per_skill: float = Field(gt=0)
+    function_mix: dict[str, dict[str, float]]
+    function_roles: dict[str, str]
+    pool_morale: float = Field(ge=0, le=100)  # tunable-exempt: morale scale 0-100
+    pool_skill_other: float = Field(ge=1, le=20)  # tunable-exempt: attribute scale 1-20
+    start_marketing_share: float = Field(ge=0, le=1)
+    key_people: int = Field(ge=0)
+    key_people_levels: dict[str, float]
+    startup: StartupBalance
+    poach: PoachBalance
+    money_bands_months: Span
+    stance_turns: int = Field(ge=0)
+    headcount_round: int = Field(gt=0)
+    headcount_round_above: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def _check(self) -> RivalsBalance:
+        for name, table in (("weights", self.weights), ("price_factor", self.price_factor)):
+            if sorted(table) != sorted(PERSONALITIES):
+                raise ValueError(f"rivals.{name} must define exactly {list(PERSONALITIES)}")
+        for personality, weights in self.weights.items():
+            if sorted(weights) != sorted(RIVAL_ACTIONS):
+                raise ValueError(f"rivals.weights.{personality} must define {list(RIVAL_ACTIONS)}")
+        for category, mix in self.function_mix.items():
+            if sorted(mix) != sorted(FUNCTIONS) or abs(sum(mix.values()) - 1) > WEIGHT_TOLERANCE:
+                raise ValueError(f"rivals.function_mix.{category} must split 1 over {FUNCTIONS}")
+        if sorted(self.function_roles) != sorted(FUNCTIONS):
+            raise ValueError(f"rivals.function_roles must define exactly {list(FUNCTIONS)}")
+        unknown = sorted(set(self.key_people_levels) - set(LEVELS))
+        if unknown:
+            raise ValueError(f"rivals.key_people_levels has unknown levels {unknown}")
+        bad = sorted(set(self.startup.personalities) - set(PERSONALITIES))
+        if bad:
+            raise ValueError(f"rivals.startup.personalities has unknown personalities {bad}")
+        return self
+
+
 class Balance(_Frozen):
     company: CompanyBalance
     costs: CostsBalance  # M4c (formulas.md 8)
@@ -623,6 +741,7 @@ class Balance(_Frozen):
     finance: FinanceBalance
     board: BoardBalance
     bankruptcy: BankruptcyBalance
+    rivals: RivalsBalance  # M5 (formulas.md 15)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -828,6 +947,7 @@ class NamePool(_Frozen):
 
 class NamesFile(_Frozen):
     names: dict[str, NamePool]
+    companies: tuple[str, ...] = Field(min_length=1)  # rival startup names (M5, 15.4)
 
 
 # --- Products and markets (M3): categories.yaml and incumbents.yaml -------------------------
@@ -925,6 +1045,10 @@ class IncumbentCompany(_Frozen):
     name: str = Field(min_length=1, max_length=80)  # tunable-exempt: name column width
     stage: int = Field(ge=0)
     founded_year: int
+    personality: str  # M5 (15.1): one of PERSONALITIES
+    builder_skill: float = Field(ge=1, le=20)  # tunable-exempt: attribute scale; pool skill d
+    target_margin_bp: int = Field(ge=0, lt=BP_DENOMINATOR)  # margin its pools are sized for
+    cash_months: float = Field(ge=0)  # starting cash in months of revenue (15.1)
     products: tuple[IncumbentProduct, ...] = Field(min_length=1)
 
 
@@ -1042,6 +1166,7 @@ class GameData(_Frozen):
     incumbents: tuple[IncumbentCompany, ...]
     investors: tuple[InvestorFirm, ...] = ()  # M4
     climate: ClimateFile = ClimateFile(default=1.0, years={})  # M4
+    startup_names: tuple[str, ...] = ()  # M5: rival startup names (names.yaml companies)
 
     @model_validator(mode="after")
     def _check_references(self) -> GameData:
