@@ -114,6 +114,7 @@ def inbox_item(m: InboxMessage) -> InboxItemOut:
         link_kind=m.link_kind,
         link_id=m.link_id,
         read=m.read,
+        archived=m.archived,
     )
 
 

@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 11 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 12 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -544,7 +544,7 @@ One row per seat. A table of its own rather than a column on `board_seat`, becau
 
 ### inbox_item
 
-Messages for the player company, rendered from `inbox_templates.yaml` when the turn or action that produced them is saved. Rows are only appended, except `read`. Index `ix_inbox_item_company_read (company_id, read)`.
+Messages for the player company, rendered from `inbox_templates.yaml` when the turn or action that produced them is saved. Rows are only appended, except `read` and `archived`. Index `ix_inbox_item_company_read (company_id, read)`.
 
 | Column | Type | Null | Description |
 | --- | --- | --- | --- |
@@ -557,6 +557,7 @@ Messages for the player company, rendered from `inbox_templates.yaml` when the t
 | `link_kind` | VARCHAR(16) | yes | `person`, `candidate`, `search`, or null. |
 | `link_id` | INTEGER | yes | Id of the linked person or search. |
 | `read` | BOOLEAN | no | Marked read by the player. |
+| `archived` | BOOLEAN | no | Archived by the player (migration `0012_inbox_archive`, M4c): hidden from the inbox unless the Archived filter is on; archiving also marks it read. UI state only: no game effect, not in `decision_log`. |
 
 ## Files next to the saves
 

@@ -246,6 +246,14 @@ class InboxItemOut(BaseModel):
     link_kind: str | None
     link_id: int | None
     read: bool
+    archived: bool = Field(description="Hidden from the inbox unless the archive is shown (M4c)")
+
+
+class InboxBulkOut(BaseModel):
+    """Mark all read or archive all read (M4c)."""
+
+    changed: int = Field(description="Items changed")
+    unread: int
 
 
 class InboxOut(BaseModel):

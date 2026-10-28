@@ -5,7 +5,9 @@ import { KindBadge } from '../components/KindBadge';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import {
   INBOX_PAGE,
+  useArchive,
   useInbox,
+  useInboxBulk,
   useOverview,
   usePerson,
   useSetRead,
@@ -29,6 +31,7 @@ const FILTERS: { key: InboxFilter; label: string }[] = [
   { key: 'hiring', label: 'Hiring' },
   { key: 'products', label: 'Products' },
   { key: 'finance', label: 'Finance' },
+  { key: 'archived', label: 'Archived' },
 ];
 
 export function InboxScreen() {
@@ -36,9 +39,17 @@ export function InboxScreen() {
   const [offset, setOffset] = useState(0);
   const [filter, setFilter] = useState<InboxFilter>('all');
   // Filters run in the API, so they apply across every page, not only the one shown (M3b).
-  const inbox = useInbox(saveId, offset, kindsFor(filter), filter === 'unread');
+  const inbox = useInbox(
+    saveId,
+    offset,
+    kindsFor(filter),
+    filter === 'unread',
+    filter === 'archived',
+  );
   const overview = useOverview(saveId);
   const setRead = useSetRead(saveId);
+  const archive = useArchive(saveId);
+  const bulk = useInboxBulk(saveId);
   const [params, setParams] = useSearchParams();
 
   if (inbox.isPending) return <Loading />;
@@ -61,6 +72,26 @@ export function InboxScreen() {
             <span className="tst-muted" style={{ fontSize: 13 }} data-testid="inbox-unread">
               {inbox.data.unread} unread{overview.data ? ` · ${overview.data.date_label}` : ''}
             </span>
+            <Button
+              size="compact-sm"
+              variant="subtle"
+              disabled={inbox.data.unread === 0}
+              loading={bulk.isPending && bulk.variables === 'read-all'}
+              onClick={() => bulk.mutate('read-all')}
+              data-testid="inbox-read-all"
+            >
+              Mark all as read
+            </Button>
+            <Button
+              size="compact-sm"
+              variant="subtle"
+              disabled={filter === 'archived'}
+              loading={bulk.isPending && bulk.variables === 'archive-read'}
+              onClick={() => bulk.mutate('archive-read')}
+              data-testid="inbox-archive-read"
+            >
+              Archive all read
+            </Button>
             <div
               role="group"
               aria-label="Filter messages"
@@ -103,8 +134,10 @@ export function InboxScreen() {
           {items.length === 0 ? (
             <p className="tst-muted" style={{ margin: 0, padding: 16 }}>
               {filter === 'all'
-                ? 'No messages yet. Open a search on Recruitment, then press Continue.'
-                : 'No messages match this filter.'}
+                ? 'Nothing in the inbox. Archived messages are under Archived.'
+                : filter === 'archived'
+                  ? 'Nothing archived yet.'
+                  : 'No messages match this filter.'}
             </p>
           ) : (
             items.map((m) => (
@@ -188,6 +221,12 @@ export function InboxScreen() {
             saveId={saveId}
             item={selected}
             onMarkUnread={() => setRead.mutate({ itemId: selected.item_id, read: false })}
+            onArchive={(archived) =>
+              archive.mutate(
+                { itemId: selected.item_id, archived },
+                { onSuccess: () => setParams({}, { replace: true }) },
+              )
+            }
           />
         )}
       </div>
@@ -199,10 +238,12 @@ function MessageDetail({
   saveId,
   item,
   onMarkUnread,
+  onArchive,
 }: {
   saveId: string;
   item: InboxItem;
   onMarkUnread: () => void;
+  onArchive: (archived: boolean) => void;
 }) {
   const linksPerson = item.link_kind === 'person' || item.link_kind === 'candidate';
   const person = usePerson(saveId, linksPerson && item.link_id ? item.link_id : 0);
@@ -310,11 +351,19 @@ function MessageDetail({
             {item.kind === 'bridge_offered' ? 'View the bridge offer' : 'Open Finance'}
           </Button>
         )}
-        {item.read && (
+        {item.read && !item.archived && (
           <Button variant="default" h={44} onClick={onMarkUnread}>
             Mark unread
           </Button>
         )}
+        <Button
+          variant="default"
+          h={44}
+          onClick={() => onArchive(!item.archived)}
+          data-testid={item.archived ? 'inbox-unarchive' : 'inbox-archive'}
+        >
+          {item.archived ? 'Move to inbox' : 'Archive'}
+        </Button>
       </div>
     </article>
   );

@@ -63,7 +63,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         costs = repository.costs_for_turn(session, player.id, state.turn - 1)
         paid = repository.expenses_by_memo(session, player.id, state.turn)
         unread = inbox.unread_count(session, player.id)
-        newest = inbox.list_inbox(session, player.id, limit=LATEST_INBOX)
+        newest = inbox.list_inbox(session, player.id, limit=LATEST_INBOX, archived=False)
     staff = state.staff(player.id)
     employees = [e for e in staff if not state.person(e.person_id).is_founder]
     morale = [m for e in employees if (m := state.person_state(e.person_id).morale) is not None]

@@ -1301,7 +1301,7 @@
           "game"
         ],
         "summary": "Get Inbox",
-        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to\nkeep only those message kinds, across every page (M3b).",
+        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to\nkeep only those message kinds, across every page (M3b). Archived items are hidden;\n`archived=true` shows only them (M4c).",
         "operationId": "getInbox",
         "parameters": [
           {
@@ -1369,6 +1369,16 @@
               "default": 0,
               "title": "Offset"
             }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Archived"
+            }
           }
         ],
         "responses": {
@@ -1378,6 +1388,316 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/read-all": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Mark Inbox All Read",
+        "description": "Mark every message read (M4c). UI state: no energy, nothing in decision_log.",
+        "operationId": "markInboxAllRead",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxBulkOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/archive-read": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Archive Inbox Read",
+        "description": "Archive every read message (M4c).",
+        "operationId": "archiveInboxRead",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxBulkOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/{item_id}/archive": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Archive Inbox Item",
+        "description": "Archive one message; it is marked read too (M4c).",
+        "operationId": "archiveInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/{item_id}/unarchive": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Unarchive Inbox Item",
+        "description": "Bring an archived message back to the inbox (M4c).",
+        "operationId": "unarchiveInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
                 }
               }
             }
@@ -8570,6 +8890,26 @@
         ],
         "title": "HolderOut"
       },
+      "InboxBulkOut": {
+        "properties": {
+          "changed": {
+            "type": "integer",
+            "title": "Changed",
+            "description": "Items changed"
+          },
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          }
+        },
+        "type": "object",
+        "required": [
+          "changed",
+          "unread"
+        ],
+        "title": "InboxBulkOut",
+        "description": "Mark all read or archive all read (M4c)."
+      },
       "InboxItemOut": {
         "properties": {
           "item_id": {
@@ -8621,6 +8961,11 @@
           "read": {
             "type": "boolean",
             "title": "Read"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived",
+            "description": "Hidden from the inbox unless the archive is shown (M4c)"
           }
         },
         "type": "object",
@@ -8633,7 +8978,8 @@
           "body",
           "link_kind",
           "link_id",
-          "read"
+          "read",
+          "archived"
         ],
         "title": "InboxItemOut"
       },

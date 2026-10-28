@@ -3,7 +3,8 @@
 
 export type KindLabel =
   'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined' | 'Delegate' | 'Product' | 'Finance';
-export type InboxFilter = 'all' | 'unread' | 'people' | 'hiring' | 'products' | 'finance';
+export type InboxFilter =
+  'all' | 'unread' | 'people' | 'hiring' | 'products' | 'finance' | 'archived';
 type Group = 'people' | 'hiring' | 'company' | 'products' | 'finance';
 
 const KINDS: Record<string, { label: KindLabel; group: Group }> = {
@@ -66,7 +67,7 @@ export function financeTab(kind: string): string {
 
 /** The message kinds a filter keeps, for the API (across every page); null keeps all. */
 export function kindsFor(filter: InboxFilter): string[] | null {
-  if (filter === 'all' || filter === 'unread') return null;
+  if (filter === 'all' || filter === 'unread' || filter === 'archived') return null;
   return Object.keys(KINDS).filter((kind) => KINDS[kind].group === filter);
 }
 
@@ -80,7 +81,12 @@ export function kindLabel(kind: string): KindLabel {
   return KINDS[kind]?.label ?? 'Notice'; // a template added without a label here
 }
 
-export function matchesFilter(item: { kind: string; read: boolean }, filter: InboxFilter): boolean {
+export function matchesFilter(
+  item: { kind: string; read: boolean; archived?: boolean },
+  filter: InboxFilter,
+): boolean {
+  if (filter === 'archived') return Boolean(item.archived);
+  if (item.archived) return false; // archived items show only under Archived (M4c)
   switch (filter) {
     case 'all':
       return true;

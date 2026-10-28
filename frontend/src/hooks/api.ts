@@ -233,9 +233,10 @@ export function useInbox(
   offset = 0,
   kinds: readonly string[] | null = null,
   unreadOnly = false,
+  archived = false,
 ) {
   return useQuery({
-    queryKey: [...keys.inbox(saveId, offset, kinds), unreadOnly],
+    queryKey: [...keys.inbox(saveId, offset, kinds), unreadOnly, archived],
     queryFn: async () =>
       unwrap(
         await api.GET('/api/saves/{save_id}/inbox', {
@@ -245,6 +246,7 @@ export function useInbox(
               limit: INBOX_PAGE,
               offset,
               unread_only: unreadOnly,
+              archived,
               ...(kinds ? { kind: [...kinds] } : {}),
             },
           },
@@ -263,6 +265,38 @@ export function useSetRead(saveId: string) {
         read
           ? await api.POST('/api/saves/{save_id}/inbox/{item_id}/read', params)
           : await api.POST('/api/saves/{save_id}/inbox/{item_id}/unread', params),
+      );
+    },
+    onSuccess: invalidate,
+  });
+}
+
+/** Archive or bring back one message (M4c). UI state only: no energy, no game effect. */
+export function useArchive(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async ({ itemId, archived }: { itemId: number; archived: boolean }) => {
+      const params = { params: { path: { save_id: saveId, item_id: itemId } } };
+      return unwrap(
+        archived
+          ? await api.POST('/api/saves/{save_id}/inbox/{item_id}/archive', params)
+          : await api.POST('/api/saves/{save_id}/inbox/{item_id}/unarchive', params),
+      );
+    },
+    onSuccess: invalidate,
+  });
+}
+
+/** Mark every message read, or archive every read message (M4c). */
+export function useInboxBulk(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (op: 'read-all' | 'archive-read') => {
+      const params = { params: { path: { save_id: saveId } } };
+      return unwrap(
+        op === 'read-all'
+          ? await api.POST('/api/saves/{save_id}/inbox/read-all', params)
+          : await api.POST('/api/saves/{save_id}/inbox/archive-read', params),
       );
     },
     onSuccess: invalidate,

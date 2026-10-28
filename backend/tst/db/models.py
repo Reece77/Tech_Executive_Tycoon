@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 11
+SCHEMA_VERSION = 12
 
 
 class Base(DeclarativeBase):
@@ -343,6 +343,8 @@ class InboxItemRow(Base):
     link_kind: Mapped[str | None] = mapped_column(String(16), nullable=True)
     link_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     read: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+    # Hidden from the inbox unless asked for (M4c, migration 0012); a UI flag, no game effect.
+    archived: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
 
 
 # --- Organization (M2a, migration 0005_org) --------------------------------------------------

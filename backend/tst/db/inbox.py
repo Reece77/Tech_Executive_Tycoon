@@ -1,4 +1,6 @@
-"""Inbox: render templated log items for the player company, list them, mark them read."""
+"""Inbox: render templated log items for the player company, list them, mark them read,
+archive them (M4c). Reading and archiving are UI state: no energy, no game effect, not in
+decision_log."""
 
 from __future__ import annotations
 
@@ -7,7 +9,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from tst.db.models import InboxItemRow
@@ -58,6 +60,7 @@ class InboxMessage:
     link_kind: str | None
     link_id: int | None
     read: bool
+    archived: bool = False
 
 
 def render(item: LogItem, templates: dict[str, InboxTemplate]) -> tuple[str, str]:
@@ -93,6 +96,7 @@ def inbox_rows(
                 link_kind=item.link_kind,
                 link_id=item.link_id,
                 read=False,
+                archived=False,
             )
         )
     return rows
@@ -106,14 +110,18 @@ def list_inbox(
     kinds: Sequence[str] | None = None,
     limit: int | None = None,
     offset: int = 0,
+    archived: bool | None = None,
 ) -> list[InboxMessage]:
     """Newest first; `offset` skips that many (paging, M2b); `kinds` keeps only those
-    templates (M3b)."""
+    templates (M3b); `archived` keeps only archived (True) or unarchived (False) items, or
+    both (None; M4c)."""
     stmt = select(InboxItemRow).where(InboxItemRow.company_id == company_id)
     if unread_only:
         stmt = stmt.where(InboxItemRow.read.is_(False))
     if kinds is not None:
         stmt = stmt.where(InboxItemRow.template.in_(kinds))
+    if archived is not None:
+        stmt = stmt.where(InboxItemRow.archived.is_(archived))
     stmt = stmt.order_by(InboxItemRow.id.desc()).offset(offset)
     if limit is not None:
         stmt = stmt.limit(limit)
@@ -126,6 +134,7 @@ def inbox_total(
     *,
     unread_only: bool = False,
     kinds: Sequence[str] | None = None,
+    archived: bool | None = None,
 ) -> int:
     stmt = (
         select(func.count()).select_from(InboxItemRow).where(InboxItemRow.company_id == company_id)
@@ -134,6 +143,8 @@ def inbox_total(
         stmt = stmt.where(InboxItemRow.read.is_(False))
     if kinds is not None:
         stmt = stmt.where(InboxItemRow.template.in_(kinds))
+    if archived is not None:
+        stmt = stmt.where(InboxItemRow.archived.is_(archived))
     return int(session.scalar(stmt) or 0)
 
 
@@ -159,6 +170,48 @@ def mark_read(
     return _message(row)
 
 
+def _own(session: Session, company_id: int, item_id: int) -> InboxItemRow:
+    row = session.get(InboxItemRow, item_id)
+    if row is None or row.company_id != company_id:
+        raise UnknownInboxItemError(f"no inbox item {item_id}")
+    return row
+
+
+def mark_all_read(session: Session, company_id: int) -> int:
+    """Mark every unread item read; returns how many changed (M4c)."""
+    result = session.execute(
+        update(InboxItemRow)
+        .where(InboxItemRow.company_id == company_id, InboxItemRow.read.is_(False))
+        .values(read=True)
+    )
+    return int(result.rowcount or 0)  # type: ignore[attr-defined]
+
+
+def archive(
+    session: Session, company_id: int, item_id: int, *, archived: bool = True
+) -> InboxMessage:
+    """Archive an item (it is read too) or bring it back (M4c)."""
+    row = _own(session, company_id, item_id)
+    row.archived = archived
+    if archived:
+        row.read = True
+    return _message(row)
+
+
+def archive_read(session: Session, company_id: int) -> int:
+    """Archive every read item still in the inbox; returns how many (M4c)."""
+    result = session.execute(
+        update(InboxItemRow)
+        .where(
+            InboxItemRow.company_id == company_id,
+            InboxItemRow.read.is_(True),
+            InboxItemRow.archived.is_(False),
+        )
+        .values(archived=True)
+    )
+    return int(result.rowcount or 0)  # type: ignore[attr-defined]
+
+
 def _message(row: InboxItemRow) -> InboxMessage:
     return InboxMessage(
         id=row.id,
@@ -169,4 +222,5 @@ def _message(row: InboxItemRow) -> InboxMessage:
         link_kind=row.link_kind,
         link_id=row.link_id,
         read=row.read,
+        archived=row.archived,
     )

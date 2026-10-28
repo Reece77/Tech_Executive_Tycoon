@@ -297,3 +297,20 @@ def test_product_notes_reach_the_inbox(tmp_path: Path, loaded: LoadedData) -> No
     assert (message.link_kind, message.link_id) == ("product", 13)
     assert message.title == "Pipeline is slipping"
     assert "Assign a unit to it." in message.body
+
+
+def test_upgrade_to_0012_keeps_items_unarchived(tmp_path: Path, loaded: LoadedData) -> None:
+    """M4c: migration 0012 adds inbox_item.archived; existing items stay in the inbox."""
+    from tst.db import migrate
+
+    path = create_save(
+        "arch", 6, "ex_big_tech_founders", company_name="Co", data=loaded, save_dir=tmp_path
+    )
+    run_action(path, loaded, OpenSearch(1, "software_engineer", "job_post"))
+    run_turn(path, loaded)
+    migrate.downgrade(path, "0011_board_nominee")
+    assert migrate.ensure_current(path) is not None
+    with open_session(path) as session:
+        items = list_inbox(session, 1, archived=False)
+        assert items and not any(m.archived for m in items)
+        assert list_inbox(session, 1, archived=True) == []

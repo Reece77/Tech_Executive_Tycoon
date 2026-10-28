@@ -20,6 +20,7 @@ from tst.api.schemas.people import (
     CheckOut,
     EnergyOut,
     FireOut,
+    InboxBulkOut,
     InboxItemOut,
     InboxOut,
     OfferIn,
@@ -346,21 +347,89 @@ def get_inbox(
     kind: Annotated[list[str] | None, Query()] = None,
     limit: int | None = Query(default=None, ge=1),
     offset: int = Query(default=0, ge=0),
+    archived: bool = False,
 ) -> InboxOut:
     """Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to
-    keep only those message kinds, across every page (M3b)."""
+    keep only those message kinds, across every page (M3b). Archived items are hidden;
+    `archived=true` shows only them (M4c)."""
     path = _path(settings, save_id)
     with repository.open_session(path) as session:
         player = repository.load_state(session).player
         items = inbox.list_inbox(
-            session, player.id, unread_only=unread_only, kinds=kind, limit=limit, offset=offset
+            session,
+            player.id,
+            unread_only=unread_only,
+            kinds=kind,
+            limit=limit,
+            offset=offset,
+            archived=archived,
         )
         return InboxOut(
             unread=inbox.unread_count(session, player.id),
-            total=inbox.inbox_total(session, player.id, unread_only=unread_only, kinds=kind),
+            total=inbox.inbox_total(
+                session, player.id, unread_only=unread_only, kinds=kind, archived=archived
+            ),
             offset=offset,
             items=[views.inbox_item(m) for m in items],
         )
+
+
+@router.post(
+    "/inbox/read-all",
+    response_model=InboxBulkOut,
+    responses=ERRORS,
+    operation_id="markInboxAllRead",
+)
+def mark_inbox_all_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
+    """Mark every message read (M4c). UI state: no energy, nothing in decision_log."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session, session.begin():
+        player = repository.load_state(session).player
+        changed = inbox.mark_all_read(session, player.id)
+        return InboxBulkOut(changed=changed, unread=inbox.unread_count(session, player.id))
+
+
+@router.post(
+    "/inbox/archive-read",
+    response_model=InboxBulkOut,
+    responses=ERRORS,
+    operation_id="archiveInboxRead",
+)
+def archive_inbox_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
+    """Archive every read message (M4c)."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session, session.begin():
+        player = repository.load_state(session).player
+        changed = inbox.archive_read(session, player.id)
+        return InboxBulkOut(changed=changed, unread=inbox.unread_count(session, player.id))
+
+
+@router.post(
+    "/inbox/{item_id}/archive",
+    response_model=InboxItemOut,
+    responses=ERRORS,
+    operation_id="archiveInboxItem",
+)
+def archive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
+    """Archive one message; it is marked read too (M4c)."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session, session.begin():
+        player = repository.load_state(session).player
+        return views.inbox_item(inbox.archive(session, player.id, item_id))
+
+
+@router.post(
+    "/inbox/{item_id}/unarchive",
+    response_model=InboxItemOut,
+    responses=ERRORS,
+    operation_id="unarchiveInboxItem",
+)
+def unarchive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
+    """Bring an archived message back to the inbox (M4c)."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session, session.begin():
+        player = repository.load_state(session).player
+        return views.inbox_item(inbox.archive(session, player.id, item_id, archived=False))
 
 
 @router.post(
