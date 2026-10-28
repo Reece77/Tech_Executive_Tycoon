@@ -65,6 +65,7 @@ from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
 from tst.sim.products.models import ProductMonth
+from tst.sim.rivals.models import RivalMove
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot
@@ -79,6 +80,17 @@ INDEX_FILE = "index.json"
 NEW_GAME_KIND = "new_game"  # decision_log row holding the new-game choices (for replay)
 PLAYER_SOURCE = "player"  # decision_log.source of player actions (re-applied by replay)
 DELEGATE_SOURCE = "delegate"  # delegate actions: recomputed by replay, never re-applied
+RIVAL_SOURCE = "rival"  # rival moves (M5, 15.3): recomputed by replay, never re-applied
+
+
+def rival_move_payload(move: RivalMove) -> dict[str, Any]:
+    return {
+        "id": move.id,
+        "action": move.action,
+        "product_id": move.product_id,
+        "segment": move.segment,
+        "detail": move.detail,
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -402,6 +414,18 @@ def apply_turn_result(
         )
         for i, (company_id, action) in enumerate(result.delegate_actions)
     )
+    first += len(result.delegate_actions)
+    session.add_all(
+        DecisionLogRow(
+            turn=played,
+            company_id=move.company_id,
+            kind=f"rival_{move.action}",
+            payload=rival_move_payload(move),
+            seq=first + i,
+            source=RIVAL_SOURCE,
+        )
+        for i, move in enumerate(result.rival_moves)
+    )
     session.add_all(entry_to_row(e) for e in result.ledger_entries)
     session.add_all(snapshot_to_rows(result.snapshot))
     session.add_all(product_month_to_row(m) for m in result.product_months)
@@ -540,6 +564,10 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
                 delegated.setdefault(row.turn, []).append(
                     (row.company_id, action_from_payload(row.payload))
                 )
+        rival_logged: dict[int, list[tuple[int, dict[str, Any]]]] = {}
+        for row in logged:
+            if row.source == RIVAL_SOURCE:
+                rival_logged.setdefault(row.turn, []).append((row.company_id, row.payload))
     setup = start.payload
     founder = dict(setup["founder"])
     if founder.get("interests") is not None:
@@ -563,6 +591,11 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
             if list(result.delegate_actions) != delegated.get(turn, []):
                 raise ReplayMismatchError(
                     f"turn {turn}: recomputed delegate actions differ from the logged ones"
+                )
+            moves = [(m.company_id, rival_move_payload(m)) for m in result.rival_moves]
+            if moves != rival_logged.get(turn, []):
+                raise ReplayMismatchError(
+                    f"turn {turn}: recomputed rival moves differ from the logged ones"
                 )
     return path
 

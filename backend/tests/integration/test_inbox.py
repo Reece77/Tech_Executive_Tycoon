@@ -145,8 +145,14 @@ def finance_games(loaded: LoadedData) -> FinanceGames:
     nominee = spinout_with_staff(loaded)
     series_a(nominee, 2)
     nominee.act(Fire(1, 2))
+    # M5: rivals with no cash fail after three month ends (15.1).
+    starved = Game(loaded, fresh_game(loaded, 9), 400_000_000)
+    starved.balances = {(1, CASH): 400_000_000}
+    for _ in range(3):
+        starved.turn()
     return FinanceGames(
-        (raised, lapsed, nobody, bankrupt, bridged, unbridged, seeded, empty, nominee), extra
+        (raised, lapsed, nobody, bankrupt, bridged, unbridged, seeded, empty, nominee, starved),
+        extra,
     )
 
 
@@ -236,7 +242,7 @@ def test_inbox_persists_from_turns_and_actions(tmp_path: Path, loaded: LoadedDat
     with open_session(path) as session:
         state = load_state(session)
         messages = list_inbox(session, 1)
-    assert [m.template for m in messages] == ["candidates_arrived"]
+    assert [m.template for m in messages if m.template != "market_news"] == ["candidates_arrived"]
     arrived = messages[0]
     assert arrived.link_kind == "search" and arrived.link_id == 1
     assert arrived.title.endswith("candidates for Software engineer")
@@ -292,7 +298,7 @@ def test_product_notes_reach_the_inbox(tmp_path: Path, loaded: LoadedData) -> No
     run_action(path, loaded, CreateProduct(1, "Pipeline", "b2b_saas", ("smb",)))
     run_turn(path, loaded)  # nobody works on it
     with open_session(path) as session:
-        [message] = list_inbox(session, 1)
+        [message] = [m for m in list_inbox(session, 1) if m.template != "market_news"]
     assert message.template == "product_rotting"
     assert (message.link_kind, message.link_id) == ("product", 13)
     assert message.title == "Pipeline is slipping"

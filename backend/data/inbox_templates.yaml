@@ -114,3 +114,12 @@ templates:
   stage_from_funding:
     title: "Now {stage_label}"
     body: "Closing your {series} makes {company} a {stage_label} company."
+  rival_failed:
+    title: "{company} has failed"
+    body: "{company} ran out of money. Its products are gone and its customers are looking for something new."
+  market_news:
+    title: "Market news: {count} rival moves"
+    body: "{lines}."
+  rival_approach:
+    title: "{rival} is trying to hire {name}"
+    body: "{rival} has offered {name} {offer_cents} a year (they earn {salary_cents}). They will decide when you press Continue. You can counter with a raise first, or let them decide."

@@ -17,6 +17,7 @@ from tst.sim.hiring.formulas import (
     acceptance_probability,
     benefits_cents,
     is_lowball,
+    market_mid_cents,
     monthly_salary_cents,
     morale_noise_sd,
     morale_step,
@@ -260,17 +261,32 @@ def monthly_costs(
         1 for e in staff if not is_remote(state, e)
     )
     job_posts = [s for s in state.open_searches(company_id) if s.channel == "job_post"]
-    employees = sum(1 for e in staff if not state.person(e.person_id).is_founder)
+    employees: float = sum(1 for e in staff if not state.person(e.person_id).is_founder)
+    # A rival's workforce pools cost the same per head at the mid-level rate (M5, 15.1).
+    for pool in state.company_pools(company_id):
+        role = data.role(balance.rivals.function_roles[pool.function])
+        pay = monthly_salary_cents(
+            market_mid_cents(role.salary_band_mid_cents["mid"], _mid_region(balance, data))
+        )
+        salaries += round(pool.headcount * pay)
+        benefits += round(pool.headcount * benefits_cents(pay, balance.payroll))
+        office += round(pool.headcount * balance.payroll.office_cost_per_head_cents)
+        employees += pool.headcount
     return (
         ("Salaries", SALARIES, salaries),
         ("Benefits", BENEFITS, benefits),
         ("Office", RENT, office),
-        ("Tools and travel", GENERAL_ADMIN, balance.costs.tools_per_head_cents * employees),
+        ("Tools and travel", GENERAL_ADMIN, round(balance.costs.tools_per_head_cents * employees)),
         ("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents),
         ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts)),
         ("Hosting", COMPUTE, hosting),  # M3 (11.8)
         ("Marketing", MARKETING, marketing),
     )
+
+
+def _mid_region(balance: Balance, data: GameData) -> int:
+    """Pools are paid at the default region's rate (15.1)."""
+    return data.region(balance.founder.default_region).salary_multiplier_bp
 
 
 def employment_monthly_cost_cents(

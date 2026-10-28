@@ -21,7 +21,17 @@ from tst.sim.finance.statements import projected_net_burn
 from tst.sim.ledger import CASH, AccountCode, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
-from tst.sim.state import GameState, reach_stage, with_company, with_safe
+from tst.sim.state import (
+    CompanyState,
+    GameState,
+    reach_stage,
+    with_company,
+    with_employment,
+    with_pool,
+    with_product,
+    with_product_segment,
+    with_safe,
+)
 
 STAGE_LABELS = {2: "venture-backed", 3: "scale-up"}  # tunable-exempt: spec section 3 names
 
@@ -82,6 +92,11 @@ def insolvency(
             continue
         months = company.insolvent_months + 1
         state = with_company(state, replace(company, insolvent_months=months))
+        if not company.is_player:  # a rival fails after the same months; no bridges (15.1)
+            if months >= bk.months:
+                state, failed = fail_rival(state, state.company(company.id))
+                logs += failed
+            continue
         logs.append(
             inbox_item(
                 state.turn,
@@ -169,3 +184,22 @@ def funding_stages(state: GameState, balance: Balance) -> tuple[GameState, tuple
             )
         )
     return state, tuple(logs)
+
+
+def fail_rival(state: GameState, company: CompanyState) -> tuple[GameState, list[LogItem]]:
+    """A rival bankrupt for bankruptcy.months month ends (15.1): its products retire and their
+    customers return to the unserved pool, its staff are released, its pools empty."""
+    state = with_company(state, replace(company, failed_turn=state.turn))
+    for product in state.company_products(company.id):
+        if product.status == "retired":
+            continue
+        for seg in state.segments_of(product.id):
+            state = with_product_segment(state, replace(seg, customers=0.0))
+        state = with_product(state, replace(product, status="retired", retired_turn=state.turn))
+    for e in state.staff(company.id):
+        state = with_employment(
+            state, replace(e, status="ended", end_turn=state.turn, end_reason="company_failed")
+        )
+    for pool in state.company_pools(company.id):
+        state = with_pool(state, replace(pool, headcount=0.0))
+    return state, [inbox_item(state.turn, company.id, "rival_failed", company=company.name)]

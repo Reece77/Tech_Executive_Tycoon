@@ -289,7 +289,7 @@ def _revenue(
         top = max(segments, key=lambda s: s.customers, default=None)
         if (
             product.first_customer_turn is None
-            and product.company_id in revenue
+            and product.company_id == state.player.id  # a note for the player only (M5)
             and top is not None
             and top.customers >= CUSTOMER_ROUNDING
         ):
@@ -397,7 +397,7 @@ def arr_stages(
                 stage = gate
         passed = [m for m in balance.products.arr_milestones_cents if arr >= m]
         milestone = company.arr_milestone_cents
-        if passed and passed[-1] > milestone:
+        if passed and passed[-1] > milestone and company.is_player:  # rivals: no notes (M5)
             milestone = passed[-1]
             logs.append(
                 inbox_item(

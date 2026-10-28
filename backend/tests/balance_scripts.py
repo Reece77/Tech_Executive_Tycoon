@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 
-from tests.helpers import fresh_game, make_person, with_employee
+from tests.helpers import fresh_game, make_person, rival_cash, with_employee
 from tst.loader import LoadedData
 from tst.sim.actions import (
     Action,
@@ -72,7 +72,7 @@ class Run:
 def start(loaded: LoadedData, seed: int, scenario: str = "funded_spinout") -> Run:
     state = fresh_game(loaded, seed=seed, scenario=scenario)
     cash = loaded.balance.scenario[scenario].starting_cash_cents
-    return Run(loaded, state, {(1, CASH): cash})
+    return Run(loaded, state, {**rival_cash(state, loaded), (1, CASH): cash})
 
 
 def hire(run: Run, person_id: int, role: str, flat_skill: float | None = None) -> None:

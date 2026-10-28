@@ -162,6 +162,15 @@ def hire_key_people(
     return state
 
 
+def opening_cash_cents(state: GameState, company_id: int, data: GameData) -> int:
+    """An incumbent's starting cash: the table's months of its revenue (15.1)."""
+    company = state.company(company_id)
+    spec = next((i for i in data.incumbents if i.name == company.name), None)
+    if spec is None or company.is_player or company.is_startup:
+        return 0
+    return round(monthly_revenue_cents(state, company_id) * spec.cash_months)
+
+
 def key_people_monthly_cents(state: GameState, company_id: int, balance: Balance) -> int:
     total = 0
     for e in state.staff(company_id):
@@ -221,7 +230,7 @@ def setup_incumbents(
             state = with_pool(
                 state, WorkforcePool(company.id, fn, heads, float(skill), rv.pool_morale)
             )
-        cash = round(revenue * spec.cash_months)
+        cash = opening_cash_cents(state, company.id, data)
         if cash:
             entries.append(
                 LedgerEntry.transfer(

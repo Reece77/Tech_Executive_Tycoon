@@ -49,6 +49,19 @@ def fresh_game(
     return move_directors(state)
 
 
+def rival_cash(state: GameState, loaded: LoadedData) -> dict[tuple[int, str], int]:
+    """Opening cash of every incumbent, as new_game posts it (M5, 15.1): add it to a test's
+    ledger balances so rivals are not insolvent from the first month."""
+    from tst.sim.ledger import CASH
+    from tst.sim.rivals.setup import opening_cash_cents
+
+    return {
+        (c.id, CASH): opening_cash_cents(state, c.id, loaded.game_data)
+        for c in state.companies
+        if not c.is_player
+    }
+
+
 def last_hire(state: GameState, company_id: int = 1) -> Employment:
     """The company's newest employment (rivals' key people have employments too, M5)."""
     return max((e for e in state.employments if e.company_id == company_id), key=lambda e: e.id)

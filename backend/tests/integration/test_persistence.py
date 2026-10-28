@@ -105,9 +105,12 @@ def test_run_turn_writes_everything(save: Path, loaded: LoadedData) -> None:
         assert snap.monthly_burn_cents == OVERHEAD
         for row_type in (TurnLogRow, TurnSnapshotRow):  # the player's (rivals log too, M5)
             count = select(func.count()).select_from(row_type).where(row_type.company_id == 1)
+            if row_type is TurnLogRow:  # the month's Market news is logged too (M5)
+                count = count.where(TurnLogRow.kind != "market_news")
             assert session.scalar(count) == 1
         # the new-game choices (for replay) plus this turn's decisions
-        assert session.scalar(select(func.count()).select_from(DecisionLogRow)) == 2
+        player_log = select(func.count()).select_from(DecisionLogRow)
+        assert session.scalar(player_log.where(DecisionLogRow.source != "rival")) == 2
         # starting cash + one overhead entry
         entries = select(func.count()).select_from(LedgerEntryRow)
         assert session.scalar(entries.where(LedgerEntryRow.company_id == 1)) == 2

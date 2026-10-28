@@ -293,8 +293,15 @@ class GameState:
         return tuple(s for s in self.seats if s.company_id == company_id)
 
     def ledger_companies(self) -> tuple[CompanyState, ...]:
-        """Companies with books: the player. Incumbents have no ledger until M5 (ADR-0017)."""
-        return tuple(c for c in self.companies if c.is_player)
+        """Companies with books: the player and every rival still in business (M5, 15.1)."""
+        return tuple(c for c in self.companies if c.is_player or c.failed_turn is None)
+
+    def company_pools(self, company_id: int) -> tuple[WorkforcePool, ...]:
+        return tuple(p for p in self.pools if p.company_id == company_id)
+
+    def rivals(self) -> tuple[CompanyState, ...]:
+        """Rival companies still in business (M5)."""
+        return tuple(c for c in self.companies if not c.is_player and c.failed_turn is None)
 
     @property
     def player(self) -> CompanyState:

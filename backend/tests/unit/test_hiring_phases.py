@@ -6,7 +6,14 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import fresh_game, make_person, mark_interviewed, with_candidates, with_employee
+from tests.helpers import (
+    fresh_game,
+    make_person,
+    mark_interviewed,
+    rival_cash,
+    with_candidates,
+    with_employee,
+)
 from tst.loader import LoadedData
 from tst.sim.actions import Action, MakeOffer, OpenSearch, apply_action
 from tst.sim.decisions import Decisions
@@ -29,7 +36,7 @@ class Game:
     def __init__(self, loaded: LoadedData, state: GameState, cash: int = START_CASH) -> None:
         self.loaded = loaded
         self.state = state
-        self.balances: dict[tuple[int, str], int] = {(1, CASH): cash}
+        self.balances: dict[tuple[int, str], int] = {**rival_cash(state, loaded), (1, CASH): cash}
         self.seq = 0
         self.results: list[TurnResult] = []
         self.action_logs: list[LogItem] = []
@@ -295,7 +302,9 @@ def test_payroll_posts_every_cost(loaded: LoadedData) -> None:
     game = Game(loaded, state)
     game.act(OpenSearch(1, "designer", "job_post"))
     result = game.turn()
-    (costs,) = [e for e in result.ledger_entries if e.memo.startswith("Monthly costs")]
+    (costs,) = [
+        e for e in result.ledger_entries if e.memo.startswith("Monthly costs") and e.company_id == 1
+    ]
     lines: dict[str, int] = {}
     for ln in costs.lines:  # 6900 carries two lines: tools and travel, and base overhead
         lines[ln.account] = lines.get(ln.account, 0) + ln.amount
@@ -328,7 +337,11 @@ def test_monthly_costs_project_phase_6(loaded: LoadedData) -> None:
         )
         if amount
     }
-    (costs,) = [e for e in game.turn().ledger_entries if e.memo.startswith("Monthly costs")]
+    (costs,) = [
+        e
+        for e in game.turn().ledger_entries
+        if e.memo.startswith("Monthly costs") and e.company_id == 1
+    ]
     assert projected == {ln.account: ln.amount for ln in costs.lines if ln.account != CASH}
     employment = game.state.employment_of(engineer.id)
     assert employment is not None
@@ -346,7 +359,9 @@ def test_notice_is_paid_then_ends(loaded: LoadedData) -> None:
     state = with_employment(state, replace(emp, status="notice", end_turn=1, end_reason="resigned"))
     game = Game(loaded, state)
     first = game.turn()  # turn 0: still on notice, paid
-    costs = next(e for e in first.ledger_entries if e.memo.startswith("Monthly costs"))
+    costs = next(
+        e for e in first.ledger_entries if e.memo.startswith("Monthly costs") and e.company_id == 1
+    )
     assert {ln.account for ln in costs.lines} >= {"6000_salaries"}
     assert first.snapshot.for_company(1).headcount == 2
     second = game.turn()  # turn 1: ends in phase 1
