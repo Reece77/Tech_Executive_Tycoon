@@ -74,10 +74,12 @@ class Game:
 
 
 def live(state: GameState) -> GameState:
-    """What a reload keeps: staff, open candidates and searches, pending offers."""
+    """What a reload keeps: staff, open candidates and searches, pending offers, and the
+    people on the board (as state_io.load_state does)."""
     staff = {e.person_id for e in state.employments if e.counts_as_staff}
     open_c = {c.person_id for c in state.candidates if c.status == "open"}
-    keep = staff | open_c
+    directors = {s.person_id for s in state.seats if s.person_id is not None}
+    keep = staff | open_c | directors
     return replace(
         state,
         people=tuple(p for p in state.people if p.id in keep),

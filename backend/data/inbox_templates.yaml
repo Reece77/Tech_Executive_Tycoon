@@ -81,6 +81,12 @@ templates:
   round_closed:
     title: "{series} closed: {amount_cents} from {lead}"
     body: "{lead} led your {series} with {amount_cents} at a {pre_cents} pre-money valuation ({price} a share). You own {founder_pct} of the company; {lead} takes a board seat."
+  board_seat_empty:
+    title: "Name your board nominee"
+    body: "Your second common board seat is empty. Name an employee to it on the Board tab; until then the seat still votes with you."
+  nominee_left:
+    title: "{name} has left the board"
+    body: "{name} has left the company, so your nominee's board seat is empty. Name another employee to it on the Board tab; until then the seat still votes with you."
   board_meeting:
     title: "Board meeting: confidence {confidence}"
     body: "Your board met for the quarter. Average confidence is {confidence} ({label})."

@@ -10,7 +10,7 @@ from dataclasses import replace
 from typing import Final
 
 from tst.sim.calendar import turn_to_ym
-from tst.sim.data_models import Balance, BoardBalance, GameData, Series
+from tst.sim.data_models import LEVELS, Balance, BoardBalance, GameData, Series
 from tst.sim.finance import formulas as f
 from tst.sim.finance.captable import last_round, mrr_now_and_then
 from tst.sim.finance.models import BoardSeat, SeatKind
@@ -58,7 +58,7 @@ def _add_seat(
 ) -> GameState:
     seat_id, ids = state.next_ids.take("seat")
     state = replace(state, next_ids=ids)
-    if person_id is None:
+    if person_id is None and kind != "common":  # a common seat may stay empty (M4c)
         state, director = new_director(state, seat_id, rng, balance, data)
         person_id = director.id
     seat = BoardSeat(
@@ -74,6 +74,38 @@ def _add_seat(
     return with_seat(state, seat)
 
 
+def adds_common_seat(state: GameState, company_id: int, series: Series, balance: Balance) -> bool:
+    """Whether closing `series` adds a common seat beyond the founder's: the founder's
+    nominee (14.6, M4c)."""
+    have = sum(1 for s in state.board(company_id) if s.kind == "common")
+    return balance.board.seats[series].common > max(have, 1)
+
+
+def nominee_problem(state: GameState, company_id: int, person_id: int) -> str | None:
+    """Why someone cannot be the founder's board nominee, or None (14.6, M4c)."""
+    employment = state.employment_of(person_id)
+    if employment is None or employment.company_id != company_id or not employment.counts_as_staff:
+        return f"person {person_id} is not on staff"
+    if state.person(person_id).is_founder:
+        return "the founder already holds a seat"
+    if any(s.person_id == person_id for s in state.board(company_id)):
+        return f"person {person_id} is already on the board"
+    return None
+
+
+def default_nominee(state: GameState, company_id: int) -> int | None:
+    """The most senior employee: highest level, then longest tenure, then lowest id."""
+    staff = [
+        e
+        for e in state.staff(company_id)
+        if nominee_problem(state, company_id, e.person_id) is None
+    ]
+    if not staff:
+        return None
+    best = min(staff, key=lambda e: (-LEVELS.index(e.level), e.start_turn, e.person_id))
+    return best.person_id
+
+
 def seat_board(
     state: GameState,
     company_id: int,
@@ -83,19 +115,33 @@ def seat_board(
     rng: RngFactory,
     balance: Balance,
     data: GameData,
-) -> GameState:
+    nominee_id: int | None = None,
+    founder_id: int | None = None,
+) -> tuple[GameState, tuple[LogItem, ...]]:
     """Grow the board to its size after `series` (14.6). The lead takes an investor seat if
-    it has none; further investor seats go to firms on the cap table without one."""
+    it has none; further investor seats go to firms on the cap table without one. A second
+    common seat goes to the founder's nominee if they are still on staff, else it is empty
+    and the inbox asks the founder to name one (M4c)."""
     want = balance.board.seats[series]
     seats = state.board(company_id)
-    founder = state.founder_of(company_id)
+    if founder_id is None:  # given at game start, before the founder is in the state
+        founder = state.founder_of(company_id)
+        founder_id = founder.id if founder is not None else None
+    logs: list[LogItem] = []
     for _ in range(want.common - sum(1 for s in seats if s.kind == "common")):
-        has_founder = any(s.person_id == (founder.id if founder else -1) for s in seats)
-        person = founder.id if founder is not None and not has_founder else None
+        has_founder = any(s.person_id == founder_id for s in seats)
+        person = founder_id if founder_id is not None and not has_founder else None
+        nominee_ok = (
+            nominee_id is not None and nominee_problem(state, company_id, nominee_id) is None
+        )
+        if person is None and nominee_ok:
+            person = nominee_id
         state = _add_seat(
             state, company_id, "common", rng, balance, data, round_id=round_id, person_id=person
         )
         seats = state.board(company_id)
+        if person is None:
+            logs.append(inbox_item(state.turn, company_id, "board_seat_empty", link_kind="finance"))
     holders = [
         e.firm
         for e in sorted(state.company_cap(company_id), key=lambda e: (-e.shares, e.id))
@@ -112,7 +158,30 @@ def seat_board(
     for _ in range(want.independent - sum(1 for s in seats if s.kind == "independent")):
         state = _add_seat(state, company_id, "independent", rng, balance, data, round_id=round_id)
         seats = state.board(company_id)
-    return state
+    return state, tuple(logs)
+
+
+def vacate_departed(state: GameState) -> tuple[GameState, tuple[LogItem, ...]]:
+    """A nominee who leaves the company leaves their common seat empty (14.6, M4c)."""
+    staff = {e.person_id for e in state.employments if e.counts_as_staff}
+    logs: list[LogItem] = []
+    for seat in state.seats:
+        if seat.kind != "common" or seat.person_id is None or seat.person_id in staff:
+            continue
+        person = state.person(seat.person_id)
+        if person.is_founder:
+            continue
+        state = with_seat(state, replace(seat, person_id=None))
+        logs.append(
+            inbox_item(
+                state.turn,
+                seat.company_id,
+                "nominee_left",
+                link_kind="finance",
+                name=f"{person.first_name} {person.last_name}",
+            )
+        )
+    return state, tuple(logs)
 
 
 # --- Monthly confidence (phase 10) -----------------------------------------------------------

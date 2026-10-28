@@ -431,7 +431,9 @@ def close_rounds(
                 if seat.confidence is not None:
                     hit = f.clamp_confidence(seat.confidence + balance.board.down_round_hit)
                     state = with_seat(state, replace(seat, confidence=hit))
-        state = seat_board(state, company, rnd.series, sheet.firm, rnd.id, rng, balance, data)
+        state, seated = seat_board(
+            state, company, rnd.series, sheet.firm, rnd.id, rng, balance, data, rnd.nominee_id
+        )
         founder = state.founder_of(company)
         founder_pct = (
             _pct(Fraction(person_shares(state, company, founder.id), fd_shares(state, company)))
@@ -453,4 +455,5 @@ def close_rounds(
                 founder_pct=founder_pct,
             )
         )
+        logs += seated
     return state, tuple(entries), tuple(logs)

@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 11
 
 
 class Base(DeclarativeBase):
@@ -544,12 +544,24 @@ class BoardSeatRow(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
     kind: Mapped[str] = mapped_column(String(16), nullable=False)
-    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), nullable=False)
+    # Null for an empty common seat (M4c, migration 0011).
+    person_id: Mapped[int | None] = mapped_column(ForeignKey("person.id"), nullable=True)
     seated_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     firm: Mapped[str | None] = mapped_column(String(32), nullable=True)
     round_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     months_below: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class RoundNomineeRow(Base):
+    """The founder's board nominee for a round that adds a common seat (M4c). Its own table,
+    not a column on funding_round: migration 0009 builds funding_round rows from the current
+    models."""
+
+    __tablename__ = "round_nominee"
+
+    round_id: Mapped[int] = mapped_column(ForeignKey("funding_round.id"), primary_key=True)
+    person_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class BoardSeatHistoryRow(Base):

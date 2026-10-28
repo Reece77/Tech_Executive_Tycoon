@@ -5465,7 +5465,7 @@
           "finance"
         ],
         "summary": "Accept Term Sheet",
-        "description": "The round closes at the next Continue; the other term sheets lapse.",
+        "description": "The round closes at the next Continue; the other term sheets lapse. Where the round\nadds a common seat, `nominee_id` names the founder's nominee (default: the most senior\nemployee; M4c).",
         "operationId": "acceptTermSheet",
         "parameters": [
           {
@@ -5487,6 +5487,115 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/AcceptSheetIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/board/seats/{seat_id}/nominee": {
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Name Nominee",
+        "description": "Name an employee to an empty common seat (14.6, M4c; energy 2).",
+        "operationId": "nameNominee",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "seat_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Seat Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NomineeIn"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5699,6 +5808,24 @@
   },
   "components": {
     "schemas": {
+      "AcceptSheetIn": {
+        "properties": {
+          "nominee_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nominee Id",
+            "description": "The board nominee where the round adds a common seat (M4c)"
+          }
+        },
+        "type": "object",
+        "title": "AcceptSheetIn"
+      },
       "ActionOut": {
         "properties": {
           "energy": {
@@ -6124,6 +6251,19 @@
                 "type": "null"
               }
             ]
+          },
+          "nominee_energy": {
+            "type": "integer",
+            "title": "Nominee Energy",
+            "description": "Energy to name a nominee to an empty seat (M4c)"
+          },
+          "nominee_choices": {
+            "items": {
+              "$ref": "#/components/schemas/NomineeChoiceOut"
+            },
+            "type": "array",
+            "title": "Nominee Choices",
+            "description": "Employees who could take a common seat, most senior first (M4c)"
           }
         },
         "type": "object",
@@ -6144,7 +6284,9 @@
           "actual_growth",
           "last_round_label",
           "next_meeting_label",
-          "last_meeting"
+          "last_meeting",
+          "nominee_energy",
+          "nominee_choices"
         ],
         "title": "BoardOut"
       },
@@ -6982,12 +7124,30 @@
             "description": "common | investor | independent"
           },
           "person_id": {
-            "type": "integer",
-            "title": "Person Id"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id",
+            "description": "Null for an empty common seat (M4c)"
           },
           "name": {
             "type": "string",
             "title": "Name"
+          },
+          "vacant": {
+            "type": "boolean",
+            "title": "Vacant",
+            "description": "An empty common seat (M4c)"
+          },
+          "is_employee": {
+            "type": "boolean",
+            "title": "Is Employee",
+            "description": "The founder or a nominee on staff: opens the person's profile; anyone else opens the board-member card (M4c)"
           },
           "firm": {
             "anyOf": [
@@ -7063,6 +7223,8 @@
           "kind",
           "person_id",
           "name",
+          "vacant",
+          "is_employee",
           "firm",
           "firm_name",
           "confidence",
@@ -9223,6 +9385,54 @@
           "founder_rules"
         ],
         "title": "NewGameMetaOut"
+      },
+      "NomineeChoiceOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "default": {
+            "type": "boolean",
+            "title": "Default",
+            "description": "The most senior: the preselected choice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role_label",
+          "level",
+          "default"
+        ],
+        "title": "NomineeChoiceOut",
+        "description": "An employee who could take a common board seat (M4c)."
+      },
+      "NomineeIn": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "title": "NomineeIn"
       },
       "OfferIn": {
         "properties": {
@@ -11930,6 +12140,19 @@
           "series_label": {
             "type": "string",
             "title": "Series Label"
+          },
+          "nominee_required": {
+            "type": "boolean",
+            "title": "Nominee Required",
+            "description": "Accepting adds a common seat for the founder's nominee (M4c)"
+          },
+          "nominee_choices": {
+            "items": {
+              "$ref": "#/components/schemas/NomineeChoiceOut"
+            },
+            "type": "array",
+            "title": "Nominee Choices",
+            "description": "Employees to choose from, most senior first; empty unless required (M4c)"
           }
         },
         "type": "object",
@@ -11951,7 +12174,9 @@
           "board_after",
           "founder_keeps_tie",
           "energy_cost",
-          "series_label"
+          "series_label",
+          "nominee_required",
+          "nominee_choices"
         ],
         "title": "RoundPreviewOut",
         "description": "Accepting this term sheet: every holder before and after the close (14.5)."

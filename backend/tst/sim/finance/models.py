@@ -120,6 +120,7 @@ class FundingRound:
     new_shares: int | None = None  # N
     fd_pre: int | None = None  # E + X + C
     down_round: bool = False
+    nominee_id: int | None = None  # the founder's choice for a new common seat (M4c, 14.6)
 
     @property
     def price(self) -> Fraction | None:
@@ -154,13 +155,18 @@ class BoardSeat:
     id: int
     company_id: int
     kind: SeatKind
-    person_id: int  # the founder, or a generated director (role board_member)
+    person_id: int | None  # the founder, a nominee employee, a generated director; None: empty
     seated_turn: int
     firm: str | None = None  # investor seats
     round_id: int | None = None  # the round that created the seat
     confidence: float | None = None  # investor and independent seats, 0..100
     months_below: int = 0  # consecutive month ends below the removal threshold
     history: tuple[float, ...] = ()  # confidence at the last month ends, oldest first (M4b)
+
+    @property
+    def vacant(self) -> bool:
+        """An empty common seat: its nominee left, or none was named (M4c). It still votes no."""
+        return self.person_id is None
 
     @property
     def votes(self) -> bool:

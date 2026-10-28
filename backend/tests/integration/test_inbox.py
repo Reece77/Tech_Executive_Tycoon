@@ -131,7 +131,23 @@ def finance_games(loaded: LoadedData) -> FinanceGames:
         if state.ended:
             break
         state = replace(state, turn=state.turn + 1)
-    return FinanceGames((raised, lapsed, nobody, bankrupt, bridged, unbridged, seeded), extra)
+    # M4c: a Series A with no one to nominate leaves the seat empty; a nominee who leaves.
+    from tests.unit.test_board import series_a, spinout_with_staff
+    from tst.sim.actions import Fire
+    from tst.sim.state import with_company
+
+    empty = Game(loaded, board_after(loaded, "seed"), 500_000_000)
+    empty.state = with_company(empty.state, replace(empty.state.player, mrr_history=(10**7,) * 7))
+    empty.act(StartRound(1, "a", 600_000_000))
+    empty.turn()
+    empty.act(AcceptTermSheet(1, next(t for t in empty.state.term_sheets).id))
+    empty.turn()
+    nominee = spinout_with_staff(loaded)
+    series_a(nominee, 2)
+    nominee.act(Fire(1, 2))
+    return FinanceGames(
+        (raised, lapsed, nobody, bankrupt, bridged, unbridged, seeded, empty, nominee), extra
+    )
 
 
 def test_every_emitted_template_renders(loaded: LoadedData) -> None:

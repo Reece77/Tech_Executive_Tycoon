@@ -246,6 +246,7 @@ ENERGY_ACTIONS = (
     "start_round",
     "accept_term_sheet",
     "accept_bridge",
+    "name_nominee",
 )
 CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
 HIRING_LEVELS = ("junior", "mid", "senior", "staff")
@@ -1001,6 +1002,8 @@ INBOX_TEMPLATE_KEYS = (
     "board_meeting",
     "board_warning",
     "founder_removed",
+    "board_seat_empty",  # M4c: name a nominee to the empty common seat
+    "nominee_left",  # M4c: the nominee left the company
     "insolvent",
     "bridge_offered",
     "bridge_lapsed",

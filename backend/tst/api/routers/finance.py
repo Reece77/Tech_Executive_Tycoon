@@ -18,11 +18,13 @@ from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _act, _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.finance import (
+    AcceptSheetIn,
     BoardOut,
     CapTableOut,
     FinanceActionOut,
     FinanceSummaryOut,
     GameOverOut,
+    NomineeIn,
     RoundIn,
     RoundPreviewOut,
     RoundsOut,
@@ -32,7 +34,7 @@ from tst.api.schemas.finance import (
     StatementsOut,
 )
 from tst.db import inbox, repository
-from tst.sim.actions import AcceptBridge, AcceptTermSheet, RaiseSafe, StartRound
+from tst.sim.actions import AcceptBridge, AcceptTermSheet, NameNominee, RaiseSafe, StartRound
 from tst.sim.errors import UnknownTermSheetError
 from tst.sim.state import company_cash
 
@@ -224,9 +226,32 @@ def preview_term_sheet(
     operation_id="acceptTermSheet",
 )
 def accept_term_sheet(
-    save_id: str, sheet_id: int, settings: SettingsDep, data: DataDep
+    save_id: str,
+    sheet_id: int,
+    settings: SettingsDep,
+    data: DataDep,
+    body: AcceptSheetIn | None = None,
 ) -> FinanceActionOut:
-    """The round closes at the next Continue; the other term sheets lapse."""
+    """The round closes at the next Continue; the other term sheets lapse. Where the round
+    adds a common seat, `nominee_id` names the founder's nominee (default: the most senior
+    employee; M4c)."""
     path = _path(settings, save_id)
-    _, out = _act(path, data, AcceptTermSheet(_founder_id(_state(path)), sheet_id))
+    nominee = body.nominee_id if body is not None else None
+    action = AcceptTermSheet(_founder_id(_state(path)), sheet_id, nominee)
+    _, out = _act(path, data, action)
+    return FinanceActionOut(energy=out.energy, unread_inbox=out.unread_inbox)
+
+
+@router.post(
+    "/finance/board/seats/{seat_id}/nominee",
+    response_model=FinanceActionOut,
+    responses=ERRORS,
+    operation_id="nameNominee",
+)
+def name_nominee(
+    save_id: str, seat_id: int, body: NomineeIn, settings: SettingsDep, data: DataDep
+) -> FinanceActionOut:
+    """Name an employee to an empty common seat (14.6, M4c; energy 2)."""
+    path = _path(settings, save_id)
+    _, out = _act(path, data, NameNominee(_founder_id(_state(path)), seat_id, body.person_id))
     return FinanceActionOut(energy=out.energy, unread_inbox=out.unread_inbox)

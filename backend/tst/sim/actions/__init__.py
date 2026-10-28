@@ -18,6 +18,7 @@ from tst.sim.actions.finance import (
     AcceptBridge,
     AcceptTermSheet,
     FinanceAction,
+    NameNominee,
     RaiseSafe,
     StartRound,
     apply_finance,
@@ -135,6 +136,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "start_round": StartRound,
     "accept_term_sheet": AcceptTermSheet,
     "accept_bridge": AcceptBridge,
+    "name_nominee": NameNominee,
 }
 
 __all__ = [
@@ -160,6 +162,7 @@ __all__ = [
     "MakeOffer",
     "MovePerson",
     "MoveUnit",
+    "NameNominee",
     "OpenSearch",
     "Promote",
     "RaiseSafe",
@@ -284,7 +287,7 @@ def apply_action(
             out = cancel_product(state, action, balance)
         case ScoutSearch():
             out = scout_search(state, action, balance, data)
-        case RaiseSafe() | StartRound() | AcceptTermSheet() | AcceptBridge():
+        case RaiseSafe() | StartRound() | AcceptTermSheet() | AcceptBridge() | NameNominee():
             out = apply_finance(state, action, balance, data, ledger_balances)
     return ActionResult(new_state=out.state, ledger_entries=out.entries, log_items=out.log)
 

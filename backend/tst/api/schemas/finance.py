@@ -264,13 +264,34 @@ class RoundPreviewOut(BaseModel):
     )
     energy_cost: int
     series_label: str
+    nominee_required: bool = Field(
+        description="Accepting adds a common seat for the founder's nominee (M4c)"
+    )
+    nominee_choices: list[NomineeChoiceOut] = Field(
+        description="Employees to choose from, most senior first; empty unless required (M4c)"
+    )
+
+
+class AcceptSheetIn(BaseModel):
+    nominee_id: int | None = Field(
+        default=None, description="The board nominee where the round adds a common seat (M4c)"
+    )
+
+
+class NomineeIn(BaseModel):
+    person_id: int
 
 
 class DirectorOut(BaseModel):
     seat_id: int
     kind: str = Field(description="common | investor | independent")
-    person_id: int
+    person_id: int | None = Field(description="Null for an empty common seat (M4c)")
     name: str
+    vacant: bool = Field(description="An empty common seat (M4c)")
+    is_employee: bool = Field(
+        description="The founder or a nominee on staff: opens the person's profile; anyone "
+        "else opens the board-member card (M4c)",
+    )
     firm: str | None
     firm_name: str | None
     confidence: float | None = Field(description="Null for common seats, which back the founder")
@@ -279,6 +300,16 @@ class DirectorOut(BaseModel):
     seated_label: str
     is_founder: bool = False
     history: list[float] = Field(description="Confidence at the last month ends, oldest first")
+
+
+class NomineeChoiceOut(BaseModel):
+    """An employee who could take a common board seat (M4c)."""
+
+    person_id: int
+    name: str
+    role_label: str
+    level: str
+    default: bool = Field(description="The most senior: the preselected choice")
 
 
 class BoardMeetingOut(BaseModel):
@@ -318,6 +349,10 @@ class BoardOut(BaseModel):
     last_round_label: str | None
     next_meeting_label: str | None
     last_meeting: BoardMeetingOut | None
+    nominee_energy: int = Field(description="Energy to name a nominee to an empty seat (M4c)")
+    nominee_choices: list[NomineeChoiceOut] = Field(
+        description="Employees who could take a common seat, most senior first (M4c)"
+    )
 
 
 class TimelineItemOut(BaseModel):

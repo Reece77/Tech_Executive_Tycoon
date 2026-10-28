@@ -1151,9 +1151,31 @@ export interface paths {
         put?: never;
         /**
          * Accept Term Sheet
-         * @description The round closes at the next Continue; the other term sheets lapse.
+         * @description The round closes at the next Continue; the other term sheets lapse. Where the round
+         *     adds a common seat, `nominee_id` names the founder's nominee (default: the most senior
+         *     employee; M4c).
          */
         post: operations["acceptTermSheet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/board/seats/{seat_id}/nominee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Name Nominee
+         * @description Name an employee to an empty common seat (14.6, M4c; energy 2).
+         */
+        post: operations["nameNominee"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1281,6 +1303,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcceptSheetIn */
+        AcceptSheetIn: {
+            /**
+             * Nominee Id
+             * @description The board nominee where the round adds a common seat (M4c)
+             */
+            nominee_id?: number | null;
+        };
         /** ActionOut */
         ActionOut: {
             energy: components["schemas"]["EnergyOut"];
@@ -1451,6 +1481,16 @@ export interface components {
             /** Next Meeting Label */
             next_meeting_label: string | null;
             last_meeting: components["schemas"]["BoardMeetingOut"] | null;
+            /**
+             * Nominee Energy
+             * @description Energy to name a nominee to an empty seat (M4c)
+             */
+            nominee_energy: number;
+            /**
+             * Nominee Choices
+             * @description Employees who could take a common seat, most senior first (M4c)
+             */
+            nominee_choices: components["schemas"]["NomineeChoiceOut"][];
         };
         /** CandidacyOut */
         CandidacyOut: {
@@ -1791,10 +1831,23 @@ export interface components {
              * @description common | investor | independent
              */
             kind: string;
-            /** Person Id */
-            person_id: number;
+            /**
+             * Person Id
+             * @description Null for an empty common seat (M4c)
+             */
+            person_id: number | null;
             /** Name */
             name: string;
+            /**
+             * Vacant
+             * @description An empty common seat (M4c)
+             */
+            vacant: boolean;
+            /**
+             * Is Employee
+             * @description The founder or a nominee on staff: opens the person's profile; anyone else opens the board-member card (M4c)
+             */
+            is_employee: boolean;
             /** Firm */
             firm: string | null;
             /** Firm Name */
@@ -2691,6 +2744,30 @@ export interface components {
             /** Roles */
             roles: components["schemas"]["LabelOut"][];
             founder_rules: components["schemas"]["FounderRulesOut"];
+        };
+        /**
+         * NomineeChoiceOut
+         * @description An employee who could take a common board seat (M4c).
+         */
+        NomineeChoiceOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role Label */
+            role_label: string;
+            /** Level */
+            level: string;
+            /**
+             * Default
+             * @description The most senior: the preselected choice
+             */
+            default: boolean;
+        };
+        /** NomineeIn */
+        NomineeIn: {
+            /** Person Id */
+            person_id: number;
         };
         /** OfferIn */
         OfferIn: {
@@ -3818,6 +3895,16 @@ export interface components {
             energy_cost: number;
             /** Series Label */
             series_label: string;
+            /**
+             * Nominee Required
+             * @description Accepting adds a common seat for the founder's nominee (M4c)
+             */
+            nominee_required: boolean;
+            /**
+             * Nominee Choices
+             * @description Employees to choose from, most senior first; empty unless required (M4c)
+             */
+            nominee_choices: components["schemas"]["NomineeChoiceOut"][];
         };
         /** RoundsOut */
         RoundsOut: {
@@ -8297,7 +8384,74 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AcceptSheetIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    nameNominee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                seat_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NomineeIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
