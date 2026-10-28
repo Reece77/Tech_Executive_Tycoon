@@ -1,4 +1,4 @@
-# Wireframes (M1, M2b, M3b and M4b)
+# Wireframes (M1 to M6)
 
 Six desktop screens, built in M1c: New-game setup, Inbox, Overview, People, Person profile, and Recruitment with the offer panel. The editable canvas is the Claude Design artifact "Tech Startup Tycoon M1b Wireframes" (ask Reece for the link). The artboard sources are copied in `docs/wireframes/source/` for reference; they use the design canvas's runtime and are not meant to run in the app.
 
@@ -108,6 +108,37 @@ Five artboards in the canvas's fourth and fifth rows: the four **Finance** tabs 
 - *Overview:* a Funding tile (last round, post-money, founder ownership, board confidence label).
 - *Inbox:* a **Finance** kind badge (gold, `#F5C451` on `#3A2F16`) for SAFE answers, term sheets, closings, board meetings, warnings, insolvency and bridges.
 
+## M5 screens
+
+Two artboards in the canvas's sixth row: **Competitors** (with the month's market news and an approach) and a **Rival profile** (Salesforce). The example is Kestrel in June 2012; the approach on Priya Raman is `docs/formulas.md` §15.8's worked example ("might go" is the band for 23.7%). Rival revenue and staff follow §15.1's sizing from the M3b market numbers.
+
+**Shell change.** Nav key 8, Competitors, is live. The top bar shows M4c's 60-point energy.
+
+**Competitors.** A filter (in your markets, all, startups) and a count of established companies, startups alive and failed. Table: company (links to its profile; a purple "Startup" chip on startups), style chip (aggressive orange, fast follower blue, premium gold, cost leader green), where it competes with the player, estimated staff, money label (deep pockets, comfortable, tight), and its last move in words. **Market news** for the month: one line per rival action or startup event with a coloured tag (Price, Push, Launch, Funding, Approach, Failed) and a link to earlier months in the inbox. An open **approach** appears as an orange panel: who, the offer against their salary and unvested options, the band ("likely to stay", "might go", "likely to go"), **Counter with a raise** (opens the M2b raise dialog, whose preview now also shows the new band) and **Let them decide**. The same approach is an inbox item with the News kind badge.
+
+**Rival profile.** Name, style chip and one line on how that style competes. Tiles: staff in the player's markets, revenue in those markets (from public prices and customers), money label, and stance toward the player ("responding", "watching", "not competing") with the reason. Products table: each segment's quality, features, brand, price, customers, and what is running now (a push and its end month). **Key people:** name, role, level, top skills as the player's ranges, potential phrase, and **Poach from <company>** (the Recruitment channel, energy 10), with a note on the quality cost to the rival and the harder ask. **Recent moves:** dated list of the rival's actions, approaches to the player's people in orange.
+
+**Not drawn (text only):**
+- *Recruitment:* a fourth channel card, **Poach from a rival** (energy 10), with a company picker; candidates show "currently at <company>" and asks of about 1.3× their salary.
+- *Inbox:* a **News** kind badge (blue-grey, `#AFC3D9` on `#1C2733`) for Market news and approaches; approaches are pinned to the top until answered.
+- *People and profile:* an "Approached by <company>" chip while an approach is open.
+
+## M6 screens
+
+Two artboards in the canvas's seventh row: **Events** (the inbox with an event open and a critical event's modal on top) and **Settings** (AI writing and the budget). Kestrel in September 2012; the raise in Priya's event is 10% of her $118,000 salary.
+
+**Events.** The inbox lists events with an **Event** badge (gold) or a **Critical** badge (orange, filled), and an "Ongoing stories" section below the messages with each storyline's step. An open event shows its category and severity, its storyline if any, the title, the body (up to 180 words), and two or three choices as full-width buttons; under each choice its effects in words with a size ("large morale lift for Priya · costs about $11,800 a year"), never exact numbers or caps. A line says effects apply at once, and that the text is written by AI within the game's rules. A header line counts the events still to answer and states that minor and major ones resolve to their first choice at Continue, and links the month's AI spend to Settings.
+
+**Critical events** open as a modal that cannot be dismissed; the top bar's Continue is disabled with "Answer the critical event first". The modal names its storyline and says when a follow-up will come.
+
+**Settings** (a top-bar button). *AI writing:* a choice between Claude and offline templates (with whether an API key was found, never the key), this calendar month's spend against the budget as a bar with the call count and reset date, the monthly budget, the two model ids, three counts (events written by Claude, rejected drafts replaced by templates, average cost per event), and a plain statement of what Claude can and cannot see. *Game:* difficulty and the saves folder.
+
+**Not drawn (text only):**
+- *Profile:* a **Relationships** panel listing unit-mates and manager with a label ("close", "good", "neutral", "strained", "hostile").
+- *Org unit panel:* a "Team mood" line naming any strained or hostile pairs.
+- *Market news:* two or three AI-written headlines at the top (templates offline).
+- *Board tab:* quarterly minutes as a short paragraph in "Last board meeting".
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).
@@ -115,5 +146,7 @@ Five artboards in the canvas's fourth and fifth rows: the four **Finance** tabs 
 - Actions apply at once and spend energy; offers resolve at Continue (ADR-0014). An offer needs an interview first (ADR-0016).
 - Never show a product's quality cap, anyone's output or capacity numbers (`docs/formulas.md` §11.13).
 - Never show investors' base value, a firm's bias or noise, or a SAFE's acceptance probability (`docs/formulas.md` §14.9).
+- Never show a rival's utilities, needs or noise, its key people's true attributes, or an approach's probability (`docs/formulas.md` §15.5–§15.6).
+- Event effects are shown as words and sizes; relationships as labels; never caps, trigger strengths or relationship numbers (`docs/formulas.md` §16.9).
 - The front end never computes a game value: spans, manager labels, morale terms and previews all come from the API (`CLAUDE.md` §7).
 - Touch targets at least 44 px for primary buttons; real buttons, links, and labelled inputs.

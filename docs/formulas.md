@@ -2,7 +2,7 @@
 
 This is the authoritative source for game math. Task briefs summarize these formulas; when a brief and this file differ, this file wins. Every number below is a default that lives in `backend/data/balance.yaml` under the key shown in §12, never as a literal in code (ADR-0008).
 
-Status: §1–§10 are final for M1. §13 (organization) is final for M2 and adds terms to §3, §6, §7 and §9, each marked "M2". §11 (products and markets) is final for M3 and adds rows to §6, each marked "M3". §14 (finance) is final for M4 and changes §7 (equity in options), §8 and §10 (retention), each marked "M4".
+Status: §1–§10 are final for M1. §13 (organization) is final for M2 and adds terms to §3, §6, §7 and §9, each marked "M2". §11 (products and markets) is final for M3 and adds rows to §6, each marked "M3". §16 (events, storylines and relationships) is final for M6 and adds a morale term to §9 and changes §13.6. §15 (rivals) is final for M5. §14 (finance) is final for M4 and changes §7 (equity in options), §8 and §10 (retention), each marked "M4".
 
 ## 0. Conventions
 
@@ -326,6 +326,7 @@ target = 50 + P + F + W_{runway} + W_{load} + W_{mgr} + W_{team} + W_{remote}
 | W_mgr (M2) | Manager quality term, §13.4 |
 | W_team (M2) | Teammates' behavior tags, §13.6 |
 | W_remote (M2) | Work-location policy, §13.9 |
+| W_rel (M6) | Relationships with unit-mates, §16.7 (from M6 it absorbs the credit-taker and toxic-high-performer parts of W_team) |
 
 Monthly update, clamped to [0, 100]:
 
@@ -715,6 +716,27 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `bankruptcy.months` / `.bridge_burn_months` / `.bridge_cap_of_post` / `.bridge_min_confidence` / `.bridge_open_turns` | 3 / 3 / 0.8 / 40 / 2 | months / months / fraction / confidence / turns | §14.7 |
 | Investor firms, scenario cap tables, funding climate | see §14.2, §14.3, §14.5 | — | data: `investors.yaml`, `scenarios.yaml`, `climate.yaml` |
 
+| `rivals.act_threshold` / `.noise_sd` / `.cooldown_turns` / `.push_turns` | 0.5 / 0.1 / 6 / 6 | utility / utility / turns / turns | §15.3 |
+| `rivals.need.<action>` | see §15.3 | divisors | §15.3 |
+| `rivals.weights.<personality>.<action>` / `.price_factor.<personality>` | see §15.3 | multiplier | §15.3 |
+| `rivals.price_cut` / `.price_rise` / `.push_pool_growth` / `.brand_push_marketing` / `.cut_costs_pools` / `.cut_costs_marketing` | 0.90 / 1.05 / 0.10 / 0.50 / 0.15 / 0.30 | multiplier / fraction | §15.3 |
+| `rivals.function_mix.<category>` / `.pool_morale` / `.pool_skill_other` / `.start_marketing_share` / `.key_people` | see §15.1 / 60 / 12 / 0.08 / 8 | fraction / morale / attribute / fraction / people | §15.1 |
+| `rivals.startup.found_rate` / `.max_alive` / `.team` / `.cash_cents` / `.raise_months` / `.raise_chance` | 0.01 / 8 / [3, 8] / [100000000, 300000000] / 18 / 0.6 | probability / companies / people / cents / months / probability | §15.4 |
+| `rivals.poach.offer_mult` / `.top_fraction` / `.ask_mult` / `.leave_penalty` / `.key_builder_quality_hit` | 1.25 / 0.30 / 1.3 / −0.5 / 2 | multiplier / fraction / multiplier / score / quality | §15.6 |
+| `founder.energy_cost.poach_search` | 10 | energy | §15.6 |
+| `rivals.poach.bands` / `rivals.money_bands_months` | [0.20, 0.50] / [12, 36] | probability / months | §15.5, §15.6 |
+| Incumbent personalities, skills, margins and cash | see §15.1 | — | data: `incumbents.yaml` |
+
+| `events.count_weights` / `.category_repeat_factor` / `.template_cooldown_turns` / `.person_cooldown_turns` / `.critical_gap_turns` | [0.15, 0.50, 0.28, 0.07] / 0.5 / 24 / 6 / 6 | probabilities / multiplier / turns | §16.1 |
+| `events.major_from` | 0.5 | trigger strength | §16.1 |
+| `events.trigger.<trigger>` | see §16.2 | thresholds and strengths | §16.2 |
+| `events.caps.<effect>.<severity>` | see §16.3 | per effect | §16.3 |
+| `events.max_storylines` / `.summary_words` / `.body_words` | 3 / 60 / 180 | count / words / words | §16.5, §16.6 |
+| `relationships.start_base` / `.start_per_temperament` / `.start_clamp` / `.drift` | 15 / 1.5 / [−20, 15] / 0.10 | points / points per attribute point / points / fraction per month | §16.7 |
+| `relationships.tag_push.<tag>` / `.politician_ambition_at` | credit_taker −3, toxic_high_performer −4, culture_carrier +2, politician −3 / 14 | points per month / attribute points | §16.7 |
+| `relationships.morale_weight` / `.morale_cap` / `.label_bounds` | 0.1 / 5 / [−50, −20, 20, 60] | morale per point / morale points / points | §16.7 |
+| `llm.monthly_budget_cents` / `.price_per_mtok_cents.<model>` / `.model_events` / `.model_story` | 1000 / settings / settings / settings | cents / cents / model id | ADR-0005, §16.5 (settings, not `balance.yaml`) |
+
 ## 13. Organization (M2)
 
 The org is a tree of units under the company. Every effect below works through things M1 already has: morale (§9), growth (§3), offers (§7) and founder energy (§6). Productivity, coordination cost and decision latency arrive with products in M3.
@@ -994,3 +1016,213 @@ After each round the unallocated pool is exactly 10.00% of FD; after the seed th
 **Board confidence.** From 70, with growth at half of expected (`g_6 / g_exp` = 0.5) and 4 months of runway: T = 50 − 10 − 15 = 25, and B is 36.8 after 6 months (warning). With under 3 months of runway: T = 10, B falls below 25 in month 7 (22.6); a removal vote follows in month 9 if it stays there.
 
 **Retention.** 75,000 unvested options at $0.896 for someone paid $95,000: u = 0.707, so their resignation chance is multiplied by 0.646.
+
+## 15. Rivals (M5)
+
+M5 turns the 2010 incumbents into companies that act, and adds rival startups that are founded, grow and die. Rivals use the same market (§11), finance rules for cash and bankruptcy (§14.7) and people rules (§2–§10) as the player; only their decisions differ (ADR-0010, ADR-0015: rivals act in phase 2).
+
+### 15.1 Incumbent companies (data: `incumbents.yaml`)
+
+Each incumbent gains a **personality**, a **workforce pool** per function, **8 key people**, cash and a ledger.
+
+| Company | Personality | Builder skill `d` | Target margin | Cash (months of revenue) |
+| --- | --- | --- | --- | --- |
+| Salesforce | premium | 14 | 15% | 24 |
+| Oracle | fast_follower | 12 | 25% | 60 |
+| Zoho | cost_leader | 11 | 15% | 18 |
+| Atlassian | fast_follower | 14 | 20% | 24 |
+| Microsoft | aggressive | 13 | 30% | 60 |
+| GitHub | aggressive | 15 | 0% | 12 |
+| Facebook | aggressive | 13 | 20% | 36 |
+| Zynga | aggressive | 11 | 15% | 18 |
+| Evernote | premium | 14 | 0% | 12 |
+| Symantec | premium | 12 | 25% | 36 |
+| McAfee | cost_leader | 11 | 20% | 24 |
+| Check Point | premium | 14 | 30% | 48 |
+
+- **Pools are sized from revenue**, so each incumbent starts near its target margin in the modelled market: monthly cost budget = revenue × (1 − margin) − hosting − marketing; headcount = budget ÷ the loaded cost per head (salary at the role's mid-level market rate, benefits, office, `costs.tools_per_head_cents`), split by the category's function mix: B2B SaaS and cybersecurity 45% builders, 40% sellers, 15% marketers; developer tools 70 / 15 / 15; consumer apps 75 / 0 / 25. Pool morale is 60; pool skill is the table's `d` for builders and 12 for sellers and marketers.
+- **Marketing budget** at start: 8% of each product's revenue.
+- **Key people:** 8 generated individuals per incumbent (senior to principal, in its pool roles, stream `people_gen`), included in the headcount. They grow, age, resign and retire like anyone, and they are the people the player can poach (§15.6). The rest of the staff stay as pools (ADR-0010).
+- **Ledgers:** from M5 each rival posts revenue (phase 5), payroll, hosting and marketing (phase 6) like the player. A rival whose cash is below zero for 3 consecutive month ends goes bankrupt (§14.7); its products are retired and their customers return to the unserved pool.
+
+### 15.2 How rival products change
+
+Rival products keep the M3 held feature score and fixed quality except through the actions below; their brand changes only through actions. This keeps the M3 equilibrium (§11.9) stable until a rival chooses to move.
+
+| Effect | Rule |
+| --- | --- |
+| Quality | moves toward `5 d` at 1 point a month while a quality push runs (§15.3), and back toward its starting value at 0.2 a month after a key builder leaves for the player |
+| Feature score | +1 a month during a feature push; −0.5 a month for 6 months after a cost cut |
+| Brand | +1 a month during a brand push; −0.5 a month for 6 months after a cost cut |
+| Price | changed by price actions |
+
+### 15.3 Decisions: one action a month (phase 2, stream `rivals`, key `(company_id,)`)
+
+Each month each rival scores every action it could take and takes the best one if its utility is at least 0.5:
+
+```latex
+U(a) = need(a) \times w_{personality}(a) + N(0,\, 0.1)
+```
+
+| Action | `need` (each clamped to 0–1) | Effect |
+| --- | --- | --- |
+| `price_cut` (product, segment) | its share of the segment's served customers fell by `drop` over 6 months: `drop / 0.05` | price × 0.90 |
+| `price_rise` | appeal leads the next best product by `lead`, share not falling: `(lead − 5) / 10` | price × 1.05 |
+| `feature_push` | `(best feature in segment − own) / 15` | +1 feature a month for 6 months; builder pool +10% |
+| `quality_push` | `(best quality in segment − own) / 15` | toward `5 d` for 6 months; builder pool +10% |
+| `brand_push` | `(best brand in segment − own) / 30` | +1 brand a month for 6 months; marketing budget +50% for 6 months |
+| `enter_segment` | a category segment it does not serve, with `unserved / D ≥ 0.4` and cash ≥ 12 months of costs: `(unserved / D − 0.4) / 0.4` | sells there at `p_ref × price_factor` |
+| `cut_costs` | cash covers fewer than 12 months of costs: `(12 − months) / 6` | every pool −15%; marketing −30% |
+| `poach` | the player gained `gain` share points over 6 months in a segment they share: `gain / 0.05`, and the player has an employee in the top 30% of its CA | approach the player's best such employee (§15.6) |
+
+| Personality | price_cut | price_rise | feature | quality | brand | enter | cut_costs | poach | `price_factor` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| aggressive | 1.3 | 0.6 | 1.2 | 0.9 | 1.1 | 1.3 | 0.9 | 1.4 | 0.9 |
+| fast_follower | 1.0 | 0.8 | 1.3 | 1.0 | 0.9 | 1.0 | 1.0 | 1.0 | 1.0 |
+| premium | 0.6 | 1.2 | 1.0 | 1.3 | 1.2 | 0.8 | 1.0 | 0.9 | 1.3 |
+| cost_leader | 1.4 | 0.5 | 0.9 | 0.8 | 0.8 | 1.1 | 1.2 | 0.8 | 0.7 |
+
+- **Cooldown:** the same action on the same product and segment is not chosen again within 6 months; a push runs its 6 months before another of the same kind.
+- Actions are written to `decision_log` with `source = "rival"` and replayed by recomputation (ADR-0015 §5).
+
+### 15.4 Rival startups (phase 9, stream `rival_spawn`, key `(category_index,)`)
+
+- Each month, each category founds a startup with probability `0.01 × climate × (1 + g)` (`g` = the category's annual growth), while fewer than 8 rival startups are alive.
+- A startup: a generated name (`names.yaml` company pool), a founder and 3 to 8 individual employees (stream `people_gen`), $1M to $3M cash, one product in development in that category for one or two segments, and a random personality other than premium. It develops, launches and prices like the player's products (§11, using its individuals' output) and decides with §15.3.
+- **Funding:** when its cash covers fewer than 6 months, it raises 18 months of costs with probability `0.6 × climate` once a quarter; otherwise it cuts costs. Bankruptcy follows §14.7. A dead startup's people become candidates in the player's next searches for their roles.
+
+### 15.5 What the player sees
+
+A monthly **Market news** inbox item lists every rival action and every startup founded, launched, funded or failed that month ("Zoho cut SMB prices 10%", "Northwind launched in Developer tools"). Prices, quality, features, brand and customers of every product stay public (§11.13). A rival's personality is shown as a label, its money as "deep pockets" (cash covers 36 months of costs or more), "comfortable" (12–36) or "tight" (under 12), and its stance toward the player as "responding" (it took an action in a segment the player sells to within the last 6 months), "watching" (it shares a segment with the player) or "not competing". Pools are shown as estimated headcount (rounded to the nearest 10 above 100). Key people are shown with the player's revealed ranges (they start as strangers).
+
+### 15.6 Poaching
+
+**Rivals approach the player's people.** A `poach` action picks the player's employee with the highest true CA in the top 30% (ties by id) and offers `1.25 ×` their role and level's market rate. The approach arrives as an inbox item; the player may counter with a raise (§13.8) before Continue. In phase 1 of the next turn the employee decides (stream `poach`, key `(approach_id,)`):
+
+```latex
+s = 4\,(R - 1) + \frac{55 - morale}{20} - \frac{loyalty - 10}{10} - 2u, \qquad p = \frac{1}{1 + e^{-2s}}
+```
+
+`R` = offer ÷ current salary (after any counter), `u` = unvested option value ÷ annual salary (§14.2). Accepting is a resignation with one month's notice; the person joins the rival as a key person. The screens show a band, never `p`, computed from what the player knows (true salary, offer and options; displayed midpoints for loyalty; morale exactly): below 20% "likely to stay", 20–50% "might go", above 50% "likely to go".
+
+**The player poaches from rivals.** A new search channel, **Poach from a rival** (energy 10, one rival): candidates are 2 to 4 of that rival's key people, shown as strangers. The interview rule (§7) applies; asks are `1.3 ×` their current salary; the offer score (§7) gets `−0.5` for leaving an employer. A hire removes the person from the rival; if they were a builder, each of that rival's products in their category loses 2 quality over the next 6 months (§15.2).
+
+### 15.7 Balance targets (M5 acceptance, printed)
+
+1. **Living market:** with no player product, over 120 turns on 10 seeds, no incumbent's share of a segment's served customers falls below half or rises above double its starting share, and on average at least one rival startup per category launches a product.
+2. **Rivals respond:** in the M3a earn-and-burn script, at least one incumbent cuts a price or starts a push in a segment the player sells to within 24 turns of launch, on at least 7 of 10 seeds.
+3. **Still winnable:** the earn-and-burn script's ARR at turn 36 stays within $500,000 to $4M on at least 8 of 10 seeds.
+4. **Poaching felt, not crushing:** in the fast-growth script, 1 to 4 approaches a year on average, and 20% to 60% of uncountered approaches accepted.
+5. **Speed:** 120 turns with 25 player staff, all incumbents and up to 8 startups under 1 second per turn on average.
+
+Tune only `rivals.*` keys and the personality weights to meet them; record the values.
+
+### 15.8 Worked examples
+
+**A cost leader answers a price war.** Zoho's SMB share of served customers fell from 47% to 41% in 6 months (`drop` = 0.06): `need` = 1, `U` = 1 × 1.4 = 1.4 (noise off), so it cuts its SMB price from $25 to $22.50.
+
+**A premium incumbent ignores a small threat.** Salesforce's SMB share fell 1 point: `need` = 0.2, `U` = 0.2 × 0.6 = 0.12, below 0.5: no action.
+
+**Poaching Priya** (salary $118,000, morale 62, loyalty 12, 52,084 unvested options at $1.0295): Salesforce offers $143,750 (`R` = 1.218, `u` = 0.454): `s` = −0.586, **p = 23.7%**. If the player counters with a raise to $135,000 (`R` = 1.065, `u` = 0.397): `s` = −1.085, **p = 10.2%**. An underpaid, unhappy employee with no options (`R` = 1.218, morale 40, loyalty 8, `u` = 0): `s` = 1.823, **p = 97.5%**.
+
+## 16. Events, storylines and relationships (M6)
+
+The engine decides when an event happens, about whom, how severe it is and what it may change; the LLM (or a template) decides only how it reads and which allowed effects each choice carries (ADR-0005). In v1 there are no weekly sub-turns: a critical event blocks Continue until the player decides (ADR-0006, amended).
+
+### 16.1 When events happen (phase 12, stream `events`, key `(turn,)`)
+
+- Each month the director draws how many events to queue for next month: 0 with 15%, 1 with 50%, 2 with 28%, 3 with 7% (mean 1.27).
+- **Candidates** are templates (§16.4) whose trigger holds this month (§16.2). Weight = template weight × trigger strength (0–1) × 0.5 if its category was used last month × 0 if the same template ran in the last 24 months or any event named the same person in the last 6 months. Draw without replacement by weight.
+- **Severity** comes from the template and the trigger's strength: minor below 0.5, major from 0.5, critical only for templates marked critical and at most one critical event in any 6 months.
+- Events for a company with no employees yet use only founder, market and finance templates.
+
+### 16.2 Triggers (computed by the engine from state; true values allowed here, never passed on)
+
+| Trigger | Holds when | Strength |
+| --- | --- | --- |
+| `low_morale` (person) | an employee's morale < 35 | (35 − morale) / 20 |
+| `unhappy_unit` | a unit's average morale < 45 | (45 − avg) / 15 |
+| `underpaid` (person) | salary < 0.9 × market rate | (0.9 − ratio) / 0.2 |
+| `star_performer` (person) | an employee in the top 10% of CA with tenure ≥ 12 months | 0.4 |
+| `team_clash` (pair) | two people in the same unit with relationship ≤ −50 | (−50 − rel) / 30 |
+| `team_bond` (pair) | relationship ≥ 60 | 0.3 |
+| `office_politics` (person) | a `politician` (true tag) in a unit of 4 or more | 0.6 |
+| `tag_noticed` (person) | a tag was revealed this month | 0.5 |
+| `anniversary` (person) | tenure reaches a whole number of years | 0.2 |
+| `product_launched` | a product launched this month | 0.5 |
+| `product_slipping` | a product is rotting (§11.4) | 0.6 |
+| `price_war` | a rival cut a price in a segment the player sells to | 0.6 |
+| `rival_move` | any rival action in the player's segments | 0.3 |
+| `poached` | a rival hired one of the player's people this month | 0.8 |
+| `customer_milestone` | first enterprise customer, or customers pass a power of ten | 0.4 |
+| `runway_short` | runway < 6 months (strength 0.6) or < 3 months (1.0, critical allowed) | as stated |
+| `funding_closed` | a round closed this month | 0.5 |
+| `board_unhappy` | average board confidence < 40 | (40 − B) / 15 |
+| `quiet_month` | none of the above | 0.2 |
+
+### 16.3 Effects (the catalog; caps by severity)
+
+Every choice carries 0 to 3 effects, every event 2 or 3 choices. Effects apply immediately when the player chooses (an immediate action, ADR-0014, energy 0); an unanswered minor or major event resolves to its first choice at Continue; a critical event must be answered first.
+
+| Effect | Target | Minor / major / critical cap |
+| --- | --- | --- |
+| `morale_delta` | person, unit or company | ±5 / ±10 / ±20 |
+| `relationship_delta` | pair | ±10 / ±20 / ±40 |
+| `cash_delta` | company | cost up to 100 / 300 / 1,000 bp of max(cash, 3 × monthly revenue); gains up to half that |
+| `brand_delta` | product | ±2 / ±5 / ±10 |
+| `quality_delta` | product | ±1 / ±3 / ±6 |
+| `customers_pct` | product and segment | ±1% / ±3% / ±8% of its customers |
+| `growth_boost` | person and skill | +0.2 / +0.5 / +1.0 skill points, once |
+| `reveal_tag` | person | reveals one of their hidden tags (the engine chooses which; nothing if none) |
+| `energy_delta` | founder, next month | ±5 / ±10 / ±15 |
+| `board_confidence` | every director | ±3 / ±6 / ±12 |
+| `salary_change` | person | 0% to +5% / +10% / +15% (a raise demand) |
+| `resign` | person | major and critical only, and only if the template allows it |
+| `follow_up` | — | critical only: queue the template's named follow-up next month |
+
+Targets must come from the event's eligible list (the trigger's people, unit, product or pair). The validator drops unknown effects, clamps values to the caps, and rejects a draft with no valid choice.
+
+### 16.4 Templates (data: `events/*.yaml`)
+
+About 60 templates: personnel 20, market 12, operations 10, finance 8, board and investors 6, rivals 4. Each has: id, category, trigger, allowed severities, weight, eligible-target rules, title and body with placeholders (`{person}`, `{product}`, `{rival}`, `{amount}`), 2 or 3 choices with labels and fixed effects within the caps, an optional `storyline` step, and for critical ones a `follow_up`. Templates are the offline mode and the fallback, so every trigger must have at least one minor template and every critical trigger at least one critical template.
+
+### 16.5 LLM requests (outside the sim, after the turn commits)
+
+Phase 12 emits `EventRequest`s (ADR-0012). After the turn's transaction commits, the event service turns each request into a stored event: with the LLM adapter if the budget allows, else the template. Events are shown when the player opens the new month; they are persisted, so replay never calls the LLM.
+
+- **Context** (allowlist only): company KPIs (cash, runway, MRR, headcount, stage), the eligible people with name, role, level, tenure, morale, displayed skill ranges as words ("strong at sales"), noticed tags and revealed interests; eligible products' public scores; involved rivals' public data; the last 10 event summaries; active storyline summaries; the template's situation facts (computed by the engine, for example "Priya's morale is 31; she is paid 0.86 of market"); the allowed effects with their caps and targets; the severity; and the tone (grounded realism, a light or satirical touch with 10% chance; ADR-0011).
+- **Output:** the spec §12 JSON (title, body ≤ 180 words, 2–3 choices with labels and effects). One retry on rejection, then the template.
+- **Models:** `llm.model_events` (small model) for events, headlines and minutes; `llm.model_story` (larger model) for storyline steps. Both are settings.
+- **Budget:** ADR-0005 §6, $10 a calendar month by default.
+- **Never in a prompt:** true attributes, potential, hidden tags, other companies' hidden values, or any number the API would not show the player. A test builds a prompt from a state with planted hidden values and asserts none appear.
+
+### 16.6 Storylines
+
+A template step may open or advance a storyline: `{key, step, next_after_turns, next_template}`. At most 3 storylines are active; each carries a short summary (≤ 60 words, written by the LLM or the template) passed to later requests. v1 ships 5 template storylines of 2 to 4 steps: a co-founder-style tension between the founder and a senior lead, a rival poaching war, a key customer that wants special treatment, a burnout arc for a star performer, and an investor who wants a say. A storyline ends at its last step or when its people leave.
+
+### 16.7 Relationships (phase 8)
+
+- Pairs are tracked between members of the same unit and between each manager and their reports. A new pair starts at `round(15 − 1.5 × |temperament_a − temperament_b|)`, clamped to [−20, 15], using true values (the number shown is a label, §16.9).
+- Each month a relationship drifts 10% of the way back toward its starting value. Behaviour tags move it before the drift: a `credit_taker` −3 a month with each unit-mate, a `toxic_high_performer` −4, a `culture_carrier` +2, a `politician` −3 with each unit-mate whose ambition is 14 or more. Events add `relationship_delta`.
+- **Morale term (adds to §9):** `W_rel = clamp(0.1 × mean relationship with unit-mates, −5, +5)`. It replaces the part of the §13.6 teammate-tag term that the tag drift now covers: from M6 the `credit_taker` and `toxic_high_performer` morale terms are removed (their effect comes through relationships); `culture_carrier`'s stays.
+- Relationships are shown as labels: "close" (≥ 60), "good" (20–59), "neutral" (−19–19), "strained" (−49 to −20), "hostile" (≤ −50).
+
+### 16.8 Other LLM text (read-only)
+
+Monthly headlines (two or three lines added to Market news), quarterly board meeting minutes (a short paragraph in the board summary), and one exit-interview line when someone resigns. Each has a template fallback and counts toward the budget. "Ask my COO" waits for M7.
+
+### 16.9 What the API may show
+
+Events with their choices and, for each choice, its effects as words with a size ("small morale lift for Priya", "costs about $8,000"), never the caps or the trigger strengths. Relationship labels, never numbers. Storyline titles and summaries. The LLM meter: spend this month against the budget, and the adapter in use.
+
+### 16.10 Balance targets (M6 acceptance, printed, with `MockLLMAdapter` choosing the first choice)
+
+Over 120 turns on 10 seeds of the M3a earn-and-burn script: 1.0 to 1.6 events a month on average; at most one critical event in any 6 months; events' combined cash effect within ±5% of cumulative revenue; events' combined effect on average employee morale within ±3 points; at least 40 distinct templates used across the 10 runs; and the M5 balance targets still hold.
+
+### 16.11 Worked examples
+
+**Director draw.** A month with `low_morale` for Priya (morale 31, strength 0.20), `price_war` (0.6) and `rival_move` (0.3), and the personnel category used last month: weights for a weight-1 template each are 0.20 × 0.5 = 0.10, 0.60 and 0.30.
+
+**Validator clamp.** A major draft offers `morale_delta` +15 for Priya and `cash_delta` −$40,000 with cash $500,000 and monthly revenue $100,000: the morale effect is clamped to +10 and the cost to 300 bp of $500,000 = $15,000.
+
+**Relationship start and drift.** Temperaments 14 and 6: start = 15 − 12 = 3 ("neutral"). With a credit-taker in the unit the pair loses 3 a month and then drifts 10% of the way back to 3: 0.3 after the first month, −2.13 after the second, settling at **−24** ("strained"), where the drift back exactly offsets the push.

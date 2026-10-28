@@ -423,14 +423,14 @@ The largest risk is scope: this design describes three games' worth of systems, 
 
 ## 20. Settled Decisions
 
-All design questions but one are settled, and each answer is recorded in an ADR in the repository so coding agents do not re-ask. The LLM budget remains open, with a configurable cap as the default.
+All design questions are settled, and each answer is recorded in an ADR in the repository so coding agents do not re-ask.
 
 | Topic | Decision | Recorded in |
 | --- | --- | --- |
 | World and names | Real-world company and commodity names; personal use only; fictional-name toggle later | ADR-0011 |
 | Start year | January 2010; a 2026 scenario later as a separate seed pack | ADR-0006, ADR-0011 |
 | Campaign length | 360 turns (30 years) for a standard run; Sandbox unlimited | ADR-0006 |
-| Turn granularity | Monthly turns, with weekly crisis sub-turns triggered by severity | ADR-0006 |
+| Turn granularity | Monthly turns. Critical events block Continue until decided and may carry a follow-up into the next month; weekly crisis sub-turns deferred to v2 | ADR-0006 |
 | Founder | Playable person with stats; can be fired by the board outside Sandbox | ADR-0011 |
 | Delegation | Everything delegable; outcome quality depends on the delegate's attributes | ADR-0011 |
 | Geography | Abstract regions in v1; named cities with offices in v2 | ADR-0011 |
@@ -439,7 +439,7 @@ All design questions but one are settled, and each answer is recorded in an ADR 
 | Rivals | Agent-based full entities; utility AI, no LLM; reduced-fidelity staff beyond each rival's top 20 | ADR-0010 |
 | Stack | Python, FastAPI, SQLite, React with Mantine | ADR-0001 |
 | Scenarios and difficulty | Four starts and four difficulties; mineral-first start unlocks in v3 | ADR-0011 |
-| LLM budget | Open: configurable monthly token cap with an on-screen meter until Reece sets a number | ADR-0005 |
+| LLM budget | $10 a calendar month, counted in dollars from token use and configurable prices, with an on-screen meter; templates take over when it runs out | ADR-0005 |
 | Randomness | One stream name per call site, keyed by entity id, so draws never collide or depend on iteration order | ADR-0013 |
 | Action timing | Player actions apply immediately between turns; offers are answered at Continue | ADR-0014 |
 | Delegates | Act in the advance step through the player's own actions, with their own energy and random stream | ADR-0015 |

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Sep 2012</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$4,410,000</span></div>
+      <a href="Settings.dc.html" aria-label="Settings" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; max-width: 980px">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Settings</h1>
+      <section class="panel" aria-label="AI writing" style="display: flex; flex-direction: column; gap: 14px">
+        <h2 class="ptitle" style="margin: 0">AI writing</h2>
+        <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+          <legend style="font-size: 13px; color: #C9D1DB; padding: 0 0 8px">Who writes events, headlines and board minutes</legend>
+          <label class="opt" style="border-color: #5AA2FF; background: #172638"><input type="radio" name="writer" checked style="margin-top: 3px; accent-color: #5AA2FF"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">Claude, within the game's rules</span><span class="meta">Events written for your company's situation. API key found in backend/.env.</span></span></label>
+          <label class="opt"><input type="radio" name="writer" style="margin-top: 3px; accent-color: #5AA2FF"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">Offline templates</span><span class="meta">No cost and no internet. The same rules and effects, with less variety.</span></span></label>
+        </fieldset>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 14px">This month (October 2026)</span><span class="num" style="font-size: 15px">$3.42 of $10.00</span></div>
+          <div style="height: 10px; background: #263040; border-radius: 5px"><div style="width: 34%; height: 10px; background: #5AA2FF; border-radius: 5px"></div></div>
+          <span class="meta" style="font-size: 12px">312 calls · resets on November 1 · when it runs out, events quietly switch to templates until then</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
+          <label class="field">Monthly budget
+            <input class="input" type="text" value="$10.00">
+            <span style="font-size: 12px; color: #9BA7B6">Set $0 to play offline only.</span>
+          </label>
+          <label class="field">Model for events and headlines
+            <input class="input" type="text" value="claude-haiku-5-5">
+          </label>
+          <label class="field">Model for storylines
+            <input class="input" type="text" value="claude-sonnet-5-5">
+          </label>
+        </div>
+        <div>
+          <div class="row"><span>Events written by Claude this month</span><span class="num">74</span></div>
+          <div class="row"><span>Rejected drafts replaced by templates</span><span class="num">3</span></div>
+          <div class="row" style="border-bottom: 0"><span>Average cost per event</span><span class="num">$0.006</span></div>
+        </div>
+        <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9BA7B6">Claude only sees what you could know: names, roles, morale, what you have learned about people, and public market data. It never sees hidden potential or traits, and the game checks every number it proposes against fixed limits.</p>
+        <div style="display: flex; gap: 8px"><button type="button" style="font-family: inherit; font-size: 14px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 6px; padding: 10px 16px; min-height: 44px; cursor: pointer">Save</button></div>
+      </section>
+      <section class="panel" aria-label="Game">
+        <h2 class="ptitle">Game</h2>
+        <div class="row"><span>Difficulty</span><span style="color: #C9D1DB">Standard (set at new game)</span></div>
+        <div class="row" style="border-bottom: 0"><span>Saves</span><a href="#">Open saves folder</a></div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
