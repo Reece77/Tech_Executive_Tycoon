@@ -61,10 +61,16 @@ def test_turns_update_people_in_place(save: Path, loaded: LoadedData) -> None:
     result = run_turn(save, loaded)
     with open_session(save) as session:
         after = load_state(session)
-        assert session.scalar(select(func.count()).select_from(PersonRow)) == 1
-        assert session.scalar(select(func.count()).select_from(EmploymentRow)) == 1
+        # The founder, plus the incumbents' key people from id 1,000,001 (M5).
+        player_people = select(func.count()).select_from(PersonRow).where(PersonRow.id < 1_000_001)
+        assert session.scalar(player_people) == 1
+        player_jobs = (
+            select(func.count()).select_from(EmploymentRow).where(EmploymentRow.company_id == 1)
+        )
+        assert session.scalar(player_jobs) == 1
         # M1b: the founder's energy lives in person_state.
-        assert session.scalar(select(func.count()).select_from(PersonStateRow)) == 1
+        states = select(func.count()).select_from(PersonStateRow)
+        assert session.scalar(states.where(PersonStateRow.person_id < 1_000_001)) == 1
         assert session.scalar(select(func.count()).select_from(RelationshipRow)) == 0
     assert after.people == result.new_state.people
     assert after.people[0].skills != before.skills
@@ -100,7 +106,7 @@ def test_upgrade_from_0001_keeps_m0_data(tmp_path: Path, loaded: LoadedData) -> 
     assert meta_version == SCHEMA_VERSION
     assert state.turn == 3
     assert state.player.name == "Old Co"
-    assert state.people == ()
+    assert [p for p in state.people if p.id < 1_000_001] == []  # rivals' key people only (M5)
 
     migrate.downgrade(path, "0001_initial")
     with open_session(path) as session:

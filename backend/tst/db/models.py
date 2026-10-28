@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 12
+SCHEMA_VERSION = 13
 
 
 class Base(DeclarativeBase):
@@ -47,6 +47,15 @@ class SaveMetaRow(Base):
     next_round_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_term_sheet_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_seat_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_rival_effect_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_rival_move_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_approach_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    next_rival_person_id: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default="1000001"
+    )
+    next_rival_employment_id: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default="1000001"
+    )
 
 
 class CompanyRow(Base):
@@ -66,6 +75,13 @@ class CompanyRow(Base):
     stage_history: Mapped[list[list[int]]] = mapped_column(
         JSON, nullable=False, server_default="[]"
     )
+    # Rivals (M5, migration 0013_rivals; formulas.md 15)
+    personality: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    builder_skill: Mapped[float | None] = mapped_column(Float, nullable=True)
+    target_margin_bp: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_startup: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+    failed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    last_raise_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class AccountRow(Base):
@@ -573,4 +589,71 @@ class BoardSeatHistoryRow(Base):
     __tablename__ = "board_seat_history"
 
     seat_id: Mapped[int] = mapped_column(ForeignKey("board_seat.id"), primary_key=True)
+    history: Mapped[list[float]] = mapped_column(JSON, nullable=False)
+
+
+# --- Rivals (M5, migration 0013_rivals; formulas.md 15) -------------------------------------
+
+
+class WorkforcePoolRow(Base):
+    """A rival's aggregate staff in one function (15.1, ADR-0010)."""
+
+    __tablename__ = "workforce_pool"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    function: Mapped[str] = mapped_column(String(16), primary_key=True)
+    headcount: Mapped[float] = mapped_column(Float, nullable=False)
+    skill: Mapped[float] = mapped_column(Float, nullable=False)
+    morale: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class RivalEffectRow(Base):
+    """A push, a cost cut's drag or a departed builder's quality loss (15.2)."""
+
+    __tablename__ = "rival_effect"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    start_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class RivalMoveRow(Base):
+    """A rival action or startup event (15.3-15.5); append-only."""
+
+    __tablename__ = "rival_move"
+    __table_args__ = (Index("ix_rival_move_turn", "turn"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    action: Mapped[str] = mapped_column(String(16), nullable=False)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    segment: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    detail: Mapped[str] = mapped_column(String(200), nullable=False)
+
+
+class PoachApproachRow(Base):
+    """A rival's offer to one of the player's people (15.6)."""
+
+    __tablename__ = "poach_approach"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    rival_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), nullable=False)
+    offer_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    made_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class SegmentShareRow(Base):
+    """A product's share of a segment's served customers at the last month ends (15.3)."""
+
+    __tablename__ = "segment_share"
+
+    product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    segment: Mapped[str] = mapped_column(String(32), primary_key=True)
     history: Mapped[list[float]] = mapped_column(JSON, nullable=False)

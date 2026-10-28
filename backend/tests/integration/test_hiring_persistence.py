@@ -72,9 +72,17 @@ def test_new_game_energy_and_counters(loaded: LoadedData) -> None:
     state = fresh(loaded)
     assert state.person_state(1) == PersonState(person_id=1, energy=60)
     # The 12 incumbent products (M3, ADR-0017) take product ids 1..12; the founder, pool and
-    # former colleagues take cap-table entries 1..3 (M4, 14.2).
+    # former colleagues take cap-table entries 1..3 (M4, 14.2). The incumbents' 96 key people
+    # count from 1,000,001 (M5, 15.1).
     assert state.next_ids == NextIds(
-        person=2, search=1, offer=1, employment=2, product=13, cap_entry=4
+        person=2,
+        search=1,
+        offer=1,
+        employment=2,
+        product=13,
+        cap_entry=4,
+        rival_person=1_000_097,
+        rival_employment=1_000_097,
     )
 
 
@@ -143,7 +151,7 @@ def test_only_live_records_load(tmp_path: Path, loaded: LoadedData) -> None:
     with open_session(path) as session:
         state = load_state(session)
         assert [c.person_id for c in state.candidates] == [3]
-        assert [p.id for p in state.people] == [1, 3]
+        assert [p.id for p in state.people if p.id < 1_000_001] == [1, 3]  # not rivals' (M5)
         assert state.offers == () and state.searches == ()
         # The rows stay in the database with their status.
         assert session.scalar(select(CandidateRow.status).where(CandidateRow.person_id == 2)) == (
@@ -172,7 +180,15 @@ def test_upgrade_from_0002_sets_counters_mission_and_energy(
     assert state.player.mission == ()
     # 0008_products adds the 12 incumbent products (ids 1..12) on upgrade; 0009_finance the
     # founder's and the pool's cap-table entries.
+    # 0013_rivals gives the incumbents their 96 key people from 1,000,001.
     assert state.next_ids == NextIds(
-        person=2, search=1, offer=1, employment=2, product=13, cap_entry=3
+        person=2,
+        search=1,
+        offer=1,
+        employment=2,
+        product=13,
+        cap_entry=3,
+        rival_person=1_000_097,
+        rival_employment=1_000_097,
     )
     assert state.person_state(1).energy == 100  # 0003_hiring's M1b value; reset to 60 next turn

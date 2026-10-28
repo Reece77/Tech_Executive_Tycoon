@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import fresh_game, make_person, with_candidates, with_employee
+from tests.helpers import fresh_game, last_hire, make_person, with_candidates, with_employee
 from tst.loader import LoadedData
 from tst.sim.actions import (
     CloseSearch,
@@ -178,7 +178,7 @@ def test_option_pool_and_per_offer_cap(loaded: LoadedData) -> None:
     # M4 (14.2): an employee's 300 bp is a grant of 300,000 options out of the 1,000,000 pool;
     # pending offers may not exceed the 700,000 left.
     state = with_employee(loaded, state, make_person(loaded, 50), 9_000_000, equity_bp=300)
-    state = grant_on_hire(state, state.employments[-1])
+    state = grant_on_hire(state, last_hire(state))
     assert unallocated(state, 1) == 700_000
     for i, pid in enumerate((2, 3, 4)):
         state = act(loaded, state, MakeOffer(1, pid, 9_000_000, 200), seq=i + 1).new_state

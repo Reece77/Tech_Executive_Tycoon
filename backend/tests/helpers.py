@@ -49,6 +49,11 @@ def fresh_game(
     return move_directors(state)
 
 
+def last_hire(state: GameState, company_id: int = 1) -> Employment:
+    """The company's newest employment (rivals' key people have employments too, M5)."""
+    return max((e for e in state.employments if e.company_id == company_id), key=lambda e: e.id)
+
+
 DIRECTOR_IDS_FROM = 900  # test fixtures put employees at ids 2.., so directors move out of the way
 
 

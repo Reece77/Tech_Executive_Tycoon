@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 12 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 13 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -558,6 +558,76 @@ Messages for the player company, rendered from `inbox_templates.yaml` when the t
 | `link_id` | INTEGER | yes | Id of the linked person or search. |
 | `read` | BOOLEAN | no | Marked read by the player. |
 | `archived` | BOOLEAN | no | Archived by the player (migration `0012_inbox_archive`, M4c): hidden from the inbox unless the Archived filter is on; archiving also marks it read. UI state only: no game effect, not in `decision_log`. |
+
+## Rivals (migration `0013_rivals`, M5)
+
+Rivals are ordinary `company` rows with `is_player = 0` (ADR-0010). From M5 they have key people (persons with an `employment` at the rival), workforce pools, a ledger, and decisions (formulas.md §15). Rivals' own people and employments take ids from 1,000,001 (`save_meta.next_rival_person_id`, `next_rival_employment_id`), so the player's ids are as before M5. An upgraded save's incumbents become rivals at its turn, as at a new game (§15.1).
+
+### company (M5 columns)
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `personality` | VARCHAR(16) | yes | `aggressive`, `fast_follower`, `premium` or `cost_leader`; null for the player. |
+| `builder_skill` | FLOAT | yes | An incumbent's builder pool skill `d` (§15.1). |
+| `target_margin_bp` | INTEGER | yes | The margin an incumbent's staff was sized for. |
+| `is_startup` | BOOLEAN | no | A rival startup founded in play (§15.4). |
+| `failed_turn` | INTEGER | yes | The turn a rival went bankrupt (§15.1, §14.7). |
+| `last_raise_turn` | INTEGER | yes | A startup's last funding attempt (§15.4). |
+
+### save_meta (M5 columns)
+
+`next_rival_effect_id`, `next_rival_move_id`, `next_approach_id` (from 1) and `next_rival_person_id`, `next_rival_employment_id` (from 1,000,001): id counters.
+
+### workforce_pool
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER PK, FK → company.id | no | The rival. |
+| `function` | VARCHAR(16) PK | no | `builder`, `seller` or `marketer`. |
+| `headcount` | FLOAT | no | People in the pool (key people are counted separately). |
+| `skill` | FLOAT | no | Mean skill, 1–20 (builders: the table's `d`; others 12). |
+| `morale` | FLOAT | no | Mean morale (60). |
+
+### rival_effect
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Effect id. |
+| `company_id` | INTEGER FK → company.id | no | The rival. |
+| `kind` | VARCHAR(16) | no | `feature_push`, `quality_push`, `brand_push`, `cut_costs` or `builder_left` (§15.2). |
+| `start_turn` / `end_turn` | INTEGER | no | First and last turn it applies. |
+| `product_id` | INTEGER | yes | The product; null for a cost cut, which drags every product. |
+
+### rival_move
+
+Append-only; the last 24 months are loaded into the state (news, cooldowns, stance). Index `ix_rival_move_turn (turn)`.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Move id. |
+| `company_id` | INTEGER FK → company.id | no | The rival. |
+| `turn` | INTEGER | no | Turn it happened. |
+| `action` | VARCHAR(16) | no | A §15.3 action, or `founded`, `launched`, `funded`, `failed`. |
+| `product_id` / `segment` | INTEGER / VARCHAR(32) | yes | Where it applies. |
+| `detail` | VARCHAR(200) | no | The news line's words. |
+
+### poach_approach
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Approach id (the `poach` stream key). |
+| `rival_id` | INTEGER FK → company.id | no | The rival making the offer. |
+| `person_id` | INTEGER FK → person.id | no | The player's employee. |
+| `offer_cents` | BIGINT | no | Annual salary offered (1.25 × market rate). |
+| `made_turn` / `resolved_turn` | INTEGER | no / yes | When it was made and answered. |
+| `status` | VARCHAR(16) | no | `pending`, `accepted`, `declined` or `lapsed`. |
+
+### segment_share
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `product_id` / `segment` | INTEGER / VARCHAR(32) PK | no | The product in one segment. |
+| `history` | JSON | no | Its share of the segment's served customers at the last 7 month ends, oldest first (§15.3 needs). |
 
 ## Files next to the saves
 

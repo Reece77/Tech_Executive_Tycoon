@@ -17,7 +17,7 @@ from tst.sim.ledger import CASH, apply_entries
 from tst.sim.log import LogItem
 from tst.sim.people.models import PA_KEY
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, with_offer, with_person_state
+from tst.sim.state import GameState, with_offer, with_person, with_person_state
 from tst.sim.turn import TurnResult, advance_turn
 
 START_CASH = 40_000_000  # ex-big-tech founders
@@ -132,13 +132,9 @@ def test_network_bonus_for_a_sociable_actor(loaded: LoadedData) -> None:
     for sociability in (14.0, 15.0):
         state = fresh_game(loaded, 4)
         founder = state.people[0]
-        state = replace(
+        state = with_person(
             state,
-            people=(
-                replace(
-                    founder, personality=founder.personality.updated({"sociability": sociability})
-                ),
-            ),
+            replace(founder, personality=founder.personality.updated({"sociability": sociability})),
         )
         game = Game(loaded, state)
         game.act(OpenSearch(1, "designer", "network"))
@@ -178,7 +174,7 @@ def test_accepted_offer_hires_and_moves_stage(loaded: LoadedData) -> None:
     game.turn()
     _offer_all(game, 1.5, 50)
     result = game.turn()
-    hires = [e for e in game.state.employments if e.role != "founder"]
+    hires = [e for e in game.state.employments if e.company_id == 1 and e.role != "founder"]
     assert hires, "a 1.5x offer should be accepted"
     for e in hires:
         person = game.state.person(e.person_id)
@@ -202,7 +198,9 @@ def test_hiring_reveals_interests_and_work_style(loaded: LoadedData) -> None:
     assert all(game.state.reveal(1, pid).profile_revealed_turn is None for pid in unknown)  # type: ignore[union-attr]
     _offer_all(game, 1.5)
     game.turn()
-    hired = [e.person_id for e in game.state.employments if e.role != "founder"]
+    hired = [
+        e.person_id for e in game.state.employments if e.company_id == 1 and e.role != "founder"
+    ]
     assert hired
     for pid in hired:
         reveal = game.state.reveal(1, pid)
@@ -219,7 +217,7 @@ def test_lowball_offers_are_always_declined(loaded: LoadedData) -> None:
     count = len(game.state.candidates)
     _offer_all(game, 0.84)
     result = game.turn()
-    assert [e.role for e in game.state.employments] == ["founder"]
+    assert [e.role for e in game.state.employments if e.company_id == 1] == ["founder"]
     declined = [i for i in result.log_items if i.template == "offer_declined"]
     assert len(declined) == count
     assert game.state.player.stage == 0
@@ -231,7 +229,7 @@ def test_recruiter_fee_on_hire(loaded: LoadedData) -> None:
     game.turn()
     _offer_all(game, 1.6)
     result = game.turn()
-    hires = [e for e in game.state.employments if e.role != "founder"]
+    hires = [e for e in game.state.employments if e.company_id == 1 and e.role != "founder"]
     assert hires
     fees = [e for e in result.ledger_entries if e.memo.startswith("Recruiter fee")]
     assert len(fees) == len(hires)

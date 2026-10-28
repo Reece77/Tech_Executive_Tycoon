@@ -32,16 +32,21 @@ from tst.db.models import (
     PersonStateRow,
     PersonTagRevealRow,
     PersonTagRow,
+    PoachApproachRow,
     ProductMonthRow,
     ProductRow,
     ProductSegmentRow,
+    RivalEffectRow,
+    RivalMoveRow,
     RoundNomineeRow,
     SafeRow,
     SaveMetaRow,
     SearchRow,
+    SegmentShareRow,
     TermSheetRow,
     TurnLogRow,
     TurnSnapshotRow,
+    WorkforcePoolRow,
 )
 from tst.sim.decisions import Decisions
 from tst.sim.finance.models import (
@@ -96,6 +101,13 @@ from tst.sim.products.models import (
     ProductSegment,
     ProductStatus,
 )
+from tst.sim.rivals.models import (
+    PoachApproach,
+    RivalEffect,
+    RivalMove,
+    SegmentShare,
+    WorkforcePool,
+)
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
 from tst.sim.state import CompanyState, GameState, SaveMeta
 
@@ -114,6 +126,12 @@ def company_to_state(row: CompanyRow) -> CompanyState:
         mrr_history=tuple(row.mrr_history or ()),
         insolvent_months=row.insolvent_months,
         stage_history=tuple((int(s), int(t)) for s, t in row.stage_history or ()),
+        personality=row.personality,
+        builder_skill=row.builder_skill,
+        target_margin_bp=row.target_margin_bp,
+        is_startup=row.is_startup,
+        failed_turn=row.failed_turn,
+        last_raise_turn=row.last_raise_turn,
     )
 
 
@@ -131,6 +149,12 @@ def company_to_row(company: CompanyState) -> CompanyRow:
         mrr_history=list(company.mrr_history),
         insolvent_months=company.insolvent_months,
         stage_history=[list(p) for p in company.stage_history],
+        personality=company.personality,
+        builder_skill=company.builder_skill,
+        target_margin_bp=company.target_margin_bp,
+        is_startup=company.is_startup,
+        failed_turn=company.failed_turn,
+        last_raise_turn=company.last_raise_turn,
     )
 
 
@@ -146,6 +170,12 @@ def update_company_row(row: CompanyRow, company: CompanyState) -> None:
     row.mrr_history = list(company.mrr_history)
     row.insolvent_months = company.insolvent_months
     row.stage_history = [list(p) for p in company.stage_history]
+    row.personality = company.personality
+    row.builder_skill = company.builder_skill
+    row.target_margin_bp = company.target_margin_bp
+    row.is_startup = company.is_startup
+    row.failed_turn = company.failed_turn
+    row.last_raise_turn = company.last_raise_turn
 
 
 def game_state_from_rows(
@@ -502,6 +532,11 @@ def next_ids_from_meta(meta: SaveMetaRow) -> NextIds:
         round=meta.next_round_id,
         term_sheet=meta.next_term_sheet_id,
         seat=meta.next_seat_id,
+        rival_effect=meta.next_rival_effect_id,
+        rival_move=meta.next_rival_move_id,
+        approach=meta.next_approach_id,
+        rival_person=meta.next_rival_person_id,
+        rival_employment=meta.next_rival_employment_id,
     )
 
 
@@ -519,6 +554,11 @@ def next_ids_to_meta(meta: SaveMetaRow, ids: NextIds) -> None:
     meta.next_round_id = ids.round
     meta.next_term_sheet_id = ids.term_sheet
     meta.next_seat_id = ids.seat
+    meta.next_rival_effect_id = ids.rival_effect
+    meta.next_rival_move_id = ids.rival_move
+    meta.next_approach_id = ids.approach
+    meta.next_rival_person_id = ids.rival_person
+    meta.next_rival_employment_id = ids.rival_employment
 
 
 # --- Organization (M2a) ---------------------------------------------------------------------
@@ -729,3 +769,30 @@ def round_nominee_row(rnd: FundingRound) -> RoundNomineeRow:
 
 def seat_history_row(seat: BoardSeat) -> BoardSeatHistoryRow:
     return BoardSeatHistoryRow(seat_id=seat.id, history=list(seat.history))
+
+
+# --- Rivals (M5) ----------------------------------------------------------------------------
+
+RIVAL_ROWS: dict[type, type] = {
+    WorkforcePool: WorkforcePoolRow,
+    RivalEffect: RivalEffectRow,
+    RivalMove: RivalMoveRow,
+    PoachApproach: PoachApproachRow,
+    SegmentShare: SegmentShareRow,
+}
+
+
+def rival_to_row(item: Any) -> Any:
+    """Any rival dataclass as its row."""
+    values = asdict(item)
+    if isinstance(item, SegmentShare):
+        values["history"] = list(item.history)
+    return RIVAL_ROWS[type(item)](**values)
+
+
+def rival_from_row[T](cls: type[T], row: Any) -> T:
+    """A rival dataclass from its row (kinds and statuses are trusted: the sim wrote them)."""
+    values = {f.name: getattr(row, f.name) for f in fields(cls)}  # type: ignore[arg-type]
+    if cls is SegmentShare:
+        values["history"] = tuple(float(v) for v in values["history"] or ())
+    return cls(**values)

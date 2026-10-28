@@ -49,6 +49,8 @@ from tst.db.mappers import (
     product_to_row,
     reveal_from_rows,
     reveal_to_rows,
+    rival_from_row,
+    rival_to_row,
     round_nominee_row,
     search_from_row,
     search_to_row,
@@ -79,13 +81,18 @@ from tst.db.models import (
     PersonStateRow,
     PersonTagRevealRow,
     PersonTagRow,
+    PoachApproachRow,
     ProductRow,
     ProductSegmentRow,
+    RivalEffectRow,
+    RivalMoveRow,
     RoundNomineeRow,
     SafeRow,
     SaveMetaRow,
     SearchRow,
+    SegmentShareRow,
     TermSheetRow,
+    WorkforcePoolRow,
 )
 from tst.sim.errors import SaveNotFoundError
 from tst.sim.finance.models import (
@@ -97,9 +104,17 @@ from tst.sim.finance.models import (
     TermSheet,
 )
 from tst.sim.people.models import RevealState
+from tst.sim.rivals.models import (
+    PoachApproach,
+    RivalEffect,
+    RivalMove,
+    SegmentShare,
+    WorkforcePool,
+)
 from tst.sim.state import GameState
 
 META_ID = 1
+RIVAL_MOVE_MEMORY = 24  # months of rival moves loaded: news, cooldowns, stance (M5)
 STAFF_STATUSES = ("active", "notice")
 
 
@@ -277,6 +292,46 @@ def load_state(session: Session) -> GameState:
         ),
         term_sheets=_all(session, TermSheet, TermSheetRow),
         seats=seats,
+        pools=tuple(
+            rival_from_row(WorkforcePool, r)
+            for r in session.scalars(
+                select(WorkforcePoolRow).order_by(
+                    WorkforcePoolRow.company_id, WorkforcePoolRow.function
+                )
+            )
+        ),
+        rival_effects=tuple(
+            rival_from_row(RivalEffect, r)
+            for r in session.scalars(
+                select(RivalEffectRow)
+                .where(RivalEffectRow.end_turn >= meta.current_turn - 1)
+                .order_by(RivalEffectRow.id)
+            )
+        ),
+        rival_moves=tuple(
+            rival_from_row(RivalMove, r)
+            for r in session.scalars(
+                select(RivalMoveRow)
+                .where(RivalMoveRow.turn >= meta.current_turn - RIVAL_MOVE_MEMORY)
+                .order_by(RivalMoveRow.id)
+            )
+        ),
+        approaches=tuple(
+            rival_from_row(PoachApproach, r)
+            for r in session.scalars(
+                select(PoachApproachRow)
+                .where(PoachApproachRow.status == "pending")
+                .order_by(PoachApproachRow.id)
+            )
+        ),
+        segment_shares=tuple(
+            rival_from_row(SegmentShare, r)
+            for r in session.scalars(
+                select(SegmentShareRow)
+                .where(SegmentShareRow.product_id.in_(product_ids))
+                .order_by(SegmentShareRow.product_id, SegmentShareRow.segment)
+            )
+        ),
         next_ids=next_ids_from_meta(meta),
     )
 
@@ -402,6 +457,17 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         session.merge(seat_history_row(seat))
     for rnd in _changed(old.rounds, new.rounds, lambda r: r.id):
         session.merge(round_nominee_row(rnd))
+
+    # Rivals (M5)
+    for rival_items in (
+        _changed(old.pools, new.pools, lambda p: (p.company_id, p.function)),
+        _changed(old.rival_effects, new.rival_effects, lambda e: e.id),
+        _changed(old.rival_moves, new.rival_moves, lambda m: m.id),
+        _changed(old.approaches, new.approaches, lambda a: a.id),
+        _changed(old.segment_shares, new.segment_shares, lambda s: (s.product_id, s.segment)),
+    ):
+        for rival_item in rival_items:
+            session.merge(rival_to_row(rival_item))
 
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)

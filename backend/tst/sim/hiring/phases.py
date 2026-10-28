@@ -46,7 +46,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
 from tst.sim.org.morale import morale_terms
 from tst.sim.org.rules import is_remote, org_view
-from tst.sim.people.generator import generate_pool
+from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
 from tst.sim.products.phases import product_costs
@@ -513,7 +513,7 @@ def candidate_batches(
         if search.status != "open":
             continue
         channel = balance.hiring.channel[search.channel]
-        gen = rng.stream(state.turn, "people_gen", search.id)
+        gen = people_gen_stream(rng, state.turn, search.id)
         count = int(gen.integers(int(channel.size.lo), int(channel.size.hi), endpoint=True))
         actor = _actor(state, search)
         if (

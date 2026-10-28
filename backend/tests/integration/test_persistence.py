@@ -78,7 +78,7 @@ def test_create_save(save: Path, loaded: LoadedData) -> None:
         assert state.player.name == "Test Co"
         assert meta.master_seed == 42
         assert meta.data_hashes == loaded.hashes
-        assert meta.schema_version == SCHEMA_VERSION == 12
+        assert meta.schema_version == SCHEMA_VERSION == 13
         assert company_cash(ledger_balances(session), state.player.id) == GARAGE_CASH
 
 
@@ -103,12 +103,14 @@ def test_run_turn_writes_everything(save: Path, loaded: LoadedData) -> None:
         assert snap is not None
         assert snap.cash_cents == GARAGE_CASH - OVERHEAD
         assert snap.monthly_burn_cents == OVERHEAD
-        for row_type in (TurnLogRow, TurnSnapshotRow):
-            assert session.scalar(select(func.count()).select_from(row_type)) == 1
+        for row_type in (TurnLogRow, TurnSnapshotRow):  # the player's (rivals log too, M5)
+            count = select(func.count()).select_from(row_type).where(row_type.company_id == 1)
+            assert session.scalar(count) == 1
         # the new-game choices (for replay) plus this turn's decisions
         assert session.scalar(select(func.count()).select_from(DecisionLogRow)) == 2
         # starting cash + one overhead entry
-        assert session.scalar(select(func.count()).select_from(LedgerEntryRow)) == 2
+        entries = select(func.count()).select_from(LedgerEntryRow)
+        assert session.scalar(entries.where(LedgerEntryRow.company_id == 1)) == 2
 
 
 def test_cash_equals_ledger_every_turn(save: Path, loaded: LoadedData) -> None:
