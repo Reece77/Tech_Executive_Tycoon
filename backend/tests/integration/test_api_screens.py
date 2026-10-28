@@ -24,7 +24,7 @@ def _hire_team(api: Client) -> list[dict[str, Any]]:
         f"{BASE}/recruitment/searches", {"role": "software_engineer", "channel": "job_post"}, 201
     )
     api.post(f"{BASE}/advance")
-    for c in api.get(f"{BASE}/recruitment/candidates"):
+    for c in api.get(f"{BASE}/recruitment/candidates")[:7]:  # 7 interviews fit 60 energy (M4c)
         ask = c["candidacy"]["salary_expectation_cents"]
         api.post(f"{BASE}/recruitment/candidates/{c['person_id']}/interview")
         api.post(
@@ -43,14 +43,14 @@ def test_hiring_meta(api: Client) -> None:
     channels = {c["key"]: c for c in meta["channels"]}
     assert {k: c["energy"] for k, c in channels.items()} == {
         "network": 10,
-        "job_post": 4,
-        "recruiter": 4,
+        "job_post": 5,
+        "recruiter": 5,
     }
     assert channels["job_post"]["monthly_cost_cents"] == 50_000
     assert channels["recruiter"]["hire_fee_bp"] == 2_000
     assert [k for k, c in channels.items() if c["repeats"]] == ["job_post"]
     assert (channels["network"]["batch_min"], channels["network"]["batch_max"]) == (2, 4)
-    assert meta["interview_energy"] == 6 and meta["reference_check_energy"] == 3
+    assert meta["interview_energy"] == 8 and meta["reference_check_energy"] == 4
     assert meta["fire_morale_penalty_min"] == 3
     swe = next(r for r in meta["roles"] if r["key"] == "software_engineer")
     assert swe["primary_skills"] == ["software_engineering", "infrastructure"]

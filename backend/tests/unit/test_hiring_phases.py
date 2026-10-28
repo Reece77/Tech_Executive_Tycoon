@@ -148,9 +148,9 @@ def test_network_bonus_for_a_sociable_actor(loaded: LoadedData) -> None:
 def test_candidates_expire_and_energy_resets(loaded: LoadedData) -> None:
     game = Game(loaded, fresh_game(loaded))
     game.act(OpenSearch(1, "software_engineer", "network"))
-    assert game.state.person_state(1).energy == 90
+    assert game.state.person_state(1).energy == 50
     game.turn()
-    assert game.state.person_state(1).energy == 100
+    assert game.state.person_state(1).energy == 60
     first_batch = {c.person_id for c in game.state.candidates}
     assert first_batch
     for _ in range(2):

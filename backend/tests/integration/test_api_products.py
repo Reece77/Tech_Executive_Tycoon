@@ -96,7 +96,7 @@ def test_create_staff_launch_and_sunset_through_the_api(
         "in_development",
         "In development",
     )
-    assert out["energy"]["energy"] == 96
+    assert out["energy"]["energy"] == 56
     assert product["launch"]["ready"] is False
     assert any("quality" in m for m in product["launch"]["missing"])
     refused = api.post(f"{BASE}/products/{PRODUCT}/launch", status=400)
@@ -217,7 +217,7 @@ def test_cancel_a_product_in_development(setup: tuple[Client, Path]) -> None:
     assert "cancel its development instead" in refused["message"]
     out = api.post(f"{BASE}/products/{PRODUCT}/cancel")
     assert set(out) == {"energy", "unread_inbox"}
-    assert out["energy"]["energy"] == 100 - 4 - 2 - 3
+    assert out["energy"]["energy"] == 60 - 4 - 2 - 3
     assert api.get(f"{BASE}/products") == []
     api.get(f"{BASE}/products/{PRODUCT}", status=404)
     api.post(f"{BASE}/products/{PRODUCT}/cancel", status=404)

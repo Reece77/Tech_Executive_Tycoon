@@ -68,7 +68,7 @@ def test_recruiter_plan_fills_four_hires_within_four_turns(loaded: LoadedData) -
     game = recruiter_game(loaded)
     game.act(CreateUnit(FOUNDER, "team", "Platform"))
     game.act(CreatePlan(FOUNDER, RECRUITER, "software_engineer", 4, "any", 11_000, 0, 1))
-    assert game.state.person_state(FOUNDER).energy == 96
+    assert game.state.person_state(FOUNDER).energy == 56
     for _ in range(4):
         before = game.state.person_state(FOUNDER).energy
         state, _, _, _ = run_delegates(
@@ -156,21 +156,21 @@ def test_delegate_steps_on_a_known_pool(loaded: LoadedData) -> None:
     )
     actions = [a for _, a in taken]
     interviews = [a for a in actions if isinstance(a, Interview)]
-    # 100 energy: interview while more than 20 would remain (13 x 6 = 78), then scout (20).
-    assert len(interviews) == 13
-    assert [a.candidate_id for a in interviews] == [c.person_id for c in ranked[:13]]
-    assert actions[13] == Scout(RECRUITER, "software_engineer")
+    # 100 energy: interview while more than 20 would remain (9 x 8 = 72), then scout (20).
+    assert len(interviews) == 9
+    assert [a.candidate_id for a in interviews] == [c.person_id for c in ranked[:9]]
+    assert actions[9] == Scout(RECRUITER, "software_engineer")
     offers = [a for a in actions if isinstance(a, MakeOffer)]
     assert len(offers) == 2 and all(o.plan_id == 1 and o.equity_bp == 5 for o in offers)
     for offer in offers:
         ask = state.person(offer.candidate_id).salary_expectation_cents or 0
         assert offer.salary_cents == plan_offer_salary(ask, 11_000)
         assert state.candidate(offer.candidate_id).interviewed_turn == 0  # type: ignore[union-attr]
-    assert state.person_state(RECRUITER).energy == 100 - 78 - 20
+    assert state.person_state(RECRUITER).energy == 100 - 72 - 20
     assert [i.template for i in logs if i.template == "plan_activity"] == ["plan_activity"]
     summary = next(i for i in logs if i.template == "plan_activity")
     assert dict(summary.params)["activity"] == (
-        "interviewed 13 software engineers, scouted 15 candidates and made 2 offers"
+        "interviewed 9 software engineers, scouted 15 candidates and made 2 offers"
     )
 
 

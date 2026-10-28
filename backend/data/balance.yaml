@@ -127,12 +127,12 @@ founder: # founder build (formulas.md section 5)
   default_age: 28 # years
   age_range: [22, 60] # years; allowed founder ages
   default_region: north_america # regions.yaml key; founder region when none is chosen (name pool)
-  energy_per_month: 100 # energy; founder's monthly action budget, reset after phase 12 (6)
+  energy_per_month: 60 # energy; founder's monthly action budget, reset after phase 12 (6; 100 before M4c)
   energy_cost: # energy spent at once by each action (6)
-    interview: 6
-    reference_check: 3
-    job_post: 4 # open a job post search
-    recruiter: 4 # engage a recruiter
+    interview: 8 # (6 before M4c)
+    reference_check: 4 # (3 before M4c)
+    job_post: 5 # open a job post search (4 before M4c)
+    recruiter: 5 # engage a recruiter (4 before M4c)
     network: 10 # network search
     offer: 0
     create_unit: 2 # create a department or team (M2, section 13.7)

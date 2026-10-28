@@ -36,7 +36,7 @@ def test_manual_check_flow(save_dir: Path) -> None:
     preview = run("safe", "--save", SAVE, "--amount", "300000", "--cap", "1000000", "--preview")
     assert "Hint: likely; the holders would get 30.00%" in preview
     out = run("safe", "--save", SAVE, "--amount", "300000", "--cap", "1000000")
-    assert "SAFE raised for $300,000.00; energy 90/100" in out
+    assert "SAFE raised for $300,000.00; energy 50/60" in out
     assert "error" in run("safe", "--save", SAVE, "--amount", "10", "--cap", "1000000", code=1)
     run("advance", "--save", SAVE)
     assert "No round is open. Next: Seed (allowed)" in run("round", "sheets", "--save", SAVE)

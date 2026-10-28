@@ -120,7 +120,7 @@ def test_three_level_org_from_the_api(make_api: Any) -> None:
     assert members[2]["manager_id"] == FOUNDER
     assert managers[2]["reports"] == [3, 4, 5] and managers[2]["leads_unit_id"] == dept_id
     assert managers[3]["span_limit"] == 8 and managers[3]["span_factor"] == 1
-    assert out["energy"]["energy"] == 100 - 2 * 2 - 7 * 1 - 2 * 2
+    assert out["energy"]["energy"] == 60 - 2 * 2 - 7 * 1 - 2 * 2
 
 
 def test_founder_penalty_and_two_leads_remove_it(make_api: Any) -> None:

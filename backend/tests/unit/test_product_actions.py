@@ -81,7 +81,7 @@ def test_create_product(loaded: LoadedData) -> None:
         ("mid_market", None, 0.0),
         ("smb", None, 0.0),
     ]
-    assert energy(state) == 100 - 4
+    assert energy(state) == 60 - 4
     assert state.next_ids.product == PRODUCT + 1
 
 
@@ -128,7 +128,7 @@ def test_prices_segments_and_marketing(loaded: LoadedData) -> None:
     }
     product = state.product(PRODUCT)
     assert product is not None and product.marketing_budget_cents == 1_000_000
-    assert energy(state) == 100 - 4 - 1 - 2 - 1
+    assert energy(state) == 60 - 4 - 1 - 2 - 1
     with pytest.raises(ProductRuleError, match="already the price"):
         act(state, SetPrice(FOUNDER, PRODUCT, "smb", 4000), loaded)
 
@@ -161,7 +161,7 @@ def test_launch_is_refused_below_the_thresholds_naming_what_is_missing(
     assert "quality 10 of the 25 needed" in message
     assert "feature score 0 of the 30 needed" in message
     assert "a price for Mid-market" in message and "a price for SMB" in message
-    assert energy(state) == 96  # nothing was spent
+    assert energy(state) == 56  # nothing was spent
 
 
 def test_launch_and_sunset(loaded: LoadedData) -> None:
@@ -215,7 +215,7 @@ def test_only_a_product_in_development_can_be_cancelled(loaded: LoadedData) -> N
     state = with_product(fresh_game(loaded))  # live
     with pytest.raises(ProductRuleError, match="only a product in development"):
         act(state, CancelProduct(FOUNDER, PRODUCT), loaded)
-    assert energy(state) == 100
+    assert energy(state) == 60
 
 
 def test_launch_posts_an_inbox_note(loaded: LoadedData) -> None:
@@ -245,7 +245,7 @@ def test_founder_scouts_a_search_for_20_energy(loaded: LoadedData) -> None:
     search = state.searches[0].id
     before = [state.reveal(1, c.person_id) for c in state.candidates]
     after_state = act(state, ScoutSearch(FOUNDER, search), loaded)
-    assert energy(after_state) == 100 - 20
+    assert energy(after_state) == 60 - 20
     for old, c in zip(before, after_state.candidates, strict=True):
         new = after_state.reveal(1, c.person_id)
         assert old is not None and new is not None

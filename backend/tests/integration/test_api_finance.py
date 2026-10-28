@@ -95,7 +95,7 @@ def test_safe_round_and_preview_through_the_api(
     out = api.post(
         f"{BASE}/finance/safes", {"amount_cents": 30_000_000, "cap_cents": 100_000_000}, 201
     )
-    assert out["energy"]["energy"] == 90
+    assert out["energy"]["energy"] == 50
     assert api.get(f"{BASE}/finance/safes")["open"] is True
     run_turn(path, loaded)
     (safe,) = api.get(f"{BASE}/finance/safes")["safes"]

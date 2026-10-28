@@ -97,7 +97,7 @@ def test_create_team_costs_energy_and_changes_no_morale(loaded: LoadedData) -> N
         None,
         None,
     )
-    assert energy(after) == 98 and after.next_ids.unit == 2
+    assert energy(after) == 58 and after.next_ids.unit == 2
     assert all(morale(after, p) == START_MORALE for p in range(2, 6))
 
 
@@ -206,7 +206,7 @@ def test_move_costs_one_energy_and_two_morale(loaded: LoadedData) -> None:
     state = run(loaded, org_game(loaded), CreateUnit(FOUNDER, "team", "Platform"))
     before = morale(state, 2) or 0
     after = run(loaded, state, MovePerson(FOUNDER, 2, 1))
-    assert energy(after) == 97 and morale(after, 2) == before - 2
+    assert energy(after) == 57 and morale(after, 2) == before - 2
     assert after.employment_of(2).unit_id == 1  # type: ignore[union-attr]
 
 
@@ -231,7 +231,7 @@ def test_firing_a_leader_clears_the_post_and_pauses_their_plans(loaded: LoadedDa
 def test_set_policy(loaded: LoadedData) -> None:
     state = run(loaded, org_game(loaded), CreateUnit(FOUNDER, "team", "Platform"))
     state = run(loaded, state, SetPolicy(FOUNDER, 1, "remote"))
-    assert state.units[0].policy == "remote" and energy(state) == 97
+    assert state.units[0].policy == "remote" and energy(state) == 57
     state = run(loaded, state, SetPolicy(FOUNDER, 1, None), SetPolicy(FOUNDER, None, "remote"))
     assert state.units[0].policy is None and state.player.work_policy == "remote"
     for bad, message in (
@@ -254,7 +254,7 @@ def test_raise_morale_once_per_twelve_turns(loaded: LoadedData) -> None:
     employment = state.employment_of(2)
     assert employment is not None
     assert (employment.salary_cents, employment.last_raise_turn) == (9_450_000, 0)
-    assert morale(state, 2) == start + 3 and energy(state) == 98
+    assert morale(state, 2) == start + 3 and energy(state) == 58
     state = run(loaded, state, GiveRaise(FOUNDER, 2, 10_000_000))  # again, within 12 turns
     assert morale(state, 2) == start + 3
     later = replace(state, turn=12)
@@ -284,7 +284,7 @@ def test_promote(loaded: LoadedData) -> None:
     assert state.employment_of(2).level == "mid"  # type: ignore[union-attr]
     state = run(loaded, state, Promote(FOUNDER, 2))
     assert state.employment_of(2).level == "senior"  # type: ignore[union-attr]
-    assert morale(state, 2) == start + 5 and energy(state) == 97
+    assert morale(state, 2) == start + 5 and energy(state) == 57
     state = run(loaded, state, Promote(FOUNDER, 2), Promote(FOUNDER, 2))
     assert state.employment_of(2).level == "principal"  # type: ignore[union-attr]
     with pytest.raises(InvalidActionError, match="highest level"):
@@ -303,14 +303,14 @@ def test_create_update_close_plan(loaded: LoadedData) -> None:
     plan = state.plans[0]
     assert (plan.id, plan.owner_id, plan.unit_id, plan.status, plan.hired) == (1, 2, 1, "active", 0)
     assert state.person_state(2).energy == 100  # the delegate's own budget
-    assert energy(state) == 96
+    assert energy(state) == 56
     update = UpdatePlan(FOUNDER, 1, 3, "designer", 1, "network", 12_000, 0, None)
     state = run(loaded, state, update)
     plan = state.plans[0]
     assert (plan.owner_id, plan.role, plan.unit_id, plan.ratio_bp) == (3, "designer", None, 12_000)
-    assert energy(state) == 94
+    assert energy(state) == 54
     state = run(loaded, state, ClosePlan(FOUNDER, 1))
-    assert state.plans[0].status == "closed" and energy(state) == 94  # closing is free
+    assert state.plans[0].status == "closed" and energy(state) == 54  # closing is free
     with pytest.raises(UnknownPlanError):
         act(loaded, state, ClosePlan(FOUNDER, 1))
 

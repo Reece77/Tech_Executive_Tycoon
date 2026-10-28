@@ -47,7 +47,7 @@ def test_safe_rules(loaded: LoadedData) -> None:
     with pytest.raises(FinanceRuleError, match="cap is too low"):
         game.act(RaiseSafe(FOUNDER, 50_000_000, 60_000_000))  # would claim 83%
     game.act(RaiseSafe(FOUNDER, 30_000_000, 100_000_000))
-    assert game.state.person_state(FOUNDER).energy == 90
+    assert game.state.person_state(FOUNDER).energy == 50
     with pytest.raises(FinanceRuleError, match="already open"):
         game.act(RaiseSafe(FOUNDER, 30_000_000, 100_000_000))
 

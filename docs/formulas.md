@@ -625,8 +625,8 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `reveal.founder_pa_hw` | 40 | CA points | §4, §5 (M2b) |
 | `founder.skill_base` / `.skill_points` / `.skill_cap` | 5 / 70 / 18 | attribute points | §5 |
 | `founder.default_age` | 28 | years | §5 |
-| `founder.energy_per_month` | 100 | energy | §6 |
-| `founder.energy_cost.<action>` | see §6 | energy | §6 |
+| `founder.energy_per_month` | 60 (100 before M4c) | energy | §6 |
+| `founder.energy_cost.<action>` | see §6 (M4c: interview 8, reference check 4, job post 5, recruiter 5) | energy | §6 |
 | `founder.age_range` | [22, 60] | years | §5 |
 | `founder.default_region` | north_america | `regions.yaml` key | §5 |
 | `hiring.hint_bands` | [−0.3, 0.3] | score | §7 |
