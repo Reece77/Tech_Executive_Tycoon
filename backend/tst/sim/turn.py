@@ -17,7 +17,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.errors import GameOverError
 from tst.sim.finance import fundraising, insolvency
-from tst.sim.finance.board import average_confidence, board_month
+from tst.sim.finance.board import average_confidence, board_month, vacate_departed
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.hiring import phases
@@ -107,10 +107,11 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     state, ended = phases.end_notices(ctx.state)
     state = settle_leavers(state)  # leavers' unvested options return to the pool (14.2)
     state, detached = detach_departed(state, ctx.data)
+    state, vacated = vacate_departed(state)  # a departed nominee's seat empties (14.6, M4c)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
     state, closing, closed = fundraising.close_rounds(state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*entries, *closing)
-    return ctx.log(*ended, *detached, *resolved, *closed)
+    return ctx.log(*ended, *detached, *vacated, *resolved, *closed)
 
 
 def rival_decisions(ctx: TurnContext) -> TurnContext:

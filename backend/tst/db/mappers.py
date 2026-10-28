@@ -35,6 +35,7 @@ from tst.db.models import (
     ProductMonthRow,
     ProductRow,
     ProductSegmentRow,
+    RoundNomineeRow,
     SafeRow,
     SaveMetaRow,
     SearchRow,
@@ -710,6 +711,8 @@ def finance_to_row(item: Any) -> Any:
     values = asdict(item)
     if isinstance(item, BoardSeat):
         del values["history"]
+    if isinstance(item, FundingRound):
+        del values["nominee_id"]  # in round_nominee (M4c)
     return FINANCE_ROWS[type(item)](**values)
 
 
@@ -718,6 +721,10 @@ def finance_from_row[T](cls: type[T], row: Any, **extra: Any) -> T:
     `extra` fills fields stored elsewhere (a seat's history)."""
     names = [f.name for f in fields(cls) if f.name not in extra]  # type: ignore[arg-type]
     return cls(**{n: getattr(row, n) for n in names}, **extra)
+
+
+def round_nominee_row(rnd: FundingRound) -> RoundNomineeRow:
+    return RoundNomineeRow(round_id=rnd.id, person_id=rnd.nominee_id)
 
 
 def seat_history_row(seat: BoardSeat) -> BoardSeatHistoryRow:

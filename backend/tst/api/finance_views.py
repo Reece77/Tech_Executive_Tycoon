@@ -23,6 +23,7 @@ from tst.api.schemas.finance import (
     GameOverOut,
     GrantOut,
     HolderOut,
+    NomineeChoiceOut,
     OwnershipEventOut,
     ProfitAndLossOut,
     RoundOut,
@@ -39,15 +40,22 @@ from tst.api.schemas.finance import (
     TimelineItemOut,
 )
 from tst.api.schemas.saves import FundingTileOut
-from tst.api.views import STAGE_LABELS, person_name
+from tst.api.views import STAGE_LABELS, person_name, role_label
 from tst.db.inbox import InboxMessage
 from tst.loader import LoadedData
 from tst.sim.calendar import MONTHS_PER_YEAR, format_turn, turn_to_ym
-from tst.sim.data_models import AccountType, FinanceBalance
+from tst.sim.data_models import LEVELS, AccountType, FinanceBalance
 from tst.sim.errors import FinanceRuleError
 from tst.sim.finance import formulas as f
 from tst.sim.finance import statements as fs
-from tst.sim.finance.board import actual_growth, average_confidence, next_meeting_turn
+from tst.sim.finance.board import (
+    actual_growth,
+    adds_common_seat,
+    average_confidence,
+    default_nominee,
+    next_meeting_turn,
+    nominee_problem,
+)
 from tst.sim.finance.captable import (
     closed_rounds,
     fd_shares,
@@ -89,6 +97,8 @@ TREND_MIN_POINTS = 2  # month ends needed before a board trend means anything
 SAFE_BLOCKED = "Not while a priced round is open."
 
 type Lines = Sequence[tuple[int, str, Cents]]
+
+EMPTY_SEAT = "Empty seat"  # a common seat with no nominee (M4c)
 
 
 def dollars(price_cents: Fraction | None) -> str:
@@ -586,6 +596,7 @@ def round_preview_out(state: GameState, sheet: TermSheet, data: LoadedData) -> R
     previous = last_round(state, company)
     rb = data.balance.finance.round
     seats = data.balance.board.seats[rnd.series]
+    nominee_required = adds_common_seat(state, company, rnd.series, data.balance)
     return RoundPreviewOut(
         sheet_id=sheet.id,
         firm_name=data.game_data.firm(sheet.firm).name,
@@ -610,6 +621,8 @@ def round_preview_out(state: GameState, sheet: TermSheet, data: LoadedData) -> R
         <= seats.common + seats.investor + seats.independent,
         energy_cost=energy_cost("accept_term_sheet", data.balance),
         series_label=SERIES_LABELS[rnd.series],
+        nominee_required=nominee_required,
+        nominee_choices=nominee_choices(state, company, data) if nominee_required else [],
     )
 
 
@@ -649,6 +662,7 @@ def board_out(
     latest = last_round(state, company)
     founder = state.founder_of(company)
     kinds = {k: sum(1 for s in seats if s.kind == k) for k in ("common", "investor", "independent")}
+    staff = {e.person_id for e in state.staff(company)}
     trend, trend_from = _trend(seats, bb.trend_points)
     last_meeting = None
     if meetings:
@@ -668,7 +682,9 @@ def board_out(
                 seat_id=s.id,
                 kind=s.kind,
                 person_id=s.person_id,
-                name=person_name(state.person(s.person_id)),
+                name=EMPTY_SEAT if s.person_id is None else person_name(state.person(s.person_id)),
+                vacant=s.vacant,
+                is_employee=s.person_id is not None and s.person_id in staff,
                 firm=s.firm,
                 firm_name=data.game_data.firm(s.firm).name if s.firm else None,
                 confidence=s.confidence,
@@ -696,7 +712,28 @@ def board_out(
         last_round_label=SERIES_LABELS[latest.series] if latest else None,
         next_meeting_label=format_turn(next_meeting_turn(state.turn, bb)) if seats else None,
         last_meeting=last_meeting,
+        nominee_energy=energy_cost("name_nominee", data.balance),
+        nominee_choices=nominee_choices(state, company, data),
     )
+
+
+def nominee_choices(state: GameState, company: int, data: LoadedData) -> list[NomineeChoiceOut]:
+    """Employees who could take a common seat, most senior first (14.6, M4c)."""
+    first = default_nominee(state, company)
+    staff = [
+        e for e in state.staff(company) if nominee_problem(state, company, e.person_id) is None
+    ]
+    staff.sort(key=lambda e: (-LEVELS.index(e.level), e.start_turn, e.person_id))
+    return [
+        NomineeChoiceOut(
+            person_id=e.person_id,
+            name=person_name(state.person(e.person_id)),
+            role_label=role_label(e.role, data) or e.role,
+            level=e.level,
+            default=e.person_id == first,
+        )
+        for e in staff
+    ]
 
 
 # --- Funding tile and game over (M4b) --------------------------------------------------------
@@ -831,7 +868,7 @@ def game_over_out(
         ],
         directors=[
             GameOverDirectorOut(
-                name=person_name(state.person(s.person_id)),
+                name=EMPTY_SEAT if s.person_id is None else person_name(state.person(s.person_id)),
                 firm_name=data.game_data.firm(s.firm).name if s.firm else None,
                 kind=s.kind,
                 confidence=s.confidence,

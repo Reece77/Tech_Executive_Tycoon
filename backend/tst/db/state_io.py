@@ -49,6 +49,7 @@ from tst.db.mappers import (
     product_to_row,
     reveal_from_rows,
     reveal_to_rows,
+    round_nominee_row,
     search_from_row,
     search_to_row,
     seat_history_row,
@@ -80,6 +81,7 @@ from tst.db.models import (
     PersonTagRow,
     ProductRow,
     ProductSegmentRow,
+    RoundNomineeRow,
     SafeRow,
     SaveMetaRow,
     SearchRow,
@@ -147,6 +149,7 @@ def load_state(session: Session) -> GameState:
             select(HiringPlanRow).where(HiringPlanRow.status != "closed").order_by(HiringPlanRow.id)
         )
     ]
+    nominees = {r.round_id: r.person_id for r in session.scalars(select(RoundNomineeRow))}
     histories = {
         r.seat_id: tuple(float(v) for v in r.history)
         for r in session.scalars(select(BoardSeatHistoryRow))
@@ -160,7 +163,7 @@ def load_state(session: Session) -> GameState:
         | {c.person_id for c in candidates}
         | {o.actor_id for o in offers}
         | {p.owner_id for p in plans}
-        | {s.person_id for s in seats}
+        | {s.person_id for s in seats if s.person_id is not None}
     )
 
     def in_live(column: Any) -> Any:
@@ -268,7 +271,10 @@ def load_state(session: Session) -> GameState:
         cap_entries=_all(session, CapEntry, CapTableEntryRow),
         grants=_all(session, OptionGrant, OptionGrantRow),
         safes=_all(session, Safe, SafeRow),
-        rounds=_all(session, FundingRound, FundingRoundRow),
+        rounds=tuple(
+            finance_from_row(FundingRound, r, nominee_id=nominees.get(r.id))
+            for r in session.scalars(select(FundingRoundRow).order_by(FundingRoundRow.id))
+        ),
         term_sheets=_all(session, TermSheet, TermSheetRow),
         seats=seats,
         next_ids=next_ids_from_meta(meta),
@@ -394,6 +400,8 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         session.flush()
     for seat in _changed(old.seats, new.seats, lambda s: s.id):
         session.merge(seat_history_row(seat))
+    for rnd in _changed(old.rounds, new.rounds, lambda r: r.id):
+        session.merge(round_nominee_row(rnd))
 
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)

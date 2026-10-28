@@ -247,7 +247,8 @@ def monthly_costs(
     """(memo label, account, amount) of one company's phase-6 costs for the current state.
 
     Phase 6 posts exactly these; the Overview shows them as this month's projection (hosting
-    at the current customers). Remote staff cost no office fee (formulas.md 13.9).
+    at the current customers). Remote staff cost no office fee (formulas.md 13.9); every
+    employee but the founder, remote staff included, costs tools and travel (M4c, section 8).
     """
     hosting, marketing = product_costs(state, company_id, data)
     staff = state.staff(company_id)
@@ -259,10 +260,12 @@ def monthly_costs(
         1 for e in staff if not is_remote(state, e)
     )
     job_posts = [s for s in state.open_searches(company_id) if s.channel == "job_post"]
+    employees = sum(1 for e in staff if not state.person(e.person_id).is_founder)
     return (
         ("Salaries", SALARIES, salaries),
         ("Benefits", BENEFITS, benefits),
         ("Office", RENT, office),
+        ("Tools and travel", GENERAL_ADMIN, balance.costs.tools_per_head_cents * employees),
         ("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents),
         ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts)),
         ("Hosting", COMPUTE, hosting),  # M3 (11.8)

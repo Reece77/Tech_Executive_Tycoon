@@ -47,7 +47,7 @@ def test_manual_check_flow() -> None:
     out = run(
         "search", "open", "--save", "m1b", "--role", "software_engineer", "--channel", "job_post"
     )
-    assert "Opened search 1: software_engineer via job_post; energy 96/100" in out
+    assert "Opened search 1: software_engineer via job_post; energy 55/60" in out
     assert "1  Software engineer" in run("search", "list", "--save", "m1b")
     run("advance", "--save", "m1b", "--turns", "1")
 
@@ -58,9 +58,9 @@ def test_manual_check_flow() -> None:
     assert "potential" in listing and "Software engineering" in listing
 
     out = run("interview", "--save", "m1b", "--candidate", str(ids[0]))
-    assert "interests" in out and "energy 94/100" in out  # reset to 100 at Continue, then -6
+    assert "interests" in out and "energy 52/60" in out  # reset to 60 at Continue, then -8
     out = run("references", "--save", "m1b", "--candidate", str(ids[1]))
-    assert "personality:" in out and "energy 91/100" in out
+    assert "personality:" in out and "energy 48/60" in out
 
     target, ask = ids[0], asks[0]
     preview = run(

@@ -69,8 +69,35 @@ Replay the first year of Game 1: does energy now force a choice, do interviews a
 
 ## Decisions made
 
-_(Agent fills in.)_
+- **Energy (change 1).** Delegates keep 100 a month and pay the same action costs as the founder (one `founder.energy_cost` table), so a delegate now interviews 9 candidates a month before scouting, not 13. The 0003 migration's starting energy of 100 for M1a saves is left as written (never edit an applied migration); the next turn resets it to 60.
+- **What you learned (change 2).** The `learned` block is computed in the API from the displayed ranges before and after the action (never true values). The panel lists the role's primary and secondary skills and every personality trait that narrowed, and counts the other skills ("and 3 other skills narrowed") so it stays short. Person summaries now carry all nine personality ranges; the candidate table shows ambition, loyalty, professionalism and risk appetite.
+- **Interview potential (change 3).** `reveal.initial_hw.pa` = **66** (sweep, gap over 400 seeds: 60 → +2.36, 61 → +2.41, 62 → +2.46, 63 → +2.57, 64 → +2.63, 65 → +2.74, **66 → +3.05**, 67 → +3.00, 68 → +3.05, 70 → +3.18, 80 → +3.66). Typical phrase after a job post plus one interview (true PA 113, centred, judgment-10 founder): range 57–169, still "limited to outstanding" (M2b: 52–174). An interview now takes 12.5% off the PA range at judgment 10 (was 6.25%); moving the phrase usually needs a reference check too.
+- **Investor heat (change 4).** Seed heat uses "a live product" at the time term sheets are delivered. Measured over 50 seeds (funded spinout, Series A): 6.34 term sheets at $6M ARR, 2.44 at $1.1M (2.6×).
+- **Board nominee (change 5).** The nominee is stored on the round (table `round_nominee`, not a `funding_round` column, because migration 0009 builds round rows from the current models). An invalid explicit nominee is refused; if the chosen nominee leaves before the round closes, the seat is empty with the `board_seat_empty` note. A nominee is "most senior" by level, then tenure, then id. While fixing this, migration 0009 turned out to seat a generated person in a funded spinout's founder seat when upgrading a pre-M4 save (its minimal state has no founder); `seat_board` now takes the founder id at game start and 0011 gives such founders their seat back. Naming a nominee to an empty seat resets its "since" to that turn.
+- **Inbox (change 6).** Archiving an item also marks it read. Bulk operations return how many changed. The Overview's latest messages skip archived items; the Board tab's last meeting and the game-over timeline still read archived items.
+- **Balance pass (change 7).** Lever 1 alone met every target; levers 2 and 3 were not touched. `costs.tools_per_head_cents` = **$1,500** (the lever's maximum; $1,400 gave (b) 6/10). It applies to every active employee **except the founder** (the founder draws no salary, and charging them would cut a solo garage founder's runway from 45 to 20 months, which is not what this lever is for), remote staff included, as a "Tools and travel" line on 6900_general_admin. Diagnostics on 10 seeds (`tests/integration/test_funding_diagnostics.py`, now with the targets asserted):
+
+| Seed | (a) lean, survives 36 | (b) 15 staff, first insolvent turn | (b) deficit / bridge offered then | (c) Series A turn, pre, amount, founder after | (c) survives 60 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | yes | 17 | $0.01M / $0.10M | 15, $20.65M, $5.00M, 54.8% | yes |
+| 2 | yes | 16 | $0.02M / $0.15M | 16, $25.15M, $6.00M, 55.0% | yes |
+| 3 | yes | 16 | $0.01M / $0.14M | 15, $21.15M, $6.00M, 52.8% | yes |
+| 4 | yes | never | — | 15, $28.28M, $6.00M, 56.4% | yes |
+| 5 | yes | 16 | $0.04M / $0.17M | 17, $31.11M, $5.00M, 59.2% | yes |
+| 6 | yes | 16 | $0.04M / $0.17M | 16, $25.53M, $6.00M, 55.2% | yes |
+| 7 | yes | never | — | 15, $22.30M, $6.00M, 53.5% | yes |
+| 8 | yes | 16 | $0.02M / $0.14M | 16, $25.90M, $6.00M, 55.4% | yes |
+| 9 | yes | 18 | $0.01M / $0.08M | 17, $31.67M, $6.00M, 57.6% | yes |
+| 10 | yes | never | — | 15, $25.33M, $6.00M, 55.1% | yes |
+
+  Result: (a) 10/10 survive to turn 36; (b) 7/10 insolvent before turn 36; (c) 10/10 survive to turn 60. The M3a earn-and-burn ARR at turn 36 is $2.55M–$2.57M on seeds 1–3 (band $500k–$4M). At a normal burn the bridge offered at (b)'s first insolvency is about 3× the month's net burn plus the deficit (see the table): $80,000–$170,000 against deficits of $10,000–$40,000, not M4b's $2.9M against $1.1M from an extreme script. (The script never accepts the bridge, so those seeds go bankrupt two months later.)
+- **Golden snapshots** were regenerated three times (energy, heat, tools and travel); see CHANGELOG.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Two writes at once fail with a 500.** SQLite returns "database is locked" (a stale read snapshot) when a second action or Continue arrives while another write is still running, for example pressing Continue before an action's response returns. The first M4c Playwright draft hit exactly this. Serializing writes per save in the API (or retrying a busy snapshot once) would make double-clicks safe.
+- **Game routes do not upgrade a save.** Only the save list and `run_action` / `run_turn` call `migrate.ensure_current`, so opening an older save's screens directly (a bookmarked URL) returns 500 until something upgrades it.
+- **Balance margin.** Target (b) is met at exactly 7/10, at the lever's maximum ($1,500). M5 rivals will change revenue; re-run `test_funding_diagnostics.py` after M5 and use levers 2 and 3 if (b) slips.
+- **Potential after one interview** still usually reads "limited to outstanding" for a typical candidate (§4 note). If the playtest still finds interviews weak for potential, the next lever is the reference check's PA strength, not more interview strength.
+- **CLI** has no commands for naming a nominee or archiving the inbox (the brief asked only for the API and screens).
+- **e2e browser.** On this machine `make e2e` needs `PLAYWRIGHT_CHANNEL=msedge` (or `pnpm exec playwright install chromium`): the bundled Chromium was not installed after the Playwright update.

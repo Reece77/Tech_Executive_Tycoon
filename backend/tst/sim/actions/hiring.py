@@ -28,6 +28,7 @@ from tst.sim.errors import (
     UnknownRoleError,
     UnknownSearchError,
 )
+from tst.sim.finance.board import vacate_departed
 from tst.sim.finance.options import settle_leavers
 from tst.sim.hiring.formulas import ROLL_RANGE, energy_cost, roll_succeeds, severance_cents
 from tst.sim.hiring.models import Candidate, Channel, Offer, Search
@@ -381,6 +382,8 @@ def fire(state: GameState, action: Fire, balance: Balance, data: GameData) -> Ou
     )
     state, detached = detach_departed(state, data)
     log += detached
+    state, vacated = vacate_departed(state)  # a nominee's board seat empties (14.6, M4c)
+    log += vacated
     # The larger morale hit gives the tag away, so the company learns it now (M1c brief).
     reveal = state.reveal(company, person.id)
     if (

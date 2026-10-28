@@ -45,7 +45,7 @@ def test_manual_check_flow(save_dir: Path) -> None:
         "product", "create", "--save", SAVE, "--name", "Pipeline",
         "--category", "b2b_saas", "--segments", "smb",
     )  # fmt: skip
-    assert "Pipeline" in out and "In development" in out and "energy 96/100" in out
+    assert "Pipeline" in out and "In development" in out and "energy 56/60" in out
     assert "Pipeline" in run("products", "--save", SAVE)
     run("product", "assign", "--save", SAVE, "--product", "13")
     out = run("product", "launch", "--save", SAVE, "--product", "13", code=1)
@@ -91,7 +91,7 @@ def test_cancel_a_product_in_development(save_dir: Path) -> None:
     out = run("product", "sunset", "--save", SAVE, "--product", "13", code=1)
     assert "cancel its development instead" in out
     out = run("product", "cancel", "--save", SAVE, "--product", "13")
-    assert "Cancelled Sentinel; energy 91/100" in out
+    assert "Cancelled Sentinel; energy 51/60" in out
     assert "No products" in run("products", "--save", SAVE)
     assert "no product 13" in run("product", "cancel", "--save", SAVE, "--product", "13", code=1)
 
@@ -100,5 +100,5 @@ def test_scout_a_search(save_dir: Path) -> None:
     run("search", "open", "--save", SAVE, "--role", "designer", "--channel", "network")
     run("advance", "--save", SAVE)
     out = run("scout", "--save", SAVE, "--search", "1")
-    assert re.search(r"Scouted \d+ candidates; energy 80/100", out), out
+    assert re.search(r"Scouted \d+ candidates; energy 40/60", out), out
     assert "no search 99" in run("scout", "--save", SAVE, "--search", "99", code=1)

@@ -131,7 +131,23 @@ def finance_games(loaded: LoadedData) -> FinanceGames:
         if state.ended:
             break
         state = replace(state, turn=state.turn + 1)
-    return FinanceGames((raised, lapsed, nobody, bankrupt, bridged, unbridged, seeded), extra)
+    # M4c: a Series A with no one to nominate leaves the seat empty; a nominee who leaves.
+    from tests.unit.test_board import series_a, spinout_with_staff
+    from tst.sim.actions import Fire
+    from tst.sim.state import with_company
+
+    empty = Game(loaded, board_after(loaded, "seed"), 500_000_000)
+    empty.state = with_company(empty.state, replace(empty.state.player, mrr_history=(10**7,) * 7))
+    empty.act(StartRound(1, "a", 600_000_000))
+    empty.turn()
+    empty.act(AcceptTermSheet(1, next(t for t in empty.state.term_sheets).id))
+    empty.turn()
+    nominee = spinout_with_staff(loaded)
+    series_a(nominee, 2)
+    nominee.act(Fire(1, 2))
+    return FinanceGames(
+        (raised, lapsed, nobody, bankrupt, bridged, unbridged, seeded, empty, nominee), extra
+    )
 
 
 def test_every_emitted_template_renders(loaded: LoadedData) -> None:
@@ -281,3 +297,20 @@ def test_product_notes_reach_the_inbox(tmp_path: Path, loaded: LoadedData) -> No
     assert (message.link_kind, message.link_id) == ("product", 13)
     assert message.title == "Pipeline is slipping"
     assert "Assign a unit to it." in message.body
+
+
+def test_upgrade_to_0012_keeps_items_unarchived(tmp_path: Path, loaded: LoadedData) -> None:
+    """M4c: migration 0012 adds inbox_item.archived; existing items stay in the inbox."""
+    from tst.db import migrate
+
+    path = create_save(
+        "arch", 6, "ex_big_tech_founders", company_name="Co", data=loaded, save_dir=tmp_path
+    )
+    run_action(path, loaded, OpenSearch(1, "software_engineer", "job_post"))
+    run_turn(path, loaded)
+    migrate.downgrade(path, "0011_board_nominee")
+    assert migrate.ensure_current(path) is not None
+    with open_session(path) as session:
+        items = list_inbox(session, 1, archived=False)
+        assert items and not any(m.archived for m in items)
+        assert list_inbox(session, 1, archived=True) == []

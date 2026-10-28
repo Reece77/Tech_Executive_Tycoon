@@ -92,4 +92,7 @@ def initial_cap_table(
         firm=seed.lead,
         round_id=round_id,
     )
-    return seat_board(state, company_id, "seed", seed.lead, round_id, rng, balance, data)
+    state, _ = seat_board(
+        state, company_id, "seed", seed.lead, round_id, rng, balance, data, founder_id=founder_id
+    )
+    return state  # a seed board has no nominee seat

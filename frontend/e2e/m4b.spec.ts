@@ -42,7 +42,7 @@ test('(a) raise a SAFE and see the answer at Continue', async ({ page, request }
   await expect(raise).toHaveText('Raise · 10 energy');
   await expect(raise).toBeEnabled();
   await raise.click();
-  await expect(page.getByTestId('energy')).toHaveText('90 / 100');
+  await expect(page.getByTestId('energy')).toHaveText('50 / 60');
   await expect(page.getByTestId('past-item').first()).toContainText('Waiting for answers');
   await expect(page.getByTestId('safe-blocked')).toContainText('answer your open SAFE');
 

@@ -1,6 +1,6 @@
-import { Alert, Button } from '@mantine/core';
+import { Alert, Button, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { DilutionLine, RoundPreview } from '../hooks/api';
 import { formatMoneyShort, formatMoneyWhole } from '../lib/format';
 import {
@@ -79,7 +79,7 @@ function PreviewLines({ lines }: { lines: DilutionLine[] }) {
 
 interface Props {
   preview: RoundPreview;
-  onAccept?: () => void;
+  onAccept?: (nomineeId: number | null) => void;
   onCancel?: () => void;
   accepting?: boolean;
   error?: Error | null;
@@ -96,6 +96,10 @@ export function DilutionPreview({
   error,
   disabledReason,
 }: Props) {
+  const fallback = p.nominee_choices.find((c) => c.default) ?? p.nominee_choices[0];
+  const [nominee, setNominee] = useState<string | null>(
+    fallback ? String(fallback.person_id) : null,
+  );
   return (
     <section
       aria-label="Dilution preview"
@@ -137,6 +141,26 @@ export function DilutionPreview({
           {p.founder_keeps_tie ? 'you keep control on a tie' : 'investors can outvote you'})
         </span>
       </div>
+      {p.nominee_required &&
+        (p.nominee_choices.length > 0 ? (
+          <Select
+            label="Your board nominee"
+            description="An employee takes the second common seat and votes with you."
+            value={nominee}
+            onChange={setNominee}
+            allowDeselect={false}
+            data={p.nominee_choices.map((c) => ({
+              value: String(c.person_id),
+              label: `${c.name} · ${c.role_label}, ${c.level}${c.default ? ' (most senior)' : ''}`,
+            }))}
+            data-testid="nominee-select"
+          />
+        ) : (
+          <span className="tst-muted" style={{ fontSize: 13 }} data-testid="nominee-none">
+            You have no employees to nominate: the second common seat stays empty until you name
+            one. It still votes with you.
+          </span>
+        ))}
       <div className="tst-row">
         <span>Legal fees</span>
         <span className="tst-num">{formatMoneyWhole(p.fees_cents)}</span>
@@ -158,7 +182,7 @@ export function DilutionPreview({
           {onAccept && (
             <Button
               h={44}
-              onClick={onAccept}
+              onClick={() => onAccept(p.nominee_required && nominee ? Number(nominee) : null)}
               loading={accepting}
               disabled={Boolean(disabledReason)}
               data-testid="accept-sheet"

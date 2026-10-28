@@ -228,7 +228,7 @@ function SheetPreview({
   return (
     <DilutionPreview
       preview={preview.data}
-      onAccept={() => accept.mutate(sheetId, { onSuccess: onCancel })}
+      onAccept={(nomineeId) => accept.mutate({ sheetId, nomineeId }, { onSuccess: onCancel })}
       onCancel={onCancel}
       accepting={accept.isPending}
       error={accept.error}

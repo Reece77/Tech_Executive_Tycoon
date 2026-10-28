@@ -35,17 +35,17 @@ from tst.sim.hiring.formulas import (
 @pytest.mark.parametrize(
     ("action", "cost"),
     [
-        ("interview", 6),
-        ("reference_check", 3),
-        ("job_post", 4),
-        ("recruiter", 4),
+        ("interview", 8),
+        ("reference_check", 4),
+        ("job_post", 5),
+        ("recruiter", 5),
         ("network", 10),
         ("offer", 0),
     ],
 )
 def test_section_6_energy_costs(loaded: LoadedData, action: str, cost: int) -> None:
     assert energy_cost(action, loaded.balance) == cost
-    assert loaded.balance.founder.energy_per_month == 100
+    assert loaded.balance.founder.energy_per_month == 60  # M4c
 
 
 # --- Section 7: hiring ----------------------------------------------------------------------

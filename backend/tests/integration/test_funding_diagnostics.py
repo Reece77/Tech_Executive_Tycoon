@@ -1,18 +1,19 @@
-"""M4a funding diagnostics (printed, no thresholds; the brief's sub-task 10), on 10 seeds:
+"""Funding diagnostics on 10 seeds (M4a, printed), with M4c's balance targets (checked):
 
-(a) the M3a earn-and-burn script in funded_spinout with no fundraising, 36 turns;
-(b) the same script hiring to 15 staff by turn 12, no fundraising: the bankruptcy turn;
-(c) as (b), raising a Series A at the best term sheet as soon as ARR allows: the turn,
-    pre-money, amount, founder ownership after, and survival to turn 60.
+(a) the M3a earn-and-burn script in funded_spinout with no fundraising: survives to turn 36
+    on at least 7 of 10 seeds (staying small and self-funded stays viable);
+(b) the same script hiring to 15 staff by turn 12, no fundraising: cash goes below zero
+    (insolvent) before turn 36 on at least 7 of 10 seeds (fast growth needs money);
+(c) as (b), raising a Series A at the best term sheet as soon as ARR allows: survives to
+    turn 60 on at least 8 of 10 seeds.
 
-Run with `-s` to see the table; the brief's Decisions made records it. Nothing is tuned to it.
+The table also shows the bridge investors would offer at (b)'s first insolvency against the
+deficit then (the M4b follow-up). Run with `-s` to see it; the M4c brief records it.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-
-import pytest
 
 from tests.balance_scripts import (
     BUILDER_SKILL,
@@ -37,6 +38,8 @@ from tst.sim.actions.products import launch_problems
 from tst.sim.errors import GameOverError
 from tst.sim.finance.captable import founder_bp, open_round
 from tst.sim.finance.fundraising import series_problem
+from tst.sim.finance.insolvency import bridge_amount
+from tst.sim.ledger import CASH
 
 SEEDS = range(1, 11)
 EXTRA_ROLES = ("software_engineer", "account_executive", "marketer")  # cycled to 15 staff
@@ -47,6 +50,9 @@ SERIES_A_TARGET = 600_000_000  # $6M
 
 @dataclass
 class Outcome:
+    insolvent_turn: int | None = None  # first month end with cash below zero
+    bridge_cents: int | None = None  # the bridge offered then (14.7), if any
+    deficit_cents: int | None = None  # how far below zero cash was then
     bankrupt_turn: int | None = None
     a_turn: int | None = None
     a_pre_cents: int | None = None
@@ -95,6 +101,15 @@ def play(loaded: LoadedData, seed: int, turns: int, grow: bool, raise_a: bool) -
             run.turn()
         except GameOverError:
             break
+        cash = run.balances.get((1, CASH), 0)
+        if cash < 0 and out.insolvent_turn is None:
+            out.insolvent_turn = run.state.turn - 1
+            out.deficit_cents = -cash
+            bridge = next((x for x in run.state.company_safes(1) if x.kind == "bridge"), None)
+            if bridge is not None:
+                out.bridge_cents = bridge_amount(
+                    run.state, 1, cash, loaded.balance, loaded.game_data
+                )
         if run.state.ended:
             out.bankrupt_turn = run.state.save_meta.ended_turn
             out.survived = False
@@ -110,16 +125,29 @@ def _money(cents: int | None) -> str:
     return "-" if cents is None else f"${cents / 100_000_000:.2f}M"
 
 
-@pytest.mark.parametrize("seed", SEEDS)
-def test_funding_diagnostics(loaded: LoadedData, seed: int) -> None:
-    a = play(loaded, seed, 36, grow=False, raise_a=False)
-    b = play(loaded, seed, 36, grow=True, raise_a=False)
-    c = play(loaded, seed, 60, grow=True, raise_a=True)
-    founder = "-" if c.founder_after_bp is None else f"{c.founder_after_bp / 100:.1f}%"
+def test_funding_balance_targets(loaded: LoadedData) -> None:
+    """M4c change 7: fast growth must need outside money; lean stays viable."""
+    lean = survived_a = insolvent_b = survived_c = 0
+    for seed in SEEDS:
+        a = play(loaded, seed, 36, grow=False, raise_a=False)
+        b = play(loaded, seed, 36, grow=True, raise_a=False)
+        c = play(loaded, seed, 60, grow=True, raise_a=True)
+        founder = "-" if c.founder_after_bp is None else f"{c.founder_after_bp / 100:.1f}%"
+        print(
+            f"\nseed {seed:2d} | (a) survives 36: {a.survived} "
+            f"| (b) insolvent turn {b.insolvent_turn}, deficit {_money(b.deficit_cents)}, "
+            f"bridge {_money(b.bridge_cents)}, bankrupt turn {b.bankrupt_turn} "
+            f"| (c) Series A turn {c.a_turn}, pre {_money(c.a_pre_cents)}, "
+            f"amount {_money(c.a_amount_cents)}, founder after {founder}, survives 60: {c.survived}"
+        )
+        survived_a += a.survived
+        insolvent_b += b.insolvent_turn is not None and b.insolvent_turn < 36
+        survived_c += c.survived
+        lean += 1
     print(
-        f"\nseed {seed:2d} | (a) survives 36: {a.survived} "
-        f"| (b) bankrupt turn: {b.bankrupt_turn} "
-        f"| (c) Series A turn {c.a_turn}, pre {_money(c.a_pre_cents)}, "
-        f"amount {_money(c.a_amount_cents)}, founder after {founder}, survives 60: {c.survived}"
+        f"\n(a) {survived_a}/{lean} survive 36 | (b) {insolvent_b}/{lean} insolvent before 36 "
+        f"| (c) {survived_c}/{lean} survive 60"
     )
-    assert a.bankrupt_turn is None or a.bankrupt_turn > 0  # printed, not judged
+    assert survived_a >= 7, "a lean, self-funded company should usually survive three years"
+    assert insolvent_b >= 7, "hiring to 15 by month 12 without raising should run out of cash"
+    assert survived_c >= 8, "the same growth with a Series A should usually survive five years"

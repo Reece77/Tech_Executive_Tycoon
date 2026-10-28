@@ -873,6 +873,7 @@
           "game"
         ],
         "summary": "Interview",
+        "description": "Interview a candidate; the response says what it taught (M4c).",
         "operationId": "interviewCandidate",
         "parameters": [
           {
@@ -900,7 +901,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PersonProfileOut"
+                  "$ref": "#/components/schemas/CheckOut"
                 }
               }
             }
@@ -954,6 +955,7 @@
           "game"
         ],
         "summary": "Reference Check",
+        "description": "Check a candidate's references; the response says what it taught (M4c).",
         "operationId": "referenceCheck",
         "parameters": [
           {
@@ -981,7 +983,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PersonProfileOut"
+                  "$ref": "#/components/schemas/CheckOut"
                 }
               }
             }
@@ -1299,7 +1301,7 @@
           "game"
         ],
         "summary": "Get Inbox",
-        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to\nkeep only those message kinds, across every page (M3b).",
+        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to\nkeep only those message kinds, across every page (M3b). Archived items are hidden;\n`archived=true` shows only them (M4c).",
         "operationId": "getInbox",
         "parameters": [
           {
@@ -1367,6 +1369,16 @@
               "default": 0,
               "title": "Offset"
             }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Archived"
+            }
           }
         ],
         "responses": {
@@ -1376,6 +1388,316 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/read-all": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Mark Inbox All Read",
+        "description": "Mark every message read (M4c). UI state: no energy, nothing in decision_log.",
+        "operationId": "markInboxAllRead",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxBulkOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/archive-read": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Archive Inbox Read",
+        "description": "Archive every read message (M4c).",
+        "operationId": "archiveInboxRead",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxBulkOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/{item_id}/archive": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Archive Inbox Item",
+        "description": "Archive one message; it is marked read too (M4c).",
+        "operationId": "archiveInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/{item_id}/unarchive": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Unarchive Inbox Item",
+        "description": "Bring an archived message back to the inbox (M4c).",
+        "operationId": "unarchiveInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
                 }
               }
             }
@@ -4446,7 +4768,7 @@
           "products"
         ],
         "summary": "Scout Search",
-        "description": "The founder scouts every open candidate of the search (20 energy, formulas.md 11.12).",
+        "description": "The founder scouts every open candidate of the search (20 energy, formulas.md 11.12);\nthe response says what it taught about each (M4c).",
         "operationId": "scoutSearch",
         "parameters": [
           {
@@ -4474,7 +4796,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ActionOut"
+                  "$ref": "#/components/schemas/ScoutOut"
                 }
               }
             }
@@ -5463,7 +5785,7 @@
           "finance"
         ],
         "summary": "Accept Term Sheet",
-        "description": "The round closes at the next Continue; the other term sheets lapse.",
+        "description": "The round closes at the next Continue; the other term sheets lapse. Where the round\nadds a common seat, `nominee_id` names the founder's nominee (default: the most senior\nemployee; M4c).",
         "operationId": "acceptTermSheet",
         "parameters": [
           {
@@ -5485,6 +5807,115 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/AcceptSheetIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/board/seats/{seat_id}/nominee": {
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Name Nominee",
+        "description": "Name an employee to an empty common seat (14.6, M4c; energy 2).",
+        "operationId": "nameNominee",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "seat_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Seat Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NomineeIn"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5697,6 +6128,24 @@
   },
   "components": {
     "schemas": {
+      "AcceptSheetIn": {
+        "properties": {
+          "nominee_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nominee Id",
+            "description": "The board nominee where the round adds a common seat (M4c)"
+          }
+        },
+        "type": "object",
+        "title": "AcceptSheetIn"
+      },
       "ActionOut": {
         "properties": {
           "energy": {
@@ -6122,6 +6571,19 @@
                 "type": "null"
               }
             ]
+          },
+          "nominee_energy": {
+            "type": "integer",
+            "title": "Nominee Energy",
+            "description": "Energy to name a nominee to an empty seat (M4c)"
+          },
+          "nominee_choices": {
+            "items": {
+              "$ref": "#/components/schemas/NomineeChoiceOut"
+            },
+            "type": "array",
+            "title": "Nominee Choices",
+            "description": "Employees who could take a common seat, most senior first (M4c)"
           }
         },
         "type": "object",
@@ -6142,7 +6604,9 @@
           "actual_growth",
           "last_round_label",
           "next_meeting_label",
-          "last_meeting"
+          "last_meeting",
+          "nominee_energy",
+          "nominee_choices"
         ],
         "title": "BoardOut"
       },
@@ -6542,6 +7006,222 @@
         ],
         "title": "ChannelOut"
       },
+      "CheckOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "age": {
+            "type": "integer",
+            "title": "Age"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "role_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Label"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "is_founder": {
+            "type": "boolean",
+            "title": "Is Founder"
+          },
+          "morale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Morale"
+          },
+          "potential_phrase": {
+            "type": "string",
+            "title": "Potential Phrase"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "personality": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Personality",
+            "description": "Personality ranges (in the summary from M4c, for the candidate table)"
+          },
+          "employment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmploymentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidacy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CandidacyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "noticed_tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagOut"
+            },
+            "type": "array",
+            "title": "Noticed Tags"
+          },
+          "knowledge": {
+            "$ref": "#/components/schemas/KnowledgeOut"
+          },
+          "interests": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interests",
+            "description": "Null until an interview or network intro"
+          },
+          "org": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonOrgOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Staff only (M2b)"
+          },
+          "energy": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Energy",
+            "description": "Energy left this month: the founder and delegates only"
+          },
+          "work_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Style",
+            "description": "Null until an interview or network intro"
+          },
+          "work_style_matches_role": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Style Matches Role",
+            "description": "Null while work style is unknown"
+          },
+          "morale_history": {
+            "items": {
+              "$ref": "#/components/schemas/MoralePointOut"
+            },
+            "type": "array",
+            "title": "Morale History",
+            "description": "Last 12 months, oldest first"
+          },
+          "learned": {
+            "$ref": "#/components/schemas/LearnedOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "age",
+          "region",
+          "role",
+          "role_label",
+          "level",
+          "is_founder",
+          "morale",
+          "potential_phrase",
+          "skills",
+          "personality",
+          "employment",
+          "candidacy",
+          "noticed_tags",
+          "knowledge",
+          "interests",
+          "work_style",
+          "work_style_matches_role",
+          "morale_history",
+          "learned"
+        ],
+        "title": "CheckOut",
+        "description": "An interview or reference check: the candidate's profile now, and what it taught."
+      },
       "CostLineOut": {
         "properties": {
           "account": {
@@ -6764,12 +7444,30 @@
             "description": "common | investor | independent"
           },
           "person_id": {
-            "type": "integer",
-            "title": "Person Id"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id",
+            "description": "Null for an empty common seat (M4c)"
           },
           "name": {
             "type": "string",
             "title": "Name"
+          },
+          "vacant": {
+            "type": "boolean",
+            "title": "Vacant",
+            "description": "An empty common seat (M4c)"
+          },
+          "is_employee": {
+            "type": "boolean",
+            "title": "Is Employee",
+            "description": "The founder or a nominee on staff: opens the person's profile; anyone else opens the board-member card (M4c)"
           },
           "firm": {
             "anyOf": [
@@ -6845,6 +7543,8 @@
           "kind",
           "person_id",
           "name",
+          "vacant",
+          "is_employee",
           "firm",
           "firm_name",
           "confidence",
@@ -8190,6 +8890,26 @@
         ],
         "title": "HolderOut"
       },
+      "InboxBulkOut": {
+        "properties": {
+          "changed": {
+            "type": "integer",
+            "title": "Changed",
+            "description": "Items changed"
+          },
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          }
+        },
+        "type": "object",
+        "required": [
+          "changed",
+          "unread"
+        ],
+        "title": "InboxBulkOut",
+        "description": "Mark all read or archive all read (M4c)."
+      },
       "InboxItemOut": {
         "properties": {
           "item_id": {
@@ -8241,6 +8961,11 @@
           "read": {
             "type": "boolean",
             "title": "Read"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived",
+            "description": "Hidden from the inbox unless the archive is shown (M4c)"
           }
         },
         "type": "object",
@@ -8253,7 +8978,8 @@
           "body",
           "link_kind",
           "link_id",
-          "read"
+          "read",
+          "archived"
         ],
         "title": "InboxItemOut"
       },
@@ -8378,6 +9104,88 @@
           "missing"
         ],
         "title": "LaunchReadinessOut"
+      },
+      "LearnedOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "interview | reference_check | scout"
+          },
+          "ranges": {
+            "items": {
+              "$ref": "#/components/schemas/RangeChangeOut"
+            },
+            "type": "array",
+            "title": "Ranges",
+            "description": "Ranges that narrowed, skills first"
+          },
+          "potential_before": {
+            "type": "string",
+            "title": "Potential Before"
+          },
+          "potential_after": {
+            "type": "string",
+            "title": "Potential After"
+          },
+          "interests": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interests",
+            "description": "Set when this action revealed them"
+          },
+          "work_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Style",
+            "description": "Set when this action revealed it"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagOut"
+            },
+            "type": "array",
+            "title": "Tags",
+            "description": "Behavior tags this action noticed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "action",
+          "ranges",
+          "potential_before",
+          "potential_after",
+          "interests",
+          "work_style",
+          "tags"
+        ],
+        "title": "LearnedOut",
+        "description": "What one interview, reference check or scout taught about a person (M4c). Built from\ndisplayed ranges before and after the action, never from true values (ADR-0007)."
       },
       "ManagerOut": {
         "properties": {
@@ -8923,6 +9731,54 @@
           "founder_rules"
         ],
         "title": "NewGameMetaOut"
+      },
+      "NomineeChoiceOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "default": {
+            "type": "boolean",
+            "title": "Default",
+            "description": "The most senior: the preselected choice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role_label",
+          "level",
+          "default"
+        ],
+        "title": "NomineeChoiceOut",
+        "description": "An employee who could take a common board seat (M4c)."
+      },
+      "NomineeIn": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "title": "NomineeIn"
       },
       "OfferIn": {
         "properties": {
@@ -10053,6 +10909,14 @@
             "type": "array",
             "title": "Skills"
           },
+          "personality": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Personality",
+            "description": "Personality ranges (in the summary from M4c, for the candidate table)"
+          },
           "employment": {
             "anyOf": [
               {
@@ -10121,13 +10985,6 @@
             "title": "Energy",
             "description": "Energy left this month: the founder and delegates only"
           },
-          "personality": {
-            "items": {
-              "$ref": "#/components/schemas/AttributeOut"
-            },
-            "type": "array",
-            "title": "Personality"
-          },
           "work_style": {
             "anyOf": [
               {
@@ -10174,12 +11031,12 @@
           "morale",
           "potential_phrase",
           "skills",
+          "personality",
           "employment",
           "candidacy",
           "noticed_tags",
           "knowledge",
           "interests",
-          "personality",
           "work_style",
           "work_style_matches_role",
           "morale_history"
@@ -10263,6 +11120,14 @@
             "type": "array",
             "title": "Skills"
           },
+          "personality": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Personality",
+            "description": "Personality ranges (in the summary from M4c, for the candidate table)"
+          },
           "employment": {
             "anyOf": [
               {
@@ -10345,6 +11210,7 @@
           "morale",
           "potential_phrase",
           "skills",
+          "personality",
           "employment",
           "candidacy",
           "noticed_tags",
@@ -11215,6 +12081,38 @@
         ],
         "title": "RaiseIn"
       },
+      "RangeChangeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group"
+          },
+          "before": {
+            "$ref": "#/components/schemas/RangeOut"
+          },
+          "after": {
+            "$ref": "#/components/schemas/RangeOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "group",
+          "before",
+          "after"
+        ],
+        "title": "RangeChangeOut",
+        "description": "One displayed range an action narrowed (M4c): what the viewer saw before and after."
+      },
       "RangeOut": {
         "properties": {
           "min": {
@@ -11588,6 +12486,19 @@
           "series_label": {
             "type": "string",
             "title": "Series Label"
+          },
+          "nominee_required": {
+            "type": "boolean",
+            "title": "Nominee Required",
+            "description": "Accepting adds a common seat for the founder's nominee (M4c)"
+          },
+          "nominee_choices": {
+            "items": {
+              "$ref": "#/components/schemas/NomineeChoiceOut"
+            },
+            "type": "array",
+            "title": "Nominee Choices",
+            "description": "Employees to choose from, most senior first; empty unless required (M4c)"
           }
         },
         "type": "object",
@@ -11609,7 +12520,9 @@
           "board_after",
           "founder_keeps_tie",
           "energy_cost",
-          "series_label"
+          "series_label",
+          "nominee_required",
+          "nominee_choices"
         ],
         "title": "RoundPreviewOut",
         "description": "Accepting this term sheet: every holder before and after the close (14.5)."
@@ -11906,6 +12819,32 @@
           "starting_cash_by_difficulty"
         ],
         "title": "ScenarioOut"
+      },
+      "ScoutOut": {
+        "properties": {
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          },
+          "learned": {
+            "items": {
+              "$ref": "#/components/schemas/LearnedOut"
+            },
+            "type": "array",
+            "title": "Learned",
+            "description": "What the scouting taught, per candidate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "energy",
+          "unread_inbox",
+          "learned"
+        ],
+        "title": "ScoutOut"
       },
       "SearchIn": {
         "properties": {

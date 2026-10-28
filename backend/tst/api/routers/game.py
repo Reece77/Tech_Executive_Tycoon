@@ -17,8 +17,10 @@ from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.people import (
     ActionOut,
+    CheckOut,
     EnergyOut,
     FireOut,
+    InboxBulkOut,
     InboxItemOut,
     InboxOut,
     OfferIn,
@@ -194,9 +196,10 @@ def list_candidates(save_id: str, settings: SettingsDep, data: DataDep) -> list[
 
 def _check(
     save_id: str, candidate_id: int, settings: SettingsDep, data: DataDep, kind: str
-) -> PersonProfileOut:
+) -> CheckOut:
     path = _path(settings, save_id)
-    actor = _founder_id(_state(path))
+    before = _state(path)
+    actor = _founder_id(before)
     action = (
         Interview(actor, candidate_id)
         if kind == "interview"
@@ -205,30 +208,33 @@ def _check(
     repository.run_action(path, data, action)
     with repository.open_session(path) as session:
         state = repository.load_state(session)
-        return views.person_profile(session, state, state.player.id, candidate_id, data)
+        company = state.player.id
+        profile = views.person_profile(session, state, company, candidate_id, data)
+    learned = views.learned(before, state, company, candidate_id, kind, data)
+    return CheckOut(**profile.model_dump(), learned=learned)
 
 
 @router.post(
     "/recruitment/candidates/{candidate_id}/interview",
-    response_model=PersonProfileOut,
+    response_model=CheckOut,
     responses=ERRORS,
     operation_id="interviewCandidate",
 )
-def interview(
-    save_id: str, candidate_id: int, settings: SettingsDep, data: DataDep
-) -> PersonProfileOut:
+def interview(save_id: str, candidate_id: int, settings: SettingsDep, data: DataDep) -> CheckOut:
+    """Interview a candidate; the response says what it taught (M4c)."""
     return _check(save_id, candidate_id, settings, data, "interview")
 
 
 @router.post(
     "/recruitment/candidates/{candidate_id}/reference-check",
-    response_model=PersonProfileOut,
+    response_model=CheckOut,
     responses=ERRORS,
     operation_id="referenceCheck",
 )
 def reference_check(
     save_id: str, candidate_id: int, settings: SettingsDep, data: DataDep
-) -> PersonProfileOut:
+) -> CheckOut:
+    """Check a candidate's references; the response says what it taught (M4c)."""
     return _check(save_id, candidate_id, settings, data, "reference_check")
 
 
@@ -341,21 +347,89 @@ def get_inbox(
     kind: Annotated[list[str] | None, Query()] = None,
     limit: int | None = Query(default=None, ge=1),
     offset: int = Query(default=0, ge=0),
+    archived: bool = False,
 ) -> InboxOut:
     """Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to
-    keep only those message kinds, across every page (M3b)."""
+    keep only those message kinds, across every page (M3b). Archived items are hidden;
+    `archived=true` shows only them (M4c)."""
     path = _path(settings, save_id)
     with repository.open_session(path) as session:
         player = repository.load_state(session).player
         items = inbox.list_inbox(
-            session, player.id, unread_only=unread_only, kinds=kind, limit=limit, offset=offset
+            session,
+            player.id,
+            unread_only=unread_only,
+            kinds=kind,
+            limit=limit,
+            offset=offset,
+            archived=archived,
         )
         return InboxOut(
             unread=inbox.unread_count(session, player.id),
-            total=inbox.inbox_total(session, player.id, unread_only=unread_only, kinds=kind),
+            total=inbox.inbox_total(
+                session, player.id, unread_only=unread_only, kinds=kind, archived=archived
+            ),
             offset=offset,
             items=[views.inbox_item(m) for m in items],
         )
+
+
+@router.post(
+    "/inbox/read-all",
+    response_model=InboxBulkOut,
+    responses=ERRORS,
+    operation_id="markInboxAllRead",
+)
+def mark_inbox_all_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
+    """Mark every message read (M4c). UI state: no energy, nothing in decision_log."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session, session.begin():
+        player = repository.load_state(session).player
+        changed = inbox.mark_all_read(session, player.id)
+        return InboxBulkOut(changed=changed, unread=inbox.unread_count(session, player.id))
+
+
+@router.post(
+    "/inbox/archive-read",
+    response_model=InboxBulkOut,
+    responses=ERRORS,
+    operation_id="archiveInboxRead",
+)
+def archive_inbox_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
+    """Archive every read message (M4c)."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session, session.begin():
+        player = repository.load_state(session).player
+        changed = inbox.archive_read(session, player.id)
+        return InboxBulkOut(changed=changed, unread=inbox.unread_count(session, player.id))
+
+
+@router.post(
+    "/inbox/{item_id}/archive",
+    response_model=InboxItemOut,
+    responses=ERRORS,
+    operation_id="archiveInboxItem",
+)
+def archive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
+    """Archive one message; it is marked read too (M4c)."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session, session.begin():
+        player = repository.load_state(session).player
+        return views.inbox_item(inbox.archive(session, player.id, item_id))
+
+
+@router.post(
+    "/inbox/{item_id}/unarchive",
+    response_model=InboxItemOut,
+    responses=ERRORS,
+    operation_id="unarchiveInboxItem",
+)
+def unarchive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
+    """Bring an archived message back to the inbox (M4c)."""
+    path = _path(settings, save_id)
+    with repository.open_session(path) as session, session.begin():
+        player = repository.load_state(session).player
+        return views.inbox_item(inbox.archive(session, player.id, item_id, archived=False))
 
 
 @router.post(

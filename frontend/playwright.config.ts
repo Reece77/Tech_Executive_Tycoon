@@ -7,7 +7,10 @@ import { join } from 'node:path';
 // never touches saves/ or a running `make dev`.
 const API_PORT = 8765;
 const WEB_PORT = 5175;
-const saveDir = mkdtempSync(join(tmpdir(), 'tst-e2e-'));
+// Kept in the environment so test workers (which load this file again) see the same folder;
+// the M4c flow edits a save there with tools/e2e_set_arr.py.
+process.env.TST_E2E_SAVE_DIR ??= mkdtempSync(join(tmpdir(), 'tst-e2e-'));
+const saveDir = process.env.TST_E2E_SAVE_DIR;
 
 // PLAYWRIGHT_CHANNEL=msedge (or chrome) uses an installed browser instead of downloading
 // Playwright's Chromium with `pnpm exec playwright install chromium`.

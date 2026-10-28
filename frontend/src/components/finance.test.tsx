@@ -18,6 +18,7 @@ import {
 import { financeTab, kindLabel, kindsFor } from '../lib/inbox';
 import { CapTable } from './CapTable';
 import { KindBadge } from './KindBadge';
+import { BoardMemberCard } from './BoardMemberCard';
 import { DilutionPreview } from './DilutionPreview';
 import { StatementTable } from './StatementTable';
 
@@ -191,6 +192,11 @@ const PREVIEW: RoundPreview = {
   founder_keeps_tie: true,
   energy_cost: 5,
   series_label: 'Series A',
+  nominee_required: true,
+  nominee_choices: [
+    { person_id: 3, name: 'Priya Shah', role_label: 'Software engineer', level: 'senior', default: true },
+    { person_id: 2, name: 'Tom Okafor', role_label: 'Designer', level: 'mid', default: false },
+  ],
 }; // prettier-ignore
 
 describe('DilutionPreview', () => {
@@ -208,6 +214,16 @@ describe('DilutionPreview', () => {
     expect(html).toContain('$25,000');
     expect(html).toContain('Accept · 5 energy');
     expect(html).not.toContain('Down round');
+  });
+
+  it('asks for the board nominee with the most senior preselected (M4c)', () => {
+    const html = wrap(<DilutionPreview preview={PREVIEW} onAccept={() => {}} />);
+    expect(html).toContain('Your board nominee');
+    expect(html).toContain('Priya Shah · Software engineer, senior (most senior)');
+    const none = wrap(<DilutionPreview preview={{ ...PREVIEW, nominee_choices: [] }} />);
+    expect(none).toContain('no employees to nominate');
+    const seed = wrap(<DilutionPreview preview={{ ...PREVIEW, nominee_required: false }} />);
+    expect(seed).not.toContain('Your board nominee');
   });
 
   it('warns on a down round and can be read-only', () => {
@@ -236,5 +252,35 @@ describe('Finance inbox kind', () => {
   it('filters Finance messages in the API', () => {
     expect(kindsFor('finance')).toContain('term_sheets_arrived');
     expect(kindsFor('finance')).not.toContain('offer_accepted');
+  });
+});
+
+describe('BoardMemberCard', () => {
+  it('shows name, firm, seat, since, confidence and trend (M4c)', () => {
+    const html = wrap(
+      <BoardMemberCard
+        director={{
+          seat_id: 2,
+          kind: 'investor',
+          person_id: 900,
+          name: 'Dana Wills',
+          firm: 'a16z',
+          firm_name: 'Andreessen Horowitz',
+          confidence: 61.4,
+          label: 'watchful',
+          months_below: 0,
+          seated_label: 'Mar 2012',
+          is_founder: false,
+          vacant: false,
+          is_employee: false,
+          history: [70, 66, 61.4],
+        }}
+      />,
+    );
+    expect(html).toContain('Dana Wills');
+    expect(html).toContain('Investor seat · Andreessen Horowitz');
+    expect(html).toContain('Mar 2012');
+    expect(html).toContain('>61<');
+    expect(html).toContain('Last 3 month ends: 70 → 61');
   });
 });

@@ -67,7 +67,7 @@ def hiring_client(tmp_path: Path) -> Iterator[Client]:
 def test_full_hiring_flow(api: Client) -> None:
     ov = api.get(f"{BASE}/overview")
     assert ov["mission"] == ["ai", "enterprise"]
-    assert ov["energy"] == {"energy": 100, "max": 100}
+    assert ov["energy"] == {"energy": 60, "max": 60}
     assert ov["headcount"] == 1 and ov["stage"] == 0
 
     people = api.get(f"{BASE}/people")
@@ -81,7 +81,7 @@ def test_full_hiring_flow(api: Client) -> None:
         f"{BASE}/recruitment/searches", {"role": "software_engineer", "channel": "job_post"}, 201
     )
     assert search["monthly_cost_cents"] == 50_000 and search["status"] == "open"
-    assert api.get(f"{BASE}/founder/energy") == {"energy": 96, "max": 100}
+    assert api.get(f"{BASE}/founder/energy") == {"energy": 55, "max": 60}
     assert [s["search_id"] for s in api.get(f"{BASE}/recruitment/searches")] == [1]
 
     api.post(f"{BASE}/advance")
@@ -100,7 +100,7 @@ def test_full_hiring_flow(api: Client) -> None:
     old = {s["key"]: s["range"]["max"] - s["range"]["min"] for s in before["skills"]}
     assert all(widths[k] <= old[k] for k in widths)
     api.post(f"{BASE}/recruitment/candidates/{pid}/reference-check")
-    assert api.get(f"{BASE}/founder/energy")["energy"] == 100 - 6 - 3  # energy reset at turn end
+    assert api.get(f"{BASE}/founder/energy")["energy"] == 60 - 8 - 4  # energy reset at turn end
 
     ask = first["candidacy"]["salary_expectation_cents"]
     preview = api.post(
@@ -187,7 +187,7 @@ def test_errors(api: Client, method: str, url: str, body: Any, status: int, code
 
 
 def test_energy_runs_out(api: Client) -> None:
-    for _ in range(10):
+    for _ in range(6):  # 60 energy, 10 each (M4c)
         api.post(f"{BASE}/recruitment/searches", {"role": "designer", "channel": "network"}, 201)
     res = api.post(f"{BASE}/recruitment/searches", {"role": "designer", "channel": "network"}, 400)
     assert res["code"] == "insufficient_energy"

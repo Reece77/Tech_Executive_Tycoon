@@ -35,22 +35,22 @@ def test_pa_scout_factor(loaded: LoadedData, judgment: float, factor: float) -> 
 
 
 def test_pa_worked_example(loaded: LoadedData) -> None:
-    """formulas.md section 4, PA row: true PA 140, offset +0.2, scout judgment 12."""
+    """formulas.md section 4, PA row (M4c values): true PA 140, offset +0.2, judgment 12."""
     r = loaded.balance.reveal
     hw = r.initial_hw.pa
-    rows = [(hw, (59, 194))]
+    rows = [(hw, (60, 193))]
     hw = narrow_pa(hw, r.pa_strength["job_post_screen"], 12, r)
-    rows.append((hw, (62, 192)))
+    rows.append((hw, (63, 191)))
     hw = narrow_pa(hw, r.pa_strength["interview"], 12, r)
-    rows.append((hw, (68, 188)))
+    rows.append((hw, (75, 184)))
     for _ in range(6):
         hw = narrow_pa(hw, r.pa_strength["employed_month"], 12, r)
-    rows.append((hw, (90, 173)))
-    expected_hw = [67.0, 64.49, 59.65, 41.15]
+    rows.append((hw, (95, 170)))
+    expected_hw = [66.0, 63.52, 54.0, 37.25]
     for (got, shown), want in zip(rows, expected_hw, strict=True):
         assert got == pytest.approx(want, abs=5e-3)
         assert displayed_range(140, got, 0.2, 10, 200) == shown
-    assert potential_phrase(90, 173, r.pa_phrase_bounds) == "decent to outstanding"
+    assert potential_phrase(75, 184, r.pa_phrase_bounds) == "decent to outstanding"
 
 
 def test_pa_uses_its_own_strength_and_factor(loaded: LoadedData) -> None:
@@ -81,7 +81,7 @@ def test_founder_pa_range_stays_at_forty(loaded: LoadedData) -> None:
     stranger = state.reveal(1, state.candidates[0].person_id)
     assert founder is not None and stranger is not None
     assert founder.record(PA_KEY).hw == loaded.balance.reveal.founder_pa_hw == 40
-    assert stranger.record(PA_KEY).hw == loaded.balance.reveal.initial_hw.pa == 67
+    assert stranger.record(PA_KEY).hw == loaded.balance.reveal.initial_hw.pa == 66
 
 
 # --- Section 13.10: focus potential --------------------------------------------------------

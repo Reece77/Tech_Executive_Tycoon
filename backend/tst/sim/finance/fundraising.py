@@ -193,11 +193,25 @@ def series_problem(state: GameState, company_id: int, series: str, balance: Bala
     return None
 
 
+def round_heat(state: GameState, company_id: int, series: str, balance: Balance) -> float:
+    """How hot investors find the company for this series (14.5, M4c)."""
+    rb = balance.finance.round
+    live = any(p.status == "live" for p in state.company_products(company_id))
+    return f.round_heat(
+        series,
+        arr_cents(state, company_id, balance),
+        rb.gate_arr_cents.get(series),  # type: ignore[call-overload]
+        live,
+        rb.heat_max,
+        rb.heat_seed_live,
+    )
+
+
 def deliver_term_sheets(
     state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LogItem, ...]]:
     """Phase 7 of the turn a round opens: each firm that invests in the series answers with
-    probability response x climate, quoting V_pre and an amount (14.5)."""
+    probability response x climate x heat, quoting V_pre and an amount (14.5)."""
     rb = balance.finance.round
     logs: list[LogItem] = []
     for rnd in state.rounds:
@@ -205,12 +219,14 @@ def deliver_term_sheets(
             continue
         base = base_value(state, rnd.company_id, balance, data)
         mood = climate(state, data)
+        heat = round_heat(state, rnd.company_id, rnd.series, balance)
         count = 0
         for index, firm in enumerate(data.investors):
             if rnd.series not in firm.series:
                 continue
             gen = finance_stream(rng, state.turn, rnd.id, index)
-            answers = float(gen.random()) < f.response_chance(firm.response, mood, rb.max_response)
+            chance = f.response_chance(firm.response, mood, rb.max_response, heat)
+            answers = float(gen.random()) < chance
             z = float(gen.standard_normal())
             if not answers:
                 continue
@@ -415,7 +431,9 @@ def close_rounds(
                 if seat.confidence is not None:
                     hit = f.clamp_confidence(seat.confidence + balance.board.down_round_hit)
                     state = with_seat(state, replace(seat, confidence=hit))
-        state = seat_board(state, company, rnd.series, sheet.firm, rnd.id, rng, balance, data)
+        state, seated = seat_board(
+            state, company, rnd.series, sheet.firm, rnd.id, rng, balance, data, rnd.nominee_id
+        )
         founder = state.founder_of(company)
         founder_pct = (
             _pct(Fraction(person_shares(state, company, founder.id), fd_shares(state, company)))
@@ -437,4 +455,5 @@ def close_rounds(
                 founder_pct=founder_pct,
             )
         )
+        logs += seated
     return state, tuple(entries), tuple(logs)

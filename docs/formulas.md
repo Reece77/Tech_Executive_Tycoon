@@ -139,14 +139,16 @@ scout\_factor_{PA} = clamp\left(\frac{judgment\_of\_talent}{20},\; 0.1,\; 1.0\ri
 
 and each action's PA strength is `reveal.pa_strength.<action>`. This is what makes a good scout worth having: current skills show themselves quickly; potential does not. `reveal.initial_hw.pa`, `reveal.pa_scout_divisor` and `reveal.pa_strength.*` are tuned to the §13.10 target. **Tuned in M2b:** stranger PA `hw` 67, `pa_scout_divisor` 16 (a judgment-6 scout learns potential at 0.375 of the full rate, judgment 16 and above at 1.0, against 0.65 and 0.9 for skills), and PA strengths job-post screen 0.05, interview 0.10, scouting month 0.60, network intro 0.30, reference check 0.30, employed month 0.08. **M4c (Reece's playtest: interviews felt pointless for potential):** interview PA strength rises to 0.20, and `reveal.initial_hw.pa` is re-tuned within 60–120 (smallest value that holds) so the §13.10 +3 PA target still passes; every interview and reference check now shows what it taught (§4 feedback in the M4c brief).
 
-**PA worked example (M2b values).** True PA 140, offset +0.2, scout judgment 12 (PA scout factor 0.75):
+**PA worked example (M4c values: stranger `hw` 66, interview PA strength 0.20).** True PA 140, offset +0.2, scout judgment 12 (PA scout factor 0.75):
 
 | Step | hw | Displayed | Phrase |
 | --- | --- | --- | --- |
-| Stranger | 67.00 | 59–194 | limited to outstanding |
-| After job-post screen | 64.49 | 62–192 | limited to outstanding |
-| After interview | 59.65 | 68–188 | limited to outstanding |
-| After 6 months employed | 41.15 | 90–173 | decent to outstanding |
+| Stranger | 66.00 | 60–193 | limited to outstanding |
+| After job-post screen | 63.52 | 63–191 | limited to outstanding |
+| After interview | 54.00 | 75–184 | decent to outstanding |
+| After 6 months employed | 37.25 | 95–170 | decent to outstanding |
+
+(M2b values, for comparison: 67.00, 64.49, 59.65 after the interview (68–188, still "limited to outstanding"), 41.15.) **M4c result:** `reveal.initial_hw.pa` = **66**, the smallest value in 60–120 that holds the §13.10 target (judgment 16 over judgment 6: +3.05 PA over 400 seeds; 65 gives +2.74). For a typical mid-level candidate (true PA 113, centred) seen by a judgment-10 founder, a job post plus one interview now shows 57–169 ("limited to outstanding"; M2b: 52–174): one interview takes 12% off the PA range instead of 6%, but the phrase usually needs a reference check or a second look to move.
 
 **Interests and work style** are not ranges: they are hidden until the first interview or network intro, then shown exactly.
 
@@ -278,6 +280,7 @@ The gap between 1.10× and 0.95× is 39 percentage points, which satisfies the M
 | Salary | `round(salary_cents / 12)` per active employment | 6000_salaries |
 | Benefits | `pct_of(monthly_salary, 2000 bp)` | 6010_benefits |
 | Office | $600 per active employee | 6100_rent |
+| Tools and travel (M4c) | `costs.tools_per_head_cents` = $1,500 per active employee, the founder excepted, remote staff included | 6900_general_admin |
 | Base overhead | $2,000 in M0, reduced to $500 from M1b | 6900_general_admin |
 | Severance | 1 month of salary, on firing | 6000_salaries |
 | Recruiter fee | 2,000 bp of annual salary, on hire | 6200_recruiting |
@@ -359,6 +362,8 @@ A resignation sets employment status to `notice` with `end_turn = turn + 1`. A n
 **Tag reveal:** each hidden tag of an employee reveals with 500 bp per month (stream `tags`, key `person_id`). An interview or reference check also rolls each still-hidden tag once at 1,500 bp (stream `actions`, key `action_seq`). Reveals are recorded per observer company (ADR-0007). A reveal writes an inbox item.
 
 ## 11. Products and markets (M3)
+
+**M4c balance pass:** the per-head tools-and-travel line (§8) alone met every target, so `market.awareness_scale` (0.5) and `products.seller_rate.*` (mid-market 2, enterprise 0.3) are unchanged; the M3a earn-and-burn ARR at turn 36 is about $2.55M (band $500k–$4M).
 
 Final for M3. Products are built by org units (§13), sold into segments of a category's market, and compete on appeal against every other product in that market. Until rivals get AI in M5, the other products belong to **incumbents**: real 2010 companies whose products hold fixed scores (ADR-0017). Regions are not modelled in M3: each category has one global market per segment.
 
@@ -617,17 +622,17 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `growth.noise_rel_sd` | 0.25 | fraction of the growth term | §3 |
 | `people.retire_bp_per_year_over_60` | 600 | bp | §3 |
 | `people.retire_from_age` | 60 | years | §3 |
-| `reveal.initial_hw.skill` / `.personality` / `.pa` | 5.0 / 7.0 / 67.0 (40.0 before M2b) | attribute or CA points | §4 |
+| `reveal.initial_hw.skill` / `.personality` / `.pa` | 5.0 / 7.0 / 66.0 (40.0 before M2b, 67.0 in M2b–M4b) | attribute or CA points | §4 |
 | `reveal.strength.<action>` | see §4 | fraction | §4 |
 | `reveal.scout_base` / `reveal.scout_divisor` | 0.5 / 40 | — | §4 |
 | `reveal.pa_phrase_bounds` | [70, 100, 130, 160] | CA points | §4 |
-| `reveal.pa_scout_divisor` / `reveal.pa_strength.<action>` | 16 / see §4 (tuned) | attribute points / fraction | §4, tuned in M2b |
+| `reveal.pa_scout_divisor` / `reveal.pa_strength.<action>` | 16 / see §4 (tuned; interview 0.20 from M4c) | attribute points / fraction | §4, tuned in M2b |
 | `reveal.pa_scout_clamp` | [0.1, 1.0] | multiplier [min, max] | §4 (M2b) |
 | `reveal.founder_pa_hw` | 40 | CA points | §4, §5 (M2b) |
 | `founder.skill_base` / `.skill_points` / `.skill_cap` | 5 / 70 / 18 | attribute points | §5 |
 | `founder.default_age` | 28 | years | §5 |
-| `founder.energy_per_month` | 100 | energy | §6 |
-| `founder.energy_cost.<action>` | see §6 | energy | §6 |
+| `founder.energy_per_month` | 60 (100 before M4c) | energy | §6 |
+| `founder.energy_cost.<action>` | see §6 (M4c: interview 8, reference check 4, job post 5, recruiter 5) | energy | §6 |
 | `founder.age_range` | [22, 60] | years | §5 |
 | `founder.default_region` | north_america | `regions.yaml` key | §5 |
 | `hiring.hint_bands` | [−0.3, 0.3] | score | §7 |
@@ -648,6 +653,7 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `payroll.benefits_bp` | 2000 | bp of salary | §8 |
 | `payroll.office_cost_per_head_cents` | 60000 | cents per month | §8 |
 | `company.base_monthly_cost_cents` | 200000 (M0), 50000 (M1b) | cents per month | §8 |
+| `costs.tools_per_head_cents` | 150000 (M4c; 0 before) | cents per month per employee, founder excepted | §8 |
 | `scenario.<id>.starting_cash_cents` | see §8a | cents | §8a |
 | `difficulty.<level>.starting_cash_mult_bp` | see §8a | bp | §8a |
 | `payroll.severance_months` | 1 | months | §8 |

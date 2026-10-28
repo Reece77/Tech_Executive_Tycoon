@@ -58,7 +58,7 @@ def energy(state: GameState) -> int | None:
     return state.person_state(1).energy
 
 
-@pytest.mark.parametrize(("channel", "cost"), [("network", 10), ("job_post", 4), ("recruiter", 4)])
+@pytest.mark.parametrize(("channel", "cost"), [("network", 10), ("job_post", 5), ("recruiter", 5)])
 def test_open_search_spends_energy(loaded: LoadedData, channel: str, cost: int) -> None:
     state = fresh_game(loaded)
     out = act(loaded, state, OpenSearch(1, "designer", channel))  # type: ignore[arg-type]
@@ -69,9 +69,9 @@ def test_open_search_spends_energy(loaded: LoadedData, channel: str, cost: int) 
         channel,
         "open",
     )
-    assert energy(out.new_state) == 100 - cost
+    assert energy(out.new_state) == 60 - cost
     assert out.new_state.next_ids.search == 2
-    assert energy(state) == 100  # input untouched
+    assert energy(state) == 60  # input untouched
 
 
 def test_open_search_errors(loaded: LoadedData) -> None:
@@ -108,7 +108,7 @@ def test_interview_narrows_and_reveals_profile(loaded: LoadedData) -> None:
     assert after.record("ambition").hw < before.record("ambition").hw
     assert after.record(PA_KEY).hw < before.record(PA_KEY).hw
     assert after.profile_revealed_turn == 0
-    assert energy(out.new_state) == 94
+    assert energy(out.new_state) == 52
     # The other candidate is untouched.
     assert out.new_state.reveal(1, 3) == state.reveal(1, 3)
 
@@ -155,7 +155,7 @@ def test_offers_withdraw_and_remake(loaded: LoadedData) -> None:
     offered = act(loaded, state, MakeOffer(1, 2, 9_000_000, 50)).new_state
     (offer,) = offered.offers
     assert (offer.id, offer.candidate_id, offer.status, offer.made_turn) == (1, 2, "pending", 0)
-    assert energy(offered) == 100  # offers cost 0 energy
+    assert energy(offered) == 60  # offers cost 0 energy
     with pytest.raises(OfferExistsError):
         act(loaded, offered, MakeOffer(1, 2, 9_500_000, 50))
     withdrawn = act(loaded, offered, WithdrawOffer(1, 1)).new_state

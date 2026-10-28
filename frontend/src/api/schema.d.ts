@@ -184,7 +184,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Interview */
+        /**
+         * Interview
+         * @description Interview a candidate; the response says what it taught (M4c).
+         */
         post: operations["interviewCandidate"];
         delete?: never;
         options?: never;
@@ -201,7 +204,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Reference Check */
+        /**
+         * Reference Check
+         * @description Check a candidate's references; the response says what it taught (M4c).
+         */
         post: operations["referenceCheck"];
         delete?: never;
         options?: never;
@@ -273,11 +279,92 @@ export interface paths {
         /**
          * Get Inbox
          * @description Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to
-         *     keep only those message kinds, across every page (M3b).
+         *     keep only those message kinds, across every page (M3b). Archived items are hidden;
+         *     `archived=true` shows only them (M4c).
          */
         get: operations["getInbox"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/inbox/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Inbox All Read
+         * @description Mark every message read (M4c). UI state: no energy, nothing in decision_log.
+         */
+        post: operations["markInboxAllRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/inbox/archive-read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive Inbox Read
+         * @description Archive every read message (M4c).
+         */
+        post: operations["archiveInboxRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/inbox/{item_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive Inbox Item
+         * @description Archive one message; it is marked read too (M4c).
+         */
+        post: operations["archiveInboxItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/inbox/{item_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Unarchive Inbox Item
+         * @description Bring an archived message back to the inbox (M4c).
+         */
+        post: operations["unarchiveInboxItem"];
         delete?: never;
         options?: never;
         head?: never;
@@ -913,7 +1000,8 @@ export interface paths {
         put?: never;
         /**
          * Scout Search
-         * @description The founder scouts every open candidate of the search (20 energy, formulas.md 11.12).
+         * @description The founder scouts every open candidate of the search (20 energy, formulas.md 11.12);
+         *     the response says what it taught about each (M4c).
          */
         post: operations["scoutSearch"];
         delete?: never;
@@ -1144,9 +1232,31 @@ export interface paths {
         put?: never;
         /**
          * Accept Term Sheet
-         * @description The round closes at the next Continue; the other term sheets lapse.
+         * @description The round closes at the next Continue; the other term sheets lapse. Where the round
+         *     adds a common seat, `nominee_id` names the founder's nominee (default: the most senior
+         *     employee; M4c).
          */
         post: operations["acceptTermSheet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/board/seats/{seat_id}/nominee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Name Nominee
+         * @description Name an employee to an empty common seat (14.6, M4c; energy 2).
+         */
+        post: operations["nameNominee"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1274,6 +1384,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcceptSheetIn */
+        AcceptSheetIn: {
+            /**
+             * Nominee Id
+             * @description The board nominee where the round adds a common seat (M4c)
+             */
+            nominee_id?: number | null;
+        };
         /** ActionOut */
         ActionOut: {
             energy: components["schemas"]["EnergyOut"];
@@ -1444,6 +1562,16 @@ export interface components {
             /** Next Meeting Label */
             next_meeting_label: string | null;
             last_meeting: components["schemas"]["BoardMeetingOut"] | null;
+            /**
+             * Nominee Energy
+             * @description Energy to name a nominee to an empty seat (M4c)
+             */
+            nominee_energy: number;
+            /**
+             * Nominee Choices
+             * @description Employees who could take a common seat, most senior first (M4c)
+             */
+            nominee_choices: components["schemas"]["NomineeChoiceOut"][];
         };
         /** CandidacyOut */
         CandidacyOut: {
@@ -1623,6 +1751,72 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /**
+         * CheckOut
+         * @description An interview or reference check: the candidate's profile now, and what it taught.
+         */
+        CheckOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Age */
+            age: number;
+            /** Region */
+            region: string;
+            /** Role */
+            role: string | null;
+            /** Role Label */
+            role_label: string | null;
+            /** Level */
+            level: string | null;
+            /** Is Founder */
+            is_founder: boolean;
+            /** Morale */
+            morale: number | null;
+            /** Potential Phrase */
+            potential_phrase: string;
+            /** Skills */
+            skills: components["schemas"]["AttributeOut"][];
+            /**
+             * Personality
+             * @description Personality ranges (in the summary from M4c, for the candidate table)
+             */
+            personality: components["schemas"]["AttributeOut"][];
+            employment: components["schemas"]["EmploymentOut"] | null;
+            candidacy: components["schemas"]["CandidacyOut"] | null;
+            /** Noticed Tags */
+            noticed_tags: components["schemas"]["TagOut"][];
+            knowledge: components["schemas"]["KnowledgeOut"];
+            /**
+             * Interests
+             * @description Null until an interview or network intro
+             */
+            interests: string[] | null;
+            /** @description Staff only (M2b) */
+            org?: components["schemas"]["PersonOrgOut"] | null;
+            /**
+             * Energy
+             * @description Energy left this month: the founder and delegates only
+             */
+            energy?: number | null;
+            /**
+             * Work Style
+             * @description Null until an interview or network intro
+             */
+            work_style: string | null;
+            /**
+             * Work Style Matches Role
+             * @description Null while work style is unknown
+             */
+            work_style_matches_role: boolean | null;
+            /**
+             * Morale History
+             * @description Last 12 months, oldest first
+             */
+            morale_history: components["schemas"]["MoralePointOut"][];
+            learned: components["schemas"]["LearnedOut"];
+        };
         /** CostLineOut */
         CostLineOut: {
             /** Account */
@@ -1718,10 +1912,23 @@ export interface components {
              * @description common | investor | independent
              */
             kind: string;
-            /** Person Id */
-            person_id: number;
+            /**
+             * Person Id
+             * @description Null for an empty common seat (M4c)
+             */
+            person_id: number | null;
             /** Name */
             name: string;
+            /**
+             * Vacant
+             * @description An empty common seat (M4c)
+             */
+            vacant: boolean;
+            /**
+             * Is Employee
+             * @description The founder or a nominee on staff: opens the person's profile; anyone else opens the board-member card (M4c)
+             */
+            is_employee: boolean;
             /** Firm */
             firm: string | null;
             /** Firm Name */
@@ -2265,6 +2472,19 @@ export interface components {
              */
             is_founder?: boolean;
         };
+        /**
+         * InboxBulkOut
+         * @description Mark all read or archive all read (M4c).
+         */
+        InboxBulkOut: {
+            /**
+             * Changed
+             * @description Items changed
+             */
+            changed: number;
+            /** Unread */
+            unread: number;
+        };
         /** InboxItemOut */
         InboxItemOut: {
             /** Item Id */
@@ -2285,6 +2505,11 @@ export interface components {
             link_id: number | null;
             /** Read */
             read: boolean;
+            /**
+             * Archived
+             * @description Hidden from the inbox unless the archive is shown (M4c)
+             */
+            archived: boolean;
         };
         /** InboxOut */
         InboxOut: {
@@ -2341,6 +2566,46 @@ export interface components {
              * @description What still stands between it and launch
              */
             missing: string[];
+        };
+        /**
+         * LearnedOut
+         * @description What one interview, reference check or scout taught about a person (M4c). Built from
+         *     displayed ranges before and after the action, never from true values (ADR-0007).
+         */
+        LearnedOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Action
+             * @description interview | reference_check | scout
+             */
+            action: string;
+            /**
+             * Ranges
+             * @description Ranges that narrowed, skills first
+             */
+            ranges: components["schemas"]["RangeChangeOut"][];
+            /** Potential Before */
+            potential_before: string;
+            /** Potential After */
+            potential_after: string;
+            /**
+             * Interests
+             * @description Set when this action revealed them
+             */
+            interests: string[] | null;
+            /**
+             * Work Style
+             * @description Set when this action revealed it
+             */
+            work_style: string | null;
+            /**
+             * Tags
+             * @description Behavior tags this action noticed
+             */
+            tags: components["schemas"]["TagOut"][];
         };
         /** ManagerOut */
         ManagerOut: {
@@ -2578,6 +2843,30 @@ export interface components {
             /** Roles */
             roles: components["schemas"]["LabelOut"][];
             founder_rules: components["schemas"]["FounderRulesOut"];
+        };
+        /**
+         * NomineeChoiceOut
+         * @description An employee who could take a common board seat (M4c).
+         */
+        NomineeChoiceOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role Label */
+            role_label: string;
+            /** Level */
+            level: string;
+            /**
+             * Default
+             * @description The most senior: the preselected choice
+             */
+            default: boolean;
+        };
+        /** NomineeIn */
+        NomineeIn: {
+            /** Person Id */
+            person_id: number;
         };
         /** OfferIn */
         OfferIn: {
@@ -3093,6 +3382,11 @@ export interface components {
             potential_phrase: string;
             /** Skills */
             skills: components["schemas"]["AttributeOut"][];
+            /**
+             * Personality
+             * @description Personality ranges (in the summary from M4c, for the candidate table)
+             */
+            personality: components["schemas"]["AttributeOut"][];
             employment: components["schemas"]["EmploymentOut"] | null;
             candidacy: components["schemas"]["CandidacyOut"] | null;
             /** Noticed Tags */
@@ -3110,8 +3404,6 @@ export interface components {
              * @description Energy left this month: the founder and delegates only
              */
             energy?: number | null;
-            /** Personality */
-            personality: components["schemas"]["AttributeOut"][];
             /**
              * Work Style
              * @description Null until an interview or network intro
@@ -3152,6 +3444,11 @@ export interface components {
             potential_phrase: string;
             /** Skills */
             skills: components["schemas"]["AttributeOut"][];
+            /**
+             * Personality
+             * @description Personality ranges (in the summary from M4c, for the candidate table)
+             */
+            personality: components["schemas"]["AttributeOut"][];
             employment: components["schemas"]["EmploymentOut"] | null;
             candidacy: components["schemas"]["CandidacyOut"] | null;
             /** Noticed Tags */
@@ -3543,6 +3840,20 @@ export interface components {
             /** Salary Cents */
             salary_cents: number;
         };
+        /**
+         * RangeChangeOut
+         * @description One displayed range an action narrowed (M4c): what the viewer saw before and after.
+         */
+        RangeChangeOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Group */
+            group: string;
+            before: components["schemas"]["RangeOut"];
+            after: components["schemas"]["RangeOut"];
+        };
         /** RangeOut */
         RangeOut: {
             /** Min */
@@ -3683,6 +3994,16 @@ export interface components {
             energy_cost: number;
             /** Series Label */
             series_label: string;
+            /**
+             * Nominee Required
+             * @description Accepting adds a common seat for the founder's nominee (M4c)
+             */
+            nominee_required: boolean;
+            /**
+             * Nominee Choices
+             * @description Employees to choose from, most senior first; empty unless required (M4c)
+             */
+            nominee_choices: components["schemas"]["NomineeChoiceOut"][];
         };
         /** RoundsOut */
         RoundsOut: {
@@ -3811,6 +4132,17 @@ export interface components {
             starting_cash_by_difficulty: {
                 [key: string]: number;
             };
+        };
+        /** ScoutOut */
+        ScoutOut: {
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+            /**
+             * Learned
+             * @description What the scouting taught, per candidate
+             */
+            learned: components["schemas"]["LearnedOut"][];
         };
         /** SearchIn */
         SearchIn: {
@@ -4837,7 +5169,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PersonProfileOut"];
+                    "application/json": components["schemas"]["CheckOut"];
                 };
             };
             /** @description Bad Request */
@@ -4896,7 +5228,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PersonProfileOut"];
+                    "application/json": components["schemas"]["CheckOut"];
                 };
             };
             /** @description Bad Request */
@@ -5129,6 +5461,7 @@ export interface operations {
                 kind?: string[] | null;
                 limit?: number | null;
                 offset?: number;
+                archived?: boolean;
             };
             header?: never;
             path: {
@@ -5145,6 +5478,240 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InboxOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    markInboxAllRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxBulkOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    archiveInboxRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxBulkOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    archiveInboxItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    unarchiveInboxItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemOut"];
                 };
             };
             /** @description Bad Request */
@@ -7388,7 +7955,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActionOut"];
+                    "application/json": components["schemas"]["ScoutOut"];
                 };
             };
             /** @description Bad Request */
@@ -8151,7 +8718,74 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AcceptSheetIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    nameNominee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                seat_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NomineeIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

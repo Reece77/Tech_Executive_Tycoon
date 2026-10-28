@@ -75,6 +75,9 @@ describe('KindBadge', () => {
     expect(matchesFilter({ kind: 'offer_accepted', read: true }, 'people')).toBe(false);
     expect(matchesFilter({ kind: 'fired', read: false }, 'unread')).toBe(true);
     expect(matchesFilter({ kind: 'fired', read: true }, 'unread')).toBe(false);
+    expect(matchesFilter({ kind: 'fired', read: true, archived: true }, 'all')).toBe(false);
+    expect(matchesFilter({ kind: 'fired', read: true, archived: true }, 'archived')).toBe(true);
+    expect(matchesFilter({ kind: 'fired', read: true, archived: false }, 'archived')).toBe(false);
     expect(preview('First. Second.')).toBe('First.');
   });
 });

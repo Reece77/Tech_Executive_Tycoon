@@ -1,6 +1,7 @@
-"""Finance actions (ADR-0014, docs/formulas.md 14.4, 14.5, 14.7): raise on a SAFE, start a
-priced round, accept a term sheet, accept a bridge. They take effect at once and spend the
-founder's energy; investors answer at the next Continue.
+"""Finance actions (ADR-0014, docs/formulas.md 14.4-14.7): raise on a SAFE, start a
+priced round, accept a term sheet (naming a board nominee where it adds a common seat),
+accept a bridge, name a nominee to an empty common seat (M4c). They take effect at once
+and spend the founder's energy; investors answer at the next Continue.
 
 Every rule an action could break raises `FinanceRuleError`, changing nothing.
 """
@@ -14,12 +15,13 @@ from typing import Literal
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.data_models import SERIES, Balance, GameData
 from tst.sim.errors import FinanceRuleError, UnknownSafeError, UnknownTermSheetError
+from tst.sim.finance.board import adds_common_seat, default_nominee, nominee_problem
 from tst.sim.finance.captable import open_round
 from tst.sim.finance.fundraising import safe_fraction, series_problem
 from tst.sim.finance.insolvency import bridge_amount
 from tst.sim.finance.models import FundingRound, Safe, SheetStatus
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
-from tst.sim.state import GameState, with_round, with_safe, with_term_sheet
+from tst.sim.state import GameState, with_round, with_safe, with_seat, with_term_sheet
 
 # --- Action types ---------------------------------------------------------------------------
 
@@ -44,6 +46,9 @@ class StartRound:
 class AcceptTermSheet:
     actor_id: int
     sheet_id: int
+    # The founder's board nominee when the round adds a common seat (M4c); None: the most
+    # senior employee.
+    nominee_id: int | None = None
     kind: Literal["accept_term_sheet"] = "accept_term_sheet"
 
 
@@ -54,7 +59,15 @@ class AcceptBridge:
     kind: Literal["accept_bridge"] = "accept_bridge"
 
 
-type FinanceAction = RaiseSafe | StartRound | AcceptTermSheet | AcceptBridge
+@dataclass(frozen=True, slots=True)
+class NameNominee:
+    actor_id: int
+    seat_id: int
+    person_id: int
+    kind: Literal["name_nominee"] = "name_nominee"
+
+
+type FinanceAction = RaiseSafe | StartRound | AcceptTermSheet | AcceptBridge | NameNominee
 
 
 def _founder_company(state: GameState, actor_id: int) -> int:
@@ -139,13 +152,38 @@ def accept_term_sheet(state: GameState, action: AcceptTermSheet, balance: Balanc
         raise UnknownTermSheetError(f"no term sheet {action.sheet_id}")
     if rnd.status != "open" or sheet.status != "offered" or state.turn > sheet.expires_turn:
         raise FinanceRuleError("that term sheet is no longer open")
+    nominee = None
+    if adds_common_seat(state, company, rnd.series, balance):
+        nominee = action.nominee_id
+        if nominee is None:
+            nominee = default_nominee(state, company)
+        elif (problem := nominee_problem(state, company, nominee)) is not None:
+            raise FinanceRuleError(f"cannot nominate them to the board: {problem}")
+    elif action.nominee_id is not None:
+        raise FinanceRuleError("this round adds no common seat to name a nominee for")
     state = spend_energy(state, action.actor_id, "accept_term_sheet", balance)
     for other in state.sheets_of(rnd.id):
         status: SheetStatus = "accepted" if other.id == sheet.id else "lapsed"
         if other.status == "offered":
             state = with_term_sheet(state, replace(other, status=status))
-    state = with_round(state, replace(rnd, status="accepted", accepted_sheet_id=sheet.id))
+    state = with_round(
+        state, replace(rnd, status="accepted", accepted_sheet_id=sheet.id, nominee_id=nominee)
+    )
     return Outcome(state)
+
+
+def name_nominee(state: GameState, action: NameNominee, balance: Balance) -> Outcome:
+    """Fill an empty common seat with an employee (14.6, M4c)."""
+    company = _founder_company(state, action.actor_id)
+    seat = next((s for s in state.board(company) if s.id == action.seat_id), None)
+    if seat is None or seat.kind != "common" or not seat.vacant:
+        raise FinanceRuleError(f"seat {action.seat_id} is not an empty common seat")
+    problem = nominee_problem(state, company, action.person_id)
+    if problem is not None:
+        raise FinanceRuleError(f"cannot nominate them to the board: {problem}")
+    state = spend_energy(state, action.actor_id, "name_nominee", balance)
+    seat = replace(seat, person_id=action.person_id, seated_turn=state.turn)
+    return Outcome(with_seat(state, seat))
 
 
 def accept_bridge(
@@ -187,3 +225,5 @@ def apply_finance(
             return accept_term_sheet(state, action, balance)
         case AcceptBridge():
             return accept_bridge(state, action, balance, data, ledger_balances)
+        case NameNominee():
+            return name_nominee(state, action, balance)

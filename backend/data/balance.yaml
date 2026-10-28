@@ -4,6 +4,9 @@
 company:
   base_monthly_cost_cents: 50000 # cents per month; base overhead on top of payroll and office ($500 from M1b, $2,000 in M0; formulas.md section 8)
 
+costs:
+  tools_per_head_cents: 150000 # cents per month per employee, the founder excepted; software, equipment and travel, posted to 6900_general_admin (M4c balance lever, formulas.md section 8)
+
 scenario:
   garage_bootstrap:
     starting_cash_cents: 5000000 # cents; founder savings, $50,000 (formulas.md section 8a)
@@ -98,7 +101,7 @@ reveal: # revealed ranges (formulas.md section 4, ADR-0007)
   initial_hw: # half-width of a stranger's range
     skill: 5.0 # attribute points
     personality: 7.0 # attribute points
-    pa: 67.0 # CA points; a stranger's potential is genuinely unknown (M2b, tuned to 13.10's +3 PA target)
+    pa: 66.0 # CA points; a stranger's potential is genuinely unknown (M2b 67; M4c 66, the smallest in 60-120 that holds 13.10's +3 PA target with interview PA strength 0.20)
   strength: # fraction of hw removed per action, before the scout factor
     job_post_screen: 0.20
     network_intro: 0.30
@@ -114,7 +117,7 @@ reveal: # revealed ranges (formulas.md section 4, ADR-0007)
   pa_strength: # fraction of PA's hw removed per action, before the PA scout factor (M2b, 4; tuned to 13.10)
     job_post_screen: 0.05 # a screen says little about potential
     network_intro: 0.30
-    interview: 0.10 # one conversation says little about potential
+    interview: 0.20 # one conversation says a little about potential (0.10 before M4c)
     reference_check: 0.30
     scouting_month: 0.60 # a scouting month is where a good scout earns their keep
     employed_month: 0.08
@@ -127,12 +130,12 @@ founder: # founder build (formulas.md section 5)
   default_age: 28 # years
   age_range: [22, 60] # years; allowed founder ages
   default_region: north_america # regions.yaml key; founder region when none is chosen (name pool)
-  energy_per_month: 100 # energy; founder's monthly action budget, reset after phase 12 (6)
+  energy_per_month: 60 # energy; founder's monthly action budget, reset after phase 12 (6; 100 before M4c)
   energy_cost: # energy spent at once by each action (6)
-    interview: 6
-    reference_check: 3
-    job_post: 4 # open a job post search
-    recruiter: 4 # engage a recruiter
+    interview: 8 # (6 before M4c)
+    reference_check: 4 # (3 before M4c)
+    job_post: 5 # open a job post search (4 before M4c)
+    recruiter: 5 # engage a recruiter (4 before M4c)
     network: 10 # network search
     offer: 0
     create_unit: 2 # create a department or team (M2, section 13.7)
@@ -158,6 +161,7 @@ founder: # founder build (formulas.md section 5)
     start_round: 15 # start a priced round (M4, section 14.5)
     accept_term_sheet: 5 # accept a term sheet (M4, section 14.5)
     accept_bridge: 5 # accept a bridge SAFE from existing investors (M4, section 14.7)
+    name_nominee: 2 # name an employee to an empty common board seat (M4c, section 14.6)
 
 # --- Hiring (formulas.md section 7) -----------------------------------------------------
 hiring:
@@ -370,6 +374,8 @@ finance:
       seed: [100000000, 300000000]
       a: [300000000, 1000000000]
       b: [1000000000, 3000000000]
+    heat_max: 3 # multiplier; a Series A or B's response x climate is also x clamp(ARR / gate, 1, this) (14.5, M4c)
+    heat_seed_live: 1.5 # multiplier; a seed's heat with a live product, else 1 (14.5, M4c)
 
 board:
   start: 70 # confidence of a new director (14.6)

@@ -36,7 +36,7 @@ def test_actions_persist_and_log_seq(save: Path, loaded: LoadedData) -> None:
         state = load_state(session)
         rows = session.scalars(select(DecisionLogRow).order_by(DecisionLogRow.id)).all()
     assert [s.role for s in state.searches] == ["software_engineer", "designer"]
-    assert state.person_state(1).energy == 100 - 4 - 10
+    assert state.person_state(1).energy == 60 - 5 - 10
     assert [(r.kind, r.seq, r.turn) for r in rows] == [
         ("new_game", 0, 0),
         ("open_search", 1, 0),
@@ -46,7 +46,7 @@ def test_actions_persist_and_log_seq(save: Path, loaded: LoadedData) -> None:
 
 
 def test_failed_action_writes_nothing(save: Path, loaded: LoadedData) -> None:
-    for _ in range(10):
+    for _ in range(6):  # 60 energy, 10 each (M4c)
         run_action(save, loaded, OpenSearch(1, "designer", "network"))
     before = _dump(save)
     with pytest.raises(InsufficientEnergyError):

@@ -124,7 +124,44 @@ def test_upgrade_gives_a_funded_spinout_its_board(tmp_path: Path, loaded: Loaded
     with open_session(path) as session:
         state = load_state(session)
     assert [s.kind for s in state.seats] == ["common", "investor"]
-    director = state.person(state.seats[1].person_id)
+    assert state.seats[0].person_id == 1  # the founder's own seat (fixed in M4c)
+    director = state.person(state.seats[1].person_id)  # type: ignore[arg-type]
     assert director.role == BOARD_ROLE
     assert share_price(state, 1) == 75 and state.rounds[0].lead_firm == "first_round"
     run_turn(path, loaded)
+
+
+def test_upgrade_to_0011_empties_a_generated_nominee_seat(
+    tmp_path: Path, loaded: LoadedData
+) -> None:
+    """M4c: a common seat held by a generated director becomes empty, with an inbox note; a
+    founder left without a seat (0009 on a funded spinout) takes theirs back."""
+    path = _save(tmp_path, loaded)
+    migrate.downgrade(path, "0010_stage_board_history")
+    with open_session(path) as session, session.begin():
+        director = session.execute(
+            text("SELECT person_id FROM board_seat WHERE kind = 'investor'")
+        ).scalar()
+        session.execute(  # as 0009 left it: a generated person in the founder's seat
+            text("UPDATE board_seat SET person_id = :d WHERE kind = 'common'"), {"d": director}
+        )
+        session.execute(
+            text(
+                "INSERT INTO board_seat (id, company_id, kind, person_id, seated_turn, firm, "
+                "round_id, confidence, months_below) VALUES (99, 1, 'common', :d, 0, NULL, "
+                "NULL, NULL, 0)"
+            ),
+            {"d": director},
+        )
+        session.execute(text("INSERT INTO board_seat_history VALUES (99, '[]')"))
+    assert migrate.ensure_current(path) is not None
+    with open_session(path) as session:
+        state = load_state(session)
+        notes = session.execute(
+            text("SELECT title FROM inbox_item WHERE template = 'board_seat_empty'")
+        ).all()
+    common = [s for s in state.seats if s.kind == "common"]
+    assert [s.person_id for s in common] == [1, None]
+    assert [n[0] for n in notes] == ["Name your board nominee"]
+    assert state.seats[-1].history == ()  # the history table survived the rebuild
+    run_turn(path, loaded)  # the upgraded save keeps playing

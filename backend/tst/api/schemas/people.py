@@ -120,6 +120,9 @@ class PersonSummaryOut(BaseModel):
     morale: float | None
     potential_phrase: str
     skills: list[AttributeOut]
+    personality: list[AttributeOut] = Field(
+        description="Personality ranges (in the summary from M4c, for the candidate table)"
+    )
     employment: EmploymentOut | None
     candidacy: CandidacyOut | None
     noticed_tags: list[TagOut]
@@ -132,10 +135,40 @@ class PersonSummaryOut(BaseModel):
 
 
 class PersonProfileOut(PersonSummaryOut):
-    personality: list[AttributeOut]
     work_style: str | None = Field(description="Null until an interview or network intro")
     work_style_matches_role: bool | None = Field(description="Null while work style is unknown")
     morale_history: list[MoralePointOut] = Field(description="Last 12 months, oldest first")
+
+
+class RangeChangeOut(BaseModel):
+    """One displayed range an action narrowed (M4c): what the viewer saw before and after."""
+
+    key: str
+    label: str
+    group: str  # technical | business | leadership | personality
+    before: RangeOut
+    after: RangeOut
+
+
+class LearnedOut(BaseModel):
+    """What one interview, reference check or scout taught about a person (M4c). Built from
+    displayed ranges before and after the action, never from true values (ADR-0007)."""
+
+    person_id: int
+    name: str
+    action: str = Field(description="interview | reference_check | scout")
+    ranges: list[RangeChangeOut] = Field(description="Ranges that narrowed, skills first")
+    potential_before: str
+    potential_after: str
+    interests: list[str] | None = Field(description="Set when this action revealed them")
+    work_style: str | None = Field(description="Set when this action revealed it")
+    tags: list[TagOut] = Field(description="Behavior tags this action noticed")
+
+
+class CheckOut(PersonProfileOut):
+    """An interview or reference check: the candidate's profile now, and what it taught."""
+
+    learned: LearnedOut
 
 
 class SearchIn(BaseModel):
@@ -195,6 +228,10 @@ class ActionOut(BaseModel):
     unread_inbox: int
 
 
+class ScoutOut(ActionOut):
+    learned: list[LearnedOut] = Field(description="What the scouting taught, per candidate")
+
+
 class FireOut(ActionOut):
     severance_cents: int
 
@@ -209,6 +246,14 @@ class InboxItemOut(BaseModel):
     link_kind: str | None
     link_id: int | None
     read: bool
+    archived: bool = Field(description="Hidden from the inbox unless the archive is shown (M4c)")
+
+
+class InboxBulkOut(BaseModel):
+    """Mark all read or archive all read (M4c)."""
+
+    changed: int = Field(description="Items changed")
+    unread: int
 
 
 class InboxOut(BaseModel):

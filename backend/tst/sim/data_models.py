@@ -30,6 +30,10 @@ class CompanyBalance(_Frozen):
     base_monthly_cost_cents: int = Field(ge=0)
 
 
+class CostsBalance(_Frozen):
+    tools_per_head_cents: int = Field(ge=0)  # M4c: software, equipment and travel per head
+
+
 class ScenarioBalance(_Frozen):
     starting_cash_cents: int = Field(ge=0)
 
@@ -246,6 +250,7 @@ ENERGY_ACTIONS = (
     "start_round",
     "accept_term_sheet",
     "accept_bridge",
+    "name_nominee",
 )
 CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
 HIRING_LEVELS = ("junior", "mid", "senior", "staff")
@@ -510,6 +515,8 @@ class RoundBalance(_Frozen):
     fee_min_cents: int = Field(ge=0)
     fee_bp: int = Field(ge=0, le=BP_DENOMINATOR)
     typical_cents: dict[Series, Span]  # guidance only (14.5 table)
+    heat_max: float = Field(ge=1)  # M4c: most a Series A or B's ARR / gate multiplies response
+    heat_seed_live: float = Field(ge=1)  # M4c: a seed's heat with a live product
 
 
 class FinanceBalance(_Frozen):
@@ -595,6 +602,7 @@ class BankruptcyBalance(_Frozen):
 
 class Balance(_Frozen):
     company: CompanyBalance
+    costs: CostsBalance  # M4c (formulas.md 8)
     scenario: dict[str, ScenarioBalance]
     difficulty: dict[str, DifficultyBalance]
     backup: BackupBalance
@@ -999,6 +1007,8 @@ INBOX_TEMPLATE_KEYS = (
     "board_meeting",
     "board_warning",
     "founder_removed",
+    "board_seat_empty",  # M4c: name a nominee to the empty common seat
+    "nominee_left",  # M4c: the nominee left the company
     "insolvent",
     "bridge_offered",
     "bridge_lapsed",

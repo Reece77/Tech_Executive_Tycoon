@@ -1,11 +1,13 @@
+import { Alert, Button, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import { BoardMemberCard } from '../../components/BoardMemberCard';
 import { DataTable } from '../../components/DataTable';
 import { Sparkline } from '../../components/Sparkline';
 import { KpiTile } from '../../components/KpiTile';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
-import { useBoard, type Board, type Director } from '../../hooks/api';
+import { useBoard, useNameNominee, type Board, type Director } from '../../hooks/api';
 import { confidenceColor, formatGrowth, labelText, seatsText } from '../../lib/finance';
 import { formatWhole } from '../../lib/format';
 import { gameTableFeatures, type GameTableFeatures } from '../../lib/table';
@@ -13,7 +15,10 @@ import { gameTableFeatures, type GameTableFeatures } from '../../lib/table';
 const helper = createColumnHelper<GameTableFeatures, Director>();
 
 function seatText(d: Director): string {
-  if (d.kind === 'common') return d.is_founder ? 'Common · founder' : 'Common · your nominee';
+  if (d.kind === 'common') {
+    if (d.is_founder) return 'Common · founder';
+    return d.vacant ? 'Common · empty' : 'Common · your nominee';
+  }
   if (d.kind === 'independent') return 'Independent';
   return `Investor · ${d.firm_name ?? ''}`;
 }
@@ -46,26 +51,99 @@ function Confidence({ d, board }: { d: Director; board: Board }) {
   );
 }
 
+/** Name an employee to an empty common seat (M4c). */
+function NameNominee({ saveId, board, seatId }: { saveId: string; board: Board; seatId: number }) {
+  const name = useNameNominee(saveId);
+  const first = board.nominee_choices.find((c) => c.default) ?? board.nominee_choices[0];
+  const [person, setPerson] = useState<string | null>(first ? String(first.person_id) : null);
+  if (board.nominee_choices.length === 0) {
+    return (
+      <span className="tst-muted" style={{ fontSize: 13 }}>
+        Hire someone to name them to this seat. Until then it still votes with you.
+      </span>
+    );
+  }
+  return (
+    <span style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+      <Select
+        aria-label="Nominee"
+        size="xs"
+        value={person}
+        onChange={setPerson}
+        allowDeselect={false}
+        data={board.nominee_choices.map((c) => ({
+          value: String(c.person_id),
+          label: `${c.name} · ${c.role_label}, ${c.level}`,
+        }))}
+        data-testid="name-nominee-select"
+      />
+      <Button
+        size="compact-sm"
+        disabled={!person}
+        loading={name.isPending}
+        onClick={() => person && name.mutate({ seatId, personId: Number(person) })}
+        data-testid="name-nominee"
+      >
+        Name nominee · {board.nominee_energy} energy
+      </Button>
+      {name.error && (
+        <Alert color="red" style={{ flexBasis: '100%' }}>
+          {name.error.message}
+        </Alert>
+      )}
+    </span>
+  );
+}
+
 function Directors({ saveId, board }: { saveId: string; board: Board }) {
+  const [cardSeat, setCardSeat] = useState<number | null>(null);
+  const card = board.directors.find((d) => d.seat_id === cardSeat && !d.is_employee && !d.vacant);
   const columns = useMemo(
     () =>
       helper.columns([
         helper.accessor('name', {
           header: 'Director',
           sortFn: 'alphanumeric',
-          cell: ({ row }) =>
-            row.original.is_founder ? (
-              <span style={{ fontWeight: 600 }}>{row.original.name} (you)</span>
-            ) : row.original.kind === 'common' ? (
-              <Link
-                to={`/game/${saveId}/people/${row.original.person_id}`}
-                style={{ fontWeight: 600, textDecoration: 'none' }}
+          cell: ({ row }) => {
+            const d = row.original;
+            if (d.is_founder) return <span style={{ fontWeight: 600 }}>{d.name} (you)</span>;
+            if (d.vacant) {
+              return (
+                <span style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span className="tst-muted" style={{ fontStyle: 'italic' }}>
+                    {d.name}
+                  </span>
+                  <NameNominee saveId={saveId} board={board} seatId={d.seat_id} />
+                </span>
+              );
+            }
+            if (d.is_employee) {
+              return (
+                <Link
+                  to={`/game/${saveId}/people/${d.person_id}`}
+                  style={{ fontWeight: 600, textDecoration: 'none' }}
+                >
+                  {d.name}
+                </Link>
+              );
+            }
+            // Investor and independent directors are not employees: a card, not a profile.
+            return (
+              <button
+                type="button"
+                onClick={() => setCardSeat(d.seat_id)}
+                data-testid="director-name"
+                style={{
+                  all: 'unset',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  color: 'var(--tst-link)',
+                }}
               >
-                {row.original.name}
-              </Link>
-            ) : (
-              <span style={{ fontWeight: 600 }}>{row.original.name}</span>
-            ),
+                {d.name}
+              </button>
+            );
+          },
         }),
         helper.accessor((d) => seatText(d), {
           id: 'seat',
@@ -128,7 +206,12 @@ function Directors({ saveId, board }: { saveId: string; board: Board }) {
     data: board.directors,
     getRowId: (d) => String(d.seat_id),
   });
-  return <DataTable table={table} label="Directors" rowTestId="director-row" />;
+  return (
+    <>
+      <DataTable table={table} label="Directors" rowTestId="director-row" />
+      {card && <BoardMemberCard director={card} onClose={() => setCardSeat(null)} />}
+    </>
+  );
 }
 
 const TREND_TEXT: Record<string, string> = {

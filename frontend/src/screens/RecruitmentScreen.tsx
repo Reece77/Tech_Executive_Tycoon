@@ -6,6 +6,7 @@ import { Link, useParams, useSearchParams } from 'react-router';
 import { AttributeRange } from '../components/AttributeRange';
 import { DataTable } from '../components/DataTable';
 import { HiringPlansPanel } from '../components/HiringPlans';
+import { LearnedPanel } from '../components/LearnedPanel';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import {
   useCandidates,
@@ -22,6 +23,7 @@ import {
   useSearches,
   useWithdrawOffer,
   type HiringMeta,
+  type Learned,
   type NewGameMeta,
   type Person,
   type Search,
@@ -33,6 +35,8 @@ import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 type Channel = HiringMeta['channels'][number];
 const helper = createColumnHelper<GameTableFeatures, Person>();
 const PREVIEW_DEBOUNCE_MS = 250;
+// The personality traits the candidate table shows; references sharpen them (M4c).
+const KEY_PERSONALITY = ['loyalty', 'professionalism', 'ambition', 'risk_appetite'];
 
 // Channel flavour text (wireframe); the numbers beside it come from GET /api/meta/hiring.
 const CHANNEL_TEXT: Record<string, string> = {
@@ -113,6 +117,7 @@ function RecruitmentBody({
 }) {
   const [params, setParams] = useSearchParams();
   const [offerTo, setOfferTo] = useState<number | null>(null);
+  const [learned, setLearned] = useState<Learned[] | null>(null);
   const check = useCheckCandidate(saveId);
   const withdraw = useWithdrawOffer(saveId);
 
@@ -188,6 +193,30 @@ function RecruitmentBody({
             },
           ),
         ),
+        helper.group({
+          id: 'personality',
+          header: 'Personality',
+          columns: helper.columns(
+            KEY_PERSONALITY.map((key) =>
+              helper.accessor(
+                (p) => {
+                  const r = p.personality.find((t) => t.key === key)?.range;
+                  return r ? r.min + r.max : 0; // midpoint order, display only
+                },
+                {
+                  id: `personality-${key}`,
+                  header: humanize(key),
+                  sortFn: 'basic',
+                  sortDescFirst: true,
+                  cell: ({ row }) => {
+                    const attr = row.original.personality.find((t) => t.key === key);
+                    return attr ? <AttributeRange range={attr.range} label={attr.label} /> : null;
+                  },
+                },
+              ),
+            ),
+          ),
+        }),
         helper.display({
           id: 'interests',
           header: 'Interests',
@@ -237,7 +266,12 @@ function RecruitmentBody({
                 <Button
                   size="compact-sm"
                   variant="default"
-                  onClick={() => check.mutate({ candidateId: p.person_id, kind: 'interview' })}
+                  onClick={() =>
+                    check.mutate(
+                      { candidateId: p.person_id, kind: 'interview' },
+                      { onSuccess: (out) => setLearned([out.learned]) },
+                    )
+                  }
                   data-testid="interview"
                 >
                   Interview · {hiring.interview_energy}
@@ -245,7 +279,12 @@ function RecruitmentBody({
                 <Button
                   size="compact-sm"
                   variant="default"
-                  onClick={() => check.mutate({ candidateId: p.person_id, kind: 'refs' })}
+                  onClick={() =>
+                    check.mutate(
+                      { candidateId: p.person_id, kind: 'refs' },
+                      { onSuccess: (out) => setLearned([out.learned]) },
+                    )
+                  }
                   data-testid="references"
                 >
                   References · {hiring.reference_check_energy}
@@ -308,6 +347,7 @@ function RecruitmentBody({
                 hiring={hiring}
                 selected={s.search_id === selected?.search_id}
                 onSelect={() => setParams({ search: String(s.search_id) }, { replace: true })}
+                onLearned={setLearned}
               />
             ))
           )}
@@ -355,6 +395,14 @@ function RecruitmentBody({
               personality. Asking salaries are exact.
             </p>
           </section>
+          {learned && (
+            <LearnedPanel
+              learned={learned}
+              interestLabel={(k) => interestLabel.get(k) ?? k}
+              focus={role ? [...role.primary_skills, ...role.secondary_skills] : undefined}
+              onClose={() => setLearned(null)}
+            />
+          )}
           {offerCandidate && (
             <OfferPanel
               key={offerCandidate.person_id}
@@ -471,12 +519,14 @@ function SearchRow({
   hiring,
   selected,
   onSelect,
+  onLearned,
 }: {
   saveId: string;
   search: Search;
   hiring: HiringMeta;
   selected: boolean;
   onSelect: () => void;
+  onLearned: (learned: Learned[]) => void;
 }) {
   const close = useCloseSearch(saveId);
   const scout = useScoutSearch(saveId);
@@ -541,7 +591,9 @@ function SearchRow({
           size="compact-sm"
           variant="default"
           loading={scout.isPending}
-          onClick={() => scout.mutate(search.search_id)}
+          onClick={() =>
+            scout.mutate(search.search_id, { onSuccess: (out) => onLearned(out.learned) })
+          }
           title="Look closely at every open candidate in this search yourself: narrows what you know of them"
           data-testid="scout-search"
         >
