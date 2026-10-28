@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs (M6 prep): formulas.md §16 events, storylines and relationships (director and triggers, effect catalog with caps, templates, LLM context allowlist and budget, storylines, relationships and the W_rel morale term, other LLM text, balance targets, worked examples) and §9/§12 rows; `events` stream in ADR-0013; M6 brief (one milestone); M6 wireframes (events with a critical modal, Settings).
 - Decision (Reece, 2026-10-27): no weekly crisis sub-turns in v1; critical events block Continue and may carry one follow-up (ADR-0006 amended).
 - Decision (Reece, 2026-10-27): LLM budget $10 a calendar month, in dollars from token counts and configurable prices (ADR-0005 §6).
 - Workflow (Reece, 2026-10-27): agents merge their own branch on a green check and tag it (CLAUDE.md §6, Merging); `pytest-xdist` approved (ADR-0001).

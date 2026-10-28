@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Events</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:16px 18px}
+.ptitle{margin:0 0 10px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.badge{font-size:11px;font-weight:600;border-radius:4px;padding:2px 7px;white-space:nowrap}
+.item{display:grid;grid-template-columns:74px 1fr auto;gap:10px;align-items:baseline;padding:10px 12px;border-bottom:1px solid #1F2732;text-decoration:none;color:#E8ECF1}
+.choice{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;background:#0F151C;text-align:left;font-family:inherit;color:#E8ECF1;cursor:pointer;min-height:44px}
+.choice:hover{border-color:#5AA2FF;background:#132131}
+.fx{font-size:12px;color:#C9D1DB}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Sep 2012</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px">$4,410,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px">70 mo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+        <span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Founder energy <span class="num" style="color: #E8ECF1">52 / 60</span></span>
+        <div style="height: 6px; background: #263040; border-radius: 3px"><div style="width: 87%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+      </div>
+      <button type="button" disabled aria-disabled="true" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #9BA7B6; background: #263040; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px">Answer the critical event first</button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html" style="background: #1F2A38; color: #E8ECF1; font-weight: 600"><span class="key">1</span>Inbox<span class="num" style="margin-left: auto; font-size: 12px; background: #5AA2FF; color: #0E1217; border-radius: 9px; padding: 0 7px">4</span></a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="#" style="color: #9BA7B6"><span class="key">9</span>History<span class="soon">M7</span></a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">Inbox</h1>
+        <span class="meta">2 events to answer · minor and major events resolve to their first choice at Continue</span>
+        <a href="Settings.dc.html" class="meta" style="margin-left: auto; color: #7DB6FF">AI writing: $3.42 of $10 this month</a>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <section aria-label="Messages" style="flex: 2 1 340px; min-width: 0; background: #151B23; border: 1px solid #2A3442; border-radius: 10px; overflow: hidden">
+          <a class="item" href="#" style="background: #2A1F16"><span class="badge" style="color: #0E1217; background: #F5A25D">Critical</span><span style="font-weight: 600">Marcus Ode is leaving for Salesforce</span><span class="num meta">Sep</span></a>
+          <a class="item" href="#" style="background: #172638"><span class="badge" style="color: #F5C451; background: #3A2F16">Event</span><span style="font-weight: 600">Priya Raman asks for a word</span><span class="num meta">Sep</span></a>
+          <a class="item" href="#"><span class="badge" style="color: #AFC3D9; background: #1C2733">News</span><span>Market news · August 2012</span><span class="num meta">Sep</span></a>
+          <a class="item" href="#"><span class="badge" style="color: #6FCF8E; background: #16301F">Hire</span><span>Ben Carter accepted your offer</span><span class="num meta">Sep</span></a>
+          <div style="padding: 12px; display: flex; flex-direction: column; gap: 6px">
+            <span class="ptitle" style="margin: 0">Ongoing stories</span>
+            <a href="#" style="font-size: 14px; text-decoration: none">The Salesforce raid <span class="meta">· step 2 of 3</span></a>
+            <a href="#" style="font-size: 14px; text-decoration: none">Priya's next step <span class="meta">· step 1 of 3</span></a>
+          </div>
+        </section>
+        <section class="panel" aria-label="Event" style="flex: 3 1 480px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px">
+            <span class="badge" style="color: #F5C451; background: #3A2F16">Event · major · people</span>
+            <span class="meta">Part of "Priya's next step"</span>
+          </div>
+          <h2 style="margin: 0; font-size: 20px; font-weight: 700">Priya Raman asks for a word</h2>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #D5DBE3">Priya catches you after the Monday stand-up. She has led the Platform rebuild for a year, she says, and she has heard what senior engineers at Salesforce are paid. She is not threatening to leave, not yet, but she would like to know where she stands before her review. Two people on her team are watching how you answer.</p>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{choices}}" as="c" hint-placeholder-count="3">
+              <button type="button" class="choice">
+                <span style="font-size: 15px; font-weight: 600">{{c.label}}</span>
+                <span class="fx">{{c.effects}}</span>
+              </button>
+            </sc-for>
+          </div>
+          <p style="margin: 0; font-size: 12px; color: #9BA7B6">Effects are shown as sizes, not exact numbers. Choosing applies them at once. Written by AI within the game's rules; switch to offline templates in Settings.</p>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div role="dialog" aria-modal="true" aria-labelledby="crit-title" style="position: absolute; inset: 0; background: rgba(5, 8, 12, 0.72); display: flex; align-items: center; justify-content: center; padding: 24px">
+    <section style="width: min(640px, 100%); background: #151B23; border: 1px solid #6A4426; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 16px 48px rgba(0,0,0,.6)">
+      <span class="badge" style="align-self: flex-start; color: #0E1217; background: #F5A25D">Critical · people · decide before Continue</span>
+      <h2 id="crit-title" style="margin: 0; font-size: 22px; font-weight: 700">Marcus Ode is leaving for Salesforce</h2>
+      <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #D5DBE3">Marcus tells you he has accepted Salesforce's offer. Worse, Mei Chen and Ben Carter from his Platform team have been asked to follow him, and both are taking calls. Platform builds Pipeline, and without them the next release slips.</p>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{crit}}" as="c" hint-placeholder-count="3">
+          <button type="button" class="choice">
+            <span style="font-size: 15px; font-weight: 600">{{c.label}}</span>
+            <span class="fx">{{c.effects}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <span class="meta" style="font-size: 12px">Part of "The Salesforce raid". There will be a follow-up next month.</span>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const choices = [
+      { label: 'Give her a 10% raise now', effects: 'Large morale lift for Priya · costs about $11,800 a year · small lift for her team' },
+      { label: 'Promise a promotion review in six months', effects: 'Small morale lift for Priya · the story continues in March' },
+      { label: 'Tell her the budget is fixed this year', effects: 'Medium morale drop for Priya · small drop for her team' }
+    ];
+    const crit = [
+      { label: 'Counter-offer Mei and Ben before they decide', effects: 'Costs about $40,000 · large morale lift for both · Salesforce notices' },
+      { label: 'Let them go and rebuild Platform', effects: 'Medium quality drop for Pipeline · medium morale drop on Platform' },
+      { label: 'Call Salesforce and push back', effects: 'Small chance it works · small drop in board confidence if it leaks' }
+    ];
+    return { choices, crit };
+  }
+}
+</script>
+</body>
+</html>

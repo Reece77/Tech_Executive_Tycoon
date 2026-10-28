@@ -24,7 +24,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `morale` | 3 | `(person_id,)` | Monthly morale noise | M1b |
 | `market` | 4 | `(category_index, segment_index)` | Monthly demand noise per market segment (ADR-0017) | M3 |
 | `rivals` | 5 | `(company_id,)` | Monthly utility noise for a rival's decision (formulas.md §15.3) | M5 |
-| `events` | 6 | — | Reserved (M6) | — |
+| `events` | 6 | `(turn,)` | The event director's monthly draw (formulas.md §16.1) | M6 |
 | `founder` | 7 | none | Founder hidden traits, PA, random personality (turn 0) | M1a |
 | `growth` | 8 | `(person_id,)` | Monthly skill growth noise | M1a |
 | `reveal` | 9 | `(observer_company_id, person_id)` | Center offsets when a knowledge record is created | M1a |

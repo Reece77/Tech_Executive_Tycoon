@@ -1,4 +1,4 @@
-# Wireframes (M1, M2b, M3b, M4b and M5)
+# Wireframes (M1 to M6)
 
 Six desktop screens, built in M1c: New-game setup, Inbox, Overview, People, Person profile, and Recruitment with the offer panel. The editable canvas is the Claude Design artifact "Tech Startup Tycoon M1b Wireframes" (ask Reece for the link). The artboard sources are copied in `docs/wireframes/source/` for reference; they use the design canvas's runtime and are not meant to run in the app.
 
@@ -123,6 +123,22 @@ Two artboards in the canvas's sixth row: **Competitors** (with the month's marke
 - *Inbox:* a **News** kind badge (blue-grey, `#AFC3D9` on `#1C2733`) for Market news and approaches; approaches are pinned to the top until answered.
 - *People and profile:* an "Approached by <company>" chip while an approach is open.
 
+## M6 screens
+
+Two artboards in the canvas's seventh row: **Events** (the inbox with an event open and a critical event's modal on top) and **Settings** (AI writing and the budget). Kestrel in September 2012; the raise in Priya's event is 10% of her $118,000 salary.
+
+**Events.** The inbox lists events with an **Event** badge (gold) or a **Critical** badge (orange, filled), and an "Ongoing stories" section below the messages with each storyline's step. An open event shows its category and severity, its storyline if any, the title, the body (up to 180 words), and two or three choices as full-width buttons; under each choice its effects in words with a size ("large morale lift for Priya · costs about $11,800 a year"), never exact numbers or caps. A line says effects apply at once, and that the text is written by AI within the game's rules. A header line counts the events still to answer and states that minor and major ones resolve to their first choice at Continue, and links the month's AI spend to Settings.
+
+**Critical events** open as a modal that cannot be dismissed; the top bar's Continue is disabled with "Answer the critical event first". The modal names its storyline and says when a follow-up will come.
+
+**Settings** (a top-bar button). *AI writing:* a choice between Claude and offline templates (with whether an API key was found, never the key), this calendar month's spend against the budget as a bar with the call count and reset date, the monthly budget, the two model ids, three counts (events written by Claude, rejected drafts replaced by templates, average cost per event), and a plain statement of what Claude can and cannot see. *Game:* difficulty and the saves folder.
+
+**Not drawn (text only):**
+- *Profile:* a **Relationships** panel listing unit-mates and manager with a label ("close", "good", "neutral", "strained", "hostile").
+- *Org unit panel:* a "Team mood" line naming any strained or hostile pairs.
+- *Market news:* two or three AI-written headlines at the top (templates offline).
+- *Board tab:* quarterly minutes as a short paragraph in "Last board meeting".
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).
@@ -131,5 +147,6 @@ Two artboards in the canvas's sixth row: **Competitors** (with the month's marke
 - Never show a product's quality cap, anyone's output or capacity numbers (`docs/formulas.md` §11.13).
 - Never show investors' base value, a firm's bias or noise, or a SAFE's acceptance probability (`docs/formulas.md` §14.9).
 - Never show a rival's utilities, needs or noise, its key people's true attributes, or an approach's probability (`docs/formulas.md` §15.5–§15.6).
+- Event effects are shown as words and sizes; relationships as labels; never caps, trigger strengths or relationship numbers (`docs/formulas.md` §16.9).
 - The front end never computes a game value: spans, manager labels, morale terms and previews all come from the API (`CLAUDE.md` §7).
 - Touch targets at least 44 px for primary buttons; real buttons, links, and labelled inputs.
