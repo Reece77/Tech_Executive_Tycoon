@@ -23,7 +23,7 @@ test('create a game and continue two months', async ({ page }) => {
   await expect(page.getByTestId('game-date')).toHaveText('Jan 2010');
   await expect(page.getByTestId('company-name')).toHaveText(company);
   await expect(page.getByTestId('top-cash')).toHaveText('$50,000');
-  await expect(page.getByTestId('energy')).toHaveText('100 / 100');
+  await expect(page.getByTestId('energy')).toHaveText('60 / 60');
 
   const cont = page.getByTestId('continue');
   await cont.click();

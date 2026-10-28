@@ -69,7 +69,7 @@ test('(b) job post, interview, offer at the ask, hire, payroll', async ({ page }
   await page.keyboard.press('4');
   await expect(page.getByTestId('channel-job_post')).toHaveAttribute('aria-checked', 'true');
   await page.getByTestId('open-search').click();
-  await expect(page.getByTestId('energy')).toHaveText('96 / 100');
+  await expect(page.getByTestId('energy')).toHaveText('55 / 60');
   await expect(page.getByTestId('search-row')).toContainText('pending');
 
   await continueMonth(page);
@@ -82,7 +82,7 @@ test('(b) job post, interview, offer at the ask, hire, payroll', async ({ page }
   await expect(rows.first().getByTestId('offer')).toHaveText('Interview first');
 
   await rows.first().getByTestId('interview').click();
-  await expect(page.getByTestId('energy')).toHaveText('94 / 100'); // energy resets each month
+  await expect(page.getByTestId('energy')).toHaveText('52 / 60'); // energy resets each month
   await expect(rows.first()).toContainText('Interviewed');
   await expect(rows.first()).not.toContainText('Interview to learn');
   await expect(rows.first().getByTestId('offer')).toBeEnabled();
@@ -135,7 +135,9 @@ test('(c) fire someone: severance and the morale dip', async ({ page, request })
   });
   await api(request, 'POST', `${base}/advance`);
   type Candidate = { person_id: number; candidacy: { salary_expectation_cents: number } };
-  for (const c of await api<Candidate[]>(request, 'GET', `${base}/recruitment/candidates`)) {
+  const candidates = await api<Candidate[]>(request, 'GET', `${base}/recruitment/candidates`);
+  for (const c of candidates.slice(0, 7)) {
+    // 7 interviews of 8 energy fit in the month's 60 (M4c)
     await api(request, 'POST', `${base}/recruitment/candidates/${c.person_id}/interview`);
     await api(request, 'POST', `${base}/recruitment/candidates/${c.person_id}/offer`, {
       salary_cents: Math.round(c.candidacy.salary_expectation_cents * 1.5),

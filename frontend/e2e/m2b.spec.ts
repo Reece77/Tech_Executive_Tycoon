@@ -133,11 +133,11 @@ test('(b) a hiring plan fills its unit while founder energy stays full', async (
   const row = page.getByTestId('plan-row');
   await expect(row).toContainText('0 / 2');
   await expect(row).toContainText('Platform');
-  await expect(page.getByTestId('energy')).toHaveText('96 / 100'); // the team and the plan cost 2 each
+  await expect(page.getByTestId('energy')).toHaveText('56 / 60'); // the team and the plan cost 2 each
 
   for (let month = 0; month < 3; month++) {
     await continueMonth(page);
-    await expect(page.getByTestId('energy')).toHaveText('100 / 100'); // delegates use their own
+    await expect(page.getByTestId('energy')).toHaveText('60 / 60'); // delegates use their own
   }
   await expect(page.getByTestId('plan-activity')).not.toContainText('Starts at');
 

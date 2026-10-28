@@ -280,6 +280,7 @@ The gap between 1.10× and 0.95× is 39 percentage points, which satisfies the M
 | Salary | `round(salary_cents / 12)` per active employment | 6000_salaries |
 | Benefits | `pct_of(monthly_salary, 2000 bp)` | 6010_benefits |
 | Office | $600 per active employee | 6100_rent |
+| Tools and travel (M4c) | `costs.tools_per_head_cents` = $1,500 per active employee, the founder excepted, remote staff included | 6900_general_admin |
 | Base overhead | $2,000 in M0, reduced to $500 from M1b | 6900_general_admin |
 | Severance | 1 month of salary, on firing | 6000_salaries |
 | Recruiter fee | 2,000 bp of annual salary, on hire | 6200_recruiting |
@@ -361,6 +362,8 @@ A resignation sets employment status to `notice` with `end_turn = turn + 1`. A n
 **Tag reveal:** each hidden tag of an employee reveals with 500 bp per month (stream `tags`, key `person_id`). An interview or reference check also rolls each still-hidden tag once at 1,500 bp (stream `actions`, key `action_seq`). Reveals are recorded per observer company (ADR-0007). A reveal writes an inbox item.
 
 ## 11. Products and markets (M3)
+
+**M4c balance pass:** the per-head tools-and-travel line (§8) alone met every target, so `market.awareness_scale` (0.5) and `products.seller_rate.*` (mid-market 2, enterprise 0.3) are unchanged; the M3a earn-and-burn ARR at turn 36 is about $2.55M (band $500k–$4M).
 
 Final for M3. Products are built by org units (§13), sold into segments of a category's market, and compete on appeal against every other product in that market. Until rivals get AI in M5, the other products belong to **incumbents**: real 2010 companies whose products hold fixed scores (ADR-0017). Regions are not modelled in M3: each category has one global market per segment.
 
@@ -650,6 +653,7 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `payroll.benefits_bp` | 2000 | bp of salary | §8 |
 | `payroll.office_cost_per_head_cents` | 60000 | cents per month | §8 |
 | `company.base_monthly_cost_cents` | 200000 (M0), 50000 (M1b) | cents per month | §8 |
+| `costs.tools_per_head_cents` | 150000 (M4c; 0 before) | cents per month per employee, founder excepted | §8 |
 | `scenario.<id>.starting_cash_cents` | see §8a | cents | §8a |
 | `difficulty.<level>.starting_cash_mult_bp` | see §8a | bp | §8a |
 | `payroll.severance_months` | 1 | months | §8 |

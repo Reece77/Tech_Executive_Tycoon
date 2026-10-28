@@ -298,14 +298,16 @@ def test_payroll_posts_every_cost(loaded: LoadedData) -> None:
     game.act(OpenSearch(1, "designer", "job_post"))
     result = game.turn()
     (costs,) = [e for e in result.ledger_entries if e.memo.startswith("Monthly costs")]
-    lines = {ln.account: ln.amount for ln in costs.lines}
+    lines: dict[str, int] = {}
+    for ln in costs.lines:  # 6900 carries two lines: tools and travel, and base overhead
+        lines[ln.account] = lines.get(ln.account, 0) + ln.amount
     assert lines == {
         "6000_salaries": 958_333,
         "6010_benefits": 191_667,
         "6100_rent": 120_000,  # founder + engineer
-        "6900_general_admin": 50_000,
+        "6900_general_admin": 150_000 + 50_000,  # the engineer's tools and travel (M4c), overhead
         "6200_recruiting": 50_000,  # one job post
-        CASH: -(958_333 + 191_667 + 120_000 + 50_000 + 50_000),
+        CASH: -(958_333 + 191_667 + 120_000 + 200_000 + 50_000),
     }
     assert sum(ln.amount for e in result.ledger_entries for ln in e.lines) == 0
     snap = result.snapshot.for_company(1)
@@ -443,7 +445,7 @@ def test_monthly_tag_reveals_and_employed_month(loaded: LoadedData) -> None:
             balance=loaded.balance,
         ),
     )
-    game = Game(loaded, state)
+    game = Game(loaded, state, 100_000_000)  # enough for 36 months of costs (not under test)
     hws = []
     for _ in range(36):
         game.turn()

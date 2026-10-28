@@ -78,9 +78,10 @@ def test_projected_runway_counts_revenue(loaded: LoadedData) -> None:
     person = make_person(loaded, 2)
     state = with_employee(loaded, state, person, 12_000_000)  # $10,000 + benefits + office
     burn = fs.projected_net_burn(state, 1, loaded.balance, loaded.game_data)
-    # salary, benefits, two office fees (the founder's too) and base overhead
-    assert burn == 1_000_000 + 200_000 + 2 * 60_000 + 50_000
-    assert fs.projected_runway(state, 1, 13_700_000, loaded.balance, loaded.game_data) == 10
+    # salary, benefits, two office fees (the founder's too), one employee's tools and travel
+    # (M4c) and base overhead
+    assert burn == 1_000_000 + 200_000 + 2 * 60_000 + 150_000 + 50_000
+    assert fs.projected_runway(state, 1, 15_200_000, loaded.balance, loaded.game_data) == 10
     selling = with_product(state, customers={"smb": 1000.0}, prices={"smb": 4000})
     assert fs.projected_net_burn(selling, 1, loaded.balance, loaded.game_data) < 0
     assert fs.projected_runway(selling, 1, 100, loaded.balance, loaded.game_data) is None

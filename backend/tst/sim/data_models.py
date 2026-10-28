@@ -30,6 +30,10 @@ class CompanyBalance(_Frozen):
     base_monthly_cost_cents: int = Field(ge=0)
 
 
+class CostsBalance(_Frozen):
+    tools_per_head_cents: int = Field(ge=0)  # M4c: software, equipment and travel per head
+
+
 class ScenarioBalance(_Frozen):
     starting_cash_cents: int = Field(ge=0)
 
@@ -598,6 +602,7 @@ class BankruptcyBalance(_Frozen):
 
 class Balance(_Frozen):
     company: CompanyBalance
+    costs: CostsBalance  # M4c (formulas.md 8)
     scenario: dict[str, ScenarioBalance]
     difficulty: dict[str, DifficultyBalance]
     backup: BackupBalance

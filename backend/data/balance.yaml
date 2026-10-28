@@ -4,6 +4,9 @@
 company:
   base_monthly_cost_cents: 50000 # cents per month; base overhead on top of payroll and office ($500 from M1b, $2,000 in M0; formulas.md section 8)
 
+costs:
+  tools_per_head_cents: 150000 # cents per month per employee, the founder excepted; software, equipment and travel, posted to 6900_general_admin (M4c balance lever, formulas.md section 8)
+
 scenario:
   garage_bootstrap:
     starting_cash_cents: 5000000 # cents; founder savings, $50,000 (formulas.md section 8a)
