@@ -8,10 +8,10 @@ check: check-backend check-api check-frontend
 check-fast: check-backend-fast check-api check-frontend
 
 check-backend:
-	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pytest -q
+	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pytest -q -n auto
 
 check-backend-fast:
-	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pytest -q --ignore=tests/golden
+	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pytest -q -n auto --ignore=tests/golden
 
 # Regenerates frontend/src/api and fails if the committed files differ (ADR-0009).
 check-api:
