@@ -370,6 +370,8 @@ finance:
       seed: [100000000, 300000000]
       a: [300000000, 1000000000]
       b: [1000000000, 3000000000]
+    heat_max: 3 # multiplier; a Series A or B's response x climate is also x clamp(ARR / gate, 1, this) (14.5, M4c)
+    heat_seed_live: 1.5 # multiplier; a seed's heat with a live product, else 1 (14.5, M4c)
 
 board:
   start: 70 # confidence of a new director (14.6)

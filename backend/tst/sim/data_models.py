@@ -510,6 +510,8 @@ class RoundBalance(_Frozen):
     fee_min_cents: int = Field(ge=0)
     fee_bp: int = Field(ge=0, le=BP_DENOMINATOR)
     typical_cents: dict[Series, Span]  # guidance only (14.5 table)
+    heat_max: float = Field(ge=1)  # M4c: most a Series A or B's ARR / gate multiplies response
+    heat_seed_live: float = Field(ge=1)  # M4c: a seed's heat with a live product
 
 
 class FinanceBalance(_Frozen):

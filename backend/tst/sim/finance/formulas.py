@@ -133,8 +133,19 @@ def offered_amount_cents(
     return min(max(target_cents, check_min_cents), max(hi, check_min_cents))
 
 
-def response_chance(response: float, climate: float, cap: float) -> float:
-    return min(response * climate, cap)
+def response_chance(response: float, climate: float, cap: float, heat: float = 1.0) -> float:
+    """min(response x climate x heat, cap) (14.5; heat from M4c)."""
+    return min(response * climate * heat, cap)
+
+
+def round_heat(
+    series: str, arr: Cents, gate: Cents | None, live: bool, heat_max: float, seed_live: float
+) -> float:
+    """Investor heat (14.5, M4c): clamp(ARR / gate, 1, heat_max) for a series with an ARR
+    gate; for a seed, seed_live with a live product, else 1."""
+    if series == "seed" or gate is None or gate <= 0:
+        return seed_live if live and series == "seed" else 1.0
+    return min(max(arr / gate, 1.0), heat_max)
 
 
 def round_fee_cents(amount_cents: Cents, min_cents: Cents, fee_bp: int) -> Cents:
