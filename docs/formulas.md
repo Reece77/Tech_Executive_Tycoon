@@ -137,7 +137,7 @@ Initial `hw`: skills 5.0, personality 7.0, PA 40.0 (on the 10–200 scale). **M2
 scout\_factor_{PA} = clamp\left(\frac{judgment\_of\_talent}{20},\; 0.1,\; 1.0\right)
 ```
 
-and each action's PA strength is `reveal.pa_strength.<action>`. This is what makes a good scout worth having: current skills show themselves quickly; potential does not. `reveal.initial_hw.pa`, `reveal.pa_scout_divisor` and `reveal.pa_strength.*` are tuned to the §13.10 target. **Tuned in M2b:** stranger PA `hw` 67, `pa_scout_divisor` 16 (a judgment-6 scout learns potential at 0.375 of the full rate, judgment 16 and above at 1.0, against 0.65 and 0.9 for skills), and PA strengths job-post screen 0.05, interview 0.10, scouting month 0.60, network intro 0.30, reference check 0.30, employed month 0.08.
+and each action's PA strength is `reveal.pa_strength.<action>`. This is what makes a good scout worth having: current skills show themselves quickly; potential does not. `reveal.initial_hw.pa`, `reveal.pa_scout_divisor` and `reveal.pa_strength.*` are tuned to the §13.10 target. **Tuned in M2b:** stranger PA `hw` 67, `pa_scout_divisor` 16 (a judgment-6 scout learns potential at 0.375 of the full rate, judgment 16 and above at 1.0, against 0.65 and 0.9 for skills), and PA strengths job-post screen 0.05, interview 0.10, scouting month 0.60, network intro 0.30, reference check 0.30, employed month 0.08. **M4c (Reece's playtest: interviews felt pointless for potential):** interview PA strength rises to 0.20, and `reveal.initial_hw.pa` is re-tuned within 60–120 (smallest value that holds) so the §13.10 +3 PA target still passes; every interview and reference check now shows what it taught (§4 feedback in the M4c brief).
 
 **PA worked example (M2b values).** True PA 140, offset +0.2, scout judgment 12 (PA scout factor 0.75):
 
@@ -183,6 +183,8 @@ and each action's PA strength is `reveal.pa_strength.<action>`. This is what mak
 - The founder has an employment row (role `founder`, level `exec`, salary 0, equity 0) so headcount counts them. In M1 the founder is excluded from payroll, morale, resignation, retirement, and firing; board removal arrives in M4.
 
 ## 6. Founder energy
+
+**M4c (Reece's playtest: energy never limited him).** The monthly budget falls from 100 to **60**, and hiring actions cost more: interview 8, reference check 4, job post 5, recruiter 5 (network stays 10, scouting 20). A typical hiring month (one job post, four interviews, two reference checks) now takes 45 of 60, leaving little for org, product and fundraising actions, so delegating hiring pays off. Delegates keep 100 (their whole month is the work). The table below shows the M1–M4 values; `balance.yaml` holds the current ones.
 
 100 points per month, stored on the founder's `person_state.energy`. Actions spend it at once (ADR-0014); `advance_turn` resets it after phase 12. Unused energy does not carry over.
 
@@ -707,6 +709,8 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `board.runway_terms` | ≥12: +10, 6–12: 0, 3–6: −15, <3: −30 | months / points | §14.6 |
 | `board.no_product_penalty` / `.no_product_after_turns` / `.down_round_hit` | −20 / 12 / −15 | points / turns / points | §14.6 |
 | `board.warning_below` / `.removal_below` / `.removal_months` | 40 / 25 / 3 | confidence / confidence / months | §14.6 |
+| `finance.round.heat_max` / `.heat_seed_live` | 3 / 1.5 | multiplier | §14.5 (M4c) |
+| `founder.energy_cost.name_nominee` | 2 | energy | §14.6 (M4c) |
 | `board.history_months` / `.trend_points` | 6 / 2 | month ends / confidence points | §14.6 (M4b: each director's recent confidence for the Board tab, and how far the average must move to read as rising or slipping) |
 | `bankruptcy.months` / `.bridge_burn_months` / `.bridge_cap_of_post` / `.bridge_min_confidence` / `.bridge_open_turns` | 3 / 3 / 0.8 / 40 / 2 | months / months / fraction / confidence / turns | §14.7 |
 | Investor firms, scenario cap tables, funding climate | see §14.2, §14.3, §14.5 | — | data: `investors.yaml`, `scenarios.yaml`, `climate.yaml` |
@@ -904,7 +908,7 @@ p = \frac{1}{1 + e^{-6\,(1.2\,V_{base} / cap - 1)}}
 
 **Starting a round** (energy 15): choose the series and a target amount. At most one round open at a time; it stays open for 3 turns.
 
-**Term sheets** arrive in phase 7 of the next turn (stream `finance`, key `(round_id, firm_index)`). Each firm in `investors.yaml` that invests in that series answers with probability `response × climate` (at most 0.95), with:
+**Term sheets** arrive in phase 7 of the next turn (stream `finance`, key `(round_id, firm_index)`). Each firm in `investors.yaml` that invests in that series answers with probability `response × climate × heat` (at most 0.95), where **heat (M4c)** rewards traction: `heat = clamp(ARR / gate, 1, 3)` for Series A and B (gate = that series' ARR gate) and, for a seed, 1.5 with a live product, else 1. A Series A candidate at $6M ARR (heat 3) hears from almost every eligible firm; one just over the $1M gate hears from two or three. Each answer quotes:
 
 ```latex
 V_{pre} = V_{base} \times bias \times e^{N(0,\, 0.15)}, \qquad amount = clamp(target,\; check_{min},\; \min(check_{max},\; 0.5\,V_{pre}))
@@ -944,7 +948,7 @@ C = \frac{f}{1 - f}\,(E + X), \qquad FD_{pre} = E + X + C, \qquad price = \frac{
 
 ### 14.6 The board
 
-- **Seats:** before any priced round there is no board. Directors other than the founder are generated people (stream `board`, id 17, key `(seat_id,)`; M4a); every new director starts at `board.start`. After the seed: 1 common seat (the founder) and 1 investor seat (the seed lead). After Series A: 2 common, 2 investor. After Series B: 2 common, 3 investor, 1 independent. The second common seat is the founder's nominee; investor directors and the independent are generated people (role `board_member`, not employees) so events can name them.
+- **Seats:** before any priced round there is no board. Directors other than the founder are generated people (stream `board`, id 17, key `(seat_id,)`; M4a); every new director starts at `board.start`. After the seed: 1 common seat (the founder) and 1 investor seat (the seed lead). After Series A: 2 common, 2 investor. After Series B: 2 common, 3 investor, 1 independent. The second common seat is the founder's nominee. **M4c:** the founder chooses the nominee from current employees when accepting the Series A term sheet (default: the most senior); if the nominee leaves, the seat is empty until the founder names another (energy 2), and an empty common seat still votes no. Investor directors and the independent are generated people (role `board_member`, not employees) so events can name them; the screens show them on a board-member card, not an employee profile.
 - **Confidence** `B` (0–100, starts at 70 when the first board forms; each director has their own, shown as the average) moves each month in phase 10:
 
 ```latex

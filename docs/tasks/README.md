@@ -24,6 +24,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M3b-product-screens.md](M3b-product-screens.md) | Products screen, product profile, market view, and the org, overview, recruitment and inbox additions | M3a |
 | [M4a-finance-rules-and-api.md](M4a-finance-rules-and-api.md) | Statements, cap table and options, SAFEs, priced rounds, board, bankruptcy: rules, API, CLI | M3b |
 | [M4b-finance-screens.md](M4b-finance-screens.md) | Finance screen (statements, cap table, fundraising, board), game over screen and additions | M4a |
+| [M4c-playtest-fixes.md](M4c-playtest-fixes.md) | Fixes from Reece's first playtest: energy, "what you learned", interview potential, investor heat, board nominee, inbox cleanup | M4b |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 
