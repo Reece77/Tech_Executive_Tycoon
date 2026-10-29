@@ -98,6 +98,7 @@ Play `funded_spinout` for 36 months. Note whether rivals feel like opponents (do
 
 ## Follow-ups
 
+- CI's job limit was raised from 20 to 45 minutes: the suite outgrew 20 on the GitHub runner once rivals ran every turn. Speeding the suite up (bulk writes for rival people and books, or fewer seeds in the balance tests on CI) would let it come back down.
 - The suite is still slower than at M4c (about 9 minutes against 5): writing rival people and books in bulk, or skipping unchanged key people, would win more.
 - Free agents: a failed rival's people should reach the player's next searches, not only searches open at the time.
 - Rival activity is high (several moves a month across the market; pushes start in month 0); worth a look in Reece's playtest even though targets 1–3 hold.

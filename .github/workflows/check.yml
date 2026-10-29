@@ -16,7 +16,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45  # M5: rivals made the suite about twice as long
     steps:
       - uses: actions/checkout@v4
 
