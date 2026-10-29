@@ -306,6 +306,14 @@ export function BoardTab({ saveId }: { saveId: string }) {
             <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6 }} data-testid="meeting-body">
               {m.body}
             </p>
+            {m.minutes && (
+              <p
+                style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: 'var(--tst-text-2)' }}
+                data-testid="meeting-minutes"
+              >
+                {m.minutes}
+              </p>
+            )}
             <span className="tst-muted" style={{ fontSize: 13 }}>
               {m.previous_title ? `Before: ${m.previous_title}. ` : ''}
               {m.warning_body ? '' : 'No warning.'}

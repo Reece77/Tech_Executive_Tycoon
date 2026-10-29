@@ -82,6 +82,15 @@ export function CompetitorsScreen() {
           title="Market news"
           style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: 8 }}
         >
+          {(news.data?.headlines ?? []).length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {(news.data?.headlines ?? []).map((h) => (
+                <strong key={h} style={{ fontSize: 13 }} data-testid="headline">
+                  {h}
+                </strong>
+              ))}
+            </div>
+          )}
           {month ? (
             <>
               <span className="tst-muted" style={{ fontSize: 12 }}>

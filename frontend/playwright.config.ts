@@ -31,7 +31,8 @@ export default defineConfig({
       command: `uv run uvicorn tst.api.app:app --port ${API_PORT}`,
       cwd: '../backend',
       url: `http://127.0.0.1:${API_PORT}/api/meta/scenarios`,
-      env: { TST_SAVE_DIR: saveDir },
+      // No API key: events are written by templates, never by Claude (CLAUDE.md section 8).
+      env: { TST_SAVE_DIR: saveDir, ANTHROPIC_API_KEY: '', TST_ANTHROPIC_API_KEY: '' },
       reuseExistingServer: false,
       timeout: 60_000,
     },

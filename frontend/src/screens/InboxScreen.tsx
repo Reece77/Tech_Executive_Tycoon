@@ -1,6 +1,7 @@
 import { Button } from '@mantine/core';
 import { useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
+import { EventCard } from '../components/EventCard';
 import { KindBadge } from '../components/KindBadge';
 import { ApproachPanel } from './CompetitorsScreen';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
@@ -8,14 +9,17 @@ import {
   INBOX_PAGE,
   useApproaches,
   useArchive,
+  useEvent,
+  useEvents,
   useInbox,
   useInboxBulk,
   useOverview,
   usePerson,
   useSetRead,
+  useStorylines,
   type InboxItem,
 } from '../hooks/api';
-import { formatMoneyWhole, formatWhole, humanize } from '../lib/format';
+import { formatMoney, formatMoneyWhole, formatWhole, humanize } from '../lib/format';
 import {
   financeTab,
   kindLabel,
@@ -127,6 +131,7 @@ export function InboxScreen() {
       >
         Inbox
       </ScreenTitle>
+      <EventsHeader saveId={saveId} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         <section
           aria-label="Messages"
@@ -216,6 +221,7 @@ export function InboxScreen() {
               </Button>
             </div>
           )}
+          <OngoingStories saveId={saveId} />
         </section>
         {selected && (
           <MessageDetail
@@ -252,6 +258,35 @@ function MessageDetail({
   const p = person.data;
   const emp = p?.employment;
   const isNotice = kindLabel(item.kind) === 'Notice';
+  const event = useEvent(saveId, item.link_kind === 'event' ? item.link_id : null);
+
+  if (item.link_kind === 'event') {
+    return (
+      <article
+        aria-label="Selected message"
+        className="tst-panel"
+        style={{ flex: '1 1 380px', padding: '20px 24px' }}
+      >
+        {event.data ? (
+          <EventCard saveId={saveId} event={event.data} />
+        ) : (
+          <p className="tst-muted" style={{ margin: 0 }}>
+            {event.error ? event.error.message : 'Loading the event…'}
+          </p>
+        )}
+        <div style={{ display: 'flex', gap: 8, paddingTop: 12 }}>
+          <Button
+            variant="default"
+            h={44}
+            onClick={() => onArchive(!item.archived)}
+            data-testid={item.archived ? 'inbox-unarchive' : 'inbox-archive'}
+          >
+            {item.archived ? 'Move to inbox' : 'Archive'}
+          </Button>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article
@@ -277,6 +312,14 @@ function MessageDetail({
       <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: 'var(--tst-text-2)' }}>
         {item.body}
       </p>
+      {item.quote && (
+        <blockquote
+          style={{ margin: 0, fontSize: 14, fontStyle: 'italic', color: 'var(--tst-text)' }}
+          data-testid="exit-quote"
+        >
+          {item.quote}
+        </blockquote>
+      )}
       {p && (emp || p.candidacy) && (
         <dl
           style={{
@@ -376,6 +419,49 @@ function MessageDetail({
         </Button>
       </div>
     </article>
+  );
+}
+
+/** Events still to answer this month (M6): minor and major ones resolve to their first
+ * choice at Continue; links the month's AI spend to Settings. */
+function EventsHeader({ saveId }: { saveId: string }) {
+  const events = useEvents(saveId);
+  if (!events.data) return null;
+  const n = events.data.to_answer;
+  return (
+    <p
+      className="tst-muted"
+      style={{ margin: '0 0 12px', fontSize: 13 }}
+      data-testid="events-header"
+    >
+      {n === 0
+        ? 'No events to answer this month.'
+        : `${n} event${n === 1 ? '' : 's'} to answer. Minor and major ones take their first choice at Continue.`}{' '}
+      <Link to={`/game/${saveId}/settings`}>
+        AI writing: {formatMoney(Math.round(events.data.ai_spend_cents))} of{' '}
+        {formatMoney(events.data.ai_budget_cents)} this month
+      </Link>
+    </p>
+  );
+}
+
+/** "Ongoing stories" under the messages (M6): each active storyline and its step. */
+function OngoingStories({ saveId }: { saveId: string }) {
+  const stories = useStorylines(saveId);
+  const active = (stories.data ?? []).filter((s) => s.status === 'active');
+  if (active.length === 0) return null;
+  return (
+    <div style={{ padding: '12px 16px', borderTop: '1px solid var(--tst-rule)' }}>
+      <h3 className="tst-ptitle" style={{ margin: '0 0 8px' }}>
+        Ongoing stories
+      </h3>
+      {active.map((s) => (
+        <div key={s.storyline_id} style={{ fontSize: 13, marginBottom: 6 }} data-testid="storyline">
+          <strong>{s.title}</strong> <span className="tst-muted">· step {s.step}</span>
+          <div className="tst-muted">{s.summary}</div>
+        </div>
+      ))}
+    </div>
   );
 }
 

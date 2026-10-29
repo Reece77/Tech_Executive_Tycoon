@@ -1,9 +1,10 @@
 import { Alert } from '@mantine/core';
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router';
+import { CriticalEventModal } from '../components/EventCard';
 import { LeftNav } from '../components/LeftNav';
 import { ScreenErrorBoundary } from '../components/ScreenErrorBoundary';
 import { TopBar } from '../components/TopBar';
-import { useAdvance, useFinanceSummary, useOverview } from '../hooks/api';
+import { useAdvance, useEvents, useFinanceSummary, useOverview } from '../hooks/api';
 import { useGameHotkeys } from '../hooks/useGameHotkeys';
 import { NAV_ITEMS } from '../lib/nav';
 
@@ -15,9 +16,12 @@ export function GameLayout() {
   const summary = useFinanceSummary(saveId);
   const advance = useAdvance(saveId);
   const ended = overview.data !== undefined && overview.data.game_state !== 'active';
+  const events = useEvents(saveId);
+  // An open critical event blocks Continue until answered (M6, ADR-0006 amended).
+  const blocked = events.data?.blocking_event_id != null;
 
   const onContinue = () => {
-    if (overview.data && !advance.isPending && !ended) {
+    if (overview.data && !advance.isPending && !ended && !blocked) {
       advance.mutate(undefined, {
         // The month that ends the game opens the game over screen (ADR-0018).
         onSuccess: (next) => {
@@ -37,8 +41,10 @@ export function GameLayout() {
         overview={overview.data}
         summary={summary.data}
         advancing={advance.isPending}
+        blocked={blocked}
         onContinue={onContinue}
       />
+      {!ended && <CriticalEventModal saveId={saveId} />}
       <div className="tst-shell-body">
         <LeftNav saveId={saveId} unread={overview.data?.unread_inbox ?? 0} />
         <main className="tst-main">

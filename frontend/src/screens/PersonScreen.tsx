@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { Line, LineChart, ResponsiveContainer, YAxis } from 'recharts';
 import { AttributeRange } from '../components/AttributeRange';
 import { MoraleBar } from '../components/MoraleBar';
+import { RelationshipsPanel } from '../components/Relationships';
 import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../components/PersonOrg';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { StatusChip } from '../components/StatusChip';
@@ -189,6 +190,9 @@ function ProfileBody({
         <PersonActions saveId={saveId} p={p} />
       </section>
       <MoraleBreakdownPanel saveId={saveId} p={p} overview={overview} />
+      {!p.is_founder && p.employment && (
+        <RelationshipsPanel saveId={saveId} personId={p.person_id} />
+      )}
 
       <div
         style={{
