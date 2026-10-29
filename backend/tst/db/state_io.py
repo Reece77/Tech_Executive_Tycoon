@@ -19,7 +19,7 @@ from collections.abc import Iterable
 from dataclasses import replace
 from typing import Any
 
-from sqlalchemy import delete, insert, inspect, select, update
+from sqlalchemy import delete, func, insert, inspect, select, update
 from sqlalchemy.orm import Session
 
 from tst.db.mappers import (
@@ -28,6 +28,8 @@ from tst.db.mappers import (
     company_to_row,
     employment_from_row,
     employment_to_row,
+    event_from_row,
+    event_to_row,
     finance_from_row,
     finance_to_row,
     game_state_from_rows,
@@ -47,6 +49,8 @@ from tst.db.mappers import (
     product_segment_from_row,
     product_segment_to_row,
     product_to_row,
+    queued_from_row,
+    queued_to_row,
     reveal_from_rows,
     reveal_to_rows,
     rival_from_row,
@@ -55,6 +59,8 @@ from tst.db.mappers import (
     search_from_row,
     search_to_row,
     seat_history_row,
+    storyline_from_row,
+    storyline_to_row,
     unit_from_row,
     unit_to_row,
 )
@@ -65,6 +71,8 @@ from tst.db.models import (
     CapTableEntryRow,
     CompanyRow,
     EmploymentRow,
+    EventQueueRow,
+    EventRow,
     FreeAgentRow,
     FundingRoundRow,
     HiringPlanRow,
@@ -93,6 +101,7 @@ from tst.db.models import (
     SaveMetaRow,
     SearchRow,
     SegmentShareRow,
+    StorylineRow,
     TermSheetRow,
     WorkforcePoolRow,
 )
@@ -105,6 +114,7 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
+from tst.sim.hiring.models import NextIds
 from tst.sim.people.models import RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.rivals.models import (
@@ -119,6 +129,7 @@ from tst.sim.state import GameState
 
 META_ID = 1
 RIVAL_MOVE_MEMORY = 24  # months of rival moves loaded: news, cooldowns, stance (M5)
+EVENT_MEMORY = 24  # months of events loaded: the director's longest cooldown (M6, 16.1)
 STAFF_STATUSES = ("active", "notice")
 
 
@@ -344,6 +355,7 @@ def load_state(session: Session) -> GameState:
             )
         ),
         free_agents=free_agents,
+        **_event_state(session, meta.current_turn),
         relationships=(
             tuple(
                 Relationship(r.person_id, r.other_person_id, r.value, r.start_value, r.since_turn)
@@ -356,7 +368,56 @@ def load_state(session: Session) -> GameState:
             if has_table(session, RelationshipRow)
             else ()
         ),
-        next_ids=next_ids_from_meta(meta),
+        next_ids=_event_ids(session, next_ids_from_meta(meta)),
+    )
+
+
+def _event_state(session: Session, turn: int) -> dict[str, Any]:
+    """Events of the last 24 months and any still open, active storylines and follow-ups not
+    yet queued (M6). Empty on a save whose migration 0016 has not run yet."""
+    if not has_table(session, EventRow):
+        return {}
+    return {
+        "events": tuple(
+            event_from_row(r)
+            for r in session.scalars(
+                select(EventRow)
+                .where(
+                    (EventRow.turn > turn - EVENT_MEMORY) | EventRow.status.in_(("pending", "open"))
+                )
+                .order_by(EventRow.id)
+            )
+        ),
+        "storylines": tuple(
+            storyline_from_row(r)
+            for r in session.scalars(
+                select(StorylineRow)
+                .where(StorylineRow.status == "active")
+                .order_by(StorylineRow.id)
+            )
+        ),
+        "queued": tuple(
+            queued_from_row(r)
+            for r in session.scalars(
+                select(EventQueueRow)
+                .where(EventQueueRow.done.is_(False))
+                .order_by(EventQueueRow.id)
+            )
+        ),
+    }
+
+
+def _event_ids(session: Session, ids: NextIds) -> NextIds:
+    """Event, storyline and queue ids continue from the largest stored (M6: not in
+    save_meta, so an old save's migration 0013 never reads a column it lacks)."""
+    if not has_table(session, EventRow):
+        return ids
+
+    def after(model: Any) -> int:
+        return int(session.scalar(select(func.max(model.id))) or 0) + 1
+
+    return replace(
+        ids, event=after(EventRow), storyline=after(StorylineRow), queued=after(EventQueueRow)
     )
 
 
@@ -583,6 +644,15 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         (old.free_agents, new.free_agents, lambda a: a.person_id),
     ):
         _write(session, olds, news, rival_key, rival_to_row)
+
+    changed = (old.events, old.storylines, old.queued) != (new.events, new.storylines, new.queued)
+    if changed and has_table(session, EventRow):
+        # Storylines before the events that name them, events before their follow-ups.
+        _write(session, old.storylines, new.storylines, lambda s: s.id, storyline_to_row)
+        session.flush()
+        _write(session, old.events, new.events, lambda e: e.id, event_to_row)
+        session.flush()
+        _write(session, old.queued, new.queued, lambda q: q.id, queued_to_row)
 
     if old.relationships != new.relationships and has_table(session, RelationshipRow):
         _sync_relationships(session, old, new)

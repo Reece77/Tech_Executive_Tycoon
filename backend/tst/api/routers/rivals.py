@@ -21,6 +21,7 @@ from tst.api.schemas.rivals import (
     RivalsOut,
 )
 from tst.db import repository
+from tst.db.events import written_text
 from tst.sim.errors import NotFoundError
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["rivals"])
@@ -71,7 +72,9 @@ def market_news(save_id: str, settings: SettingsDep) -> NewsOut:
     """Rival moves and startup events of the last 24 months, newest month first (15.5)."""
     with repository.open_session(_path(settings, save_id)) as session:
         state = repository.load_state(session)
-    return NewsOut(months=rival_views.news_months(list(state.rival_moves)))
+        headlines = written_text(session, "headlines")
+    lines = [line.strip() for line in (headlines or "").splitlines() if line.strip()]
+    return NewsOut(headlines=lines, months=rival_views.news_months(list(state.rival_moves)))
 
 
 @router.get(

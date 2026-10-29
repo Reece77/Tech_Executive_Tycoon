@@ -34,6 +34,7 @@ from tst.api.schemas.finance import (
     StatementsOut,
 )
 from tst.db import inbox, repository
+from tst.db.events import written_text
 from tst.sim.actions import AcceptBridge, AcceptTermSheet, NameNominee, RaiseSafe, StartRound
 from tst.sim.errors import UnknownTermSheetError
 from tst.sim.state import company_cash
@@ -96,7 +97,11 @@ def get_board(save_id: str, settings: SettingsDep, data: DataDep) -> BoardOut:
         player = state.player.id
         meetings = inbox.list_inbox(session, player, kinds=["board_meeting"], limit=2)
         warnings = inbox.list_inbox(session, player, kinds=["board_warning"], limit=1)
-    return finance_views.board_out(state, data, meetings, warnings)
+        minutes = written_text(session, "minutes", meetings[0].turn) if meetings else None
+    out = finance_views.board_out(state, data, meetings, warnings)
+    if out.last_meeting is not None and minutes:
+        out.last_meeting.minutes = minutes
+    return out
 
 
 @router.get(

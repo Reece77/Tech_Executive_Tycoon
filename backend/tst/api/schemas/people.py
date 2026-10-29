@@ -250,6 +250,7 @@ class InboxItemOut(BaseModel):
     link_id: int | None
     read: bool
     archived: bool = Field(description="Hidden from the inbox unless the archive is shown (M4c)")
+    quote: str | None = Field(default=None, description="An exit-interview line (M6, 16.8)")
 
 
 class InboxBulkOut(BaseModel):

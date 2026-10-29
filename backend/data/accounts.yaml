@@ -19,6 +19,7 @@ accounts:
   - { code: 4000_revenue_subscriptions, name: Subscription revenue, type: revenue }
   - { code: 4100_revenue_licenses, name: License revenue, type: revenue }
   - { code: 4200_revenue_services, name: Services revenue, type: revenue }
+  - { code: 4900_other_income, name: Other income, type: revenue } # M6: event cash gains
   # Expenses
   - { code: 5000_cogs, name: Cost of goods sold, type: expense }
   - { code: 6000_salaries, name: Salaries, type: expense }

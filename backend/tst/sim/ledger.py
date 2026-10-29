@@ -26,7 +26,9 @@ REVENUE_SUBSCRIPTIONS: Final = "4000_revenue_subscriptions"  # M3
 COMPUTE: Final = "6300_compute"  # hosting (M3)
 MARKETING: Final = "6400_marketing"  # M3
 SAFES: Final = "2600_safes"  # SAFEs until they convert (M4)
+OTHER_INCOME: Final = "4900_other_income"  # event cash gains (M6, 16.3)
 ENGINE_ACCOUNTS: Final = (
+    OTHER_INCOME,
     CASH,
     COMMON_EQUITY,
     PREFERRED_EQUITY,

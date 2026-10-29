@@ -630,6 +630,96 @@ Append-only; the last 24 months are loaded into the state (news, cooldowns, stan
 | `product_id` / `segment` | INTEGER / VARCHAR(32) PK | no | The product in one segment. |
 | `history` | JSON | no | Its share of the segment's served customers at the last 7 month ends, oldest first (§15.3 needs). |
 
+## Events (migration `0016_events`, M6)
+
+Phase 12 queues next month's events as `pending` rows; after the turn commits the event service writes their words and validated choices (`open`); the player answers (`answered`) or Continue answers minor and major ones with their first choice (`auto`). Replay copies these rows from the original save and never calls an adapter. Effect values are in each effect's own units (formulas.md §16.3): points for morale, relationships, brand, quality, energy and confidence; cents for cash; percent for customers and salary; skill points for growth.
+
+### event
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Event id (next id = max + 1; not in `save_meta`). |
+| `company_id` | INTEGER FK → company.id | no | The player's company. |
+| `turn` | INTEGER | no | The month it is shown in (queued in phase 12 of the month before). |
+| `template_id` | VARCHAR(64) | no | `events/*.yaml` template. |
+| `category` / `severity` / `trigger` | VARCHAR | no | From the template and the director: `minor`, `major` or `critical`; the §16.2 trigger, `storyline` or `follow_up`. |
+| `strength` | FLOAT | no | The trigger's strength (0–1). Never shown (§16.9). |
+| `person_ids` | JSON | no | The trigger's people (a pair: two). |
+| `unit_id` / `product_id` / `segment` / `rival_id` / `months` | various | yes | What else the event is about; `months` is the runway for `runway_short`. |
+| `cash_base_cents` | BIGINT | no | max(cash, 3 × monthly revenue) when queued: the base of the cash caps. |
+| `tone` | VARCHAR(16) | no | `grounded` or `light` (ADR-0011). |
+| `storyline_id` | INTEGER FK → storyline.id | yes | The storyline this event is a step of. |
+| `status` | VARCHAR(16) | no | `pending`, `open`, `answered` or `auto`. |
+| `title` / `body` | VARCHAR(160) / TEXT | no | Written by the LLM or the template (empty while pending). |
+| `choices` | JSON | no | `[{key, label, effects: [{type, target, value}]}]`, validated and clamped. |
+| `chosen` / `resolved_turn` | VARCHAR(1) / INTEGER | yes | The choice taken and when. |
+| `source` | VARCHAR(16) | no | Who wrote the words: `claude`, `template`, `mock` or `replay`. |
+
+### storyline
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Storyline id. |
+| `company_id` | INTEGER FK → company.id | no | The player's company. |
+| `key` / `title` | VARCHAR | no | The template storyline key and its rendered title. |
+| `step` | INTEGER | no | The last step queued. |
+| `started_turn` / `ended_turn` | INTEGER | no / yes | When it began and ended. |
+| `summary` | TEXT | no | At most 60 words, from the template or the LLM; passed to later requests. |
+| `person_ids` / `product_id` / `rival_id` / `unit_id` / `segment` | various | — | What every step is about; it ends when its people leave. |
+| `next_turn` / `next_template` | INTEGER / VARCHAR(64) | yes | The next step and the month it is shown in; null at the last step. |
+| `status` | VARCHAR(16) | no | `active` or `ended`. |
+
+### event_queue
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Queue id. |
+| `company_id` | INTEGER FK → company.id | no | The player's company. |
+| `template_id` | VARCHAR(64) | no | The critical event's follow-up template. |
+| `due_turn` | INTEGER | no | The month it is shown in (the month after the answer). |
+| `source_event_id` | INTEGER FK → event.id | no | The critical event answered. |
+| `person_ids` / `product_id` / `unit_id` / `rival_id` / `segment` | various | — | Inherited from that event. |
+| `done` | BOOLEAN | no | Queued as an event. |
+
+### llm_text
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Row id. |
+| `company_id` | INTEGER FK → company.id | no | The player's company. |
+| `turn` | INTEGER | no | The month it is about. |
+| `kind` | VARCHAR(16) | no | `headlines` (Market news), `minutes` (quarterly board meeting) or `exit_line`. |
+| `ref_id` | INTEGER | yes | The person, for an exit line. |
+| `status` | VARCHAR(16) | no | `pending` until the service writes it, then `written`. |
+| `text` / `source` | TEXT / VARCHAR(16) | no | The words and who wrote them. |
+
+### llm_call_log
+
+ADR-0005 §5: one row per adapter call. Prompts and responses are stored only with `TST_LLM_DEBUG=1`.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Row id. |
+| `turn` | INTEGER | no | The save's month when written. |
+| `purpose` | VARCHAR(16) | no | `event`, `story`, `headlines`, `minutes` or `exit_line`. |
+| `model` | VARCHAR(64) | no | Model id from the response (or `template`). |
+| `prompt_hash` | VARCHAR(16) | no | First 16 hex digits of the prompt's SHA-256. |
+| `input_tokens` / `output_tokens` | INTEGER | no | From the API response. |
+| `cost_cents` | FLOAT | no | Real US cents (tokens × `llm.price_per_mtok_cents`); not game money. |
+| `latency_ms` | INTEGER | no | Call time. |
+| `outcome` | VARCHAR(16) | no | `ok`, `rejected`, `error` or `budget`. |
+| `created_at` | VARCHAR(32) | no | Wall-clock UTC time (outside the sim). |
+| `prompt` / `response` | TEXT | yes | Debug only. |
+
+### account (M6 row)
+
+`4900_other_income` (revenue): event cash gains. Costs post to `6900_general_admin`.
+
+## Files next to the saves (M6)
+
+- `saves/llm_settings.json`: the AI writing settings (adapter, monthly budget in cents, model ids, prices per million tokens in cents). Never holds the API key.
+- `saves/llm_spend.json`: spend, calls, events written by Claude and rejected drafts per real calendar month (`YYYY-MM`); the meter reads the current month.
+
 ## Relationships (migration `0015_relationships`, M6 sub-task 2)
 
 ### relationship

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,11 @@ from tst.loader import LoadedData, load_all
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BACKEND_DIR / "data"
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
+
+# Never call the Anthropic API in tests (CLAUDE.md section 8): every event is written by
+# MockLLMAdapter, whatever llm_settings.json or a local .env say.
+os.environ["TST_LLM_ADAPTER"] = "mock"
+os.environ.pop("ANTHROPIC_API_KEY", None)
 
 
 @pytest.fixture(scope="session")

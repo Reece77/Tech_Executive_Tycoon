@@ -163,6 +163,7 @@ founder: # founder build (formulas.md section 5)
     accept_bridge: 5 # accept a bridge SAFE from existing investors (M4, section 14.7)
     name_nominee: 2 # name an employee to an empty common board seat (M4c, section 14.6)
     poach_search: 10 # open a "Poach from a rival" search (M5, section 15.6)
+    choose_event: 0 # answer an event (M6, section 16.3)
 
 # --- Hiring (formulas.md section 7) -----------------------------------------------------
 hiring:

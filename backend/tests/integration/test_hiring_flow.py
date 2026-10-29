@@ -8,8 +8,8 @@ from pathlib import Path
 
 from sqlalchemy import text
 
-from tests.helpers import fund_save
-from tst.db.repository import create_save, open_session, replay_save, run_action, run_turn
+from tests.helpers import fund_save, play_turn
+from tst.db.repository import create_save, open_session, replay_save, run_action
 from tst.db.state_io import load_state
 from tst.loader import LoadedData
 from tst.sim.actions import Interview, MakeOffer, OpenSearch
@@ -58,7 +58,7 @@ def test_hire_ten_within_six_turns_using_all_three_channels(
     run_action(path, loaded, OpenSearch(1, "software_engineer", "job_post"))
     run_action(path, loaded, OpenSearch(1, "product_manager", "recruiter"))
     for _ in range(6):
-        run_turn(path, loaded)  # offers resolve in phase 1, batches arrive in phase 12
+        play_turn(path, loaded)  # offers resolve in phase 1, batches arrive in phase 12
         if staff_count(path) >= 10:
             break
         for c in state_of(path).candidates[:2]:
@@ -85,7 +85,8 @@ def _tables(path: Path) -> dict[str, list[tuple[object, ...]]]:
         names = [
             r[0]
             for r in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name != 'alembic_version'"
+                "SELECT name FROM sqlite_master WHERE type='table' "
+                "AND name NOT IN ('alembic_version', 'llm_call_log')"  # replay calls no adapter
             )
         ]
         out = {}
@@ -107,12 +108,12 @@ def test_replay_with_hiring_reproduces_the_save(tmp_path: Path, loaded: LoadedDa
     run_action(path, loaded, OpenSearch(1, "designer", "job_post"))
     run_action(path, loaded, OpenSearch(1, "data_scientist", "recruiter"))
     for _ in range(4):
-        run_turn(path, loaded)
+        play_turn(path, loaded)
         state = state_of(path)
         if state.candidates:
             run_action(path, loaded, Interview(1, state.candidates[0].person_id))
         offer_everyone(path, loaded, 1.05, 25)
-    run_turn(path, loaded)
+    play_turn(path, loaded)
     assert staff_count(path) > 0
     copy = replay_save(path, tmp_path / "b", "copy", loaded)
     assert _tables(copy) == _tables(path)
@@ -127,14 +128,14 @@ def test_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
     run_action(path, loaded, OpenSearch(1, "software_engineer", "job_post"))
     run_action(path, loaded, OpenSearch(1, "designer", "recruiter"))
     while staff_count(path) < 10 and state_of(path).turn < 12:
-        run_turn(path, loaded)
+        play_turn(path, loaded)
         offer_everyone(path, loaded, 1.3, 0)
-    run_turn(path, loaded)
+    play_turn(path, loaded)
     assert staff_count(path) >= 10
     start = time.perf_counter()
     turns = 120
     for _ in range(turns):
-        run_turn(path, loaded)
+        play_turn(path, loaded)
     per_turn = (time.perf_counter() - start) / turns
     state = state_of(path)
     print(

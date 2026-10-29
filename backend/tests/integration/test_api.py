@@ -7,9 +7,11 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.helpers import event_cash_cents
 from tst.api import schemas
 from tst.api.app import create_app
 from tst.config import Settings, get_settings
+from tst.db import repository
 from tst.db.repository import open_session, read_meta
 
 GARAGE_CASH = 5_000_000
@@ -52,7 +54,7 @@ def test_create_list_get(client: TestClient) -> None:
     assert client.get("/api/saves/dev").json() == expected
 
 
-def test_overview_and_advance(client: TestClient) -> None:
+def test_overview_and_advance(client: TestClient, save_dir: Path) -> None:
     create(client)
     ov = client.get("/api/saves/dev/overview").json()
     assert ov["date_label"] == "Jan 2010"
@@ -70,7 +72,8 @@ def test_overview_and_advance(client: TestClient) -> None:
     second = client.post("/api/saves/dev/advance").json()
     assert second["date_label"] == "Mar 2010"
     assert second["turn"] == 2
-    assert second["cash_cents"] == GARAGE_CASH - 2 * OVERHEAD
+    events = event_cash_cents(repository.save_path(save_dir, "dev"))  # M6: answered at Continue
+    assert second["cash_cents"] == GARAGE_CASH - 2 * OVERHEAD + events
     assert [p["date_label"] for p in second["history"]] == ["Jan 2010", "Feb 2010"]
     assert client.get("/api/saves/dev/overview").json() == second
 

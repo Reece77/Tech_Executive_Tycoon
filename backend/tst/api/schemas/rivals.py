@@ -99,6 +99,9 @@ class NewsMonthOut(BaseModel):
 
 
 class NewsOut(BaseModel):
+    headlines: list[str] = Field(
+        default_factory=list, description="This month's headlines, by AI or a template (M6)"
+    )
     months: list[NewsMonthOut]
 
 

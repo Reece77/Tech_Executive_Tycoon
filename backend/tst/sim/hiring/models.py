@@ -98,6 +98,11 @@ class NextIds:
     # player's ids stay as before rivals existed.
     rival_person: int = RIVAL_IDS_FROM
     rival_employment: int = RIVAL_IDS_FROM
+    # M6: loaded as max(id) + 1 of their tables, not kept in save_meta (an old save's
+    # migration 0013 reads save_meta through the current model).
+    event: int = 1
+    storyline: int = 1
+    queued: int = 1
 
     def take(
         self,
@@ -120,6 +125,9 @@ class NextIds:
             "approach",
             "rival_person",
             "rival_employment",
+            "event",
+            "storyline",
+            "queued",
         ],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)

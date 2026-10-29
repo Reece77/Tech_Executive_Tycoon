@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+from tests.helpers import event_cash_cents
 from tst.cli import app, format_money
 
 runner = CliRunner()
@@ -49,7 +50,9 @@ def test_acceptance_flow(save_dir: Path) -> None:
 
     out = run("inspect", "--save", "dev")
     assert "Date:    Jan 2012 (turn 24)" in out
-    assert "Cash:    $23,600.00" in out  # $50,000 - 24 x ($500 overhead + $600 office)
+    # $50,000 - 24 x ($500 overhead + $600 office), plus what events cost or brought (M6).
+    cash = 2_360_000 + event_cash_cents(save_dir / "dev.tst.sqlite")
+    assert f"Cash:    ${cash / 100:,.2f}" in out
     assert "Burn:    $1,100.00 / month" in out
     assert "Runway:  21 months at this month's projected costs\n" in out
 

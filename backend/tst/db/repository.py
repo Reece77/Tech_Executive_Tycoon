@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from tst.db import migrate
 from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
+from tst.db.events import write_pending
 from tst.db.inbox import inbox_rows
 from tst.db.mappers import (
     company_snapshot_from_row,
@@ -35,6 +36,7 @@ from tst.db.models import (
     DecisionLogRow,
     LedgerEntryRow,
     LedgerLineRow,
+    LLMTextRow,
     PersonMoraleLogRow,
     PersonRow,
     ProductMonthRow,
@@ -42,7 +44,8 @@ from tst.db.models import (
     TurnSnapshotRow,
 )
 from tst.db.session import make_engine, make_sessionmaker
-from tst.db.state_io import META_ID, load_state, read_meta, sync_state
+from tst.db.state_io import META_ID, has_table, load_state, read_meta, sync_state
+from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.actions import (
     Action,
@@ -481,6 +484,13 @@ def apply_turn_result(
         )
         for i, move in enumerate(result.rival_moves)
     )
+    if result.text_requests and has_table(session, LLMTextRow):  # M6 (16.8)
+        session.add_all(
+            LLMTextRow(
+                company_id=t.company_id, turn=t.turn, kind=t.kind, ref_id=t.ref_id, status="pending"
+            )
+            for t in result.text_requests
+        )
     session.add_all(entry_to_row(e) for e in result.ledger_entries)
     session.add_all(snapshot_to_rows(result.snapshot))
     session.add_all(product_month_to_row(m) for m in result.product_months)
@@ -492,10 +502,21 @@ def apply_turn_result(
     session.flush()
 
 
-def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = None) -> TurnResult:
-    """Play one turn in a single transaction; any exception rolls everything back."""
+def run_turn(
+    save_path: Path,
+    data: LoadedData,
+    decisions: Decisions | None = None,
+    *,
+    adapter: LLMAdapter | None = None,
+    events_from: Path | None = None,
+) -> TurnResult:
+    """Play one turn in a single transaction; any exception rolls everything back. Then the
+    event service writes next month's events and texts in a transaction of its own (M6):
+    `adapter` overrides the settings' adapter; replay passes `events_from`, the original save,
+    so no adapter is called."""
     decisions = decisions or Decisions()
     migrate.ensure_current(save_path)
+    write_pending(save_path, data, adapter=adapter, copy_from=events_from)  # a failed earlier write
     with write_session(save_path) as session:
         meta = read_meta(session)
         if meta.data_hashes != data.hashes:
@@ -512,6 +533,10 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
         )
         apply_turn_result(session, result, decisions, state, data)
 
+    if result.event_requests or result.text_requests:
+        write_pending(
+            save_path, data, adapter=adapter, copy_from=events_from, committed=result.new_state
+        )
     committed = result.new_state.turn
     backup = data.balance.backup
     if committed % backup.every_n_turns == 0:
@@ -642,7 +667,7 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         for _, action in (a for a in actions if a[0] == turn):
             run_action(path, data, action)
         if turn < target_turn:
-            result = run_turn(path, data)
+            result = run_turn(path, data, events_from=source)  # events copied, never written
             if list(result.delegate_actions) != delegated.get(turn, []):
                 raise ReplayMismatchError(
                     f"turn {turn}: recomputed delegate actions differ from the logged ones"

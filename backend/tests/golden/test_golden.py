@@ -24,6 +24,7 @@ from typing import Any
 import pytest
 from sqlalchemy import select
 
+from tests.helpers import answer_critical
 from tst.db.models import LedgerEntryRow, TurnSnapshotRow
 from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
 from tst.loader import LoadedData
@@ -273,6 +274,7 @@ def play(
         funding_plan(path, data)
         product_plan(path, data)
         hiring_plan(path, data)
+        answer_critical(path, data)  # M6: a critical event must be answered before Continue
         result = run_turn(path, data)
         with open_session(path) as session:
             founder = next(p for p in load_state(session).people if p.is_founder)

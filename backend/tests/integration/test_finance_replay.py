@@ -10,13 +10,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests.golden.test_golden import ledger_rows, snapshots
+from tests.helpers import play_turn
 from tst.db.repository import (
     create_save,
     load_state,
     open_session,
     replay_save,
     run_action,
-    run_turn,
 )
 from tst.loader import LoadedData
 from tst.sim.actions import (
@@ -46,29 +46,29 @@ def build(tmp_path: Path, loaded: LoadedData) -> Path:
     run_action(path, loaded, RaiseSafe(1, 30_000_000, 100_000_000))
     run_action(path, loaded, StartRound(1, "seed", 150_000_000))
     for _ in range(3):  # the first round's term sheets arrive and lapse unaccepted
-        run_turn(path, loaded)
+        play_turn(path, loaded)
     for _ in range(4):  # start again until a round brings term sheets
         run_action(path, loaded, StartRound(1, "seed", 150_000_000))
-        run_turn(path, loaded)
+        play_turn(path, loaded)
         state = _state(path)
         sheets = [t for t in state.term_sheets if t.status == "offered"]
         if sheets:
             break
     best = max(sheets, key=lambda t: t.pre_money_cents)
     run_action(path, loaded, AcceptTermSheet(1, best.id))
-    run_turn(path, loaded)  # the seed closes; the board forms
+    play_turn(path, loaded)  # the seed closes; the board forms
     run_action(path, loaded, CreateProduct(1, "Pipeline", "b2b_saas", ("smb",)))
     run_action(path, loaded, SetMarketing(1, PRODUCT, BURN_MARKETING))
     for _ in range(3):
-        run_turn(path, loaded)
+        play_turn(path, loaded)
         state = _state(path)
         offers = [s for s in state.safes if s.kind == "bridge" and s.status == "offered"]
         if offers:
             break
     run_action(path, loaded, AcceptBridge(1, offers[0].id))
     run_action(path, loaded, SetMarketing(1, PRODUCT, 0))
-    run_turn(path, loaded)
-    run_turn(path, loaded)
+    play_turn(path, loaded)
+    play_turn(path, loaded)
     return path
 
 

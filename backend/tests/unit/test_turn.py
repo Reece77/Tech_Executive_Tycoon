@@ -80,7 +80,10 @@ def test_turn_increments_and_inputs_not_mutated() -> None:
     assert result.new_state.companies == tuple(
         replace(c, mrr_history=(0,)) for c in state.companies
     )
-    assert result.event_requests == ()
+    # From M6 the director may queue next month's events; each is a pending event in state.
+    pending = {e.id for e in result.new_state.events if e.status == "pending"}
+    assert {r.event_id for r in result.event_requests} == pending
+    assert state.events == ()  # the input is not mutated
 
 
 def test_zero_overhead_posts_nothing() -> None:

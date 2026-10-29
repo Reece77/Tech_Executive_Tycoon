@@ -254,6 +254,7 @@ ENERGY_ACTIONS = (
     "name_nominee",
     # M5 rivals (formulas.md 15.6)
     "poach_search",
+    "choose_event",  # M6 (formulas.md 16.3): energy 0
 )
 CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
 HIRING_LEVELS = ("junior", "mid", "senior", "staff")

@@ -14,6 +14,7 @@ from typing import Any
 
 import numpy as np
 
+from tst.sim.actions.events import ChooseEvent, choose_event
 from tst.sim.actions.finance import (
     AcceptBridge,
     AcceptTermSheet,
@@ -99,7 +100,7 @@ from tst.sim.log import LogItem
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
-type Action = HiringAction | OrgAction | ProductAction | FinanceAction
+type Action = HiringAction | OrgAction | ProductAction | FinanceAction | ChooseEvent
 
 ACTION_TYPES: dict[str, type[Any]] = {
     "open_search": OpenSearch,
@@ -137,6 +138,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "accept_term_sheet": AcceptTermSheet,
     "accept_bridge": AcceptBridge,
     "name_nominee": NameNominee,
+    "choose_event": ChooseEvent,
 }
 
 __all__ = [
@@ -148,6 +150,7 @@ __all__ = [
     "AddSegment",
     "AssignUnit",
     "CancelProduct",
+    "ChooseEvent",
     "ClosePlan",
     "CloseSearch",
     "CreatePlan",
@@ -289,6 +292,8 @@ def apply_action(
             out = scout_search(state, action, balance, data)
         case RaiseSafe() | StartRound() | AcceptTermSheet() | AcceptBridge() | NameNominee():
             out = apply_finance(state, action, balance, data, ledger_balances)
+        case ChooseEvent():
+            out = choose_event(state, action, balance, data)
     return ActionResult(new_state=out.state, ledger_entries=out.entries, log_items=out.log)
 
 

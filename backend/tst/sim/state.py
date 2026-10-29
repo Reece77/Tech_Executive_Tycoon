@@ -7,6 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from typing import Any
 
+from tst.sim.events.models import GameEvent, QueuedEvent, Storyline
 from tst.sim.finance.models import (
     BoardSeat,
     CapEntry,
@@ -122,6 +123,9 @@ class GameState:
     segment_shares: tuple[SegmentShare, ...] = ()  # by (product_id, segment) (M5)
     free_agents: tuple[FreeAgent, ...] = ()  # available free agents, by person id (M6.0)
     relationships: tuple[Relationship, ...] = ()  # the player's pairs, by (a, b) (M6, 16.7)
+    events: tuple[GameEvent, ...] = ()  # the last 24 months' events and any open, by id (M6)
+    storylines: tuple[Storyline, ...] = ()  # active storylines, by id (M6, 16.6)
+    queued: tuple[QueuedEvent, ...] = ()  # follow-ups not yet shown, by id (M6, 16.3)
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -308,6 +312,20 @@ class GameState:
         """Rival companies still in business (M5)."""
         return tuple(c for c in self.companies if not c.is_player and c.failed_turn is None)
 
+    def event(self, event_id: int) -> GameEvent | None:
+        return next((e for e in self.events if e.id == event_id), None)
+
+    def open_events(self, company_id: int) -> tuple[GameEvent, ...]:
+        """Events shown this month or earlier that are not answered yet."""
+        return tuple(
+            e
+            for e in self.events
+            if e.company_id == company_id and e.is_open and e.turn <= self.turn
+        )
+
+    def storyline(self, storyline_id: int) -> Storyline | None:
+        return next((s for s in self.storylines if s.id == storyline_id), None)
+
     def relationship_map(self) -> dict[tuple[int, int], Relationship]:
         return {r.key: r for r in self.relationships}
 
@@ -435,6 +453,18 @@ def with_approach(state: GameState, approach: PoachApproach) -> GameState:
 
 def with_free_agent(state: GameState, agent: FreeAgent) -> GameState:
     return replace(state, free_agents=_upsert(state.free_agents, agent, lambda a: a.person_id))
+
+
+def with_event(state: GameState, event: GameEvent) -> GameState:
+    return replace(state, events=_upsert(state.events, event, lambda e: e.id))
+
+
+def with_storyline(state: GameState, story: Storyline) -> GameState:
+    return replace(state, storylines=_upsert(state.storylines, story, lambda s: s.id))
+
+
+def with_queued(state: GameState, queued: QueuedEvent) -> GameState:
+    return replace(state, queued=_upsert(state.queued, queued, lambda q: q.id))
 
 
 def with_relationship(state: GameState, rel: Relationship) -> GameState:

@@ -32,6 +32,7 @@ from tst.api.schemas.people import (
     SearchOut,
 )
 from tst.db import inbox, repository
+from tst.db.events import written_text
 from tst.db.mappers import search_from_row
 from tst.db.models import SearchRow
 from tst.loader import LoadedData
@@ -375,7 +376,14 @@ def get_inbox(
                 session, player.id, unread_only=unread_only, kinds=kind, archived=archived
             ),
             offset=offset,
-            items=[views.inbox_item(m) for m in items],
+            items=[
+                views.inbox_item(m).model_copy(
+                    update={"quote": written_text(session, "exit_line", m.turn, m.link_id)}
+                )
+                if m.template == "resigned" and m.link_id is not None
+                else views.inbox_item(m)
+                for m in items
+            ],
         )
 
 

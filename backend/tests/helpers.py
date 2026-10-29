@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 from tst.loader import LoadedData
 from tst.sim.hiring.models import Candidate, PersonState, Search
@@ -281,3 +282,49 @@ def fund_save(path: Path, cents: int) -> None:
     )
     with open_session(path) as session, session.begin():
         session.add(entry_to_row(entry))
+
+
+def event_cash_cents(path: Path, company_id: int = 1, through_turn: int | None = None) -> int:
+    """Cash moved by answered events (M6, formulas.md 16.3): their ledger entries carry an
+    "Event:" memo. Tests about overheads add it to the expected cash."""
+    from sqlalchemy import func, select
+
+    from tst.db.models import LedgerEntryRow, LedgerLineRow
+    from tst.db.repository import open_session
+    from tst.sim.ledger import CASH
+
+    stmt = (
+        select(func.coalesce(func.sum(LedgerLineRow.amount_cents), 0))
+        .join(LedgerEntryRow, LedgerLineRow.entry_id == LedgerEntryRow.id)
+        .where(
+            LedgerEntryRow.company_id == company_id,
+            LedgerEntryRow.memo.like("Event:%"),
+            LedgerLineRow.account_code == CASH,
+        )
+    )
+    if through_turn is not None:
+        stmt = stmt.where(LedgerEntryRow.turn <= through_turn)
+    with open_session(path) as session:
+        return int(session.scalar(stmt) or 0)
+
+
+def answer_critical(path: Path, loaded: LoadedData) -> None:
+    """Answer any open critical event with its first choice, as a player must before Continue
+    (M6, ADR-0006 amended). Scripts that run a company low on cash call this each month."""
+    from tst.db.repository import load_state, open_session, run_action
+    from tst.sim.actions import ChooseEvent
+
+    with open_session(path) as session:
+        state = load_state(session)
+    founder = state.founder_of(state.player.id)
+    for event in state.open_events(state.player.id):
+        if event.severity == "critical" and event.status == "open" and founder is not None:
+            run_action(path, loaded, ChooseEvent(founder.id, event.id, event.choices[0].key))
+
+
+def play_turn(path: Path, loaded: LoadedData) -> Any:
+    """run_turn after answering any open critical event (M6)."""
+    from tst.db.repository import run_turn
+
+    answer_critical(path, loaded)
+    return run_turn(path, loaded)

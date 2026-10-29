@@ -8,6 +8,7 @@ from alembic.autogenerate import compare_metadata
 from alembic.runtime.migration import MigrationContext
 from sqlalchemy import func, select, text
 
+from tests.helpers import event_cash_cents
 from tst.db import migrate, repository
 from tst.db.backup import periodic_backups
 from tst.db.models import (
@@ -78,7 +79,7 @@ def test_create_save(save: Path, loaded: LoadedData) -> None:
         assert state.player.name == "Test Co"
         assert meta.master_seed == 42
         assert meta.data_hashes == loaded.hashes
-        assert meta.schema_version == SCHEMA_VERSION == 14
+        assert meta.schema_version == SCHEMA_VERSION == 16
         assert company_cash(ledger_balances(session), state.player.id) == GARAGE_CASH
 
 
@@ -124,7 +125,9 @@ def test_cash_equals_ledger_every_turn(save: Path, loaded: LoadedData) -> None:
             balances = ledger_balances(session, played)
             snap = result.snapshot.for_company(1)
             assert snap.cash_cents == company_cash(balances, 1)
-            assert snap.cash_cents == GARAGE_CASH - OVERHEAD * expected_turn
+            # Overheads, plus any event the month brought (M6: answered at Continue).
+            events = event_cash_cents(save, 1, played)
+            assert snap.cash_cents == GARAGE_CASH - OVERHEAD * expected_turn + events
             # Double entry: every company's balances sum to zero at every turn.
             assert sum(v for (cid, _), v in balances.items() if cid == 1) == 0
     with open_session(save) as session:
