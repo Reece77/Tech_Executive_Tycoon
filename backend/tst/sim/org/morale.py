@@ -12,8 +12,10 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.hiring.formulas import fit_term, market_mid_cents, pay_term, runway_term
 from tst.sim.hiring.rules import matching_interests
 from tst.sim.money import Cents
+from tst.sim.org.relationships import unit_mate_values
 from tst.sim.org.rules import OrgView, manager_terms, remote_morale, teammate_terms
 from tst.sim.people.models import Employment
+from tst.sim.people.relationships import relationship_morale
 from tst.sim.state import GameState
 
 
@@ -27,6 +29,7 @@ class MoraleTerms:
     manager: float
     team: tuple[tuple[str, int, float], ...]  # (tag, holders, term) per morale tag (13.6)
     remote: float
+    relationships: float = 0.0  # W_rel (M6, 16.7)
 
     @property
     def team_total(self) -> float:
@@ -34,7 +37,8 @@ class MoraleTerms:
 
     @property
     def target(self) -> float:
-        """target = 50 + P + F + W_runway + W_load + W_mgr + W_team + W_remote (section 9)."""
+        """target = 50 + P + F + W_runway + W_load + W_mgr + W_team + W_remote + W_rel
+        (sections 9 and 16.7)."""
         return (
             self.base
             + self.pay
@@ -44,6 +48,7 @@ class MoraleTerms:
             + self.manager
             + self.team_total
             + self.remote
+            + self.relationships
         )
 
 
@@ -81,4 +86,7 @@ def morale_terms(
         manager=manager_terms(state, view, person.id, balance).morale,
         team=teammate_terms(state, view, person.id, balance),
         remote=remote_morale(state, employment, balance),
+        relationships=relationship_morale(
+            unit_mate_values(state, view, person.id), balance.relationships
+        ),
     )

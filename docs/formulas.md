@@ -800,8 +800,10 @@ Each tag affects the other members of its holder's unit (not the holder), using 
 | Tag | Effect on each other member's morale target | Cap per tag |
 | --- | --- | --- |
 | `culture_carrier` | +2 | +2 |
-| `credit_taker` | −2 | −4 |
-| `toxic_high_performer` | −3 | −6 |
+| `credit_taker` | −2 (until M6) | −4 |
+| `toxic_high_performer` | −3 (until M6) | −6 |
+
+**M6 (§16.7):** the `credit_taker` and `toxic_high_performer` rows are removed; their effect now comes through relationships (tag pushes on unit-mate pairs, then W_rel). `culture_carrier` keeps its row and also pushes relationships.
 
 `mentor` acts through §13.5. `politician`, `maverick`, `perfectionist` and `quiet_genius` take effect with products (M3). The API never explains a morale change by a tag the company has not noticed (§13.11).
 

@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 14
+SCHEMA_VERSION = 15
 
 
 class Base(DeclarativeBase):
@@ -273,12 +273,16 @@ class EmploymentRow(Base):
 
 
 class RelationshipRow(Base):
+    """A tracked pair in the player's company (16.7), person_id < other_person_id. Rebuilt
+    with these columns by migration 0015_relationships (M6); the M1a table was never used."""
+
     __tablename__ = "relationship"
 
     person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
     other_person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
-    affinity: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)  # 0 = neutral
-    updated_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    value: Mapped[float] = mapped_column(Float, nullable=False)  # true value, -100..100
+    start_value: Mapped[float] = mapped_column(Float, nullable=False)  # drift target
+    since_turn: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 # --- Hiring (M1b, migration 0003_hiring) -----------------------------------------------------

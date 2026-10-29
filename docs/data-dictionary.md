@@ -630,6 +630,19 @@ Append-only; the last 24 months are loaded into the state (news, cooldowns, stan
 | `product_id` / `segment` | INTEGER / VARCHAR(32) PK | no | The product in one segment. |
 | `history` | JSON | no | Its share of the segment's served customers at the last 7 month ends, oldest first (§15.3 needs). |
 
+## Relationships (migration `0015_relationships`, M6 sub-task 2)
+
+### relationship
+
+Rebuilt by `0015_relationships` (the M1a table with `affinity` and `updated_turn` was never written). Only the player's company has pairs: every two members of a unit (the company root included) and each manager with each report. A pair that is no longer one of these is deleted in phase 8.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `person_id` / `other_person_id` | INTEGER PK FK → person.id | no | The pair, `person_id < other_person_id`. |
+| `value` | FLOAT | no | True relationship, −100..100. The API shows only a label (§16.7, §16.9). |
+| `start_value` | FLOAT | no | round(15 − 1.5 × \|temperament difference\|), clamped to −20..15; the value drifts 10% a month back toward it. |
+| `since_turn` | INTEGER | no | The turn the pair began. |
+
 ## Free agents (migration `0014_free_agents`, M6 sub-task 0)
 
 ### free_agent

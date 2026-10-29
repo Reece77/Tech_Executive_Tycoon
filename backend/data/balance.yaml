@@ -251,14 +251,10 @@ org:
   mentor_tag_bonus: 3 # attribute points added when another member of the unit is a mentor (13.5)
   growth_mult_min: 0.75 # multiplier; floor of M_growth (13.5)
   growth_mult_max: 1.5 # multiplier; ceiling of M_growth (13.5)
-  tag_morale: # morale points each holder adds to every other member's morale target (13.6)
+  tag_morale: # morale points each holder adds to every other member's morale target (13.6; from M6 credit_taker and toxic_high_performer act through relationships, 16.7)
     culture_carrier: 2
-    credit_taker: -2
-    toxic_high_performer: -3
   tag_morale_cap: # morale points; the sum per tag is capped at this (same sign as the effect) (13.6)
     culture_carrier: 2
-    credit_taker: -4
-    toxic_high_performer: -6
   reorg: # one-off morale points (13.7)
     move: -2 # the person moved to another unit
     new_leader_members: -1 # each other member when a unit's leader is set or replaced

@@ -133,16 +133,14 @@ def test_manager_term_and_growth_are_capped(loaded: LoadedData) -> None:
     [
         ("culture_carrier", 1, 2),
         ("culture_carrier", 3, 2),
-        ("credit_taker", 1, -2),
-        ("credit_taker", 3, -4),
-        ("toxic_high_performer", 1, -3),
-        ("toxic_high_performer", 2, -6),
-        ("toxic_high_performer", 4, -6),
-        ("credit_taker", 0, 0),
+        ("culture_carrier", 0, 0),
     ],
 )
 def test_teammate_tag_terms(loaded: LoadedData, tag: str, holders: int, expected: float) -> None:
+    """13.6. From M6 credit_taker and toxic_high_performer have no morale term: they act
+    through relationships (16.7; tests/unit/test_relationships.py)."""
     assert tag_term(tag, holders, loaded.balance.org) == expected
+    assert set(loaded.balance.org.tag_morale) == {"culture_carrier"}
 
 
 @pytest.mark.parametrize(

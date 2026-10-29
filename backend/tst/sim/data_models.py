@@ -347,7 +347,9 @@ class TagsBalance(_Frozen):
     reveal_bp_on_check: int = Field(ge=0)
 
 
-ORG_TAGS = ("culture_carrier", "credit_taker", "toxic_high_performer")  # formulas.md 13.6
+# Teammate tags with a morale term (formulas.md 13.6). From M6 credit_taker and
+# toxic_high_performer act through relationships instead (16.7).
+ORG_TAGS = ("culture_carrier",)
 MENTOR_TAG = "mentor"  # formulas.md 13.5
 
 

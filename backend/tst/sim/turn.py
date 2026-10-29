@@ -32,6 +32,7 @@ from tst.sim.ledger import (
 from tst.sim.log import LogItem
 from tst.sim.money import Cents
 from tst.sim.org.delegates import run_delegates
+from tst.sim.org.relationships import relationships_month
 from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
@@ -183,7 +184,8 @@ def people_updates(ctx: TurnContext) -> TurnContext:
     each manager's mentoring multiplier (13.5) from the reporting lines at the phase start.
 
     Then morale, resignations and retirements, monthly tag reveals, and employed_month
-    narrowing (formulas.md sections 4, 9, 10). Relationships arrive later.
+    narrowing (formulas.md sections 4, 9, 10). Relationships move first, so morale reads this
+    month's W_rel (16.7).
     """
     mentoring: dict[int, float] = {}
     for company in ctx.state.companies:
@@ -197,6 +199,7 @@ def people_updates(ctx: TurnContext) -> TurnContext:
         for p in sorted(ctx.state.people, key=lambda p: p.id)
     )
     state = replace(ctx.state, people=people)
+    state = relationships_month(state, ctx.balance)  # before morale, which reads W_rel (M6)
     state, departures = phases.morale_and_departures(
         state, ctx.rng, ctx.balance, ctx.data, ctx.opening_balances, ctx.balances
     )

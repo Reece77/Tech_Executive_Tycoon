@@ -103,15 +103,17 @@ def test_leaderless_units_and_leaders_look_one_level_up(loaded: LoadedData) -> N
 
 
 def test_teammate_tags_affect_only_the_unit(loaded: LoadedData) -> None:
+    """13.6 with M6: a culture carrier lifts its unit-mates, not itself or outsiders (a toxic
+    teammate now acts through relationships, 16.7)."""
     state = staffed(loaded, 4)
     state = with_unit(state, team(1, leader=None))
     state = put(put(state, 2, 1), 3, 1)
-    state = set_tags(state, 3, "toxic_high_performer")
+    state = set_tags(state, 3, "culture_carrier")
     view = org_view(state, 1)
     employment = state.employment_of(2)
     assert employment is not None
     mt = morale_terms(state, view, employment, loaded.balance, loaded.game_data, 1, 1)
-    assert dict((t, v) for t, _, v in mt.team)["toxic_high_performer"] == -3
+    assert dict((t, v) for t, _, v in mt.team)["culture_carrier"] == 2
     holder = state.employment_of(3)
     assert holder is not None
     own = morale_terms(state, view, holder, loaded.balance, loaded.game_data, 1, 1)

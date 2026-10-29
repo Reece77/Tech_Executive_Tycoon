@@ -269,25 +269,26 @@ def test_hiring_plans(make_api: Any) -> None:
     assert api.post(f"{BASE}/hiring-plans", bad, 400)["code"] == "org_rule"
 
 
-def test_hidden_toxic_teammate_shows_only_as_other(make_api: Any) -> None:
-    """Acceptance: an unnoticed toxic teammate's -3 is in "other", never named; once noticed
-    it appears as a teammate term. No response carries the hidden tag."""
-    api = make_api(3, p3="toxic_high_performer")
+def test_hidden_teammate_tag_shows_only_as_other(make_api: Any) -> None:
+    """Acceptance: an unnoticed culture carrier's +2 is in "other", never named; once noticed
+    it appears as a teammate term. No response carries the hidden tag. (Until M6 this used a
+    toxic teammate; from M6 that tag acts through relationships, 16.7.)"""
+    api = make_api(3, p3="culture_carrier")
     api.post(f"{BASE}/org/units", {"kind": "team", "name": "Platform"}, 201)
     for pid in (2, 3):
         api.post(f"{BASE}/org/people/{pid}/move", {"unit_id": 1})
     breakdown = api.get(f"{BASE}/people/2/morale")
     keys = [t["key"] for t in breakdown["terms"]]
     assert all(not k.startswith("teammate:") for k in keys)
-    assert term(breakdown, "other") == pytest.approx(-3.0)
+    assert term(breakdown, "other") == pytest.approx(2.0)
     assert sum(t["value"] for t in breakdown["terms"]) == pytest.approx(breakdown["target"])
     for url in (f"{BASE}/people/2/morale", f"{BASE}/org", f"{BASE}/people", f"{BASE}/people/3"):
-        assert "toxic" not in json.dumps(api.get(url)), url
+        assert "culture" not in json.dumps(api.get(url)), url
     assert term(api.get(f"{BASE}/people/4/morale"), "other") == 0  # not in the unit
 
 
-def test_noticed_toxic_teammate_is_named(make_api: Any, loaded: LoadedData, tmp_path: Path) -> None:
-    api = make_api(3, p3="toxic_high_performer")
+def test_noticed_teammate_tag_is_named(make_api: Any, loaded: LoadedData, tmp_path: Path) -> None:
+    api = make_api(3, p3="culture_carrier")
     api.post(f"{BASE}/org/units", {"kind": "team", "name": "Platform"}, 201)
     for pid in (2, 3):
         api.post(f"{BASE}/org/people/{pid}/move", {"unit_id": 1})
@@ -299,13 +300,13 @@ def test_noticed_toxic_teammate_is_named(make_api: Any, loaded: LoadedData, tmp_
         state = replace(
             before,
             reveals=tuple(
-                replace(r, revealed_tags=(("toxic_high_performer", 0),)) if r is reveal else r
+                replace(r, revealed_tags=(("culture_carrier", 0),)) if r is reveal else r
                 for r in before.reveals
             ),
         )
         sync_state(session, before, state)
     breakdown = api.get(f"{BASE}/people/2/morale")
-    assert term(breakdown, "teammate:toxic_high_performer") == -3
+    assert term(breakdown, "teammate:culture_carrier") == 2
     assert term(breakdown, "other") == pytest.approx(0.0)
 
 

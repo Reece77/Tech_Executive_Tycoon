@@ -1,6 +1,6 @@
-"""Relationships (docs/formulas.md 16.7): pairs of unit-mates and of managers and their
-reports, a start value from temperament, a monthly drift back toward it after behaviour-tag
-pushes, the W_rel morale term and the labels the player sees.
+"""Relationship formulas (docs/formulas.md 16.7): a pair's start value from temperament, the
+monthly drift back toward it after behaviour-tag pushes, the W_rel morale term and the labels
+the player sees. The monthly phase is tst.sim.org.relationships.
 """
 
 from __future__ import annotations

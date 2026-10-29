@@ -19,7 +19,7 @@ from collections.abc import Iterable
 from dataclasses import replace
 from typing import Any
 
-from sqlalchemy import insert, inspect, select, update
+from sqlalchemy import delete, insert, inspect, select, update
 from sqlalchemy.orm import Session
 
 from tst.db.mappers import (
@@ -85,6 +85,7 @@ from tst.db.models import (
     PoachApproachRow,
     ProductRow,
     ProductSegmentRow,
+    RelationshipRow,
     RivalEffectRow,
     RivalMoveRow,
     RoundNomineeRow,
@@ -105,6 +106,7 @@ from tst.sim.finance.models import (
     TermSheet,
 )
 from tst.sim.people.models import RevealState
+from tst.sim.people.relationships import Relationship
 from tst.sim.rivals.models import (
     FreeAgent,
     PoachApproach,
@@ -342,15 +344,32 @@ def load_state(session: Session) -> GameState:
             )
         ),
         free_agents=free_agents,
+        relationships=(
+            tuple(
+                Relationship(r.person_id, r.other_person_id, r.value, r.start_value, r.since_turn)
+                for r in session.scalars(
+                    select(RelationshipRow).order_by(
+                        RelationshipRow.person_id, RelationshipRow.other_person_id
+                    )
+                )
+            )
+            if has_table(session, RelationshipRow)
+            else ()
+        ),
         next_ids=next_ids_from_meta(meta),
     )
 
 
 def has_table(session: Session, model: Any) -> bool:
-    """Whether the save already has a table added after 0013. Migration 0013 loads and syncs
-    state through the current models, so on an older save it runs before later migrations
-    have made their tables; those tables then read as empty (M6 sub-task 0)."""
-    return bool(inspect(session.connection()).has_table(model.__tablename__))
+    """Whether the save already has a table added or rebuilt after 0013, with the model's
+    columns. Migration 0013 loads and syncs state through the current models, so on an
+    older save it runs before later migrations have made their tables; those tables then
+    read as empty and are not written (M6 sub-task 0)."""
+    insp = inspect(session.connection())
+    if not insp.has_table(model.__tablename__):
+        return False
+    have = {c["name"] for c in insp.get_columns(model.__tablename__)}
+    return {c.name for c in model.__table__.columns} <= have
 
 
 def _rows(session: Session, model: Any, where: Any) -> list[Any]:
@@ -409,6 +428,30 @@ def _insert(session: Session, rows: Iterable[Any]) -> None:
         )
     for model, values in by_model.items():
         session.execute(insert(model), values)
+
+
+def _sync_relationships(session: Session, old: GameState, new: GameState) -> None:
+    """Pairs are written like other rows; a pair that ended is deleted (16.7)."""
+    ended = {r.key for r in old.relationships} - {r.key for r in new.relationships}
+    for a, b in sorted(ended):
+        session.execute(
+            delete(RelationshipRow).where(
+                RelationshipRow.person_id == a, RelationshipRow.other_person_id == b
+            )
+        )
+    _write(
+        session,
+        old.relationships,
+        new.relationships,
+        lambda r: r.key,
+        lambda r: RelationshipRow(
+            person_id=r.a,
+            other_person_id=r.b,
+            value=r.value,
+            start_value=r.start,
+            since_turn=r.since_turn,
+        ),
+    )
 
 
 def _sync_reveal(session: Session, old: RevealState | None, new: RevealState) -> None:
@@ -540,6 +583,9 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         (old.free_agents, new.free_agents, lambda a: a.person_id),
     ):
         _write(session, olds, news, rival_key, rival_to_row)
+
+    if old.relationships != new.relationships and has_table(session, RelationshipRow):
+        _sync_relationships(session, old, new)
 
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)

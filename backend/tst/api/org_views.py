@@ -375,6 +375,10 @@ def morale_breakdown(
         MoraleTermOut(key="runway", label="Cash runway", value=terms.runway),
         MoraleTermOut(key="manager", label="Their manager", value=terms.manager),
         MoraleTermOut(key="remote", label="Work-location policy", value=terms.remote),
+        # W_rel (M6, 16.7): the morale term, never a relationship's own number.
+        MoraleTermOut(
+            key="relationships", label="Relationships with teammates", value=terms.relationships
+        ),
     ]
     holders = teammate_tag_holders(state, view, person_id)
     labels = {t.key: t.label for t in data.game_data.tags}

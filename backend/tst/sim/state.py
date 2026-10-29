@@ -21,6 +21,7 @@ from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
 from tst.sim.org.models import HiringPlan, OrgUnit, WorkPolicy
 from tst.sim.people.models import Employment, Person, RevealState
+from tst.sim.people.relationships import Relationship
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
 from tst.sim.rivals.models import (
     FreeAgent,
@@ -120,6 +121,7 @@ class GameState:
     approaches: tuple[PoachApproach, ...] = ()  # pending approaches, sorted by id (M5)
     segment_shares: tuple[SegmentShare, ...] = ()  # by (product_id, segment) (M5)
     free_agents: tuple[FreeAgent, ...] = ()  # available free agents, by person id (M6.0)
+    relationships: tuple[Relationship, ...] = ()  # the player's pairs, by (a, b) (M6, 16.7)
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -306,6 +308,12 @@ class GameState:
         """Rival companies still in business (M5)."""
         return tuple(c for c in self.companies if not c.is_player and c.failed_turn is None)
 
+    def relationship_map(self) -> dict[tuple[int, int], Relationship]:
+        return {r.key: r for r in self.relationships}
+
+    def relationships_of(self, person_id: int) -> tuple[Relationship, ...]:
+        return tuple(r for r in self.relationships if person_id in r.key)
+
     @property
     def player(self) -> CompanyState:
         for company in self.companies:
@@ -427,6 +435,10 @@ def with_approach(state: GameState, approach: PoachApproach) -> GameState:
 
 def with_free_agent(state: GameState, agent: FreeAgent) -> GameState:
     return replace(state, free_agents=_upsert(state.free_agents, agent, lambda a: a.person_id))
+
+
+def with_relationship(state: GameState, rel: Relationship) -> GameState:
+    return replace(state, relationships=_upsert(state.relationships, rel, lambda r: r.key))
 
 
 def with_segment_share(state: GameState, share: SegmentShare) -> GameState:

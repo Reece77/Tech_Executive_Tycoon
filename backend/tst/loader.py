@@ -152,7 +152,7 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
             "is not in regions.yaml"
         )
     tag_keys = {t.key for t in data.tags}
-    missing_tags = sorted({*ORG_TAGS, MENTOR_TAG} - tag_keys)
+    missing_tags = sorted({*ORG_TAGS, MENTOR_TAG, *balance.relationships.tag_push} - tag_keys)
     if missing_tags:
         raise DataLoadError(f"{TAGS_FILE}: org rules need tags {missing_tags} (formulas.md 13)")
     sales = sorted(s.key for s in data.segments if s.reach == "sales")
