@@ -5970,6 +5970,413 @@
         }
       }
     },
+    "/api/saves/{save_id}/rivals": {
+      "get": {
+        "tags": [
+          "rivals"
+        ],
+        "summary": "List Rivals",
+        "description": "Every rival: in your markets, all, or startups (15.5).",
+        "operationId": "listRivals",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(all|markets|startups)$",
+              "default": "all",
+              "title": "View"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RivalsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/rivals/{company_id}": {
+      "get": {
+        "tags": [
+          "rivals"
+        ],
+        "summary": "Get Rival",
+        "operationId": "getRival",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RivalProfileOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/news": {
+      "get": {
+        "tags": [
+          "rivals"
+        ],
+        "summary": "Market News",
+        "description": "Rival moves and startup events of the last 24 months, newest month first (15.5).",
+        "operationId": "getMarketNews",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/approaches": {
+      "get": {
+        "tags": [
+          "rivals"
+        ],
+        "summary": "List Approaches",
+        "description": "Rivals' open offers to your people, answered at Continue (15.6).",
+        "operationId": "listApproaches",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApproachOut"
+                  },
+                  "title": "Response Listapproaches"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/approaches/{approach_id}/counter-preview": {
+      "post": {
+        "tags": [
+          "rivals"
+        ],
+        "summary": "Preview Counter",
+        "description": "The band now and after a raise to `salary_cents`. Nothing is saved.",
+        "operationId": "previewCounter",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "approach_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Approach Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CounterPreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/meta/scenarios": {
       "get": {
         "tags": [
@@ -6191,6 +6598,75 @@
         ],
         "title": "AppealWeightsOut",
         "description": "How a segment's buyers weigh the four scores (formulas.md 11.6); they sum to 1."
+      },
+      "ApproachOut": {
+        "properties": {
+          "approach_id": {
+            "type": "integer",
+            "title": "Approach Id"
+          },
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "rival_id": {
+            "type": "integer",
+            "title": "Rival Id"
+          },
+          "rival_name": {
+            "type": "string",
+            "title": "Rival Name"
+          },
+          "offer_cents": {
+            "type": "integer",
+            "title": "Offer Cents"
+          },
+          "salary_cents": {
+            "type": "integer",
+            "title": "Salary Cents"
+          },
+          "unvested_options": {
+            "type": "integer",
+            "title": "Unvested Options"
+          },
+          "band": {
+            "type": "string",
+            "title": "Band",
+            "description": "likely to stay | might go | likely to go"
+          },
+          "made_date_label": {
+            "type": "string",
+            "title": "Made Date Label"
+          },
+          "answer_date_label": {
+            "type": "string",
+            "title": "Answer Date Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approach_id",
+          "person_id",
+          "name",
+          "role_label",
+          "rival_id",
+          "rival_name",
+          "offer_cents",
+          "salary_cents",
+          "unvested_options",
+          "band",
+          "made_date_label",
+          "answer_date_label"
+        ],
+        "title": "ApproachOut"
       },
       "AssignIn": {
         "properties": {
@@ -7244,6 +7720,38 @@
           "amount_cents"
         ],
         "title": "CostLineOut"
+      },
+      "CounterIn": {
+        "properties": {
+          "salary_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Salary Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "salary_cents"
+        ],
+        "title": "CounterIn"
+      },
+      "CounterPreviewOut": {
+        "properties": {
+          "band_now": {
+            "type": "string",
+            "title": "Band Now"
+          },
+          "band_after": {
+            "type": "string",
+            "title": "Band After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "band_now",
+          "band_after"
+        ],
+        "title": "CounterPreviewOut"
       },
       "CreateProductIn": {
         "properties": {
@@ -9015,6 +9523,48 @@
         ],
         "title": "InboxOut"
       },
+      "KeyPersonOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "top_skills": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Top Skills",
+            "description": "The player's ranges, strongest first"
+          },
+          "potential_phrase": {
+            "type": "string",
+            "title": "Potential Phrase"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role_label",
+          "level",
+          "top_skills",
+          "potential_phrase"
+        ],
+        "title": "KeyPersonOut"
+      },
       "KnowledgeOut": {
         "properties": {
           "channel": {
@@ -9731,6 +10281,48 @@
           "founder_rules"
         ],
         "title": "NewGameMetaOut"
+      },
+      "NewsMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "moves": {
+            "items": {
+              "$ref": "#/components/schemas/RivalMoveOut"
+            },
+            "type": "array",
+            "title": "Moves"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "moves"
+        ],
+        "title": "NewsMonthOut"
+      },
+      "NewsOut": {
+        "properties": {
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/NewsMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "months"
+        ],
+        "title": "NewsOut"
       },
       "NomineeChoiceOut": {
         "properties": {
@@ -12146,6 +12738,380 @@
         ],
         "title": "RenameUnitIn"
       },
+      "RivalMoveOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "tag": {
+            "type": "string",
+            "title": "Tag",
+            "description": "Price, Push, Enter, Cut, Approach, Launch, Funding, Founded, Failed"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "approach": {
+            "type": "boolean",
+            "title": "Approach",
+            "description": "An approach to one of the player's people"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "tag",
+          "detail",
+          "approach"
+        ],
+        "title": "RivalMoveOut"
+      },
+      "RivalProfileOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "is_startup": {
+            "type": "boolean",
+            "title": "Is Startup"
+          },
+          "personality": {
+            "type": "string",
+            "title": "Personality"
+          },
+          "personality_label": {
+            "type": "string",
+            "title": "Personality Label"
+          },
+          "style_text": {
+            "type": "string",
+            "title": "Style Text"
+          },
+          "founded_label": {
+            "type": "string",
+            "title": "Founded Label"
+          },
+          "staff_estimate": {
+            "type": "integer",
+            "title": "Staff Estimate"
+          },
+          "staff_in_your_markets": {
+            "type": "integer",
+            "title": "Staff In Your Markets",
+            "description": "Estimated staff on products you compete with"
+          },
+          "revenue_in_your_markets_cents": {
+            "type": "integer",
+            "title": "Revenue In Your Markets Cents",
+            "description": "Public prices x customers"
+          },
+          "money_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Money Label"
+          },
+          "stance": {
+            "type": "string",
+            "title": "Stance"
+          },
+          "stance_reason": {
+            "type": "string",
+            "title": "Stance Reason"
+          },
+          "failed": {
+            "type": "boolean",
+            "title": "Failed"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/RivalSegmentOut"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "key_people": {
+            "items": {
+              "$ref": "#/components/schemas/KeyPersonOut"
+            },
+            "type": "array",
+            "title": "Key People"
+          },
+          "recent_moves": {
+            "items": {
+              "$ref": "#/components/schemas/RivalMoveOut"
+            },
+            "type": "array",
+            "title": "Recent Moves"
+          },
+          "poach_energy": {
+            "type": "integer",
+            "title": "Poach Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "is_startup",
+          "personality",
+          "personality_label",
+          "style_text",
+          "founded_label",
+          "staff_estimate",
+          "staff_in_your_markets",
+          "revenue_in_your_markets_cents",
+          "money_label",
+          "stance",
+          "stance_reason",
+          "failed",
+          "segments",
+          "key_people",
+          "recent_moves",
+          "poach_energy"
+        ],
+        "title": "RivalProfileOut"
+      },
+      "RivalRowOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "is_startup": {
+            "type": "boolean",
+            "title": "Is Startup"
+          },
+          "personality": {
+            "type": "string",
+            "title": "Personality",
+            "description": "aggressive | fast_follower | premium | cost_leader"
+          },
+          "personality_label": {
+            "type": "string",
+            "title": "Personality Label"
+          },
+          "competes_in": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Competes In",
+            "description": "Segments shared with the player, as labels"
+          },
+          "staff_estimate": {
+            "type": "integer",
+            "title": "Staff Estimate",
+            "description": "Rounded to the nearest 10 above 100"
+          },
+          "money_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Money Label",
+            "description": "deep pockets | comfortable | tight; null for startups"
+          },
+          "stance": {
+            "type": "string",
+            "title": "Stance",
+            "description": "responding | watching | not competing"
+          },
+          "last_move": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Move"
+          },
+          "last_move_date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Move Date Label"
+          },
+          "failed": {
+            "type": "boolean",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "is_startup",
+          "personality",
+          "personality_label",
+          "competes_in",
+          "staff_estimate",
+          "money_label",
+          "stance",
+          "last_move",
+          "last_move_date_label",
+          "failed"
+        ],
+        "title": "RivalRowOut"
+      },
+      "RivalSegmentOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "category_label": {
+            "type": "string",
+            "title": "Category Label"
+          },
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "segment_label": {
+            "type": "string",
+            "title": "Segment Label"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "feature_score": {
+            "type": "number",
+            "title": "Feature Score"
+          },
+          "brand": {
+            "type": "number",
+            "title": "Brand"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "shared_with_player": {
+            "type": "boolean",
+            "title": "Shared With Player"
+          },
+          "running": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Running",
+            "description": "A push or cost cut running now, in words"
+          },
+          "running_until_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Running Until Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product_name",
+          "category_label",
+          "segment",
+          "segment_label",
+          "quality",
+          "feature_score",
+          "brand",
+          "price_cents",
+          "customers",
+          "shared_with_player",
+          "running",
+          "running_until_label"
+        ],
+        "title": "RivalSegmentOut"
+      },
+      "RivalsOut": {
+        "properties": {
+          "established": {
+            "type": "integer",
+            "title": "Established"
+          },
+          "startups_alive": {
+            "type": "integer",
+            "title": "Startups Alive"
+          },
+          "startups_failed": {
+            "type": "integer",
+            "title": "Startups Failed"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalRowOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "established",
+          "startups_alive",
+          "startups_failed",
+          "rivals"
+        ],
+        "title": "RivalsOut"
+      },
       "RoleOut": {
         "properties": {
           "key": {
@@ -12855,6 +13821,18 @@
           "channel": {
             "type": "string",
             "title": "Channel"
+          },
+          "rival_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rival Id",
+            "description": "The rival of a poach search (M5)"
           }
         },
         "type": "object",
@@ -12924,6 +13902,29 @@
           "open_candidates": {
             "type": "integer",
             "title": "Open Candidates"
+          },
+          "rival_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rival Id",
+            "description": "A poach search's rival (M5)"
+          },
+          "rival_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rival Name"
           }
         },
         "type": "object",
@@ -12938,7 +13939,9 @@
           "closed_date_label",
           "next_batch_date_label",
           "monthly_cost_cents",
-          "open_candidates"
+          "open_candidates",
+          "rival_id",
+          "rival_name"
         ],
         "title": "SearchOut"
       },

@@ -412,6 +412,8 @@ def search_out(state: GameState, search: Search, data: LoadedData) -> SearchOut:
         open_candidates=sum(
             1 for c in state.candidates if c.search_id == search.id and c.status == "open"
         ),
+        rival_id=search.rival_id,
+        rival_name=state.company(search.rival_id).name if search.rival_id is not None else None,
     )
 
 

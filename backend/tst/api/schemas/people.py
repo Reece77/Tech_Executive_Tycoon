@@ -173,7 +173,8 @@ class CheckOut(PersonProfileOut):
 
 class SearchIn(BaseModel):
     role: str
-    channel: str  # network | job_post | recruiter
+    channel: str  # network | job_post | recruiter | poach (M5)
+    rival_id: int | None = Field(default=None, description="The rival of a poach search (M5)")
 
 
 class SearchOut(BaseModel):
@@ -188,6 +189,8 @@ class SearchOut(BaseModel):
     next_batch_date_label: str | None = Field(description="When an open search's batch arrives")
     monthly_cost_cents: int
     open_candidates: int
+    rival_id: int | None = Field(description="A poach search's rival (M5)")
+    rival_name: str | None
 
 
 class OfferIn(BaseModel):

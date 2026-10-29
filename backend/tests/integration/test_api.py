@@ -190,12 +190,33 @@ FINANCE_FORBIDDEN_NAMES = frozenset(
 )
 
 
+# formulas.md 15.5-15.6 (M5): never a rival's utilities, needs, weights, noise or cash, nor
+# an approach's probability; money is a label and an approach a band.
+RIVAL_FORBIDDEN_NAMES = frozenset(
+    {
+        "utility",
+        "utilities",
+        "need",
+        "needs",
+        "personality_weights",
+        "rival_cash_cents",
+        "cash_months",
+        "pool_headcount",
+        "pool_skill",
+        "approach_probability",
+        "poach_probability",
+        "chance",
+    }
+)
+
+
 def forbidden(name: str) -> bool:
     """ADR-0007 exact-name rule (potential_phrase is allowed), plus the 11.13 names."""
     return (
         name in FORBIDDEN_NAMES
         or name in PRODUCT_FORBIDDEN_NAMES
         or name in FINANCE_FORBIDDEN_NAMES
+        or name in RIVAL_FORBIDDEN_NAMES
         or name.startswith(FORBIDDEN_PREFIXES)
     )
 
@@ -218,6 +239,8 @@ def test_no_hidden_fields_in_api_models(client: TestClient) -> None:
     assert forbidden("q_cap") and forbidden("contribution") and not forbidden("pace")
     assert "CapTableOut" in components and "SafeHintOut" in components
     assert forbidden("v_base") and forbidden("bias") and not forbidden("hint")
+    assert "RivalProfileOut" in components and "ApproachOut" in components
+    assert forbidden("utility") and forbidden("cash_months") and not forbidden("band")
 
 
 def find_forbidden_keys(value: Any, path: str = "$") -> list[str]:

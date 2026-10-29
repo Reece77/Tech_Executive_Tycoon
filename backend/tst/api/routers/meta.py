@@ -119,6 +119,20 @@ def hiring_meta(data: DataDep) -> HiringMetaOut:
                 level_mix={k: int(v) for k, v in cfg.level_mix.items()},
             )
         )
+    poach = data.balance.rivals.poach  # M5 (15.6): a rival's key people, one batch
+    channels.append(
+        ChannelOut(
+            key="poach",
+            label="Poach from a rival",
+            energy=energy_cost("poach_search", data.balance),
+            monthly_cost_cents=0,
+            hire_fee_bp=0,
+            batch_min=int(poach.candidates.lo),
+            batch_max=int(poach.candidates.hi),
+            repeats=False,
+            level_mix={},
+        )
+    )
     morale = data.balance.morale
     return HiringMetaOut(
         channels=channels,

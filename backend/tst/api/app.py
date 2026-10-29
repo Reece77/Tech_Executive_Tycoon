@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from tst.api.routers import finance, game, meta, org, products, saves
+from tst.api.routers import finance, game, meta, org, products, rivals, saves
 from tst.api.schemas.common import ErrorOut
 from tst.sim.errors import (
     GameOverError,
@@ -39,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(org.router)
     app.include_router(products.router)
     app.include_router(finance.router)
+    app.include_router(rivals.router)
     app.include_router(meta.router)
 
     @app.exception_handler(SimError)

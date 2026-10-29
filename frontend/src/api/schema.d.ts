@@ -1263,6 +1263,103 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/rivals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Rivals
+         * @description Every rival: in your markets, all, or startups (15.5).
+         */
+        get: operations["listRivals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/rivals/{company_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Rival */
+        get: operations["getRival"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/news": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Market News
+         * @description Rival moves and startup events of the last 24 months, newest month first (15.5).
+         */
+        get: operations["getMarketNews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/approaches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Approaches
+         * @description Rivals' open offers to your people, answered at Continue (15.6).
+         */
+        get: operations["listApproaches"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/approaches/{approach_id}/counter-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Counter
+         * @description The band now and after a raise to `salary_cents`. Nothing is saved.
+         */
+        post: operations["previewCounter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/scenarios": {
         parameters: {
             query?: never;
@@ -1411,6 +1508,36 @@ export interface components {
             brand: number;
             /** Features */
             features: number;
+        };
+        /** ApproachOut */
+        ApproachOut: {
+            /** Approach Id */
+            approach_id: number;
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role Label */
+            role_label: string;
+            /** Rival Id */
+            rival_id: number;
+            /** Rival Name */
+            rival_name: string;
+            /** Offer Cents */
+            offer_cents: number;
+            /** Salary Cents */
+            salary_cents: number;
+            /** Unvested Options */
+            unvested_options: number;
+            /**
+             * Band
+             * @description likely to stay | might go | likely to go
+             */
+            band: string;
+            /** Made Date Label */
+            made_date_label: string;
+            /** Answer Date Label */
+            answer_date_label: string;
         };
         /** AssignIn */
         AssignIn: {
@@ -1825,6 +1952,18 @@ export interface components {
             label: string;
             /** Amount Cents */
             amount_cents: number;
+        };
+        /** CounterIn */
+        CounterIn: {
+            /** Salary Cents */
+            salary_cents: number;
+        };
+        /** CounterPreviewOut */
+        CounterPreviewOut: {
+            /** Band Now */
+            band_now: string;
+            /** Band After */
+            band_after: string;
         };
         /** CreateProductIn */
         CreateProductIn: {
@@ -2528,6 +2667,24 @@ export interface components {
             /** Items */
             items: components["schemas"]["InboxItemOut"][];
         };
+        /** KeyPersonOut */
+        KeyPersonOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role Label */
+            role_label: string;
+            /** Level */
+            level: string;
+            /**
+             * Top Skills
+             * @description The player's ranges, strongest first
+             */
+            top_skills: components["schemas"]["AttributeOut"][];
+            /** Potential Phrase */
+            potential_phrase: string;
+        };
         /**
          * KnowledgeOut
          * @description How the viewing company has come to know someone (not what it knows).
@@ -2843,6 +3000,20 @@ export interface components {
             /** Roles */
             roles: components["schemas"]["LabelOut"][];
             founder_rules: components["schemas"]["FounderRulesOut"];
+        };
+        /** NewsMonthOut */
+        NewsMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Moves */
+            moves: components["schemas"]["RivalMoveOut"][];
+        };
+        /** NewsOut */
+        NewsOut: {
+            /** Months */
+            months: components["schemas"]["NewsMonthOut"][];
         };
         /**
          * NomineeChoiceOut
@@ -3866,6 +4037,155 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** RivalMoveOut */
+        RivalMoveOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Tag
+             * @description Price, Push, Enter, Cut, Approach, Launch, Funding, Founded, Failed
+             */
+            tag: string;
+            /** Detail */
+            detail: string;
+            /**
+             * Approach
+             * @description An approach to one of the player's people
+             */
+            approach: boolean;
+        };
+        /** RivalProfileOut */
+        RivalProfileOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Is Startup */
+            is_startup: boolean;
+            /** Personality */
+            personality: string;
+            /** Personality Label */
+            personality_label: string;
+            /** Style Text */
+            style_text: string;
+            /** Founded Label */
+            founded_label: string;
+            /** Staff Estimate */
+            staff_estimate: number;
+            /**
+             * Staff In Your Markets
+             * @description Estimated staff on products you compete with
+             */
+            staff_in_your_markets: number;
+            /**
+             * Revenue In Your Markets Cents
+             * @description Public prices x customers
+             */
+            revenue_in_your_markets_cents: number;
+            /** Money Label */
+            money_label: string | null;
+            /** Stance */
+            stance: string;
+            /** Stance Reason */
+            stance_reason: string;
+            /** Failed */
+            failed: boolean;
+            /** Segments */
+            segments: components["schemas"]["RivalSegmentOut"][];
+            /** Key People */
+            key_people: components["schemas"]["KeyPersonOut"][];
+            /** Recent Moves */
+            recent_moves: components["schemas"]["RivalMoveOut"][];
+            /** Poach Energy */
+            poach_energy: number;
+        };
+        /** RivalRowOut */
+        RivalRowOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Is Startup */
+            is_startup: boolean;
+            /**
+             * Personality
+             * @description aggressive | fast_follower | premium | cost_leader
+             */
+            personality: string;
+            /** Personality Label */
+            personality_label: string;
+            /**
+             * Competes In
+             * @description Segments shared with the player, as labels
+             */
+            competes_in: string[];
+            /**
+             * Staff Estimate
+             * @description Rounded to the nearest 10 above 100
+             */
+            staff_estimate: number;
+            /**
+             * Money Label
+             * @description deep pockets | comfortable | tight; null for startups
+             */
+            money_label: string | null;
+            /**
+             * Stance
+             * @description responding | watching | not competing
+             */
+            stance: string;
+            /** Last Move */
+            last_move: string | null;
+            /** Last Move Date Label */
+            last_move_date_label: string | null;
+            /** Failed */
+            failed: boolean;
+        };
+        /** RivalSegmentOut */
+        RivalSegmentOut: {
+            /** Product Id */
+            product_id: number;
+            /** Product Name */
+            product_name: string;
+            /** Category Label */
+            category_label: string;
+            /** Segment */
+            segment: string;
+            /** Segment Label */
+            segment_label: string;
+            /** Quality */
+            quality: number;
+            /** Feature Score */
+            feature_score: number;
+            /** Brand */
+            brand: number;
+            /** Price Cents */
+            price_cents: number | null;
+            /** Customers */
+            customers: number;
+            /** Shared With Player */
+            shared_with_player: boolean;
+            /**
+             * Running
+             * @description A push or cost cut running now, in words
+             */
+            running: string | null;
+            /** Running Until Label */
+            running_until_label: string | null;
+        };
+        /** RivalsOut */
+        RivalsOut: {
+            /** Established */
+            established: number;
+            /** Startups Alive */
+            startups_alive: number;
+            /** Startups Failed */
+            startups_failed: number;
+            /** Rivals */
+            rivals: components["schemas"]["RivalRowOut"][];
+        };
         /** RoleOut */
         RoleOut: {
             /** Key */
@@ -4150,6 +4470,11 @@ export interface components {
             role: string;
             /** Channel */
             channel: string;
+            /**
+             * Rival Id
+             * @description The rival of a poach search (M5)
+             */
+            rival_id?: number | null;
         };
         /** SearchOut */
         SearchOut: {
@@ -4178,6 +4503,13 @@ export interface components {
             monthly_cost_cents: number;
             /** Open Candidates */
             open_candidates: number;
+            /**
+             * Rival Id
+             * @description A poach search's rival (M5)
+             */
+            rival_id: number | null;
+            /** Rival Name */
+            rival_name: string | null;
         };
         /** SegmentIn */
         SegmentIn: {
@@ -8794,6 +9126,304 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FinanceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listRivals: {
+        parameters: {
+            query?: {
+                view?: string;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RivalsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getRival: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                company_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RivalProfileOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMarketNews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listApproaches: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApproachOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewCounter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                approach_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CounterIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CounterPreviewOut"];
                 };
             };
             /** @description Bad Request */

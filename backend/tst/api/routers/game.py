@@ -157,7 +157,12 @@ def list_searches(save_id: str, settings: SettingsDep, data: DataDep) -> list[Se
 )
 def open_search(save_id: str, body: SearchIn, settings: SettingsDep, data: DataDep) -> SearchOut:
     path = _path(settings, save_id)
-    action = OpenSearch(_founder_id(_state(path)), body.role, body.channel)  # type: ignore[arg-type]
+    action = OpenSearch(
+        _founder_id(_state(path)),
+        body.role,
+        body.channel,  # type: ignore[arg-type]
+        rival_id=body.rival_id,
+    )
     result, _ = _act(path, data, action)
     search = max(result.new_state.searches, key=lambda s: s.id)
     return views.search_out(result.new_state, search, data)
