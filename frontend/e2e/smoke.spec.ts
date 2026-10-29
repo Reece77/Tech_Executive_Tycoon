@@ -59,7 +59,9 @@ test('Space advances one month; keys jump screens; later screens say when they a
   await page.keyboard.press('7');
   await expect(page).toHaveURL(/\/finance$/); // live from M4b
   await page.keyboard.press('8');
-  await expect(page.getByText('Arrives in M5.')).toBeVisible();
+  await expect(page).toHaveURL(/\/competitors$/); // live from M5
+  await page.keyboard.press('9');
+  await expect(page.getByText('Arrives in M7.')).toBeVisible();
 
   // Reloading keeps the game: state lives in the save file, not the browser.
   await page.reload();

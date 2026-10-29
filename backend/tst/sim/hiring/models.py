@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Literal
 
-type Channel = Literal["network", "job_post", "recruiter"]
+type Channel = Literal["network", "job_post", "recruiter", "poach"]  # poach: M5 (15.6)
 type SearchStatus = Literal["open", "closed"]
 # "withdrawn" is unused in M1: M2 uses it when a candidate or a delegate pulls out.
 type CandidateStatus = Literal["open", "hired", "declined", "expired", "withdrawn"]
@@ -28,6 +28,7 @@ class Search:
     status: SearchStatus = "open"
     closed_turn: int | None = None
     plan_id: int | None = None  # the hiring plan it serves (opened by its delegate, M2a)
+    rival_id: int | None = None  # a "Poach from a rival" search: the rival (M5, 15.6)
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,6 +71,9 @@ class PersonState:
     morale: float | None = None  # employees, not the founder (formulas.md section 9)
 
 
+RIVAL_IDS_FROM = 1_000_001  # tunable-exempt: first id of rivals' own people and employments
+
+
 @dataclass(frozen=True, slots=True)
 class NextIds:
     """Id counters persisted in save_meta (M1b sweep rule 2); ids are never reused."""
@@ -87,6 +91,13 @@ class NextIds:
     round: int = 1
     term_sheet: int = 1
     seat: int = 1
+    rival_effect: int = 1  # M5
+    rival_move: int = 1
+    approach: int = 1
+    # Rivals' own people and employments count from here, apart from the player's (M5): the
+    # player's ids stay as before rivals existed.
+    rival_person: int = RIVAL_IDS_FROM
+    rival_employment: int = RIVAL_IDS_FROM
 
     def take(
         self,
@@ -104,6 +115,11 @@ class NextIds:
             "round",
             "term_sheet",
             "seat",
+            "rival_effect",
+            "rival_move",
+            "approach",
+            "rival_person",
+            "rival_employment",
         ],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)

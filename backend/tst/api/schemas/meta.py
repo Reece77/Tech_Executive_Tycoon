@@ -81,7 +81,7 @@ class FounderPreviewOut(BaseModel):
 
 
 class ChannelOut(BaseModel):
-    key: str  # network | job_post | recruiter
+    key: str  # network | job_post | recruiter | poach (M5)
     label: str
     energy: int
     monthly_cost_cents: int  # while open (job post)

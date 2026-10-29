@@ -17,6 +17,7 @@ from tst.sim.hiring.formulas import (
     acceptance_probability,
     benefits_cents,
     is_lowball,
+    market_mid_cents,
     monthly_salary_cents,
     morale_noise_sd,
     morale_step,
@@ -46,10 +47,11 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
 from tst.sim.org.morale import morale_terms
 from tst.sim.org.rules import is_remote, org_view
-from tst.sim.people.generator import generate_pool
+from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
 from tst.sim.products.phases import product_costs
+from tst.sim.rivals.poaching import leave_rival, poach_batch
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -66,7 +68,7 @@ from tst.sim.state import (
 )
 
 JOB_HOPPER = "job_hopper"
-ONE_BATCH = frozenset({"network", "recruiter"})  # these searches close after one batch
+ONE_BATCH = frozenset({"network", "recruiter", "poach"})  # these close after one batch
 
 
 def _name(person: Person) -> str:
@@ -162,6 +164,8 @@ def resolve_offers(
                 offer=hiring.offer,
                 pitch=offer_pitch(state, offer.actor_id, hiring),
             )
+            if candidate.channel == "poach":  # leaving an employer (M5, 15.6)
+                score += balance.rivals.poach.leave_penalty
             accepted = draw < acceptance_probability(score, hiring.offer)
         status: OfferStatus = "accepted" if accepted else "declined"
         state = with_offer(state, replace(offer, status=status, resolved_turn=state.turn))
@@ -183,6 +187,8 @@ def resolve_offers(
                 )
             )
             continue
+        if candidate is not None and candidate.channel == "poach":
+            state = leave_rival(state, person.id, balance, data)  # M5 (15.6)
         emp_id, ids = state.next_ids.take("employment")
         state = replace(state, next_ids=ids)
         joins = state.unit(offer.unit_id) if offer.unit_id is not None else None
@@ -260,17 +266,32 @@ def monthly_costs(
         1 for e in staff if not is_remote(state, e)
     )
     job_posts = [s for s in state.open_searches(company_id) if s.channel == "job_post"]
-    employees = sum(1 for e in staff if not state.person(e.person_id).is_founder)
+    employees: float = sum(1 for e in staff if not state.person(e.person_id).is_founder)
+    # A rival's workforce pools cost the same per head at the mid-level rate (M5, 15.1).
+    for pool in state.company_pools(company_id):
+        role = data.role(balance.rivals.function_roles[pool.function])
+        pay = monthly_salary_cents(
+            market_mid_cents(role.salary_band_mid_cents["mid"], _mid_region(balance, data))
+        )
+        salaries += round(pool.headcount * pay)
+        benefits += round(pool.headcount * benefits_cents(pay, balance.payroll))
+        office += round(pool.headcount * balance.payroll.office_cost_per_head_cents)
+        employees += pool.headcount
     return (
         ("Salaries", SALARIES, salaries),
         ("Benefits", BENEFITS, benefits),
         ("Office", RENT, office),
-        ("Tools and travel", GENERAL_ADMIN, balance.costs.tools_per_head_cents * employees),
+        ("Tools and travel", GENERAL_ADMIN, round(balance.costs.tools_per_head_cents * employees)),
         ("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents),
         ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts)),
         ("Hosting", COMPUTE, hosting),  # M3 (11.8)
         ("Marketing", MARKETING, marketing),
     )
+
+
+def _mid_region(balance: Balance, data: GameData) -> int:
+    """Pools are paid at the default region's rate (15.1)."""
+    return data.region(balance.founder.default_region).salary_multiplier_bp
 
 
 def employment_monthly_cost_cents(
@@ -512,8 +533,25 @@ def candidate_batches(
     for search in sorted(state.searches, key=lambda s: s.id):
         if search.status != "open":
             continue
+        gen = people_gen_stream(rng, state.turn, search.id)
+        if search.channel == "poach":  # a rival's key people, not generated (M5, 15.6)
+            state, count = poach_batch(state, search, gen, balance, data)
+            state = with_search(state, replace(search, status="closed", closed_turn=state.turn))
+            logs.append(
+                inbox_item(
+                    state.turn,
+                    search.company_id,
+                    "candidates_arrived",
+                    link_kind="search",
+                    link_id=search.id,
+                    count=count,
+                    role=data.role(search.role).label,
+                    channel=f"poach from {state.company(search.rival_id or 0).name}",
+                    shelf=balance.hiring.candidate_shelf_turns,
+                )
+            )
+            continue
         channel = balance.hiring.channel[search.channel]
-        gen = rng.stream(state.turn, "people_gen", search.id)
         count = int(gen.integers(int(channel.size.lo), int(channel.size.hi), endpoint=True))
         actor = _actor(state, search)
         if (

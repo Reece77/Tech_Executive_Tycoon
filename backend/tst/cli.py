@@ -1216,3 +1216,106 @@ def board(save: SaveOpt) -> None:
 
 if __name__ == "__main__":
     app()
+
+
+# --- Rivals (M5, formulas.md 15) --------------------------------------------------------------
+
+
+def _rival_view(save: str) -> tuple[Path, LoadedData, GameState, dict[tuple[int, str], int]]:
+    path, data, state = _game(save)
+    with repository.open_session(path) as session:
+        balances = repository.ledger_balances(session, state.turn)
+    return path, data, state, balances
+
+
+@app.command()
+def rivals(
+    save: SaveOpt,
+    view: Annotated[str, typer.Option(help="all|markets|startups")] = "all",
+) -> None:
+    """List rival companies: style, where they meet you, staff, money and last move."""
+    from tst.api import rival_views
+
+    _, data, state, balances = _rival_view(save)
+    out = rival_views.rivals_out(state, balances, data, list(state.rival_moves), view)
+    typer.echo(
+        f"{out.established} established, {out.startups_alive} startups alive, "
+        f"{out.startups_failed} failed"
+    )
+    for r in out.rivals:
+        tag = " (startup)" if r.is_startup else ""
+        money = r.money_label or "-"
+        where = ", ".join(r.competes_in) or "-"
+        typer.echo(
+            f"{r.company_id:>3}  {r.name + tag:<28} {r.personality_label:<14} "
+            f"staff ~{r.staff_estimate:<6} {money:<13} {r.stance:<13} "
+            f"in: {where}; last: {r.last_move or '-'}"
+        )
+
+
+@app.command()
+def rival(
+    save: SaveOpt, rival_id: Annotated[int, typer.Option("--id", help="Rival company id")]
+) -> None:
+    """One rival: products, key people (your ranges) and recent moves."""
+    from tst.api import rival_views
+
+    _, data, state, balances = _rival_view(save)
+    company = next((c for c in state.companies if c.id == rival_id and not c.is_player), None)
+    if company is None:
+        raise _fail(f"no rival {rival_id}")
+    p = rival_views.rival_profile(state, company, balances, data, list(state.rival_moves))
+    typer.echo(f"{p.name} ({p.personality_label}): {p.style_text}")
+    typer.echo(
+        f"Staff ~{p.staff_estimate}, money {p.money_label or '-'}, {p.stance}: {p.stance_reason}"
+    )
+    for s in p.segments:
+        running = f", {s.running} until {s.running_until_label}" if s.running else ""
+        typer.echo(
+            f"  {s.product_name} / {s.segment_label}: quality {s.quality:.0f}, features "
+            f"{s.feature_score:.0f}, brand {s.brand:.0f}, price "
+            f"{format_money(s.price_cents or 0)}, customers {s.customers:,.0f}{running}"
+        )
+    typer.echo("Key people:")
+    for k in p.key_people:
+        skills = ", ".join(f"{a.short_label} {a.range.min}-{a.range.max}" for a in k.top_skills)
+        typer.echo(
+            f"  {k.person_id:>8}  {k.name:<24} {k.role_label} ({k.level}); {skills}; "
+            f"{k.potential_phrase}"
+        )
+    for m in p.recent_moves[:10]:
+        typer.echo(f"  {m.date_label}  [{m.tag}] {m.detail}")
+
+
+@app.command()
+def news(save: SaveOpt) -> None:
+    """Market news: rival moves and startup events, newest month first."""
+    from tst.api import rival_views
+
+    _, _, state = _game(save)
+    months = rival_views.news_months(list(state.rival_moves))
+    if not months:
+        typer.echo("No market news yet.")
+    for month in months:
+        typer.echo(month.date_label)
+        for m in month.moves:
+            typer.echo(f"  [{m.tag}] {m.detail}")
+
+
+@app.command()
+def poach(
+    save: SaveOpt,
+    rival_id: Annotated[int, typer.Option("--rival", help="Rival company id")],
+    role: Annotated[
+        str, typer.Option(help="Role key, e.g. software_engineer")
+    ] = "software_engineer",
+) -> None:
+    """Open a "Poach from a rival" search: their key people arrive at the end of this month."""
+    path, data, state = _game(save)
+    action = OpenSearch(_actor(state), role, "poach", rival_id=rival_id)
+    result = _run(path, data, action)
+    search = max(result.new_state.searches, key=lambda s: s.id)
+    typer.echo(
+        f"Opened search {search.id}: poach {role} from "
+        f"{result.new_state.company(rival_id).name}; {_energy(result.new_state, data)}"
+    )

@@ -20,6 +20,7 @@ from tst.sim.people.founder import FounderSpec, build_founder
 from tst.sim.people.models import FOUNDER_ROLE, Employment, Person
 from tst.sim.people.reveal import new_reveal_state
 from tst.sim.products.setup import initial_market
+from tst.sim.rivals.setup import setup_incumbents
 from tst.sim.rng import RngFactory
 from tst.sim.state import CompanyState, GameState, SaveMeta
 
@@ -156,7 +157,8 @@ def new_game(
         ),
     )
     state = initial_cap_table(state, PLAYER_COMPANY_ID, person.id, scenario, rng, balance, data)
-    entries: tuple[LedgerEntry, ...] = ()
+    state, rival_cash = setup_incumbents(state, rng, balance, data)  # M5 (formulas.md 15.1)
+    entries: tuple[LedgerEntry, ...] = rival_cash
     if cash:
         entries = (
             LedgerEntry.transfer(
@@ -167,5 +169,6 @@ def new_game(
                 credit=scenario.starting_equity_account,
                 amount=cash,
             ),
+            *rival_cash,
         )
     return state, entries

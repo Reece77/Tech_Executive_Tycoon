@@ -722,13 +722,13 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `bankruptcy.months` / `.bridge_burn_months` / `.bridge_cap_of_post` / `.bridge_min_confidence` / `.bridge_open_turns` | 3 / 3 / 0.8 / 40 / 2 | months / months / fraction / confidence / turns | §14.7 |
 | Investor firms, scenario cap tables, funding climate | see §14.2, §14.3, §14.5 | — | data: `investors.yaml`, `scenarios.yaml`, `climate.yaml` |
 
-| `rivals.act_threshold` / `.noise_sd` / `.cooldown_turns` / `.push_turns` | 0.5 / 0.1 / 6 / 6 | utility / utility / turns / turns | §15.3 |
-| `rivals.need.<action>` | see §15.3 | divisors | §15.3 |
+| `rivals.act_threshold` / `.noise_sd` / `.cooldown_turns` / `.push_turns` / `.window_turns` | 0.5 / 0.1 / 6 / 6 / 6 | utility / utility / turns / turns / turns | §15.3 |
+| `rivals.need.<action>` | see §15.3; tuned in M5: `poach_gain` 0.007 (was 0.05) | divisors | §15.3 |
 | `rivals.weights.<personality>.<action>` / `.price_factor.<personality>` | see §15.3 | multiplier | §15.3 |
 | `rivals.price_cut` / `.price_rise` / `.push_pool_growth` / `.brand_push_marketing` / `.cut_costs_pools` / `.cut_costs_marketing` | 0.90 / 1.05 / 0.10 / 0.50 / 0.15 / 0.30 | multiplier / fraction | §15.3 |
 | `rivals.function_mix.<category>` / `.pool_morale` / `.pool_skill_other` / `.start_marketing_share` / `.key_people` | see §15.1 / 60 / 12 / 0.08 / 8 | fraction / morale / attribute / fraction / people | §15.1 |
-| `rivals.startup.found_rate` / `.max_alive` / `.team` / `.cash_cents` / `.raise_months` / `.raise_chance` | 0.01 / 8 / [3, 8] / [100000000, 300000000] / 18 / 0.6 | probability / companies / people / cents / months / probability | §15.4 |
-| `rivals.poach.offer_mult` / `.top_fraction` / `.ask_mult` / `.leave_penalty` / `.key_builder_quality_hit` | 1.25 / 0.30 / 1.3 / −0.5 / 2 | multiplier / fraction / multiplier / score / quality | §15.6 |
+| `rivals.startup.found_rate` / `.max_alive` / `.team` / `.cash_cents` / `.raise_months` / `.raise_chance` | 0.02 (tuned in M5; 0.01 before) / 8 / [3, 8] / [100000000, 300000000] / 18 / 0.6 | probability / companies / people / cents / months / probability | §15.4 |
+| `rivals.poach.offer_mult` / `.top_fraction` / `.ask_mult` / `.leave_penalty` / `.key_builder_quality_hit` | 1.0 (tuned in M5; 1.25 before) / 0.30 / 1.3 / −0.5 / 2 | multiplier / fraction / multiplier / score / quality | §15.6 |
 | `founder.energy_cost.poach_search` | 10 | energy | §15.6 |
 | `rivals.poach.bands` / `rivals.money_bands_months` | [0.20, 0.50] / [12, 36] | probability / months | §15.5, §15.6 |
 | Incumbent personalities, skills, margins and cash | see §15.1 | — | data: `incumbents.yaml` |
@@ -1106,7 +1106,7 @@ A monthly **Market news** inbox item lists every rival action and every startup 
 **Rivals approach the player's people.** A `poach` action picks the player's employee with the highest true CA in the top 30% (ties by id) and offers `1.25 ×` their role and level's market rate. The approach arrives as an inbox item; the player may counter with a raise (§13.8) before Continue. In phase 1 of the next turn the employee decides (stream `poach`, key `(approach_id,)`):
 
 ```latex
-s = 4\,(R - 1) + \frac{55 - morale}{20} - \frac{loyalty - 10}{10} - 2u, \qquad p = \frac{1}{1 + e^{-2s}}
+s = 4\,(R - 1) + \frac{55 - morale}{20} - \frac{loyalty - 10}{10} - 2u + leave\_penalty, \qquad p = \frac{1}{1 + e^{-2s}}
 ```
 
 `R` = offer ÷ current salary (after any counter), `u` = unvested option value ÷ annual salary (§14.2). Accepting is a resignation with one month's notice; the person joins the rival as a key person. The screens show a band, never `p`, computed from what the player knows (true salary, offer and options; displayed midpoints for loyalty; morale exactly): below 20% "likely to stay", 20–50% "might go", above 50% "likely to go".
@@ -1129,7 +1129,7 @@ Tune only `rivals.*` keys and the personality weights to meet them; record the v
 
 **A premium incumbent ignores a small threat.** Salesforce's SMB share fell 1 point: `need` = 0.2, `U` = 0.2 × 0.6 = 0.12, below 0.5: no action.
 
-**Poaching Priya** (salary $118,000, morale 62, loyalty 12, 52,084 unvested options at $1.0295): Salesforce offers $143,750 (`R` = 1.218, `u` = 0.454): `s` = −0.586, **p = 23.7%**. If the player counters with a raise to $135,000 (`R` = 1.065, `u` = 0.397): `s` = −1.085, **p = 10.2%**. An underpaid, unhappy employee with no options (`R` = 1.218, morale 40, loyalty 8, `u` = 0): `s` = 1.823, **p = 97.5%**.
+**Poaching Priya** (salary $118,000, morale 62, loyalty 12, 52,084 unvested options at $1.0295; `leave_penalty` −0.5 from M5, Reece's decision): Salesforce offers $143,750 (`R` = 1.218, `u` = 0.454): `s` = −1.086, **p = 10.2%**. If the player counters with a raise to $135,000 (`R` = 1.065, `u` = 0.397): `s` = −1.585, **p = 4.0%**. An underpaid, unhappy employee with no options (`R` = 1.218, morale 40, loyalty 8, `u` = 0): `s` = 1.323, **p = 93.4%**. (Before the leaving penalty: −0.586 and 23.7%, −1.085 and 10.2%, 1.823 and 97.5%.)
 
 ## 16. Events, storylines and relationships (M6)
 

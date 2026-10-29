@@ -37,6 +37,10 @@ from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
 from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
+from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
+from tst.sim.rivals.models import RivalMove
+from tst.sim.rivals.poaching import answer_approaches, join_rivals
+from tst.sim.rivals.startups import found_startups, launch_ready, record_failures
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
 from tst.sim.state import GameState, with_company
@@ -57,6 +61,7 @@ class TurnResult:
     # Phase 2's delegate actions as (company id, action), in the order taken (ADR-0015).
     delegate_actions: tuple[tuple[int, Action], ...] = ()
     product_months: tuple[ProductMonth, ...] = ()  # month-end history per product and segment
+    rival_moves: tuple[RivalMove, ...] = ()  # phase 2 (and startup events, phase 9), M5
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,6 +82,7 @@ class TurnContext:
     revenue: Mapping[int, Cents] = field(default_factory=dict)  # MRR per company, phase 5
     flows: Mapping[products.FlowKey, products.Flow] = field(default_factory=dict)  # phase 5
     product_months: tuple[ProductMonth, ...] = ()  # phase 11
+    rival_moves: tuple[RivalMove, ...] = ()  # M5: phase 2 decisions and phase 9 startup events
 
     @property
     def turn(self) -> int:
@@ -105,27 +111,36 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     Player actions themselves were applied at once between turns; Decisions stays empty in M1.
     """
     state, ended = phases.end_notices(ctx.state)
+    state = join_rivals(state)  # people who took a rival's offer join it (M5, 15.6)
+    state, answered = answer_approaches(state, ctx.rng, ctx.balance)  # M5 (15.6)
     state = settle_leavers(state)  # leavers' unvested options return to the pool (14.2)
     state, detached = detach_departed(state, ctx.data)
     state, vacated = vacate_departed(state)  # a departed nominee's seat empties (14.6, M4c)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
     state, closing, closed = fundraising.close_rounds(state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*entries, *closing)
-    return ctx.log(*ended, *detached, *vacated, *resolved, *closed)
+    return ctx.log(*ended, *answered, *detached, *vacated, *resolved, *closed)
 
 
 def rival_decisions(ctx: TurnContext) -> TurnContext:
-    """Phase 2: delegates work their hiring plans (ADR-0015); rivals join in M5."""
+    """Phase 2: delegates work their hiring plans (ADR-0015); then each rival takes at most
+    one action (formulas.md 15.3), and the month's moves become Market news (15.5)."""
     state, entries, logs, taken = run_delegates(
         ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
     )
-    return replace(ctx, state=state, delegate_actions=taken).post(*entries).log(*logs)
+    ctx = replace(ctx, state=state, delegate_actions=taken).post(*entries).log(*logs)
+    state, moves, approached, raised = rival_month(
+        ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state, rival_moves=ctx.rival_moves + moves).post(*raised)
+    return ctx.log(*approached)
 
 
 def research_progress(ctx: TurnContext) -> TurnContext:
     """Product development: quality and features (formulas.md 11.4, ADR-0017). The v2
     technology tree joins this phase later."""
     state, logs = products.develop(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    state = apply_effects(state, ctx.balance, ctx.data)  # rival pushes and drags (M5, 15.2)
     return replace(ctx, state=state).log(*logs)
 
 
@@ -158,6 +173,8 @@ def financing(ctx: TurnContext) -> TurnContext:
     state = vest(state, ctx.balance)
     ctx = replace(ctx, state=state).post(*entries, *bridging)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
+    state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
+    ctx = replace(ctx, rival_moves=ctx.rival_moves + failed)
     return replace(ctx, state=state).log(*answered, *sheets, *lapsed, *bridges, *insolvent)
 
 
@@ -191,7 +208,11 @@ def people_updates(ctx: TurnContext) -> TurnContext:
 def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     """Brand toward its marketing target and addressable demand growth (11.1, 11.5); the
     macro layer joins later."""
-    return replace(ctx, state=products.brand_and_demand(ctx.state, ctx.balance, ctx.data))
+    state = products.brand_and_demand(ctx.state, ctx.balance, ctx.data)
+    state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
+    state, founding, founded = found_startups(state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state, rival_moves=ctx.rival_moves + launched + founded)
+    return ctx.post(*founding)
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:
@@ -241,7 +262,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
             )
         )
     # MRR at each month end feeds investors' growth and the board (M4, 14.3).
-    state = ctx.state
+    state = remember_shares(ctx.state, ctx.balance)  # rivals' share memory (M5, 15.3)
     keep = 2 * ctx.balance.finance.growth_window_months + 1
     for company in state.ledger_companies():
         history = (*company.mrr_history, ctx.revenue.get(company.id, 0))[-keep:]
@@ -252,7 +273,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
         snapshot=TurnSnapshot(turn=ctx.turn, companies=tuple(snaps)),
         product_months=products.month_history(ctx.state, ctx.flows, ctx.data),
     )
-    return ctx.log(*items)
+    return ctx.log(*items, *market_news(state, ctx.rival_moves))  # M5 (15.5)
 
 
 def event_director_requests(ctx: TurnContext) -> TurnContext:
@@ -315,4 +336,5 @@ def advance_turn(
         event_requests=ctx.event_requests,
         delegate_actions=ctx.delegate_actions,
         product_months=ctx.product_months,
+        rival_moves=ctx.rival_moves,
     )

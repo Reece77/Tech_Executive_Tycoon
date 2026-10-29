@@ -145,10 +145,13 @@ def test_revenue_hosting_and_marketing_post_balanced_entries(loaded: LoadedData)
     assert snap.kpis()["mrr_cents"] == snap.mrr_cents
 
 
-def test_incumbents_have_no_ledger(loaded: LoadedData) -> None:
-    result = turn(fresh_game(loaded), loaded)
-    assert {e.company_id for e in result.ledger_entries} == {1}
-    assert [s.company_id for s in result.snapshot.companies] == [1]
+def test_incumbents_keep_books(loaded: LoadedData) -> None:
+    """From M5 every rival in business has a ledger and a month-end snapshot (15.1)."""
+    state = fresh_game(loaded)
+    result = turn(state, loaded)
+    ids = {c.id for c in state.companies}
+    assert {e.company_id for e in result.ledger_entries} == ids
+    assert [s.company_id for s in result.snapshot.companies] == sorted(ids)
 
 
 def test_one_million_arr_enters_stage_2_and_notes_the_milestone(loaded: LoadedData) -> None:
@@ -191,7 +194,7 @@ def test_products_in_development_win_nothing(loaded: LoadedData) -> None:
     state = base(loaded, status="in_development")
     out = run_markets(state, RngFactory(4), loaded.balance, loaded.game_data)
     assert (PRODUCT, "smb") not in out.flows
-    assert out.revenue == {1: 0}
+    assert out.revenue[1] == 0
 
 
 def test_brand_follows_marketing_and_demand_grows(loaded: LoadedData) -> None:

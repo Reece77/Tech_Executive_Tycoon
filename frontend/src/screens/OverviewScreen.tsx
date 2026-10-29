@@ -201,7 +201,7 @@ function CostsPanel({ overview, month }: { overview: Overview; month: string }) 
         Costs
       </h3>
       {overview.month_costs.map((c) => (
-        <div key={c.account} className="tst-row" data-testid={`cost-${c.account}`}>
+        <div key={`${c.account}-${c.label}`} className="tst-row" data-testid={`cost-${c.account}`}>
           <span style={{ color: 'var(--tst-text-2)' }}>{label(c.label)}</span>
           <span className="tst-num">{formatMoneyWhole(c.amount_cents)}</span>
         </div>

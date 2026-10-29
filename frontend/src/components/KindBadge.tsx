@@ -9,6 +9,7 @@ const STYLES: Record<KindLabel, { color: string; background: string }> = {
   Delegate: { color: 'var(--tst-purple)', background: 'var(--tst-purple-bg)' },
   Product: { color: 'var(--tst-teal)', background: 'var(--tst-teal-bg)' },
   Finance: { color: 'var(--tst-tier-4)', background: 'var(--tst-finance-bg)' },
+  News: { color: 'var(--tst-warn)', background: 'var(--tst-warn-bg)' }, // M5 rivals
 };
 
 /** Inbox message kind as a text badge (no icons). `kind` is the API's template key. */

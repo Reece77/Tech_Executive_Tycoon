@@ -299,11 +299,13 @@ def _check_golden(name: str, actual: object, update: bool) -> None:
     assert actual == json.loads(golden.read_text(encoding="utf-8"))
 
 
-def snapshots(path: Path) -> list[dict[str, Any]]:
+def snapshots(path: Path, company_id: int | None = 1) -> list[dict[str, Any]]:
+    """Month-end snapshots: the player's (the golden files), or every company's (None)."""
     with open_session(path) as session:
-        rows = session.scalars(
-            select(TurnSnapshotRow).order_by(TurnSnapshotRow.turn, TurnSnapshotRow.company_id)
-        ).all()
+        query = select(TurnSnapshotRow).order_by(TurnSnapshotRow.turn, TurnSnapshotRow.company_id)
+        if company_id is not None:
+            query = query.where(TurnSnapshotRow.company_id == company_id)
+        rows = session.scalars(query).all()
         return [
             {"turn": r.turn, "date": format_turn(r.turn), "company_id": r.company_id, **r.kpis}
             for r in rows
@@ -362,6 +364,6 @@ def test_same_seed_twice_is_identical(tmp_path: Path, loaded: LoadedData) -> Non
     assert first_ca == second_ca
     with open_session(first) as a, open_session(second) as b:
         assert load_state(a).people == load_state(b).people
-    assert snapshots(first) == snapshots(second)
+    assert snapshots(first, None) == snapshots(second, None)  # rivals' books too (M5)
     assert ledger_rows(first) == ledger_rows(second)
     assert len(ledger_rows(first)) > 2 + 3 * TURNS  # payroll and fees on top of office/overhead

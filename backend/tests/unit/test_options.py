@@ -8,7 +8,14 @@ from fractions import Fraction
 
 import pytest
 
-from tests.helpers import fresh_game, make_person, mark_interviewed, with_candidates, with_employee
+from tests.helpers import (
+    fresh_game,
+    last_hire,
+    make_person,
+    mark_interviewed,
+    with_candidates,
+    with_employee,
+)
 from tests.unit.test_hiring_phases import Game
 from tst.loader import LoadedData
 from tst.sim.actions import Fire, MakeOffer
@@ -42,7 +49,7 @@ def test_an_accepted_offer_grants_options_from_the_pool(loaded: LoadedData) -> N
 
 def test_vesting_cliff_then_monthly(loaded: LoadedData) -> None:
     state = with_employee(loaded, fresh_game(loaded), make_person(loaded, 2), 9_000_000, 48)
-    state = grant_on_hire(state, state.employments[-1])
+    state = grant_on_hire(state, last_hire(state))
     vested = []
     for turn in range(14):
         state = vest(replace(state, turn=turn), loaded.balance)
@@ -53,7 +60,7 @@ def test_vesting_cliff_then_monthly(loaded: LoadedData) -> None:
 
 def test_leaving_returns_unvested_options(loaded: LoadedData) -> None:
     state = with_employee(loaded, fresh_game(loaded), make_person(loaded, 2), 9_000_000, 100)
-    state = grant_on_hire(state, state.employments[-1])
+    state = grant_on_hire(state, last_hire(state))
     state = vest(replace(state, turn=23), loaded.balance)  # 24 months: half vested
     assert state.grants[0].vested == 50_000 and unallocated(state, 1) == 900_000
     game = Game(loaded, state)
@@ -72,8 +79,8 @@ def test_leaving_returns_unvested_options(loaded: LoadedData) -> None:
 
 def test_retention_needs_a_share_price(loaded: LoadedData) -> None:
     state = with_employee(loaded, fresh_game(loaded), make_person(loaded, 2), 9_500_000, 75)
-    state = grant_on_hire(state, state.employments[-1])
-    employment = state.employments[-1]
+    state = grant_on_hire(state, last_hire(state))
+    employment = last_hire(state)
     assert retention(state, employment, loaded.balance) == 1.0  # $0 before any priced round
     priced = with_round(
         state,
@@ -105,7 +112,7 @@ def test_next_vesting_is_the_cliff_then_each_month(loaded: LoadedData) -> None:
     """M4b: the profile and cap table show the next vesting date and amount."""
     fb = loaded.balance.finance
     state = with_employee(loaded, fresh_game(loaded), make_person(loaded, 2), 9_000_000, 48)
-    state = grant_on_hire(state, state.employments[-1])
+    state = grant_on_hire(state, last_hire(state))
     (grant,) = state.grants
     assert next_vesting(grant, 0, fb) == (11, 12_000)  # 48 bp: 48,000; the cliff vests 1/4
     assert at_cliff(grant, 11, fb)

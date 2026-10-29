@@ -45,6 +45,7 @@ def test_hiring_meta(api: Client) -> None:
         "network": 10,
         "job_post": 5,
         "recruiter": 5,
+        "poach": 10,  # M5 (15.6)
     }
     assert channels["job_post"]["monthly_cost_cents"] == 50_000
     assert channels["recruiter"]["hire_fee_bp"] == 2_000

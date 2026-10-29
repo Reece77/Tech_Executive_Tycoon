@@ -31,6 +31,7 @@ from tst.sim.data_models import Balance, GameData, Role, Tag
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.people.formulas import current_ability, pa_gap_mean, salary_expectation_cents
 from tst.sim.people.models import HiddenTraits, Person, Personality, Skills
+from tst.sim.rng import RngFactory
 from tst.sim.scale import (
     ABILITY_MAX,
     ABILITY_PER_ATTR,
@@ -141,6 +142,13 @@ def _rescale_primaries(skills: dict[str, float], role: Role, target_ca: float) -
                 factor = lo if s_hi == s_lo else lo + (needed - s_lo) * (hi - lo) / (s_hi - s_lo)
                 break
     return {**skills, **{k: clamp_attr(skills[k] * factor) for k in role.primary}}
+
+
+def people_gen_stream(rng: RngFactory, turn: int, *key: int) -> np.random.Generator:
+    """Stream `people_gen` (ADR-0013): key `(search_id,)` for a search's batch (section 7), or
+    `(company_id, n)` for people a rival hires itself (formulas.md 15.1, 15.4). The two key
+    lengths never meet; this helper is the stream's one call site."""
+    return rng.stream(turn, "people_gen", *key)
 
 
 def generate_person(

@@ -57,8 +57,9 @@ def test_new_game_garage(loaded: LoadedData) -> None:
     assert state.player.id == PLAYER_COMPANY_ID
     assert state.player.name == "Test Co"
     assert state.player.stage == 0
-    assert len(entries) == 1
-    entry = entries[0]
+    player = [e for e in entries if e.company_id == state.player.id]
+    assert len(player) == 1
+    entry = player[0]
     assert entry.turn == 0
     assert {(ln.account, ln.amount) for ln in entry.lines} == {
         (CASH, 5_000_000),

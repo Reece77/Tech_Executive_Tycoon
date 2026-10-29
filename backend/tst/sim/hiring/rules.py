@@ -103,7 +103,8 @@ def offer_preview(
         ambition=midpoint("ambition"),
         stage=company.stage,
         offer=balance.hiring.offer,
-        pitch=0.0 if actor_id is None else offer_pitch(state, actor_id, balance.hiring),
+        pitch=(0.0 if actor_id is None else offer_pitch(state, actor_id, balance.hiring))
+        + (balance.rivals.poach.leave_penalty if candidate.channel == "poach" else 0.0),
     )
     pending = state.pending_offer_for(person.id)
     problems = offer_problems(

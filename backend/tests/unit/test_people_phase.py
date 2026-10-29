@@ -81,11 +81,11 @@ def test_only_staff_grow(loaded: LoadedData) -> None:
         loaded.game_data.role("designer"),
         "junior",
         "europe",
-        person_id=2,
+        person_id=state.next_ids.person,  # rivals' key people hold the low ids (M5)
     )
     state = replace(state, people=(*state.people, stranger))
     after = play(loaded, state, 3)[-1]
-    assert after.person(2) == stranger
+    assert after.person(stranger.id) == stranger
     assert after.person(1) != state.person(1)
 
 

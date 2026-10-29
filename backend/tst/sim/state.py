@@ -21,6 +21,13 @@ from tst.sim.money import Cents
 from tst.sim.org.models import HiringPlan, OrgUnit, WorkPolicy
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
+from tst.sim.rivals.models import (
+    PoachApproach,
+    RivalEffect,
+    RivalMove,
+    SegmentShare,
+    WorkforcePool,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +56,22 @@ class CompanyState:
     # (stage, turn) each time a stage was reached, oldest first; new games start with the
     # starting stage at the founding turn; saves from before M4b may lack earlier stages (M4b)
     stage_history: tuple[tuple[int, int], ...] = ()
+    # Rivals (M5, formulas.md 15): personality key; the builder pool's skill d and the
+    # margin its staff is sized for (incumbents); startups are founded in play.
+    personality: str | None = None
+    builder_skill: float | None = None
+    target_margin_bp: int | None = None
+    is_startup: bool = False
+    failed_turn: int | None = None  # a rival that went bankrupt (15.1, 14.7)
+    last_raise_turn: int | None = None  # a startup's last funding attempt (15.4)
+
+    @property
+    def is_rival(self) -> bool:
+        return not self.is_player
+
+    @property
+    def alive(self) -> bool:
+        return self.failed_turn is None
 
 
 def reach_stage(company: CompanyState, stage: int, turn: int) -> CompanyState:
@@ -89,6 +112,11 @@ class GameState:
     rounds: tuple[FundingRound, ...] = ()  # every priced round, sorted by id (M4)
     term_sheets: tuple[TermSheet, ...] = ()  # every term sheet, sorted by id (M4)
     seats: tuple[BoardSeat, ...] = ()  # board seats, sorted by id (M4)
+    pools: tuple[WorkforcePool, ...] = ()  # rival workforce pools, by (company_id, function) (M5)
+    rival_effects: tuple[RivalEffect, ...] = ()  # running effects, sorted by id (M5)
+    rival_moves: tuple[RivalMove, ...] = ()  # the last 24 months of rival moves, by id (M5)
+    approaches: tuple[PoachApproach, ...] = ()  # pending approaches, sorted by id (M5)
+    segment_shares: tuple[SegmentShare, ...] = ()  # by (product_id, segment) (M5)
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -265,8 +293,15 @@ class GameState:
         return tuple(s for s in self.seats if s.company_id == company_id)
 
     def ledger_companies(self) -> tuple[CompanyState, ...]:
-        """Companies with books: the player. Incumbents have no ledger until M5 (ADR-0017)."""
-        return tuple(c for c in self.companies if c.is_player)
+        """Companies with books: the player and every rival still in business (M5, 15.1)."""
+        return tuple(c for c in self.companies if c.is_player or c.failed_turn is None)
+
+    def company_pools(self, company_id: int) -> tuple[WorkforcePool, ...]:
+        return tuple(p for p in self.pools if p.company_id == company_id)
+
+    def rivals(self) -> tuple[CompanyState, ...]:
+        """Rival companies still in business (M5)."""
+        return tuple(c for c in self.companies if not c.is_player and c.failed_turn is None)
 
     @property
     def player(self) -> CompanyState:
@@ -365,6 +400,29 @@ def with_round(state: GameState, funding_round: FundingRound) -> GameState:
 
 def with_term_sheet(state: GameState, sheet: TermSheet) -> GameState:
     return replace(state, term_sheets=_upsert(state.term_sheets, sheet, lambda t: t.id))
+
+
+def with_pool(state: GameState, pool: WorkforcePool) -> GameState:
+    return replace(state, pools=_upsert(state.pools, pool, lambda p: (p.company_id, p.function)))
+
+
+def with_rival_effect(state: GameState, effect: RivalEffect) -> GameState:
+    return replace(state, rival_effects=_upsert(state.rival_effects, effect, lambda e: e.id))
+
+
+def with_rival_move(state: GameState, move: RivalMove) -> GameState:
+    return replace(state, rival_moves=_upsert(state.rival_moves, move, lambda m: m.id))
+
+
+def with_approach(state: GameState, approach: PoachApproach) -> GameState:
+    return replace(state, approaches=_upsert(state.approaches, approach, lambda a: a.id))
+
+
+def with_segment_share(state: GameState, share: SegmentShare) -> GameState:
+    return replace(
+        state,
+        segment_shares=_upsert(state.segment_shares, share, lambda s: (s.product_id, s.segment)),
+    )
 
 
 def with_seat(state: GameState, seat: BoardSeat) -> GameState:

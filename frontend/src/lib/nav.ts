@@ -13,6 +13,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { path: 'org', label: 'Org', arrivesIn: null },
   { path: 'products', label: 'Products', arrivesIn: null },
   { path: 'finance', label: 'Finance', arrivesIn: null },
-  { path: 'competitors', label: 'Competitors', arrivesIn: 'M5' },
+  { path: 'competitors', label: 'Competitors', arrivesIn: null },
   { path: 'history', label: 'History', arrivesIn: 'M7' },
 ];

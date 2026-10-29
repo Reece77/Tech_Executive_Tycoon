@@ -1,7 +1,7 @@
-"""M3a balance checks (printed): incumbent equilibrium and the earn-and-burn band.
+"""M3a balance checks (printed): the earn-and-burn band. (M3a's incumbent equilibrium,
+with incumbents that never moved, is replaced by M5's living-market target in
+test_rival_balance.py: rivals now act, formulas.md 15.7.)
 
-- Incumbent equilibrium: with no player product, each incumbent's share of its segment's
-  served customers moves by at most 5 points over the first 24 turns.
 - Earn-and-burn: a funded_spinout founder, 3 builders, 1 account executive and 1 marketer
   ($10,000 a month marketing) on one B2B SaaS product reach first revenue by turn 10 and an
   ARR between $500,000 and $4M at turn 36 (formulas.md 11.14 design check: about $2.6M).
@@ -11,13 +11,11 @@ from __future__ import annotations
 
 import pytest
 
-from tests.balance_scripts import earn_and_burn, start
+from tests.balance_scripts import earn_and_burn
 from tst.loader import LoadedData
 from tst.sim.money import format_money
 from tst.sim.state import GameState
 
-EQUILIBRIUM_TURNS = 24
-EQUILIBRIUM_POINTS = 5.0
 FIRST_REVENUE_BY = 10
 ARR_TURN = 36
 ARR_BAND_CENTS = (50_000_000, 400_000_000)
@@ -36,19 +34,6 @@ def served_shares(state: GameState) -> dict[tuple[str, str, int], float]:
         / totals[(products[s.product_id].category, s.segment)]
         for s in state.product_segments
     }
-
-
-@pytest.mark.parametrize("seed", [1, 2, 3, 4, 5])
-def test_incumbent_equilibrium(loaded: LoadedData, seed: int) -> None:
-    run = start(loaded, seed)
-    first = served_shares(run.state)
-    worst = 0.0
-    for _ in range(EQUILIBRIUM_TURNS):
-        run.turn()
-        now = served_shares(run.state)
-        worst = max(worst, max(abs(now[k] - first[k]) for k in first))
-    print(f"seed {seed}: largest move in share of served customers {worst:.2f} points")
-    assert worst <= EQUILIBRIUM_POINTS
 
 
 @pytest.mark.parametrize("seed", [1, 2, 3])

@@ -70,6 +70,8 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "product_dev": 15,
         "finance": 16,
         "board": 17,
+        "rival_spawn": 18,
+        "poach": 19,
         "misc": 99,
     }
 

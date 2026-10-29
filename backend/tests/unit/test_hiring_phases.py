@@ -6,7 +6,14 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import fresh_game, make_person, mark_interviewed, with_candidates, with_employee
+from tests.helpers import (
+    fresh_game,
+    make_person,
+    mark_interviewed,
+    rival_cash,
+    with_candidates,
+    with_employee,
+)
 from tst.loader import LoadedData
 from tst.sim.actions import Action, MakeOffer, OpenSearch, apply_action
 from tst.sim.decisions import Decisions
@@ -17,7 +24,7 @@ from tst.sim.ledger import CASH, apply_entries
 from tst.sim.log import LogItem
 from tst.sim.people.models import PA_KEY
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, with_offer, with_person_state
+from tst.sim.state import GameState, with_offer, with_person, with_person_state
 from tst.sim.turn import TurnResult, advance_turn
 
 START_CASH = 40_000_000  # ex-big-tech founders
@@ -29,7 +36,7 @@ class Game:
     def __init__(self, loaded: LoadedData, state: GameState, cash: int = START_CASH) -> None:
         self.loaded = loaded
         self.state = state
-        self.balances: dict[tuple[int, str], int] = {(1, CASH): cash}
+        self.balances: dict[tuple[int, str], int] = {**rival_cash(state, loaded), (1, CASH): cash}
         self.seq = 0
         self.results: list[TurnResult] = []
         self.action_logs: list[LogItem] = []
@@ -132,13 +139,9 @@ def test_network_bonus_for_a_sociable_actor(loaded: LoadedData) -> None:
     for sociability in (14.0, 15.0):
         state = fresh_game(loaded, 4)
         founder = state.people[0]
-        state = replace(
+        state = with_person(
             state,
-            people=(
-                replace(
-                    founder, personality=founder.personality.updated({"sociability": sociability})
-                ),
-            ),
+            replace(founder, personality=founder.personality.updated({"sociability": sociability})),
         )
         game = Game(loaded, state)
         game.act(OpenSearch(1, "designer", "network"))
@@ -178,7 +181,7 @@ def test_accepted_offer_hires_and_moves_stage(loaded: LoadedData) -> None:
     game.turn()
     _offer_all(game, 1.5, 50)
     result = game.turn()
-    hires = [e for e in game.state.employments if e.role != "founder"]
+    hires = [e for e in game.state.employments if e.company_id == 1 and e.role != "founder"]
     assert hires, "a 1.5x offer should be accepted"
     for e in hires:
         person = game.state.person(e.person_id)
@@ -202,7 +205,9 @@ def test_hiring_reveals_interests_and_work_style(loaded: LoadedData) -> None:
     assert all(game.state.reveal(1, pid).profile_revealed_turn is None for pid in unknown)  # type: ignore[union-attr]
     _offer_all(game, 1.5)
     game.turn()
-    hired = [e.person_id for e in game.state.employments if e.role != "founder"]
+    hired = [
+        e.person_id for e in game.state.employments if e.company_id == 1 and e.role != "founder"
+    ]
     assert hired
     for pid in hired:
         reveal = game.state.reveal(1, pid)
@@ -219,7 +224,7 @@ def test_lowball_offers_are_always_declined(loaded: LoadedData) -> None:
     count = len(game.state.candidates)
     _offer_all(game, 0.84)
     result = game.turn()
-    assert [e.role for e in game.state.employments] == ["founder"]
+    assert [e.role for e in game.state.employments if e.company_id == 1] == ["founder"]
     declined = [i for i in result.log_items if i.template == "offer_declined"]
     assert len(declined) == count
     assert game.state.player.stage == 0
@@ -231,7 +236,7 @@ def test_recruiter_fee_on_hire(loaded: LoadedData) -> None:
     game.turn()
     _offer_all(game, 1.6)
     result = game.turn()
-    hires = [e for e in game.state.employments if e.role != "founder"]
+    hires = [e for e in game.state.employments if e.company_id == 1 and e.role != "founder"]
     assert hires
     fees = [e for e in result.ledger_entries if e.memo.startswith("Recruiter fee")]
     assert len(fees) == len(hires)
@@ -297,7 +302,9 @@ def test_payroll_posts_every_cost(loaded: LoadedData) -> None:
     game = Game(loaded, state)
     game.act(OpenSearch(1, "designer", "job_post"))
     result = game.turn()
-    (costs,) = [e for e in result.ledger_entries if e.memo.startswith("Monthly costs")]
+    (costs,) = [
+        e for e in result.ledger_entries if e.memo.startswith("Monthly costs") and e.company_id == 1
+    ]
     lines: dict[str, int] = {}
     for ln in costs.lines:  # 6900 carries two lines: tools and travel, and base overhead
         lines[ln.account] = lines.get(ln.account, 0) + ln.amount
@@ -330,7 +337,11 @@ def test_monthly_costs_project_phase_6(loaded: LoadedData) -> None:
         )
         if amount
     }
-    (costs,) = [e for e in game.turn().ledger_entries if e.memo.startswith("Monthly costs")]
+    (costs,) = [
+        e
+        for e in game.turn().ledger_entries
+        if e.memo.startswith("Monthly costs") and e.company_id == 1
+    ]
     assert projected == {ln.account: ln.amount for ln in costs.lines if ln.account != CASH}
     employment = game.state.employment_of(engineer.id)
     assert employment is not None
@@ -348,7 +359,9 @@ def test_notice_is_paid_then_ends(loaded: LoadedData) -> None:
     state = with_employment(state, replace(emp, status="notice", end_turn=1, end_reason="resigned"))
     game = Game(loaded, state)
     first = game.turn()  # turn 0: still on notice, paid
-    costs = next(e for e in first.ledger_entries if e.memo.startswith("Monthly costs"))
+    costs = next(
+        e for e in first.ledger_entries if e.memo.startswith("Monthly costs") and e.company_id == 1
+    )
     assert {ln.account for ln in costs.lines} >= {"6000_salaries"}
     assert first.snapshot.for_company(1).headcount == 2
     second = game.turn()  # turn 1: ends in phase 1

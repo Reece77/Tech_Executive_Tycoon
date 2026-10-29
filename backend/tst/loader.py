@@ -173,6 +173,22 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
             f"{BALANCE_FILE}: board.director_role {balance.board.director_role!r} "
             "is not in roles.yaml"
         )
+    rv = balance.rivals  # M5 (formulas.md 15)
+    roles = {r.key for r in data.roles}
+    bad_roles = sorted(set(rv.function_roles.values()) - roles)
+    if bad_roles:
+        raise DataLoadError(f"{BALANCE_FILE}: rivals.function_roles {bad_roles} not in roles.yaml")
+    cats = {c.key for c in data.categories}
+    if set(rv.function_mix) != cats:
+        raise DataLoadError(
+            f"{BALANCE_FILE}: rivals.function_mix must cover exactly {sorted(cats)}"
+        )
+    for inc in data.incumbents:
+        if inc.personality not in rv.weights:
+            raise DataLoadError(
+                f"{INCUMBENTS_FILE}: {inc.name!r} personality {inc.personality!r} is not one of "
+                f"{sorted(rv.weights)}"
+            )
     founder = balance.founder
     for bg in data.backgrounds:
         spent = sum(bg.default_allocation.values())
@@ -241,6 +257,7 @@ def load_all(path: Path) -> LoadedData:
             "backgrounds": backgrounds.backgrounds,
             "personality_presets": backgrounds.personality_presets,
             "names": names.names,
+            "startup_names": names.companies,
             "inbox_templates": inbox.templates,
             "segments": categories.segments,
             "categories": categories.categories,

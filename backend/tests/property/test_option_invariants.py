@@ -10,7 +10,7 @@ from dataclasses import replace
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from tests.helpers import fresh_game, make_person, with_employee
+from tests.helpers import fresh_game, last_hire, make_person, with_employee
 from tst.loader import LoadedData
 from tst.sim.finance.captable import fd_shares, unallocated
 from tst.sim.finance.options import grant_on_hire, settle_leavers, vest
@@ -47,7 +47,7 @@ def test_holdings_sum_to_fd(loaded: LoadedData, steps: list[tuple[str, int]]) ->
             person = make_person(loaded, next_pid)
             next_pid += 1
             state = with_employee(loaded, state, person, 9_000_000, equity_bp=n)
-            state = grant_on_hire(state, state.employments[-1])
+            state = grant_on_hire(state, last_hire(state))
         elif kind == "leave":
             staff = [e for e in state.employments if e.counts_as_staff and e.person_id != 1]
             if staff:

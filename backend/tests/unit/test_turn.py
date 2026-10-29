@@ -41,13 +41,13 @@ def make_state(n_companies: int = 2) -> GameState:
 
 
 def test_phase_6_posts_overhead_for_each_company_with_books() -> None:
-    """Non-player companies are incumbents with no ledger until M5 (ADR-0017)."""
+    """From M5 rivals keep books like the player (formulas.md 15.1)."""
     state = make_state(2)
     balances = {(1, CASH): 5_000_000, (2, CASH): 1_000_000}
     result = advance_turn(state, Decisions(), RngFactory(1), make_balance(), _BASE_DATA, balances)
 
-    assert [e.company_id for e in result.ledger_entries] == [1]
-    assert [s.company_id for s in result.snapshot.companies] == [1]
+    assert [e.company_id for e in result.ledger_entries] == [1, 2]
+    assert [s.company_id for s in result.snapshot.companies] == [1, 2]
     for entry in result.ledger_entries:
         assert entry.turn == 0
         assert {(ln.account, ln.amount) for ln in entry.lines} == {

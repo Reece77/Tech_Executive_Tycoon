@@ -65,6 +65,7 @@ test('(a) set up a game with a custom founder and mission', async ({ page }) => 
 });
 
 test('(b) job post, interview, offer at the ask, hire, payroll', async ({ page }) => {
+  test.setTimeout(60_000); // a batch of interviews, one round trip each; rivals made each slower (M5)
   await setupGame(page, { company: `Hiring ${Date.now()}`, seed: SEED });
   await page.keyboard.press('4');
   await expect(page.getByTestId('channel-job_post')).toHaveAttribute('aria-checked', 'true');

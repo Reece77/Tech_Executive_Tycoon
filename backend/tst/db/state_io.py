@@ -49,6 +49,8 @@ from tst.db.mappers import (
     product_to_row,
     reveal_from_rows,
     reveal_to_rows,
+    rival_from_row,
+    rival_to_row,
     round_nominee_row,
     search_from_row,
     search_to_row,
@@ -79,13 +81,18 @@ from tst.db.models import (
     PersonStateRow,
     PersonTagRevealRow,
     PersonTagRow,
+    PoachApproachRow,
     ProductRow,
     ProductSegmentRow,
+    RivalEffectRow,
+    RivalMoveRow,
     RoundNomineeRow,
     SafeRow,
     SaveMetaRow,
     SearchRow,
+    SegmentShareRow,
     TermSheetRow,
+    WorkforcePoolRow,
 )
 from tst.sim.errors import SaveNotFoundError
 from tst.sim.finance.models import (
@@ -97,9 +104,17 @@ from tst.sim.finance.models import (
     TermSheet,
 )
 from tst.sim.people.models import RevealState
+from tst.sim.rivals.models import (
+    PoachApproach,
+    RivalEffect,
+    RivalMove,
+    SegmentShare,
+    WorkforcePool,
+)
 from tst.sim.state import GameState
 
 META_ID = 1
+RIVAL_MOVE_MEMORY = 24  # months of rival moves loaded: news, cooldowns, stance (M5)
 STAFF_STATUSES = ("active", "notice")
 
 
@@ -169,19 +184,13 @@ def load_state(session: Session) -> GameState:
     def in_live(column: Any) -> Any:
         return column.in_(live_ids)
 
-    skills = _by_person(
-        session.scalars(select(PersonSkillRow).where(in_live(PersonSkillRow.person_id)))
-    )
+    skills = _by_person(_rows(session, PersonSkillRow, in_live(PersonSkillRow.person_id)))
     personality = _by_person(
-        session.scalars(select(PersonPersonalityRow).where(in_live(PersonPersonalityRow.person_id)))
+        _rows(session, PersonPersonalityRow, in_live(PersonPersonalityRow.person_id))
     )
-    hidden = _by_person(
-        session.scalars(select(PersonHiddenRow).where(in_live(PersonHiddenRow.person_id)))
-    )
-    interests = _by_person(
-        session.scalars(select(PersonInterestRow).where(in_live(PersonInterestRow.person_id)))
-    )
-    tags = _by_person(session.scalars(select(PersonTagRow).where(in_live(PersonTagRow.person_id))))
+    hidden = _by_person(_rows(session, PersonHiddenRow, in_live(PersonHiddenRow.person_id)))
+    interests = _by_person(_rows(session, PersonInterestRow, in_live(PersonInterestRow.person_id)))
+    tags = _by_person(_rows(session, PersonTagRow, in_live(PersonTagRow.person_id)))
     people = tuple(
         person_from_rows(
             row,
@@ -200,7 +209,7 @@ def load_state(session: Session) -> GameState:
         return (row.observer_company_id, row.person_id)
 
     records: dict[tuple[int, int], list[PersonRevealRow]] = defaultdict(list)
-    for r in session.scalars(select(PersonRevealRow).where(in_live(PersonRevealRow.person_id))):
+    for r in _rows(session, PersonRevealRow, in_live(PersonRevealRow.person_id)):
         records[key(r)].append(r)
     profiles = {
         key(r): r
@@ -277,8 +286,55 @@ def load_state(session: Session) -> GameState:
         ),
         term_sheets=_all(session, TermSheet, TermSheetRow),
         seats=seats,
+        pools=tuple(
+            rival_from_row(WorkforcePool, r)
+            for r in session.scalars(
+                select(WorkforcePoolRow).order_by(
+                    WorkforcePoolRow.company_id, WorkforcePoolRow.function
+                )
+            )
+        ),
+        rival_effects=tuple(
+            rival_from_row(RivalEffect, r)
+            for r in session.scalars(
+                select(RivalEffectRow)
+                .where(RivalEffectRow.end_turn >= meta.current_turn - 1)
+                .order_by(RivalEffectRow.id)
+            )
+        ),
+        rival_moves=tuple(
+            rival_from_row(RivalMove, r)
+            for r in session.scalars(
+                select(RivalMoveRow)
+                .where(RivalMoveRow.turn >= meta.current_turn - RIVAL_MOVE_MEMORY)
+                .order_by(RivalMoveRow.id)
+            )
+        ),
+        approaches=tuple(
+            rival_from_row(PoachApproach, r)
+            for r in session.scalars(
+                select(PoachApproachRow)
+                .where(PoachApproachRow.status.in_(("pending", "accepted")))
+                .order_by(PoachApproachRow.id)
+            )
+        ),
+        segment_shares=tuple(
+            rival_from_row(SegmentShare, r)
+            for r in session.scalars(
+                select(SegmentShareRow)
+                .where(SegmentShareRow.product_id.in_(product_ids))
+                .order_by(SegmentShareRow.product_id, SegmentShareRow.segment)
+            )
+        ),
         next_ids=next_ids_from_meta(meta),
     )
+
+
+def _rows(session: Session, model: Any, where: Any) -> list[Any]:
+    """Plain rows (column attributes only) for a large child table: building ORM objects
+    for every skill and knowledge record was most of a load's time once rivals had people
+    (M5)."""
+    return list(session.execute(select(model.__table__).where(where)).all())
 
 
 def _all[T](session: Session, cls: type[T], row: Any) -> tuple[T, ...]:
@@ -343,6 +399,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
 
     old_people = {p.id: p for p in old.people}
     skill_updates: list[dict[str, Any]] = []
+    asks: list[dict[str, Any]] = []  # a poached key person's new ask (M5, 15.6)
     added = [p for p in new.people if p.id not in old_people]
     rows = [person_to_rows(p) for p in added]
     session.add_all(r[0] for r in rows)  # person rows first: children reference them
@@ -350,6 +407,13 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     session.add_all(child for r in rows for child in r[1:])
     for person in new.people:
         before = old_people.get(person.id)
+        if (
+            before is not None
+            and before.salary_expectation_cents != person.salary_expectation_cents
+        ):
+            asks.append(
+                {"id": person.id, "salary_expectation_cents": person.salary_expectation_cents}
+            )
         if before is not None and before != person:
             old_skills = before.skills.as_dict()
             skill_updates += [
@@ -360,6 +424,8 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     session.flush()
     if skill_updates:
         session.execute(update(PersonSkillRow), skill_updates)
+    if asks:
+        session.execute(update(PersonRow), asks)
 
     # Units before employments and plans, which reference them; plans before offers.
     for unit in _changed(old.units, new.units, lambda u: u.id):
@@ -402,6 +468,17 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         session.merge(seat_history_row(seat))
     for rnd in _changed(old.rounds, new.rounds, lambda r: r.id):
         session.merge(round_nominee_row(rnd))
+
+    # Rivals (M5)
+    for rival_items in (
+        _changed(old.pools, new.pools, lambda p: (p.company_id, p.function)),
+        _changed(old.rival_effects, new.rival_effects, lambda e: e.id),
+        _changed(old.rival_moves, new.rival_moves, lambda m: m.id),
+        _changed(old.approaches, new.approaches, lambda a: a.id),
+        _changed(old.segment_shares, new.segment_shares, lambda s: (s.product_id, s.segment)),
+    ):
+        for rival_item in rival_items:
+            session.merge(rival_to_row(rival_item))
 
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)

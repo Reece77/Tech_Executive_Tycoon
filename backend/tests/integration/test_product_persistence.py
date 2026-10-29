@@ -42,7 +42,7 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
     seg = state.product_segment(sales_cloud.id, "smb")
     assert seg is not None and seg.customers == pytest.approx(40_000)  # 10% (tuned)
     assert state.next_ids.product == 13
-    assert state.ledger_companies() == (state.player,)
+    assert state.ledger_companies() == state.companies  # rivals keep books from M5 (15.1)
 
 
 def test_products_and_assignments_round_trip(tmp_path: Path, loaded: LoadedData) -> None:

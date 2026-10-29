@@ -141,8 +141,8 @@ def test_new_game_creates_founder_employment_and_knowledge(loaded: LoadedData) -
         balance=loaded.balance,
         data=loaded.game_data,
     )
-    (person,) = state.people
-    (employment,) = state.employments
+    (employment,) = [e for e in state.employments if e.company_id == state.player.id]
+    person = state.person(employment.person_id)
     assert person.is_founder
     assert (employment.role, employment.level, employment.salary_cents) == ("founder", "exec", 0)
     assert (employment.equity_bp, employment.start_turn, employment.status) == (0, 0, "active")
