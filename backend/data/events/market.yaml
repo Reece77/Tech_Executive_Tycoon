@@ -1,0 +1,286 @@
+# Market event templates (docs/formulas.md 16.4). Conventions: see personnel.yaml.
+templates:
+  - id: launch_press
+    category: market
+    trigger: product_launched
+    severities: [minor, major]
+    weight: 1.0
+    title: "A reporter wants to write about {product}"
+    body: >-
+      A trade reporter has spotted the {product} launch and wants an interview this week. The
+      piece could be generous or could be a footnote; it depends on how much time you give it.
+    choices:
+      - key: A
+        label: "A short email interview"
+        effects:
+          - { type: brand_delta, target: product, share: 0.3 }
+      - key: B
+        label: "Clear your afternoon and do it properly"
+        effects:
+          - { type: brand_delta, target: product, share: 0.8 }
+          - { type: energy_delta, target: founder, share: -0.4 }
+      - key: C
+        label: "Decline; let the product speak"
+        effects: []
+
+  - id: launch_early_feedback
+    category: market
+    trigger: product_launched
+    severities: [minor]
+    weight: 0.9
+    title: "The first {product} users have opinions"
+    body: >-
+      The first week of {product} brought a flood of feedback: people like the core idea and
+      are confused by almost everything around it. The team wants to drop the plan and fix
+      the onboarding.
+    choices:
+      - key: A
+        label: "Fix the top three complaints, then resume"
+        effects:
+          - { type: quality_delta, target: product, share: 0.5 }
+      - key: B
+        label: "Stick to the plan"
+        effects:
+          - { type: customers_pct, target: product, share: -0.4 }
+      - key: C
+        label: "Offer launch discounts to the unhappy ones"
+        effects:
+          - { type: customers_pct, target: product, share: 0.5 }
+          - { type: cash_delta, target: company, share: -0.2 }
+
+  - id: launch_hacker_news
+    category: market
+    trigger: product_launched
+    severities: [minor, major]
+    weight: 0.7
+    title: "{product} is on the front page"
+    body: >-
+      Someone posted {product} to a popular forum and it climbed to the front page. The
+      comments are a mix of praise, nitpicks and one long thread about your pricing.
+    choices:
+      - key: A
+        label: "Answer questions in the thread yourself"
+        effects:
+          - { type: brand_delta, target: product, share: 0.6 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Let the team handle it"
+        effects:
+          - { type: brand_delta, target: product, share: 0.3 }
+          - { type: morale_delta, target: company, share: 0.2 }
+
+  - id: milestone_customers
+    category: market
+    trigger: customer_milestone
+    severities: [minor]
+    weight: 1.0
+    title: "{product} passes a milestone"
+    body: >-
+      {product} just passed a round number of customers. Someone has ordered a cake. The sales
+      team would like to tell the world; marketing would like a budget to do it.
+    choices:
+      - key: A
+        label: "Cake for everyone, nothing more"
+        effects:
+          - { type: morale_delta, target: company, share: 0.3 }
+      - key: B
+        label: "Fund a small announcement campaign"
+        effects:
+          - { type: brand_delta, target: product, share: 0.6 }
+          - { type: cash_delta, target: company, share: -0.2 }
+
+  - id: milestone_case_study
+    category: market
+    trigger: customer_milestone
+    severities: [minor]
+    weight: 0.8
+    title: "A customer offers a case study"
+    body: >-
+      One of {product}'s customers loves it enough to offer a public case study, in exchange
+      for a few months of free service.
+    choices:
+      - key: A
+        label: "Accept the trade"
+        effects:
+          - { type: brand_delta, target: product, share: 0.7 }
+          - { type: cash_delta, target: company, share: -0.1 }
+      - key: B
+        label: "Politely decline"
+        effects: []
+
+  - id: key_customer_1
+    category: market
+    trigger: customer_milestone
+    severities: [minor, major]
+    weight: 0.6
+    storyline:
+      key: key_customer
+      title: "The big account"
+      step: 1
+      next_after_turns: 2
+      next_template: key_customer_2
+      summary: "A large customer of {product} is asking for special treatment in exchange for a bigger contract."
+    title: "A big customer wants a custom feature"
+    body: >-
+      One of {product}'s largest customers asks for a feature nobody else needs. In exchange
+      they hint at a much larger contract next year. The engineers are not enthusiastic.
+    choices:
+      - key: A
+        label: "Promise to look at it next quarter"
+        effects:
+          - { type: customers_pct, target: product, share: -0.2 }
+      - key: B
+        label: "Build it now"
+        effects:
+          - { type: customers_pct, target: product, share: 0.4 }
+          - { type: quality_delta, target: product, share: -0.3 }
+      - key: C
+        label: "Say no; we build one product"
+        effects:
+          - { type: customers_pct, target: product, share: -0.5 }
+          - { type: morale_delta, target: company, share: 0.2 }
+
+  - id: key_customer_2
+    category: market
+    trigger: storyline
+    severities: [major]
+    weight: 1.0
+    storyline:
+      key: key_customer
+      step: 2
+      next_after_turns: 2
+      next_template: key_customer_3
+      summary: "The big customer is back, asking for a dedicated support line and a discount."
+    title: "The big customer wants a discount, too"
+    body: >-
+      The large account is back. They want a dedicated support contact and a discount on
+      renewal, and their procurement lead mentions, in passing, that a competitor has called.
+    choices:
+      - key: A
+        label: "Give a modest discount"
+        effects:
+          - { type: cash_delta, target: company, share: -0.3 }
+          - { type: customers_pct, target: product, share: 0.2 }
+      - key: B
+        label: "Dedicated support, no discount"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.4 }
+          - { type: customers_pct, target: product, share: 0.3 }
+      - key: C
+        label: "Hold the line on price and terms"
+        effects:
+          - { type: customers_pct, target: product, share: -0.6 }
+
+  - id: key_customer_3
+    category: market
+    trigger: storyline
+    severities: [major]
+    weight: 1.0
+    storyline:
+      key: key_customer
+      step: 3
+      summary: "The big customer's renewal decided whether {product} serves one master or many."
+    title: "Renewal time for the big account"
+    body: >-
+      The large customer's renewal is on the table. They will sign a multi-year deal if
+      {product} commits to their roadmap for the next year. Your other customers would not
+      love that.
+    choices:
+      - key: A
+        label: "A shorter deal on standard terms"
+        effects:
+          - { type: customers_pct, target: product, share: 0.2 }
+      - key: B
+        label: "Sign the multi-year deal"
+        effects:
+          - { type: cash_delta, target: company, share: 0.4 }
+          - { type: quality_delta, target: product, share: -0.4 }
+      - key: C
+        label: "Walk away"
+        effects:
+          - { type: customers_pct, target: product, share: -0.7 }
+          - { type: morale_delta, target: company, share: 0.3 }
+
+  - id: price_war_customers_ask
+    category: market
+    trigger: price_war
+    severities: [minor, major]
+    weight: 1.0
+    title: "Customers have noticed {rival}'s new price"
+    body: >-
+      {rival} cut its price in {segment}, and your account managers are fielding the same
+      question all week: why does {product} cost more?
+    choices:
+      - key: A
+        label: "Arm the team with a comparison sheet"
+        effects:
+          - { type: customers_pct, target: product, share: -0.3 }
+      - key: B
+        label: "Offer loyalty discounts to existing customers"
+        effects:
+          - { type: cash_delta, target: company, share: -0.3 }
+          - { type: customers_pct, target: product, share: 0.3 }
+      - key: C
+        label: "Double down on quality messaging"
+        effects:
+          - { type: brand_delta, target: product, share: 0.4 }
+          - { type: customers_pct, target: product, share: -0.4 }
+
+  - id: quiet_analyst_call
+    category: market
+    trigger: quiet_month
+    severities: [minor]
+    weight: 1.0
+    title: "An analyst wants a briefing"
+    body: >-
+      An industry analyst firm would like a briefing on {company}. They are writing a market
+      overview, and companies that brief them tend to be described more kindly.
+    choices:
+      - key: A
+        label: "Send the deck"
+        effects:
+          - { type: brand_delta, target: product, share: 0.2 }
+      - key: B
+        label: "Brief them in person"
+        effects:
+          - { type: brand_delta, target: product, share: 0.6 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+
+  - id: quiet_meetup
+    category: market
+    trigger: quiet_month
+    severities: [minor]
+    weight: 0.9
+    title: "Host the local meetup?"
+    body: >-
+      The organisers of a local tech meetup are looking for a venue next month. Hosting means
+      pizza, a few late nights, and a room full of people who might want to work for you.
+    choices:
+      - key: A
+        label: "Host it"
+        effects:
+          - { type: morale_delta, target: company, share: 0.3 }
+          - { type: cash_delta, target: company, share: -0.1 }
+      - key: B
+        label: "Not this time"
+        effects: []
+
+  - id: quiet_award
+    category: market
+    trigger: quiet_month
+    severities: [minor]
+    weight: 0.7
+    title: "{company} is shortlisted for an award"
+    body: >-
+      {company} has been shortlisted for a regional "startup to watch" award. The ceremony is
+      a black-tie dinner; the table costs money, and winning would be nice to put on the site.
+    choices:
+      - key: A
+        label: "Buy a table and bring the team"
+        effects:
+          - { type: morale_delta, target: company, share: 0.4 }
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Send a short acceptance video, just in case"
+        effects:
+          - { type: brand_delta, target: product, share: 0.2 }

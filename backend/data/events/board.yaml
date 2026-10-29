@@ -1,0 +1,146 @@
+# Board and investor event templates (docs/formulas.md 16.4). Conventions: see personnel.yaml.
+templates:
+  - id: board_unhappy_call
+    category: board
+    trigger: board_unhappy
+    severities: [minor, major]
+    weight: 1.0
+    title: "A director calls between meetings"
+    body: >-
+      One of your directors calls on a Sunday evening. Nothing is wrong, exactly, but the
+      board would like to see more of a plan, and soon.
+    choices:
+      - key: A
+        label: "Send a written update this week"
+        effects:
+          - { type: board_confidence, target: board, share: 0.4 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Take the call on the chin, change nothing"
+        effects:
+          - { type: board_confidence, target: board, share: -0.3 }
+
+  - id: board_unhappy_advisor
+    category: board
+    trigger: board_unhappy
+    severities: [minor, major]
+    weight: 0.8
+    title: "The board suggests an advisor"
+    body: >-
+      The board would like you to work with an experienced operator they trust, a few hours
+      a month. It is framed as help. It is also, clearly, a message.
+    choices:
+      - key: A
+        label: "Accept the advisor"
+        effects:
+          - { type: board_confidence, target: board, share: 0.5 }
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Thank them and decline"
+        effects:
+          - { type: board_confidence, target: board, share: -0.5 }
+          - { type: morale_delta, target: company, share: 0.1 }
+
+  - id: investor_say_1
+    category: board
+    trigger: funding_closed
+    severities: [minor, major]
+    weight: 0.7
+    storyline:
+      key: investor_say
+      title: "An investor wants a say"
+      step: 1
+      next_after_turns: 2
+      next_template: investor_say_2
+      summary: "A new investor in {company} has opinions about how it should be run and wants to share them."
+    title: "Your new investor has ideas"
+    body: >-
+      Your newest investor sends a long email the week the round closes: a list of hires they
+      think you should make and a reporting format they would like you to adopt.
+    choices:
+      - key: A
+        label: "Adopt the reporting format"
+        effects:
+          - { type: board_confidence, target: board, share: 0.3 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Thank them warmly; change nothing"
+        effects:
+          - { type: board_confidence, target: board, share: -0.2 }
+
+  - id: investor_say_2
+    category: board
+    trigger: storyline
+    severities: [major]
+    weight: 1.0
+    storyline:
+      key: investor_say
+      step: 2
+      next_after_turns: 3
+      next_template: investor_say_3
+      summary: "The investor has started contacting {company}'s team directly."
+    title: "The investor calls your team directly"
+    body: >-
+      Two of your managers mention that the investor has been calling them directly to ask
+      how things are going. They didn't know whether to say no.
+    choices:
+      - key: A
+        label: "Ask the investor to go through you"
+        effects:
+          - { type: board_confidence, target: board, share: -0.3 }
+          - { type: morale_delta, target: company, share: 0.3 }
+      - key: B
+        label: "Let it happen; transparency is fine"
+        effects:
+          - { type: morale_delta, target: company, share: -0.3 }
+          - { type: board_confidence, target: board, share: 0.3 }
+
+  - id: investor_say_3
+    category: board
+    trigger: storyline
+    severities: [major]
+    weight: 1.0
+    storyline:
+      key: investor_say
+      step: 3
+      summary: "The investor pushed for a formal role in decisions at {company}; the answer set the tone with the board."
+    title: "The investor wants a formal role"
+    body: >-
+      The investor proposes a monthly "operating review" in which they would sign off on
+      major decisions. Other directors have been copied on the email and are waiting to see
+      what you say.
+    choices:
+      - key: A
+        label: "Offer a quarterly review instead"
+        effects:
+          - { type: board_confidence, target: board, share: 0.2 }
+      - key: B
+        label: "Agree to the monthly review"
+        effects:
+          - { type: board_confidence, target: board, share: 0.6 }
+          - { type: energy_delta, target: founder, share: -0.6 }
+      - key: C
+        label: "Decline firmly"
+        effects:
+          - { type: board_confidence, target: board, share: -0.6 }
+          - { type: morale_delta, target: company, share: 0.2 }
+
+  - id: funding_board_dinner
+    category: board
+    trigger: funding_closed
+    severities: [minor]
+    weight: 0.6
+    title: "Dinner with the new board"
+    body: >-
+      With the round closed, the board would like a dinner to meet the leadership team and
+      talk about the next eighteen months.
+    choices:
+      - key: A
+        label: "Bring the leadership team"
+        effects:
+          - { type: board_confidence, target: board, share: 0.4 }
+          - { type: morale_delta, target: company, share: 0.1 }
+      - key: B
+        label: "Just you and the board"
+        effects:
+          - { type: board_confidence, target: board, share: 0.2 }

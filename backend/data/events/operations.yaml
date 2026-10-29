@@ -1,0 +1,220 @@
+# Operations event templates (docs/formulas.md 16.4). Conventions: see personnel.yaml.
+templates:
+  - id: slipping_tech_debt
+    category: operations
+    trigger: product_slipping
+    severities: [minor, major]
+    weight: 1.0
+    title: "{product} is creaking"
+    body: >-
+      Small bugs in {product} are taking longer to fix each month, and the engineers have
+      started calling one part of the code "the swamp". They want a month to clean it up.
+    choices:
+      - key: A
+        label: "Give them two weeks"
+        effects:
+          - { type: quality_delta, target: product, share: 0.4 }
+      - key: B
+        label: "Give them the full month"
+        effects:
+          - { type: quality_delta, target: product, share: 0.8 }
+          - { type: customers_pct, target: product, share: -0.2 }
+      - key: C
+        label: "Not now; customers want features"
+        effects:
+          - { type: quality_delta, target: product, share: -0.4 }
+          - { type: morale_delta, target: company, share: -0.2 }
+
+  - id: slipping_outage
+    category: operations
+    trigger: product_slipping
+    severities: [major]
+    weight: 0.8
+    title: "{product} was down for six hours"
+    body: >-
+      {product} went down on a weekday morning and stayed down until mid-afternoon. Support
+      is buried, and customers want to know what happened and whether it will happen again.
+    choices:
+      - key: A
+        label: "Publish an honest post-mortem"
+        effects:
+          - { type: brand_delta, target: product, share: 0.2 }
+          - { type: customers_pct, target: product, share: -0.2 }
+      - key: B
+        label: "Credit every affected customer"
+        effects:
+          - { type: cash_delta, target: company, share: -0.4 }
+          - { type: customers_pct, target: product, share: 0.1 }
+      - key: C
+        label: "Say as little as possible"
+        effects:
+          - { type: brand_delta, target: product, share: -0.6 }
+          - { type: customers_pct, target: product, share: -0.4 }
+
+  - id: slipping_security_report
+    category: operations
+    trigger: product_slipping
+    severities: [minor, major]
+    weight: 0.7
+    title: "A researcher found a hole in {product}"
+    body: >-
+      A security researcher has reported a vulnerability in {product}, responsibly and
+      privately. They would like it fixed within thirty days and would appreciate a bounty.
+    choices:
+      - key: A
+        label: "Fix it and pay a modest bounty"
+        effects:
+          - { type: cash_delta, target: company, share: -0.1 }
+          - { type: quality_delta, target: product, share: 0.3 }
+      - key: B
+        label: "Fix it, thank them, no bounty"
+        effects:
+          - { type: quality_delta, target: product, share: 0.3 }
+          - { type: brand_delta, target: product, share: -0.2 }
+
+  - id: launch_night_outage
+    category: operations
+    trigger: product_launched
+    severities: [minor, major]
+    weight: 0.6
+    title: "Launch traffic took {product} down"
+    body: >-
+      {product} launched, the traffic arrived, and the servers did not cope. The site was
+      back within the hour, but not before the screenshots started circulating.
+    choices:
+      - key: A
+        label: "Over-provision for a month"
+        effects:
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Ride it out"
+        effects:
+          - { type: brand_delta, target: product, share: -0.4 }
+
+  - id: unhappy_unit_process
+    category: operations
+    trigger: unhappy_unit
+    severities: [minor]
+    weight: 0.8
+    title: "{unit} asks for fewer meetings"
+    body: >-
+      {unit} has sent a polite, carefully worded note: they spend more time in meetings than
+      doing the work, and they would like permission to cancel most of them.
+    choices:
+      - key: A
+        label: "Approve a meeting-free week each month"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.5 }
+      - key: B
+        label: "Ask them to propose which to cut"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.3 }
+          - { type: energy_delta, target: founder, share: -0.2 }
+
+  - id: tag_noticed_process
+    category: operations
+    trigger: tag_noticed
+    severities: [minor]
+    weight: 0.7
+    title: "{person} changes how the team works"
+    body: >-
+      Now that you know {person} better, their habits make sense, and they are spreading:
+      half the team has adopted {person}'s way of planning work, for better or worse.
+    choices:
+      - key: A
+        label: "Let it spread"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.2 }
+      - key: B
+        label: "Write it down as the official process"
+        effects:
+          - { type: quality_delta, target: product, share: 0.3 }
+          - { type: energy_delta, target: founder, share: -0.2 }
+
+  - id: support_backlog
+    category: operations
+    trigger: customer_milestone
+    severities: [minor, major]
+    weight: 0.8
+    title: "Support can't keep up"
+    body: >-
+      More customers means more questions, and the support inbox for {product} now holds
+      several days of unanswered tickets. The engineers are being pulled in to help.
+    choices:
+      - key: A
+        label: "Engineers rotate on support for a month"
+        effects:
+          - { type: quality_delta, target: product, share: -0.2 }
+          - { type: customers_pct, target: product, share: 0.2 }
+      - key: B
+        label: "Outsource first-line support"
+        effects:
+          - { type: cash_delta, target: company, share: -0.3 }
+      - key: C
+        label: "Let the queue grow"
+        effects:
+          - { type: customers_pct, target: product, share: -0.5 }
+
+  - id: quiet_office_lease
+    category: operations
+    trigger: quiet_month
+    severities: [minor]
+    weight: 0.8
+    title: "The landlord has news"
+    body: >-
+      The building's landlord writes to say that the lease renews in a few months, at a
+      higher rate, unless you commit to a longer term now.
+    choices:
+      - key: A
+        label: "Commit to the longer lease"
+        effects:
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Look around for somewhere cheaper"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.4 }
+          - { type: morale_delta, target: company, share: -0.1 }
+
+  - id: quiet_tooling
+    category: operations
+    trigger: quiet_month
+    severities: [minor]
+    weight: 0.9
+    title: "The build takes forty minutes"
+    body: >-
+      The engineers have measured it: the build now takes forty minutes, and everyone waits
+      for it several times a day. One of them has a plan to fix it in two weeks.
+    choices:
+      - key: A
+        label: "Approve the two weeks"
+        effects:
+          - { type: quality_delta, target: product, share: 0.3 }
+          - { type: morale_delta, target: company, share: 0.2 }
+      - key: B
+        label: "Buy faster machines instead"
+        effects:
+          - { type: cash_delta, target: company, share: -0.2 }
+          - { type: morale_delta, target: company, share: 0.3 }
+      - key: C
+        label: "Live with it"
+        effects:
+          - { type: morale_delta, target: company, share: -0.2 }
+
+  - id: quiet_laptop_theft
+    category: operations
+    trigger: quiet_month
+    severities: [minor]
+    weight: 0.6
+    title: "A laptop went missing"
+    body: >-
+      A company laptop was stolen from a car overnight. The disk was encrypted, probably. IT
+      would like to use it as a reason to tighten everyone's security settings.
+    choices:
+      - key: A
+        label: "Tighten the settings"
+        effects:
+          - { type: morale_delta, target: company, share: -0.1 }
+      - key: B
+        label: "Replace the laptop and move on"
+        effects:
+          - { type: cash_delta, target: company, share: -0.1 }

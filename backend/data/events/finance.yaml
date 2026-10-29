@@ -1,0 +1,182 @@
+# Finance event templates (docs/formulas.md 16.4). Conventions: see personnel.yaml. A
+# critical template names its `follow_up`, which arrives the month after the player answers
+# with a choice that carries a follow_up effect (ADR-0006, amended).
+templates:
+  - id: runway_trim
+    category: finance
+    trigger: runway_short
+    severities: [minor, major]
+    weight: 1.0
+    title: "{months} months of runway"
+    body: >-
+      The finance spreadsheet says {company} has about {months} months of cash at the current
+      burn. Nobody outside the leadership knows yet, but people can read the mood in the room.
+    choices:
+      - key: A
+        label: "Freeze discretionary spending"
+        effects:
+          - { type: cash_delta, target: company, share: 0.3 }
+          - { type: morale_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Tell the whole team the truth"
+        effects:
+          - { type: morale_delta, target: company, share: -0.4 }
+          - { type: board_confidence, target: board, share: 0.3 }
+      - key: C
+        label: "Keep it to yourself and push sales"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.5 }
+
+  - id: runway_vendor_terms
+    category: finance
+    trigger: runway_short
+    severities: [minor, major]
+    weight: 0.8
+    title: "Could the vendors wait?"
+    body: >-
+      Your largest suppliers might agree to longer payment terms if you ask nicely. Asking
+      means admitting that money is tight, and the startup world is small.
+    choices:
+      - key: A
+        label: "Ask the two biggest vendors"
+        effects:
+          - { type: cash_delta, target: company, share: 0.4 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Don't ask"
+        effects: []
+
+  - id: runway_payroll_crunch
+    category: finance
+    trigger: runway_short
+    severities: [critical]
+    weight: 1.0
+    follow_up: runway_aftermath
+    title: "Payroll is at risk"
+    body: >-
+      At the current burn, {company} has under three months of cash, and the next payroll
+      will leave the account close to empty. The team does not know how close it is. You need
+      to decide what to do before anyone else does it for you.
+    choices:
+      - key: A
+        label: "Founders take no salary; everyone else is paid"
+        effects:
+          - { type: cash_delta, target: company, share: 0.3 }
+          - { type: board_confidence, target: board, share: 0.3 }
+          - { type: follow_up }
+      - key: B
+        label: "Ask the team to defer part of their pay"
+        effects:
+          - { type: cash_delta, target: company, share: 0.5 }
+          - { type: morale_delta, target: company, share: -0.6 }
+          - { type: follow_up }
+      - key: C
+        label: "Call the investors for an emergency bridge"
+        effects:
+          - { type: board_confidence, target: board, share: -0.5 }
+          - { type: energy_delta, target: founder, share: -0.6 }
+          - { type: follow_up }
+
+  - id: runway_aftermath
+    category: finance
+    trigger: follow_up
+    severities: [major]
+    weight: 1.0
+    title: "The morning after the payroll scare"
+    body: >-
+      Last month's decision has gone around the company. People are asking each other, quietly,
+      whether {company} is going to make it. A few of them have asked you directly.
+    choices:
+      - key: A
+        label: "Share a written plan to break even"
+        effects:
+          - { type: morale_delta, target: company, share: 0.4 }
+          - { type: energy_delta, target: founder, share: -0.4 }
+      - key: B
+        label: "Hold an open all-hands"
+        effects:
+          - { type: morale_delta, target: company, share: 0.6 }
+          - { type: board_confidence, target: board, share: -0.2 }
+      - key: C
+        label: "Keep heads down and work"
+        effects:
+          - { type: morale_delta, target: company, share: -0.3 }
+
+  - id: funding_party
+    category: finance
+    trigger: funding_closed
+    severities: [minor]
+    weight: 1.0
+    title: "The money is in the bank"
+    body: >-
+      The round closed and the wire arrived this morning. The team would like to celebrate;
+      a couple of people have suggested something more lavish than usual.
+    choices:
+      - key: A
+        label: "Drinks after work"
+        effects:
+          - { type: morale_delta, target: company, share: 0.4 }
+      - key: B
+        label: "A proper party"
+        effects:
+          - { type: morale_delta, target: company, share: 0.8 }
+          - { type: cash_delta, target: company, share: -0.2 }
+
+  - id: funding_spending_pressure
+    category: finance
+    trigger: funding_closed
+    severities: [minor, major]
+    weight: 0.8
+    title: "Everyone has a plan for the new money"
+    body: >-
+      Within a day of the round closing, three different people have sent you plans to spend
+      a large part of it. Each plan is sensible on its own.
+    choices:
+      - key: A
+        label: "Stick to the budget the round was raised on"
+        effects:
+          - { type: board_confidence, target: board, share: 0.3 }
+          - { type: morale_delta, target: company, share: -0.1 }
+      - key: B
+        label: "Fund the best of the three"
+        effects:
+          - { type: cash_delta, target: company, share: -0.3 }
+          - { type: morale_delta, target: company, share: 0.3 }
+
+  - id: quiet_tax_credit
+    category: finance
+    trigger: quiet_month
+    severities: [minor]
+    weight: 0.8
+    title: "An R&D tax credit, possibly"
+    body: >-
+      Your accountant thinks {company} might qualify for a research tax credit. Claiming it
+      means a few days of paperwork and an adviser's fee.
+    choices:
+      - key: A
+        label: "Claim it"
+        effects:
+          - { type: cash_delta, target: company, share: 0.5 }
+          - { type: energy_delta, target: founder, share: -0.4 }
+      - key: B
+        label: "Not worth the hassle"
+        effects: []
+
+  - id: quiet_audit
+    category: finance
+    trigger: quiet_month
+    severities: [minor]
+    weight: 0.6
+    title: "The bank wants an audit"
+    body: >-
+      Your bank would like audited accounts this year. It isn't required yet, but it would
+      make the next fundraise smoother.
+    choices:
+      - key: A
+        label: "Do it"
+        effects:
+          - { type: cash_delta, target: company, share: -0.2 }
+          - { type: board_confidence, target: board, share: 0.3 }
+      - key: B
+        label: "Next year"
+        effects: []

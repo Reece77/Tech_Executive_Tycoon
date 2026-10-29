@@ -1,0 +1,549 @@
+# Personnel event templates (docs/formulas.md 16.4): the offline mode and the LLM fallback.
+# Effects give `share`: the fraction of the severity's cap (16.3); negative is a loss or a
+# cost, and cash gains reach at most half the cost cap. Targets name the event's eligible
+# list: person, other (a pair's second person), pair, unit, company, product, founder, board.
+# Placeholders: {person} {other} {unit} {product} {segment} {rival} {amount} {months}
+# {founder} {company}. Tone: grounded realism (ADR-0011). The first choice is what happens
+# when a minor or major event is left unanswered at Continue.
+templates:
+  - id: low_morale_checkin
+    category: personnel
+    trigger: low_morale
+    severities: [minor, major]
+    weight: 1.0
+    title: "{person} has gone quiet"
+    body: >-
+      {person} used to be first into every design review. Lately the camera stays off, the
+      replies are one line long, and the team has noticed. Nobody has complained, exactly,
+      but a manager mentions that {person} turned down a stretch project without a reason.
+    choices:
+      - key: A
+        label: "Book a long one-to-one and listen"
+        effects:
+          - { type: morale_delta, target: person, share: 0.5 }
+          - { type: energy_delta, target: founder, share: -0.4 }
+      - key: B
+        label: "Give {person} a week off, paid"
+        effects:
+          - { type: morale_delta, target: person, share: 0.8 }
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: C
+        label: "Leave it; people have off months"
+        effects:
+          - { type: morale_delta, target: person, share: -0.3 }
+
+  - id: low_morale_job_search
+    category: personnel
+    trigger: low_morale
+    severities: [minor, major]
+    weight: 0.8
+    title: "{person} is taking calls"
+    body: >-
+      A recruiter you know mentions, a little too casually, that {person} has been "open to
+      conversations". Nothing has been said to you. The work is still fine, but the spark has
+      gone out of it, and the people around {person} can tell.
+    choices:
+      - key: A
+        label: "Ask {person} what would make them stay"
+        effects:
+          - { type: morale_delta, target: person, share: 0.4 }
+          - { type: reveal_tag, target: person }
+      - key: B
+        label: "Offer a retention raise before they ask"
+        effects:
+          - { type: salary_change, target: person, share: 0.6 }
+          - { type: morale_delta, target: person, share: 0.7 }
+      - key: C
+        label: "Start quietly planning for their exit"
+        effects:
+          - { type: morale_delta, target: person, share: -0.5 }
+
+  - id: low_morale_bad_review
+    category: personnel
+    trigger: low_morale
+    severities: [major]
+    weight: 0.6
+    title: "An anonymous review mentions {person}'s team"
+    body: >-
+      A new review on a jobs site describes a "joyless" team with "no recognition and no
+      direction". It names nobody, but the details point at the corner of the company where
+      {person} works, and {person} has been unhappy for weeks.
+    choices:
+      - key: A
+        label: "Talk to {person} privately first"
+        effects:
+          - { type: morale_delta, target: person, share: 0.5 }
+      - key: B
+        label: "Hold an open Q&A with the whole company"
+        effects:
+          - { type: morale_delta, target: company, share: 0.3 }
+          - { type: energy_delta, target: founder, share: -0.5 }
+      - key: C
+        label: "Ignore it; reviews are noise"
+        effects:
+          - { type: morale_delta, target: person, share: -0.4 }
+          - { type: morale_delta, target: company, share: -0.2 }
+
+  - id: underpaid_market_data
+    category: personnel
+    trigger: underpaid
+    severities: [minor, major]
+    weight: 1.0
+    title: "{person} has seen the salary survey"
+    body: >-
+      {person} forwards you a salary survey without comment. The highlighted row is their own
+      role and level, and the median is comfortably above what you pay. The email ends:
+      "Could we talk about this at some point?"
+    choices:
+      - key: A
+        label: "Promise a review next quarter"
+        effects:
+          - { type: morale_delta, target: person, share: -0.2 }
+      - key: B
+        label: "Give a market adjustment now"
+        effects:
+          - { type: salary_change, target: person, share: 0.8 }
+          - { type: morale_delta, target: person, share: 0.6 }
+      - key: C
+        label: "Explain the equity story instead"
+        effects:
+          - { type: morale_delta, target: person, share: 0.2 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+
+  - id: underpaid_competing_offer
+    category: personnel
+    trigger: underpaid
+    severities: [major]
+    weight: 0.7
+    title: "{person} has an offer elsewhere"
+    body: >-
+      {person} asks for fifteen minutes and gets straight to it: another company has offered
+      noticeably more money. {person} would rather stay, and says so, but has a mortgage and
+      a deadline to answer.
+    choices:
+      - key: A
+        label: "Meet them halfway"
+        effects:
+          - { type: salary_change, target: person, share: 0.5 }
+      - key: B
+        label: "Match it"
+        effects:
+          - { type: salary_change, target: person, share: 1.0 }
+          - { type: morale_delta, target: person, share: 0.5 }
+      - key: C
+        label: "Wish them well"
+        effects:
+          - { type: resign, target: person }
+
+  - id: star_conference_talk
+    category: personnel
+    trigger: star_performer
+    severities: [minor]
+    weight: 1.0
+    title: "{person} has been asked to speak"
+    body: >-
+      A well-known industry conference has invited {person} to talk about the work behind
+      {product}. It would take a couple of weeks of preparation and travel, and it would put
+      {company} in front of a lot of people.
+    choices:
+      - key: A
+        label: "Yes, but no time off the roadmap"
+        effects:
+          - { type: morale_delta, target: person, share: 0.2 }
+      - key: B
+        label: "Back it fully: time, travel, rehearsal"
+        effects:
+          - { type: morale_delta, target: person, share: 0.6 }
+          - { type: brand_delta, target: product, share: 0.6 }
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: C
+        label: "Not this year"
+        effects:
+          - { type: morale_delta, target: person, share: -0.4 }
+
+  - id: star_wants_growth
+    category: personnel
+    trigger: star_performer
+    severities: [minor]
+    weight: 0.9
+    title: "{person} wants a bigger challenge"
+    body: >-
+      After a year of excellent work, {person} asks what comes next. They are not threatening
+      to leave; they want to learn something hard, and they would like your help finding it.
+    choices:
+      - key: A
+        label: "Pair {person} with you on strategy"
+        effects:
+          - { type: growth_boost, target: person, share: 0.6 }
+          - { type: energy_delta, target: founder, share: -0.5 }
+      - key: B
+        label: "Pay for a serious course"
+        effects:
+          - { type: growth_boost, target: person, share: 1.0 }
+          - { type: cash_delta, target: company, share: -0.3 }
+      - key: C
+        label: "Ask them to wait until things calm down"
+        effects:
+          - { type: morale_delta, target: person, share: -0.5 }
+
+  - id: cofounder_tension_1
+    category: personnel
+    trigger: star_performer
+    severities: [minor, major]
+    weight: 0.6
+    storyline:
+      key: cofounder_tension
+      title: "You and {person}"
+      step: 1
+      next_after_turns: 2
+      next_template: cofounder_tension_2
+      summary: "{person}, one of the strongest people at {company}, has started pushing back on {founder}'s calls in public."
+    title: "{person} disagrees with you at the all-hands"
+    body: >-
+      In front of everyone, {person} questions the roadmap you just presented, politely but
+      firmly. Half the room nods. Afterwards, people drift toward {person}'s desk, not yours.
+    choices:
+      - key: A
+        label: "Invite {person} to argue it out in private"
+        effects:
+          - { type: relationship_delta, target: pair, share: 0.4 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Restate the plan and move on"
+        effects:
+          - { type: relationship_delta, target: pair, share: -0.5 }
+          - { type: morale_delta, target: person, share: -0.3 }
+      - key: C
+        label: "Give {person} ownership of part of the roadmap"
+        effects:
+          - { type: morale_delta, target: person, share: 0.6 }
+          - { type: board_confidence, target: board, share: -0.2 }
+
+  - id: cofounder_tension_2
+    category: personnel
+    trigger: storyline
+    severities: [major]
+    weight: 1.0
+    storyline:
+      key: cofounder_tension
+      step: 2
+      next_after_turns: 3
+      next_template: cofounder_tension_3
+      summary: "The tension between {founder} and {person} has become two camps: some of the team now take their questions to {person} first."
+    title: "Two camps"
+    body: >-
+      A manager tells you, uncomfortably, that the team has started to split: decisions you
+      make get re-argued in {person}'s one-to-ones. {person} hasn't done anything wrong,
+      exactly. But the company is starting to have two leaders.
+    choices:
+      - key: A
+        label: "Make {person}'s authority formal and clear"
+        effects:
+          - { type: morale_delta, target: person, share: 0.5 }
+          - { type: relationship_delta, target: pair, share: 0.5 }
+      - key: B
+        label: "Bring in a coach for both of you"
+        effects:
+          - { type: relationship_delta, target: pair, share: 0.7 }
+          - { type: cash_delta, target: company, share: -0.4 }
+      - key: C
+        label: "Tell {person} that you make the calls"
+        effects:
+          - { type: relationship_delta, target: pair, share: -0.7 }
+          - { type: morale_delta, target: unit, share: -0.3 }
+
+  - id: cofounder_tension_3
+    category: personnel
+    trigger: storyline
+    severities: [major]
+    weight: 1.0
+    storyline:
+      key: cofounder_tension
+      step: 3
+      summary: "{founder} and {person} had it out; how they settled it will shape {company} for years."
+    title: "{person} asks for a real conversation"
+    body: >-
+      {person} books an hour with no agenda. They say they love the company, but they can't
+      keep working this way: either they get a real say in where it goes, or they will build
+      something of their own.
+    choices:
+      - key: A
+        label: "Agree on clear lines and shake on it"
+        effects:
+          - { type: relationship_delta, target: pair, share: 0.4 }
+      - key: B
+        label: "Offer {person} a leadership role and a raise"
+        effects:
+          - { type: salary_change, target: person, share: 0.7 }
+          - { type: morale_delta, target: person, share: 0.8 }
+          - { type: relationship_delta, target: pair, share: 0.6 }
+      - key: C
+        label: "Let {person} go and build their thing"
+        effects:
+          - { type: resign, target: person }
+          - { type: morale_delta, target: company, share: -0.4 }
+
+  - id: burnout_1
+    category: personnel
+    trigger: star_performer
+    severities: [minor, major]
+    weight: 0.6
+    storyline:
+      key: burnout
+      title: "{person} is running hot"
+      step: 1
+      next_after_turns: 2
+      next_template: burnout_2
+      summary: "{person}, a star performer, has been carrying too much and working late most nights."
+    title: "{person} is online at 2 a.m. again"
+    body: >-
+      The commit log tells the story: {person} has been working past midnight most of the
+      month. The work is excellent. {person} says it's fine, they're just in the zone.
+    choices:
+      - key: A
+        label: "Thank them and let them run"
+        effects:
+          - { type: quality_delta, target: product, share: 0.5 }
+      - key: B
+        label: "Insist on a lighter month"
+        effects:
+          - { type: morale_delta, target: person, share: 0.3 }
+          - { type: quality_delta, target: product, share: -0.3 }
+      - key: C
+        label: "Hire help for their area"
+        effects:
+          - { type: cash_delta, target: company, share: -0.5 }
+          - { type: morale_delta, target: person, share: 0.5 }
+
+  - id: burnout_2
+    category: personnel
+    trigger: storyline
+    severities: [major]
+    weight: 1.0
+    storyline:
+      key: burnout
+      step: 2
+      next_after_turns: 2
+      next_template: burnout_3
+      summary: "{person} is visibly exhausted; small mistakes are creeping in."
+    title: "{person} snaps in a meeting"
+    body: >-
+      In a routine planning meeting {person} loses their temper over a minor point, then
+      apologises and leaves. Their teammates are shaken. Two small bugs from {person}'s work
+      reached customers this week, which has never happened before.
+    choices:
+      - key: A
+        label: "Talk it through and redistribute work"
+        effects:
+          - { type: morale_delta, target: person, share: 0.3 }
+          - { type: energy_delta, target: founder, share: -0.4 }
+      - key: B
+        label: "Send {person} on two weeks' leave now"
+        effects:
+          - { type: morale_delta, target: person, share: 0.6 }
+          - { type: quality_delta, target: product, share: -0.4 }
+      - key: C
+        label: "Push through to the release"
+        effects:
+          - { type: morale_delta, target: person, share: -0.6 }
+          - { type: quality_delta, target: product, share: 0.3 }
+
+  - id: burnout_3
+    category: personnel
+    trigger: storyline
+    severities: [major]
+    weight: 1.0
+    storyline:
+      key: burnout
+      step: 3
+      summary: "{person}'s burnout came to a head; how {company} handled it is now part of its culture."
+    title: "{person}'s doctor has an opinion"
+    body: >-
+      {person} tells you their doctor has ordered a proper break. They are embarrassed about
+      it. The team is watching how you respond, because every one of them has worked a late
+      night for this company.
+    choices:
+      - key: A
+        label: "Part-time for a while"
+        effects:
+          - { type: morale_delta, target: person, share: 0.3 }
+      - key: B
+        label: "A month's paid leave, no questions"
+        effects:
+          - { type: morale_delta, target: company, share: 0.4 }
+          - { type: morale_delta, target: person, share: 0.8 }
+          - { type: cash_delta, target: company, share: -0.4 }
+      - key: C
+        label: "Accept their resignation if they offer it"
+        effects:
+          - { type: resign, target: person }
+          - { type: morale_delta, target: company, share: -0.5 }
+
+  - id: team_clash_meeting
+    category: personnel
+    trigger: team_clash
+    severities: [minor, major]
+    weight: 1.0
+    title: "{person} and {other} can't share a room"
+    body: >-
+      Every meeting with both {person} and {other} in it ends in an argument, and the rest of
+      the team has started scheduling around them. Each has come to you separately to explain
+      why the other is the problem.
+    choices:
+      - key: A
+        label: "Split their work so they rarely overlap"
+        effects:
+          - { type: relationship_delta, target: pair, share: 0.2 }
+          - { type: morale_delta, target: unit, share: 0.2 }
+      - key: B
+        label: "Mediate: both of them, one room, one hour"
+        effects:
+          - { type: relationship_delta, target: pair, share: 0.6 }
+          - { type: energy_delta, target: founder, share: -0.4 }
+      - key: C
+        label: "Tell them to sort it out themselves"
+        effects:
+          - { type: relationship_delta, target: pair, share: -0.4 }
+          - { type: morale_delta, target: unit, share: -0.3 }
+
+  - id: team_clash_ultimatum
+    category: personnel
+    trigger: team_clash
+    severities: [major]
+    weight: 0.6
+    title: "\"It's them or me\""
+    body: >-
+      {other} walks into your office and says it plainly: they cannot keep working alongside
+      {person}. They are not asking for anything else. They are asking you to choose.
+    choices:
+      - key: A
+        label: "Refuse to choose; set ground rules"
+        effects:
+          - { type: relationship_delta, target: pair, share: 0.3 }
+          - { type: morale_delta, target: other, share: -0.3 }
+      - key: B
+        label: "Back {other}"
+        effects:
+          - { type: morale_delta, target: other, share: 0.6 }
+          - { type: morale_delta, target: person, share: -0.8 }
+      - key: C
+        label: "Back {person}"
+        effects:
+          - { type: morale_delta, target: person, share: 0.6 }
+          - { type: resign, target: other }
+
+  - id: team_bond_side_project
+    category: personnel
+    trigger: team_bond
+    severities: [minor]
+    weight: 1.0
+    title: "{person} and {other} built something on the weekend"
+    body: >-
+      {person} and {other}, who have become close, show you a prototype they built over a
+      weekend. It's rough, but it solves a problem customers keep mentioning.
+    choices:
+      - key: A
+        label: "Praise it at the all-hands"
+        effects:
+          - { type: morale_delta, target: company, share: 0.2 }
+      - key: B
+        label: "Give them a sprint to polish it"
+        effects:
+          - { type: quality_delta, target: product, share: 0.6 }
+          - { type: morale_delta, target: person, share: 0.4 }
+          - { type: morale_delta, target: other, share: 0.4 }
+      - key: C
+        label: "Remind them to stay on the roadmap"
+        effects:
+          - { type: morale_delta, target: person, share: -0.3 }
+          - { type: morale_delta, target: other, share: -0.3 }
+
+  - id: office_politics_turf
+    category: personnel
+    trigger: office_politics
+    severities: [minor, major]
+    weight: 1.0
+    title: "A turf war in {unit}"
+    body: >-
+      Several people in {unit} tell you, separately, that decisions there seem to be made in
+      hallway conversations they aren't part of. Every story somehow involves {person}.
+    choices:
+      - key: A
+        label: "Make decisions in {unit} written and open"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.4 }
+          - { type: morale_delta, target: person, share: -0.3 }
+      - key: B
+        label: "Have a frank word with {person}"
+        effects:
+          - { type: reveal_tag, target: person }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: C
+        label: "Stay out of it"
+        effects:
+          - { type: morale_delta, target: unit, share: -0.4 }
+
+  - id: tag_noticed_reputation
+    category: personnel
+    trigger: tag_noticed
+    severities: [minor]
+    weight: 1.0
+    title: "Word gets around about {person}"
+    body: >-
+      What you just learned about {person} is apparently not news to the team; they have been
+      working around it, or leaning on it, for a while. Several people want to know what you
+      intend to do with it.
+    choices:
+      - key: A
+        label: "Note it and say nothing"
+        effects: []
+      - key: B
+        label: "Acknowledge it openly with {person}"
+        effects:
+          - { type: morale_delta, target: person, share: 0.2 }
+          - { type: morale_delta, target: unit, share: 0.2 }
+
+  - id: anniversary_card
+    category: personnel
+    trigger: anniversary
+    severities: [minor]
+    weight: 1.0
+    title: "{person}'s work anniversary"
+    body: >-
+      Today marks another year for {person} at {company}. Someone has put a card on the desk;
+      it filled up fast.
+    choices:
+      - key: A
+        label: "A thank-you note from you"
+        effects:
+          - { type: morale_delta, target: person, share: 0.3 }
+      - key: B
+        label: "Take {person}'s team to lunch"
+        effects:
+          - { type: morale_delta, target: person, share: 0.6 }
+          - { type: cash_delta, target: company, share: -0.1 }
+
+  - id: unhappy_unit_retro
+    category: personnel
+    trigger: unhappy_unit
+    severities: [minor, major]
+    weight: 1.0
+    title: "{unit} is running on empty"
+    body: >-
+      The mood in {unit} has soured. Stand-ups are short and quiet, people leave on time and
+      not a minute later, and two of them have asked whether a reorganisation is coming.
+    choices:
+      - key: A
+        label: "Run an honest retrospective with {unit}"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.5 }
+          - { type: energy_delta, target: founder, share: -0.4 }
+      - key: B
+        label: "Team offsite, on the company"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.7 }
+          - { type: cash_delta, target: company, share: -0.3 }
+      - key: C
+        label: "Wait for the next win to lift spirits"
+        effects:
+          - { type: morale_delta, target: unit, share: -0.2 }

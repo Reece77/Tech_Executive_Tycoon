@@ -38,7 +38,8 @@ def test_starting_cash_values_match_formulas(loaded: LoadedData) -> None:
 
 
 def test_hashes_cover_every_file(loaded: LoadedData) -> None:
-    assert sorted(loaded.hashes) == sorted(DATA_FILES)
+    events = [f"events/{p.name}" for p in (DATA_DIR / "events").glob("*.yaml")]  # M6
+    assert sorted(loaded.hashes) == sorted([*DATA_FILES, *events]) and len(events) == 6
     for name, digest in loaded.hashes.items():
         assert digest == file_hash((DATA_DIR / name).read_bytes())
         assert len(digest) == 64

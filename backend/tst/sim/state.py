@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from bisect import bisect_left
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from typing import Any
@@ -322,10 +323,14 @@ def company_cash(balances: LedgerBalances, company_id: int) -> Cents:
 
 
 def _upsert[T](items: tuple[T, ...], item: T, key: Callable[[T], Any]) -> tuple[T, ...]:
+    """`items` (sorted by key, keys unique) with `item` replacing the one with its key, or
+    inserted in order. A binary search instead of a re-sort: phases update people one at a
+    time (M6 sub-task 0)."""
     k = key(item)
-    out = [x for x in items if key(x) != k]
-    out.append(item)
-    return tuple(sorted(out, key=key))
+    i = bisect_left(items, k, key=key)
+    if i < len(items) and key(items[i]) == k:
+        return (*items[:i], item, *items[i + 1 :])
+    return (*items[:i], item, *items[i:])
 
 
 def with_person(state: GameState, person: Person) -> GameState:

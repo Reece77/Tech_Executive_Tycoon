@@ -34,6 +34,7 @@ from tst.sim.data_models import (
     SkillsFile,
     TagsFile,
 )
+from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
 from tst.sim.ledger import ENGINE_ACCOUNTS
 
 BALANCE_FILE = "balance.yaml"
@@ -52,6 +53,7 @@ CATEGORIES_FILE = "categories.yaml"
 INCUMBENTS_FILE = "incumbents.yaml"
 INVESTORS_FILE = "investors.yaml"
 CLIMATE_FILE = "climate.yaml"
+EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
     BACKGROUNDS_FILE,
@@ -219,6 +221,15 @@ def load_all(path: Path) -> LoadedData:
         parsed[name] = data
         hashes[name] = file_hash(raw)
 
+    event_templates: list[EventTemplate] = []
+    for file in sorted((path / EVENTS_DIR).glob("*.yaml")):
+        name = f"{EVENTS_DIR}/{file.name}"
+        data, raw = _read(file)
+        hashes[name] = file_hash(raw)
+        event_templates += _validate(EventTemplatesFile, data, name).templates
+    if problems := template_problems(tuple(event_templates)):
+        raise DataLoadError(f"{EVENTS_DIR}/*.yaml: " + "; ".join(problems))
+
     balance = _validate(Balance, parsed[BALANCE_FILE], BALANCE_FILE)
     accounts = [
         _validate(Account, item, ACCOUNTS_FILE)
@@ -264,6 +275,7 @@ def load_all(path: Path) -> LoadedData:
             "incumbents": incumbents.companies,
             "investors": investors.firms,
             "climate": climate,
+            "event_templates": tuple(event_templates),
         },
         "seed data cross-check",
     )

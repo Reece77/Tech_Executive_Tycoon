@@ -493,3 +493,62 @@ rivals:
   stance_turns: 6 # turns: a rival that acted in a player segment this recently is "responding" (15.5)
   headcount_round: 10 # people; estimated headcounts above 100 are rounded to this (15.5)
   headcount_round_above: 100
+
+events: # event director, effect caps, storylines (formulas.md 16; ADR-0005, ADR-0011)
+  count_weights: [0.15, 0.50, 0.28, 0.07] # probability of 0, 1, 2, 3 events a month (16.1)
+  category_repeat_factor: 0.5 # weight multiplier for a category used last month (16.1)
+  template_cooldown_turns: 24 # months before the same template may run again (16.1)
+  person_cooldown_turns: 6 # months before an event may name the same person again (16.1)
+  critical_gap_turns: 6 # at most one critical event in any this many months (16.1)
+  major_from: 0.5 # trigger strength from which an event is major, below it minor (16.1)
+  light_tone_chance_bp: 1000 # bp chance an event asks for a light or satirical touch (ADR-0011)
+  max_storylines: 3 # storylines active at once (16.6)
+  summary_words: 60 # words in a storyline summary (16.6)
+  body_words: 180 # words in an event body (16.5)
+  recent_summaries: 10 # past event summaries passed to the LLM (16.5)
+  trigger: # when each trigger holds and how strong it is (16.2); strengths are clamped to 0..1
+    low_morale: { below: 35, span: 20 } # morale points: (below - morale) / span
+    unhappy_unit: { below: 45, span: 15 } # unit average morale points
+    underpaid: { below: 0.9, span: 0.2 } # salary / market mid
+    star_performer: { top_fraction: 0.10, tenure_months: 12, strength: 0.4 } # top share of employees by CA
+    team_clash: { at_most: -50, span: 30 } # relationship points: (at_most - rel) / span
+    team_bond: { at_least: 60, strength: 0.3 } # relationship points
+    office_politics: { unit_size: 4, strength: 0.6 } # people in the politician's unit
+    tag_noticed: { strength: 0.5 }
+    anniversary: { strength: 0.2 }
+    product_launched: { strength: 0.5 }
+    product_slipping: { strength: 0.6 }
+    price_war: { strength: 0.6 }
+    rival_move: { strength: 0.3 }
+    poached: { strength: 0.8 }
+    customer_milestone: { strength: 0.4 }
+    runway_short: { months: [6, 3], strength: [0.6, 1.0] } # runway months; below the second, critical is allowed
+    funding_closed: { strength: 0.5 }
+    board_unhappy: { below: 40, span: 15 } # average board confidence points
+    quiet_month: { strength: 0.2 }
+  caps: # largest effect per choice by severity [minor, major, critical] (16.3)
+    morale_delta: [5, 10, 20] # morale points
+    relationship_delta: [10, 20, 40] # relationship points
+    cash_delta: [100, 300, 1000] # bp of max(cash, cash_revenue_months x monthly revenue); gains up to cash_gain_share of it
+    brand_delta: [2, 5, 10] # brand points
+    quality_delta: [1, 3, 6] # quality points
+    customers_pct: [1, 3, 8] # percent of the product's customers in the segment
+    growth_boost: [0.2, 0.5, 1.0] # skill points, once
+    energy_delta: [5, 10, 15] # founder energy next month
+    board_confidence: [3, 6, 12] # confidence points for every director
+    salary_change: [5, 10, 15] # percent raise, never a cut
+  cash_revenue_months: 3 # months of revenue in the cash cap base (16.3)
+  cash_gain_share: 0.5 # gains reach at most this share of the cost cap (16.3)
+  effect_size_bounds: [0.34, 0.67] # share of the cap: up to the first "small", above the second "large" (16.9)
+
+relationships: # pairs of unit-mates and manager links (formulas.md 16.7)
+  start_base: 15 # points: start = round(start_base - start_per_temperament x |temperament difference|)
+  start_per_temperament: 1.5 # points per temperament point of difference
+  start_clamp: [-20, 15] # points
+  drift: 0.10 # fraction of the way back to the start value each month
+  tag_push: { credit_taker: -3, toxic_high_performer: -4, culture_carrier: 2, politician: -3 } # points a month with each unit-mate
+  politician_ambition_at: 14 # a politician pushes only unit-mates with ambition at least this
+  morale_weight: 0.1 # morale points per relationship point (W_rel)
+  morale_cap: 5 # W_rel is clamped to plus or minus this
+  label_bounds: [-50, -20, 20, 60] # hostile at or below the first; strained below the second; close from the last
+  range: [-100, 100] # relationships stay in this range

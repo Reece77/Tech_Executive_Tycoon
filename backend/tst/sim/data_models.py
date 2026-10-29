@@ -12,6 +12,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from tst.sim.calendar import MONTHS_PER_YEAR
+from tst.sim.events.data import EFFECT_TYPES, SEVERITIES, TRIGGERS, VALUELESS, EventTemplate
 from tst.sim.money import BP_DENOMINATOR
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
@@ -719,6 +720,81 @@ class RivalsBalance(_Frozen):
         return self
 
 
+class TriggerBalance(_Frozen):
+    """One trigger's thresholds (formulas.md 16.2); unused fields stay None."""
+
+    below: float | None = None
+    span: float | None = Field(default=None, gt=0)
+    at_most: float | None = None
+    at_least: float | None = None
+    strength: float | list[float] | None = None
+    top_fraction: float | None = Field(default=None, gt=0, le=1)
+    tenure_months: int | None = Field(default=None, ge=0)
+    unit_size: int | None = Field(default=None, ge=2)
+    months: list[float] | None = None
+
+
+class EventsBalance(_Frozen):
+    """Event director, effect caps and storylines (formulas.md 16)."""
+
+    count_weights: list[float]
+    category_repeat_factor: float = Field(ge=0)
+    template_cooldown_turns: int = Field(ge=0)
+    person_cooldown_turns: int = Field(ge=0)
+    critical_gap_turns: int = Field(ge=0)
+    major_from: float = Field(ge=0, le=1)
+    light_tone_chance_bp: int = Field(ge=0, le=10_000)  # tunable-exempt: basis-point scale
+    max_storylines: int = Field(ge=0)
+    summary_words: int = Field(gt=0)
+    body_words: int = Field(gt=0)
+    recent_summaries: int = Field(ge=0)
+    trigger: dict[str, TriggerBalance]
+    caps: dict[str, list[float]]
+    cash_revenue_months: float = Field(ge=0)
+    cash_gain_share: float = Field(ge=0, le=1)
+    effect_size_bounds: Span
+
+    @model_validator(mode="after")
+    def _check(self) -> EventsBalance:
+        counts, tolerance = 4, 1e-9  # tunable-exempt: 0-3 events (16.1), float tolerance
+        if len(self.count_weights) != counts or abs(sum(self.count_weights) - 1) > tolerance:
+            raise ValueError("events.count_weights: four probabilities (0-3 events) summing to 1")
+        if sorted(self.trigger) != sorted(TRIGGERS):
+            raise ValueError(f"events.trigger must cover exactly {list(TRIGGERS)}")
+        sized = sorted(set(EFFECT_TYPES) - set(VALUELESS) - {"resign"})
+        if sorted(self.caps) != sized:
+            raise ValueError(f"events.caps must cover exactly {sized}")
+        for effect, caps in self.caps.items():
+            if len(caps) != len(SEVERITIES) or any(c <= 0 for c in caps) or caps != sorted(caps):
+                raise ValueError(f"events.caps.{effect}: three rising positive caps")
+        return self
+
+    def cap(self, effect: str, severity: str) -> float:
+        return self.caps[effect][SEVERITIES.index(severity)]
+
+
+class RelationshipsBalance(_Frozen):
+    """Relationships between unit-mates and manager links (formulas.md 16.7)."""
+
+    start_base: float
+    start_per_temperament: float = Field(ge=0)
+    start_clamp: Span
+    drift: float = Field(ge=0, le=1)
+    tag_push: dict[str, float]
+    politician_ambition_at: float = Field(ge=1, le=20)  # tunable-exempt: attribute scale 1-20
+    morale_weight: float = Field(ge=0)
+    morale_cap: float = Field(ge=0)
+    label_bounds: list[float]
+    range: Span
+
+    @model_validator(mode="after")
+    def _check(self) -> RelationshipsBalance:
+        labels = 5  # tunable-exempt: hostile, strained, neutral, good, close (16.7)
+        if len(self.label_bounds) != labels - 1 or self.label_bounds != sorted(self.label_bounds):
+            raise ValueError("relationships.label_bounds: four rising bounds")
+        return self
+
+
 class Balance(_Frozen):
     company: CompanyBalance
     costs: CostsBalance  # M4c (formulas.md 8)
@@ -743,6 +819,8 @@ class Balance(_Frozen):
     board: BoardBalance
     bankruptcy: BankruptcyBalance
     rivals: RivalsBalance  # M5 (formulas.md 15)
+    events: EventsBalance  # M6 (formulas.md 16)
+    relationships: RelationshipsBalance  # M6 (formulas.md 16.7)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1173,6 +1251,13 @@ class GameData(_Frozen):
     investors: tuple[InvestorFirm, ...] = ()  # M4
     climate: ClimateFile = ClimateFile(default=1.0, years={})  # M4
     startup_names: tuple[str, ...] = ()  # M5: rival startup names (names.yaml companies)
+    event_templates: tuple[EventTemplate, ...] = ()  # M6: events/*.yaml (formulas.md 16.4)
+
+    def event_template(self, template_id: str) -> EventTemplate:
+        for template in self.event_templates:
+            if template.id == template_id:
+                return template
+        raise KeyError(template_id)
 
     @model_validator(mode="after")
     def _check_references(self) -> GameData:
