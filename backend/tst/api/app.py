@@ -5,16 +5,20 @@ from __future__ import annotations
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import OperationalError
 
 from tst.api.routers import finance, game, meta, org, products, rivals, saves
 from tst.api.schemas.common import ErrorOut
+from tst.db.repository import BUSY_MESSAGE, is_locked_error
 from tst.sim.errors import (
     GameOverError,
     InterviewRequired,
     NotFoundError,
+    SaveBusyError,
     SaveExistsError,
     SaveNotFoundError,
     SimError,
+    UpgradeNeededError,
 )
 
 ERROR_STATUS: dict[type[SimError], int] = {
@@ -23,6 +27,8 @@ ERROR_STATUS: dict[type[SimError], int] = {
     SaveExistsError: status.HTTP_409_CONFLICT,
     InterviewRequired: status.HTTP_409_CONFLICT,  # ADR-0016
     GameOverError: status.HTTP_409_CONFLICT,  # ADR-0018
+    SaveBusyError: status.HTTP_409_CONFLICT,  # M6 sub-task 0
+    UpgradeNeededError: status.HTTP_409_CONFLICT,
 }
 
 
@@ -49,6 +55,13 @@ def create_app() -> FastAPI:
             status.HTTP_400_BAD_REQUEST,
         )
         return _error(status_code, exc.code, exc.message)
+
+    @app.exception_handler(OperationalError)
+    async def _locked(_request: Request, exc: OperationalError) -> JSONResponse:
+        """Another process holds the save's write lock: busy, not a server error."""
+        if is_locked_error(exc):
+            return _error(status.HTTP_409_CONFLICT, SaveBusyError.code, BUSY_MESSAGE)
+        raise exc
 
     @app.exception_handler(RequestValidationError)
     async def _invalid(_request: Request, exc: RequestValidationError) -> JSONResponse:

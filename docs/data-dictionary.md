@@ -630,6 +630,18 @@ Append-only; the last 24 months are loaded into the state (news, cooldowns, stan
 | `product_id` / `segment` | INTEGER / VARCHAR(32) PK | no | The product in one segment. |
 | `history` | JSON | no | Its share of the segment's served customers at the last 7 month ends, oldest first (§15.3 needs). |
 
+## Free agents (migration `0014_free_agents`, M6 sub-task 0)
+
+### free_agent
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER PK FK → person.id | no | A failed rival's former employee. |
+| `role` | VARCHAR(32) | no | Their role at the rival (`roles.yaml` key): they join the player's next search for it. |
+| `released_turn` | INTEGER | no | The turn the rival failed. |
+| `until_turn` | INTEGER | no | They leave the pool in phase 12 of this turn (`released_turn + rivals.free_agent_months`). |
+| `status` | VARCHAR(16) | no | `available`, `placed` (joined a search's batch) or `expired`. Only `available` rows are loaded. |
+
 ## Files next to the saves
 
 - `saves/index.json`: list of `{slug, company_name, scenario_id, difficulty, current_turn}`, rebuilt from the save files after each create and turn. The save files are the source of truth; a missing or corrupt index is rebuilt.

@@ -448,7 +448,7 @@ def inbox(
 ) -> None:
     """Show inbox messages, newest first (unread only unless --all)."""
     path, _, state = _game(save)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         items = inbox_db.list_inbox(session, state.player.id, unread_only=not all_items)
         if not items:
             typer.echo("No messages.")

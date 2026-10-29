@@ -12,6 +12,7 @@ from typing import Literal
 type Function = Literal["builder", "seller", "marketer"]
 type EffectKind = Literal["feature_push", "quality_push", "brand_push", "cut_costs", "builder_left"]
 type ApproachStatus = Literal["pending", "accepted", "declined", "lapsed", "joined"]
+type FreeAgentStatus = Literal["available", "placed", "expired"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,6 +63,18 @@ class PoachApproach:
     made_turn: int
     status: ApproachStatus = "pending"
     resolved_turn: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class FreeAgent:
+    """A failed rival's employee looking for work (M6 sub-task 0): they join the player's
+    next search for their role until `until_turn`."""
+
+    person_id: int
+    role: str
+    released_turn: int
+    until_turn: int  # leaves the pool in phase 12 of this turn
+    status: FreeAgentStatus = "available"
 
 
 @dataclass(frozen=True, slots=True)

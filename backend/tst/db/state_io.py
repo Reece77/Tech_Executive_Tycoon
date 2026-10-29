@@ -19,7 +19,7 @@ from collections.abc import Iterable
 from dataclasses import replace
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import insert, inspect, select, update
 from sqlalchemy.orm import Session
 
 from tst.db.mappers import (
@@ -65,6 +65,7 @@ from tst.db.models import (
     CapTableEntryRow,
     CompanyRow,
     EmploymentRow,
+    FreeAgentRow,
     FundingRoundRow,
     HiringPlanRow,
     MarketSegmentRow,
@@ -105,6 +106,7 @@ from tst.sim.finance.models import (
 )
 from tst.sim.people.models import RevealState
 from tst.sim.rivals.models import (
+    FreeAgent,
     PoachApproach,
     RivalEffect,
     RivalMove,
@@ -173,12 +175,25 @@ def load_state(session: Session) -> GameState:
         finance_from_row(BoardSeat, r, history=histories.get(r.id, ()))
         for r in session.scalars(select(BoardSeatRow).order_by(BoardSeatRow.id))
     )
+    free_agents = (
+        tuple(
+            rival_from_row(FreeAgent, r)
+            for r in session.scalars(
+                select(FreeAgentRow)
+                .where(FreeAgentRow.status == "available")
+                .order_by(FreeAgentRow.person_id)
+            )
+        )
+        if has_table(session, FreeAgentRow)
+        else ()
+    )
     live_ids = sorted(
         {e.person_id for e in employments}
         | {c.person_id for c in candidates}
         | {o.actor_id for o in offers}
         | {p.owner_id for p in plans}
         | {s.person_id for s in seats if s.person_id is not None}
+        | {a.person_id for a in free_agents}
     )
 
     def in_live(column: Any) -> Any:
@@ -326,8 +341,16 @@ def load_state(session: Session) -> GameState:
                 .order_by(SegmentShareRow.product_id, SegmentShareRow.segment)
             )
         ),
+        free_agents=free_agents,
         next_ids=next_ids_from_meta(meta),
     )
+
+
+def has_table(session: Session, model: Any) -> bool:
+    """Whether the save already has a table added after 0013. Migration 0013 loads and syncs
+    state through the current models, so on an older save it runs before later migrations
+    have made their tables; those tables then read as empty (M6 sub-task 0)."""
+    return bool(inspect(session.connection()).has_table(model.__tablename__))
 
 
 def _rows(session: Session, model: Any, where: Any) -> list[Any]:
@@ -351,9 +374,46 @@ def _changed[T](old: Iterable[T], new: Iterable[T], key: Any) -> list[T]:
     return [x for x in new if before.get(key(x)) != x]
 
 
+def _write[T](session: Session, old: Iterable[T], new: Iterable[T], key: Any, to_row: Any) -> None:
+    """Write the changed items of `new`: one bulk UPDATE by primary key for items that were in
+    `old` (their rows exist), a merge for the rest. A merge per row costs a SELECT, which made
+    every turn write rivals' people and shares one at a time (M6 sub-task 0)."""
+    known = {key(x) for x in old}
+    updates: list[dict[str, Any]] = []
+    model: Any = None
+    for item in _changed(old, new, key):
+        row = to_row(item)
+        if key(item) in known:
+            model = type(row)
+            updates.append({a.key: getattr(row, a.key) for a in model.__mapper__.column_attrs})
+        else:
+            session.merge(row)
+    if updates:
+        session.execute(update(model), updates)
+
+
+def _insert(session: Session, rows: Iterable[Any]) -> None:
+    """Insert new rows with one executemany per table instead of the unit of work (a new
+    save writes thousands of people's child rows; M6 sub-task 0). A column left None that
+    has a default keeps its default."""
+    by_model: dict[Any, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        model = type(row)
+        by_model[model].append(
+            {
+                a.key: v
+                for a in model.__mapper__.column_attrs
+                if (v := getattr(row, a.key)) is not None
+                or (a.columns[0].default is None and a.columns[0].server_default is None)
+            }
+        )
+    for model, values in by_model.items():
+        session.execute(insert(model), values)
+
+
 def _sync_reveal(session: Session, old: RevealState | None, new: RevealState) -> None:
     if old is None:
-        session.add_all(reveal_to_rows(new))
+        _insert(session, reveal_to_rows(new))
         return
     base = {"person_id": new.person_id, "observer_company_id": new.observer_company_id}
     old_records = dict(old.attributes)
@@ -384,18 +444,18 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     """Write the differences between `old` (as loaded, or None for a new save) and `new`."""
     old = old or GameState(save_meta=new.save_meta, turn=new.turn, companies=())
 
-    for company in _changed(old.companies, new.companies, lambda c: c.id):
-        session.merge(company_to_row(company))
+    _write(session, old.companies, new.companies, lambda c: c.id, company_to_row)
     session.flush()
-    for product in _changed(old.products, new.products, lambda p: p.id):
-        session.merge(product_to_row(product))
+    _write(session, old.products, new.products, lambda p: p.id, product_to_row)
     session.flush()
-    for seg in _changed(
-        old.product_segments, new.product_segments, lambda s: (s.product_id, s.segment)
-    ):
-        session.merge(product_segment_to_row(seg))
-    for market in _changed(old.markets, new.markets, lambda m: (m.category, m.segment)):
-        session.merge(market_to_row(market))
+    _write(
+        session,
+        old.product_segments,
+        new.product_segments,
+        lambda s: (s.product_id, s.segment),
+        product_segment_to_row,
+    )
+    _write(session, old.markets, new.markets, lambda m: (m.category, m.segment), market_to_row)
 
     old_people = {p.id: p for p in old.people}
     skill_updates: list[dict[str, Any]] = []
@@ -404,7 +464,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     rows = [person_to_rows(p) for p in added]
     session.add_all(r[0] for r in rows)  # person rows first: children reference them
     session.flush()
-    session.add_all(child for r in rows for child in r[1:])
+    _insert(session, (child for r in rows for child in r[1:]))
     for person in new.people:
         before = old_people.get(person.id)
         if (
@@ -443,8 +503,9 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         session.merge(candidate_to_row(candidate))
     for offer in _changed(old.offers, new.offers, lambda o: o.id):
         session.merge(offer_to_row(offer))
-    for ps in _changed(old.person_states, new.person_states, lambda p: p.person_id):
-        session.merge(person_state_to_row(ps))
+    _write(
+        session, old.person_states, new.person_states, lambda p: p.person_id, person_state_to_row
+    )
 
     old_reveals = {(r.observer_company_id, r.person_id): r for r in old.reveals}
     for reveal in new.reveals:
@@ -470,15 +531,15 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         session.merge(round_nominee_row(rnd))
 
     # Rivals (M5)
-    for rival_items in (
-        _changed(old.pools, new.pools, lambda p: (p.company_id, p.function)),
-        _changed(old.rival_effects, new.rival_effects, lambda e: e.id),
-        _changed(old.rival_moves, new.rival_moves, lambda m: m.id),
-        _changed(old.approaches, new.approaches, lambda a: a.id),
-        _changed(old.segment_shares, new.segment_shares, lambda s: (s.product_id, s.segment)),
+    for olds, news, rival_key in (
+        (old.pools, new.pools, lambda p: (p.company_id, p.function)),
+        (old.rival_effects, new.rival_effects, lambda e: e.id),
+        (old.rival_moves, new.rival_moves, lambda m: m.id),
+        (old.approaches, new.approaches, lambda a: a.id),
+        (old.segment_shares, new.segment_shares, lambda s: (s.product_id, s.segment)),
+        (old.free_agents, new.free_agents, lambda a: a.person_id),
     ):
-        for rival_item in rival_items:
-            session.merge(rival_to_row(rival_item))
+        _write(session, olds, news, rival_key, rival_to_row)
 
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)

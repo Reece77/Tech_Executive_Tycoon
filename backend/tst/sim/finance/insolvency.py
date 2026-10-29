@@ -22,6 +22,7 @@ from tst.sim.hiring.models import Candidate
 from tst.sim.ledger import CASH, AccountCode, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
+from tst.sim.rivals.models import FreeAgent
 from tst.sim.state import (
     CompanyState,
     GameState,
@@ -29,6 +30,7 @@ from tst.sim.state import (
     with_candidate,
     with_company,
     with_employment,
+    with_free_agent,
     with_pool,
     with_product,
     with_product_segment,
@@ -97,7 +99,10 @@ def insolvency(
         if not company.is_player:  # a rival fails after the same months; no bridges (15.1)
             if months >= bk.months:
                 state, failed = fail_rival(
-                    state, state.company(company.id), balance.hiring.candidate_shelf_turns
+                    state,
+                    state.company(company.id),
+                    balance.hiring.candidate_shelf_turns,
+                    balance.rivals.free_agent_months,
                 )
                 logs += failed
             continue
@@ -191,10 +196,12 @@ def funding_stages(state: GameState, balance: Balance) -> tuple[GameState, tuple
 
 
 def fail_rival(
-    state: GameState, company: CompanyState, shelf_turns: int
+    state: GameState, company: CompanyState, shelf_turns: int, free_agent_months: int
 ) -> tuple[GameState, list[LogItem]]:
     """A rival bankrupt for bankruptcy.months month ends (15.1): its products retire and their
-    customers return to the unserved pool, its staff are released, its pools empty."""
+    customers return to the unserved pool, its staff are released, its pools empty. Released
+    people join the player's open search for their role, or else the free-agent pool for the
+    player's later searches (M6 sub-task 0)."""
     state = with_company(state, replace(company, failed_turn=state.turn))
     for product in state.company_products(company.id):
         if product.status == "retired":
@@ -223,6 +230,11 @@ def fail_rival(
                     created_turn=state.turn,
                     expires_turn=state.turn + shelf_turns,
                 ),
+            )
+        elif search is None:
+            state = with_free_agent(
+                state,
+                FreeAgent(e.person_id, e.role, state.turn, state.turn + free_agent_months),
             )
     for pool in state.company_pools(company.id):
         state = with_pool(state, replace(pool, headcount=0.0))

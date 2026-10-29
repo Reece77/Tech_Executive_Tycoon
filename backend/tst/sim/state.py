@@ -22,6 +22,7 @@ from tst.sim.org.models import HiringPlan, OrgUnit, WorkPolicy
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
 from tst.sim.rivals.models import (
+    FreeAgent,
     PoachApproach,
     RivalEffect,
     RivalMove,
@@ -117,6 +118,7 @@ class GameState:
     rival_moves: tuple[RivalMove, ...] = ()  # the last 24 months of rival moves, by id (M5)
     approaches: tuple[PoachApproach, ...] = ()  # pending approaches, sorted by id (M5)
     segment_shares: tuple[SegmentShare, ...] = ()  # by (product_id, segment) (M5)
+    free_agents: tuple[FreeAgent, ...] = ()  # available free agents, by person id (M6.0)
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -416,6 +418,10 @@ def with_rival_move(state: GameState, move: RivalMove) -> GameState:
 
 def with_approach(state: GameState, approach: PoachApproach) -> GameState:
     return replace(state, approaches=_upsert(state.approaches, approach, lambda a: a.id))
+
+
+def with_free_agent(state: GameState, agent: FreeAgent) -> GameState:
+    return replace(state, free_agents=_upsert(state.free_agents, agent, lambda a: a.person_id))
 
 
 def with_segment_share(state: GameState, share: SegmentShare) -> GameState:

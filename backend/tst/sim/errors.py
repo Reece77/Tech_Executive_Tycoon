@@ -186,6 +186,18 @@ class UnknownSafeError(NotFoundError):
     code = "unknown_safe"
 
 
+class SaveBusyError(SimError):
+    """Another write to the same save is in progress (M6 sub-task 0)."""
+
+    code = "save_busy"
+
+
+class UpgradeNeededError(SimError):
+    """A save from before the latest migration could not be upgraded (M6 sub-task 0)."""
+
+    code = "upgrade_needed"
+
+
 class GameOverError(SimError):
     """The game has ended (bankruptcy or the founder's removal); ADR-0018 section 4."""
 

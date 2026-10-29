@@ -388,7 +388,7 @@ def get_inbox(
 def mark_inbox_all_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
     """Mark every message read (M4c). UI state: no energy, nothing in decision_log."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         changed = inbox.mark_all_read(session, player.id)
         return InboxBulkOut(changed=changed, unread=inbox.unread_count(session, player.id))
@@ -403,7 +403,7 @@ def mark_inbox_all_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
 def archive_inbox_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
     """Archive every read message (M4c)."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         changed = inbox.archive_read(session, player.id)
         return InboxBulkOut(changed=changed, unread=inbox.unread_count(session, player.id))
@@ -418,7 +418,7 @@ def archive_inbox_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
 def archive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
     """Archive one message; it is marked read too (M4c)."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         return views.inbox_item(inbox.archive(session, player.id, item_id))
 
@@ -432,7 +432,7 @@ def archive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> Inb
 def unarchive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
     """Bring an archived message back to the inbox (M4c)."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         return views.inbox_item(inbox.archive(session, player.id, item_id, archived=False))
 
@@ -445,7 +445,7 @@ def unarchive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> I
 )
 def mark_inbox_read(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         return views.inbox_item(inbox.mark_read(session, player.id, item_id))
 
@@ -458,7 +458,7 @@ def mark_inbox_read(save_id: str, item_id: int, settings: SettingsDep) -> InboxI
 )
 def mark_inbox_unread(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         return views.inbox_item(inbox.mark_read(session, player.id, item_id, read=False))
 

@@ -14,6 +14,7 @@ from tst.db.models import (
     CompanyRow,
     DecisionLogRow,
     EmploymentRow,
+    FreeAgentRow,
     FundingRoundRow,
     HiringPlanRow,
     LedgerEntryRow,
@@ -102,6 +103,7 @@ from tst.sim.products.models import (
     ProductStatus,
 )
 from tst.sim.rivals.models import (
+    FreeAgent,
     PoachApproach,
     RivalEffect,
     RivalMove,
@@ -781,6 +783,7 @@ RIVAL_ROWS: dict[type, type] = {
     RivalMove: RivalMoveRow,
     PoachApproach: PoachApproachRow,
     SegmentShare: SegmentShareRow,
+    FreeAgent: FreeAgentRow,
 }
 
 

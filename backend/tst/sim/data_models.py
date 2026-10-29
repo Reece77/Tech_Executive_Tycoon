@@ -689,6 +689,7 @@ class RivalsBalance(_Frozen):
     start_marketing_share: float = Field(ge=0, le=1)
     key_people: int = Field(ge=0)
     key_people_levels: dict[str, float]
+    free_agent_months: int = Field(ge=0)
     startup: StartupBalance
     poach: PoachBalance
     money_bands_months: Span

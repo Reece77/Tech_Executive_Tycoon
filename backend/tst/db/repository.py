@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import threading
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
@@ -12,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from tst.db import migrate
@@ -56,9 +58,11 @@ from tst.sim.errors import (
     InvalidSaveNameError,
     InvalidSeedError,
     ReplayMismatchError,
+    SaveBusyError,
     SaveExistsError,
     SaveNotFoundError,
     UnknownScenarioError,
+    UpgradeNeededError,
 )
 from tst.sim.finance.statements import projected_runway
 from tst.sim.ledger import AccountCode
@@ -114,9 +118,26 @@ def save_path(save_dir: Path, slug: str) -> Path:
 
 
 def existing_save_path(save_dir: Path, slug: str) -> Path:
+    """The path of an existing save, upgraded to the latest migration first (as the save
+    index does), so no route reads a save with an old schema (M6 sub-task 0)."""
     path = save_path(save_dir, slug)
     if not path.is_file():
         raise SaveNotFoundError(f"no save named {slug!r}")
+    if migrate.current_revision(path) == migrate.head_revision():
+        return path
+    lock = _lock(path)
+    if not lock.acquire(blocking=False):
+        raise SaveBusyError(BUSY_MESSAGE)
+    try:
+        migrate.ensure_current(path)
+    except Exception as exc:
+        log.warning("Save %s needs an upgrade that failed: %s", slug, exc)
+        raise UpgradeNeededError(
+            f"save {slug!r} was made by an older version and could not be upgraded"
+            f" ({type(exc).__name__}); its pre-upgrade backup is in the backups folder"
+        ) from exc
+    finally:
+        lock.release()
     return path
 
 
@@ -129,6 +150,40 @@ def open_session(path: Path) -> Iterator[Session]:
             yield session
     finally:
         engine.dispose()
+
+
+_LOCKS: dict[Path, threading.Lock] = {}
+_LOCKS_GUARD = threading.Lock()
+BUSY_MESSAGE = "This save is busy with another change; try again when it finishes."
+
+
+def _lock(path: Path) -> threading.Lock:
+    with _LOCKS_GUARD:
+        return _LOCKS.setdefault(path.resolve(), threading.Lock())
+
+
+def is_locked_error(exc: BaseException) -> bool:
+    """SQLite's answer when another connection (another process) holds the write lock."""
+    return isinstance(exc, OperationalError) and "locked" in str(exc).lower()
+
+
+@contextmanager
+def write_session(path: Path) -> Iterator[Session]:
+    """A session in one write transaction on a save. A second write to the same save while
+    one is in progress raises SaveBusyError at once instead of waiting or failing deep inside
+    SQLite (M6 sub-task 0)."""
+    lock = _lock(path)
+    if not lock.acquire(blocking=False):
+        raise SaveBusyError(BUSY_MESSAGE)
+    try:
+        with open_session(path) as session, session.begin():
+            yield session
+    except OperationalError as exc:
+        if is_locked_error(exc):
+            raise SaveBusyError(BUSY_MESSAGE) from exc
+        raise
+    finally:
+        lock.release()
 
 
 # --- Creation -------------------------------------------------------------------------------
@@ -170,7 +225,7 @@ def create_save(
     save_dir.mkdir(parents=True, exist_ok=True)
     try:
         migrate.upgrade_new(path)
-        with open_session(path) as session, session.begin():
+        with write_session(path) as session:
             session.add(
                 SaveMetaRow(
                     id=META_ID,
@@ -441,7 +496,7 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
     """Play one turn in a single transaction; any exception rolls everything back."""
     decisions = decisions or Decisions()
     migrate.ensure_current(save_path)
-    with open_session(save_path) as session, session.begin():
+    with write_session(save_path) as session:
         meta = read_meta(session)
         if meta.data_hashes != data.hashes:
             log.warning("Data files changed since %s was created: %s", meta.name, data.hashes)
@@ -481,7 +536,7 @@ def next_action_seq(session: Session, turn: int) -> int:
 def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResult:
     """Apply one player action in its own short transaction and log it to decision_log."""
     migrate.ensure_current(save_path)
-    with open_session(save_path) as session, session.begin():
+    with write_session(save_path) as session:
         state = load_state(session)
         balances = ledger_balances(session, state.turn)
         seq = next_action_seq(session, state.turn)

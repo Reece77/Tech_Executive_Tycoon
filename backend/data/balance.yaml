@@ -463,6 +463,7 @@ rivals:
   start_marketing_share: 0.08 # fraction of each product's revenue spent on marketing at start (15.1)
   key_people: 8 # generated individuals per incumbent, included in its headcount (15.1)
   key_people_levels: { senior: 50, staff: 35, principal: 15 } # percent level mix of key people (15.1: senior to principal)
+  free_agent_months: 6 # months a failed rival's people stay in the free-agent pool for the player's searches (M6 sub-task 0)
   startup:
     found_rate: 0.02 # probability per category per month before climate and growth (15.4)
     max_alive: 8 # rival startups alive at once (15.4)

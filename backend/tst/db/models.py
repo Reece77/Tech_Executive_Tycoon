@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 13
+SCHEMA_VERSION = 14
 
 
 class Base(DeclarativeBase):
@@ -658,3 +658,16 @@ class SegmentShareRow(Base):
     product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     segment: Mapped[str] = mapped_column(String(32), primary_key=True)
     history: Mapped[list[float]] = mapped_column(JSON, nullable=False)
+
+
+class FreeAgentRow(Base):
+    """A failed rival's employee waiting for the player's next search for their role
+    (M6 sub-task 0, migration 0014_free_agents)."""
+
+    __tablename__ = "free_agent"
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    role: Mapped[str] = mapped_column(String(32), nullable=False)
+    released_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    until_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
