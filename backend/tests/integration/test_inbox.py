@@ -159,6 +159,8 @@ def finance_games(loaded: LoadedData) -> FinanceGames:
     rival = poached.state.company(_by_name(poached.state, "Salesforce"))
     poached.state = approach(poached.state, rival, pid, loaded.balance, loaded.game_data)
     extra.append(approach_note(poached.state, poached.state.approaches[0]))
+    rich = replace(poached.state.approaches[0], offer_cents=40_000_000)  # a fortune: they go
+    poached.state = with_approach(poached.state, rich)
     poached.turn()
     poached.turn()
     loyal, kept = _with_staff(loaded)

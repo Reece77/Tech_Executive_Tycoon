@@ -92,12 +92,14 @@ def money_label(cash_months: float | None, rv: RivalsBalance) -> str:
 def poach_score(
     ratio: float, morale: float, loyalty: float, unvested: float, pb: PoachBalance
 ) -> float:
-    """s = 4 (R - 1) + (55 - morale) / 20 - (loyalty - 10) / 10 - 2 u."""
+    """s = 4 (R - 1) + (55 - morale) / 20 - (loyalty - 10) / 10 - 2 u + leave_penalty: the
+    employee's side of leaving an employer, as on the player's poach channel (M5, Reece)."""
     return (
         pb.salary_weight * (ratio - 1)
         + (pb.morale_mid - morale) / pb.morale_divisor
         - (loyalty - pb.loyalty_mid) / pb.loyalty_divisor
         - pb.options_weight * unvested
+        + pb.leave_penalty
     )
 
 

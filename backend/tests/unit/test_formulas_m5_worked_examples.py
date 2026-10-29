@@ -28,9 +28,10 @@ def test_a_premium_incumbent_ignores_a_small_threat(loaded: LoadedData) -> None:
 @pytest.mark.parametrize(
     ("ratio", "morale", "loyalty", "unvested", "score", "p", "band"),
     [
-        (143_750 / 118_000, 62, 12, 0.454, -0.586, 0.237, "might go"),
-        (143_750 / 135_000, 62, 12, 0.397, -1.085, 0.102, "likely to stay"),
-        (1.218, 40, 8, 0.0, 1.823, 0.975, "likely to go"),
+        # With the leaving penalty (-0.5) on the employee's side too (M5, Reece's decision).
+        (143_750 / 118_000, 62, 12, 0.454, -1.086, 0.102, "likely to stay"),
+        (143_750 / 135_000, 62, 12, 0.397, -1.585, 0.040, "likely to stay"),
+        (1.218, 40, 8, 0.0, 1.323, 0.934, "likely to go"),
     ],
 )
 def test_poaching_priya(

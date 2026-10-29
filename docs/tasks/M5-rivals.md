@@ -52,7 +52,8 @@ Play `funded_spinout` for 36 months. Note whether rivals feel like opponents (do
 - **Poaching.** An approach made in phase 2 of turn T is answered in phase 1 of T+1; accepting is a notice ending at T+2, when the person joins the rival (`approach.status` `joined`). The band in the API uses true salary, offer and options, the displayed loyalty midpoint and true morale (§15.6). The player's poach search filters the rival's key people by the search's role (any role if none match).
 - **Golden snapshots** keep the player's rows only (the twin-run test compares every company's). Regenerated in M5.3–4 (rivals act) and M5.5 (a startup on seed 2); unchanged by the tuning in M5.9.
 - **Migration 0013** loads and syncs the state through the current models, so it must stay the newest data migration that does so.
-- **Balance (sub-task 9), values:** `rivals.startup.found_rate` 0.02 (0.015 gave 0.97 launches per category), `rivals.need.poach_gain` 0.005 (0.05 gave no approaches; 0.01 gave 1.97 a year but the replay script none in 24 months), `rivals.poach.offer_mult` 1.0 (1.25 gave 97% accepted, 1.10 87%, 1.05 80%, 0.95 64%). Weights unchanged. Table (`uv run pytest tests/integration/test_rival_balance.py -s`):
+- **Balance (sub-task 9), values:** `rivals.startup.found_rate` 0.02 (0.015 gave 0.97 launches per category), `rivals.need.poach_gain` 0.007 (0.05 gave no approaches; 0.005 gave 4.20 a year once the leaving penalty applied; 0.01 gave 2.10 a year but the replay script none in 24 months), `rivals.poach.offer_mult` 1.0 (1.25 gave 97% accepted, 1.10 87%, 1.05 80%, 0.95 64% before the leaving penalty). Weights unchanged.
+- **Leaving penalty on the employee's side (Reece, 2026-10-28):** with the §15.6 score as written, no allowed key brought uncountered acceptances under 60% (67% at an offer of 1.0×). Reece added the existing `rivals.poach.leave_penalty` (−0.5) to the employee's score too: `s = 4(R − 1) + (55 − morale)/20 − (loyalty − 10)/10 − 2u + leave_penalty`. formulas.md §15.6 and the §15.8 worked examples are updated (Priya: 10.2%, 4.0% after a counter, 93.4% for the unhappy case). The M5 wireframe note that Priya "might go" at 23.7% describes the old numbers. Final table (`uv run pytest tests/integration/test_rival_balance.py -s`):
 
 ```text
 1 seed  1: share ratios 0.60-1.47, startups 8 (failed 0), launches 2
@@ -66,39 +67,37 @@ Play `funded_spinout` for 36 months. Note whether rivals feel like opponents (do
 1 seed  9: share ratios 0.56-1.65, startups 8 (failed 0), launches 4
 1 seed 10: share ratios 0.56-1.65, startups 8 (failed 0), launches 4
 1 living market: breaches 0/10, launches per category 1.12
-2-3 seed  1: launch 5, first answer 5 (Oracle started a brand push on CRM On Demand), ARR at 36 $1,308,075 ok
-2-3 seed  2: launch 6, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,393,239 ok
-2-3 seed  3: launch 5, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,409,880 ok
-2-3 seed  4: launch 5, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,090,867 ok
+2-3 seed  1: launch 5, first answer 5 (Oracle started a brand push on CRM On Demand), ARR at 36 $1,631,752 ok
+2-3 seed  2: launch 6, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,478,071 ok
+2-3 seed  3: launch 5, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,889,841 ok
+2-3 seed  4: launch 5, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,559,764 ok
 2-3 seed  5: launch 6, first answer 6 (Zoho started a quality push on Zoho CRM), ARR at 36 $1,530,259 ok
-2-3 seed  6: launch 5, first answer 6 (Oracle started a quality push on CRM On Demand), ARR at 36 $1,471,985 ok
-2-3 seed  7: launch 5, first answer 6 (Oracle started a quality push on CRM On Demand), ARR at 36 $1,266,583 ok
-2-3 seed  8: launch 5, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,341,751 ok
-2-3 seed  9: launch 6, first answer 6 (Zoho started a quality push on Zoho CRM), ARR at 36 $861,743 ok
-2-3 seed 10: launch 5, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,259,661 ok
+2-3 seed  6: launch 5, first answer 6 (Oracle started a quality push on CRM On Demand), ARR at 36 $1,672,307 ok
+2-3 seed  7: launch 5, first answer 6 (Oracle started a quality push on CRM On Demand), ARR at 36 $1,560,718 ok
+2-3 seed  8: launch 5, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,672,146 ok
+2-3 seed  9: launch 6, first answer 6 (Zoho started a quality push on Zoho CRM), ARR at 36 $867,799 ok
+2-3 seed 10: launch 5, first answer 6 (Zoho started a feature push on Zoho CRM), ARR at 36 $1,280,912 ok
 2 rivals respond: 10/10 | 3 still winnable: 10/10
-4 seed  1: approaches 11, accepted 6
-4 seed  2: approaches 14, accepted 10
-4 seed  3: approaches 12, accepted 7
-4 seed  4: approaches 11, accepted 8
-4 seed  5: approaches 12, accepted 8
-4 seed  6: approaches 13, accepted 9
-4 seed  7: approaches 12, accepted 9
-4 seed  8: approaches 13, accepted 10
-4 seed  9: approaches 10, accepted 5
-4 seed 10: approaches 11, accepted 8
-4 poaching: 3.97 approaches a year, 67% of answered accepted
-5 speed: 422 ms a turn over 120 turns
-1 failed, 3 passed in 118.71s (0:01:58)
+4 seed  1: approaches 9, accepted 4
+4 seed  2: approaches 13, accepted 6
+4 seed  3: approaches 11, accepted 5
+4 seed  4: approaches 9, accepted 5
+4 seed  5: approaches 10, accepted 5
+4 seed  6: approaches 10, accepted 4
+4 seed  7: approaches 10, accepted 5
+4 seed  8: approaches 11, accepted 7
+4 seed  9: approaches 9, accepted 4
+4 seed 10: approaches 10, accepted 4
+4 poaching: 3.40 approaches a year, 49% of answered accepted
+5 speed: 347 ms a turn over 120 turns
+4 passed in 118.57s (0:01:58)
 ```
 
-  **Target 4's acceptance rate is not met (67% against 20–60%)**: with the §15.6 formula the fast-growth script's people (morale about 49, no options, loyalty about 10) accept an offer at their own salary about 65% of the time, and no `rivals.*` key in §12 moves that further without offering a pay cut. Raised with Reece before merging.
 - **Speed:** 422 ms a persisted turn with 25 staff, the incumbents and up to 8 startups (target 5), before loading people's skill and knowledge rows as plain rows instead of ORM objects; after it, a turn of the 5-person benchmark save takes 0.23 s (was 0.44 s) and a state load 0.065 s (was 0.18 s). The full backend suite takes about 9 minutes in parallel (17 before that change; 5 at M4c, before rivals had people).
 - **Before and after (sub-task 0):** the backend suite took about 11 minutes serially before xdist and about 5 in parallel at M4c.
 
 ## Follow-ups
 
-- Target 4's acceptance rate (above): a decision on the §15.6 constants (`morale_mid` 55 is above a typical employee's morale) or on the target.
 - The suite is still slower than at M4c (about 9 minutes against 5): writing rival people and books in bulk, or skipping unchanged key people, would win more.
 - Free agents: a failed rival's people should reach the player's next searches, not only searches open at the time.
 - Rival activity is high (several moves a month across the market; pushes start in month 0); worth a look in Reece's playtest even though targets 1–3 hold.
