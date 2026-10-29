@@ -2,9 +2,11 @@ import { Button } from '@mantine/core';
 import { useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { KindBadge } from '../components/KindBadge';
+import { ApproachPanel } from './CompetitorsScreen';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import {
   INBOX_PAGE,
+  useApproaches,
   useArchive,
   useInbox,
   useInboxBulk,
@@ -351,6 +353,14 @@ function MessageDetail({
             {item.kind === 'bridge_offered' ? 'View the bridge offer' : 'Open Finance'}
           </Button>
         )}
+        {item.kind === 'rival_approach' && (
+          <ApproachActions saveId={saveId} personId={item.link_id} />
+        )}
+        {(item.kind === 'market_news' || item.kind === 'rival_approach') && (
+          <Button component={Link} to={`/game/${saveId}/competitors`} variant="default" h={44}>
+            Open Competitors
+          </Button>
+        )}
         {item.read && !item.archived && (
           <Button variant="default" h={44} onClick={onMarkUnread}>
             Mark unread
@@ -367,6 +377,15 @@ function MessageDetail({
       </div>
     </article>
   );
+}
+
+/** A rival's approach (M5): counter it with a raise (the dialog shows the new band) or let
+ * them decide at Continue. Once answered, the approach is gone and nothing shows. */
+function ApproachActions({ saveId, personId }: { saveId: string; personId: number | null }) {
+  const approaches = useApproaches(saveId);
+  const open = approaches.data?.find((a) => a.person_id === personId);
+  if (!open) return null;
+  return <ApproachPanel saveId={saveId} approach={open} />;
 }
 
 function Fact({

@@ -5,6 +5,7 @@ import { useDebouncedValue } from '@mantine/hooks';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import {
+  useCounterPreview,
   useGiveRaise,
   useMoraleBreakdown,
   useOrg,
@@ -172,23 +173,28 @@ export function RaiseFacts({ pv, roleText }: { pv: PayPreview; roleText: string 
   );
 }
 
-function RaiseDialog({
+/** Give a raise; with `approachId` (M5) it is a counter to a rival's offer and also shows the
+ * chance band before and after (formulas.md 15.6). */
+export function RaiseDialog({
   saveId,
   p,
   meta,
   initialCents,
   onClose,
+  approachId = null,
 }: {
   saveId: string;
   p: Profile;
   meta: OrgMeta;
   initialCents: number;
   onClose: () => void;
+  approachId?: number | null;
 }) {
   const [text, setText] = useState(String(Math.round(initialCents / 100)));
   const [debounced] = useDebouncedValue(text, 250);
   const cents = parseDollars(debounced);
   const preview = usePayPreview(saveId, p.person_id, 'raise', cents, true);
+  const counter = useCounterPreview(saveId, approachId, cents);
   const raise = useGiveRaise(saveId);
   const pv = preview.data;
   const first = p.name.split(' ')[0];
@@ -205,6 +211,14 @@ function RaiseDialog({
         />
         {cents === 0 && <span className="tst-muted">Enter a salary in dollars.</span>}
         {pv && cents > 0 && <RaiseFacts pv={pv} roleText={roleText} />}
+        {counter.data && (
+          <div className="tst-row" data-testid="counter-band">
+            <span>Chance they go</span>
+            <span>
+              {counter.data.band_now} → <strong>{counter.data.band_after}</strong>
+            </span>
+          </div>
+        )}
         {pv && !pv.allowed && <Alert color="warn">{pv.problem}</Alert>}
         <p className="tst-muted" style={{ margin: 0, fontSize: 12 }}>
           Raises of {formatBpPercent(meta.raise_threshold_bp)} or more lift morale by{' '}

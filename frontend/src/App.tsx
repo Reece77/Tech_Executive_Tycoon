@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
+import { CompetitorsScreen } from './screens/CompetitorsScreen';
 import { FinanceScreen } from './screens/FinanceScreen';
 import { GameLayout } from './screens/GameLayout';
 import { GameOverScreen } from './screens/GameOverScreen';
@@ -14,6 +15,7 @@ import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { ProductScreen } from './screens/ProductScreen';
 import { ProductsScreen } from './screens/ProductsScreen';
 import { RecruitmentScreen } from './screens/RecruitmentScreen';
+import { RivalScreen } from './screens/RivalScreen';
 
 export default function App() {
   return (
@@ -36,6 +38,8 @@ export default function App() {
           <Route path="products/:productId" element={<ProductScreen />} />
           <Route path="finance" element={<FinanceScreen />} />
           <Route path="finance/:tab" element={<FinanceScreen />} />
+          <Route path="competitors" element={<CompetitorsScreen />} />
+          <Route path="competitors/:rivalId" element={<RivalScreen />} />
           <Route path=":section" element={<PlaceholderScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

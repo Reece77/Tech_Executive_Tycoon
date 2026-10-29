@@ -19,6 +19,7 @@ import {
   useOpenSearch,
   useOverview,
   useProductsMeta,
+  useRivals,
   useScoutSearch,
   useSearches,
   useWithdrawOffer,
@@ -43,11 +44,13 @@ const CHANNEL_TEXT: Record<string, string> = {
   network: 'People you know of; you start knowing them better.',
   job_post: 'Stays open until you close it.',
   recruiter: 'Recruiters screen each candidate twice.',
+  poach: "A rival's key people. They ask 1.3x their salary and leaving makes them harder to win.",
 };
 const SUBMIT_TEXT: Record<string, string> = {
   network: 'Search network',
   job_post: 'Post job',
   recruiter: 'Engage recruiter',
+  poach: 'Poach',
 };
 
 /** 2000 bp -> "20%", 250 bp -> "2.50%". */
@@ -57,6 +60,7 @@ function bpShort(bp: number): string {
 
 function channelCost(c: Channel): string {
   const size = `${c.batch_min}–${c.batch_max}`;
+  if (c.key === 'poach') return `Free · ${size} of their key people, one batch`;
   if (c.monthly_cost_cents) {
     return `${formatMoneyWhole(c.monthly_cost_cents)} per month while open · ${size} each month`;
   }
@@ -67,6 +71,7 @@ function channelCost(c: Channel): string {
 
 /** "Mostly junior and mid level": the two largest shares of the channel's level mix. */
 function levelText(c: Channel): string {
+  if (c.key === 'poach') return 'Senior to principal level.';
   const top = Object.entries(c.level_mix)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 2)
@@ -437,7 +442,11 @@ function OpenSearchPanel({
     hiring.roles.find((r) => r.key === initialRole)?.key ?? hiring.roles[0]?.key ?? null,
   );
   const [channel, setChannel] = useState('job_post');
+  const [rivalId, setRivalId] = useState<string | null>(null);
+  const rivals = useRivals(saveId, 'all');
+  const rivalChoices = (rivals.data?.rivals ?? []).filter((r) => !r.failed);
   const chosen = hiring.channels.find((c) => c.key === channel);
+  const needsRival = channel === 'poach' && !rivalId;
   return (
     <Panel
       title="Open a search"
@@ -488,6 +497,16 @@ function OpenSearchPanel({
           </button>
         ))}
       </div>
+      {channel === 'poach' && (
+        <Select
+          label="Rival"
+          placeholder="Choose a rival"
+          value={rivalId}
+          onChange={setRivalId}
+          data={rivalChoices.map((r) => ({ value: String(r.company_id), label: r.name }))}
+          data-testid="poach-rival-select"
+        />
+      )}
       {open.error && (
         <Alert color="red" title="Could not open the search" withCloseButton onClose={open.reset}>
           {open.error.message}
@@ -495,12 +514,15 @@ function OpenSearchPanel({
       )}
       <Button
         h={44}
-        disabled={!role || !chosen}
+        disabled={!role || !chosen || needsRival}
         loading={open.isPending}
         data-testid="open-search"
         onClick={() => {
           if (role) {
-            open.mutate({ role, channel }, { onSuccess: (search) => onOpened(search.search_id) });
+            open.mutate(
+              { role, channel, rival_id: channel === 'poach' ? Number(rivalId) : null },
+              { onSuccess: (search) => onOpened(search.search_id) },
+            );
           }
         }}
       >
@@ -577,7 +599,8 @@ function SearchRow({
         }}
       >
         <span style={{ fontWeight: 600 }}>
-          {humanize(search.channel)} · {search.role_label}
+          {search.rival_name ? `Poach from ${search.rival_name}` : humanize(search.channel)} ·{' '}
+          {search.role_label}
         </span>
         <span className="tst-muted" style={{ fontSize: 12 }}>
           {detail}

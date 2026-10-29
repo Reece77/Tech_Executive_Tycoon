@@ -9533,6 +9533,10 @@
             "type": "string",
             "title": "Name"
           },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
           "role_label": {
             "type": "string",
             "title": "Role Label"
@@ -9558,6 +9562,7 @@
         "required": [
           "person_id",
           "name",
+          "role",
           "role_label",
           "level",
           "top_skills",

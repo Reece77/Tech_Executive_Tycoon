@@ -2673,6 +2673,8 @@ export interface components {
             person_id: number;
             /** Name */
             name: string;
+            /** Role */
+            role: string;
             /** Role Label */
             role_label: string;
             /** Level */

@@ -54,6 +54,7 @@ class RivalSegmentOut(BaseModel):
 class KeyPersonOut(BaseModel):
     person_id: int
     name: str
+    role: str
     role_label: str
     level: str
     top_skills: list[AttributeOut] = Field(description="The player's ranges, strongest first")

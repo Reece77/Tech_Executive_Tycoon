@@ -984,3 +984,69 @@ export function useGameOver(saveId: string, enabled = true) {
     enabled,
   });
 }
+
+// --- Rivals (M5) ----------------------------------------------------------------------------------
+
+export type Rivals = Schemas['RivalsOut'];
+export type RivalRow = Schemas['RivalRowOut'];
+export type RivalProfile = Schemas['RivalProfileOut'];
+export type RivalMove = Schemas['RivalMoveOut'];
+export type News = Schemas['NewsOut'];
+export type Approach = Schemas['ApproachOut'];
+export type RivalView = 'all' | 'markets' | 'startups';
+
+export function useRivals(saveId: string, view: RivalView) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'rivals', view],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/rivals', {
+          params: { path: { save_id: saveId }, query: { view } },
+        }),
+      ),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useRival(saveId: string, companyId: number) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'rival', companyId],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/rivals/{company_id}', {
+          params: { path: { save_id: saveId, company_id: companyId } },
+        }),
+      ),
+    enabled: companyId > 0,
+  });
+}
+
+export function useNews(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'news'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/news', path(saveId))),
+  });
+}
+
+export function useApproaches(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'approaches'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/approaches', path(saveId))),
+  });
+}
+
+/** The approach band now and after a raise to `salaryCents` (nothing is saved). */
+export function useCounterPreview(saveId: string, approachId: number | null, salaryCents: number) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'counter', approachId, salaryCents],
+    queryFn: async () =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/approaches/{approach_id}/counter-preview', {
+          params: { path: { save_id: saveId, approach_id: approachId ?? 0 } },
+          body: { salary_cents: salaryCents },
+        }),
+      ),
+    enabled: approachId !== null && salaryCents > 0,
+    placeholderData: keepPreviousData,
+  });
+}

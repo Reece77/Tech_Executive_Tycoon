@@ -2,7 +2,7 @@
 // wireframe's text labels (no icons) and to the People/Hiring/Products filters.
 
 export type KindLabel =
-  'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined' | 'Delegate' | 'Product' | 'Finance';
+  'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined' | 'Delegate' | 'Product' | 'Finance' | 'News';
 export type InboxFilter =
   'all' | 'unread' | 'people' | 'hiring' | 'products' | 'finance' | 'archived';
 type Group = 'people' | 'hiring' | 'company' | 'products' | 'finance';
@@ -40,6 +40,12 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   board_warning: { label: 'Finance', group: 'finance' },
   founder_removed: { label: 'Finance', group: 'finance' },
   board_seat_empty: { label: 'Finance', group: 'finance' },
+  // M5: rivals
+  market_news: { label: 'News', group: 'company' },
+  rival_approach: { label: 'News', group: 'people' },
+  poach_accepted: { label: 'Notice', group: 'people' },
+  poach_declined: { label: 'News', group: 'people' },
+  rival_failed: { label: 'News', group: 'company' },
   nominee_left: { label: 'Finance', group: 'finance' },
   insolvent: { label: 'Finance', group: 'finance' },
   bridge_offered: { label: 'Finance', group: 'finance' },

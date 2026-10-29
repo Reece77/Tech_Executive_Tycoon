@@ -261,6 +261,7 @@ def rival_profile(
             KeyPersonOut(
                 person_id=person.id,
                 name=person_name(person),
+                role=e.role,
                 role_label=role_label(e.role, data) or e.role,
                 level=e.level,
                 top_skills=_skills(state, person.id, data),

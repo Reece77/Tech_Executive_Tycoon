@@ -356,7 +356,7 @@ def act(
     if c.action in ("feature_push", "quality_push") and product is not None:
         state = _effect(state, company.id, c.action, product.id, balance)
         state = _grow_builders(state, company.id, rv.push_pool_growth)
-        what = "features" if c.action == "feature_push" else "quality"
+        what = "feature" if c.action == "feature_push" else "quality"
         return state, f"started a {what} push on {product.name}"
     if c.action == "brand_push" and product is not None:
         state = _effect(state, company.id, c.action, product.id, balance)
