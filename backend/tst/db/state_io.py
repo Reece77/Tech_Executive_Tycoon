@@ -184,19 +184,13 @@ def load_state(session: Session) -> GameState:
     def in_live(column: Any) -> Any:
         return column.in_(live_ids)
 
-    skills = _by_person(
-        session.scalars(select(PersonSkillRow).where(in_live(PersonSkillRow.person_id)))
-    )
+    skills = _by_person(_rows(session, PersonSkillRow, in_live(PersonSkillRow.person_id)))
     personality = _by_person(
-        session.scalars(select(PersonPersonalityRow).where(in_live(PersonPersonalityRow.person_id)))
+        _rows(session, PersonPersonalityRow, in_live(PersonPersonalityRow.person_id))
     )
-    hidden = _by_person(
-        session.scalars(select(PersonHiddenRow).where(in_live(PersonHiddenRow.person_id)))
-    )
-    interests = _by_person(
-        session.scalars(select(PersonInterestRow).where(in_live(PersonInterestRow.person_id)))
-    )
-    tags = _by_person(session.scalars(select(PersonTagRow).where(in_live(PersonTagRow.person_id))))
+    hidden = _by_person(_rows(session, PersonHiddenRow, in_live(PersonHiddenRow.person_id)))
+    interests = _by_person(_rows(session, PersonInterestRow, in_live(PersonInterestRow.person_id)))
+    tags = _by_person(_rows(session, PersonTagRow, in_live(PersonTagRow.person_id)))
     people = tuple(
         person_from_rows(
             row,
@@ -215,7 +209,7 @@ def load_state(session: Session) -> GameState:
         return (row.observer_company_id, row.person_id)
 
     records: dict[tuple[int, int], list[PersonRevealRow]] = defaultdict(list)
-    for r in session.scalars(select(PersonRevealRow).where(in_live(PersonRevealRow.person_id))):
+    for r in _rows(session, PersonRevealRow, in_live(PersonRevealRow.person_id)):
         records[key(r)].append(r)
     profiles = {
         key(r): r
@@ -334,6 +328,13 @@ def load_state(session: Session) -> GameState:
         ),
         next_ids=next_ids_from_meta(meta),
     )
+
+
+def _rows(session: Session, model: Any, where: Any) -> list[Any]:
+    """Plain rows (column attributes only) for a large child table: building ORM objects
+    for every skill and knowledge record was most of a load's time once rivals had people
+    (M5)."""
+    return list(session.execute(select(model.__table__).where(where)).all())
 
 
 def _all[T](session: Session, cls: type[T], row: Any) -> tuple[T, ...]:

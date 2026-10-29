@@ -93,13 +93,13 @@ Play `funded_spinout` for 36 months. Note whether rivals feel like opponents (do
 ```
 
   **Target 4's acceptance rate is not met (67% against 20–60%)**: with the §15.6 formula the fast-growth script's people (morale about 49, no options, loyalty about 10) accept an offer at their own salary about 65% of the time, and no `rivals.*` key in §12 moves that further without offering a pay cut. Raised with Reece before merging.
-- **Speed:** 422 ms a persisted turn with 25 staff, the incumbents and up to 8 startups (target 5). The full backend suite now takes about 17 minutes in parallel (was 5): every turn persists 96+ key people and 13+ rival books.
+- **Speed:** 422 ms a persisted turn with 25 staff, the incumbents and up to 8 startups (target 5), before loading people's skill and knowledge rows as plain rows instead of ORM objects; after it, a turn of the 5-person benchmark save takes 0.23 s (was 0.44 s) and a state load 0.065 s (was 0.18 s). The full backend suite takes about 9 minutes in parallel (17 before that change; 5 at M4c, before rivals had people).
 - **Before and after (sub-task 0):** the backend suite took about 11 minutes serially before xdist and about 5 in parallel at M4c.
 
 ## Follow-ups
 
 - Target 4's acceptance rate (above): a decision on the §15.6 constants (`morale_mid` 55 is above a typical employee's morale) or on the target.
-- The full suite is about three times slower: write rival people and books in bulk, or skip unchanged key people, before M6.
+- The suite is still slower than at M4c (about 9 minutes against 5): writing rival people and books in bulk, or skipping unchanged key people, would win more.
 - Free agents: a failed rival's people should reach the player's next searches, not only searches open at the time.
 - Rival activity is high (several moves a month across the market; pushes start in month 0); worth a look in Reece's playtest even though targets 1–3 hold.
 - An acquirer personality, rival fundraising beyond 15.4, and events about rivals are M6/v2.

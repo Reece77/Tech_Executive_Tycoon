@@ -72,8 +72,8 @@ def test_needs_and_labels(loaded: LoadedData) -> None:
     assert f.need_enter(0.6, 20, n) == pytest.approx(0.5)
     assert f.need_enter(0.6, 6, n) == 0.0  # not enough cash to enter
     assert f.need_cut_costs(9, n) == pytest.approx(0.5)
-    assert f.need_poach(0.03, True, n) == pytest.approx(0.6)
-    assert f.need_poach(0.03, False, n) == 0.0
+    assert f.need_poach(0.6 * n.poach_gain, True, n) == pytest.approx(0.6)  # tuned in M5.9
+    assert f.need_poach(0.6 * n.poach_gain, False, n) == 0.0
     assert [f.money_label(m, rv) for m in (40, 20, 5)] == ["deep pockets", "comfortable", "tight"]
     assert [f.rounded_headcount(h, rv) for h in (42.4, 154, 1_236)] == [42, 150, 1240]
     assert f.pool_budget_cents(1_000_000, 1500, 50_000, 80_000) == pytest.approx(720_000)
