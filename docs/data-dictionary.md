@@ -261,12 +261,13 @@ Live records are loaded into the game state; finished ones keep their rows with 
 | `id` | INTEGER PK | no | Search id. |
 | `company_id` | INTEGER FK → company.id | no | Searching company. |
 | `role` | VARCHAR(64) | no | `roles.yaml` role searched for. |
-| `channel` | VARCHAR(16) | no | `network`, `job_post` or `recruiter`. |
+| `channel` | VARCHAR(16) | no | `network`, `job_post`, `recruiter`, or `poach` (M5: a rival's key people, one batch). |
 | `actor_id` | INTEGER FK → person.id | no | Who opened it; their judgment of talent scouts its candidates. |
 | `opened_turn` | INTEGER | no | Turn opened. |
 | `status` | VARCHAR(16) | no | `open` or `closed`. Network and recruiter searches close after their one batch. |
 | `closed_turn` | INTEGER | yes | Turn closed. |
 | `plan_id` | INTEGER | yes | Hiring plan whose delegate opened it, or that inherited it (`hiring_plan.id`); null for the player's searches. A filled or closed plan's job posts close (formulas.md §13.10). No FK constraint (added by `ALTER TABLE` in `0006_search_plan`). |
+| `rival_id` | INTEGER | yes | A poach search's rival (`company.id`, migration `0013_rivals`, M5); null otherwise. |
 
 Index `ix_search_company_status (company_id, status)`.
 

@@ -40,6 +40,7 @@ from tst.sim.finance.captable import founder_bp, open_round
 from tst.sim.finance.fundraising import series_problem
 from tst.sim.finance.insolvency import bridge_amount
 from tst.sim.ledger import CASH
+from tst.sim.rivals.models import PoachApproach
 
 SEEDS = range(1, 11)
 EXTRA_ROLES = ("software_engineer", "account_executive", "marketer")  # cycled to 15 staff
@@ -59,9 +60,13 @@ class Outcome:
     a_amount_cents: int | None = None
     founder_after_bp: int | None = None
     survived: bool = True
+    run: Run | None = None  # kept on request (M5 balance: approaches)
+    approaches: tuple[PoachApproach, ...] = ()
 
 
-def play(loaded: LoadedData, seed: int, turns: int, grow: bool, raise_a: bool) -> Outcome:
+def play(
+    loaded: LoadedData, seed: int, turns: int, grow: bool, raise_a: bool, keep_run: bool = False
+) -> Outcome:
     run: Run = start(loaded, seed)
     for pid in (2, 3, 4):
         hire(run, pid, "software_engineer", BUILDER_SKILL)
@@ -118,6 +123,9 @@ def play(loaded: LoadedData, seed: int, turns: int, grow: bool, raise_a: bool) -
         if closed and out.a_turn is None:
             out.a_turn = closed[0].closed_turn
             out.founder_after_bp = founder_bp(run.state, 1)
+    if keep_run:
+        out.run = run
+        out.approaches = run.state.approaches
     return out
 
 

@@ -398,6 +398,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
 
     old_people = {p.id: p for p in old.people}
     skill_updates: list[dict[str, Any]] = []
+    asks: list[dict[str, Any]] = []  # a poached key person's new ask (M5, 15.6)
     added = [p for p in new.people if p.id not in old_people]
     rows = [person_to_rows(p) for p in added]
     session.add_all(r[0] for r in rows)  # person rows first: children reference them
@@ -405,6 +406,13 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     session.add_all(child for r in rows for child in r[1:])
     for person in new.people:
         before = old_people.get(person.id)
+        if (
+            before is not None
+            and before.salary_expectation_cents != person.salary_expectation_cents
+        ):
+            asks.append(
+                {"id": person.id, "salary_expectation_cents": person.salary_expectation_cents}
+            )
         if before is not None and before != person:
             old_skills = before.skills.as_dict()
             skill_updates += [
@@ -415,6 +423,8 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     session.flush()
     if skill_updates:
         session.execute(update(PersonSkillRow), skill_updates)
+    if asks:
+        session.execute(update(PersonRow), asks)
 
     # Units before employments and plans, which reference them; plans before offers.
     for unit in _changed(old.units, new.units, lambda u: u.id):
