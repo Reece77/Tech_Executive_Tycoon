@@ -110,7 +110,7 @@ Five artboards in the canvas's fourth and fifth rows: the four **Finance** tabs 
 
 ## M5 screens
 
-Two artboards in the canvas's sixth row: **Competitors** (with the month's market news and an approach) and a **Rival profile** (Salesforce). The example is Kestrel in June 2012; the approach on Priya Raman is `docs/formulas.md` §15.8's worked example ("might go" is the band for 23.7%). Rival revenue and staff follow §15.1's sizing from the M3b market numbers.
+Two artboards in the canvas's sixth row: **Competitors** (with the month's market news and an approach) and a **Rival profile** (Salesforce). The example is Kestrel in June 2012; the approach on Priya Raman is `docs/formulas.md` §15.8's worked example; with M5's leaving penalty her chance is 10.2%, the "likely to stay" band (the board was drawn before that change and still says "might go"). Rival revenue and staff follow §15.1's sizing from the M3b market numbers.
 
 **Shell change.** Nav key 8, Competitors, is live. The top bar shows M4c's 60-point energy.
 

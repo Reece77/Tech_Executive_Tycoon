@@ -14,6 +14,11 @@ Weekly crisis sub-turns (v2, ADR-0006 amended), "Ask my COO" (M7), the History s
 
 ## Sub-tasks (commit after each)
 
+0. **Carried from M5 (do first):**
+   - **Suite speed:** save rival people, employments and ledger lines in bulk (as M5 did for loads), and anything else profiling shows, until the GitHub `check` run is back under 20 minutes; then restore the workflow's `timeout-minutes` to 25. Record before and after.
+   - **Busy save:** a second write to a save while one is in progress returns HTTP 409 with code `save_busy` and a clear message, not a 500.
+   - **Old saves on game routes:** opening a save from before the latest migration upgrades it (as the save index does) or refuses with a clear "upgrade needed" message; never a 500.
+   - **Free agents:** people from a failed rival join a pool of free agents for 6 months and appear in the player's later searches for their roles (not only searches open when the rival fails); `rivals.free_agent_months` (6).
 1. **Data and formula tests:** every §12 M6 key; the trigger table (§16.2) and effect caps (§16.3) as data; every §16.11 worked example as a unit test.
 2. **Relationships** (§16.7): pairs, starting values, drift, tag pushes, `W_rel` in morale, the §13.6 change; property tests (relationships stay in [−100, 100]; pairs exist only for unit-mates and manager links). Migration; data dictionary.
 3. **Director** (§16.1, §16.2): triggers from state, candidate weights, cooldowns, severity, critical spacing, stream `events` (id 6), `EventRequest`s from phase 12.
