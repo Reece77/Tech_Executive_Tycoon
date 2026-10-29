@@ -62,6 +62,7 @@ test('(b) counter a scripted approach and see the answer at Continue', async ({ 
   const double = String(Number(offer.replace(/,/g, '')) * 2);
   await dialog.getByTestId('raise-salary').fill(double);
   await expect(page.getByTestId('counter-band')).toContainText('likely to stay');
+  await expect(dialog.getByTestId('confirm-raise')).toBeEnabled(); // the preview has settled
   await dialog.getByTestId('confirm-raise').click();
   await expect(dialog).toBeHidden();
 
