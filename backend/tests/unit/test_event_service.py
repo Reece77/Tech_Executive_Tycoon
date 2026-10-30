@@ -31,7 +31,18 @@ KPIS = Kpis(cash_cents=50_000_000, runway_months=14, mrr_cents=10_000_000, headc
 PRIYA = 2
 
 
+_STATES: dict[int, GameState] = {}
+
+
 def _state(loaded: LoadedData) -> GameState:
+    """The test company (built once: states are immutable and the property test asks 400
+    times)."""
+    if id(loaded) not in _STATES:
+        _STATES[id(loaded)] = _build(loaded)
+    return _STATES[id(loaded)]
+
+
+def _build(loaded: LoadedData) -> GameState:
     state = fresh_game(loaded)
     for pid in (PRIYA, 3):
         state = with_employee(loaded, state, make_person(loaded, pid), 9_000_000)
