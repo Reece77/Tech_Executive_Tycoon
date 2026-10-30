@@ -245,6 +245,7 @@ def test_recruiter_fee_on_hire(loaded: LoadedData) -> None:
         assert lines["6200_recruiting"] == hire.salary_cents // 5  # 20% of annual salary
 
 
+@pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_acceptance_gap_over_1000_seeded_offers(loaded: LoadedData) -> None:
     """Acceptance at 1.10x the ask beats 0.95x by at least 30 points (engine resolution).
 
@@ -396,6 +397,7 @@ def _staff_game(
     return Game(loaded, state, cash=10**12)
 
 
+@pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_underpaid_misfits_lose_morale_and_resign_more(loaded: LoadedData) -> None:
     """Acceptance: over 60 turns, underpaid misfits end with lower morale and more departures."""
     happy_left = sad_left = 0

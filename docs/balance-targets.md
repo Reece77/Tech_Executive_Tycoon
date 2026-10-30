@@ -2,7 +2,7 @@
 
 **Status: approved by Reece, 2026-10-30, with three changes** (success needs traction above the floor; founder value is the mean of turns 109–120; steady's standard bankruptcy band is 5–25%). Spec §16 asks for this file: target curves, a do-nothing strategy that fails, and no strategy winning more than 60% of seeds.
 
-The balance runner (`make balance`, nightly in CI) plays every strategy below on the same 10 seeds for 120 turns (10 years) and prints each target with its measured value. Targets T1–T3 are pass/fail for the nightly run; T4–T8 are bands, also checked. Anything outside a band is either tuned (only keys in `balance.yaml`) or brought back to Reece.
+The balance runner (`make balance` or `tools/balance_runner.py`, nightly in CI; code in `backend/tst/balance/`) plays every strategy below on the same 10 seeds for 120 turns (10 years) and prints each target with its measured value. Targets T1–T3 are pass/fail for the nightly run; T4–T8 are bands, also checked. Anything outside a band is either tuned (only keys in `balance.yaml`) or brought back to Reece.
 
 ## Setup
 
@@ -58,6 +58,8 @@ Every strategy answers critical events with the first choice, sets prices at the
 
 ## Events (carried from M6, plus the two known issues)
 
+E1 and E2 run on the M3a earn-and-burn script, so they are checked by `backend/tests/integration/test_event_balance.py` (nightly), not by the runner; the runner prints E3.
+
 | # | Measure | Band |
 | --- | --- | --- |
 | E1 | §16.10 on the earn-and-burn script, 10 seeds × 120 turns | 1.0–1.6 events a month; at most one critical event in any 6 months; event cash within ±5% of revenue; at least 40 distinct templates |
@@ -69,7 +71,7 @@ Every strategy answers critical events with the first choice, sets prices at the
 | # | Measure | Band |
 | --- | --- | --- |
 | S1 | Persisted turn 120 of the product-perf save (25 staff, 3 products, all rivals), local | under 300 ms (131 ms after M7a sub-task 0) |
-| S2 | The full balance run (4 strategies × 10 seeds × 120 turns, plus T5's 20 difficulty runs) | under 20 worker-minutes on CI (estimate: about 7) |
+| S2 | The full balance run (4 strategies × 10 seeds × 120 turns, plus T5's 20 difficulty runs) | under 20 worker-minutes on CI (first measured run, M7a sub-task 2: 17.5 worker-minutes and 4m43s wall clock locally with 4 jobs; companies of 130+ staff cost about 0.5 s a turn) |
 
 ## Recorded results
 

@@ -6,8 +6,9 @@ with `-s` for the table; the M6 brief's Decisions made records it.
 - 1.0 to 1.6 events a month on average (Reece, 2026-10-29: aim for about 1.2);
 - at most one critical event in any 6 months;
 - events' combined cash effect within 5% of cumulative revenue;
-- events' combined effect on average employee morale within 3 points (the mean over the runs of
-  each run's average morale against the same seed without events);
+- events' combined effect on average employee morale within 3 points on every seed (each run's
+  average morale against the same seed without events; docs/balance-targets.md E2, M7a: every
+  seed, not only the mean);
 - at least 40 distinct templates used across the 10 runs;
 - the M5 targets still hold (tests/integration/test_rival_balance.py, unchanged).
 """
@@ -17,6 +18,8 @@ from __future__ import annotations
 from collections import Counter
 from itertools import pairwise
 from statistics import mean
+
+import pytest
 
 from tests.balance_scripts import earn_and_burn
 from tst.loader import LoadedData
@@ -30,6 +33,7 @@ MORALE_POINTS = 3.0
 DISTINCT = 40
 
 
+@pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_event_balance(loaded: LoadedData) -> None:
     rates, cash_shares, morale_effects = [], [], []
     templates: Counter[str] = Counter()
@@ -67,5 +71,5 @@ def test_event_balance(loaded: LoadedData) -> None:
     )
     assert RATE[0] <= mean(rates) <= RATE[1]
     assert all(abs(share) <= CASH_SHARE for share in cash_shares)
-    assert abs(mean(morale_effects)) <= MORALE_POINTS
+    assert all(abs(effect) <= MORALE_POINTS for effect in morale_effects)
     assert len(templates) >= DISTINCT

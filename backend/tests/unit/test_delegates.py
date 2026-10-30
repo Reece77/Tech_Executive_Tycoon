@@ -101,6 +101,7 @@ def _role_skill_width(state: GameState, data: GameData, role: str) -> list[float
     return widths
 
 
+@pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_better_judgment_narrows_ranges_faster(loaded: LoadedData) -> None:
     """Acceptance (revised): over 200 seeded runs, a judgment-16 recruiter's plan leaves the
     company with narrower ranges on the candidates it worked than a judgment-6 recruiter's
