@@ -674,7 +674,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
 
 def live_view(state: GameState) -> GameState:
     """What `load_state` would return after `state` was written: the same live set, by the
-    same rules (tests/integration/test_state_cache.py checks the two agree)."""
+    same rules (golden seed 1 runs with TST_STATE_CACHE_CHECK=1, which compares them)."""
     staff = tuple(e for e in state.employments if e.status in STAFF_STATUSES)
     candidates = tuple(c for c in state.candidates if c.status == "open")
     offers = tuple(o for o in state.offers if o.status == "pending")

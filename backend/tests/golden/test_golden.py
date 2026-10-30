@@ -347,8 +347,14 @@ def assert_statements_reconcile(path: Path, loaded: LoadedData) -> None:
 
 @pytest.mark.parametrize("seed", SEEDS)
 def test_golden_seed(
-    seed: int, tmp_path: Path, loaded: LoadedData, request: pytest.FixtureRequest
+    seed: int,
+    tmp_path: Path,
+    loaded: LoadedData,
+    request: pytest.FixtureRequest,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    if seed == 1:  # M6.0: every reuse of the remembered state is compared with the save
+        monkeypatch.setenv("TST_STATE_CACHE_CHECK", "1")
     path, founder_ca = play(tmp_path, f"golden-{seed}", seed, loaded)
     actual = snapshots(path)
     assert len(actual) == TURNS
