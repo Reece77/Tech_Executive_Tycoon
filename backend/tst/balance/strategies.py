@@ -132,30 +132,30 @@ def headcount(game: Game) -> int:
 
 
 def hire(game: Game, wanted: int, per_month: int, order: tuple[str, ...] = HIRE_ORDER) -> None:
-    """Work toward `wanted` employees (offers out count), one role at a time in HIRE_ORDER:
-    def hire(
-        game: Game, wanted: int, per_month: int, order: tuple[str, ...] = HIRE_ORDER
-    ) -> None:
-        and offer 1.05x the ask. Job posts close once the target is reached."""
+    """Work toward `wanted` employees (offers out count) in `order` (cycled): the next
+    `per_month` slots' roles each get a job post (others close), their candidates are
+    interviewed while energy lasts and offered 1.05x the ask. Job posts close once the target
+    is reached."""
     state = game.state
     searches = [s for s in state.searches if s.company_id == PLAYER and s.status == "open"]
-    role = order[headcount(game) % len(order)]
+    count = headcount(game)
+    slots = [order[(count + i) % len(order)] for i in range(min(per_month, wanted - count))]
     for search in searches:
-        if headcount(game) >= wanted or search.role != role:
+        if search.role not in slots:
             game.act(CloseSearch(game.founder_id, search.id))
-    if headcount(game) >= wanted:
+    if not slots:
         return
-    if not any(s.role == role for s in searches):
-        game.act(OpenSearch(game.founder_id, role, "job_post"))
-    made = 0
+    for role in dict.fromkeys(slots):
+        if not any(s.role == role for s in searches):
+            game.act(OpenSearch(game.founder_id, role, "job_post"))
     for candidate in list(game.state.candidates):
-        if made >= per_month or headcount(game) >= wanted:
+        if not slots:
             break
         person = game.state.person(candidate.person_id)
         if (
             candidate.company_id != PLAYER
             or candidate.status != "open"
-            or person.role != order[headcount(game) % len(order)]
+            or person.role not in slots
             or game.state.pending_offer_for(person.id) is not None
             or person.salary_expectation_cents is None
         ):
@@ -168,7 +168,7 @@ def hire(game: Game, wanted: int, per_month: int, order: tuple[str, ...] = HIRE_
                 continue
         salary = round(person.salary_expectation_cents * OFFER_RATIO)
         if game.act(MakeOffer(game.founder_id, person.id, salary, 0)):
-            made += 1
+            slots.remove(person.role)
     team = next((u for u in game.state.units if u.name == SECOND_TEAM), None)
     if team is not None:  # alternate new hires between the root and the second team
         for i, employment in enumerate(game.state.staff(PLAYER)):

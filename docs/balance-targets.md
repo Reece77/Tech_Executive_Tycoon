@@ -75,4 +75,22 @@ E1 and E2 run on the M3a earn-and-burn script, so they are checked by `backend/t
 
 ## Recorded results
 
-_(Filled in by the balance pass, M7a sub-task 4: one row per target, measured value, pass or fail, and the `balance.yaml` keys changed.)_
+M7a sub-task 4, after Reece's B1–B4 (2026-10-30), `make balance` (60 runs × 120 turns, 137 s wall clock with 4 jobs, 8.8 worker-minutes):
+
+| Target | Measured | Result |
+| --- | --- | --- |
+| T1 do-nothing fails | 10/10 | pass |
+| T2 wins | bootstrap-frugal 6, steady 4, blitzscale 0 | pass |
+| T3 succeed | bootstrap-frugal 6/10, steady 10/10, blitzscale 7/10 | pass |
+| T4a seed (median month) | steady 4, blitzscale 1 | steady **fails** (6–24): B3's runway rule starts its seed at once |
+| T4b Series A | steady 29.5, blitzscale 19.5 | pass |
+| T4c Series B | blitzscale 36 on 7/10 | pass |
+| T5 bankrupt | steady easy 0%, standard 0%, hard 0%; blitzscale 30%; bootstrap-frugal 40% | steady standard and hard, and bootstrap-frugal, **fail** |
+| T6 tenure | leavers' median 25 months; 11% leave a year; 9% of hires leave in their first year | pass |
+| T7 rivals | incumbents 12/12; startups alive after 5 years 54% | pass |
+| T8 median ARR | bootstrap-frugal $18.4M, steady $44.2M, blitzscale $57.4M | printed |
+| E1, E2 (`test_event_balance`) | 1.35 events a month; cash −1.35% of revenue; morale worst +2.90 | pass |
+| E3 | solo founder 15.0 distinct, 18% dull, ≤ 2 repeats; bootstrap before launch 8% dull | pass |
+| S2 | 8.8 worker-minutes locally | pass |
+
+Keys changed: `resign.base_bp` 50 → 80; `rivals.startup.raise_chance` 0.6 → 0.25, `raise_months` 18 → 12, `found_rate` 0.02 → 0.03. Still open with Reece: steady's T4a and T5 bands, and bootstrap-frugal's launch time against T2 (see the M7a brief).
