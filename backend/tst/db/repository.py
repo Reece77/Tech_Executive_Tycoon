@@ -172,11 +172,16 @@ def is_locked_error(exc: BaseException) -> bool:
 
 
 def _stamp(path: Path) -> tuple[int, int, int, int]:
-    """The save file and its WAL as they are on disk: any commit changes one of them."""
+    """The save file and its WAL as they are on disk: any commit changes one of them. An
+    empty WAL counts as none: any connection creates one, and only a commit writes to it."""
     main = path.stat()
-    wal = path.with_name(path.name + "-wal")
-    w = wal.stat() if wal.exists() else None
-    return (main.st_size, main.st_mtime_ns, w.st_size if w else -1, w.st_mtime_ns if w else -1)
+    try:
+        w = path.with_name(path.name + "-wal").stat()
+    except FileNotFoundError:
+        w = None
+    if w is None or w.st_size == 0:
+        return (main.st_size, main.st_mtime_ns, -1, -1)
+    return (main.st_size, main.st_mtime_ns, w.st_size, w.st_mtime_ns)
 
 
 _LAST: dict[str, tuple[tuple[int, int, int, int], GameState]] = {}
@@ -238,6 +243,8 @@ def read_state(session: Session) -> GameState:
     (TST_STATE_CACHE_CHECK=1 compares), else loaded, for `read_session` to remember."""
     if session.info.get(CACHED_STATE) is not None:
         return load_current(session)
+    if (loaded := session.info.get(LOADED_STATE)) is not None:
+        return cast(GameState, loaded)  # a route that reads the state twice loads it once
     state = load_state(session)
     session.info[LOADED_STATE] = state
     return state
