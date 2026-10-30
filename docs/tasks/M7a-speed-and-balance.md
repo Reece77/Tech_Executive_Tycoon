@@ -6,7 +6,7 @@
 
 ## Context
 
-Reece's decisions (2026-10-30): D1a (M7a then M7b, merged separately); D2a ("Ask my COO" in M7b, built last and cut first); D3a (v1 strategies only: bootstrap-frugal, blitzscale, steady, do-nothing); D4a (a `nightly` pytest marker, a nightly workflow and `make balance` for the 120-turn runs; a 24-turn smoke version in PR CI); D5a (tag pushes allowed). Additions: the balance pass fixes M6's known issues (event morale within ±3 on seed 4; a solo founder with no product gets a varied early game, with some new templates aimed at that phase); `docs/balance-targets.md` is drafted first and approved by Reece before the runner is built against it. Rules kept from M6: speed work first; refresh `tests/durations.json` after each sub-task; add a third CI shard if any job passes 17 minutes.
+Reece's decisions (2026-10-30): D1a (M7a then M7b, merged separately); D2a ("Ask my COO" in M7b, built last and cut first); D3a (v1 strategies only: bootstrap-frugal, blitzscale, steady, do-nothing); D4a (a `nightly` pytest marker, a nightly workflow and `make balance` for the 120-turn runs; a 24-turn smoke version in PR CI); D5: tag pushes from cloud sessions are blocked (HTTP 403 from the session's git connection, not a GitHub setting), so a workflow does the tagging: `.github/workflows/tag-milestone.yml` runs when `check` succeeds on `main` and creates the tag named by a `Milestone-Tag: mX-done` trailer on the head commit (sub-task 2). Additions: the balance pass fixes M6's known issues (event morale within ±3 on seed 4; a solo founder with no product gets a varied early game, with some new templates aimed at that phase); `docs/balance-targets.md` is drafted first and approved by Reece before the runner is built against it. Rules kept from M6: speed work first; refresh `tests/durations.json` after each sub-task; add a third CI shard if any job passes 17 minutes.
 
 ## Out of scope
 
@@ -15,8 +15,8 @@ Everything in M7b. Research-heavy, acquirer and vertical-integrator strategies (
 ## Sub-tasks (commit after each)
 
 0. **Turn speed:** profile a persisted turn, then optimize. Target: turn 120 of the product-perf save under 300 ms locally. Golden snapshots unchanged.
-1. **Balance targets:** draft `docs/balance-targets.md` (strategies, outcome measure, pass/fail targets, curves, event and speed bands). **Stop for Reece's approval.**
-2. **Strategies and runner:** the four strategies as scripts over the pure sim (`tst/balance/`, outside `tst/sim`; hiring through the real actions); `tools/balance_runner.py` (strategies, seeds, turns, difficulty; prints a table per target; exit code 1 on a failed pass/fail target); `make balance`; `tests/balance/test_balance_targets.py` marked `nightly` (the full run) and a 24-turn smoke test (2 seeds, every strategy finishes, no exception, ledger balanced) in PR CI; the long statistical tests move to `nightly`; PR CI shards run `-m "not nightly"`; `.github/workflows/nightly.yml` runs `make balance` and the `nightly` tests every night and on demand. `make check` still runs everything.
+1. **Balance targets:** draft `docs/balance-targets.md` (strategies, outcome measure, pass/fail targets, curves, event and speed bands). **Stop for Reece's approval.** (Approved 2026-10-30 with three changes, recorded in the file.)
+2. **Strategies and runner:** the four strategies as scripts over the pure sim (`tst/balance/`, outside `tst/sim`; hiring through the real actions); `tools/balance_runner.py` (strategies, seeds, turns, difficulty; prints a table per target; exit code 1 on a failed pass/fail target); `make balance`; `tests/balance/test_balance_targets.py` marked `nightly` (the full run) and a 24-turn smoke test (2 seeds, every strategy finishes, no exception, ledger balanced) in PR CI; the long statistical tests move to `nightly`; PR CI shards run `-m "not nightly"`; `.github/workflows/nightly.yml` runs `make balance` and the `nightly` tests every night and on demand. `make check` still runs everything. `.github/workflows/tag-milestone.yml` tags milestone merges (D5); CLAUDE.md §6 step 2 says so.
 3. **Templates:** about 20 more templates (personnel, operations, market), at least 6 of them for a solo founder or a company with no live product; validated at load like the others.
 4. **Balance pass:** run the runner, tune only `balance.yaml` keys (and the new templates' weights) until every target is met; fix E2 (seed 4 morale) and E3 (solo-founder variety); record values in `docs/balance-targets.md` and the "Decisions made" below. Golden snapshots regenerated only if tuning changes them (CHANGELOG reason).
 5. **Close-out:** durations, CI shard times (third shard if a job passes 17 minutes), CHANGELOG, data dictionary if any schema changed.
@@ -30,7 +30,7 @@ Everything in M7b. Research-heavy, acquirer and vertical-integrator strategies (
 - [ ] Event morale within ±3 on every seed; solo-founder early game meets E3.
 - [ ] About 20 new templates, validated at load.
 - [ ] Nightly workflow runs green; the PR smoke test runs in CI; each PR shard under 17 minutes or a third shard added.
-- [ ] `make check` green; `make e2e` passes; merged and tagged `m7a-done` per CLAUDE.md §6.
+- [ ] `make check` green; `make e2e` passes; merged with a `Milestone-Tag: m7a-done` trailer and tagged by the workflow per CLAUDE.md §6.
 
 ## Manual check (Reece, after merge)
 

@@ -6,9 +6,9 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 
 1. Start a fresh Claude Code session in the repo root (it reads `CLAUDE.md` automatically).
 2. Paste: `Read docs/tasks/<brief>.md and implement it. Follow CLAUDE.md. Work through the sub-tasks in order, committing after each. Stop and ask if anything in the brief conflicts with the spec or ADRs.`
-3. When it finishes, the agent merges its own branch once `make check`, `make e2e` and the GitHub check are green (CLAUDE.md §6, Merging), tags it and pushes. Play the brief's "Manual check" every two or three milestones.
+3. When it finishes, the agent merges its own branch once `make check`, `make e2e` and the GitHub check are green (CLAUDE.md §6, Merging) with a `Milestone-Tag: mX-done` trailer and pushes; the `tag-milestone` workflow then tags it. Play the brief's "Manual check" every two or three milestones.
 4. Optional second opinion: give ChatGPT (or a fresh Claude session) `AGENTS.md`, the brief, and `git diff <start>..HEAD`, and ask for a review per the "reviewer" section of `AGENTS.md`.
-5. The agent tags each merge `mX-done`.
+5. The `tag-milestone` workflow tags each merge `mX-done` once `check` is green on `main`.
 
 ## Order
 

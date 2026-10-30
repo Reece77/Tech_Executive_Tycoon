@@ -110,8 +110,8 @@ make dev       # run API and front end together
 
 When every box above is ticked, `make e2e` passes, and the GitHub Actions `check` run on your pushed branch is green:
 
-1. Merge the branch into `main` with `git merge --no-ff` (resolve `CHANGELOG.md` conflicts by keeping both sides' lines), push `main`, and wait for the `check` run on `main` to go green. If it fails, fix it on `main` at once.
-2. Tag the merge commit `mX-done` (the milestone id) and push the tag.
+1. Merge the branch into `main` with `git merge --no-ff` (resolve `CHANGELOG.md` conflicts by keeping both sides' lines), ending the merge commit's message with the trailer `Milestone-Tag: mX-done` (the milestone id), push `main`, and wait for the `check` run on `main` to go green. If it fails, fix it on `main` at once (that fix commit carries the trailer instead).
+2. The `tag-milestone` workflow tags the commit: when `check` succeeds on `main` and the head commit has a `Milestone-Tag:` trailer whose tag doesn't exist yet, it creates and pushes that tag. Confirm the tag appeared (`git ls-remote --tags origin mX-done`). Cloud sessions cannot push tags themselves (HTTP 403).
 3. If the instructions name a next brief, start it on a new branch from the updated `main`; otherwise stop and report.
 
 Never force-push, rewrite `main`'s history, or merge with a red check. The product manager reviews after the merge and sends any fixes as a follow-up brief.

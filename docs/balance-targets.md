@@ -1,6 +1,6 @@
 # Balance targets (v1)
 
-**Status: DRAFT for Reece's approval (M7a sub-task 1).** Nothing is built against these numbers until they are approved. Spec §16 asks for this file: target curves, a do-nothing strategy that fails, and no strategy winning more than 60% of seeds.
+**Status: approved by Reece, 2026-10-30, with three changes** (success needs traction above the floor; founder value is the mean of turns 109–120; steady's standard bankruptcy band is 5–25%). Spec §16 asks for this file: target curves, a do-nothing strategy that fails, and no strategy winning more than 60% of seeds.
 
 The balance runner (`make balance`, nightly in CI) plays every strategy below on the same 10 seeds for 120 turns (10 years) and prints each target with its measured value. Targets T1–T3 are pass/fail for the nightly run; T4–T8 are bands, also checked. Anything outside a band is either tuned (only keys in `balance.yaml`) or brought back to Reece.
 
@@ -30,10 +30,10 @@ Every strategy answers critical events with the first choice, sets prices at the
 
 ## Outcome measure
 
-**Founder value** at turn 120 = the founder's ownership × V_base (formulas.md §14.3, investors' base value, no bias or noise) + nothing for cash. A bankrupt company or a removed founder scores 0.
+**Founder value** in a month = the founder's ownership × V_base (formulas.md §14.3, investors' base value, no bias or noise) + nothing for cash. A bankrupt company or a removed founder scores 0 from then on. Success and wins use the **mean founder value over turns 109–120** (Reece: the squared six-month growth in the multiple makes a single month noisy).
 
-- A strategy **succeeds** on a seed when the game is still active at turn 120 and founder value is at least **3×** its turn-0 value.
-- A strategy **wins** a seed when it has the highest founder value on that seed (ties: nobody wins).
+- A strategy **succeeds** on a seed when the game is still active at turn 120, the mean founder value over turns 109–120 is at least **3×** its turn-0 value, and **V_traction > V_floor at turn 120** (Reece: so the headcount floor alone can't make a success; a live product with 23 staff reaches 3× the start value with no revenue).
+- A strategy **wins** a seed when it has the highest mean founder value over turns 109–120 on that seed (ties: nobody wins).
 
 ## Pass/fail targets
 
@@ -51,7 +51,7 @@ Every strategy answers critical events with the first choice, sets prices at the
 | T4b | Median months to a closed Series A (steady; blitzscale) | steady 24–60; blitzscale 12–36 |
 | T4c | Median months to a closed Series B (blitzscale) | 30–72, reached on at least 4/10 seeds |
 | T4d | Median months to IPO | not in v1 (IPO is v2); printed as "–" |
-| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 10–40%, hard 30–70%; blitzscale standard 20–60%; bootstrap-frugal standard ≤ 30% |
+| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 5–25% (Reece: it keeps 18 months of runway), hard 30–70%; blitzscale standard 20–60%; bootstrap-frugal standard ≤ 30% |
 | T6 | Employee tenure (player staff, all strategies pooled) | median tenure of leavers 18–48 months; 10–25% of staff leave each year; at most 25% of hires leave in their first 12 months |
 | T7 | Rival survival at turn 120 (do-nothing runs, so the player doesn't distort it) | incumbents: at least 10 of 12 in business on average; rival startups: 20–60% of those founded are alive 5 years later |
 | T8 | ARR at turn 120 (median per strategy) | printed only: bootstrap-frugal, steady and blitzscale should rank in that order on the median |
