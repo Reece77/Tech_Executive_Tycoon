@@ -10,6 +10,7 @@ from sqlalchemy.exc import OperationalError
 from tst.api.routers import events, finance, game, holiday, meta, org, products, rivals, saves
 from tst.api.schemas.common import ErrorOut
 from tst.db.repository import BUSY_MESSAGE, is_locked_error
+from tst.db.saves import IronmanSaveError
 from tst.sim.errors import (
     CriticalEventOpenError,
     EventError,
@@ -33,6 +34,7 @@ ERROR_STATUS: dict[type[SimError], int] = {
     CriticalEventOpenError: status.HTTP_409_CONFLICT,  # M6: answer it first (ADR-0006)
     EventError: status.HTTP_409_CONFLICT,
     UpgradeNeededError: status.HTTP_409_CONFLICT,
+    IronmanSaveError: status.HTTP_409_CONFLICT,  # M7b: no duplicate or restore
 }
 
 

@@ -3,7 +3,7 @@ import { Modal } from '@mantine/core';
 const SHORTCUTS: readonly [string, string][] = [
   ['Space or Enter', 'Continue to the next month'],
   ['H', 'Go on holiday'],
-  ['1–9', 'Jump to a screen in the left nav'],
+  ['1–9, 0', 'Jump to a screen in the left nav'],
   ['/', 'Search the table on this screen'],
   ['?', 'Show these shortcuts'],
   ['Esc', 'Close a dialog'],

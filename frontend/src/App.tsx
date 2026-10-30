@@ -16,6 +16,7 @@ import { ProductScreen } from './screens/ProductScreen';
 import { ProductsScreen } from './screens/ProductsScreen';
 import { RecruitmentScreen } from './screens/RecruitmentScreen';
 import { RivalScreen } from './screens/RivalScreen';
+import { SavesScreen } from './screens/SavesScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainMenu />} />
         <Route path="/new" element={<NewGameScreen />} />
+        <Route path="/saves" element={<MainMenu />} />
         <Route path="/game/:saveId/over" element={<GameOverScreen />} />
         <Route path="/game/:saveId" element={<GameLayout />}>
           <Route index element={<Navigate to="inbox" replace />} />
@@ -42,6 +44,7 @@ export default function App() {
           <Route path="competitors" element={<CompetitorsScreen />} />
           <Route path="competitors/:rivalId" element={<RivalScreen />} />
           <Route path="settings" element={<SettingsScreen />} />
+          <Route path="saves" element={<SavesScreen />} />
           <Route path=":section" element={<PlaceholderScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

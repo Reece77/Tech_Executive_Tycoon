@@ -55,6 +55,7 @@ export type Director = Schemas['DirectorOut'];
 export type FinanceSummary = Schemas['FinanceSummaryOut'];
 export type GameOver = Schemas['GameOverOut'];
 export type Holiday = Schemas['HolidayOut'];
+export type Backup = Schemas['BackupOut'];
 export type HolidayIn = Schemas['HolidayIn'];
 export type StatementPeriodKind = 'month' | 'quarter' | 'year';
 
@@ -192,6 +193,61 @@ export function useCreateSave() {
   return useMutation({
     mutationFn: async (body: CreateSave) => unwrap(await api.POST('/api/saves', { body })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.saves }),
+  });
+}
+
+// --- Saves manager (M7b) -------------------------------------------------------------------
+
+export function useRenameSave() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ saveId, name }: { saveId: string; name: string }) =>
+      unwrap(await api.POST('/api/saves/{save_id}/rename', { ...path(saveId), body: { name } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.saves }),
+  });
+}
+
+export function useDuplicateSave() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ saveId, name }: { saveId: string; name: string }) =>
+      unwrap(await api.POST('/api/saves/{save_id}/duplicate', { ...path(saveId), body: { name } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.saves, exact: true }),
+  });
+}
+
+export function useDeleteSave() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (saveId: string) => {
+      const res = await api.DELETE('/api/saves/{save_id}', path(saveId));
+      if (!res.response.ok) unwrap(res);
+    },
+    onSuccess: (_data, saveId) => {
+      client.removeQueries({ queryKey: keys.save(saveId) });
+      void client.invalidateQueries({ queryKey: keys.saves, exact: true });
+    },
+  });
+}
+
+export function useBackups(saveId: string | null) {
+  return useQuery({
+    queryKey: ['backups', saveId],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/backups', path(saveId ?? ''))),
+    enabled: saveId !== null,
+  });
+}
+
+export function useRestoreBackup() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ saveId, backupId }: { saveId: string; backupId: string }) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/backups/{backup_id}/restore', {
+          params: { path: { save_id: saveId, backup_id: backupId } },
+        }),
+      ),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.saves, exact: true }),
   });
 }
 

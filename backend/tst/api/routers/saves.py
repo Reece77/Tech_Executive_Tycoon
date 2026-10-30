@@ -3,22 +3,26 @@
 from __future__ import annotations
 
 import secrets
+from pathlib import Path
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 
 from tst.api import finance_views, org_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.schemas.common import ErrorOut
 from tst.api.schemas.saves import (
+    BackupOut,
     CostLineOut,
     CreateSaveIn,
     OverviewOut,
+    SaveNameIn,
     SaveOut,
     SnapshotPointOut,
     StageReachedOut,
     TeamOut,
 )
 from tst.db import inbox, repository
+from tst.db import saves as saves_db
 from tst.sim.calendar import format_turn
 from tst.sim.finance.options import pool_left_bp
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
@@ -42,14 +46,20 @@ ERRORS: dict[int | str, dict[str, object]] = {
 }
 
 
-def _save_out(summary: repository.SaveSummary) -> SaveOut:
+def _save_out(save: saves_db.SaveFile) -> SaveOut:
     return SaveOut(
-        save_id=summary.slug,
-        company_name=summary.company_name,
-        scenario_id=summary.scenario_id,
-        difficulty=summary.difficulty,
-        turn=summary.current_turn,
-        date_label=format_turn(summary.current_turn),
+        save_id=save.slug,
+        display_name=save.display_name,
+        company_name=save.company_name,
+        scenario_id=save.scenario_id,
+        difficulty=save.difficulty,
+        turn=save.current_turn,
+        date_label=format_turn(save.current_turn),
+        game_state=save.game_state,
+        last_played=save.last_played,
+        size_bytes=save.size_bytes,
+        ironman=save.difficulty == saves_db.IRONMAN,
+        busy=save.busy,
     )
 
 
@@ -169,7 +179,8 @@ def network_bonus(state: GameState, company_id: int, data: DataDep) -> int:
 
 @router.get("", response_model=list[SaveOut], operation_id="listSaves")
 def list_saves(settings: SettingsDep) -> list[SaveOut]:
-    return [_save_out(s) for s in repository.list_saves(settings.resolved_save_dir())]
+    """Every save, most recently played first (M7b: the Saves screen)."""
+    return [_save_out(s) for s in saves_db.list_files(settings.resolved_save_dir())]
 
 
 @router.post(
@@ -193,13 +204,82 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         data=data,
         save_dir=settings.resolved_save_dir(),
     )
-    return _save_out(repository.summarize(path))
+    return _save_out(saves_db.describe(path))
+
+
+def _existing(settings: SettingsDep, save_id: str) -> Path:
+    return repository.existing_save_path(settings.resolved_save_dir(), save_id)
 
 
 @router.get("/{save_id}", response_model=SaveOut, responses=ERRORS, operation_id="getSave")
 def get_save(save_id: str, settings: SettingsDep) -> SaveOut:
-    path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
-    return _save_out(repository.summarize(path))
+    return _save_out(saves_db.describe(_existing(settings, save_id)))
+
+
+@router.post(
+    "/{save_id}/rename", response_model=SaveOut, responses=ERRORS, operation_id="renameSave"
+)
+def rename_save(save_id: str, body: SaveNameIn, settings: SettingsDep) -> SaveOut:
+    """Change the save's display name; the company name and the save's id stay (M7b)."""
+    return _save_out(saves_db.rename(_existing(settings, save_id), body.name))
+
+
+@router.post(
+    "/{save_id}/duplicate",
+    response_model=SaveOut,
+    status_code=status.HTTP_201_CREATED,
+    responses=ERRORS,
+    operation_id="duplicateSave",
+)
+def duplicate_save(save_id: str, body: SaveNameIn, settings: SettingsDep) -> SaveOut:
+    """Save as: a copy under a new name and id. 409 for an Ironman or busy save."""
+    return _save_out(saves_db.duplicate(_existing(settings, save_id), body.name))
+
+
+@router.delete(
+    "/{save_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=ERRORS,
+    operation_id="deleteSave",
+)
+def delete_save(save_id: str, settings: SettingsDep) -> Response:
+    """Delete the save and its backups. 409 while it is busy."""
+    saves_db.delete(_existing(settings, save_id))
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/{save_id}/backups",
+    response_model=list[BackupOut],
+    responses=ERRORS,
+    operation_id="listBackups",
+)
+def list_backups(save_id: str, settings: SettingsDep) -> list[BackupOut]:
+    """Periodic and pre-upgrade backups, newest first."""
+    return [
+        BackupOut(
+            backup_id=b.backup_id,
+            kind=b.kind,
+            turn=b.turn,
+            date_label=format_turn(b.turn),
+            created=b.created,
+            size_bytes=b.size_bytes,
+        )
+        for b in saves_db.backups(_existing(settings, save_id))
+    ]
+
+
+@router.post(
+    "/{save_id}/backups/{backup_id}/restore",
+    response_model=SaveOut,
+    status_code=status.HTTP_201_CREATED,
+    responses=ERRORS,
+    operation_id="restoreBackup",
+)
+def restore_backup(save_id: str, backup_id: str, settings: SettingsDep) -> SaveOut:
+    """Restore a backup as a new save, "Company (restored, Mar 2013)"; the original is
+    never changed. 409 for an Ironman or busy save."""
+    return _save_out(saves_db.restore(_existing(settings, save_id), backup_id))
 
 
 @router.get(

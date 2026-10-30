@@ -19,6 +19,7 @@ from tst.api import finance_views, org_views, product_views, views
 from tst.config import Settings
 from tst.db import inbox as inbox_db
 from tst.db import repository
+from tst.db import saves as saves_db
 from tst.db.models import InboxItemRow
 from tst.loader import DataLoadError, LoadedData, load_all
 from tst.sim.actions import (
@@ -271,6 +272,103 @@ def list_saves() -> None:
         typer.echo(
             f"{s.slug:<24} {s.company_name:<30} {format_turn(s.current_turn):<9} {s.scenario_id}"
         )
+
+
+# --- Saves manager (M7b) -------------------------------------------------------------------
+
+saves_app = typer.Typer(no_args_is_help=True, help="Rename, duplicate, delete and restore saves")
+app.add_typer(saves_app, name="saves")
+
+
+def _save_file(save: str) -> Path:
+    settings = Settings()
+    try:
+        return repository.existing_save_path(settings.resolved_save_dir(), save)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+
+
+def _show_save(s: saves_db.SaveFile) -> str:
+    size = f"{s.size_bytes / 1_000_000:.1f} MB"
+    return (
+        f"{s.slug:<28} {s.display_name:<32} {s.company_name:<24} {s.scenario_id:<22}"
+        f" {s.difficulty:<9} {format_turn(s.current_turn):<9} turn {s.current_turn:<4}"
+        f" {s.game_state:<16} {s.last_played:%Y-%m-%d %H:%M} {size}"
+    )
+
+
+@saves_app.command("list")
+def saves_list() -> None:
+    """Every save, most recently played first, with its state, last play and size."""
+    found = saves_db.list_files(Settings().resolved_save_dir())
+    if not found:
+        typer.echo("No saves.")
+    for s in found:
+        typer.echo(_show_save(s))
+
+
+@saves_app.command("rename")
+def saves_rename(
+    save: Annotated[str, typer.Option(help="Save slug")],
+    name: Annotated[str, typer.Option(help="New display name (the company keeps its name)")],
+) -> None:
+    """Change a save's display name."""
+    try:
+        typer.echo(_show_save(saves_db.rename(_save_file(save), name)))
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+
+
+@saves_app.command("duplicate")
+def saves_duplicate(
+    save: Annotated[str, typer.Option(help="Save slug")],
+    name: Annotated[str, typer.Option(help="The copy's display name")],
+) -> None:
+    """Save as: copy a save under a new name (not for Ironman saves)."""
+    try:
+        typer.echo(_show_save(saves_db.duplicate(_save_file(save), name)))
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+
+
+@saves_app.command("delete")
+def saves_delete(
+    save: Annotated[str, typer.Option(help="Save slug")],
+    confirm: Annotated[str, typer.Option(help="Type the save slug again to confirm")],
+) -> None:
+    """Delete a save and its backups."""
+    if confirm != save:
+        raise _fail("--confirm must repeat the save slug")
+    try:
+        saves_db.delete(_save_file(save))
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    typer.echo(f"Deleted {save}")
+
+
+@saves_app.command("restore")
+def saves_restore(
+    save: Annotated[str, typer.Option(help="Save slug")],
+    backup: Annotated[
+        str | None, typer.Option(help="Backup file name; omit to list the backups")
+    ] = None,
+) -> None:
+    """List a save's backups, or restore one as a new save (not for Ironman saves)."""
+    path = _save_file(save)
+    try:
+        if backup is None:
+            found = saves_db.backups(path)
+            if not found:
+                typer.echo("No backups.")
+            for b in found:
+                typer.echo(
+                    f"{b.backup_id:<56} {b.kind:<12} {format_turn(b.turn):<9}"
+                    f" {b.created:%Y-%m-%d %H:%M}"
+                )
+            return
+        typer.echo(_show_save(saves_db.restore(path, backup)))
+    except SimError as exc:
+        raise _fail(exc.message) from exc
 
 
 # --- Hiring (M1b) ---------------------------------------------------------------------------

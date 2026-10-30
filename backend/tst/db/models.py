@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 16
+SCHEMA_VERSION = 17
 
 
 class Base(DeclarativeBase):
@@ -50,6 +50,9 @@ class SaveMetaRow(Base):
     next_rival_effect_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_rival_move_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_approach_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    # M7b: the Saves screen's name for the save; null shows the slug. Deferred: migration 0013
+    # reads save_meta through these models, before 0017 adds the column.
+    display_name: Mapped[str | None] = mapped_column(String(80), nullable=True, deferred=True)
     next_rival_person_id: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default="1000001"
     )

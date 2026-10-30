@@ -11,6 +11,7 @@
           "saves"
         ],
         "summary": "List Saves",
+        "description": "Every save, most recently played first (M7b: the Saves screen).",
         "operationId": "listSaves",
         "responses": {
           "200": {
@@ -119,6 +120,395 @@
         ],
         "responses": {
           "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Delete Save",
+        "description": "Delete the save and its backups. 409 while it is busy.",
+        "operationId": "deleteSave",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/rename": {
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Rename Save",
+        "description": "Change the save's display name; the company name and the save's id stay (M7b).",
+        "operationId": "renameSave",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveNameIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/duplicate": {
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Duplicate Save",
+        "description": "Save as: a copy under a new name and id. 409 for an Ironman or busy save.",
+        "operationId": "duplicateSave",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveNameIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/backups": {
+      "get": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "List Backups",
+        "description": "Periodic and pre-upgrade backups, newest first.",
+        "operationId": "listBackups",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BackupOut"
+                  },
+                  "title": "Response Listbackups"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/backups/{backup_id}/restore": {
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Restore Backup",
+        "description": "Restore a backup as a new save, \"Company (restored, Mar 2013)\"; the original is\nnever changed. 409 for an Ironman or busy save.",
+        "operationId": "restoreBackup",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "backup_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Backup Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -7582,6 +7972,52 @@
           "default_allocation"
         ],
         "title": "BackgroundOut"
+      },
+      "BackupOut": {
+        "properties": {
+          "backup_id": {
+            "type": "string",
+            "title": "Backup Id",
+            "description": "The backup's file name"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "periodic",
+              "pre_upgrade"
+            ],
+            "title": "Kind"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn",
+            "description": "The game turn the backup was taken at"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created",
+            "description": "When the backup file was written (UTC)"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "backup_id",
+          "kind",
+          "turn",
+          "date_label",
+          "created",
+          "size_bytes"
+        ],
+        "title": "BackupOut"
       },
       "BalanceSheetOut": {
         "properties": {
@@ -15112,11 +15548,33 @@
         ],
         "title": "SafesOut"
       },
+      "SaveNameIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "description": "The save's display name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "SaveNameIn"
+      },
       "SaveOut": {
         "properties": {
           "save_id": {
             "type": "string",
-            "title": "Save Id"
+            "title": "Save Id",
+            "description": "The file's slug: the save's id in every route"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name",
+            "description": "The save's name on the Saves screen (M7b)"
           },
           "company_name": {
             "type": "string",
@@ -15137,16 +15595,47 @@
           "date_label": {
             "type": "string",
             "title": "Date Label"
+          },
+          "game_state": {
+            "type": "string",
+            "title": "Game State",
+            "description": "active | bankrupt | founder_removed"
+          },
+          "last_played": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Played",
+            "description": "When the file last changed (UTC)"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "ironman": {
+            "type": "boolean",
+            "title": "Ironman",
+            "description": "No duplicate or restore (ADR-0004)"
+          },
+          "busy": {
+            "type": "boolean",
+            "title": "Busy",
+            "description": "A turn, action or holiday is writing to it now"
           }
         },
         "type": "object",
         "required": [
           "save_id",
+          "display_name",
           "company_name",
           "scenario_id",
           "difficulty",
           "turn",
-          "date_label"
+          "date_label",
+          "game_state",
+          "last_played",
+          "size_bytes",
+          "ironman",
+          "busy"
         ],
         "title": "SaveOut"
       },

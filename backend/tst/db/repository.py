@@ -930,6 +930,25 @@ def update_index(path: Path, state: GameState | None = None) -> None:
     index.write_text(json.dumps([asdict(s) for s in items], indent=2) + "\n", encoding="utf-8")
 
 
+def remove_from_index(path: Path) -> None:
+    """Drop a deleted save's entry from saves/index.json (M7b)."""
+    index = path.parent / INDEX_FILE
+    try:
+        items = [SaveSummary(**item) for item in json.loads(index.read_text(encoding="utf-8"))]
+    except (OSError, ValueError, TypeError):
+        refresh_index(path.parent)
+        return
+    slug = slug_of(path)
+    kept = [s for s in items if s.slug != slug]
+    index.write_text(json.dumps([asdict(s) for s in kept], indent=2) + "\n", encoding="utf-8")
+
+
+def forget(path: Path) -> None:
+    """Forget what this process remembers about a save file that is about to go (M7b)."""
+    _LAST.pop(str(path.resolve()), None)
+    migrate.forget(path)
+
+
 def list_saves(save_dir: Path) -> list[SaveSummary]:
     index = save_dir / INDEX_FILE
     if not save_dir.is_dir():

@@ -30,7 +30,7 @@ export function focusTableSearch(): boolean {
   return true;
 }
 
-/** Space/Enter -> Continue; 1-9 -> jump to the Nth left-nav screen; H -> Holiday;
+/** Space/Enter -> Continue; 1-9 and 0 -> jump to the Nth left-nav screen; H -> Holiday;
  *  / -> the table search; ? -> the shortcut list. */
 export function useGameHotkeys(
   onContinue: () => void,
@@ -50,8 +50,8 @@ export function useGameHotkeys(
         if (isActivatingTarget(event.target)) return;
         event.preventDefault();
         handlers.current.onContinue();
-      } else if (/^[1-9]$/.test(event.key)) {
-        handlers.current.onJump(Number(event.key) - 1);
+      } else if (/^[0-9]$/.test(event.key)) {
+        handlers.current.onJump((Number(event.key) + 9) % 10); // 1-9, then 0 for the tenth
       } else if (event.key === 'h' || event.key === 'H') {
         handlers.current.extra.onHoliday?.();
       } else if (event.key === '/') {
