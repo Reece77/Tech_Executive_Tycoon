@@ -27,6 +27,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M4c-playtest-fixes.md](M4c-playtest-fixes.md) | Fixes from Reece's first playtest: energy, "what you learned", interview potential, investor heat, board nominee, inbox cleanup | M4b |
 | [M5-rivals.md](M5-rivals.md) | Rival AI for incumbents, rival startups, poaching both ways, Competitors screen (one milestone) | M4c |
 | [M6-events.md](M6-events.md) | Event director, templates and LLM pipeline, storylines, relationships, critical events, headlines, Settings (one milestone) | M5 |
+| [M7a-speed-and-balance.md](M7a-speed-and-balance.md) | Turn speed, balance targets, strategy runner (nightly), 20 templates, balance pass | M6 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 
