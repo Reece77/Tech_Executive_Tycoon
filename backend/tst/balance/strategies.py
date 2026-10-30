@@ -132,16 +132,17 @@ def headcount(game: Game) -> int:
 
 
 def hire(game: Game, wanted: int, per_month: int) -> None:
-    """Work toward `wanted` employees (offers out count): keep one job post open for the next
-    role in HIRE_ORDER, interview its candidates while energy lasts and offer 1.05x the ask.
-    The job post closes once the target is reached."""
+    """Work toward `wanted` employees (offers out count), one role at a time in HIRE_ORDER:
+    keep a job post open for the next role only, interview its candidates while energy lasts
+    and offer 1.05x the ask. Job posts close once the target is reached."""
     state = game.state
     searches = [s for s in state.searches if s.company_id == PLAYER and s.status == "open"]
-    if headcount(game) >= wanted:
-        for search in searches:
-            game.act(CloseSearch(game.founder_id, search.id))
-        return
     role = HIRE_ORDER[headcount(game) % len(HIRE_ORDER)]
+    for search in searches:
+        if headcount(game) >= wanted or search.role != role:
+            game.act(CloseSearch(game.founder_id, search.id))
+    if headcount(game) >= wanted:
+        return
     if not any(s.role == role for s in searches):
         game.act(OpenSearch(game.founder_id, role, "job_post"))
     made = 0
@@ -152,6 +153,7 @@ def hire(game: Game, wanted: int, per_month: int) -> None:
         if (
             candidate.company_id != PLAYER
             or candidate.status != "open"
+            or person.role != HIRE_ORDER[headcount(game) % len(HIRE_ORDER)]
             or game.state.pending_offer_for(person.id) is not None
             or person.salary_expectation_cents is None
         ):
