@@ -14,6 +14,9 @@ from tst.db.models import (
     CompanyRow,
     DecisionLogRow,
     EmploymentRow,
+    EventQueueRow,
+    EventRow,
+    FreeAgentRow,
     FundingRoundRow,
     HiringPlanRow,
     LedgerEntryRow,
@@ -43,12 +46,14 @@ from tst.db.models import (
     SaveMetaRow,
     SearchRow,
     SegmentShareRow,
+    StorylineRow,
     TermSheetRow,
     TurnLogRow,
     TurnSnapshotRow,
     WorkforcePoolRow,
 )
 from tst.sim.decisions import Decisions
+from tst.sim.events.models import Effect, EventChoice, GameEvent, QueuedEvent, Storyline
 from tst.sim.finance.models import (
     BoardSeat,
     CapEntry,
@@ -102,6 +107,7 @@ from tst.sim.products.models import (
     ProductStatus,
 )
 from tst.sim.rivals.models import (
+    FreeAgent,
     PoachApproach,
     RivalEffect,
     RivalMove,
@@ -781,6 +787,7 @@ RIVAL_ROWS: dict[type, type] = {
     RivalMove: RivalMoveRow,
     PoachApproach: PoachApproachRow,
     SegmentShare: SegmentShareRow,
+    FreeAgent: FreeAgentRow,
 }
 
 
@@ -798,3 +805,58 @@ def rival_from_row[T](cls: type[T], row: Any) -> T:
     if cls is SegmentShare:
         values["history"] = tuple(float(v) for v in values["history"] or ())
     return cls(**values)
+
+
+# --- Events (M6) ------------------------------------------------------------------------------
+
+
+def event_to_row(event: GameEvent) -> EventRow:
+    values = asdict(event)
+    values["person_ids"] = list(event.person_ids)
+    values["choices"] = [
+        {
+            "key": c.key,
+            "label": c.label,
+            "effects": [{"type": e.type, "target": e.target, "value": e.value} for e in c.effects],
+        }
+        for c in event.choices
+    ]
+    return EventRow(**values)
+
+
+def event_from_row(row: EventRow) -> GameEvent:
+    values = {f.name: getattr(row, f.name) for f in fields(GameEvent)}
+    values["person_ids"] = tuple(row.person_ids or ())
+    values["choices"] = tuple(
+        EventChoice(
+            c["key"],
+            c["label"],
+            tuple(Effect(e["type"], e["target"], float(e["value"])) for e in c.get("effects", ())),
+        )
+        for c in row.choices or ()
+    )
+    return GameEvent(**values)
+
+
+def storyline_to_row(story: Storyline) -> StorylineRow:
+    values = asdict(story)
+    values["person_ids"] = list(story.person_ids)
+    return StorylineRow(**values)
+
+
+def storyline_from_row(row: StorylineRow) -> Storyline:
+    values = {f.name: getattr(row, f.name) for f in fields(Storyline)}
+    values["person_ids"] = tuple(row.person_ids or ())
+    return Storyline(**values)
+
+
+def queued_to_row(queued: QueuedEvent) -> EventQueueRow:
+    values = asdict(queued)
+    values["person_ids"] = list(queued.person_ids)
+    return EventQueueRow(**values)
+
+
+def queued_from_row(row: EventQueueRow) -> QueuedEvent:
+    values = {f.name: getattr(row, f.name) for f in fields(QueuedEvent)}
+    values["person_ids"] = tuple(row.person_ids or ())
+    return QueuedEvent(**values)

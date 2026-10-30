@@ -210,8 +210,8 @@ def preview_change(
 
 
 def _profile(path: Path, person_id: int, data: LoadedData) -> PersonProfileOut:
-    with repository.open_session(path) as session:
-        state = repository.load_state(session)
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
         return views.person_profile(session, state, state.player.id, person_id, data)
 
 
@@ -280,8 +280,8 @@ def morale_breakdown(
     save_id: str, person_id: int, settings: SettingsDep, data: DataDep
 ) -> MoraleBreakdownOut:
     path = _path(settings, save_id)
-    with repository.open_session(path) as session:
-        state = repository.load_state(session)
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
         cash = company_cash(repository.ledger_balances(session), state.player.id)
     projected = sum(
         amount

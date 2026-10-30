@@ -34,6 +34,7 @@ from tst.api.schemas.finance import (
     StatementsOut,
 )
 from tst.db import inbox, repository
+from tst.db.events import written_text
 from tst.sim.actions import AcceptBridge, AcceptTermSheet, NameNominee, RaiseSafe, StartRound
 from tst.sim.errors import UnknownTermSheetError
 from tst.sim.state import company_cash
@@ -56,8 +57,8 @@ def get_statements(
     period: Annotated[Literal["month", "quarter", "year"], Query()] = "month",
 ) -> StatementsOut:
     """P&L, balance sheet and cash flow for every closed month, quarter or year (14.1)."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         lines = repository.ledger_lines(session, state.player.id)
     return finance_views.statements_out(state, lines, period, data)
 
@@ -71,8 +72,8 @@ def get_statements(
 def get_summary(save_id: str, settings: SettingsDep, data: DataDep) -> FinanceSummaryOut:
     """Cash, the projected net burn and runway ("profitable" when null), insolvency and the
     game state (ADR-0018)."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         cash = company_cash(repository.ledger_balances(session), state.player.id)
     return finance_views.summary_out(state, cash, data)
 
@@ -82,8 +83,8 @@ def get_summary(save_id: str, settings: SettingsDep, data: DataDep) -> FinanceSu
 )
 def get_captable(save_id: str, settings: SettingsDep, data: DataDep) -> CapTableOut:
     """Holders, classes, shares and percentages; every grant with vested and unvested."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         names = repository.person_names(session, [g.person_id for g in state.grants])
     return finance_views.captable_out(state, names, data)
 
@@ -91,12 +92,16 @@ def get_captable(save_id: str, settings: SettingsDep, data: DataDep) -> CapTable
 @router.get("/finance/board", response_model=BoardOut, responses=ERRORS, operation_id="getBoard")
 def get_board(save_id: str, settings: SettingsDep, data: DataDep) -> BoardOut:
     """Seats, each director's confidence and trend, and the last quarterly meeting (14.6)."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         player = state.player.id
         meetings = inbox.list_inbox(session, player, kinds=["board_meeting"], limit=2)
         warnings = inbox.list_inbox(session, player, kinds=["board_warning"], limit=1)
-    return finance_views.board_out(state, data, meetings, warnings)
+        minutes = written_text(session, "minutes", meetings[0].turn) if meetings else None
+    out = finance_views.board_out(state, data, meetings, warnings)
+    if out.last_meeting is not None and minutes:
+        out.last_meeting.minutes = minutes
+    return out
 
 
 @router.get(
@@ -105,8 +110,8 @@ def get_board(save_id: str, settings: SettingsDep, data: DataDep) -> BoardOut:
 def get_game_over(save_id: str, settings: SettingsDep, data: DataDep) -> GameOverOut:
     """How the game ended: the reason, the turn, the last numbers and the last six months'
     finance news (ADR-0018). Works on an active save too (game_state "active")."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         player = state.player.id
         cash = company_cash(repository.ledger_balances(session), player)
         snaps = repository.recent_snapshots(session, player, max(state.turn, 1))
@@ -122,8 +127,8 @@ def get_game_over(save_id: str, settings: SettingsDep, data: DataDep) -> GameOve
 @router.get("/finance/safes", response_model=SafesOut, responses=ERRORS, operation_id="listSafes")
 def list_safes(save_id: str, settings: SettingsDep, data: DataDep) -> SafesOut:
     """Every SAFE and bridge; an open bridge offer shows today's amount (14.7)."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         cash = company_cash(repository.ledger_balances(session), state.player.id)
     return finance_views.safes_out(state, cash, data)
 

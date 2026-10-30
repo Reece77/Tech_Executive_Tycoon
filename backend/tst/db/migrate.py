@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import shutil
+import tempfile
 from functools import lru_cache
 from pathlib import Path
 
@@ -35,6 +37,33 @@ def head_revision() -> str:
     return head
 
 
+# Saves this process has seen at head, keyed by path and creation time (a file recreated at
+# the same path is a new key). Any migration run on a path forgets it (M6 sub-task 0).
+_AT_HEAD: set[tuple[str, int, str]] = set()
+# One migrated, empty schema per head revision, copied into each new save (M6 sub-task 0).
+_SCHEMA: dict[str, Path] = {}
+
+
+def _key(save_path: Path) -> tuple[str, int, str]:
+    return (str(save_path.resolve()), save_path.stat().st_ctime_ns, head_revision())
+
+
+def is_current(save_path: Path) -> bool:
+    """Whether the save is at head (remembered per process once seen)."""
+    if _key(save_path) in _AT_HEAD:
+        return True
+    if current_revision(save_path) == head_revision():
+        _AT_HEAD.add(_key(save_path))
+        return True
+    return False
+
+
+def _forget(save_path: Path) -> None:
+    resolved = str(save_path.resolve())
+    for key in [k for k in _AT_HEAD if k[0] == resolved]:
+        _AT_HEAD.discard(key)
+
+
 def current_revision(save_path: Path) -> str | None:
     engine = make_engine(save_path)
     try:
@@ -45,6 +74,8 @@ def current_revision(save_path: Path) -> str | None:
 
 
 def _run(save_path: Path, revision: str, *, down: bool = False) -> None:
+    if save_path.exists():
+        _forget(save_path)
     cfg = _config()
     engine = make_engine(save_path)
     try:
@@ -59,8 +90,24 @@ def _run(save_path: Path, revision: str, *, down: bool = False) -> None:
 
 
 def upgrade_new(save_path: Path) -> None:
-    """Create the schema in a brand-new save file. No backup: there is nothing to lose."""
-    _run(save_path, "head")
+    """Create the schema in a brand-new save file. No backup: there is nothing to lose.
+
+    The migrations run once per process into an empty schema file, which each new save then
+    copies: the same file as running them again, without the time (M6 sub-task 0)."""
+    head = head_revision()
+    schema = _SCHEMA.get(head)
+    if schema is None or not schema.is_file():
+        schema = Path(tempfile.mkdtemp(prefix="tst-schema-")) / "schema.sqlite"
+        _run(schema, "head")
+        engine = make_engine(schema)
+        try:
+            with engine.connect() as conn:
+                conn.exec_driver_sql("PRAGMA wal_checkpoint(TRUNCATE)")
+        finally:
+            engine.dispose()
+        _SCHEMA[head] = schema
+    shutil.copyfile(schema, save_path)
+    _AT_HEAD.add(_key(save_path))
 
 
 def downgrade(save_path: Path, revision: str) -> None:
@@ -83,10 +130,14 @@ def _current_turn(save_path: Path) -> int:
 
 def ensure_current(save_path: Path) -> Path | None:
     """Upgrade an existing save to head, backing it up first. Returns the backup, if any."""
+    if _key(save_path) in _AT_HEAD:
+        return None
     current = current_revision(save_path)
     if current == head_revision():
+        _AT_HEAD.add(_key(save_path))
         return None
     backup = pre_migration_backup(save_path, _current_turn(save_path), current)
     log.info("Upgrading %s from %s to head (backup %s)", save_path.name, current, backup.name)
     _run(save_path, "head")
+    _AT_HEAD.add(_key(save_path))
     return backup

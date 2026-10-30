@@ -7,9 +7,11 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.helpers import event_cash_cents
 from tst.api import schemas
 from tst.api.app import create_app
 from tst.config import Settings, get_settings
+from tst.db import repository
 from tst.db.repository import open_session, read_meta
 
 GARAGE_CASH = 5_000_000
@@ -52,7 +54,7 @@ def test_create_list_get(client: TestClient) -> None:
     assert client.get("/api/saves/dev").json() == expected
 
 
-def test_overview_and_advance(client: TestClient) -> None:
+def test_overview_and_advance(client: TestClient, save_dir: Path) -> None:
     create(client)
     ov = client.get("/api/saves/dev/overview").json()
     assert ov["date_label"] == "Jan 2010"
@@ -70,7 +72,8 @@ def test_overview_and_advance(client: TestClient) -> None:
     second = client.post("/api/saves/dev/advance").json()
     assert second["date_label"] == "Mar 2010"
     assert second["turn"] == 2
-    assert second["cash_cents"] == GARAGE_CASH - 2 * OVERHEAD
+    events = event_cash_cents(repository.save_path(save_dir, "dev"))  # M6: answered at Continue
+    assert second["cash_cents"] == GARAGE_CASH - 2 * OVERHEAD + events
     assert [p["date_label"] for p in second["history"]] == ["Jan 2010", "Feb 2010"]
     assert client.get("/api/saves/dev/overview").json() == second
 
@@ -210,6 +213,25 @@ RIVAL_FORBIDDEN_NAMES = frozenset(
 )
 
 
+# formulas.md 16.9 (M6): never a trigger's strength, an effect's cap, the cash base of the caps,
+# or a relationship's number; effects are words and relationships labels.
+EVENT_FORBIDDEN_NAMES = frozenset(
+    {
+        "strength",
+        "trigger_strength",
+        "cap",
+        "caps",
+        "effect_cap",
+        "cash_base_cents",
+        "affinity",
+        "relationship_value",
+        "start_value",
+        "api_key",
+        "anthropic_api_key",
+    }
+)
+
+
 def forbidden(name: str) -> bool:
     """ADR-0007 exact-name rule (potential_phrase is allowed), plus the 11.13 names."""
     return (
@@ -217,6 +239,7 @@ def forbidden(name: str) -> bool:
         or name in PRODUCT_FORBIDDEN_NAMES
         or name in FINANCE_FORBIDDEN_NAMES
         or name in RIVAL_FORBIDDEN_NAMES
+        or name in EVENT_FORBIDDEN_NAMES
         or name.startswith(FORBIDDEN_PREFIXES)
     )
 

@@ -24,6 +24,7 @@ from typing import Any
 import pytest
 from sqlalchemy import select
 
+from tests.helpers import answer_critical
 from tst.db.models import LedgerEntryRow, TurnSnapshotRow
 from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
 from tst.loader import LoadedData
@@ -273,6 +274,7 @@ def play(
         funding_plan(path, data)
         product_plan(path, data)
         hiring_plan(path, data)
+        answer_critical(path, data)  # M6: a critical event must be answered before Continue
         result = run_turn(path, data)
         with open_session(path) as session:
             founder = next(p for p in load_state(session).people if p.is_founder)
@@ -345,8 +347,14 @@ def assert_statements_reconcile(path: Path, loaded: LoadedData) -> None:
 
 @pytest.mark.parametrize("seed", SEEDS)
 def test_golden_seed(
-    seed: int, tmp_path: Path, loaded: LoadedData, request: pytest.FixtureRequest
+    seed: int,
+    tmp_path: Path,
+    loaded: LoadedData,
+    request: pytest.FixtureRequest,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    if seed == 1:  # M6.0: every reuse of the remembered state is compared with the save
+        monkeypatch.setenv("TST_STATE_CACHE_CHECK", "1")
     path, founder_ca = play(tmp_path, f"golden-{seed}", seed, loaded)
     actual = snapshots(path)
     assert len(actual) == TURNS

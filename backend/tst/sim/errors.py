@@ -186,6 +186,34 @@ class UnknownSafeError(NotFoundError):
     code = "unknown_safe"
 
 
+class SaveBusyError(SimError):
+    """Another write to the same save is in progress (M6 sub-task 0)."""
+
+    code = "save_busy"
+
+
+class UpgradeNeededError(SimError):
+    """A save from before the latest migration could not be upgraded (M6 sub-task 0)."""
+
+    code = "upgrade_needed"
+
+
+class CriticalEventOpenError(SimError):
+    """Continue is blocked until the player answers a critical event (ADR-0006, amended)."""
+
+    code = "critical_event_open"
+
+    def __init__(self, message: str, event_id: int) -> None:
+        super().__init__(message)
+        self.event_id = event_id
+
+
+class EventError(SimError):
+    """An event choice that cannot be made (closed, not shown yet, unknown key)."""
+
+    code = "invalid_event_choice"
+
+
 class GameOverError(SimError):
     """The game has ended (bankruptcy or the founder's removal); ADR-0018 section 4."""
 

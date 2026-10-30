@@ -8,3 +8,4 @@ class ErrorOut(BaseModel):
 
     code: str
     message: str
+    event_id: int | None = None  # critical_event_open: the event blocking Continue (M6)

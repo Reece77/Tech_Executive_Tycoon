@@ -19,7 +19,7 @@ from collections.abc import Iterable
 from dataclasses import replace
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, func, insert, inspect, select, update
 from sqlalchemy.orm import Session
 
 from tst.db.mappers import (
@@ -28,6 +28,8 @@ from tst.db.mappers import (
     company_to_row,
     employment_from_row,
     employment_to_row,
+    event_from_row,
+    event_to_row,
     finance_from_row,
     finance_to_row,
     game_state_from_rows,
@@ -47,6 +49,8 @@ from tst.db.mappers import (
     product_segment_from_row,
     product_segment_to_row,
     product_to_row,
+    queued_from_row,
+    queued_to_row,
     reveal_from_rows,
     reveal_to_rows,
     rival_from_row,
@@ -55,6 +59,8 @@ from tst.db.mappers import (
     search_from_row,
     search_to_row,
     seat_history_row,
+    storyline_from_row,
+    storyline_to_row,
     unit_from_row,
     unit_to_row,
 )
@@ -65,6 +71,9 @@ from tst.db.models import (
     CapTableEntryRow,
     CompanyRow,
     EmploymentRow,
+    EventQueueRow,
+    EventRow,
+    FreeAgentRow,
     FundingRoundRow,
     HiringPlanRow,
     MarketSegmentRow,
@@ -84,6 +93,7 @@ from tst.db.models import (
     PoachApproachRow,
     ProductRow,
     ProductSegmentRow,
+    RelationshipRow,
     RivalEffectRow,
     RivalMoveRow,
     RoundNomineeRow,
@@ -91,6 +101,7 @@ from tst.db.models import (
     SaveMetaRow,
     SearchRow,
     SegmentShareRow,
+    StorylineRow,
     TermSheetRow,
     WorkforcePoolRow,
 )
@@ -103,8 +114,11 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
+from tst.sim.hiring.models import NextIds
 from tst.sim.people.models import RevealState
+from tst.sim.people.relationships import Relationship
 from tst.sim.rivals.models import (
+    FreeAgent,
     PoachApproach,
     RivalEffect,
     RivalMove,
@@ -115,6 +129,7 @@ from tst.sim.state import GameState
 
 META_ID = 1
 RIVAL_MOVE_MEMORY = 24  # months of rival moves loaded: news, cooldowns, stance (M5)
+EVENT_MEMORY = 24  # months of events loaded: the director's longest cooldown (M6, 16.1)
 STAFF_STATUSES = ("active", "notice")
 
 
@@ -173,12 +188,25 @@ def load_state(session: Session) -> GameState:
         finance_from_row(BoardSeat, r, history=histories.get(r.id, ()))
         for r in session.scalars(select(BoardSeatRow).order_by(BoardSeatRow.id))
     )
+    free_agents = (
+        tuple(
+            rival_from_row(FreeAgent, r)
+            for r in session.scalars(
+                select(FreeAgentRow)
+                .where(FreeAgentRow.status == "available")
+                .order_by(FreeAgentRow.person_id)
+            )
+        )
+        if has_table(session, FreeAgentRow)
+        else ()
+    )
     live_ids = sorted(
         {e.person_id for e in employments}
         | {c.person_id for c in candidates}
         | {o.actor_id for o in offers}
         | {p.owner_id for p in plans}
         | {s.person_id for s in seats if s.person_id is not None}
+        | {a.person_id for a in free_agents}
     )
 
     def in_live(column: Any) -> Any:
@@ -326,8 +354,83 @@ def load_state(session: Session) -> GameState:
                 .order_by(SegmentShareRow.product_id, SegmentShareRow.segment)
             )
         ),
-        next_ids=next_ids_from_meta(meta),
+        free_agents=free_agents,
+        **_event_state(session, meta.current_turn),
+        relationships=(
+            tuple(
+                Relationship(r.person_id, r.other_person_id, r.value, r.start_value, r.since_turn)
+                for r in session.scalars(
+                    select(RelationshipRow).order_by(
+                        RelationshipRow.person_id, RelationshipRow.other_person_id
+                    )
+                )
+            )
+            if has_table(session, RelationshipRow)
+            else ()
+        ),
+        next_ids=_event_ids(session, next_ids_from_meta(meta)),
     )
+
+
+def _event_state(session: Session, turn: int) -> dict[str, Any]:
+    """Events of the last 24 months and any still open, active storylines and follow-ups not
+    yet queued (M6). Empty on a save whose migration 0016 has not run yet."""
+    if not has_table(session, EventRow):
+        return {}
+    return {
+        "events": tuple(
+            event_from_row(r)
+            for r in session.scalars(
+                select(EventRow)
+                .where(
+                    (EventRow.turn > turn - EVENT_MEMORY) | EventRow.status.in_(("pending", "open"))
+                )
+                .order_by(EventRow.id)
+            )
+        ),
+        "storylines": tuple(
+            storyline_from_row(r)
+            for r in session.scalars(
+                select(StorylineRow)
+                .where(StorylineRow.status == "active")
+                .order_by(StorylineRow.id)
+            )
+        ),
+        "queued": tuple(
+            queued_from_row(r)
+            for r in session.scalars(
+                select(EventQueueRow)
+                .where(EventQueueRow.done.is_(False))
+                .order_by(EventQueueRow.id)
+            )
+        ),
+    }
+
+
+def _event_ids(session: Session, ids: NextIds) -> NextIds:
+    """Event, storyline and queue ids continue from the largest stored (M6: not in
+    save_meta, so an old save's migration 0013 never reads a column it lacks)."""
+    if not has_table(session, EventRow):
+        return ids
+
+    def after(model: Any) -> int:
+        return int(session.scalar(select(func.max(model.id))) or 0) + 1
+
+    return replace(
+        ids, event=after(EventRow), storyline=after(StorylineRow), queued=after(EventQueueRow)
+    )
+
+
+def has_table(session: Session, model: Any) -> bool:
+    """Whether the save already has a table added or rebuilt after 0013, with the model's
+    columns. Migration 0013 loads and syncs state through the current models, so on an
+    older save it runs before later migrations have made their tables; those tables then
+    read as empty and are not written (M6 sub-task 0)."""
+    insp = inspect(session.connection())
+    if not insp.has_table(model.__tablename__):
+        return False
+    have = {c["name"] for c in insp.get_columns(model.__tablename__)}
+    return {c.name for c in model.__table__.columns} <= have
 
 
 def _rows(session: Session, model: Any, where: Any) -> list[Any]:
@@ -351,9 +454,70 @@ def _changed[T](old: Iterable[T], new: Iterable[T], key: Any) -> list[T]:
     return [x for x in new if before.get(key(x)) != x]
 
 
+def _write[T](session: Session, old: Iterable[T], new: Iterable[T], key: Any, to_row: Any) -> None:
+    """Write the changed items of `new`: one bulk UPDATE by primary key for items that were in
+    `old` (their rows exist), a merge for the rest. A merge per row costs a SELECT, which made
+    every turn write rivals' people and shares one at a time (M6 sub-task 0)."""
+    known = {key(x) for x in old}
+    updates: list[dict[str, Any]] = []
+    model: Any = None
+    for item in _changed(old, new, key):
+        row = to_row(item)
+        if key(item) in known:
+            model = type(row)
+            updates.append({a.key: getattr(row, a.key) for a in model.__mapper__.column_attrs})
+        else:
+            session.merge(row)
+    if updates:
+        session.execute(update(model), updates)
+
+
+def _insert(session: Session, rows: Iterable[Any]) -> None:
+    """Insert new rows with one executemany per table instead of the unit of work (a new
+    save writes thousands of people's child rows; M6 sub-task 0). A column left None that
+    has a default keeps its default."""
+    by_model: dict[Any, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        model = type(row)
+        by_model[model].append(
+            {
+                a.key: v
+                for a in model.__mapper__.column_attrs
+                if (v := getattr(row, a.key)) is not None
+                or (a.columns[0].default is None and a.columns[0].server_default is None)
+            }
+        )
+    for model, values in by_model.items():
+        session.execute(insert(model), values)
+
+
+def _sync_relationships(session: Session, old: GameState, new: GameState) -> None:
+    """Pairs are written like other rows; a pair that ended is deleted (16.7)."""
+    ended = {r.key for r in old.relationships} - {r.key for r in new.relationships}
+    for a, b in sorted(ended):
+        session.execute(
+            delete(RelationshipRow).where(
+                RelationshipRow.person_id == a, RelationshipRow.other_person_id == b
+            )
+        )
+    _write(
+        session,
+        old.relationships,
+        new.relationships,
+        lambda r: r.key,
+        lambda r: RelationshipRow(
+            person_id=r.a,
+            other_person_id=r.b,
+            value=r.value,
+            start_value=r.start,
+            since_turn=r.since_turn,
+        ),
+    )
+
+
 def _sync_reveal(session: Session, old: RevealState | None, new: RevealState) -> None:
     if old is None:
-        session.add_all(reveal_to_rows(new))
+        _insert(session, reveal_to_rows(new))
         return
     base = {"person_id": new.person_id, "observer_company_id": new.observer_company_id}
     old_records = dict(old.attributes)
@@ -384,18 +548,18 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     """Write the differences between `old` (as loaded, or None for a new save) and `new`."""
     old = old or GameState(save_meta=new.save_meta, turn=new.turn, companies=())
 
-    for company in _changed(old.companies, new.companies, lambda c: c.id):
-        session.merge(company_to_row(company))
+    _write(session, old.companies, new.companies, lambda c: c.id, company_to_row)
     session.flush()
-    for product in _changed(old.products, new.products, lambda p: p.id):
-        session.merge(product_to_row(product))
+    _write(session, old.products, new.products, lambda p: p.id, product_to_row)
     session.flush()
-    for seg in _changed(
-        old.product_segments, new.product_segments, lambda s: (s.product_id, s.segment)
-    ):
-        session.merge(product_segment_to_row(seg))
-    for market in _changed(old.markets, new.markets, lambda m: (m.category, m.segment)):
-        session.merge(market_to_row(market))
+    _write(
+        session,
+        old.product_segments,
+        new.product_segments,
+        lambda s: (s.product_id, s.segment),
+        product_segment_to_row,
+    )
+    _write(session, old.markets, new.markets, lambda m: (m.category, m.segment), market_to_row)
 
     old_people = {p.id: p for p in old.people}
     skill_updates: list[dict[str, Any]] = []
@@ -404,7 +568,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     rows = [person_to_rows(p) for p in added]
     session.add_all(r[0] for r in rows)  # person rows first: children reference them
     session.flush()
-    session.add_all(child for r in rows for child in r[1:])
+    _insert(session, (child for r in rows for child in r[1:]))
     for person in new.people:
         before = old_people.get(person.id)
         if (
@@ -443,8 +607,9 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         session.merge(candidate_to_row(candidate))
     for offer in _changed(old.offers, new.offers, lambda o: o.id):
         session.merge(offer_to_row(offer))
-    for ps in _changed(old.person_states, new.person_states, lambda p: p.person_id):
-        session.merge(person_state_to_row(ps))
+    _write(
+        session, old.person_states, new.person_states, lambda p: p.person_id, person_state_to_row
+    )
 
     old_reveals = {(r.observer_company_id, r.person_id): r for r in old.reveals}
     for reveal in new.reveals:
@@ -470,15 +635,27 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         session.merge(round_nominee_row(rnd))
 
     # Rivals (M5)
-    for rival_items in (
-        _changed(old.pools, new.pools, lambda p: (p.company_id, p.function)),
-        _changed(old.rival_effects, new.rival_effects, lambda e: e.id),
-        _changed(old.rival_moves, new.rival_moves, lambda m: m.id),
-        _changed(old.approaches, new.approaches, lambda a: a.id),
-        _changed(old.segment_shares, new.segment_shares, lambda s: (s.product_id, s.segment)),
+    for olds, news, rival_key in (
+        (old.pools, new.pools, lambda p: (p.company_id, p.function)),
+        (old.rival_effects, new.rival_effects, lambda e: e.id),
+        (old.rival_moves, new.rival_moves, lambda m: m.id),
+        (old.approaches, new.approaches, lambda a: a.id),
+        (old.segment_shares, new.segment_shares, lambda s: (s.product_id, s.segment)),
+        (old.free_agents, new.free_agents, lambda a: a.person_id),
     ):
-        for rival_item in rival_items:
-            session.merge(rival_to_row(rival_item))
+        _write(session, olds, news, rival_key, rival_to_row)
+
+    changed = (old.events, old.storylines, old.queued) != (new.events, new.storylines, new.queued)
+    if changed and has_table(session, EventRow):
+        # Storylines before the events that name them, events before their follow-ups.
+        _write(session, old.storylines, new.storylines, lambda s: s.id, storyline_to_row)
+        session.flush()
+        _write(session, old.events, new.events, lambda e: e.id, event_to_row)
+        session.flush()
+        _write(session, old.queued, new.queued, lambda q: q.id, queued_to_row)
+
+    if old.relationships != new.relationships and has_table(session, RelationshipRow):
+        _sync_relationships(session, old, new)
 
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)
@@ -490,3 +667,53 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         meta.game_state = new.save_meta.game_state
         meta.ended_turn = new.save_meta.ended_turn
     session.flush()
+
+
+# --- The last state written, per save (M6 sub-task 0) -----------------------------------------
+
+
+def live_view(state: GameState) -> GameState:
+    """What `load_state` would return after `state` was written: the same live set, by the
+    same rules (golden seed 1 runs with TST_STATE_CACHE_CHECK=1, which compares them)."""
+    staff = tuple(e for e in state.employments if e.status in STAFF_STATUSES)
+    candidates = tuple(c for c in state.candidates if c.status == "open")
+    offers = tuple(o for o in state.offers if o.status == "pending")
+    plans = tuple(p for p in state.plans if p.status != "closed")
+    free_agents = tuple(a for a in state.free_agents if a.status == "available")
+    live = (
+        {e.person_id for e in staff}
+        | {c.person_id for c in candidates}
+        | {o.actor_id for o in offers}
+        | {p.owner_id for p in plans}
+        | {s.person_id for s in state.seats if s.person_id is not None}
+        | {a.person_id for a in free_agents}
+    )
+    products = tuple(p for p in state.products if p.status != "retired")
+    product_ids = {p.id for p in products}
+    turn = state.turn
+    return replace(
+        state,
+        people=tuple(p for p in state.people if p.id in live),
+        employments=staff,
+        reveals=tuple(r for r in state.reveals if r.person_id in live and r.attributes),
+        searches=tuple(s for s in state.searches if s.status == "open"),
+        candidates=candidates,
+        offers=offers,
+        units=tuple(u for u in state.units if u.status == "active"),
+        plans=plans,
+        products=products,
+        product_segments=tuple(s for s in state.product_segments if s.product_id in product_ids),
+        person_states=tuple(p for p in state.person_states if p.person_id in live),
+        rival_effects=tuple(e for e in state.rival_effects if e.end_turn >= turn - 1),
+        rival_moves=tuple(m for m in state.rival_moves if m.turn >= turn - RIVAL_MOVE_MEMORY),
+        approaches=tuple(a for a in state.approaches if a.status in ("pending", "accepted")),
+        segment_shares=tuple(s for s in state.segment_shares if s.product_id in product_ids),
+        free_agents=free_agents,
+        events=tuple(
+            e
+            for e in state.events
+            if e.turn > turn - EVENT_MEMORY or e.status in ("pending", "open")
+        ),
+        storylines=tuple(s for s in state.storylines if s.status == "active"),
+        queued=tuple(q for q in state.queued if not q.done),
+    )

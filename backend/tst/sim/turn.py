@@ -15,7 +15,10 @@ from tst.sim.actions import Action
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
-from tst.sim.errors import GameOverError
+from tst.sim.errors import CriticalEventOpenError, GameOverError
+from tst.sim.events.director import direct
+from tst.sim.events.effects import auto_resolve, energy_next_month
+from tst.sim.events.models import EventRequest, TextRequest
 from tst.sim.finance import fundraising, insolvency
 from tst.sim.finance.board import average_confidence, board_month, vacate_departed
 from tst.sim.finance.captable import founder_bp
@@ -32,6 +35,7 @@ from tst.sim.ledger import (
 from tst.sim.log import LogItem
 from tst.sim.money import Cents
 from tst.sim.org.delegates import run_delegates
+from tst.sim.org.relationships import relationships_month
 from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
@@ -43,12 +47,7 @@ from tst.sim.rivals.poaching import answer_approaches, join_rivals
 from tst.sim.rivals.startups import found_startups, launch_ready, record_failures
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
-from tst.sim.state import GameState, with_company
-
-
-@dataclass(frozen=True, slots=True)
-class EventRequest:
-    """Request for the event director. Empty until M6 (ADR-0012)."""
+from tst.sim.state import GameState, with_company, with_person_state
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,6 +61,7 @@ class TurnResult:
     delegate_actions: tuple[tuple[int, Action], ...] = ()
     product_months: tuple[ProductMonth, ...] = ()  # month-end history per product and segment
     rival_moves: tuple[RivalMove, ...] = ()  # phase 2 (and startup events, phase 9), M5
+    text_requests: tuple[TextRequest, ...] = ()  # read-only LLM text, phase 12 (M6, 16.8)
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,6 +83,8 @@ class TurnContext:
     flows: Mapping[products.FlowKey, products.Flow] = field(default_factory=dict)  # phase 5
     product_months: tuple[ProductMonth, ...] = ()  # phase 11
     rival_moves: tuple[RivalMove, ...] = ()  # M5: phase 2 decisions and phase 9 startup events
+    start: GameState | None = None  # the state the turn began from (M6 milestones)
+    text_requests: tuple[TextRequest, ...] = ()
 
     @property
     def turn(self) -> int:
@@ -101,6 +103,9 @@ class TurnContext:
 
 type Phase = Callable[[TurnContext], TurnContext]
 
+BOARD_MEETING = "board_meeting"  # inbox templates that ask for read-only text (16.8)
+RESIGNED = "resigned"
+
 
 # --- Phases, in ADR-0006 order -------------------------------------------------------------
 
@@ -109,7 +114,10 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     """Notices that end this turn close; pending offers resolve (ADR-0014, formulas.md 7, 10).
 
     Player actions themselves were applied at once between turns; Decisions stays empty in M1.
+    The month's unanswered minor and major events resolve to their first choice first (M6).
     """
+    state, event_entries, event_logs = auto_resolve(ctx.state, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*event_entries).log(*event_logs)
     state, ended = phases.end_notices(ctx.state)
     state = join_rivals(state)  # people who took a rival's offer join it (M5, 15.6)
     state, answered = answer_approaches(state, ctx.rng, ctx.balance)  # M5 (15.6)
@@ -183,7 +191,8 @@ def people_updates(ctx: TurnContext) -> TurnContext:
     each manager's mentoring multiplier (13.5) from the reporting lines at the phase start.
 
     Then morale, resignations and retirements, monthly tag reveals, and employed_month
-    narrowing (formulas.md sections 4, 9, 10). Relationships arrive later.
+    narrowing (formulas.md sections 4, 9, 10). Relationships move first, so morale reads this
+    month's W_rel (16.7).
     """
     mentoring: dict[int, float] = {}
     for company in ctx.state.companies:
@@ -197,6 +206,7 @@ def people_updates(ctx: TurnContext) -> TurnContext:
         for p in sorted(ctx.state.people, key=lambda p: p.id)
     )
     state = replace(ctx.state, people=people)
+    state = relationships_month(state, ctx.balance)  # before morale, which reads W_rel (M6)
     state, departures = phases.morale_and_departures(
         state, ctx.rng, ctx.balance, ctx.data, ctx.opening_balances, ctx.balances
     )
@@ -277,13 +287,39 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
 
 
 def event_director_requests(ctx: TurnContext) -> TurnContext:
-    """Phase 12: candidates expire, open searches deliver next month's batches.
-
-    Event requests for the next turn join this phase in M6 (always empty until then).
-    """
+    """Phase 12: candidates expire, open searches deliver next month's batches, and the
+    event director queues next month's events (16.1) and the month's read-only texts (16.8)."""
     state = phases.expire_candidates(ctx.state)
     state, arrivals = phases.candidate_batches(state, ctx.rng, ctx.balance, ctx.data)
-    return replace(ctx, state=state).log(*arrivals)
+    player = state.player.id
+    state, requests = direct(
+        state,
+        ctx.start or ctx.state,
+        ctx.rng,
+        ctx.balance,
+        ctx.data,
+        account_balance(ctx.balances, player, CASH),
+        ctx.revenue.get(player, 0),
+        ctx.rival_moves,
+    )
+    texts = text_requests(ctx.log_items, player, ctx.turn)
+    ctx = replace(ctx, state=state, event_requests=requests, text_requests=texts)
+    return ctx.log(*arrivals)
+
+
+def text_requests(logs: tuple[LogItem, ...], player: int, turn: int) -> tuple[TextRequest, ...]:
+    """16.8: headlines every month; minutes after a quarterly board meeting; an exit line
+    for each resignation, all for the player."""
+    out = [TextRequest("headlines", player, turn)]
+    mine = [i for i in logs if i.company_id == player]
+    if any(i.template == BOARD_MEETING for i in mine):
+        out.append(TextRequest("minutes", player, turn))
+    out += [
+        TextRequest("exit_line", player, turn, i.link_id)
+        for i in mine
+        if i.template == RESIGNED and i.link_id is not None
+    ]
+    return tuple(out)
 
 
 PHASES: Final[tuple[tuple[str, Phase], ...]] = (
@@ -313,6 +349,11 @@ def advance_turn(
     """Resolve turn `state.turn` and return the next state plus everything to persist."""
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
+    for event in state.open_events(state.player.id):
+        if event.severity == "critical" and event.status == "open":
+            raise CriticalEventOpenError(
+                f"answer the critical event {event.title or event.template_id!r} first", event.id
+            )
     ctx = TurnContext(
         state=state,
         decisions=decisions,
@@ -321,6 +362,7 @@ def advance_turn(
         data=data,
         opening_balances=ledger_balances,
         balances=dict(ledger_balances),
+        start=state,
     )
     for _name, phase in PHASES:
         ctx = phase(ctx)
@@ -328,6 +370,11 @@ def advance_turn(
         raise RuntimeError("snapshot phase did not run")
     # Founder and delegate energy reset for the new month after phase 12 (ADR-0014).
     final = phases.reset_energy(ctx.state, balance)
+    founder = final.founder_of(final.player.id)
+    bonus = energy_next_month(ctx.state, founder.id) if founder else 0
+    if founder is not None and bonus:  # events' energy_delta, next month (16.3)
+        ps = final.person_state(founder.id)
+        final = with_person_state(final, replace(ps, energy=max(0, (ps.energy or 0) + bonus)))
     return TurnResult(
         new_state=replace(final, turn=state.turn + 1),
         ledger_entries=ctx.entries,
@@ -337,4 +384,5 @@ def advance_turn(
         delegate_actions=ctx.delegate_actions,
         product_months=ctx.product_months,
         rival_moves=ctx.rival_moves,
+        text_requests=ctx.text_requests,
     )

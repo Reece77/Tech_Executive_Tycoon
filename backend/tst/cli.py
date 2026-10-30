@@ -58,7 +58,7 @@ from tst.sim.actions import (
 from tst.sim.actions.products import assignment_of, own_product
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
-from tst.sim.errors import SimError
+from tst.sim.errors import CriticalEventOpenError, SimError
 from tst.sim.finance import statements as fs
 from tst.sim.hiring.phases import monthly_costs
 from tst.sim.hiring.rules import offer_preview
@@ -141,6 +141,8 @@ def advance(
         result = None
         for _ in range(turns):
             result = repository.run_turn(path, data)
+    except CriticalEventOpenError as exc:
+        raise _fail(f"{exc.message} (tst events --save {save}; tst choose)") from exc
     except SimError as exc:
         raise _fail(exc.message) from exc
     assert result is not None
@@ -448,7 +450,7 @@ def inbox(
 ) -> None:
     """Show inbox messages, newest first (unread only unless --all)."""
     path, _, state = _game(save)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         items = inbox_db.list_inbox(session, state.player.id, unread_only=not all_items)
         if not items:
             typer.echo("No messages.")
@@ -1319,3 +1321,82 @@ def poach(
         f"Opened search {search.id}: poach {role} from "
         f"{result.new_state.company(rival_id).name}; {_energy(result.new_state, data)}"
     )
+
+
+# --- Events (M6) ------------------------------------------------------------------------------
+
+
+@app.command()
+def events(save: SaveOpt) -> None:
+    """This month's events with their choices and what each does (in words), then the last
+    few answered ones. Minor and major events take their first choice at Continue; a critical
+    one must be answered first."""
+    from tst.api import event_views
+
+    _, data, state = _game(save)
+    cid = state.player.id
+    shown = [e for e in state.open_events(cid) if e.status == "open"]
+    if not shown:
+        typer.echo("No events to answer this month.")
+    for event in shown:
+        out = event_views.event_out(state, event, data)
+        tag = "CRITICAL" if out.severity == "critical" else out.severity
+        story = f" · {out.storyline.title}, step {out.storyline.step}" if out.storyline else ""
+        typer.echo(f"Event {out.event_id} [{out.category_label}, {tag}]{story}: {out.title}")
+        typer.echo(f"  {out.body}")
+        for choice in out.choices:
+            words = "; ".join(choice.effects) or "nothing else"
+            typer.echo(f"  {choice.key}. {choice.label} — {words}")
+        if out.follow_up_note:
+            typer.echo(f"  {out.follow_up_note}")
+    answered = sorted(
+        (e for e in state.events if e.company_id == cid and e.status in ("answered", "auto")),
+        key=lambda e: -e.id,
+    )[:5]
+    for event in answered:
+        chosen = event.choice(event.chosen or "")
+        how = "you chose" if event.status == "answered" else "at Continue"
+        label = chosen.label if chosen else "nothing"
+        typer.echo(f"Answered {event.id} ({how}): {event.title} — {label}")
+
+
+@app.command()
+def choose(
+    save: SaveOpt,
+    event: Annotated[int, typer.Option("--event", help="Event id")],
+    choice: Annotated[str, typer.Option("--choice", help="A, B or C")],
+) -> None:
+    """Answer an event: its effects apply at once (energy 0)."""
+    from tst.sim.actions import ChooseEvent
+
+    path, data, state = _game(save)
+    result = _run(path, data, ChooseEvent(_actor(state), event, choice.upper()))
+    answered = result.new_state.event(event)
+    assert answered is not None
+    label = answered.choice(choice.upper())
+    typer.echo(f"Answered event {event}: {label.label if label else choice}")
+
+
+@app.command()
+def storylines(save: SaveOpt) -> None:
+    """Storylines: active ones first, with their latest summary."""
+    from sqlalchemy import select
+
+    from tst.db.mappers import storyline_from_row
+    from tst.db.models import StorylineRow
+    from tst.db.state_io import has_table
+
+    path, _, _ = _game(save)
+    with repository.open_session(path) as session:
+        rows = (
+            session.scalars(select(StorylineRow).order_by(StorylineRow.id.desc())).all()
+            if has_table(session, StorylineRow)
+            else []
+        )
+        stories = [storyline_from_row(r) for r in rows]
+    if not stories:
+        typer.echo("No storylines yet.")
+    for story in sorted(stories, key=lambda s: (s.status != "active", -s.id)):
+        since = format_turn(story.started_turn)
+        typer.echo(f"{story.title} ({story.status}, step {story.step}, from {since})")
+        typer.echo(f"  {story.summary}")

@@ -32,6 +32,7 @@ from tst.api.schemas.people import (
     SearchOut,
 )
 from tst.db import inbox, repository
+from tst.db.events import written_text
 from tst.db.mappers import search_from_row
 from tst.db.models import SearchRow
 from tst.loader import LoadedData
@@ -60,8 +61,8 @@ def _path(settings: SettingsDep, save_id: str) -> Path:
 
 
 def _state(path: Path) -> GameState:
-    with repository.open_session(path) as session:
-        return repository.load_state(session)
+    with repository.read_session(path) as session:
+        return repository.read_state(session)
 
 
 def _founder_id(state: GameState) -> int:
@@ -85,8 +86,8 @@ def _act(path: Path, data: LoadedData, action: Action) -> tuple[ActionResult, Ac
     "/people", response_model=list[PersonSummaryOut], responses=ERRORS, operation_id="listPeople"
 )
 def list_people(save_id: str, settings: SettingsDep, data: DataDep) -> list[PersonSummaryOut]:
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         company = state.player.id
         checks = views.checks_by_person(session, company)
     return [
@@ -105,8 +106,8 @@ def get_person(
     save_id: str, person_id: int, settings: SettingsDep, data: DataDep
 ) -> PersonProfileOut:
     path = _path(settings, save_id)
-    with repository.open_session(path) as session:
-        state = repository.load_state(session)
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
         return views.person_profile(session, state, state.player.id, person_id, data)
 
 
@@ -131,8 +132,8 @@ def fire_person(save_id: str, person_id: int, settings: SettingsDep, data: DataD
 )
 def list_searches(save_id: str, settings: SettingsDep, data: DataDep) -> list[SearchOut]:
     """Open searches, plus closed ones whose candidates are still available, newest first."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         company = state.player.id
         live = {c.search_id for c in state.open_candidates(company)}
         open_ids = {s.id for s in state.open_searches(company)}
@@ -189,8 +190,8 @@ def close_search(save_id: str, search_id: int, settings: SettingsDep, data: Data
     operation_id="listCandidates",
 )
 def list_candidates(save_id: str, settings: SettingsDep, data: DataDep) -> list[PersonSummaryOut]:
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         company = state.player.id
         checks = views.checks_by_person(session, company)
     return [
@@ -211,8 +212,8 @@ def _check(
         else ReferenceCheck(actor, candidate_id)
     )
     repository.run_action(path, data, action)
-    with repository.open_session(path) as session:
-        state = repository.load_state(session)
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
         company = state.player.id
         profile = views.person_profile(session, state, company, candidate_id, data)
     learned = views.learned(before, state, company, candidate_id, kind, data)
@@ -358,8 +359,8 @@ def get_inbox(
     keep only those message kinds, across every page (M3b). Archived items are hidden;
     `archived=true` shows only them (M4c)."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session:
-        player = repository.load_state(session).player
+    with repository.read_session(path) as session:
+        player = repository.read_state(session).player
         items = inbox.list_inbox(
             session,
             player.id,
@@ -375,7 +376,14 @@ def get_inbox(
                 session, player.id, unread_only=unread_only, kinds=kind, archived=archived
             ),
             offset=offset,
-            items=[views.inbox_item(m) for m in items],
+            items=[
+                views.inbox_item(m).model_copy(
+                    update={"quote": written_text(session, "exit_line", m.turn, m.link_id)}
+                )
+                if m.template == "resigned" and m.link_id is not None
+                else views.inbox_item(m)
+                for m in items
+            ],
         )
 
 
@@ -388,7 +396,7 @@ def get_inbox(
 def mark_inbox_all_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
     """Mark every message read (M4c). UI state: no energy, nothing in decision_log."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         changed = inbox.mark_all_read(session, player.id)
         return InboxBulkOut(changed=changed, unread=inbox.unread_count(session, player.id))
@@ -403,7 +411,7 @@ def mark_inbox_all_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
 def archive_inbox_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
     """Archive every read message (M4c)."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         changed = inbox.archive_read(session, player.id)
         return InboxBulkOut(changed=changed, unread=inbox.unread_count(session, player.id))
@@ -418,7 +426,7 @@ def archive_inbox_read(save_id: str, settings: SettingsDep) -> InboxBulkOut:
 def archive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
     """Archive one message; it is marked read too (M4c)."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         return views.inbox_item(inbox.archive(session, player.id, item_id))
 
@@ -432,7 +440,7 @@ def archive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> Inb
 def unarchive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
     """Bring an archived message back to the inbox (M4c)."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         return views.inbox_item(inbox.archive(session, player.id, item_id, archived=False))
 
@@ -445,7 +453,7 @@ def unarchive_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> I
 )
 def mark_inbox_read(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         return views.inbox_item(inbox.mark_read(session, player.id, item_id))
 
@@ -458,7 +466,7 @@ def mark_inbox_read(save_id: str, item_id: int, settings: SettingsDep) -> InboxI
 )
 def mark_inbox_unread(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
     path = _path(settings, save_id)
-    with repository.open_session(path) as session, session.begin():
+    with repository.write_session(path) as session:
         player = repository.load_state(session).player
         return views.inbox_item(inbox.mark_read(session, player.id, item_id, read=False))
 

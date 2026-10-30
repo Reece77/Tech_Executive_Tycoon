@@ -12,6 +12,7 @@ from tst.loader import LoadedData
 from tst.sim.actions import (
     Action,
     AssignUnit,
+    ChooseEvent,
     CreateProduct,
     LaunchProduct,
     SetMarketing,
@@ -40,6 +41,8 @@ class Run:
     seq: int = 0
     snapshots: list[CompanySnapshot] = field(default_factory=list)
     launched_turn: int | None = None
+    events: bool = False  # M6: write events with MockLLMAdapter, as the service would
+    event_requests: int = 0
 
     def act(self, action: Action) -> None:
         self.seq += 1
@@ -56,6 +59,10 @@ class Run:
         self.balances = dict(apply_entries(self.balances, out.ledger_entries))
 
     def turn(self) -> None:
+        if self.events:  # a critical event must be answered first: take its first choice
+            for event in self.state.open_events(1):
+                if event.severity == "critical" and event.status == "open":
+                    self.act(ChooseEvent(FOUNDER, event.id, event.choices[0].key))
         result = advance_turn(
             self.state,
             Decisions(),
@@ -67,6 +74,24 @@ class Run:
         self.state = result.new_state
         self.balances = dict(apply_entries(self.balances, result.ledger_entries))
         self.snapshots.append(result.snapshot.for_company(1))
+        if self.events:
+            self.event_requests += len(result.event_requests)
+            self.write_events()
+
+    def write_events(self) -> None:
+        """The post-commit event service, in memory (formulas.md 16.5)."""
+        from tst.events.context import Kpis
+        from tst.events.service import Writer, write_event
+        from tst.llm.offline import MockLLMAdapter
+        from tst.llm.settings import LLMSettings
+
+        writer = Writer(MockLLMAdapter(), LLMSettings(), lambda: 1_000_000.0)
+        snap = self.snapshots[-1]
+        kpis = Kpis(snap.cash_cents, None, snap.mrr_cents, snap.headcount, self.state.player.stage)
+        for event in [e for e in self.state.events if e.status == "pending"]:
+            self.state = write_event(
+                self.state, event, kpis, writer, self.loaded.balance, self.loaded.game_data
+            )
 
 
 def start(loaded: LoadedData, seed: int, scenario: str = "funded_spinout") -> Run:
@@ -87,11 +112,14 @@ def hire(run: Run, person_id: int, role: str, flat_skill: float | None = None) -
     run.state = replace(run.state, next_ids=replace(run.state.next_ids, person=person_id + 1))
 
 
-def earn_and_burn(loaded: LoadedData, seed: int, turns: int, marketing: bool = True) -> Run:
+def earn_and_burn(
+    loaded: LoadedData, seed: int, turns: int, marketing: bool = True, events: bool = False
+) -> Run:
     """The M3a brief's script: the founder, 3 builders, 1 account executive and 1 marketer on
     one B2B SaaS product (SMB $40, mid-market $700), $10,000 a month of marketing, launched
     as soon as it is allowed."""
     run = start(loaded, seed)
+    run.events = events
     for pid in (2, 3, 4):
         hire(run, pid, "software_engineer", BUILDER_SKILL)
     hire(run, 5, "account_executive")
@@ -111,5 +139,7 @@ def earn_and_burn(loaded: LoadedData, seed: int, turns: int, marketing: bool = T
         ):
             run.act(LaunchProduct(FOUNDER, product))
             run.launched_turn = run.state.turn
+        if run.state.ended:
+            break
         run.turn()
     return run

@@ -1,0 +1,98 @@
+# Rival event templates (docs/formulas.md 16.4). Conventions: see personnel.yaml.
+templates:
+  - id: rival_price_war
+    category: rivals
+    trigger: price_war
+    severities: [minor, major]
+    weight: 1.0
+    title: "{rival} is coming for {segment}"
+    body: >-
+      {rival} has cut its price in {segment}, and its salespeople are calling your customers
+      by name. The sales team wants permission to match.
+    choices:
+      - key: A
+        label: "Hold the price; sell the difference"
+        effects:
+          - { type: customers_pct, target: product, share: -0.4 }
+      - key: B
+        label: "Match it for renewals only"
+        effects:
+          - { type: cash_delta, target: company, share: -0.3 }
+          - { type: customers_pct, target: product, share: 0.2 }
+      - key: C
+        label: "Launch a loud comparison campaign"
+        effects:
+          - { type: brand_delta, target: product, share: 0.5 }
+          - { type: cash_delta, target: company, share: -0.2 }
+
+  - id: rival_move_noticed
+    category: rivals
+    trigger: rival_move
+    severities: [minor]
+    weight: 1.0
+    title: "{rival} made a move"
+    body: >-
+      {rival} has been busy in your market this month, and your team has spent a fair amount
+      of the week reading about it instead of working.
+    choices:
+      - key: A
+        label: "Ask someone to write a short competitor brief"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.2 }
+      - key: B
+        label: "Tell the team to ignore it"
+        effects:
+          - { type: morale_delta, target: company, share: 0.1 }
+
+  - id: poaching_war_1
+    category: rivals
+    trigger: poached
+    severities: [minor, major]
+    weight: 1.0
+    storyline:
+      key: poaching_war
+      title: "{rival} is hiring your people"
+      step: 1
+      next_after_turns: 2
+      next_template: poaching_war_2
+      summary: "{rival} hired one of {company}'s people and its recruiters are still calling."
+    title: "{rival} just hired one of yours"
+    body: >-
+      One of your people has left for {rival}, and the rest of the team knows it. A couple of
+      them have had recruiter messages from {rival} this week too.
+    choices:
+      - key: A
+        label: "Talk to the team about why people stay"
+        effects:
+          - { type: morale_delta, target: company, share: 0.3 }
+      - key: B
+        label: "Review salaries for the most exposed people"
+        effects:
+          - { type: cash_delta, target: company, share: -0.2 }
+          - { type: morale_delta, target: company, share: 0.4 }
+
+  - id: poaching_war_2
+    category: rivals
+    trigger: storyline
+    severities: [major]
+    weight: 1.0
+    storyline:
+      key: poaching_war
+      step: 2
+      summary: "{rival}'s hiring raid on {company} became a test of how the company keeps its people."
+    title: "{rival}'s recruiters are still at it"
+    body: >-
+      {rival}'s recruiters have now approached several of your people. Your team is flattered
+      and a little unsettled; one of them asks you, half joking, what you are going to do
+      about it.
+    choices:
+      - key: A
+        label: "Retention bonuses for key people"
+        effects:
+          - { type: cash_delta, target: company, share: -0.4 }
+          - { type: morale_delta, target: company, share: 0.5 }
+      - key: B
+        label: "Make the work the reason to stay"
+        effects:
+          - { type: morale_delta, target: company, share: 0.2 }
+          - { type: energy_delta, target: founder, share: -0.4 }

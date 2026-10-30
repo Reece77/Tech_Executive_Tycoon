@@ -244,3 +244,38 @@ def test_the_player_poaches_a_key_builder_and_the_rival_loses_quality(loaded: Lo
         game.turn()
     after = game.state.product(product).quality  # type: ignore[union-attr]
     assert after <= before - 2 + 1.0  # 2 quality over six months, pushes aside
+
+
+def test_a_failed_rivals_people_become_free_agents_for_later_searches(
+    loaded: LoadedData,
+) -> None:
+    """M6 sub-task 0: with no open search, a failed startup's people wait in the free-agent
+    pool and join the player's next search for their role; the rest leave after
+    rivals.free_agent_months."""
+    eager = _always_found(loaded)
+    state = fresh_game(eager)
+    state, _, _ = found_startups(state, RngFactory(5), eager.balance, eager.game_data)
+    startup = next(c for c in state.companies if c.is_startup)
+    staff = state.staff(startup.id)
+    game = Game(eager, state, 40_000_000)
+    for _ in range(3):
+        game.turn()
+    ids = {e.person_id for e in staff}
+    agents = [a for a in game.state.free_agents if a.person_id in ids]
+    assert {a.person_id for a in agents} == ids
+    assert all(a.until_turn == 2 + eager.balance.rivals.free_agent_months for a in agents)
+    role = staff[-1].role
+    game.act(OpenSearch(1, role, "job_post"))
+    game.turn()
+    pooled = {a.person_id for a in game.state.free_agents if a.role == role}
+    joined = {c.person_id for c in game.state.candidates if c.person_id in pooled}
+    assert ids & pooled and joined == pooled  # every free agent for the role, this one's too
+    assert all(
+        a.status == ("placed" if a.role == role else "available")
+        for a in game.state.free_agents
+        if a.person_id in ids
+    )
+    for _ in range(eager.balance.rivals.free_agent_months):
+        game.turn()
+    left = [a for a in game.state.free_agents if a.role != role]
+    assert left and all(a.status == "expired" for a in left)

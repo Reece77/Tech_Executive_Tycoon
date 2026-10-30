@@ -1050,3 +1050,97 @@ export function useCounterPreview(saveId: string, approachId: number | null, sal
     placeholderData: keepPreviousData,
   });
 }
+
+// --- Events, storylines, relationships and AI writing (M6) -----------------------------------
+
+export type GameEventOut = Schemas['EventOut'];
+export type Events = Schemas['EventsOut'];
+export type Storyline = Schemas['StorylineOut'];
+export type Relationship = Schemas['RelationshipOut'];
+export type TeamMood = Schemas['TeamMoodOut'];
+export type LlmSettings = Schemas['LLMSettingsOut'];
+export type LlmSettingsIn = Schemas['LLMSettingsIn'];
+
+/** This month's events to answer, recent answers, and the month's AI spend. */
+export function useEvents(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'events'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/events', path(saveId))),
+    enabled: saveId !== '',
+  });
+}
+
+export function useEvent(saveId: string, eventId: number | null) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'event', eventId],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/events/{event_id}', {
+          params: { path: { save_id: saveId, event_id: eventId ?? 0 } },
+        }),
+      ),
+    enabled: eventId !== null && eventId > 0,
+  });
+}
+
+/** Answer an event: its effects apply at once (energy 0). */
+export function useChooseEvent(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async ({ eventId, choice }: { eventId: number; choice: string }) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/events/{event_id}/choose', {
+          params: { path: { save_id: saveId, event_id: eventId } },
+          body: { choice },
+        }),
+      ),
+    onSuccess: invalidate,
+  });
+}
+
+export function useStorylines(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'storylines'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/storylines', path(saveId))),
+  });
+}
+
+export function useRelationships(saveId: string, personId: number) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'relationships', personId],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/people/{person_id}/relationships', {
+          params: { path: { save_id: saveId, person_id: personId } },
+        }),
+      ),
+    enabled: personId > 0,
+  });
+}
+
+export function useTeamMood(saveId: string, unitId: number | null) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'team-mood', unitId],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/org/team-mood', {
+          params: { path: { save_id: saveId }, query: unitId === null ? {} : { unit_id: unitId } },
+        }),
+      ),
+  });
+}
+
+export function useLlmSettings() {
+  return useQuery({
+    queryKey: ['settings', 'llm'],
+    queryFn: async () => unwrap(await api.GET('/api/settings/llm')),
+  });
+}
+
+export function useUpdateLlmSettings() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: LlmSettingsIn) => unwrap(await api.PUT('/api/settings/llm', { body })),
+    onSuccess: (data) => client.setQueryData(['settings', 'llm'], data),
+  });
+}

@@ -1360,6 +1360,148 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Events
+         * @description This month's events to answer (minor and major resolve to their first choice at
+         *     Continue; an open critical event blocks it) and recently answered ones (16.3).
+         */
+        get: operations["listEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/events/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Event */
+        get: operations["getEvent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/events/{event_id}/choose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Choose Event
+         * @description Answer an event: its effects apply at once (energy 0, 16.3).
+         */
+        post: operations["chooseEvent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/storylines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Storylines
+         * @description Active storylines first, then ended ones, newest first (16.6).
+         */
+        get: operations["listStorylines"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/people/{person_id}/relationships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Relationships
+         * @description Unit-mates and manager links with a label (16.7); never a number.
+         */
+        get: operations["getRelationships"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/org/team-mood": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Team Mood
+         * @description The org unit panel's "Team mood" line: strained or hostile pairs (16.9).
+         */
+        get: operations["getTeamMood"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/llm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Llm Settings
+         * @description AI writing: the adapter, this calendar month's spend against the budget, models.
+         */
+        get: operations["getLlmSettings"];
+        /**
+         * Update Llm Settings
+         * @description Change the adapter, budget (0 is offline play) or model ids; prices stay as they are.
+         */
+        put: operations["updateLlmSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/scenarios": {
         parameters: {
             query?: never;
@@ -1633,6 +1775,11 @@ export interface components {
              * @description The formal warning given at this meeting
              */
             warning_body: string | null;
+            /**
+             * Minutes
+             * @description Short minutes, written by AI or a template (M6, 16.8)
+             */
+            minutes?: string | null;
         };
         /** BoardOut */
         BoardOut: {
@@ -1944,6 +2091,19 @@ export interface components {
             morale_history: components["schemas"]["MoralePointOut"][];
             learned: components["schemas"]["LearnedOut"];
         };
+        /** ChooseEventIn */
+        ChooseEventIn: {
+            /** Choice */
+            choice: string;
+        };
+        /** ChooseEventOut */
+        ChooseEventOut: {
+            event: components["schemas"]["EventOut"];
+            /** Energy */
+            energy: number;
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
         /** CostLineOut */
         CostLineOut: {
             /** Account */
@@ -2154,6 +2314,97 @@ export interface components {
             code: string;
             /** Message */
             message: string;
+            /** Event Id */
+            event_id?: number | null;
+        };
+        /** EventChoiceOut */
+        EventChoiceOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Effects
+             * @description What the choice does, in words with a size
+             */
+            effects: string[];
+        };
+        /** EventOut */
+        EventOut: {
+            /** Event Id */
+            event_id: number;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Category */
+            category: string;
+            /** Category Label */
+            category_label: string;
+            /**
+             * Severity
+             * @description minor | major | critical
+             */
+            severity: string;
+            /**
+             * Status
+             * @description pending | open | answered | auto
+             */
+            status: string;
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+            /** Choices */
+            choices: components["schemas"]["EventChoiceOut"][];
+            /** Chosen */
+            chosen: string | null;
+            /**
+             * Written By
+             * @description Claude | template | mock | replay
+             */
+            written_by: string;
+            storyline: components["schemas"]["EventStorylineOut"] | null;
+            /**
+             * Follow Up Note
+             * @description Critical events: when a follow-up comes
+             */
+            follow_up_note: string | null;
+            /** Person Ids */
+            person_ids: number[];
+        };
+        /** EventStorylineOut */
+        EventStorylineOut: {
+            /** Storyline Id */
+            storyline_id: number;
+            /** Title */
+            title: string;
+            /** Step */
+            step: number;
+        };
+        /** EventsOut */
+        EventsOut: {
+            /** To Answer */
+            to_answer: number;
+            /**
+             * Blocking Event Id
+             * @description An open critical event blocks Continue
+             */
+            blocking_event_id: number | null;
+            /** Open */
+            open: components["schemas"]["EventOut"][];
+            /**
+             * Recent
+             * @description Answered events of the last few months
+             */
+            recent: components["schemas"]["EventOut"][];
+            /**
+             * Ai Spend Cents
+             * @description Real cents spent this calendar month
+             */
+            ai_spend_cents: number;
+            /** Ai Budget Cents */
+            ai_budget_cents: number;
         };
         /** FinanceActionOut */
         FinanceActionOut: {
@@ -2649,6 +2900,11 @@ export interface components {
              * @description Hidden from the inbox unless the archive is shown (M4c)
              */
             archived: boolean;
+            /**
+             * Quote
+             * @description An exit-interview line (M6, 16.8)
+             */
+            quote?: string | null;
         };
         /** InboxOut */
         InboxOut: {
@@ -2708,6 +2964,57 @@ export interface components {
              * @description Interests and work style are visible
              */
             profile_known: boolean;
+        };
+        /** LLMSettingsIn */
+        LLMSettingsIn: {
+            /** Adapter */
+            adapter: string;
+            /** Monthly Budget Cents */
+            monthly_budget_cents: number;
+            /** Model Events */
+            model_events: string;
+            /** Model Story */
+            model_story: string;
+        };
+        /** LLMSettingsOut */
+        LLMSettingsOut: {
+            /**
+             * Adapter
+             * @description claude | templates
+             */
+            adapter: string;
+            /**
+             * In Use
+             * @description What writes events now: Claude or offline templates
+             */
+            in_use: string;
+            /**
+             * Key Found
+             * @description Whether an API key was found (never the key)
+             */
+            key_found: boolean;
+            /** Spend Cents */
+            spend_cents: number;
+            /** Budget Cents */
+            budget_cents: number;
+            /** Calls */
+            calls: number;
+            /** Reset Date */
+            reset_date: string;
+            /** Model Events */
+            model_events: string;
+            /** Model Story */
+            model_story: string;
+            /** Events By Claude */
+            events_by_claude: number;
+            /** Rejected Drafts */
+            rejected_drafts: number;
+            /** Average Cost Cents */
+            average_cost_cents: number | null;
+            /** Can See */
+            can_see: string[];
+            /** Cannot See */
+            cannot_see: string[];
         };
         /** LabelOut */
         LabelOut: {
@@ -3014,6 +3321,11 @@ export interface components {
         };
         /** NewsOut */
         NewsOut: {
+            /**
+             * Headlines
+             * @description This month's headlines, by AI or a template (M6)
+             */
+            headlines?: string[];
             /** Months */
             months: components["schemas"]["NewsMonthOut"][];
         };
@@ -4034,6 +4346,23 @@ export interface components {
             /** Max */
             max: number;
         };
+        /** RelationshipOut */
+        RelationshipOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Link
+             * @description unit-mate | manager | report
+             */
+            link: string;
+            /**
+             * Label
+             * @description close | good | neutral | strained | hostile
+             */
+            label: string;
+        };
         /** RenameUnitIn */
         RenameUnitIn: {
             /** Name */
@@ -4670,6 +4999,24 @@ export interface components {
              */
             periods: components["schemas"]["StatementPeriodOut"][];
         };
+        /** StorylineOut */
+        StorylineOut: {
+            /** Storyline Id */
+            storyline_id: number;
+            /** Title */
+            title: string;
+            /** Step */
+            step: number;
+            /** Summary */
+            summary: string;
+            /**
+             * Status
+             * @description active | ended
+             */
+            status: string;
+            /** Started Label */
+            started_label: string;
+        };
         /** TagOut */
         TagOut: {
             /** Key */
@@ -4682,6 +5029,27 @@ export interface components {
             noticed_turn: number;
             /** Noticed Date Label */
             noticed_date_label: string;
+        };
+        /** TeamMoodOut */
+        TeamMoodOut: {
+            /** Unit Id */
+            unit_id: number | null;
+            /** Line */
+            line: string;
+            /**
+             * Pairs
+             * @description Strained or hostile pairs in the unit
+             */
+            pairs: components["schemas"]["TeamMoodPairOut"][];
+        };
+        /** TeamMoodPairOut */
+        TeamMoodPairOut: {
+            /** A Name */
+            a_name: string;
+            /** B Name */
+            b_name: string;
+            /** Label */
+            label: string;
         };
         /**
          * TeamOut
@@ -9462,6 +9830,416 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listEvents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getEvent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                event_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    chooseEvent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                event_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChooseEventIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChooseEventOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listStorylines: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorylineOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getRelationships: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelationshipOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getTeamMood: {
+        parameters: {
+            query?: {
+                unit_id?: number | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMoodOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getLlmSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMSettingsOut"];
+                };
+            };
+        };
+    };
+    updateLlmSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LLMSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

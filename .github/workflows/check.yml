@@ -1,5 +1,7 @@
 # Runs `make check` (backend lint, types, tests; API client sync; frontend lint, types,
-# tests) on every push and pull request. The Playwright smoke test (`make e2e`) stays local.
+# tests) on every push and pull request, as two matrix jobs on 2-core runners: `make check-ci-1`
+# (backend lint, types, test shard 1) and `make check-ci-2` (API sync, frontend, test shard 2).
+# Shards are balanced by tests/durations.json. The Playwright smoke test (`make e2e`) stays local.
 name: check
 
 on:
@@ -15,8 +17,13 @@ permissions:
 
 jobs:
   check:
+    name: check (shard ${{ matrix.shard }}/2)
     runs-on: ubuntu-latest
-    timeout-minutes: 45  # M5: rivals made the suite about twice as long
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
 
@@ -46,5 +53,5 @@ jobs:
         working-directory: frontend
         run: pnpm install --frozen-lockfile
 
-      - name: make check
-        run: make check
+      - name: make check-ci-${{ matrix.shard }}
+        run: make check-ci-${{ matrix.shard }}

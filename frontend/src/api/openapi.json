@@ -6377,6 +6377,566 @@
         }
       }
     },
+    "/api/saves/{save_id}/events": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "List Events",
+        "description": "This month's events to answer (minor and major resolve to their first choice at\nContinue; an open critical event blocks it) and recently answered ones (16.3).",
+        "operationId": "listEvents",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/events/{event_id}": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Get Event",
+        "operationId": "getEvent",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Event Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/events/{event_id}/choose": {
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Choose Event",
+        "description": "Answer an event: its effects apply at once (energy 0, 16.3).",
+        "operationId": "chooseEvent",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Event Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChooseEventIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChooseEventOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/storylines": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "List Storylines",
+        "description": "Active storylines first, then ended ones, newest first (16.6).",
+        "operationId": "listStorylines",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StorylineOut"
+                  },
+                  "title": "Response Liststorylines"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/people/{person_id}/relationships": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Get Relationships",
+        "description": "Unit-mates and manager links with a label (16.7); never a number.",
+        "operationId": "getRelationships",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RelationshipOut"
+                  },
+                  "title": "Response Getrelationships"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/org/team-mood": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Get Team Mood",
+        "description": "The org unit panel's \"Team mood\" line: strained or hostile pairs (16.9).",
+        "operationId": "getTeamMood",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "unit_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unit Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMoodOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/settings/llm": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get Llm Settings",
+        "description": "AI writing: the adapter, this calendar month's spend against the budget, models.",
+        "operationId": "getLlmSettings",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LLMSettingsOut"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Update Llm Settings",
+        "description": "Change the adapter, budget (0 is offline play) or model ids; prices stay as they are.",
+        "operationId": "updateLlmSettings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LLMSettingsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LLMSettingsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/meta/scenarios": {
       "get": {
         "tags": [
@@ -6890,6 +7450,18 @@
             ],
             "title": "Warning Body",
             "description": "The formal warning given at this meeting"
+          },
+          "minutes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minutes",
+            "description": "Short minutes, written by AI or a template (M6, 16.8)"
           }
         },
         "type": "object",
@@ -7698,6 +8270,42 @@
         "title": "CheckOut",
         "description": "An interview or reference check: the candidate's profile now, and what it taught."
       },
+      "ChooseEventIn": {
+        "properties": {
+          "choice": {
+            "type": "string",
+            "pattern": "^[ABC]$",
+            "title": "Choice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "choice"
+        ],
+        "title": "ChooseEventIn"
+      },
+      "ChooseEventOut": {
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/EventOut"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "ChooseEventOut"
+      },
       "CostLineOut": {
         "properties": {
           "account": {
@@ -8207,6 +8815,17 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
           }
         },
         "type": "object",
@@ -8216,6 +8835,223 @@
         ],
         "title": "ErrorOut",
         "description": "Stable error body for every 4xx response."
+      },
+      "EventChoiceOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "effects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Effects",
+            "description": "What the choice does, in words with a size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "effects"
+        ],
+        "title": "EventChoiceOut"
+      },
+      "EventOut": {
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "category_label": {
+            "type": "string",
+            "title": "Category Label"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity",
+            "description": "minor | major | critical"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "pending | open | answered | auto"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/EventChoiceOut"
+            },
+            "type": "array",
+            "title": "Choices"
+          },
+          "chosen": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chosen"
+          },
+          "written_by": {
+            "type": "string",
+            "title": "Written By",
+            "description": "Claude | template | mock | replay"
+          },
+          "storyline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventStorylineOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "follow_up_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Follow Up Note",
+            "description": "Critical events: when a follow-up comes"
+          },
+          "person_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Person Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "turn",
+          "date_label",
+          "category",
+          "category_label",
+          "severity",
+          "status",
+          "title",
+          "body",
+          "choices",
+          "chosen",
+          "written_by",
+          "storyline",
+          "follow_up_note",
+          "person_ids"
+        ],
+        "title": "EventOut"
+      },
+      "EventStorylineOut": {
+        "properties": {
+          "storyline_id": {
+            "type": "integer",
+            "title": "Storyline Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "step": {
+            "type": "integer",
+            "title": "Step"
+          }
+        },
+        "type": "object",
+        "required": [
+          "storyline_id",
+          "title",
+          "step"
+        ],
+        "title": "EventStorylineOut"
+      },
+      "EventsOut": {
+        "properties": {
+          "to_answer": {
+            "type": "integer",
+            "title": "To Answer"
+          },
+          "blocking_event_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocking Event Id",
+            "description": "An open critical event blocks Continue"
+          },
+          "open": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Open"
+          },
+          "recent": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Recent",
+            "description": "Answered events of the last few months"
+          },
+          "ai_spend_cents": {
+            "type": "number",
+            "title": "Ai Spend Cents",
+            "description": "Real cents spent this calendar month"
+          },
+          "ai_budget_cents": {
+            "type": "integer",
+            "title": "Ai Budget Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "to_answer",
+          "blocking_event_id",
+          "open",
+          "recent",
+          "ai_spend_cents",
+          "ai_budget_cents"
+        ],
+        "title": "EventsOut"
       },
       "FinanceActionOut": {
         "properties": {
@@ -9474,6 +10310,18 @@
             "type": "boolean",
             "title": "Archived",
             "description": "Hidden from the inbox unless the archive is shown (M4c)"
+          },
+          "quote": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote",
+            "description": "An exit-interview line (M6, 16.8)"
           }
         },
         "type": "object",
@@ -9619,6 +10467,135 @@
         ],
         "title": "KnowledgeOut",
         "description": "How the viewing company has come to know someone (not what it knows)."
+      },
+      "LLMSettingsIn": {
+        "properties": {
+          "adapter": {
+            "type": "string",
+            "pattern": "^(claude|templates)$",
+            "title": "Adapter"
+          },
+          "monthly_budget_cents": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Monthly Budget Cents"
+          },
+          "model_events": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Model Events"
+          },
+          "model_story": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Model Story"
+          }
+        },
+        "type": "object",
+        "required": [
+          "adapter",
+          "monthly_budget_cents",
+          "model_events",
+          "model_story"
+        ],
+        "title": "LLMSettingsIn"
+      },
+      "LLMSettingsOut": {
+        "properties": {
+          "adapter": {
+            "type": "string",
+            "title": "Adapter",
+            "description": "claude | templates"
+          },
+          "in_use": {
+            "type": "string",
+            "title": "In Use",
+            "description": "What writes events now: Claude or offline templates"
+          },
+          "key_found": {
+            "type": "boolean",
+            "title": "Key Found",
+            "description": "Whether an API key was found (never the key)"
+          },
+          "spend_cents": {
+            "type": "number",
+            "title": "Spend Cents"
+          },
+          "budget_cents": {
+            "type": "integer",
+            "title": "Budget Cents"
+          },
+          "calls": {
+            "type": "integer",
+            "title": "Calls"
+          },
+          "reset_date": {
+            "type": "string",
+            "title": "Reset Date"
+          },
+          "model_events": {
+            "type": "string",
+            "title": "Model Events"
+          },
+          "model_story": {
+            "type": "string",
+            "title": "Model Story"
+          },
+          "events_by_claude": {
+            "type": "integer",
+            "title": "Events By Claude"
+          },
+          "rejected_drafts": {
+            "type": "integer",
+            "title": "Rejected Drafts"
+          },
+          "average_cost_cents": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Cost Cents"
+          },
+          "can_see": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Can See"
+          },
+          "cannot_see": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cannot See"
+          }
+        },
+        "type": "object",
+        "required": [
+          "adapter",
+          "in_use",
+          "key_found",
+          "spend_cents",
+          "budget_cents",
+          "calls",
+          "reset_date",
+          "model_events",
+          "model_story",
+          "events_by_claude",
+          "rejected_drafts",
+          "average_cost_cents",
+          "can_see",
+          "cannot_see"
+        ],
+        "title": "LLMSettingsOut"
       },
       "LabelOut": {
         "properties": {
@@ -10315,6 +11292,14 @@
       },
       "NewsOut": {
         "properties": {
+          "headlines": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Headlines",
+            "description": "This month's headlines, by AI or a template (M6)"
+          },
           "months": {
             "items": {
               "$ref": "#/components/schemas/NewsMonthOut"
@@ -12728,6 +13713,36 @@
         ],
         "title": "RangeOut"
       },
+      "RelationshipOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "link": {
+            "type": "string",
+            "title": "Link",
+            "description": "unit-mate | manager | report"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "close | good | neutral | strained | hostile"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "link",
+          "label"
+        ],
+        "title": "RelationshipOut"
+      },
       "RenameUnitIn": {
         "properties": {
           "name": {
@@ -14346,6 +15361,45 @@
         ],
         "title": "StatementsOut"
       },
+      "StorylineOut": {
+        "properties": {
+          "storyline_id": {
+            "type": "integer",
+            "title": "Storyline Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "step": {
+            "type": "integer",
+            "title": "Step"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "active | ended"
+          },
+          "started_label": {
+            "type": "string",
+            "title": "Started Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "storyline_id",
+          "title",
+          "step",
+          "summary",
+          "status",
+          "started_label"
+        ],
+        "title": "StorylineOut"
+      },
       "TagOut": {
         "properties": {
           "key": {
@@ -14378,6 +15432,63 @@
           "noticed_date_label"
         ],
         "title": "TagOut"
+      },
+      "TeamMoodOut": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          },
+          "line": {
+            "type": "string",
+            "title": "Line"
+          },
+          "pairs": {
+            "items": {
+              "$ref": "#/components/schemas/TeamMoodPairOut"
+            },
+            "type": "array",
+            "title": "Pairs",
+            "description": "Strained or hostile pairs in the unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "line",
+          "pairs"
+        ],
+        "title": "TeamMoodOut"
+      },
+      "TeamMoodPairOut": {
+        "properties": {
+          "a_name": {
+            "type": "string",
+            "title": "A Name"
+          },
+          "b_name": {
+            "type": "string",
+            "title": "B Name"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "a_name",
+          "b_name",
+          "label"
+        ],
+        "title": "TeamMoodPairOut"
       },
       "TeamOut": {
         "properties": {

@@ -163,6 +163,7 @@ founder: # founder build (formulas.md section 5)
     accept_bridge: 5 # accept a bridge SAFE from existing investors (M4, section 14.7)
     name_nominee: 2 # name an employee to an empty common board seat (M4c, section 14.6)
     poach_search: 10 # open a "Poach from a rival" search (M5, section 15.6)
+    choose_event: 0 # answer an event (M6, section 16.3)
 
 # --- Hiring (formulas.md section 7) -----------------------------------------------------
 hiring:
@@ -251,14 +252,10 @@ org:
   mentor_tag_bonus: 3 # attribute points added when another member of the unit is a mentor (13.5)
   growth_mult_min: 0.75 # multiplier; floor of M_growth (13.5)
   growth_mult_max: 1.5 # multiplier; ceiling of M_growth (13.5)
-  tag_morale: # morale points each holder adds to every other member's morale target (13.6)
+  tag_morale: # morale points each holder adds to every other member's morale target (13.6; from M6 credit_taker and toxic_high_performer act through relationships, 16.7)
     culture_carrier: 2
-    credit_taker: -2
-    toxic_high_performer: -3
   tag_morale_cap: # morale points; the sum per tag is capped at this (same sign as the effect) (13.6)
     culture_carrier: 2
-    credit_taker: -4
-    toxic_high_performer: -6
   reorg: # one-off morale points (13.7)
     move: -2 # the person moved to another unit
     new_leader_members: -1 # each other member when a unit's leader is set or replaced
@@ -463,6 +460,7 @@ rivals:
   start_marketing_share: 0.08 # fraction of each product's revenue spent on marketing at start (15.1)
   key_people: 8 # generated individuals per incumbent, included in its headcount (15.1)
   key_people_levels: { senior: 50, staff: 35, principal: 15 } # percent level mix of key people (15.1: senior to principal)
+  free_agent_months: 6 # months a failed rival's people stay in the free-agent pool for the player's searches (M6 sub-task 0)
   startup:
     found_rate: 0.02 # probability per category per month before climate and growth (15.4)
     max_alive: 8 # rival startups alive at once (15.4)
@@ -492,3 +490,62 @@ rivals:
   stance_turns: 6 # turns: a rival that acted in a player segment this recently is "responding" (15.5)
   headcount_round: 10 # people; estimated headcounts above 100 are rounded to this (15.5)
   headcount_round_above: 100
+
+events: # event director, effect caps, storylines (formulas.md 16; ADR-0005, ADR-0011)
+  count_weights: [0.08, 0.40, 0.38, 0.14] # probability of 0, 1, 2, 3 events a month (16.1; tuned in M6.9 from [0.15, 0.50, 0.28, 0.07])
+  category_repeat_factor: 0.5 # weight multiplier for a category used last month (16.1)
+  template_cooldown_turns: 12 # months before the same template may run again (16.1; tuned in M6.9 from 24)
+  person_cooldown_turns: 4 # months before an event may name the same person again (16.1; tuned in M6.9 from 6)
+  critical_gap_turns: 6 # at most one critical event in any this many months (16.1)
+  major_from: 0.5 # trigger strength from which an event is major, below it minor (16.1)
+  light_tone_chance_bp: 1000 # bp chance an event asks for a light or satirical touch (ADR-0011)
+  max_storylines: 3 # storylines active at once (16.6)
+  summary_words: 60 # words in a storyline summary (16.6)
+  body_words: 180 # words in an event body (16.5)
+  recent_summaries: 10 # past event summaries passed to the LLM (16.5)
+  trigger: # when each trigger holds and how strong it is (16.2); strengths are clamped to 0..1
+    low_morale: { below: 35, span: 20 } # morale points: (below - morale) / span
+    unhappy_unit: { below: 45, span: 15 } # unit average morale points
+    underpaid: { below: 0.95, span: 0.2 } # salary / market mid (tuned in M6.9 from 0.9)
+    star_performer: { top_fraction: 0.30, tenure_months: 12, strength: 0.4 } # top share of employees by CA (tuned in M6.9 from 0.10)
+    team_clash: { at_most: -25, span: 30 } # relationship points: (at_most - rel) / span (tuned in M6.9 from -50)
+    team_bond: { at_least: 30, strength: 0.3 } # relationship points (tuned in M6.9 from 60)
+    office_politics: { unit_size: 4, strength: 0.6 } # people in the politician's unit
+    tag_noticed: { strength: 0.5 }
+    anniversary: { strength: 0.2 }
+    product_launched: { strength: 0.5 }
+    product_slipping: { strength: 0.6 }
+    price_war: { strength: 0.6 }
+    rival_move: { strength: 0.3 }
+    poached: { strength: 0.8 }
+    customer_milestone: { strength: 0.4 }
+    runway_short: { months: [6, 3], strength: [0.6, 1.0] } # runway months; below the second, critical is allowed
+    funding_closed: { strength: 0.5 }
+    board_unhappy: { below: 50, span: 15 } # average board confidence points (tuned in M6.9 from 40)
+    quiet_month: { strength: 0.2 }
+  caps: # largest effect per choice by severity [minor, major, critical] (16.3)
+    morale_delta: [3, 10, 20] # morale points (minor tuned in M6.9 from 5)
+    relationship_delta: [10, 20, 40] # relationship points
+    cash_delta: [100, 300, 1000] # bp of max(cash, cash_revenue_months x monthly revenue); gains up to cash_gain_share of it
+    brand_delta: [2, 5, 10] # brand points
+    quality_delta: [1, 3, 6] # quality points
+    customers_pct: [1, 3, 8] # percent of the product's customers in the segment
+    growth_boost: [0.2, 0.5, 1.0] # skill points, once
+    energy_delta: [5, 10, 15] # founder energy next month
+    board_confidence: [3, 6, 12] # confidence points for every director
+    salary_change: [5, 10, 15] # percent raise, never a cut
+  cash_revenue_months: 3 # months of revenue in the cash cap base (16.3)
+  cash_gain_share: 0.5 # gains reach at most this share of the cost cap (16.3)
+  effect_size_bounds: [0.34, 0.67] # share of the cap: up to the first "small", above the second "large" (16.9)
+
+relationships: # pairs of unit-mates and manager links (formulas.md 16.7)
+  start_base: 15 # points: start = round(start_base - start_per_temperament x |temperament difference|)
+  start_per_temperament: 1.5 # points per temperament point of difference
+  start_clamp: [-20, 15] # points
+  drift: 0.10 # fraction of the way back to the start value each month
+  tag_push: { credit_taker: -3, toxic_high_performer: -4, culture_carrier: 2, politician: -3 } # points a month with each unit-mate
+  politician_ambition_at: 14 # a politician pushes only unit-mates with ambition at least this
+  morale_weight: 0.1 # morale points per relationship point (W_rel)
+  morale_cap: 5 # W_rel is clamped to plus or minus this
+  label_bounds: [-50, -20, 20, 60] # hostile at or below the first; strained below the second; close from the last
+  range: [-100, 100] # relationships stay in this range

@@ -2,7 +2,17 @@
 // wireframe's text labels (no icons) and to the People/Hiring/Products filters.
 
 export type KindLabel =
-  'Hire' | 'Search' | 'Scout' | 'Notice' | 'Declined' | 'Delegate' | 'Product' | 'Finance' | 'News';
+  | 'Hire'
+  | 'Search'
+  | 'Scout'
+  | 'Notice'
+  | 'Declined'
+  | 'Delegate'
+  | 'Product'
+  | 'Finance'
+  | 'News'
+  | 'Event'
+  | 'Critical';
 export type InboxFilter =
   'all' | 'unread' | 'people' | 'hiring' | 'products' | 'finance' | 'archived';
 type Group = 'people' | 'hiring' | 'company' | 'products' | 'finance';
@@ -53,6 +63,9 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   bridge_funded: { label: 'Finance', group: 'finance' },
   bankrupt: { label: 'Finance', group: 'finance' },
   stage_from_funding: { label: 'Finance', group: 'finance' },
+  // M6: events (the card opens in the message panel)
+  event: { label: 'Event', group: 'company' },
+  critical_event: { label: 'Critical', group: 'company' },
 };
 
 /** The Finance tab a finance message opens (M4b). */

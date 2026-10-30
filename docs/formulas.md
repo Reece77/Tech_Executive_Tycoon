@@ -727,16 +727,17 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `rivals.weights.<personality>.<action>` / `.price_factor.<personality>` | see §15.3 | multiplier | §15.3 |
 | `rivals.price_cut` / `.price_rise` / `.push_pool_growth` / `.brand_push_marketing` / `.cut_costs_pools` / `.cut_costs_marketing` | 0.90 / 1.05 / 0.10 / 0.50 / 0.15 / 0.30 | multiplier / fraction | §15.3 |
 | `rivals.function_mix.<category>` / `.pool_morale` / `.pool_skill_other` / `.start_marketing_share` / `.key_people` | see §15.1 / 60 / 12 / 0.08 / 8 | fraction / morale / attribute / fraction / people | §15.1 |
+| `rivals.free_agent_months` | 6 | months | §15.4 (M6 sub-task 0: a failed rival's people join the player's later searches for their role) |
 | `rivals.startup.found_rate` / `.max_alive` / `.team` / `.cash_cents` / `.raise_months` / `.raise_chance` | 0.02 (tuned in M5; 0.01 before) / 8 / [3, 8] / [100000000, 300000000] / 18 / 0.6 | probability / companies / people / cents / months / probability | §15.4 |
 | `rivals.poach.offer_mult` / `.top_fraction` / `.ask_mult` / `.leave_penalty` / `.key_builder_quality_hit` | 1.0 (tuned in M5; 1.25 before) / 0.30 / 1.3 / −0.5 / 2 | multiplier / fraction / multiplier / score / quality | §15.6 |
 | `founder.energy_cost.poach_search` | 10 | energy | §15.6 |
 | `rivals.poach.bands` / `rivals.money_bands_months` | [0.20, 0.50] / [12, 36] | probability / months | §15.5, §15.6 |
 | Incumbent personalities, skills, margins and cash | see §15.1 | — | data: `incumbents.yaml` |
 
-| `events.count_weights` / `.category_repeat_factor` / `.template_cooldown_turns` / `.person_cooldown_turns` / `.critical_gap_turns` | [0.15, 0.50, 0.28, 0.07] / 0.5 / 24 / 6 / 6 | probabilities / multiplier / turns | §16.1 |
+| `events.count_weights` / `.category_repeat_factor` / `.template_cooldown_turns` / `.person_cooldown_turns` / `.critical_gap_turns` | [0.08, 0.40, 0.38, 0.14] / 0.5 / 12 / 4 / 6 (tuned in M6.9; were [0.15, 0.50, 0.28, 0.07] / 0.5 / 24 / 6 / 6) | probabilities / multiplier / turns | §16.1 |
 | `events.major_from` | 0.5 | trigger strength | §16.1 |
-| `events.trigger.<trigger>` | see §16.2 | thresholds and strengths | §16.2 |
-| `events.caps.<effect>.<severity>` | see §16.3 | per effect | §16.3 |
+| `events.trigger.<trigger>` | see §16.2; tuned in M6.9: `underpaid.below` 0.95, `star_performer.top_fraction` 0.30, `team_clash.at_most` −25, `team_bond.at_least` 30, `board_unhappy.below` 50 (§16.1) | thresholds and strengths | §16.2 |
+| `events.caps.<effect>.<severity>` | see §16.3; tuned in M6.9: `morale_delta` minor 3 | per effect | §16.3 |
 | `events.max_storylines` / `.summary_words` / `.body_words` | 3 / 60 / 180 | count / words / words | §16.5, §16.6 |
 | `relationships.start_base` / `.start_per_temperament` / `.start_clamp` / `.drift` | 15 / 1.5 / [−20, 15] / 0.10 | points / points per attribute point / points / fraction per month | §16.7 |
 | `relationships.tag_push.<tag>` / `.politician_ambition_at` | credit_taker −3, toxic_high_performer −4, culture_carrier +2, politician −3 / 14 | points per month / attribute points | §16.7 |
@@ -799,8 +800,10 @@ Each tag affects the other members of its holder's unit (not the holder), using 
 | Tag | Effect on each other member's morale target | Cap per tag |
 | --- | --- | --- |
 | `culture_carrier` | +2 | +2 |
-| `credit_taker` | −2 | −4 |
-| `toxic_high_performer` | −3 | −6 |
+| `credit_taker` | −2 (until M6) | −4 |
+| `toxic_high_performer` | −3 (until M6) | −6 |
+
+**M6 (§16.7):** the `credit_taker` and `toxic_high_performer` rows are removed; their effect now comes through relationships (tag pushes on unit-mate pairs, then W_rel). `culture_carrier` keeps its row and also pushes relationships.
 
 `mentor` acts through §13.5. `politician`, `maverick`, `perfectionist` and `quiet_genius` take effect with products (M3). The API never explains a morale change by a tag the company has not noticed (§13.11).
 
@@ -1141,6 +1144,8 @@ The engine decides when an event happens, about whom, how severe it is and what 
 - **Candidates** are templates (§16.4) whose trigger holds this month (§16.2). Weight = template weight × trigger strength (0–1) × 0.5 if its category was used last month × 0 if the same template ran in the last 24 months or any event named the same person in the last 6 months. Draw without replacement by weight.
 - **Severity** comes from the template and the trigger's strength: minor below 0.5, major from 0.5, critical only for templates marked critical and at most one critical event in any 6 months.
 - Events for a company with no employees yet use only founder, market and finance templates.
+- **Quiet-month fill (Reece, 2026-10-29, M6.9):** when the drawn count still has slots but every triggered candidate is spent or in cooldown, `quiet_month` templates fill the remaining slots, drawn the same way (weight × the `quiet_month` strength, same cooldowns), at **minor** severity only; never when `quiet_month` holds anyway.
+- **M6.9 tuning** (to meet §16.10 at about 1.2 events a month): count weights [0.08, 0.40, 0.38, 0.14] (mean 1.58; was [0.15, 0.50, 0.28, 0.07]), template cooldown 12 months (was 24), person cooldown 4 (was 6); triggers `underpaid` below 0.95 (was 0.9), `star_performer` top 30% (was 10%), `team_clash` at −25 or below (was −50), `team_bond` at 30 or above (was 60), `board_unhappy` below 50 (was 40); minor `morale_delta` cap 3 (was 5). The values in §16.1–§16.3 below are the original design; `balance.yaml` holds the tuned ones. `low_morale` stays at 35 so the §16.11 director example holds.
 
 ### 16.2 Triggers (computed by the engine from state; true values allowed here, never passed on)
 

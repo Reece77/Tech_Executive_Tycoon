@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 13
+SCHEMA_VERSION = 16
 
 
 class Base(DeclarativeBase):
@@ -273,12 +273,16 @@ class EmploymentRow(Base):
 
 
 class RelationshipRow(Base):
+    """A tracked pair in the player's company (16.7), person_id < other_person_id. Rebuilt
+    with these columns by migration 0015_relationships (M6); the M1a table was never used."""
+
     __tablename__ = "relationship"
 
     person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
     other_person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
-    affinity: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)  # 0 = neutral
-    updated_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    value: Mapped[float] = mapped_column(Float, nullable=False)  # true value, -100..100
+    start_value: Mapped[float] = mapped_column(Float, nullable=False)  # drift target
+    since_turn: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 # --- Hiring (M1b, migration 0003_hiring) -----------------------------------------------------
@@ -658,3 +662,118 @@ class SegmentShareRow(Base):
     product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     segment: Mapped[str] = mapped_column(String(32), primary_key=True)
     history: Mapped[list[float]] = mapped_column(JSON, nullable=False)
+
+
+class FreeAgentRow(Base):
+    """A failed rival's employee waiting for the player's next search for their role
+    (M6 sub-task 0, migration 0014_free_agents)."""
+
+    __tablename__ = "free_agent"
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    role: Mapped[str] = mapped_column(String(32), nullable=False)
+    released_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    until_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+# --- Events (M6, migration 0016_events) -----------------------------------------------------
+
+
+class StorylineRow(Base):
+    __tablename__ = "storyline"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    key: Mapped[str] = mapped_column(String(32), nullable=False)
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    step: Mapped[int] = mapped_column(Integer, nullable=False)
+    started_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    person_ids: Mapped[list[int]] = mapped_column(JSON, nullable=False)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rival_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    segment: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    next_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    next_template: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    ended_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class EventRow(Base):
+    __tablename__ = "event"
+    __table_args__ = (Index("ix_event_turn", "turn"), Index("ix_event_status", "status"))
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    template_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    category: Mapped[str] = mapped_column(String(16), nullable=False)
+    severity: Mapped[str] = mapped_column(String(16), nullable=False)
+    trigger: Mapped[str] = mapped_column(String(32), nullable=False)
+    strength: Mapped[float] = mapped_column(Float, nullable=False)
+    person_ids: Mapped[list[int]] = mapped_column(JSON, nullable=False)
+    unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    segment: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    rival_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    months: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cash_base_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    tone: Mapped[str] = mapped_column(String(16), nullable=False)
+    storyline_id: Mapped[int | None] = mapped_column(ForeignKey("storyline.id"), nullable=True)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    choices: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    chosen: Mapped[str | None] = mapped_column(String(1), nullable=True)
+    resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    source: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class EventQueueRow(Base):
+    __tablename__ = "event_queue"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    template_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    due_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), nullable=False)
+    person_ids: Mapped[list[int]] = mapped_column(JSON, nullable=False)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rival_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    segment: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    done: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+
+
+class LLMTextRow(Base):
+    __tablename__ = "llm_text"
+    __table_args__ = (Index("ix_llm_text_turn_kind", "turn", "kind"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    ref_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
+    source: Mapped[str] = mapped_column(String(16), nullable=False, server_default="")
+
+
+class LLMCallLogRow(Base):
+    __tablename__ = "llm_call_log"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    purpose: Mapped[str] = mapped_column(String(16), nullable=False)
+    model: Mapped[str] = mapped_column(String(64), nullable=False)
+    prompt_hash: Mapped[str] = mapped_column(String(16), nullable=False)
+    input_tokens: Mapped[int] = mapped_column(Integer, nullable=False)
+    output_tokens: Mapped[int] = mapped_column(Integer, nullable=False)
+    cost_cents: Mapped[float] = mapped_column(Float, nullable=False)  # real cents, not game money
+    latency_ms: Mapped[int] = mapped_column(Integer, nullable=False)
+    outcome: Mapped[str] = mapped_column(String(16), nullable=False)
+    created_at: Mapped[str] = mapped_column(String(32), nullable=False)
+    prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    response: Mapped[str | None] = mapped_column(Text, nullable=True)

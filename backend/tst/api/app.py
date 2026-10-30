@@ -5,16 +5,22 @@ from __future__ import annotations
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import OperationalError
 
-from tst.api.routers import finance, game, meta, org, products, rivals, saves
+from tst.api.routers import events, finance, game, meta, org, products, rivals, saves
 from tst.api.schemas.common import ErrorOut
+from tst.db.repository import BUSY_MESSAGE, is_locked_error
 from tst.sim.errors import (
+    CriticalEventOpenError,
+    EventError,
     GameOverError,
     InterviewRequired,
     NotFoundError,
+    SaveBusyError,
     SaveExistsError,
     SaveNotFoundError,
     SimError,
+    UpgradeNeededError,
 )
 
 ERROR_STATUS: dict[type[SimError], int] = {
@@ -23,12 +29,17 @@ ERROR_STATUS: dict[type[SimError], int] = {
     SaveExistsError: status.HTTP_409_CONFLICT,
     InterviewRequired: status.HTTP_409_CONFLICT,  # ADR-0016
     GameOverError: status.HTTP_409_CONFLICT,  # ADR-0018
+    SaveBusyError: status.HTTP_409_CONFLICT,  # M6 sub-task 0
+    CriticalEventOpenError: status.HTTP_409_CONFLICT,  # M6: answer it first (ADR-0006)
+    EventError: status.HTTP_409_CONFLICT,
+    UpgradeNeededError: status.HTTP_409_CONFLICT,
 }
 
 
 def _error(status_code: int, code: str, message: str) -> JSONResponse:
     return JSONResponse(
-        status_code=status_code, content=ErrorOut(code=code, message=message).model_dump()
+        status_code=status_code,
+        content=ErrorOut(code=code, message=message).model_dump(exclude_none=True),
     )
 
 
@@ -40,6 +51,8 @@ def create_app() -> FastAPI:
     app.include_router(products.router)
     app.include_router(finance.router)
     app.include_router(rivals.router)
+    app.include_router(events.router)
+    app.include_router(events.settings_router)
     app.include_router(meta.router)
 
     @app.exception_handler(SimError)
@@ -48,7 +61,17 @@ def create_app() -> FastAPI:
             (code for cls, code in ERROR_STATUS.items() if isinstance(exc, cls)),
             status.HTTP_400_BAD_REQUEST,
         )
+        if isinstance(exc, CriticalEventOpenError):
+            body = ErrorOut(code=exc.code, message=exc.message, event_id=exc.event_id)
+            return JSONResponse(status_code=status_code, content=body.model_dump())
         return _error(status_code, exc.code, exc.message)
+
+    @app.exception_handler(OperationalError)
+    async def _locked(_request: Request, exc: OperationalError) -> JSONResponse:
+        """Another process holds the save's write lock: busy, not a server error."""
+        if is_locked_error(exc):
+            return _error(status.HTTP_409_CONFLICT, SaveBusyError.code, BUSY_MESSAGE)
+        raise exc
 
     @app.exception_handler(RequestValidationError)
     async def _invalid(_request: Request, exc: RequestValidationError) -> JSONResponse:

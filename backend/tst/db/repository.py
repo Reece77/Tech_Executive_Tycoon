@@ -4,18 +4,22 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
+import threading
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from tst.db import migrate
 from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
+from tst.db.events import has_pending, write_pending
 from tst.db.inbox import inbox_rows
 from tst.db.mappers import (
     company_snapshot_from_row,
@@ -33,6 +37,7 @@ from tst.db.models import (
     DecisionLogRow,
     LedgerEntryRow,
     LedgerLineRow,
+    LLMTextRow,
     PersonMoraleLogRow,
     PersonRow,
     ProductMonthRow,
@@ -40,7 +45,8 @@ from tst.db.models import (
     TurnSnapshotRow,
 )
 from tst.db.session import make_engine, make_sessionmaker
-from tst.db.state_io import META_ID, load_state, read_meta, sync_state
+from tst.db.state_io import META_ID, has_table, live_view, load_state, read_meta, sync_state
+from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.actions import (
     Action,
@@ -56,9 +62,11 @@ from tst.sim.errors import (
     InvalidSaveNameError,
     InvalidSeedError,
     ReplayMismatchError,
+    SaveBusyError,
     SaveExistsError,
     SaveNotFoundError,
     UnknownScenarioError,
+    UpgradeNeededError,
 )
 from tst.sim.finance.statements import projected_runway
 from tst.sim.ledger import AccountCode
@@ -114,9 +122,26 @@ def save_path(save_dir: Path, slug: str) -> Path:
 
 
 def existing_save_path(save_dir: Path, slug: str) -> Path:
+    """The path of an existing save, upgraded to the latest migration first (as the save
+    index does), so no route reads a save with an old schema (M6 sub-task 0)."""
     path = save_path(save_dir, slug)
     if not path.is_file():
         raise SaveNotFoundError(f"no save named {slug!r}")
+    if migrate.is_current(path):
+        return path
+    lock = _lock(path)
+    if not lock.acquire(blocking=False):
+        raise SaveBusyError(BUSY_MESSAGE)
+    try:
+        migrate.ensure_current(path)
+    except Exception as exc:
+        log.warning("Save %s needs an upgrade that failed: %s", slug, exc)
+        raise UpgradeNeededError(
+            f"save {slug!r} was made by an older version and could not be upgraded"
+            f" ({type(exc).__name__}); its pre-upgrade backup is in the backups folder"
+        ) from exc
+    finally:
+        lock.release()
     return path
 
 
@@ -129,6 +154,121 @@ def open_session(path: Path) -> Iterator[Session]:
             yield session
     finally:
         engine.dispose()
+
+
+_LOCKS: dict[Path, threading.Lock] = {}
+_LOCKS_GUARD = threading.Lock()
+BUSY_MESSAGE = "This save is busy with another change; try again when it finishes."
+
+
+def _lock(path: Path) -> threading.Lock:
+    with _LOCKS_GUARD:
+        return _LOCKS.setdefault(path.resolve(), threading.Lock())
+
+
+def is_locked_error(exc: BaseException) -> bool:
+    """SQLite's answer when another connection (another process) holds the write lock."""
+    return isinstance(exc, OperationalError) and "locked" in str(exc).lower()
+
+
+def _stamp(path: Path) -> tuple[int, int, int, int]:
+    """The save file and its WAL as they are on disk: any commit changes one of them. An
+    empty WAL counts as none: any connection creates one, and only a commit writes to it."""
+    main = path.stat()
+    try:
+        w = path.with_name(path.name + "-wal").stat()
+    except FileNotFoundError:
+        w = None
+    if w is None or w.st_size == 0:
+        return (main.st_size, main.st_mtime_ns, -1, -1)
+    return (main.st_size, main.st_mtime_ns, w.st_size, w.st_mtime_ns)
+
+
+_LAST: dict[str, tuple[tuple[int, int, int, int], GameState]] = {}
+CACHED_STATE = "tst_cached_state"
+
+
+def remember(path: Path, state: GameState) -> None:
+    """Keep the state just written to a save (after its session closed), as `load_state`
+    would read it back (M6 sub-task 0: a turn or action then skips a full load)."""
+    _LAST[str(path.resolve())] = (_stamp(path), live_view(state))
+
+
+def _recall(path: Path) -> GameState | None:
+    entry = _LAST.get(str(path.resolve()))
+    if entry is None or not path.exists() or entry[0] != _stamp(path):
+        return None
+    return entry[1]
+
+
+def load_current(session: Session) -> GameState:
+    """The save's state: the one this process last wrote if the file has not changed since,
+    else read from the database. TST_STATE_CACHE_CHECK=1 reads it anyway and compares."""
+    cached = session.info.get(CACHED_STATE)
+    if cached is None:
+        return load_state(session)
+    if os.environ.get("TST_STATE_CACHE_CHECK") == "1":
+        fresh = load_state(session)
+        if fresh != cached:
+            raise RuntimeError("the remembered state differs from the save")
+    return cast(GameState, cached)
+
+
+_READ_LOCKS: dict[Path, threading.Lock] = {}
+LOADED_STATE = "tst_loaded_state"
+
+
+@contextmanager
+def read_session(path: Path) -> Iterator[Session]:
+    """A session for a read-only route. Reads of one save take turns in this process, and the
+    file's stamp is taken only while none of them has a connection open (a reader's
+    connection creates the WAL and its close removes it), so `read_state` can reuse the state
+    this process remembers. A screen's parallel requests then share one load instead of each
+    making their own (M6: seven concurrent loads took about 6 s each)."""
+    with _LOCKS_GUARD:
+        lock = _READ_LOCKS.setdefault(path.resolve(), threading.Lock())
+    with lock:
+        before = _stamp(path)
+        cached = _recall(path)
+        with open_session(path) as session:
+            session.info[CACHED_STATE] = cached
+            yield session
+            loaded = session.info.get(LOADED_STATE)
+        if cached is None and loaded is not None and _stamp(path) == before:
+            _LAST[str(path.resolve())] = (before, loaded)  # no commit landed during the read
+
+
+def read_state(session: Session) -> GameState:
+    """The save's state on a read: the remembered one when `read_session` found it current
+    (TST_STATE_CACHE_CHECK=1 compares), else loaded, for `read_session` to remember."""
+    if session.info.get(CACHED_STATE) is not None:
+        return load_current(session)
+    if (loaded := session.info.get(LOADED_STATE)) is not None:
+        return cast(GameState, loaded)  # a route that reads the state twice loads it once
+    state = load_state(session)
+    session.info[LOADED_STATE] = state
+    return state
+
+
+@contextmanager
+def write_session(path: Path) -> Iterator[Session]:
+    """A session in one write transaction on a save. A second write to the same save while
+    one is in progress raises SaveBusyError at once instead of waiting or failing deep inside
+    SQLite (M6 sub-task 0)."""
+    lock = _lock(path)
+    if not lock.acquire(blocking=False):
+        raise SaveBusyError(BUSY_MESSAGE)
+    try:
+        cached = _recall(path)  # before the connection opens (it can create the WAL file)
+        with open_session(path) as session, session.begin():
+            session.info[CACHED_STATE] = cached
+            yield session
+    except OperationalError as exc:
+        if is_locked_error(exc):
+            raise SaveBusyError(BUSY_MESSAGE) from exc
+        raise
+    finally:
+        lock.release()
 
 
 # --- Creation -------------------------------------------------------------------------------
@@ -170,7 +310,7 @@ def create_save(
     save_dir.mkdir(parents=True, exist_ok=True)
     try:
         migrate.upgrade_new(path)
-        with open_session(path) as session, session.begin():
+        with write_session(path) as session:
             session.add(
                 SaveMetaRow(
                     id=META_ID,
@@ -216,7 +356,7 @@ def create_save(
         ):
             leftover.unlink(missing_ok=True)
         raise
-    refresh_index(save_dir)
+    update_index(path)
     return path
 
 
@@ -353,7 +493,7 @@ class Overview:
 def player_overview(session: Session, history: int, data: LoadedData) -> Overview:
     """What the player sees on the Overview screen and in `tst inspect`."""
     meta = read_meta(session)
-    state = load_state(session)
+    state = read_state(session)
     player = state.player
     cash = company_cash(ledger_balances(session), player.id)
     snaps = recent_snapshots(session, player.id, history)
@@ -426,6 +566,13 @@ def apply_turn_result(
         )
         for i, move in enumerate(result.rival_moves)
     )
+    if result.text_requests and has_table(session, LLMTextRow):  # M6 (16.8)
+        session.add_all(
+            LLMTextRow(
+                company_id=t.company_id, turn=t.turn, kind=t.kind, ref_id=t.ref_id, status="pending"
+            )
+            for t in result.text_requests
+        )
     session.add_all(entry_to_row(e) for e in result.ledger_entries)
     session.add_all(snapshot_to_rows(result.snapshot))
     session.add_all(product_month_to_row(m) for m in result.product_months)
@@ -437,15 +584,18 @@ def apply_turn_result(
     session.flush()
 
 
-def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = None) -> TurnResult:
-    """Play one turn in a single transaction; any exception rolls everything back."""
-    decisions = decisions or Decisions()
-    migrate.ensure_current(save_path)
-    with open_session(save_path) as session, session.begin():
+class _PendingEvents(Exception):
+    """Events or texts from an earlier turn are still unwritten (the service did not finish)."""
+
+
+def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnResult:
+    with write_session(save_path) as session:
+        if has_pending(session):
+            raise _PendingEvents
         meta = read_meta(session)
         if meta.data_hashes != data.hashes:
             log.warning("Data files changed since %s was created: %s", meta.name, data.hashes)
-        state = load_state(session)
+        state = load_current(session)
         balances = ledger_balances(session, state.turn)
         result = advance_turn(
             state,
@@ -456,12 +606,39 @@ def run_turn(save_path: Path, data: LoadedData, decisions: Decisions | None = No
             balances,
         )
         apply_turn_result(session, result, decisions, state, data)
+    remember(save_path, result.new_state)
+    return result
 
+
+def run_turn(
+    save_path: Path,
+    data: LoadedData,
+    decisions: Decisions | None = None,
+    *,
+    adapter: LLMAdapter | None = None,
+    events_from: Path | None = None,
+) -> TurnResult:
+    """Play one turn in a single transaction; any exception rolls everything back. Then the
+    event service writes next month's events and texts in a transaction of its own (M6):
+    `adapter` overrides the settings' adapter; replay passes `events_from`, the original save,
+    so no adapter is called."""
+    decisions = decisions or Decisions()
+    migrate.ensure_current(save_path)
+    try:
+        result = _play_turn(save_path, data, decisions)
+    except _PendingEvents:  # an earlier write did not finish: write them, then play
+        write_pending(save_path, data, adapter=adapter, copy_from=events_from)
+        result = _play_turn(save_path, data, decisions)
+
+    if result.event_requests or result.text_requests:
+        write_pending(
+            save_path, data, adapter=adapter, copy_from=events_from, committed=result.new_state
+        )
     committed = result.new_state.turn
     backup = data.balance.backup
     if committed % backup.every_n_turns == 0:
         periodic_backup(save_path, committed, backup.keep_periodic)
-    refresh_index(save_path.parent)
+    update_index(save_path, result.new_state)
     return result
 
 
@@ -481,8 +658,8 @@ def next_action_seq(session: Session, turn: int) -> int:
 def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResult:
     """Apply one player action in its own short transaction and log it to decision_log."""
     migrate.ensure_current(save_path)
-    with open_session(save_path) as session, session.begin():
-        state = load_state(session)
+    with write_session(save_path) as session:
+        state = load_current(session)
         balances = ledger_balances(session, state.turn)
         seq = next_action_seq(session, state.turn)
         result = apply_action(
@@ -513,6 +690,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
                 actor_id=action.actor_id,
             )
         )
+    remember(save_path, result.new_state)
     return result
 
 
@@ -587,7 +765,7 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         for _, action in (a for a in actions if a[0] == turn):
             run_action(path, data, action)
         if turn < target_turn:
-            result = run_turn(path, data)
+            result = run_turn(path, data, events_from=source)  # events copied, never written
             if list(result.delegate_actions) != delegated.get(turn, []):
                 raise ReplayMismatchError(
                     f"turn {turn}: recomputed delegate actions differ from the logged ones"
@@ -640,6 +818,33 @@ def refresh_index(save_dir: Path) -> list[SaveSummary]:
         json.dumps([asdict(s) for s in summaries], indent=2) + "\n", encoding="utf-8"
     )
     return summaries
+
+
+def update_index(path: Path, state: GameState | None = None) -> None:
+    """Refresh one save's entry in saves/index.json after it was created or played; the
+    whole index is rebuilt only when it is missing or unreadable (M6 sub-task 0: rebuilding
+    opened every save after every turn)."""
+    save_dir = path.parent
+    index = save_dir / INDEX_FILE
+    try:
+        items = [SaveSummary(**item) for item in json.loads(index.read_text(encoding="utf-8"))]
+    except (OSError, ValueError, TypeError):
+        refresh_index(save_dir)
+        return
+    slug = slug_of(path)
+    mine = (
+        summarize(path)
+        if state is None
+        else SaveSummary(
+            slug=slug,
+            company_name=state.player.name,
+            scenario_id=state.save_meta.scenario_id,
+            difficulty=state.save_meta.difficulty,
+            current_turn=state.turn,
+        )
+    )
+    items = sorted([s for s in items if s.slug != slug] + [mine], key=lambda s: s.slug)
+    index.write_text(json.dumps([asdict(s) for s in items], indent=2) + "\n", encoding="utf-8")
 
 
 def list_saves(save_dir: Path) -> list[SaveSummary]:

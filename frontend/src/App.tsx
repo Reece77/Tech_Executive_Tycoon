@@ -16,6 +16,7 @@ import { ProductScreen } from './screens/ProductScreen';
 import { ProductsScreen } from './screens/ProductsScreen';
 import { RecruitmentScreen } from './screens/RecruitmentScreen';
 import { RivalScreen } from './screens/RivalScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="finance/:tab" element={<FinanceScreen />} />
           <Route path="competitors" element={<CompetitorsScreen />} />
           <Route path="competitors/:rivalId" element={<RivalScreen />} />
+          <Route path="settings" element={<SettingsScreen />} />
           <Route path=":section" element={<PlaceholderScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -21,6 +21,7 @@ from tst.api.schemas.rivals import (
     RivalsOut,
 )
 from tst.db import repository
+from tst.db.events import written_text
 from tst.sim.errors import NotFoundError
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["rivals"])
@@ -42,8 +43,8 @@ def list_rivals(
     view: Annotated[str, Query(pattern="^(all|markets|startups)$")] = "all",
 ) -> RivalsOut:
     """Every rival: in your markets, all, or startups (15.5)."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         balances = repository.ledger_balances(session, state.turn)
     return rival_views.rivals_out(state, balances, data, list(state.rival_moves), view)
 
@@ -57,8 +58,8 @@ def list_rivals(
 def get_rival(
     save_id: str, company_id: int, settings: SettingsDep, data: DataDep
 ) -> RivalProfileOut:
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
         balances = repository.ledger_balances(session, state.turn)
     company = next((c for c in state.companies if c.id == company_id and not c.is_player), None)
     if company is None:
@@ -69,9 +70,11 @@ def get_rival(
 @router.get("/news", response_model=NewsOut, responses=ERRORS, operation_id="getMarketNews")
 def market_news(save_id: str, settings: SettingsDep) -> NewsOut:
     """Rival moves and startup events of the last 24 months, newest month first (15.5)."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
-    return NewsOut(months=rival_views.news_months(list(state.rival_moves)))
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
+        headlines = written_text(session, "headlines")
+    lines = [line.strip() for line in (headlines or "").splitlines() if line.strip()]
+    return NewsOut(headlines=lines, months=rival_views.news_months(list(state.rival_moves)))
 
 
 @router.get(
@@ -82,8 +85,8 @@ def market_news(save_id: str, settings: SettingsDep) -> NewsOut:
 )
 def list_approaches(save_id: str, settings: SettingsDep, data: DataDep) -> list[ApproachOut]:
     """Rivals' open offers to your people, answered at Continue (15.6)."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
     return [
         rival_views.approach_out(state, a, data)
         for a in state.approaches
@@ -101,8 +104,8 @@ def preview_counter(
     save_id: str, approach_id: int, body: CounterIn, settings: SettingsDep, data: DataDep
 ) -> CounterPreviewOut:
     """The band now and after a raise to `salary_cents`. Nothing is saved."""
-    with repository.open_session(_path(settings, save_id)) as session:
-        state = repository.load_state(session)
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
     approach = next((a for a in state.approaches if a.id == approach_id), None)
     if approach is None or approach.status != "pending":
         raise UnknownApproachError(f"no open approach {approach_id}")

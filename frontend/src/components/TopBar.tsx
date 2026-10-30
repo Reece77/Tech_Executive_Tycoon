@@ -8,6 +8,7 @@ interface Props {
   overview: Overview | undefined;
   summary?: FinanceSummary;
   advancing: boolean;
+  blocked?: boolean; // an open critical event (M6)
   onContinue: () => void;
 }
 
@@ -82,7 +83,7 @@ export function EnergyMeter({ energy, max }: { energy: number; max: number }) {
   );
 }
 
-export function TopBar({ overview, summary, advancing, onContinue }: Props) {
+export function TopBar({ overview, summary, advancing, blocked = false, onContinue }: Props) {
   const ended = overview !== undefined && overview.game_state !== 'active';
   return (
     <header
@@ -163,18 +164,35 @@ export function TopBar({ overview, summary, advancing, onContinue }: Props) {
             Game over
           </Link>
         )}
+        {overview && (
+          <Button
+            component={Link}
+            to={`/game/${overview.save_id}/settings`}
+            variant="default"
+            h={44}
+            data-testid="settings-button"
+          >
+            Settings
+          </Button>
+        )}
         <Button
           size="md"
           radius="md"
           h={44}
           px={28}
           onClick={onContinue}
-          disabled={!overview || advancing || ended}
+          disabled={!overview || advancing || ended || blocked}
+          title={blocked ? 'Answer the critical event first' : undefined}
           leftSection={advancing ? <Loader size="xs" color="dark" /> : undefined}
           data-testid="continue"
         >
           Continue <span style={{ fontWeight: 400, opacity: 0.75, marginLeft: 6 }}>· Space</span>
         </Button>
+        {blocked && (
+          <span style={{ fontSize: 12, color: 'var(--tst-warn)' }} data-testid="continue-blocked">
+            Answer the critical event first
+          </span>
+        )}
       </div>
     </header>
   );

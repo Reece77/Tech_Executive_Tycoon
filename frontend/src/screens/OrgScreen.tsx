@@ -1,3 +1,4 @@
+import { TeamMoodLine } from '../components/Relationships';
 import { Alert, Button, Menu, NativeSelect } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState, type DragEvent } from 'react';
@@ -454,6 +455,7 @@ function UnitPanel({
         <UnitKindBadge kind={unit.kind as UnitKind} />
         {parent && <span className="tst-muted">in {parent.name}</span>}
       </div>
+      <TeamMoodLine unitId={unit.unit_id} />
       <div
         style={{
           display: 'grid',

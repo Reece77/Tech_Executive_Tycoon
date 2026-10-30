@@ -59,6 +59,7 @@ from tst.sim.state import (
     with_candidate,
     with_company,
     with_employment,
+    with_free_agent,
     with_offer,
     with_person,
     with_person_state,
@@ -506,7 +507,11 @@ def first_hire_stage(state: GameState) -> GameState:
 
 
 def expire_candidates(state: GameState) -> GameState:
-    """Open candidates without a pending offer leave in phase 12 of their expires_turn."""
+    """Open candidates without a pending offer leave in phase 12 of their expires_turn; so do
+    free agents (M6 sub-task 0)."""
+    for agent in state.free_agents:
+        if agent.status == "available" and agent.until_turn <= state.turn:
+            state = with_free_agent(state, replace(agent, status="expired"))
     for candidate in state.candidates:
         if (
             candidate.status == "open"
@@ -598,6 +603,9 @@ def candidate_batches(
                     reveal, action, scout, balance, turn=state.turn, skill_keys=skill_keys
                 )
             state = with_reveal(state, reveal)
+        if search.company_id == state.player.id:
+            state, joined = _free_agents_join(state, search, balance)
+            count += joined
         if search.channel in ONE_BATCH:
             state = with_search(state, replace(search, status="closed", closed_turn=state.turn))
         logs.append(
@@ -614,6 +622,30 @@ def candidate_batches(
             )
         )
     return state, tuple(logs)
+
+
+def _free_agents_join(state: GameState, search: Search, balance: Balance) -> tuple[GameState, int]:
+    """Free agents for the search's role join its batch, by person id (M6 sub-task 0)."""
+    joined = 0
+    for agent in state.free_agents:
+        if agent.status != "available" or agent.role != search.role:
+            continue
+        state = with_free_agent(state, replace(agent, status="placed"))
+        if state.candidate(agent.person_id) is not None:
+            continue
+        state = with_candidate(
+            state,
+            Candidate(
+                person_id=agent.person_id,
+                company_id=search.company_id,
+                search_id=search.id,
+                channel=search.channel,
+                created_turn=state.turn,
+                expires_turn=state.turn + balance.hiring.candidate_shelf_turns,
+            ),
+        )
+        joined += 1
+    return state, joined
 
 
 def _actor(state: GameState, search: Search) -> Person | None:

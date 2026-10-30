@@ -69,7 +69,8 @@ def _tables(path: Path) -> dict[str, list[tuple[object, ...]]]:
         names = [
             r[0]
             for r in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name != 'alembic_version'"
+                "SELECT name FROM sqlite_master WHERE type='table' "
+                "AND name NOT IN ('alembic_version', 'llm_call_log')"  # replay calls no adapter
             )
         ]
         out = {}

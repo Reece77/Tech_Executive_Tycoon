@@ -45,6 +45,9 @@ from tst.sim.data_models import INBOX_TEMPLATE_KEYS
 from tst.sim.ledger import CASH
 from tst.sim.log import LogItem, inbox_item
 
+# Market news (M5) and events (M6) arrive alongside; these tests are about other messages.
+NOT_PRODUCT_NOTES = ("market_news", "event", "critical_event")
+
 
 def test_render_formats_money(loaded: LoadedData) -> None:
     item = inbox_item(3, 1, "fired", name="Ada Mensah", severance_cents=958_333)
@@ -274,8 +277,10 @@ def test_inbox_persists_from_turns_and_actions(tmp_path: Path, loaded: LoadedDat
     with open_session(path) as session:
         state = load_state(session)
         messages = list_inbox(session, 1)
-    assert [m.template for m in messages if m.template != "market_news"] == ["candidates_arrived"]
-    arrived = messages[0]
+    assert [m.template for m in messages if m.template not in NOT_PRODUCT_NOTES] == [
+        "candidates_arrived"
+    ]
+    arrived = next(m for m in messages if m.template == "candidates_arrived")
     assert arrived.link_kind == "search" and arrived.link_id == 1
     assert arrived.title.endswith("candidates for Software engineer")
     for c in state.candidates:
@@ -330,7 +335,7 @@ def test_product_notes_reach_the_inbox(tmp_path: Path, loaded: LoadedData) -> No
     run_action(path, loaded, CreateProduct(1, "Pipeline", "b2b_saas", ("smb",)))
     run_turn(path, loaded)  # nobody works on it
     with open_session(path) as session:
-        [message] = [m for m in list_inbox(session, 1) if m.template != "market_news"]
+        [message] = [m for m in list_inbox(session, 1) if m.template not in NOT_PRODUCT_NOTES]
     assert message.template == "product_rotting"
     assert (message.link_kind, message.link_id) == ("product", 13)
     assert message.title == "Pipeline is slipping"

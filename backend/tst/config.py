@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -20,6 +21,12 @@ class Settings(BaseSettings):
 
     save_dir: Path = REPO_DIR / "saves"
     data_dir: Path = BACKEND_DIR / "data"
+    # M6 (ADR-0005): TST_LLM_ADAPTER forces "claude", "templates" or "mock" (tests use mock);
+    # the key comes from ANTHROPIC_API_KEY in the environment or .env and is never returned.
+    llm_adapter: str | None = None
+    anthropic_api_key: str | None = Field(
+        default=None, validation_alias=AliasChoices("ANTHROPIC_API_KEY", "TST_ANTHROPIC_API_KEY")
+    )
 
     def resolved_save_dir(self) -> Path:
         """Relative TST_SAVE_DIR values are resolved against the repository root."""

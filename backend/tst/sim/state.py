@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from bisect import bisect_left
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from typing import Any
 
+from tst.sim.events.models import GameEvent, QueuedEvent, Storyline
 from tst.sim.finance.models import (
     BoardSeat,
     CapEntry,
@@ -20,8 +22,10 @@ from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
 from tst.sim.org.models import HiringPlan, OrgUnit, WorkPolicy
 from tst.sim.people.models import Employment, Person, RevealState
+from tst.sim.people.relationships import Relationship
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
 from tst.sim.rivals.models import (
+    FreeAgent,
     PoachApproach,
     RivalEffect,
     RivalMove,
@@ -117,6 +121,11 @@ class GameState:
     rival_moves: tuple[RivalMove, ...] = ()  # the last 24 months of rival moves, by id (M5)
     approaches: tuple[PoachApproach, ...] = ()  # pending approaches, sorted by id (M5)
     segment_shares: tuple[SegmentShare, ...] = ()  # by (product_id, segment) (M5)
+    free_agents: tuple[FreeAgent, ...] = ()  # available free agents, by person id (M6.0)
+    relationships: tuple[Relationship, ...] = ()  # the player's pairs, by (a, b) (M6, 16.7)
+    events: tuple[GameEvent, ...] = ()  # the last 24 months' events and any open, by id (M6)
+    storylines: tuple[Storyline, ...] = ()  # active storylines, by id (M6, 16.6)
+    queued: tuple[QueuedEvent, ...] = ()  # follow-ups not yet shown, by id (M6, 16.3)
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -303,6 +312,26 @@ class GameState:
         """Rival companies still in business (M5)."""
         return tuple(c for c in self.companies if not c.is_player and c.failed_turn is None)
 
+    def event(self, event_id: int) -> GameEvent | None:
+        return next((e for e in self.events if e.id == event_id), None)
+
+    def open_events(self, company_id: int) -> tuple[GameEvent, ...]:
+        """Events shown this month or earlier that are not answered yet."""
+        return tuple(
+            e
+            for e in self.events
+            if e.company_id == company_id and e.is_open and e.turn <= self.turn
+        )
+
+    def storyline(self, storyline_id: int) -> Storyline | None:
+        return next((s for s in self.storylines if s.id == storyline_id), None)
+
+    def relationship_map(self) -> dict[tuple[int, int], Relationship]:
+        return {r.key: r for r in self.relationships}
+
+    def relationships_of(self, person_id: int) -> tuple[Relationship, ...]:
+        return tuple(r for r in self.relationships if person_id in r.key)
+
     @property
     def player(self) -> CompanyState:
         for company in self.companies:
@@ -320,10 +349,14 @@ def company_cash(balances: LedgerBalances, company_id: int) -> Cents:
 
 
 def _upsert[T](items: tuple[T, ...], item: T, key: Callable[[T], Any]) -> tuple[T, ...]:
+    """`items` (sorted by key, keys unique) with `item` replacing the one with its key, or
+    inserted in order. A binary search instead of a re-sort: phases update people one at a
+    time (M6 sub-task 0)."""
     k = key(item)
-    out = [x for x in items if key(x) != k]
-    out.append(item)
-    return tuple(sorted(out, key=key))
+    i = bisect_left(items, k, key=key)
+    if i < len(items) and key(items[i]) == k:
+        return (*items[:i], item, *items[i + 1 :])
+    return (*items[:i], item, *items[i:])
 
 
 def with_person(state: GameState, person: Person) -> GameState:
@@ -416,6 +449,26 @@ def with_rival_move(state: GameState, move: RivalMove) -> GameState:
 
 def with_approach(state: GameState, approach: PoachApproach) -> GameState:
     return replace(state, approaches=_upsert(state.approaches, approach, lambda a: a.id))
+
+
+def with_free_agent(state: GameState, agent: FreeAgent) -> GameState:
+    return replace(state, free_agents=_upsert(state.free_agents, agent, lambda a: a.person_id))
+
+
+def with_event(state: GameState, event: GameEvent) -> GameState:
+    return replace(state, events=_upsert(state.events, event, lambda e: e.id))
+
+
+def with_storyline(state: GameState, story: Storyline) -> GameState:
+    return replace(state, storylines=_upsert(state.storylines, story, lambda s: s.id))
+
+
+def with_queued(state: GameState, queued: QueuedEvent) -> GameState:
+    return replace(state, queued=_upsert(state.queued, queued, lambda q: q.id))
+
+
+def with_relationship(state: GameState, rel: Relationship) -> GameState:
+    return replace(state, relationships=_upsert(state.relationships, rel, lambda r: r.key))
 
 
 def with_segment_share(state: GameState, share: SegmentShare) -> GameState:

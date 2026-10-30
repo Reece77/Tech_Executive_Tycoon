@@ -321,6 +321,9 @@ class BoardMeetingOut(BaseModel):
     body: str
     previous_title: str | None = Field(description="The meeting before, for the change")
     warning_body: str | None = Field(description="The formal warning given at this meeting")
+    minutes: str | None = Field(
+        default=None, description="Short minutes, written by AI or a template (M6, 16.8)"
+    )
 
 
 class BoardOut(BaseModel):
