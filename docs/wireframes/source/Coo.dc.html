@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Coo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+.tab{font-size:14px;padding:8px 14px;border-bottom:2px solid transparent;color:#9BA7B6;text-decoration:none}
+.tab.on{color:#E8ECF1;border-color:#5AA2FF}
+.chip{font-size:12px;color:#C9D1DB;border:1px solid #2A3442;border-radius:12px;padding:3px 10px;background:#11161D}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1B232E;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.btnp{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;color:#9BA7B6;font-size:12px;padding:6px 8px;border-bottom:1px solid #2A3442}
+.tbl td{padding:7px 8px;border-bottom:1px solid #1F2732;vertical-align:top}
+.tip{position:absolute;background:#1F2834;border:1px solid #3A4656;border-radius:8px;padding:12px 14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+.dim{color:#9BA7B6}.pos{color:#5FD08B}.neg{color:#F07C7C}.warn{color:#E8B85A}
+.sev{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Sep 2014</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">$6,180,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">19 mo</span></div>
+      <a href="Coo.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Ask COO</a>
+      <a href="Settings.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <a href="Holiday.dc.html" style="font-size: 14px; color: #E8ECF1; text-decoration: none; border: 1px solid #3A4656; border-radius: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px">Holiday <span class="key">H</span></a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html" aria-current="page" style="background:#1B232E;color:#E8ECF1"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="History.dc.html"><span class="key">9</span>History</a>
+      <a class="navlink" href="Saves.dc.html"><span class="key" style="visibility:hidden">0</span>Saves</a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; position: relative">
+<!--H:1150-->
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">People</h1>
+        <button class="btn" type="button" style="margin-left: auto">View: Hiring review ▾</button>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start">
+        <section class="panel" aria-label="Saved column views" style="position: relative">
+          <h2 class="ptitle">Saved column views</h2>
+          <table class="tbl">
+            <thead><tr><th><span style="border-bottom: 1px dotted #6B7889">Name</span></th><th><span style="border-bottom: 1px dotted #6B7889">Role</span></th><th style="background: #1B232E"><span style="border-bottom: 1px dotted #6B7889">Morale</span> ▾</th><th><span style="border-bottom: 1px dotted #6B7889">Tenure</span></th><th><span style="border-bottom: 1px dotted #6B7889">Salary vs market</span></th></tr></thead>
+            <tbody>
+              <tr><td>Tom Ellis</td><td>Senior Engineer</td><td class="num warn">38</td><td class="num">31 mo</td><td class="num">0.88×</td></tr>
+              <tr><td>Priya Raman</td><td>Engineering Manager</td><td class="num">66</td><td class="num">43 mo</td><td class="num">1.02×</td></tr>
+              <tr><td>Luis Ortega</td><td>Account Executive</td><td class="num">71</td><td class="num">19 mo</td><td class="num">1.00×</td></tr>
+            </tbody>
+          </table>
+          <div class="tip" style="left: 270px; top: 92px; width: 260px"><b style="font-size: 12px">Morale</b><div class="dim" style="margin-top: 4px">How content someone is, 0–100. Under 35 they may start looking for another job. Pay, manager, teammates, workload and fit all move it.</div><div class="dim" style="font-size: 11px; margin-top: 6px">Definition · from the glossary</div></div>
+          <div style="margin-top: 70px; border: 1px solid #3A4656; border-radius: 8px; padding: 12px; max-width: 360px; background: #11161D">
+            <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px">Views for People</div>
+            <div class="row"><span>Default</span><span class="dim" style="font-size: 12px">built in</span></div>
+            <div class="row"><span><b>Hiring review</b> ✓</span><span class="dim" style="font-size: 12px">sort: morale ↑</span></div>
+            <div class="row" style="border-bottom: 0"><span>Payroll</span><span class="dim" style="font-size: 12px">rename · delete</span></div>
+            <div style="display: flex; gap: 6px; margin-top: 8px"><button class="btn" type="button">Save current as…</button><button class="btn" type="button">Columns</button></div>
+          </div>
+          <div class="tip" style="left: 420px; top: 280px; width: 280px; position: absolute">
+            <b style="font-size: 12px">Cash $6,180,000 · down $310,000 last month</b>
+            <div class="row" style="font-size: 12px"><span>Revenue</span><span class="num pos">+$652,000</span></div>
+            <div class="row" style="font-size: 12px"><span>Payroll</span><span class="num neg">−$598,000</span></div>
+            <div class="row" style="font-size: 12px"><span>Marketing</span><span class="num neg">−$260,000</span></div>
+            <div class="row" style="font-size: 12px"><span>Tools, travel and other</span><span class="num neg">−$96,000</span></div>
+            <div class="row" style="font-size: 12px; border-bottom: 0"><span>Event: year-end party</span><span class="num neg">−$8,000</span></div>
+            <div class="dim" style="font-size: 11px; margin-top: 6px">Drivers · top-bar cash, on hover</div>
+          </div>
+        </section>
+        <aside class="panel" aria-label="Ask my COO" style="border-color: #3A4656; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 class="ptitle" style="margin: 0">Ask Dana Okafor</h2><span class="dim" style="font-size: 12px">Operations Manager</span></div>
+          <div class="meta" style="font-size: 12px">Briefing</div>
+          <div class="row"><span><span class="sev" style="background: #4A3A1A; color: #E8B85A">Major</span> Ledgerline cut its price by 20%</span><a href="Event.dc.html">Open</a></div>
+          <div class="row"><span>Tom Ellis seems unhappy (morale 38)</span><a href="#">Profile</a></div>
+          <div class="row" style="border-bottom: 0"><span>Data engineer role open 4 months</span><a href="RecruitmentPlans.dc.html">Plan</a></div>
+          <label class="field" style="margin-top: 6px">Your question<textarea class="input" rows="2" style="font-family: inherit; resize: vertical">Should we match Ledgerline's price cut?</textarea><span class="dim" style="font-size: 11px; text-align: right">41 / 300</span></label>
+          <button class="btnp" type="button">Ask</button>
+          <div style="background: #11161D; border: 1px solid #2A3442; border-radius: 8px; padding: 12px; font-size: 14px; line-height: 1.5">
+            I wouldn't match it outright. Our churn is still low at 1.4% and Ledger's quality is ahead of theirs, so most customers have no reason to move. A smaller cut on the starter plan would protect new sign-ups without giving up revenue from existing accounts. If churn goes past 2% next month, we should look again.
+            <div class="dim" style="font-size: 11px; margin-top: 8px">Sep 2014 · about $0.02 of this month's $10 budget</div>
+          </div>
+          <p class="meta" style="font-size: 11px; margin: 0">Dana only knows what you know. Offline or over budget, you still get the briefing.</p>
+        </aside>
+      </div>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1150}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

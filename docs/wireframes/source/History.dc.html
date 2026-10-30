@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>History</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+.tab{font-size:14px;padding:8px 14px;border-bottom:2px solid transparent;color:#9BA7B6;text-decoration:none}
+.tab.on{color:#E8ECF1;border-color:#5AA2FF}
+.chip{font-size:12px;color:#C9D1DB;border:1px solid #2A3442;border-radius:12px;padding:3px 10px;background:#11161D}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1B232E;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.btnp{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;color:#9BA7B6;font-size:12px;padding:6px 8px;border-bottom:1px solid #2A3442}
+.tbl td{padding:7px 8px;border-bottom:1px solid #1F2732;vertical-align:top}
+.tip{position:absolute;background:#1F2834;border:1px solid #3A4656;border-radius:8px;padding:12px 14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+.dim{color:#9BA7B6}.pos{color:#5FD08B}.neg{color:#F07C7C}.warn{color:#E8B85A}
+.sev{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Sep 2014</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">$6,180,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">19 mo</span></div>
+      <a href="Coo.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Ask COO</a>
+      <a href="Settings.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <a href="Holiday.dc.html" style="font-size: 14px; color: #E8ECF1; text-decoration: none; border: 1px solid #3A4656; border-radius: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px">Holiday <span class="key">H</span></a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="History.dc.html" aria-current="page" style="background:#1B232E;color:#E8ECF1"><span class="key">9</span>History</a>
+      <a class="navlink" href="Saves.dc.html"><span class="key" style="visibility:hidden">0</span>Saves</a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; position: relative">
+<!--H:1400-->
+      <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">History</h1>
+        <span class="meta">Kestrel Systems · founded Jan 2010 · 57 months</span>
+      </div>
+      <nav aria-label="History tabs" style="display: flex; gap: 4px; border-bottom: 1px solid #2A3442">
+        <a class="tab on" href="#">Timeline</a><a class="tab" href="#">Charts</a><a class="tab" href="#">Storylines</a><a class="tab" href="#">Hall of fame</a>
+      </nav>
+      <section class="panel" aria-label="Timeline" style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+          <input class="input" type="search" value="priya" aria-label="Search history" style="flex: 1 1 260px; font-family: inherit">
+          <span class="key">/</span>
+          <select class="input" style="font-family: inherit" aria-label="Year"><option>All years</option></select>
+          <select class="input" style="font-family: inherit" aria-label="Category"><option>All categories</option></select>
+          <select class="input" style="font-family: inherit" aria-label="Source"><option>Player, delegate, default</option></select>
+          <button class="btn" type="button">View: Default ▾</button>
+        </div>
+        <div class="meta" style="font-size: 12px">9 entries match "priya" · newest first</div>
+        <table class="tbl">
+          <thead><tr><th style="width: 90px">Month</th><th style="width: 110px">Category</th><th>What happened</th><th style="width: 150px">By</th></tr></thead>
+          <tbody>
+            <tr style="background: #11161D"><td class="num dim">Sep 2014</td><td colspan="3" class="num dim" style="font-size: 12px">ARR $7.9M (+6%) · cash $6.18M · 41 staff (+2) · morale 63</td></tr>
+            <tr><td class="num">Sep 2014</td><td><span class="chip">Events</span></td><td><a href="Event.dc.html">Priya asks to lead the new platform team</a><div class="dim" style="font-size: 12px">Chose: "Give her the team" · small morale lift for Priya</div></td><td>You</td></tr>
+            <tr><td class="num">Jul 2014</td><td><span class="chip">People</span></td><td><a href="ProfileOrg.dc.html">Priya Raman</a> promoted to Engineering Manager</td><td>You</td></tr>
+            <tr style="background: #11161D"><td class="num dim">Jul 2014</td><td colspan="3" class="num dim" style="font-size: 12px">ARR $7.1M (+5%) · cash $7.02M · 38 staff (+1) · morale 61</td></tr>
+            <tr><td class="num">Mar 2014</td><td><span class="chip">Rivals</span></td><td>Ledgerline approached Priya Raman · she stayed</td><td class="dim">—</td></tr>
+            <tr><td class="num">Nov 2013</td><td><span class="chip">Events</span></td><td>Priya and Tom clash over the release plan<div class="dim" style="font-size: 12px">Chose: "Let them sort it out" · strained relationship</div></td><td class="dim">Default (at Continue)</td></tr>
+            <tr><td class="num">Jun 2012</td><td><span class="chip">People</span></td><td>Raise for Priya Raman: $96,000 → $108,000</td><td>Dana Okafor <span class="dim">(delegate)</span></td></tr>
+            <tr><td class="num">Feb 2011</td><td><span class="chip">People</span></td><td>Hired <a href="ProfileOrg.dc.html">Priya Raman</a>, Software Engineer, $96,000</td><td>You</td></tr>
+          </tbody>
+        </table>
+        <div style="display: flex; justify-content: space-between; align-items: center"><span class="meta" style="font-size: 12px">Month lines come from each month's snapshot</span><span class="meta" style="font-size: 12px">Page 1 of 1</span></div>
+      </section>
+
+      <h2 class="ptitle" style="margin: 8px 0 0">Hall of fame tab</h2>
+      <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px" aria-label="Hall of fame">
+        <div class="panel">
+          <h3 class="ptitle">Company records</h3>
+          <div class="row"><span>Peak ARR</span><span class="num">$7.9M · Sep 2014</span></div>
+          <div class="row"><span>Peak headcount</span><span class="num">41 · Sep 2014</span></div>
+          <div class="row"><span>Biggest round</span><span class="num">Series A $8M · Foundry Peak · Apr 2013</span></div>
+          <div class="row"><span>First launch</span><span class="num">Kestrel Ledger · Nov 2010</span></div>
+          <div class="row"><span>First enterprise customer</span><span class="num">Aug 2012</span></div>
+          <div class="row" style="border-bottom: 0"><span>First $1M ARR</span><span class="num">Jan 2012</span></div>
+        </div>
+        <div class="panel">
+          <h3 class="ptitle">People</h3>
+          <div class="meta" style="font-size: 12px; margin-bottom: 4px">Longest serving</div>
+          <div class="row"><a href="#">Dana Okafor</a><span class="num">52 mo</span></div>
+          <div class="row"><a href="#">Priya Raman</a><span class="num">43 mo</span></div>
+          <div class="meta" style="font-size: 12px; margin: 10px 0 4px">Best hires (rise in shown rating)</div>
+          <div class="row"><a href="#">Priya Raman</a><span class="num">11 → 15</span></div>
+          <div class="row"><a href="#">Luis Ortega</a><span class="num">9 → 12</span></div>
+          <div class="meta" style="font-size: 12px; margin: 10px 0 4px">Notable departures</div>
+          <div class="row" style="border-bottom: 0"><a href="#">Grace Lin</a><span>14 · poached by Ledgerline</span></div>
+        </div>
+        <div class="panel">
+          <h3 class="ptitle">Products and rivals</h3>
+          <div class="row"><span>Best product</span><span class="num">Kestrel Ledger · $610k MRR</span></div>
+          <div class="row"><span>Highest quality shown</span><span class="num">Kestrel Ledger · 74</span></div>
+          <div class="row" style="border-bottom: 0"><span>Rivals outlasted</span><span>Tallybook (2013), Numera (2014)</span></div>
+        </div>
+      </section>
+      <p class="meta" style="font-size: 12px; margin: 0">Ratings are the midpoint of what you've learned about a person, never their hidden values.</p>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1237,3 +1237,50 @@ Over 120 turns on 10 seeds of the M3a earn-and-burn script: 1.0 to 1.6 events a 
 **Validator clamp.** A major draft offers `morale_delta` +15 for Priya and `cash_delta` −$40,000 with cash $500,000 and monthly revenue $100,000: the morale effect is clamped to +10 and the cost to 300 bp of $500,000 = $15,000.
 
 **Relationship start and drift.** Temperaments 14 and 6: start = 15 − 12 = 3 ("neutral"). With a credit-taker in the unit the pair loses 3 a month and then drifts 10% of the way back to 3: 0.3 after the first month, −2.13 after the second, settling at **−24** ("strained"), where the drift back exactly offsets the push.
+
+## 17. Holiday, history and the COO (M7b)
+
+None of this changes the simulation: Holiday runs ordinary turns, History reads what is already stored, and the COO only reads. Nothing here may show a hidden value (ADR-0007).
+
+### 17.1 Holiday (auto-advance)
+
+- **Starting.** The player chooses how many months (1 to `holiday.max_months`, 24; default `holiday.default_months`, 6) and a stop severity (minor, major or critical; default `holiday.default_stop`, major). Holiday cannot start while a critical event is open or the game is over.
+- **Each month** is exactly one Continue: its own transaction (ADR-0004), its events written after the commit (ADR-0005), and the next month only after that. Open minor and major events below the stop severity resolve to their first choice at the next Continue, as they do now (§16.3). Delegates act in phase 2 as usual (ADR-0015); the founder takes no actions and their energy is unused.
+- **It stops after the month in which** (checked in this order, the first one names the reason):
+  1. the game is over (ADR-0018);
+  2. an event at or above the stop severity was queued (a critical event always stops);
+  3. runway fell below `holiday.stop_runway_months` (6) for the first time in this holiday, or is below 3 months;
+  4. a term sheet, a SAFE offer or a bridge offer arrived;
+  5. the chosen number of months has passed;
+  6. the player pressed Stop (the month in progress finishes; nothing is rolled back).
+- **Afterwards** one inbox item, kind `holiday_summary`, "While you were away": months played, start and end values of cash, ARR, headcount and average morale, the events resolved for the player with the choice taken, hires and departures, launches, rounds, and the stop reason.
+- Determinism: a holiday of N months gives the same save as N presses of Continue with no actions in between.
+
+### 17.2 History
+
+- **Timeline.** One entry per thing that happened to the player's company, newest first, from stored rows only: events (title, the choice taken and by whom: player, or "default" when it resolved at Continue), the decision log (player and delegate actions, with the delegate's name), and inbox items of kinds hire, departure, launch, round, board, rival news and month-end. Search is a case-insensitive match on title, body and names; filters: year, category (people, products, finance, rivals, events), source (player, delegate, default), person, product.
+- **Month lines.** Each month gets one summary line from `turn_snapshot`: "Mar 2012 · ARR $1.2M (+8%) · cash $640k · 14 staff (+1) · morale 62".
+- **Charts.** Every `turn_snapshot` KPI over the whole game, plus each product's MRR and customers from its product months; ranges 1 year, 3 years, all.
+- **Storylines.** Each storyline (active and ended) with its steps on a time line: month, step title, the choice taken.
+- **Hall of fame** (computed from history when the screen opens; values only as the player could see them):
+
+| Record | Definition |
+| --- | --- |
+| Peak ARR | highest `arr_cents` and its month |
+| Peak headcount | highest `headcount` and its month |
+| Biggest round | largest closed round by amount: stage, amount, lead firm, month |
+| Firsts | first launch, first paying customer, first enterprise customer, first $1M ARR, first round closed, each with its month |
+| Longest serving | top 5 people by tenure, current and former |
+| Best hires | top 5 by the rise in shown rating (the midpoint of the displayed range) from hire to now, or to their last month |
+| Notable departures | top 5 former staff by shown rating at departure, with the reason (resigned, poached by a named rival, fired, retired) |
+| Best product | highest peak MRR, and highest quality score shown |
+| Rivals outlasted | rival startups that went out of business while the player sold in one of their segments |
+
+### 17.3 Ask my COO
+
+- **Who answers.** The highest-level active employee whose role is `operations_manager`; if none, the highest-level non-founder employee (ties: longest tenure); with no staff, "Founder's notebook" (the founder thinking aloud).
+- **Briefing** (engine-computed, always available, no LLM): up to 5 issues, most urgent first, each a sentence and a link: runway under 12 months; an open critical or major event; a rotting product (§11.4); a person whose shown morale is under 40; a unit over its span limit; a role open more than 3 months; average board confidence under 50; a rival price cut in one of the player's segments this month. "Nothing urgent" when none apply.
+- **Questions.** Free text up to `coo.max_question_chars` (300). Context: the briefing, the §16.5 allowlist context, and the last 12 months of the player's `turn_snapshot` KPIs. Answer up to `coo.max_answer_words` (200), plain prose, written as the named person; the prompt tells the model to use only the numbers given and to say when it doesn't know. Model `llm.model_story`; counts toward the monthly budget (ADR-0005 §6); logged in `llm_call_log`.
+- **Offline, over budget or after an error:** the reply is "I can't think that through right now" plus the briefing.
+- **Stored:** the last `coo.keep_answers` (20) questions and answers per save, read-only, never fed into events.
+- **Never** changes state or costs energy. The hidden-value prompt test (§16.5) covers COO prompts too.

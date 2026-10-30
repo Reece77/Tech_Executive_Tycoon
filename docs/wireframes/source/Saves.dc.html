@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Saves</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+.tab{font-size:14px;padding:8px 14px;border-bottom:2px solid transparent;color:#9BA7B6;text-decoration:none}
+.tab.on{color:#E8ECF1;border-color:#5AA2FF}
+.chip{font-size:12px;color:#C9D1DB;border:1px solid #2A3442;border-radius:12px;padding:3px 10px;background:#11161D}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1B232E;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.btnp{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;color:#9BA7B6;font-size:12px;padding:6px 8px;border-bottom:1px solid #2A3442}
+.tbl td{padding:7px 8px;border-bottom:1px solid #1F2732;vertical-align:top}
+.tip{position:absolute;background:#1F2834;border:1px solid #3A4656;border-radius:8px;padding:12px 14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+.dim{color:#9BA7B6}.pos{color:#5FD08B}.neg{color:#F07C7C}.warn{color:#E8B85A}
+.sev{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Sep 2014</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">$6,180,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">19 mo</span></div>
+      <a href="Coo.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Ask COO</a>
+      <a href="Settings.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <a href="Holiday.dc.html" style="font-size: 14px; color: #E8ECF1; text-decoration: none; border: 1px solid #3A4656; border-radius: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px">Holiday <span class="key">H</span></a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="History.dc.html"><span class="key">9</span>History</a>
+      <a class="navlink" href="Saves.dc.html" aria-current="page" style="background:#1B232E;color:#E8ECF1"><span class="key" style="visibility:hidden">0</span>Saves</a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; position: relative">
+<!--H:1000-->
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">Saves</h1>
+        <button class="btnp" type="button" style="margin-left: auto">New game</button>
+      </div>
+      <section class="panel" aria-label="Saved games">
+        <table class="tbl">
+          <thead><tr><th>Save</th><th>Company</th><th>Scenario</th><th>Difficulty</th><th>Date</th><th>State</th><th>Last played</th><th>Size</th><th></th></tr></thead>
+          <tbody>
+            <tr style="background: #172638"><td><b>kestrel-main</b></td><td>Kestrel Systems</td><td>Ex-big-tech founders</td><td>Standard</td><td class="num">Sep 2014</td><td>Active</td><td class="num">today 14:02</td><td class="num">38 MB</td><td><div style="display: flex; gap: 6px; flex-wrap: wrap"><button class="btn" type="button">Open</button><button class="btn" type="button">Rename</button><button class="btn" type="button">Duplicate</button><button class="btn" type="button">Backups</button><button class="btn" type="button" style="color: #F07C7C">Delete</button></div></td></tr>
+            <tr><td>kestrel-main-2</td><td>Kestrel Systems</td><td>Ex-big-tech founders</td><td>Standard</td><td class="num">Feb 2013</td><td>Active</td><td class="num">Oct 28</td><td class="num">21 MB</td><td><button class="btn" type="button">Open</button></td></tr>
+            <tr><td>garage-run</td><td>Fernhill Labs</td><td>Garage bootstrap</td><td>Ironman</td><td class="num">Jul 2011</td><td class="warn">Bankrupt</td><td class="num">Oct 24</td><td class="num">9 MB</td><td><div style="display: flex; gap: 6px"><button class="btn" type="button">Open</button><span class="meta" style="font-size: 12px; align-self: center">Ironman: no duplicate or restore</span></div></td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="panel" aria-label="Restore from backup" style="max-width: 640px; border-color: #3A4656">
+        <h2 class="ptitle">Backups of kestrel-main</h2>
+        <div class="row"><span class="num">Sep 2014 · turn 56</span><span class="dim">every 12 turns</span><button class="btn" type="button">Restore as new save</button></div>
+        <div class="row"><span class="num">Sep 2013 · turn 44</span><span class="dim">every 12 turns</span><button class="btn" type="button">Restore as new save</button></div>
+        <div class="row" style="border-bottom: 0"><span class="num">Jun 2013 · turn 41</span><span class="dim">before upgrade to v16</span><button class="btn" type="button">Restore as new save</button></div>
+        <p class="meta" style="font-size: 12px; margin: 10px 0 0">Restoring makes a new save, "Kestrel Systems (restored, Sep 2013)". The original is never changed.</p>
+      </section>
+      <section class="panel" aria-label="Delete confirmation" style="max-width: 480px; border-color: #7A3434">
+        <h2 class="ptitle" style="color: #F07C7C">Delete kestrel-main?</h2>
+        <p style="margin: 0 0 12px; font-size: 14px">This removes the save and its backups. It can't be undone.</p>
+        <label class="field">Type the save name to confirm<input class="input" type="text" value="kestrel-main"></label>
+        <div style="display: flex; gap: 8px; margin-top: 12px"><button class="btn" type="button" style="background: #7A3434; border-color: #7A3434">Delete</button><button class="btn" type="button">Cancel</button></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

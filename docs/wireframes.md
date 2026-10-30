@@ -139,6 +139,28 @@ Two artboards in the canvas's seventh row: **Events** (the inbox with an event o
 - *Market news:* two or three AI-written headlines at the top (templates offline).
 - *Board tab:* quarterly minutes as a short paragraph in "Last board meeting".
 
+## M7b screens
+
+Four artboards in the canvas's eighth row. Kestrel in September 2014, 41 staff. A new **Ask COO** button and a **Holiday** button (key `H`) sit in the top bar. Cash and runway have dotted underlines because their drivers show on hover. **Saves** joins the left nav below History (now live).
+
+**History** (nav key 9) has four tabs: Timeline, Charts, Storylines and Hall of fame.
+- *Timeline:* a search box (key `/`), filters for year, category and source, and a saved-view menu. Each entry has its month, a category chip, what happened (with links to the person, product or event, and for events the choice taken and its effect in words) and who did it: you, a named delegate, or "Default (at Continue)". Each month's summary line comes from its snapshot and sits in the list as a dimmed row.
+- *Hall of fame:* three panels, for company records, people (longest serving, best hires by rise in shown rating, notable departures with the reason) and products and rivals. A footnote says ratings are what you've learned, never hidden values.
+- *Charts and Storylines:* not drawn (text only). Charts shows the snapshot KPIs over time with 1-year, 3-year and all ranges; Storylines shows each storyline's steps on a time line with the choice taken.
+
+**Saves** (from the main menu and the left nav). The table shows save, company, scenario, difficulty, date, state, last played and size, and each row has Open, Rename, Duplicate, Backups and Delete. An Ironman row shows only Open, with "Ironman: no duplicate or restore". The Backups panel lists periodic and pre-upgrade backups, each with "Restore as new save", and explains that the original is never changed. Delete asks you to type the save name.
+
+**Holiday.**
+- *Dialog:* the number of months (1–24) and a stop level (any event, major and critical, critical only), with the reasons it always stops.
+- *Progress:* while it runs, a strip under the top bar shows month N of M, the date, a progress bar, the stop rules and "Stop after this month".
+- *Summary:* afterwards, a "While you were away" inbox item gives the reason it stopped, cash, ARR, staff and morale on leaving and on return, the events decided for you with the choice taken, and the people changes, linking to History.
+
+**Tooltips, views and the COO** (drawn on People).
+- *Definition tooltips:* column headers have dotted underlines; hovering Morale shows its glossary definition.
+- *Driver tooltips:* hovering the top bar's cash shows last month's change by revenue, payroll, marketing, other costs and event effects.
+- *Saved views:* the "Views for People" menu lists the built-in Default (which can't be deleted) and saved views with their sort, plus "Save current as…" and "Columns".
+- *Ask COO panel:* it is named for the person answering (Dana Okafor, Operations Manager). It shows the briefing (up to five issues with links), a question box (300 characters) and the answer with its date and cost against the budget. A note says Dana only knows what you know, and that offline you still get the briefing.
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Holiday</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+.tab{font-size:14px;padding:8px 14px;border-bottom:2px solid transparent;color:#9BA7B6;text-decoration:none}
+.tab.on{color:#E8ECF1;border-color:#5AA2FF}
+.chip{font-size:12px;color:#C9D1DB;border:1px solid #2A3442;border-radius:12px;padding:3px 10px;background:#11161D}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1B232E;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.btnp{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;color:#9BA7B6;font-size:12px;padding:6px 8px;border-bottom:1px solid #2A3442}
+.tbl td{padding:7px 8px;border-bottom:1px solid #1F2732;vertical-align:top}
+.tip{position:absolute;background:#1F2834;border:1px solid #3A4656;border-radius:8px;padding:12px 14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+.dim{color:#9BA7B6}.pos{color:#5FD08B}.neg{color:#F07C7C}.warn{color:#E8B85A}
+.sev{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 2 · Venture-backed</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Sep 2014</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">$6,180,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">19 mo</span></div>
+      <a href="Coo.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Ask COO</a>
+      <a href="Settings.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <a href="Holiday.dc.html" style="font-size: 14px; color: #E8ECF1; text-decoration: none; border: 1px solid #3A4656; border-radius: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px">Holiday <span class="key">H</span></a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div role="status" style="display: flex; align-items: center; gap: 14px; padding: 8px 20px; background: #172638; border-bottom: 1px solid #2A4A70; font-size: 13px">
+    <span style="font-weight: 600">On holiday</span><span class="num">month 4 of 6 · Jan 2015</span>
+    <div style="flex: 0 1 240px; height: 6px; background: #263040; border-radius: 3px"><div style="width: 66%; height: 6px; background: #5AA2FF; border-radius: 3px"></div></div>
+    <span class="dim">stops on a major event, a funding offer or runway under 6 months</span>
+    <button class="btn" type="button" style="margin-left: auto">Stop after this month</button>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html" aria-current="page" style="background:#1B232E;color:#E8ECF1"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="History.dc.html"><span class="key">9</span>History</a>
+      <a class="navlink" href="Saves.dc.html"><span class="key" style="visibility:hidden">0</span>Saves</a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; position: relative">
+<!--H:1100-->
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Inbox</h1>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; align-items: start">
+        <section class="panel" aria-label="Holiday dialog" style="border-color: #3A4656">
+          <h2 class="ptitle">Go on holiday</h2>
+          <p class="meta" style="margin: 0 0 14px">Months play one at a time. Your delegates keep hiring and running plans; events below your stop level take their first choice.</p>
+          <label class="field">For up to<span style="display: flex; gap: 8px; align-items: center"><input class="input" type="text" value="6" style="width: 70px"> months <span class="dim">(1–24)</span></span></label>
+          <fieldset style="border: 0; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+            <legend style="font-size: 13px; color: #C9D1DB; padding: 0 0 8px">Come back for</legend>
+            <label class="opt"><input type="radio" name="stop" style="accent-color: #5AA2FF"><span>Any event <span class="dim">(minor and up)</span></span></label>
+            <label class="opt" style="border-color: #5AA2FF; background: #172638"><input type="radio" name="stop" checked style="accent-color: #5AA2FF"><span>Major and critical events</span></label>
+            <label class="opt"><input type="radio" name="stop" style="accent-color: #5AA2FF"><span>Critical events only</span></label>
+          </fieldset>
+          <p class="meta" style="font-size: 12px; margin: 12px 0">Always comes back for: game over, a critical event, runway under 6 months, a term sheet, SAFE or bridge offer.</p>
+          <div style="display: flex; gap: 8px"><button class="btnp" type="button">Start holiday</button><button class="btn" type="button">Cancel</button></div>
+        </section>
+        <section class="panel" aria-label="While you were away" style="border-color: #2A4A70">
+          <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 class="ptitle" style="margin: 0">While you were away</h2><span class="num dim" style="font-size: 12px">Oct 2014 – Jan 2015</span></div>
+          <p style="margin: 10px 0; font-size: 14px">Back after 4 months: <b>a major event needs you</b> — "Ledgerline cuts its price by 20%".</p>
+          <table class="tbl">
+            <thead><tr><th></th><th>Left</th><th>Back</th></tr></thead>
+            <tbody>
+              <tr><td>Cash</td><td class="num">$6.18M</td><td class="num">$5.42M</td></tr>
+              <tr><td>ARR</td><td class="num">$7.9M</td><td class="num pos">$8.8M</td></tr>
+              <tr><td>Staff</td><td class="num">41</td><td class="num">44</td></tr>
+              <tr><td>Average morale</td><td class="num">63</td><td class="num">61</td></tr>
+            </tbody>
+          </table>
+          <div class="meta" style="font-size: 12px; margin: 12px 0 4px">Decided for you (first choice)</div>
+          <div class="row"><span>Nov · Office coffee machine breaks</span><span class="dim">"Replace it" · costs about $1,200</span></div>
+          <div class="row"><span>Dec · Year-end party</span><span class="dim">"Keep it modest" · small morale lift</span></div>
+          <div class="meta" style="font-size: 12px; margin: 12px 0 4px">People</div>
+          <div class="row" style="border-bottom: 0"><span>Hired 4 (Dana's plan), 1 resigned</span><a href="History.dc.html">See in History</a></div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
