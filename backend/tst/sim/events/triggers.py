@@ -232,6 +232,11 @@ def triggers(
     if s is not None:
         hits.append(TriggerHit("board_unhappy", s))
 
+    own = state.company_products(cid)
+    if not any(p.status == "live" for p in own):  # early_days (M7a): nothing to sell yet
+        building = next((p.id for p in own if p.status == "in_development"), None)
+        hits.append(TriggerHit("early_days", _fixed(t["early_days"]), product_id=building))
+
     if not hits:
         hits.append(TriggerHit("quiet_month", _fixed(t["quiet_month"])))
     return hits

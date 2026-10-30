@@ -142,6 +142,7 @@ def test_focus_is_validated_and_round_trips(loaded: LoadedData) -> None:
     assert action_from_payload(old).focus == "current"  # type: ignore[union-attr]
 
 
+@pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_judgment_spots_potential(loaded: LoadedData) -> None:
     """Acceptance (formulas.md 13.10, revised): over 400 seeded runs of a potential plan for 2
     software engineers, a judgment-16 recruiter's hires have a mean true PA at least 3 points

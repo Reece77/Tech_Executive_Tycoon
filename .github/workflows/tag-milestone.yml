@@ -1,0 +1,48 @@
+# Tags a milestone merge (CLAUDE.md §6, Reece's D5): when `check` succeeds on main and the head
+# commit carries a "Milestone-Tag: mX-done" trailer whose tag does not exist yet, create that
+# annotated tag on the commit and push it. Cloud agent sessions cannot push tags themselves.
+name: tag-milestone
+
+on:
+  workflow_run:
+    workflows: [check]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 1
+
+      - name: Tag the commit named by its Milestone-Tag trailer
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          tag="$(git log -1 --format='%(trailers:key=Milestone-Tag,valueonly,separator=%x20)' "$SHA" | tr -d '[:space:]')"
+          if [ -z "$tag" ]; then
+            echo "No Milestone-Tag trailer on $SHA; nothing to tag."
+            exit 0
+          fi
+          if ! printf '%s' "$tag" | grep -Eq '^m[0-9]+[a-z]?-done$'; then
+            echo "::error::Milestone-Tag '$tag' is not of the form mX-done"
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "Tag $tag already exists; leaving it alone."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          subject="$(git log -1 --format=%s "$SHA")"
+          git tag -a "$tag" "$SHA" -m "$subject"
+          git push origin "refs/tags/$tag"
+          echo "Tagged $SHA as $tag."

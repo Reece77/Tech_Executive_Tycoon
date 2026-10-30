@@ -1,0 +1,37 @@
+# The long balance runs (M7a, Reece's D4a): `make balance` prints the docs/balance-targets.md table,
+# then `make nightly` runs every test marked `nightly` (the balance targets in full and the
+# statistical tests that PR CI skips). Every night, and on demand from the Actions tab.
+name: nightly
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # 03:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install backend dependencies
+        run: uv sync --project backend --locked
+
+      - name: make balance
+        run: make balance
+
+      - name: make nightly
+        run: make nightly

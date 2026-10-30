@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from tst.sim.data_models import Balance, GameData
+from tst.sim.data_models import Balance, GameData, band_value
 from tst.sim.people.formulas import growth_delta
 from tst.sim.people.models import Person, growth_role, role_ability
 from tst.sim.rng import RngFactory
@@ -37,12 +37,16 @@ def grow_person(
     professionalism = person.personality["professionalism"]
     gen = rng.stream(turn, "growth", person.id)
 
+    current = person.skills.as_dict()
+    decline = band_value(growth.decline, age)  # growth_delta for a skill outside the role
     changes = {}
     for key in data.skill_keys:
-        role_skill = key in in_role
-        noise = float(gen.normal(0.0, growth.noise_rel_sd)) if role_skill else 0.0
+        if key not in in_role:
+            changes[key] = current[key] - decline
+            continue
+        noise = float(gen.normal(0.0, growth.noise_rel_sd))
         delta = growth_delta(
-            in_role=role_skill,
+            in_role=True,
             age=age,
             ca=ca,
             pa=person.potential_ability,
@@ -51,5 +55,5 @@ def grow_person(
             noise=noise,
             mentoring=mentoring,
         )
-        changes[key] = person.skills[key] + delta
+        changes[key] = current[key] + delta
     return replace(person, skills=person.skills.updated(changes))  # updated() clamps

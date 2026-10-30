@@ -18,6 +18,8 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
+import pytest
+
 from tests.balance_scripts import earn_and_burn, start
 from tests.integration.test_funding_diagnostics import play as funding_play
 from tests.integration.test_market_balance import served_shares
@@ -34,6 +36,7 @@ SPEED_STAFF = 25
 PUSHES = {"price_cut", "feature_push", "quality_push", "brand_push"}
 
 
+@pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_1_living_market(loaded: LoadedData) -> None:
     breaches, launches = 0, 0
     worst_low, worst_high = 1.0, 1.0
@@ -77,6 +80,7 @@ def test_1_living_market(loaded: LoadedData) -> None:
     assert per_category >= 1.0
 
 
+@pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_2_and_3_rivals_respond_and_still_winnable(loaded: LoadedData) -> None:
     responded, winnable = 0, 0
     for seed in SEEDS:
@@ -109,6 +113,7 @@ def test_2_and_3_rivals_respond_and_still_winnable(loaded: LoadedData) -> None:
     assert winnable >= 8
 
 
+@pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_4_poaching_felt_not_crushing(loaded: LoadedData) -> None:
     made, decided, accepted = 0, 0, 0
     for seed in SEEDS:

@@ -547,3 +547,94 @@ templates:
         label: "Wait for the next win to lift spirits"
         effects:
           - { type: morale_delta, target: unit, share: -0.2 }
+
+  # --- M7a additions ---------------------------------------------------------------------
+
+  - id: anniversary_feedback
+    category: personnel
+    trigger: anniversary
+    severities: [minor]
+    weight: 0.8
+    title: "A year in, {person} has notes"
+    body: >-
+      At {person}'s anniversary coffee, the conversation turns into a list: meetings that
+      could be emails, a deploy process nobody trusts, and a promise from their first week
+      that was never kept.
+    choices:
+      - key: A
+        label: "Thank them and pick one thing to fix"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.2 }
+      - key: B
+        label: "Fix the deploy process this quarter"
+        effects:
+          - { type: morale_delta, target: person, share: 0.5 }
+          - { type: energy_delta, target: founder, share: -0.5 }
+      - key: C
+        label: "Remind them every company has rough edges"
+        effects:
+          - { type: morale_delta, target: person, share: -0.3 }
+
+  - id: star_side_offer
+    category: personnel
+    trigger: star_performer
+    severities: [minor]
+    weight: 0.8
+    title: "{person} is being asked to consult"
+    body: >-
+      People in the industry have noticed {person}'s work. A former colleague wants them for
+      a few paid evenings a month on an unrelated project, and {person} asks whether you
+      mind.
+    choices:
+      - key: A
+        label: "Allow it, within limits"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.1 }
+      - key: B
+        label: "Ask them to keep their evenings for rest"
+        effects:
+          - { type: morale_delta, target: person, share: -0.4 }
+
+  - id: underpaid_quiet_ask
+    category: personnel
+    trigger: underpaid
+    severities: [minor, major]
+    weight: 0.8
+    title: "{person} asks how pay is decided"
+    body: >-
+      {person} doesn't ask for a raise. They ask, carefully, how {company} decides what
+      people are paid, and whether there is a review coming. It's the kind of question people
+      ask a few weeks before they start looking.
+    choices:
+      - key: A
+        label: "Explain the process and promise a review"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Give a raise now"
+        effects:
+          - { type: salary_change, target: person, share: 0.6 }
+          - { type: morale_delta, target: person, share: 0.4 }
+      - key: C
+        label: "Say budgets are tight this year"
+        effects:
+          - { type: morale_delta, target: person, share: -0.5 }
+
+  - id: team_bond_lunch_club
+    category: personnel
+    trigger: team_bond
+    severities: [minor]
+    weight: 0.7
+    title: "{person} and {other} started a lunch club"
+    body: >-
+      What began as {person} and {other} eating together has become a weekly lunch that half
+      the office joins. They'd like {company} to pay for it once a month.
+    choices:
+      - key: A
+        label: "Pay for one lunch a month"
+        effects:
+          - { type: cash_delta, target: company, share: -0.1 }
+      - key: B
+        label: "Let it stay a grassroots thing"
+        effects:
+          - { type: relationship_delta, target: pair, share: -0.2 }

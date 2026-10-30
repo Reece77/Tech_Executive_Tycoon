@@ -355,6 +355,8 @@ p_{bp} = 50 \times \left(1 + \frac{\max(0,\,40 - morale)}{20}\right) \times \fra
 | Morale 25, loyalty 6 | 131 bp (1.3%) |
 | Morale 25, loyalty 6, job hopper | 263 bp (2.6%) |
 
+**M7a balance pass:** the base is now 80 bp (`resign.base_bp`), so about 10–25% of staff leave a year (docs/balance-targets.md T6); the formula and the table above keep the original 50 bp, and their tests use it.
+
 **M4:** the chance is then multiplied by the retention factor for unvested options, `max(0.5, 1 − 0.5 u)` (§14.2), before the cap.
 
 A resignation sets employment status to `notice` with `end_turn = turn + 1`. A notice employment is still paid that month; in phase 1 of `end_turn` it becomes `ended` (`end_reason` = `resigned`). Firing ends it at once (`end_reason` = `fired`); retirement works like a resignation (`end_reason` = `retired`).
@@ -1143,7 +1145,7 @@ The engine decides when an event happens, about whom, how severe it is and what 
 - Each month the director draws how many events to queue for next month: 0 with 15%, 1 with 50%, 2 with 28%, 3 with 7% (mean 1.27).
 - **Candidates** are templates (§16.4) whose trigger holds this month (§16.2). Weight = template weight × trigger strength (0–1) × 0.5 if its category was used last month × 0 if the same template ran in the last 24 months or any event named the same person in the last 6 months. Draw without replacement by weight.
 - **Severity** comes from the template and the trigger's strength: minor below 0.5, major from 0.5, critical only for templates marked critical and at most one critical event in any 6 months.
-- Events for a company with no employees yet use only founder, market and finance templates.
+- Events for a company with no employees yet use only founder, market and finance templates. (M7a: the `founder` category holds the `early_days` templates: the founder's own first months, before anything is live; Reece asked for a varied early game for a solo founder, docs/balance-targets.md E3.)
 - **Quiet-month fill (Reece, 2026-10-29, M6.9):** when the drawn count still has slots but every triggered candidate is spent or in cooldown, `quiet_month` templates fill the remaining slots, drawn the same way (weight × the `quiet_month` strength, same cooldowns), at **minor** severity only; never when `quiet_month` holds anyway.
 - **M6.9 tuning** (to meet §16.10 at about 1.2 events a month): count weights [0.08, 0.40, 0.38, 0.14] (mean 1.58; was [0.15, 0.50, 0.28, 0.07]), template cooldown 12 months (was 24), person cooldown 4 (was 6); triggers `underpaid` below 0.95 (was 0.9), `star_performer` top 30% (was 10%), `team_clash` at −25 or below (was −50), `team_bond` at 30 or above (was 60), `board_unhappy` below 50 (was 40); minor `morale_delta` cap 3 (was 5). The values in §16.1–§16.3 below are the original design; `balance.yaml` holds the tuned ones. `low_morale` stays at 35 so the §16.11 director example holds.
 
@@ -1169,6 +1171,7 @@ The engine decides when an event happens, about whom, how severe it is and what 
 | `runway_short` | runway < 6 months (strength 0.6) or < 3 months (1.0, critical allowed) | as stated |
 | `funding_closed` | a round closed this month | 0.5 |
 | `board_unhappy` | average board confidence < 40 | (40 − B) / 15 |
+| `early_days` (M7a) | the player has no live product (names a product in development, if any) | 0.4 |
 | `quiet_month` | none of the above | 0.2 |
 
 ### 16.3 Effects (the catalog; caps by severity)
@@ -1195,7 +1198,7 @@ Targets must come from the event's eligible list (the trigger's people, unit, pr
 
 ### 16.4 Templates (data: `events/*.yaml`)
 
-About 60 templates: personnel 20, market 12, operations 10, finance 8, board and investors 6, rivals 4. Each has: id, category, trigger, allowed severities, weight, eligible-target rules, title and body with placeholders (`{person}`, `{product}`, `{rival}`, `{amount}`), 2 or 3 choices with labels and fixed effects within the caps, an optional `storyline` step, and for critical ones a `follow_up`. Templates are the offline mode and the fallback, so every trigger must have at least one minor template and every critical trigger at least one critical template.
+About 60 templates: personnel 20, market 12, operations 10, finance 8, board and investors 6, rivals 4. (M7a adds 22: founder 14 for `early_days`, personnel 4, market 2, operations 2; 82 in all.) Each has: id, category, trigger, allowed severities, weight, eligible-target rules, title and body with placeholders (`{person}`, `{product}`, `{rival}`, `{amount}`), 2 or 3 choices with labels and fixed effects within the caps, an optional `storyline` step, and for critical ones a `follow_up`. Templates are the offline mode and the fallback, so every trigger must have at least one minor template and every critical trigger at least one critical template.
 
 ### 16.5 LLM requests (outside the sim, after the turn commits)
 

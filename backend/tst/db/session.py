@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import threading
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +46,28 @@ def make_engine(path: Path) -> Engine:
         conn.exec_driver_sql("BEGIN")
 
     return engine
+
+
+_ENGINES: OrderedDict[str, Engine] = OrderedDict()
+_ENGINES_GUARD = threading.Lock()
+ENGINES_KEPT = 16  # saves whose engines (and compiled SQL) are kept, most recently used
+
+
+def shared_engine(path: Path) -> Engine:
+    """The save's engine, kept between sessions. An engine holds SQLAlchemy's compiled-SQL
+    cache, so a new engine per session compiled every statement again on every turn (about a
+    third of a turn's write time; M7a sub-task 0). NullPool still closes the file when a
+    session ends, so keeping the engine keeps no file open."""
+    key = str(path.resolve())
+    with _ENGINES_GUARD:
+        engine = _ENGINES.get(key)
+        if engine is None:
+            engine = _ENGINES[key] = make_engine(path)
+            while len(_ENGINES) > ENGINES_KEPT:
+                _ENGINES.popitem(last=False)[1].dispose()
+        else:
+            _ENGINES.move_to_end(key)
+        return engine
 
 
 def make_sessionmaker(engine: Engine) -> sessionmaker[Session]:

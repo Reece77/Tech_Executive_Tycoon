@@ -8,7 +8,7 @@ import pytest
 from typer.testing import CliRunner
 
 from tst.cli import app
-from tst.db.repository import create_save
+from tst.db.repository import create_save, load_state, open_session
 from tst.loader import LoadedData
 
 runner = CliRunner()
@@ -38,6 +38,10 @@ def test_rivals_rival_news_and_poach(save_dir: Path) -> None:
     assert "Sales Cloud / SMB" in profile
     news = run("news", "--save", SAVE)
     assert "[" in news  # at least one tagged move
+    with open_session(save_dir / f"{SAVE}.tst.sqlite") as session:
+        state = load_state(session)
+    before = state.person_state(1).energy or 0  # events can move this month's energy (M6, M7a)
     poach = run("poach", "--save", SAVE, "--rival", "2")
-    assert "poach software_engineer from Salesforce" in poach and "energy 50/60" in poach
+    assert "poach software_engineer from Salesforce" in poach
+    assert f"energy {before - 10}/60" in poach
     run("rival", "--save", SAVE, "--id", "1", code=1)

@@ -41,10 +41,10 @@ def default_adapter(save_dir: Path) -> LLMAdapter:
 
 
 def _kpis(session: Session, state: GameState, data: LoadedData) -> Kpis:
-    from tst.db.repository import latest_snapshot, ledger_balances
+    from tst.db.repository import current_balances, latest_snapshot
 
     cid = state.player.id
-    cash = account_balance(ledger_balances(session, state.turn), cid, CASH)
+    cash = account_balance(current_balances(session, state.turn), cid, CASH)
     snap = latest_snapshot(session, cid)
     return Kpis(
         cash_cents=cash,
@@ -135,7 +135,13 @@ def write_pending(
 ) -> int:
     """Write every pending event and text of the save; returns how many events were written.
     `committed` is the state the turn just wrote, which saves loading it again (run_turn)."""
-    from tst.db.repository import load_current, remember, write_session
+    from tst.db.repository import (
+        CACHED_BALANCES,
+        CACHED_STATE,
+        load_current,
+        remember,
+        write_session,
+    )
 
     save_dir = path.parent
     with write_session(path) as session:
@@ -187,7 +193,10 @@ def write_pending(
         opened = [e for e in state.events if e.id in was_pending and e.status == "open"]
         session.add_all(event_inbox_row(e) for e in opened)
         sync_state(session, before, state)
-    remember(path, state)
+        cached = session.info.get(CACHED_STATE)  # writing events posts no ledger lines
+        same_turn = cached is not None and cached.turn == state.turn
+        balances = session.info.get(CACHED_BALANCES) if same_turn else None
+    remember(path, state, balances)
     if writer is not None and (writer.records or writer.spent_cents):
         add_spend(
             save_dir,

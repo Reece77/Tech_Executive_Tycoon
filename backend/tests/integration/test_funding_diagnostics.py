@@ -15,6 +15,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import pytest
+
 from tests.balance_scripts import (
     BUILDER_SKILL,
     EARN_AND_BURN_PRICES,
@@ -133,6 +135,7 @@ def _money(cents: int | None) -> str:
     return "-" if cents is None else f"${cents / 100_000_000:.2f}M"
 
 
+@pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_funding_balance_targets(loaded: LoadedData) -> None:
     """M4c change 7: fast growth must need outside money; lean stays viable."""
     lean = survived_a = insolvent_b = survived_c = 0

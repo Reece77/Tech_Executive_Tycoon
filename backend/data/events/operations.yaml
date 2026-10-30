@@ -218,3 +218,44 @@ templates:
         label: "Replace the laptop and move on"
         effects:
           - { type: cash_delta, target: company, share: -0.1 }
+
+  # --- M7a additions ---------------------------------------------------------------------
+
+  - id: quiet_power_cut
+    category: operations
+    trigger: quiet_month
+    severities: [minor]
+    weight: 0.7
+    title: "A power cut takes out the office"
+    body: >-
+      The building loses power for a day and a half. Laptops die by lunchtime, the
+      on-call engineer works from a café, and someone asks why {company} has no plan for this.
+    choices:
+      - key: A
+        label: "Send everyone home and write a plan"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Pay for a backup connection and a generator"
+        effects:
+          - { type: cash_delta, target: company, share: -0.4 }
+
+  - id: slipping_dependency
+    category: operations
+    trigger: product_slipping
+    severities: [minor, major]
+    weight: 0.8
+    title: "{product} depends on something abandoned"
+    body: >-
+      A library at the heart of {product} has had no maintainer for a year, and a security
+      researcher has just posted about it. Replacing it is a month of careful work.
+    choices:
+      - key: A
+        label: "Replace it now"
+        effects:
+          - { type: quality_delta, target: product, share: 0.5 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Patch our copy and keep going"
+        effects:
+          - { type: quality_delta, target: product, share: -0.4 }

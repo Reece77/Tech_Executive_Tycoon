@@ -75,3 +75,6 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+markers = [
+    "nightly: long statistical balance runs; CI runs them nightly, `make check` runs everything (M7a, D4a)",
+]

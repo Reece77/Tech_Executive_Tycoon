@@ -1,7 +1,7 @@
 // M2b flows: build an org, run a hiring plan, give a raise and a promotion. State the tests are
 // not about (hiring the first staff) is set up through the API; the rest is driven in the UI.
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
-import { api, continueMonth } from './helpers.ts';
+import { api, continueMonth, energyLeft } from './helpers.ts';
 
 const SEED = 11;
 
@@ -120,6 +120,7 @@ test('(b) a hiring plan fills its unit while founder energy stays full', async (
   await api(request, 'POST', `${base}/org/units`, { kind: 'team', name: 'Platform' });
 
   await page.goto(`/game/${save}/recruitment`);
+  const before = await energyLeft(page); // early-days events can move this month's energy (M7a)
   await page.getByTestId('new-plan').click();
   const dialog = page.getByTestId('plan-dialog');
   await expect(dialog.getByTestId('plan-owner-info')).toContainText('energy a month');
@@ -133,11 +134,17 @@ test('(b) a hiring plan fills its unit while founder energy stays full', async (
   const row = page.getByTestId('plan-row');
   await expect(row).toContainText('0 / 2');
   await expect(row).toContainText('Platform');
-  await expect(page.getByTestId('energy')).toHaveText('56 / 60'); // the team and the plan cost 2 each
+  // The team (created through the API before the page loaded) and the plan cost 2 each.
+  await expect(page.getByTestId('energy')).toHaveText(`${before - 2} / 60`);
 
   for (let month = 0; month < 3; month++) {
     await continueMonth(page);
-    await expect(page.getByTestId('energy')).toHaveText('60 / 60'); // delegates use their own
+    // Delegates use their own energy: the founder starts the month full, give or take one
+    // minor event's energy effect (cap 5, M7a early-days events); one delegate interview
+    // charged to the founder would cost 8.
+    const energy = await energyLeft(page);
+    expect(energy).toBeGreaterThanOrEqual(55);
+    expect(energy).toBeLessThanOrEqual(65);
   }
   await expect(page.getByTestId('plan-activity')).not.toContainText('Starts at');
 

@@ -88,3 +88,18 @@ export async function api<T>(
   expect(res.ok(), `${method} ${path}: ${res.status()} ${await res.text()}`).toBe(true);
   return (await res.json()) as T;
 }
+
+/**
+ * Answer any open critical event with its first choice, through the API, as a player must
+ * before Continue (M7a: early-days events move cash, so a short runway can turn critical in
+ * flows that are not about events).
+ */
+export async function answerCritical(request: APIRequestContext, base: string) {
+  type Events = { blocking_event_id: number | null };
+  const events = await api<Events>(request, 'GET', `${base}/events`);
+  if (events.blocking_event_id !== null) {
+    await api(request, 'POST', `${base}/events/${events.blocking_event_id}/choose`, {
+      choice: 'A',
+    });
+  }
+}

@@ -6,9 +6,9 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 
 1. Start a fresh Claude Code session in the repo root (it reads `CLAUDE.md` automatically).
 2. Paste: `Read docs/tasks/<brief>.md and implement it. Follow CLAUDE.md. Work through the sub-tasks in order, committing after each. Stop and ask if anything in the brief conflicts with the spec or ADRs.`
-3. When it finishes, the agent merges its own branch once `make check`, `make e2e` and the GitHub check are green (CLAUDE.md §6, Merging), tags it and pushes. Play the brief's "Manual check" every two or three milestones.
+3. When it finishes, the agent merges its own branch once `make check`, `make e2e` and the GitHub check are green (CLAUDE.md §6, Merging) with a `Milestone-Tag: mX-done` trailer and pushes; the `tag-milestone` workflow then tags it. Play the brief's "Manual check" every two or three milestones.
 4. Optional second opinion: give ChatGPT (or a fresh Claude session) `AGENTS.md`, the brief, and `git diff <start>..HEAD`, and ask for a review per the "reviewer" section of `AGENTS.md`.
-5. The agent tags each merge `mX-done`.
+5. The `tag-milestone` workflow tags each merge `mX-done` once `check` is green on `main`.
 
 ## Order
 
@@ -27,6 +27,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M4c-playtest-fixes.md](M4c-playtest-fixes.md) | Fixes from Reece's first playtest: energy, "what you learned", interview potential, investor heat, board nominee, inbox cleanup | M4b |
 | [M5-rivals.md](M5-rivals.md) | Rival AI for incumbents, rival startups, poaching both ways, Competitors screen (one milestone) | M4c |
 | [M6-events.md](M6-events.md) | Event director, templates and LLM pipeline, storylines, relationships, critical events, headlines, Settings (one milestone) | M5 |
+| [M7a-speed-and-balance.md](M7a-speed-and-balance.md) | Turn speed, balance targets, strategy runner (nightly), 20 templates, balance pass | M6 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

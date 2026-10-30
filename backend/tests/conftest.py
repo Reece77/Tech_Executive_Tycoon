@@ -68,6 +68,7 @@ def shard_of(nodeids: list[str], durations: dict[str, float], shards: int) -> di
     return shard
 
 
+@pytest.hookimpl(trylast=True)  # after -m deselection, so `nightly` tests weigh nothing (M7a)
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     spec = config.getoption("--shard")
     if spec is None:
