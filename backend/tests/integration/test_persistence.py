@@ -83,13 +83,21 @@ def test_create_save(save: Path, loaded: LoadedData) -> None:
         assert company_cash(ledger_balances(session), state.player.id) == GARAGE_CASH
 
 
-def test_pragmas(save: Path) -> None:
+@pytest.mark.parametrize(("sync", "expected"), [(None, 1), ("OFF", 0)])
+def test_pragmas(
+    save: Path, monkeypatch: pytest.MonkeyPatch, sync: str | None, expected: int
+) -> None:
+    """The game syncs NORMAL; the test suite sets TST_SQLITE_SYNC=OFF (M6 sub-task 0)."""
+    if sync is None:
+        monkeypatch.delenv("TST_SQLITE_SYNC", raising=False)
+    else:
+        monkeypatch.setenv("TST_SQLITE_SYNC", sync)
     engine = make_engine(save)
     try:
         with engine.connect() as conn:
             assert conn.execute(text("PRAGMA journal_mode")).scalar() == "wal"
             assert conn.execute(text("PRAGMA foreign_keys")).scalar() == 1
-            assert conn.execute(text("PRAGMA synchronous")).scalar() == 1  # NORMAL
+            assert conn.execute(text("PRAGMA synchronous")).scalar() == expected
     finally:
         engine.dispose()
 

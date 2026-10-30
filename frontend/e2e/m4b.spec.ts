@@ -153,15 +153,29 @@ test('(c) run out of cash, see the insolvency badge and bridge, ignore it, reach
   await expect(page.getByTestId('bridge-amount')).toHaveText(/^\$[\d,]+$/);
   await expect(page.getByTestId('accept-bridge')).toHaveText('Accept the bridge · 5 energy');
 
-  // Ignore it: Continue until the third month end below zero ends the game.
+  // Ignore it: Continue until the third month end below zero ends the game. A critical
+  // event (the payroll crunch, M6) must be answered first; take its first choice.
   const date = page.getByTestId('game-date');
-  for (let month = 0; month < 3 && !page.url().endsWith('/over'); month++) {
+  const cont = page.getByTestId('continue');
+  const critical = page.getByRole('dialog');
+  for (let step = 0; step < 8 && !page.url().endsWith('/over'); step++) {
+    if (await critical.isVisible()) {
+      await critical.locator('[data-choice="A"]').click();
+      await expect(critical).toBeHidden();
+      continue;
+    }
     const before = await date.textContent();
-    await page.getByTestId('continue').click();
+    await expect(cont).toBeEnabled();
+    await cont.click();
     await expect
-      .poll(async () => page.url().endsWith('/over') || (await date.textContent()) !== before)
+      .poll(
+        async () =>
+          page.url().endsWith('/over') ||
+          (await date.textContent()) !== before ||
+          (await critical.isVisible()),
+      )
       .toBe(true);
-    if (!page.url().endsWith('/over'))
+    if (!page.url().endsWith('/over') && !(await critical.isVisible()))
       await expect(page.getByTestId('insolvent-badge')).toBeVisible();
   }
   await expect(page).toHaveURL(/\/over$/);

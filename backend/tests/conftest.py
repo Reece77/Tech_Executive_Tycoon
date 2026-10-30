@@ -15,6 +15,8 @@ FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 # MockLLMAdapter, whatever llm_settings.json or a local .env say.
 os.environ["TST_LLM_ADAPTER"] = "mock"
 os.environ.pop("ANTHROPIC_API_KEY", None)
+# Throwaway saves need no fsync (tst/db/session.py; M6 sub-task 0: CI disks are slow to sync).
+os.environ.setdefault("TST_SQLITE_SYNC", "OFF")
 
 
 @pytest.fixture(scope="session")

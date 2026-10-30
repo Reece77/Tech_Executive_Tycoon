@@ -88,9 +88,24 @@ def relationships_month(state: GameState, balance: Balance) -> GameState:
     return replace(state, relationships=tuple(out))  # only the player has pairs
 
 
+_MAPS: list[tuple[tuple[Relationship, ...], dict[tuple[int, int], Relationship]]] = []
+
+
+def _pair_map(state: GameState) -> dict[tuple[int, int], Relationship]:
+    """The pairs by key, built once per relationships tuple (morale asks for every person)."""
+    if _MAPS and _MAPS[0][0] is state.relationships:
+        return _MAPS[0][1]
+    built = state.relationship_map()
+    _MAPS[:] = [(state.relationships, built)]
+    return built
+
+
 def unit_mate_values(state: GameState, view: OrgView, person_id: int) -> list[float]:
-    """The person's relationships with each unit-mate that has one (for W_rel)."""
-    rels = state.relationship_map()
+    """The person's relationships with each unit-mate that has one (for W_rel). Only the
+    player's company has relationships."""
+    if not state.relationships or view.company_id != state.player.id:
+        return []
+    rels = _pair_map(state)
     values = []
     for mate in teammates(view, person_id):
         rel = rels.get(pair_key(person_id, mate))

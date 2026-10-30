@@ -33,9 +33,14 @@ test('create a game and continue two months', async ({ page }) => {
   await cont.click();
   await expect(page.getByTestId('game-date')).toHaveText('Mar 2010');
   await page.getByRole('link', { name: /Overview/ }).click();
-  await expect(page.getByTestId('kpi-cash')).toHaveText('$47,800');
-  await expect(page.getByTestId('kpi-burn')).toHaveText('$1,100');
-  await expect(page.getByTestId('kpi-runway')).toHaveText('43 months');
+  // $50,000 less two months of $1,100, give or take February's event, answered with its
+  // first choice at Continue (M6): a minor event moves at most 1% of cash, $500.
+  const dollars = async (id: string) =>
+    Number(((await page.getByTestId(id).textContent()) ?? '').replace(/[^0-9-]/g, ''));
+  await expect(page.getByTestId('kpi-cash')).toHaveText(/^\$[\d,]+$/);
+  expect(Math.abs((await dollars('kpi-cash')) - 47_800)).toBeLessThanOrEqual(500);
+  expect(Math.abs((await dollars('kpi-burn')) - 1_100)).toBeLessThanOrEqual(500);
+  await expect(page.getByTestId('kpi-runway')).toHaveText(/^4[2-4] months$/);
 });
 
 test('Space advances one month; keys jump screens; later screens say when they arrive', async ({

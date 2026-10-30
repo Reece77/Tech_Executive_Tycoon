@@ -7,6 +7,7 @@ pysqlite's implicit transaction handling is disabled and SQLAlchemy emits BEGIN 
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
 from typing import Any
@@ -18,8 +19,12 @@ from sqlalchemy.pool import NullPool
 PRAGMAS = (
     "PRAGMA journal_mode=WAL",
     "PRAGMA foreign_keys=ON",
-    "PRAGMA synchronous=NORMAL",
 )
+
+
+def _sync_pragma() -> str:
+    """NORMAL; TST_SQLITE_SYNC=OFF skips fsync for throwaway saves (the test suite, M6.0)."""
+    return f"PRAGMA synchronous={'OFF' if os.environ.get('TST_SQLITE_SYNC') == 'OFF' else 'NORMAL'}"
 
 
 def make_engine(path: Path) -> Engine:
@@ -30,7 +35,7 @@ def make_engine(path: Path) -> Engine:
     def _on_connect(dbapi_conn: sqlite3.Connection, _record: Any) -> None:
         dbapi_conn.isolation_level = None
         cursor = dbapi_conn.cursor()
-        for pragma in PRAGMAS:
+        for pragma in (*PRAGMAS, _sync_pragma()):
             cursor.execute(pragma)
         cursor.close()
 

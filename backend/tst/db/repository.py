@@ -597,7 +597,7 @@ def run_turn(
     backup = data.balance.backup
     if committed % backup.every_n_turns == 0:
         periodic_backup(save_path, committed, backup.keep_periodic)
-    update_index(save_path)
+    update_index(save_path, result.new_state)
     return result
 
 
@@ -779,7 +779,7 @@ def refresh_index(save_dir: Path) -> list[SaveSummary]:
     return summaries
 
 
-def update_index(path: Path) -> None:
+def update_index(path: Path, state: GameState | None = None) -> None:
     """Refresh one save's entry in saves/index.json after it was created or played; the
     whole index is rebuilt only when it is missing or unreadable (M6 sub-task 0: rebuilding
     opened every save after every turn)."""
@@ -791,7 +791,17 @@ def update_index(path: Path) -> None:
         refresh_index(save_dir)
         return
     slug = slug_of(path)
-    mine = summarize(path)
+    mine = (
+        summarize(path)
+        if state is None
+        else SaveSummary(
+            slug=slug,
+            company_name=state.player.name,
+            scenario_id=state.save_meta.scenario_id,
+            difficulty=state.save_meta.difficulty,
+            current_turn=state.turn,
+        )
+    )
     items = sorted([s for s in items if s.slug != slug] + [mine], key=lambda s: s.slug)
     index.write_text(json.dumps([asdict(s) for s in items], indent=2) + "\n", encoding="utf-8")
 
