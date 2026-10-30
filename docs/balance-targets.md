@@ -47,11 +47,11 @@ Every strategy answers critical events with the first choice, sets prices at the
 
 | # | Measure | Band |
 | --- | --- | --- |
-| T4a | Median months to a closed seed (steady; blitzscale) | steady 6–24; blitzscale 1–12 (Reece, M7a B2: its seed has no gate, so it raises at once) |
+| T4a | Median months to a closed seed (steady; blitzscale) | steady 1–24 (Reece, M7a C1: 5 hires on $400k leave under 12 months of runway, so it raises at once); blitzscale 1–12 (Reece, M7a B2: its seed has no gate, so it raises at once) |
 | T4b | Median months to a closed Series A (steady; blitzscale) | steady 24–60; blitzscale 12–36 |
 | T4c | Median months to a closed Series B (blitzscale) | 30–72, reached on at least 4/10 seeds |
 | T4d | Median months to IPO | not in v1 (IPO is v2); printed as "–" |
-| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 5–25% (Reece: it keeps 18 months of runway), hard 30–70%; blitzscale standard 10–40% (Reece, M7a B3: reached by round gates and investor appetite, so it fails when traction lags, not by its script); bootstrap-frugal standard ≤ 30% |
+| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 0–25%, hard 0–70% (Reece, M7a C2: a cautious strategy that keeps 18 months of runway and retries its seed should survive); blitzscale standard 10–40% (Reece, M7a B3: reached by round gates and investor appetite, so it fails when traction lags, not by its script); bootstrap-frugal standard 20–50% (Reece, M7a C3: today's launch gates kept; bootstrappers win whenever they survive) |
 | T6 | Employee tenure (player staff, all strategies pooled) | median tenure of leavers 18–48 months; 10–25% of staff leave each year; at most 25% of hires leave in their first 12 months |
 | T7 | Rival survival at turn 120 (do-nothing runs, so the player doesn't distort it) | incumbents: at least 10 of 12 in business on average; rival startups: 20–60% of those founded are alive 5 years later |
 | T8 | ARR at turn 120 (median per strategy) | printed only: bootstrap-frugal, steady and blitzscale should rank in that order on the median |
@@ -75,22 +75,22 @@ E1 and E2 run on the M3a earn-and-burn script, so they are checked by `backend/t
 
 ## Recorded results
 
-M7a sub-task 4, after Reece's B1–B4 (2026-10-30), `make balance` (60 runs × 120 turns, 137 s wall clock with 4 jobs, 8.8 worker-minutes):
+M7a sub-task 4, after Reece's B1–B4 and C1–C3 (2026-10-30), `make balance` (60 runs × 120 turns, 130 s wall clock with 4 jobs, 8.4 worker-minutes); every target passes:
 
 | Target | Measured | Result |
 | --- | --- | --- |
 | T1 do-nothing fails | 10/10 | pass |
 | T2 wins | bootstrap-frugal 6, steady 4, blitzscale 0 | pass |
 | T3 succeed | bootstrap-frugal 6/10, steady 10/10, blitzscale 7/10 | pass |
-| T4a seed (median month) | steady 4, blitzscale 1 | steady **fails** (6–24): B3's runway rule starts its seed at once |
+| T4a seed (median month) | steady 4, blitzscale 1 | pass (bands 1–24 and 1–12) |
 | T4b Series A | steady 29.5, blitzscale 19.5 | pass |
 | T4c Series B | blitzscale 36 on 7/10 | pass |
-| T5 bankrupt | steady easy 0%, standard 0%, hard 0%; blitzscale 30%; bootstrap-frugal 40% | steady standard and hard, and bootstrap-frugal, **fail** |
+| T5 bankrupt | steady easy 0%, standard 0%, hard 0%; blitzscale 30%; bootstrap-frugal 40% | pass |
 | T6 tenure | leavers' median 25 months; 11% leave a year; 9% of hires leave in their first year | pass |
 | T7 rivals | incumbents 12/12; startups alive after 5 years 54% | pass |
 | T8 median ARR | bootstrap-frugal $18.4M, steady $44.2M, blitzscale $57.4M | printed |
 | E1, E2 (`test_event_balance`) | 1.35 events a month; cash −1.35% of revenue; morale worst +2.90 | pass |
 | E3 | solo founder 15.0 distinct, 18% dull, ≤ 2 repeats; bootstrap before launch 8% dull | pass |
-| S2 | 8.8 worker-minutes locally | pass |
+| S2 | 8.4 worker-minutes locally | pass |
 
-Keys changed: `resign.base_bp` 50 → 80; `rivals.startup.raise_chance` 0.6 → 0.25, `raise_months` 18 → 12, `found_rate` 0.02 → 0.03. Still open with Reece: steady's T4a and T5 bands, and bootstrap-frugal's launch time against T2 (see the M7a brief).
+Keys changed: `resign.base_bp` 50 → 80; `rivals.startup.raise_chance` 0.6 → 0.25, `raise_months` 18 → 12, `found_rate` 0.02 → 0.03. Findings carried forward (M7a brief, Follow-ups): hard difficulty does not threaten a cautious funded strategy; funded companies plateau at about $45–57M ARR (v1 has one market per product line); a 2-person team launches at about month 21.

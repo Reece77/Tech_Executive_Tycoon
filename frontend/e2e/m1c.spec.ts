@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { api, continueMonth, offerToAll, setupGame } from './helpers.ts';
+import { answerCritical, api, continueMonth, offerToAll, setupGame } from './helpers.ts';
 
 const SEED = 11;
 
@@ -146,6 +146,7 @@ test('(c) fire someone: severance and the morale dip', async ({ page, request })
     });
   }
   await api(request, 'POST', `${base}/advance`);
+  await answerCritical(request, base); // seven hires at 1.5x can leave a short runway
 
   await page.goto(`/game/${save}/people`);
   await expect(page.getByTestId('person-row').nth(2)).toBeVisible(); // founder + at least two

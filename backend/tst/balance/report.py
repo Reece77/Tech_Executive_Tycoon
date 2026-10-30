@@ -253,7 +253,7 @@ def evaluate(results: Sequence[RunResult]) -> list[Row]:
                 Row("T3", f"{s} succeeds", f"{ok}/{len(runs)}", f">= {need:g}", ok >= need, True)
             )
 
-    for s, low, high in (("steady", 6, 24), ("blitzscale", 1, 12)):  # blitzscale 1-12: Reece, B2
+    for s, low, high in (("steady", 1, 24), ("blitzscale", 1, 12)):  # Reece: C1 and B2
         m = _median_months(_runs(results, s), "seed")
         rows.append(
             Row("T4a", f"{s}: median months to seed", _fmt(m), f"{low}-{high}", _in(m, low, high))
@@ -286,10 +286,10 @@ def evaluate(results: Sequence[RunResult]) -> list[Row]:
 
     bands: tuple[tuple[str, str, float, float], ...] = (
         ("steady", "easy", 0.0, 0.10),
-        ("steady", "standard", 0.05, 0.25),
-        ("steady", "hard", 0.30, 0.70),
+        ("steady", "standard", 0.0, 0.25),  # Reece, C2
+        ("steady", "hard", 0.0, 0.70),  # Reece, C2
         ("blitzscale", "standard", 0.10, 0.40),  # Reece, B3
-        ("bootstrap-frugal", "standard", 0.0, 0.30),
+        ("bootstrap-frugal", "standard", 0.20, 0.50),  # Reece, C3 (a)
     )
     for s, d, lo, hi in bands:
         runs = _runs(results, s, d)
