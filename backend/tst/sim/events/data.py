@@ -15,9 +15,17 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 type Severity = Literal["minor", "major", "critical"]
 SEVERITIES: Final = ("minor", "major", "critical")
 
-CATEGORIES: Final = ("personnel", "market", "operations", "finance", "board", "rivals")
+CATEGORIES: Final = (
+    "personnel",
+    "market",
+    "operations",
+    "finance",
+    "board",
+    "rivals",
+    "founder",  # M7a: the founder's own early days (16.1 "founder templates")
+)
 # Templates a company with no employees may draw (16.1: founder, market and finance).
-NO_STAFF_CATEGORIES: Final = ("market", "finance")
+NO_STAFF_CATEGORIES: Final = ("market", "finance", "founder")
 
 # Triggers the director computes from state (16.2), in table order; `storyline` and
 # `follow_up` templates are never drawn, only scheduled (16.3, 16.6).
@@ -40,6 +48,7 @@ TRIGGERS: Final = (
     "runway_short",
     "funding_closed",
     "board_unhappy",
+    "early_days",  # M7a: no live product yet
     "quiet_month",
 )
 SCHEDULED: Final = ("storyline", "follow_up")
@@ -103,6 +112,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "runway_short": frozenset({"months"}),
     "funding_closed": frozenset(),
     "board_unhappy": frozenset(),
+    "early_days": frozenset(),  # names the product in development, if any
     "quiet_month": frozenset(),
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")

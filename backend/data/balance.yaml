@@ -522,6 +522,7 @@ events: # event director, effect caps, storylines (formulas.md 16; ADR-0005, ADR
     runway_short: { months: [6, 3], strength: [0.6, 1.0] } # runway months; below the second, critical is allowed
     funding_closed: { strength: 0.5 }
     board_unhappy: { below: 50, span: 15 } # average board confidence points (tuned in M6.9 from 40)
+    early_days: { strength: 0.4 } # no live product yet: the founder's early-days templates (M7a, E3 in docs/balance-targets.md)
     quiet_month: { strength: 0.2 }
   caps: # largest effect per choice by severity [minor, major, critical] (16.3)
     morale_delta: [3, 10, 20] # morale points (minor tuned in M6.9 from 5)

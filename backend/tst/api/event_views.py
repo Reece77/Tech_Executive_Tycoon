@@ -29,6 +29,7 @@ CATEGORY_LABELS = {
     "finance": "Finance",
     "board": "Board and investors",
     "rivals": "Rivals",
+    "founder": "Founder",
 }
 SOURCE_LABELS = {"claude": "Claude", "template": "template", "mock": "mock", "replay": "replay"}
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion

@@ -184,3 +184,25 @@ def test_quiet_month_templates_fill_when_every_candidate_is_in_cooldown(
     assert len(chosen) == 2 and chosen[0].template.id != chosen[1].template.id
     quiet = [TriggerHit("quiet_month", 0.2)]
     assert fill_candidates(blocked, quiet, loaded.balance, loaded.game_data) == []
+
+
+def test_early_days_until_something_is_live(loaded: LoadedData) -> None:
+    """M7a (docs/balance-targets.md E3): with nothing live to sell, early_days holds instead of
+    quiet_month, and a solo founder draws founder templates; a template naming {product}
+    needs a product in development. Once a product is live, early_days stops."""
+    solo = replace(fresh_game(loaded), turn=3)
+    hits = _hits(solo, loaded)
+    assert [h.trigger for h in hits] == ["early_days"]
+    pool = candidates(solo, hits, loaded.balance, loaded.game_data)
+    ids = {c.template.id for c in pool}
+    assert {c.template.category for c in pool} == {"founder"}
+    assert len(ids) >= 10 and "early_prototype_bug" not in ids  # no product to name
+
+    building = with_product(solo, status="in_development")
+    hit = next(h for h in _hits(building, loaded) if h.trigger == "early_days")
+    assert hit.product_id == building.company_products(1)[0].id
+    pool = candidates(building, [hit], loaded.balance, loaded.game_data)
+    assert "early_prototype_bug" in {c.template.id for c in pool}
+
+    live = with_product(solo, customers={"smb": 10.0})
+    assert "early_days" not in {h.trigger for h in _hits(live, loaded)}

@@ -53,8 +53,13 @@ def test_acceptance_flow(save_dir: Path) -> None:
     # $50,000 - 24 x ($500 overhead + $600 office), plus what events cost or brought (M6).
     cash = 2_360_000 + event_cash_cents(save_dir / "dev.tst.sqlite")
     assert f"Cash:    ${cash / 100:,.2f}" in out
-    assert "Burn:    $1,100.00 / month" in out
-    assert "Runway:  21 months at this month's projected costs\n" in out
+    # Last month's burn includes what its events cost (M7a: a solo founder has early-days events).
+    path = save_dir / "dev.tst.sqlite"
+    burn = 110_000 - (
+        event_cash_cents(path, through_turn=23) - event_cash_cents(path, through_turn=22)
+    )
+    assert f"Burn:    ${burn / 100:,.2f} / month" in out
+    assert f"Runway:  {cash // 110_000} months at this month's projected costs\n" in out
 
     out = run("list")
     assert "dev" in out and "Test Co" in out and "Jan 2012" in out

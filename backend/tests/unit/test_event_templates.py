@@ -22,12 +22,13 @@ from tst.sim.events.data import (
 def test_the_library(loaded: LoadedData) -> None:
     templates = loaded.game_data.event_templates
     assert Counter(t.category for t in templates) == {
-        "personnel": 20,
-        "market": 12,
-        "operations": 10,
+        "personnel": 24,  # M6: 20; M7a: +4
+        "market": 14,  # M6: 12; M7a: +2
+        "operations": 12,  # M6: 10; M7a: +2
         "finance": 8,
         "board": 6,
         "rivals": 4,
+        "founder": 14,  # M7a: early days (trigger early_days)
     }
     for trigger in TRIGGERS:
         assert any(t.trigger == trigger and "minor" in t.severities for t in templates), trigger

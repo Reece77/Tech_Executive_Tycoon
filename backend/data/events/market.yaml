@@ -284,3 +284,44 @@ templates:
         label: "Send a short acceptance video, just in case"
         effects:
           - { type: brand_delta, target: product, share: 0.2 }
+
+  # --- M7a additions ---------------------------------------------------------------------
+
+  - id: milestone_user_group
+    category: market
+    trigger: customer_milestone
+    severities: [minor]
+    weight: 0.7
+    title: "Customers want a user group"
+    body: >-
+      {product} now has enough customers in {segment} that a few of them want to meet each
+      other. They ask {company} to host an evening: demos, drinks, and an honest Q&A.
+    choices:
+      - key: A
+        label: "Host it"
+        effects:
+          - { type: brand_delta, target: product, share: 0.5 }
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Start an online forum instead"
+        effects:
+          - { type: brand_delta, target: product, share: 0.2 }
+
+  - id: rival_move_trade_show
+    category: market
+    trigger: rival_move
+    severities: [minor]
+    weight: 0.7
+    title: "{rival} booked the big booth"
+    body: >-
+      {rival} has taken the largest stand at this year's {segment} trade show. The organisers
+      call to offer {company} the one opposite, at a price.
+    choices:
+      - key: A
+        label: "Skip the show this year"
+        effects: []
+      - key: B
+        label: "Take the booth opposite"
+        effects:
+          - { type: brand_delta, target: product, share: 0.5 }
+          - { type: cash_delta, target: company, share: -0.4 }

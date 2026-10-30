@@ -1,0 +1,283 @@
+# Founder event templates (docs/formulas.md 16.4, M7a): the founder's early days, while the
+# company has nothing live to sell (trigger early_days, 16.2). They are what a solo founder
+# hears about before there are staff or customers (docs/balance-targets.md E3). Effects give
+# `share`: the fraction of the severity's cap (16.3); negative is a loss or a cost, and cash
+# gains reach at most half the cost cap. Targets: founder, company, and product (only when a
+# product is in development; the director skips the template otherwise). Placeholders:
+# {founder} {company} {product}. Tone: grounded realism (ADR-0011). The first choice is what
+# happens when the event is left unanswered at Continue.
+templates:
+  - id: early_mentor_offer
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 1.0
+    title: "Your old boss offers to mentor you"
+    body: >-
+      A former manager heard you left to start {company} and offers an hour a month: someone
+      who has hired, fired and raised money before, and who will tell you when an idea is bad.
+    choices:
+      - key: A
+        label: "Say yes and put the first call in the diary"
+        effects:
+          - { type: energy_delta, target: founder, share: 0.4 }
+      - key: B
+        label: "Thank them; you'd rather work it out alone"
+        effects: []
+
+  - id: early_customer_interviews
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 1.0
+    title: "Twenty conversations before a line of code"
+    body: >-
+      A friend who sold her first company swears by it: talk to twenty people who might buy
+      from {company} before you build anything. It is slow, awkward work, and some of them
+      will tell you the idea is not worth paying for.
+    choices:
+      - key: A
+        label: "Book the twenty calls"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.5 }
+      - key: B
+        label: "You know this market already"
+        effects: []
+
+  - id: early_consulting_gig
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.9
+    title: "An old client wants a few weeks of your time"
+    body: >-
+      A client from your last job needs someone who knows their systems, and they will pay a
+      day rate that would cover a couple of months of {company}'s costs. It would also eat
+      most of those weeks.
+    choices:
+      - key: A
+        label: "Take the gig; cash is oxygen"
+        effects:
+          - { type: cash_delta, target: company, share: 0.8 }
+          - { type: energy_delta, target: founder, share: -0.8 }
+      - key: B
+        label: "Turn it down and stay focused"
+        effects: []
+
+  - id: early_meetup_talk
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.8
+    title: "A meetup wants a speaker"
+    body: >-
+      The organiser of a local developers' meetup asks {founder} to give a twenty-minute talk
+      about why you started {company}. It's a chance to be seen; it also means a train ticket,
+      a hotel and two evenings of slides.
+    choices:
+      - key: A
+        label: "Give the talk"
+        effects:
+          - { type: cash_delta, target: company, share: -0.2 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Not yet; nothing to show"
+        effects: []
+
+  - id: early_coworking_desk
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.8
+    title: "A desk in a coworking space"
+    body: >-
+      The kitchen table has become {company}'s headquarters, and it shows. A coworking space
+      nearby has a desk free, with other founders at the next table and coffee that isn't
+      yours to make.
+    choices:
+      - key: A
+        label: "Rent the desk"
+        effects:
+          - { type: cash_delta, target: company, share: -0.4 }
+          - { type: energy_delta, target: founder, share: 0.5 }
+      - key: B
+        label: "Keep the kitchen table"
+        effects: []
+
+  - id: early_family_worry
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.8
+    title: "Your family is worried"
+    body: >-
+      Over dinner, someone close to {founder} asks the question everyone has been avoiding:
+      how long can the savings last, and what happens if {company} doesn't work?
+    choices:
+      - key: A
+        label: "Take the weekend off and talk it through"
+        effects:
+          - { type: energy_delta, target: founder, share: 0.5 }
+      - key: B
+        label: "Promise them a plan by spring and get back to work"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.3 }
+
+  - id: early_prototype_bug
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.9
+    title: "The prototype eats its own data"
+    body: >-
+      Testing {product} late at night, you find that saving twice in a row quietly corrupts
+      the record. Nobody outside {company} has seen it yet. Fixing it properly means pulling
+      apart the storage layer you were proud of.
+    choices:
+      - key: A
+        label: "Tear it out and do it properly"
+        effects:
+          - { type: quality_delta, target: product, share: 0.6 }
+          - { type: energy_delta, target: founder, share: -0.5 }
+      - key: B
+        label: "Patch it and move on"
+        effects:
+          - { type: quality_delta, target: product, share: -0.3 }
+
+  - id: early_domain_name
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.6
+    title: "The perfect domain is for sale"
+    body: >-
+      The short, obvious domain name for {company} has been parked for years. Its owner has
+      finally answered your email, with a price that would buy a month of someone's salary.
+    choices:
+      - key: A
+        label: "Pick a different name for the site"
+        effects: []
+      - key: B
+        label: "Buy it"
+        effects:
+          - { type: cash_delta, target: company, share: -0.5 }
+
+  - id: early_accelerator_invite
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.8
+    title: "An accelerator invites you to apply"
+    body: >-
+      A partner at a startup accelerator met {founder} at a dinner and suggests applying to
+      the next batch. The application is long, the interviews are longer, and the small
+      stipend comes with a lot of demo-day rehearsals.
+    choices:
+      - key: A
+        label: "Apply"
+        effects:
+          - { type: cash_delta, target: company, share: 0.4 }
+          - { type: energy_delta, target: founder, share: -0.6 }
+      - key: B
+        label: "Not this batch"
+        effects: []
+
+  - id: early_long_hours
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.9
+    title: "Eighty-hour weeks"
+    body: >-
+      {founder} hasn't had a day off since starting {company}. The work is still exciting, but
+      small mistakes are creeping in, and a friend points out that you've cancelled on them
+      three times this month.
+    choices:
+      - key: A
+        label: "Take a proper week off"
+        effects:
+          - { type: energy_delta, target: founder, share: 0.8 }
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Push through to the next milestone"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.4 }
+
+  - id: early_open_source
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.7
+    title: "Open-source a piece of {product}?"
+    body: >-
+      One component of {product} is general enough that other developers keep asking about it.
+      Releasing it would get {company}'s name around before launch, and you'd spend evenings
+      answering issues from strangers.
+    choices:
+      - key: A
+        label: "Release it"
+        effects:
+          - { type: brand_delta, target: product, share: 0.6 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Keep it in-house"
+        effects: []
+
+  - id: early_advisor
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.7
+    title: "An industry veteran wants to help"
+    body: >-
+      A retired executive who knows {company}'s market offers to be an informal adviser: a
+      few calls a month and introductions, in exchange for lunch on {company} now and then.
+    choices:
+      - key: A
+        label: "Welcome the help"
+        effects:
+          - { type: energy_delta, target: founder, share: 0.4 }
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Politely decline"
+        effects: []
+
+  - id: early_market_report
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.6
+    title: "A market report, for a price"
+    body: >-
+      A research firm is selling its annual report on {company}'s market: sizes, buyers,
+      who is growing. You could buy it, or spend a fortnight piecing the same picture together
+      from earnings calls and forums.
+    choices:
+      - key: A
+        label: "Do the research yourself"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Buy the report"
+        effects:
+          - { type: cash_delta, target: company, share: -0.4 }
+          - { type: energy_delta, target: founder, share: 0.3 }
+
+  - id: early_paperwork
+    category: founder
+    trigger: early_days
+    severities: [minor]
+    weight: 0.7
+    title: "The paperwork catches up"
+    body: >-
+      Registration forms, a business bank account, a payroll provider for the day you hire:
+      the dull machinery of {company} needs a week of attention, or an accountant's invoice.
+    choices:
+      - key: A
+        label: "Pay an accountant to sort it"
+        effects:
+          - { type: cash_delta, target: company, share: -0.3 }
+      - key: B
+        label: "Do it yourself over a weekend"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.5 }
