@@ -190,6 +190,8 @@ def test_section_9_terms(loaded: LoadedData) -> None:
 
 # --- Section 10: resignations (and section 3 retirement) ------------------------------------
 
+DOCUMENTED_BASE_BP = 50  # formulas.md section 10's base; M7a tuned balance.yaml to 80
+
 
 @pytest.mark.parametrize(
     ("morale", "loyalty", "hopper", "chance"),
@@ -198,12 +200,14 @@ def test_section_9_terms(loaded: LoadedData) -> None:
 def test_section_10_resignation_table(
     loaded: LoadedData, morale: float, loyalty: float, hopper: bool, chance: float
 ) -> None:
-    """The formulas.md table shows these rounded: 45, 131 and 263 bp."""
-    assert resignation_bp(morale, loyalty, hopper, loaded.balance.resign) == pytest.approx(chance)
+    """The formulas.md table shows these rounded: 45, 131 and 263 bp (at the documented base of
+    50 bp; balance.yaml holds the M7a-tuned base)."""
+    resign = loaded.balance.resign.model_copy(update={"base_bp": DOCUMENTED_BASE_BP})
+    assert resignation_bp(morale, loyalty, hopper, resign) == pytest.approx(chance)
 
 
 def test_section_10_cap(loaded: LoadedData) -> None:
-    resign = loaded.balance.resign
+    resign = loaded.balance.resign.model_copy(update={"base_bp": DOCUMENTED_BASE_BP})
     # With the defaults the chance tops out at 50 x 3 x 2 x 2 = 600 bp (morale 0, loyalty 1,
     # job hopper), so the 2,000 bp cap does not bind; check it with a larger base.
     assert resignation_bp(0, 1, True, resign) == pytest.approx(600)

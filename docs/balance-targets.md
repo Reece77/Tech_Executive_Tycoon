@@ -22,8 +22,8 @@ Research-heavy, acquirer and vertical-integrator need v2 and v3 systems and are 
 | Strategy | Product | People | Money | Marketing |
 | --- | --- | --- | --- | --- |
 | **do-nothing** | none | founder alone | none raised | none |
-| **bootstrap-frugal** | one B2B SaaS product, launched as soon as allowed | founder + 2 engineers; one more hire each time cash covers 12 months of costs, to at most 15 | never raises | 10% of last month's revenue |
-| **steady** | one product, a second at $5M ARR | founder + 5 (the M3a earn-and-burn team); grows so that runway stays above 18 months | seed when the gate allows, Series A when it allows, best term sheet; bridges when offered | $10,000 a month, then 20% of revenue |
+| **bootstrap-frugal** | one B2B SaaS product, launched as soon as allowed | founder + 1 engineer; an account executive at launch; then one more hire each time cash covers 12 months of costs, to at most 15 (Reece, M7a B1) | never raises | 10% of last month's revenue |
+| **steady** | one product, a second at $5M ARR | founder + 5 (the M3a earn-and-burn team); grows so that runway stays above 18 months | seed at launch or when runway falls below 12 months, whichever comes first (Reece, M7a B3); Series A when its gate allows; best term sheet; bridges when offered | $10,000 a month, then 20% of revenue |
 | **blitzscale** | one product, a second at Series A | 15 staff by month 12, then hires while runway is above 12 months | every round as soon as allowed (seed, A, B), largest amount offered; bridges when offered | 40% of revenue, at least $25,000 a month |
 
 Every strategy answers critical events with the first choice, sets prices at the category's reference price, and never fires anyone.
@@ -47,11 +47,11 @@ Every strategy answers critical events with the first choice, sets prices at the
 
 | # | Measure | Band |
 | --- | --- | --- |
-| T4a | Median months to a closed seed (steady; blitzscale) | steady 6–24; blitzscale 3–12 |
+| T4a | Median months to a closed seed (steady; blitzscale) | steady 6–24; blitzscale 1–12 (Reece, M7a B2: its seed has no gate, so it raises at once) |
 | T4b | Median months to a closed Series A (steady; blitzscale) | steady 24–60; blitzscale 12–36 |
 | T4c | Median months to a closed Series B (blitzscale) | 30–72, reached on at least 4/10 seeds |
 | T4d | Median months to IPO | not in v1 (IPO is v2); printed as "–" |
-| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 5–25% (Reece: it keeps 18 months of runway), hard 30–70%; blitzscale standard 20–60%; bootstrap-frugal standard ≤ 30% |
+| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 5–25% (Reece: it keeps 18 months of runway), hard 30–70%; blitzscale standard 10–40% (Reece, M7a B3: reached by round gates and investor appetite, so it fails when traction lags, not by its script); bootstrap-frugal standard ≤ 30% |
 | T6 | Employee tenure (player staff, all strategies pooled) | median tenure of leavers 18–48 months; 10–25% of staff leave each year; at most 25% of hires leave in their first 12 months |
 | T7 | Rival survival at turn 120 (do-nothing runs, so the player doesn't distort it) | incumbents: at least 10 of 12 in business on average; rival startups: 20–60% of those founded are alive 5 years later |
 | T8 | ARR at turn 120 (median per strategy) | printed only: bootstrap-frugal, steady and blitzscale should rank in that order on the median |

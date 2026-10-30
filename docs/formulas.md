@@ -355,6 +355,8 @@ p_{bp} = 50 \times \left(1 + \frac{\max(0,\,40 - morale)}{20}\right) \times \fra
 | Morale 25, loyalty 6 | 131 bp (1.3%) |
 | Morale 25, loyalty 6, job hopper | 263 bp (2.6%) |
 
+**M7a balance pass:** the base is now 80 bp (`resign.base_bp`), so about 10–25% of staff leave a year (docs/balance-targets.md T6); the formula and the table above keep the original 50 bp, and their tests use it.
+
 **M4:** the chance is then multiplied by the retention factor for unvested options, `max(0.5, 1 − 0.5 u)` (§14.2), before the cap.
 
 A resignation sets employment status to `notice` with `end_turn = turn + 1`. A notice employment is still paid that month; in phase 1 of `end_turn` it becomes `ended` (`end_reason` = `resigned`). Firing ends it at once (`end_reason` = `fired`); retirement works like a resignation (`end_reason` = `retired`).

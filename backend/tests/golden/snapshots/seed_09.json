@@ -325,14 +325,14 @@
     "turn": 23,
     "date": "Dec 2011",
     "company_id": 1,
-    "cash_cents": 22956800,
-    "monthly_burn_cents": 7478682,
-    "headcount": 12,
-    "payroll_cents": 8409950,
-    "avg_morale": 48.93373757425599,
-    "mrr_cents": 3479142,
-    "arr_cents": 41749704,
+    "cash_cents": 23996453,
+    "monthly_burn_cents": 6439029,
+    "headcount": 11,
+    "payroll_cents": 7395950,
+    "avg_morale": 48.28658132644445,
+    "mrr_cents": 3329778,
+    "arr_cents": 39957336,
     "founder_bp": 4527,
-    "board_confidence": 52.16557542087175
+    "board_confidence": 55.16557542087175
   }
 ]

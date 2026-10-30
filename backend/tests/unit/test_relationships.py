@@ -4,6 +4,7 @@ in morale. A credit-taker's unit-mate settles near the 16.11 value (-24)."""
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import replace
 
 import pytest
@@ -87,7 +88,12 @@ def test_pairs_exist_only_for_unit_mates_and_manager_links(
 
 def test_a_credit_takers_unit_mate_settles_near_minus_24(loaded: LoadedData) -> None:
     """16.11: temperaments 14 and 6 start at 3; the credit-taker pushes -3 a month and the
-    pair settles at -24, where it pulls the mate's W_rel down."""
+    pair settles at -24, where it pulls the mate's W_rel down. Resignations are off: the
+    example is about drift, and at M7a's base rate one of the two could leave within 60 months."""
+    balance = loaded.balance.model_copy(
+        update={"resign": loaded.balance.resign.model_copy(update={"base_bp": 0})}
+    )
+    loaded = dataclasses.replace(loaded, balance=balance)
     taker = _person(loaded, 2, 14, ("credit_taker",))
     mate = _person(loaded, 3, 6)
     state = _company(loaded, [taker, mate])

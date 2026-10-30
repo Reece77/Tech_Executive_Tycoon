@@ -131,13 +131,15 @@ def headcount(game: Game) -> int:
     return len(game.state.staff(PLAYER)) - 1 + pending
 
 
-def hire(game: Game, wanted: int, per_month: int) -> None:
+def hire(game: Game, wanted: int, per_month: int, order: tuple[str, ...] = HIRE_ORDER) -> None:
     """Work toward `wanted` employees (offers out count), one role at a time in HIRE_ORDER:
-    keep a job post open for the next role only, interview its candidates while energy lasts
-    and offer 1.05x the ask. Job posts close once the target is reached."""
+    def hire(
+        game: Game, wanted: int, per_month: int, order: tuple[str, ...] = HIRE_ORDER
+    ) -> None:
+        and offer 1.05x the ask. Job posts close once the target is reached."""
     state = game.state
     searches = [s for s in state.searches if s.company_id == PLAYER and s.status == "open"]
-    role = HIRE_ORDER[headcount(game) % len(HIRE_ORDER)]
+    role = order[headcount(game) % len(order)]
     for search in searches:
         if headcount(game) >= wanted or search.role != role:
             game.act(CloseSearch(game.founder_id, search.id))
@@ -153,7 +155,7 @@ def hire(game: Game, wanted: int, per_month: int) -> None:
         if (
             candidate.company_id != PLAYER
             or candidate.status != "open"
-            or person.role != HIRE_ORDER[headcount(game) % len(HIRE_ORDER)]
+            or person.role != order[headcount(game) % len(order)]
             or game.state.pending_offer_for(person.id) is not None
             or person.salary_expectation_cents is None
         ):
@@ -180,8 +182,8 @@ def accept_bridges(game: Game) -> None:
             game.act(AcceptBridge(game.founder_id, safe.id))
 
 
-def fundraise(game: Game, targets: dict[str, int], pick: str, needs_live: bool = True) -> None:
-    """Start the next round as soon as its gate allows (the seed once a product is live) and
+def fundraise(game: Game, targets: dict[str, int], pick: str, seed_ok: bool = True) -> None:
+    """Start the next round as soon as its gate allows (the seed only when `seed_ok`) and
     accept the best term sheet: the highest pre-money (`pick="pre"`) or the largest amount
     (`pick="amount"`)."""
     state = game.state
@@ -196,8 +198,7 @@ def fundraise(game: Game, targets: dict[str, int], pick: str, needs_live: bool =
             game.act(AcceptTermSheet(game.founder_id, best.id))
         return
     series = next_series(state, PLAYER)
-    live = any(p.status == "live" for p in _products(game))
-    if series not in targets or (needs_live and not live):
+    if series not in targets or (series == "seed" and not seed_ok):
         return
     if series_problem(state, PLAYER, series, game.loaded.balance) is None:
         game.act(StartRound(game.founder_id, series, targets[series]))
@@ -214,44 +215,64 @@ def do_nothing(game: Game) -> None:
     """The founder alone: no product, no hires, no money raised."""
 
 
-BOOTSTRAP_START = 2  # engineers hired at the start
+BOOTSTRAP_ORDER = (  # Reece, M7a B1: an engineer to build, an account executive at launch
+    "software_engineer",
+    "account_executive",
+    "software_engineer",
+    "marketer",
+    "software_engineer",
+    "account_executive",
+    "product_manager",
+    "software_engineer",
+    "sales_representative",
+    "designer",
+)
+BOOTSTRAP_BUILDERS = 1  # employees before launch
+BOOTSTRAP_AT_LAUNCH = 2  # employees once live (the account executive)
 BOOTSTRAP_MAX = 15  # employees at most
-BOOTSTRAP_CASH_MONTHS = 12  # hire one more when cash covers this many months of costs
+BOOTSTRAP_CASH_MONTHS = 12  # then one more hire when cash covers this many months of costs
 BOOTSTRAP_MARKETING = 0.10  # share of last month's revenue spent on marketing
 
 
 def bootstrap_frugal(game: Game) -> None:
-    """One B2B SaaS product built by the founder and 2 engineers, launched when allowed; one
-    more hire each time cash covers 12 months of costs, to 15; never raises; marketing 10% of
-    last month's revenue."""
+    """One B2B SaaS product built by the founder and 1 engineer, launched when allowed; an
+    account executive at launch; then one hire each time cash covers 12 months of costs, to
+    15; never raises; marketing 10% of last month's revenue (Reece, M7a B1)."""
     ensure_product(game, 0)
     launch_ready(game)
-    wanted = BOOTSTRAP_START
-    if game.cash >= BOOTSTRAP_CASH_MONTHS * monthly_cost(game):
-        wanted = min(max(headcount(game) + 1, BOOTSTRAP_START), BOOTSTRAP_MAX)
-    hire(game, wanted, per_month=1)
+    wanted = BOOTSTRAP_BUILDERS
+    if any(p.status == "live" for p in _products(game)):
+        wanted = max(headcount(game), BOOTSTRAP_AT_LAUNCH)
+        covered = game.cash >= BOOTSTRAP_CASH_MONTHS * monthly_cost(game)
+        if headcount(game) >= BOOTSTRAP_AT_LAUNCH and covered:
+            wanted = min(headcount(game) + 1, BOOTSTRAP_MAX)
+    hire(game, wanted, per_month=1, order=BOOTSTRAP_ORDER)
     set_marketing(game, round(BOOTSTRAP_MARKETING * last_revenue(game)))
 
 
 STEADY_START = 5  # the M3a earn-and-burn team
 STEADY_RUNWAY = 24  # hire one more while projected runway is above this (keeps it above 18)
 STEADY_ROUNDS = {"seed": 150_000_000, "a": 600_000_000}  # $1.5M seed, $6M Series A
+STEADY_SEED_RUNWAY = 12  # start the seed when runway falls below this or at launch (M7a B3)
 STEADY_SECOND_ARR = 500_000_000  # second product at $5M ARR
 STEADY_MARKETING_MIN = 1_000_000  # $10,000 a month, then 20% of revenue
 STEADY_MARKETING = 0.20
 
 
 def steady(game: Game) -> None:
-    """The M3a team on one product; a seed once live and a Series A when allowed, best
-    pre-money; grows while runway stays above 18 months; a second product at $5M ARR."""
+    """The M3a team on one product; a seed at launch or when runway falls below 12 months,
+    whichever comes first, and a Series A when allowed, best pre-money; grows while runway
+    stays above 18 months; a second product at $5M ARR."""
     accept_bridges(game)
-    fundraise(game, STEADY_ROUNDS, pick="pre")
+    months = runway(game)
+    live = any(p.status == "live" for p in _products(game))
+    seed_ok = live or (months is not None and months < STEADY_SEED_RUNWAY)
+    fundraise(game, STEADY_ROUNDS, pick="pre", seed_ok=seed_ok)
     ensure_product(game, 0)
     if arr_cents(game.state, PLAYER, game.loaded.balance) >= STEADY_SECOND_ARR:
         ensure_product(game, 1)
     launch_ready(game)
     wanted = STEADY_START
-    months = runway(game)
     if headcount(game) >= STEADY_START and (months is None or months > STEADY_RUNWAY):
         wanted = headcount(game) + 1
     hire(game, wanted, per_month=2)
@@ -270,7 +291,7 @@ def blitzscale(game: Game) -> None:
     """15 staff by month 12, then hires while runway is above 12 months; every round as soon
     as allowed (seed, A, B), largest amount; a second product at Series A."""
     accept_bridges(game)
-    fundraise(game, BLITZ_ROUNDS, pick="amount", needs_live=False)
+    fundraise(game, BLITZ_ROUNDS, pick="amount")
     ensure_product(game, 0)
     if "a" in closed_series(game):
         ensure_product(game, 1)
