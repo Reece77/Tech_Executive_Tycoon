@@ -24,7 +24,6 @@ from tst.db.inbox import inbox_rows
 from tst.db.mappers import (
     company_snapshot_from_row,
     decisions_to_row,
-    entry_to_row,
     log_item_to_row,
     product_month_from_row,
     product_month_to_row,
@@ -44,8 +43,17 @@ from tst.db.models import (
     SaveMetaRow,
     TurnSnapshotRow,
 )
-from tst.db.session import make_engine, make_sessionmaker
-from tst.db.state_io import META_ID, has_table, live_view, load_state, read_meta, sync_state
+from tst.db.session import make_sessionmaker, shared_engine
+from tst.db.state_io import (
+    META_ID,
+    has_table,
+    insert_entries,
+    insert_rows,
+    live_view,
+    load_state,
+    read_meta,
+    sync_state,
+)
 from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.actions import (
@@ -69,7 +77,7 @@ from tst.sim.errors import (
     UpgradeNeededError,
 )
 from tst.sim.finance.statements import projected_runway
-from tst.sim.ledger import AccountCode
+from tst.sim.ledger import AccountCode, apply_entries
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
 from tst.sim.products.models import ProductMonth
@@ -147,13 +155,9 @@ def existing_save_path(save_dir: Path, slug: str) -> Path:
 
 @contextmanager
 def open_session(path: Path) -> Iterator[Session]:
-    """A session on one save file. The engine is disposed (file closed) on exit."""
-    engine = make_engine(path)
-    try:
-        with make_sessionmaker(engine)() as session:
-            yield session
-    finally:
-        engine.dispose()
+    """A session on one save file; its connection closes on exit (the engine is shared)."""
+    with make_sessionmaker(shared_engine(path))() as session:
+        yield session
 
 
 _LOCKS: dict[Path, threading.Lock] = {}
@@ -184,21 +188,30 @@ def _stamp(path: Path) -> tuple[int, int, int, int]:
     return (main.st_size, main.st_mtime_ns, w.st_size, w.st_mtime_ns)
 
 
-_LAST: dict[str, tuple[tuple[int, int, int, int], GameState]] = {}
+Balances = dict[tuple[int, AccountCode], Cents]
+_LAST: dict[str, tuple[tuple[int, int, int, int], GameState, Balances | None]] = {}
 CACHED_STATE = "tst_cached_state"
+CACHED_BALANCES = "tst_cached_balances"
 
 
-def remember(path: Path, state: GameState) -> None:
+def remember(path: Path, state: GameState, balances: Balances | None = None) -> None:
     """Keep the state just written to a save (after its session closed), as `load_state`
-    would read it back (M6 sub-task 0: a turn or action then skips a full load)."""
-    _LAST[str(path.resolve())] = (_stamp(path), live_view(state))
+    would read it back (M6 sub-task 0: a turn or action then skips a full load), and the
+    ledger balances through its turn when the writer knows them (M7a: summing the whole
+    ledger cost about 10 ms a call by turn 120, and grows every month)."""
+    _LAST[str(path.resolve())] = (_stamp(path), live_view(state), balances)
 
 
-def _recall(path: Path) -> GameState | None:
+def _recall(path: Path) -> tuple[GameState, Balances | None] | None:
     entry = _LAST.get(str(path.resolve()))
     if entry is None or not path.exists() or entry[0] != _stamp(path):
         return None
-    return entry[1]
+    return entry[1], entry[2]
+
+
+def _cache(session: Session, recalled: tuple[GameState, Balances | None] | None) -> None:
+    session.info[CACHED_STATE] = recalled[0] if recalled else None
+    session.info[CACHED_BALANCES] = recalled[1] if recalled else None
 
 
 def load_current(session: Session) -> GameState:
@@ -212,6 +225,20 @@ def load_current(session: Session) -> GameState:
         if fresh != cached:
             raise RuntimeError("the remembered state differs from the save")
     return cast(GameState, cached)
+
+
+def current_balances(session: Session, turn: int) -> Balances:
+    """`ledger_balances(session, turn)` for the save's current turn: the balances remembered
+    with the state when they are for that turn, else summed from the ledger.
+    TST_STATE_CACHE_CHECK=1 sums anyway and compares."""
+    cached = session.info.get(CACHED_BALANCES)
+    state = session.info.get(CACHED_STATE)
+    if cached is None or state is None or state.turn != turn:
+        return ledger_balances(session, turn)
+    check = os.environ.get("TST_STATE_CACHE_CHECK") == "1"
+    if check and ledger_balances(session, turn) != cached:
+        raise RuntimeError("the remembered ledger balances differ from the save")
+    return dict(cached)
 
 
 _READ_LOCKS: dict[Path, threading.Lock] = {}
@@ -231,11 +258,11 @@ def read_session(path: Path) -> Iterator[Session]:
         before = _stamp(path)
         cached = _recall(path)
         with open_session(path) as session:
-            session.info[CACHED_STATE] = cached
+            _cache(session, cached)
             yield session
             loaded = session.info.get(LOADED_STATE)
         if cached is None and loaded is not None and _stamp(path) == before:
-            _LAST[str(path.resolve())] = (before, loaded)  # no commit landed during the read
+            _LAST[str(path.resolve())] = (before, loaded, None)  # no commit landed meanwhile
 
 
 def read_state(session: Session) -> GameState:
@@ -261,7 +288,7 @@ def write_session(path: Path) -> Iterator[Session]:
     try:
         cached = _recall(path)  # before the connection opens (it can create the WAL file)
         with open_session(path) as session, session.begin():
-            session.info[CACHED_STATE] = cached
+            _cache(session, cached)
             yield session
     except OperationalError as exc:
         if is_locked_error(exc):
@@ -336,7 +363,7 @@ def create_save(
             )
             session.flush()
             sync_state(session, None, state)
-            session.add_all(entry_to_row(e) for e in entries)
+            insert_entries(session, entries)
             session.add(
                 DecisionLogRow(
                     turn=state.turn,
@@ -533,10 +560,13 @@ def apply_turn_result(
 
     sync_state(session, before, result.new_state)
     staff = {e.person_id for e in result.new_state.employments if e.counts_as_staff}
-    session.add_all(
-        PersonMoraleLogRow(person_id=ps.person_id, turn=played, morale=ps.morale)
-        for ps in result.new_state.person_states
-        if ps.morale is not None and ps.person_id in staff
+    insert_rows(
+        session,
+        (
+            PersonMoraleLogRow(person_id=ps.person_id, turn=played, morale=ps.morale)
+            for ps in result.new_state.person_states
+            if ps.morale is not None and ps.person_id in staff
+        ),
     )
 
     player = result.new_state.player
@@ -573,12 +603,17 @@ def apply_turn_result(
             )
             for t in result.text_requests
         )
-    session.add_all(entry_to_row(e) for e in result.ledger_entries)
-    session.add_all(snapshot_to_rows(result.snapshot))
-    session.add_all(product_month_to_row(m) for m in result.product_months)
-    session.add_all(log_item_to_row(i) for i in result.log_items)
-    session.add_all(
-        inbox_rows(result.log_items, result.new_state.player.id, data.game_data.inbox_templates)
+    insert_entries(session, result.ledger_entries)
+    insert_rows(
+        session,
+        [
+            *snapshot_to_rows(result.snapshot),
+            *(product_month_to_row(m) for m in result.product_months),
+            *(log_item_to_row(i) for i in result.log_items),
+            *inbox_rows(
+                result.log_items, result.new_state.player.id, data.game_data.inbox_templates
+            ),
+        ],
     )
     meta.current_turn = result.new_state.turn
     session.flush()
@@ -596,7 +631,7 @@ def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnR
         if meta.data_hashes != data.hashes:
             log.warning("Data files changed since %s was created: %s", meta.name, data.hashes)
         state = load_current(session)
-        balances = ledger_balances(session, state.turn)
+        balances = current_balances(session, state.turn)
         result = advance_turn(
             state,
             decisions,
@@ -606,7 +641,7 @@ def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnR
             balances,
         )
         apply_turn_result(session, result, decisions, state, data)
-    remember(save_path, result.new_state)
+    remember(save_path, result.new_state, apply_entries(balances, result.ledger_entries))
     return result
 
 
@@ -660,7 +695,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
     migrate.ensure_current(save_path)
     with write_session(save_path) as session:
         state = load_current(session)
-        balances = ledger_balances(session, state.turn)
+        balances = current_balances(session, state.turn)
         seq = next_action_seq(session, state.turn)
         result = apply_action(
             state,
@@ -672,7 +707,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
             seq=seq,
         )
         sync_state(session, state, result.new_state)
-        session.add_all(entry_to_row(e) for e in result.ledger_entries)
+        insert_entries(session, result.ledger_entries)
         session.add_all(log_item_to_row(i) for i in result.log_items)
         session.add_all(
             inbox_rows(result.log_items, state.player.id, data.game_data.inbox_templates)
@@ -690,7 +725,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
                 actor_id=action.actor_id,
             )
         )
-    remember(save_path, result.new_state)
+    remember(save_path, result.new_state, apply_entries(balances, result.ledger_entries))
     return result
 
 

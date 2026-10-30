@@ -17,9 +17,10 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import replace
-from typing import Any
+from functools import cache
+from typing import Any, cast
 
-from sqlalchemy import delete, func, insert, inspect, select, update
+from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, inspect, select
 from sqlalchemy.orm import Session
 
 from tst.db.mappers import (
@@ -76,6 +77,8 @@ from tst.db.models import (
     FreeAgentRow,
     FundingRoundRow,
     HiringPlanRow,
+    LedgerEntryRow,
+    LedgerLineRow,
     MarketSegmentRow,
     OfferRow,
     OptionGrantRow,
@@ -115,6 +118,7 @@ from tst.sim.finance.models import (
     TermSheet,
 )
 from tst.sim.hiring.models import NextIds
+from tst.sim.ledger import LedgerEntry
 from tst.sim.people.models import RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.rivals.models import (
@@ -468,8 +472,33 @@ def _write[T](session: Session, old: Iterable[T], new: Iterable[T], key: Any, to
             updates.append({a.key: getattr(row, a.key) for a in model.__mapper__.column_attrs})
         else:
             session.merge(row)
-    if updates:
-        session.execute(update(model), updates)
+    _update_rows(session, model, updates)
+
+
+@cache
+def _update_statement(model: Any, keys: tuple[str, ...]) -> Update:
+    """UPDATE <table> SET <keys> WHERE <primary key>, with a bind parameter per attribute."""
+    mapper = model.__mapper__
+    pk = {mapper.get_property_by_column(c).key: c for c in mapper.primary_key}
+    return (
+        model.__table__.update()
+        .where(and_(*(col == bindparam(f"b_{k}") for k, col in pk.items())))
+        .values({mapper.columns[k].name: bindparam(f"b_{k}") for k in keys if k not in pk})
+    )
+
+
+def _update_rows(session: Session, model: Any, rows: list[dict[str, Any]]) -> None:
+    """Bulk UPDATE by primary key as one Core executemany per set of attributes. The ORM's
+    bulk UPDATE builds each row's parameters in Python and cost more than the SQL itself
+    (M7a sub-task 0). `rows` are attribute -> value and include the primary key."""
+    if not rows:
+        return
+    session.flush()  # a Core statement does not flush: rows it may reference come first
+    groups: dict[tuple[str, ...], list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        groups[tuple(row)].append({f"b_{k}": v for k, v in row.items()})
+    for keys, params in groups.items():
+        session.execute(_update_statement(model, keys), params)
 
 
 def _insert(session: Session, rows: Iterable[Any]) -> None:
@@ -489,6 +518,38 @@ def _insert(session: Session, rows: Iterable[Any]) -> None:
         )
     for model, values in by_model.items():
         session.execute(insert(model), values)
+
+
+def insert_rows(session: Session, rows: Iterable[Any]) -> None:
+    """`_insert` for append-only rows of a turn (logs, months, snapshots): one executemany per
+    table instead of the unit of work (M7a sub-task 0)."""
+    session.flush()  # rows they reference come first
+    _insert(session, rows)
+
+
+def insert_entries(session: Session, entries: Iterable[LedgerEntry]) -> None:
+    """Ledger entries and their lines as two executemanys, entry ids continuing from the
+    largest stored (the unit of work inserted them one entry at a time; M7a sub-task 0)."""
+    entries = list(entries)
+    if not entries:
+        return
+    session.flush()
+    first = int(session.scalar(select(func.max(LedgerEntryRow.id))) or 0) + 1
+    session.execute(
+        insert(cast(Table, LedgerEntryRow.__table__)),
+        [
+            {"id": first + i, "turn": e.turn, "company_id": e.company_id, "memo": e.memo}
+            for i, e in enumerate(entries)
+        ],
+    )
+    session.execute(
+        insert(cast(Table, LedgerLineRow.__table__)),
+        [
+            {"entry_id": first + i, "account_code": ln.account, "amount_cents": ln.amount}
+            for i, e in enumerate(entries)
+            for ln in e.lines
+        ],
+    )
 
 
 def _sync_relationships(session: Session, old: GameState, new: GameState) -> None:
@@ -515,13 +576,20 @@ def _sync_relationships(session: Session, old: GameState, new: GameState) -> Non
     )
 
 
-def _sync_reveal(session: Session, old: RevealState | None, new: RevealState) -> None:
+def _sync_reveal(
+    session: Session,
+    old: RevealState | None,
+    new: RevealState,
+    changed: list[dict[str, Any]],
+) -> None:
+    """Write one reveal; its changed attribute records go to `changed`, which the caller
+    writes for every reveal at once (M7a: one UPDATE per reveal was a tenth of a turn)."""
     if old is None:
         _insert(session, reveal_to_rows(new))
         return
     base = {"person_id": new.person_id, "observer_company_id": new.observer_company_id}
     old_records = dict(old.attributes)
-    changed = [
+    changed += [
         {
             **base,
             "attribute": attr,
@@ -532,8 +600,6 @@ def _sync_reveal(session: Session, old: RevealState | None, new: RevealState) ->
         for attr, rec in new.attributes
         if old_records.get(attr) != rec
     ]
-    if changed:
-        session.execute(update(PersonRevealRow), changed)
     if old.profile_revealed_turn is None and new.profile_revealed_turn is not None:
         session.add(PersonProfileRevealRow(**base, revealed_turn=new.profile_revealed_turn))
     known = {tag for tag, _ in old.revealed_tags}
@@ -586,10 +652,8 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
                 if old_skills[k] != v
             ]
     session.flush()
-    if skill_updates:
-        session.execute(update(PersonSkillRow), skill_updates)
-    if asks:
-        session.execute(update(PersonRow), asks)
+    _update_rows(session, PersonSkillRow, skill_updates)
+    _update_rows(session, PersonRow, asks)
 
     # Units before employments and plans, which reference them; plans before offers.
     for unit in _changed(old.units, new.units, lambda u: u.id):
@@ -612,10 +676,12 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     )
 
     old_reveals = {(r.observer_company_id, r.person_id): r for r in old.reveals}
+    reveal_updates: list[dict[str, Any]] = []
     for reveal in new.reveals:
         known = old_reveals.get((reveal.observer_company_id, reveal.person_id))
         if known != reveal:
-            _sync_reveal(session, known, reveal)
+            _sync_reveal(session, known, reveal, reveal_updates)
+    _update_rows(session, PersonRevealRow, reveal_updates)
 
     # Finance (M4): rounds before their term sheets.
     for items in (

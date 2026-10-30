@@ -81,5 +81,6 @@ def test_parallel_reads_share_one_load_and_see_every_write(
             assert bodies[0]["turn"] == turn  # the write before these reads is visible
             with repository.open_session(_path(tmp_path)) as session:
                 fresh = original(session)
-            assert repository._recall(_path(tmp_path)) in (None, fresh)
+            recalled = repository._recall(_path(tmp_path))
+            assert recalled is None or recalled[0] == fresh
             api.post(f"{BASE}/advance")
