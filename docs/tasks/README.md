@@ -28,6 +28,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M5-rivals.md](M5-rivals.md) | Rival AI for incumbents, rival startups, poaching both ways, Competitors screen (one milestone) | M4c |
 | [M6-events.md](M6-events.md) | Event director, templates and LLM pipeline, storylines, relationships, critical events, headlines, Settings (one milestone) | M5 |
 | [M7a-speed-and-balance.md](M7a-speed-and-balance.md) | Turn speed, balance targets, strategy runner (nightly), 20 templates, balance pass | M6 |
+| [M7b-history-saves-holiday.md](M7b-history-saves-holiday.md) | Holiday, saves manager, History, tooltips, saved column views, Ask my COO, the 10-year run (finishes v1) | M7a |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

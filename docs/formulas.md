@@ -1279,6 +1279,8 @@ None of this changes the simulation: Holiday runs ordinary turns, History reads 
 | Best product | highest peak MRR, and highest quality score shown |
 | Rivals outlasted | rival startups that went out of business while the player sold in one of their segments |
 
+A person's **shown rating** (M7b decision) is the mean midpoint of the displayed ranges of their role's primary skills, as the player sees them; it is logged for every player employee at each month end (`person_rating_log`), so "from hire" is their first logged month.
+
 ### 17.3 Ask my COO
 
 - **Who answers.** The highest-level active employee whose role is `operations_manager`; if none, the highest-level non-founder employee (ties: longest tenure); with no staff, "Founder's notebook" (the founder thinking aloud).
@@ -1287,3 +1289,4 @@ None of this changes the simulation: Holiday runs ordinary turns, History reads 
 - **Offline, over budget or after an error:** the reply is "I can't think that through right now" plus the briefing.
 - **Stored:** the last `coo.keep_answers` (20) questions and answers per save, read-only, never fed into events.
 - **Never** changes state or costs energy. The hidden-value prompt test (§16.5) covers COO prompts too.
+- **Keys** (M7b): `coo.max_issues` (5), `coo.runway_months` (12), `coo.morale_below` (40), `coo.role_open_months` (3) and `coo.board_below` (50) hold the briefing's thresholds above.
