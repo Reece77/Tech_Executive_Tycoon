@@ -157,6 +157,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/overview/breakdowns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Overview Breakdowns
+         * @description What drives the top bar's and Overview's numbers (M7b tooltips): fetched when a
+         *     tooltip first opens, so Continue does not pay for them.
+         */
+        get: operations["getOverviewBreakdowns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/people": {
         parameters: {
             query?: never;
@@ -1833,6 +1854,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meta/glossary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Glossary
+         * @description Definitions of every KPI label and table column header (M7b tooltips).
+         */
+        get: operations["getGlossary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2101,6 +2142,32 @@ export interface components {
              * @description Employees who could take a common seat, most senior first (M4c)
              */
             nominee_choices: components["schemas"]["NomineeChoiceOut"][];
+        };
+        /**
+         * BreakdownItemOut
+         * @description One driver of a number (M7b tooltips).
+         */
+        BreakdownItemOut: {
+            /** Label */
+            label: string;
+            /** Amount */
+            amount: number;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "cents" | "count" | "points" | "percent" | "months";
+        };
+        /**
+         * BreakdownOut
+         * @description Why a number is what it is: its drivers and an optional note, built by the backend;
+         *     the front end only displays them (M7b; spec 13).
+         */
+        BreakdownOut: {
+            /** Items */
+            items: components["schemas"]["BreakdownItemOut"][];
+            /** Note */
+            note?: string | null;
         };
         /** CandidacyOut */
         CandidacyOut: {
@@ -2555,6 +2622,8 @@ export interface components {
              * @description Role and level band mid for the region
              */
             market_rate_cents: number | null;
+            /** @description Salary against the market rate (M7b tooltip) */
+            salary_breakdown?: components["schemas"]["BreakdownOut"] | null;
             /**
              * Monthly Cost Cents
              * @description Salary, benefits and office per month
@@ -2933,6 +3002,16 @@ export interface components {
              * @description The board at the end
              */
             directors: components["schemas"]["GameOverDirectorOut"][];
+        };
+        /**
+         * GlossaryOut
+         * @description Definitions of every KPI and column (backend/data/glossary.yaml; M7b).
+         */
+        GlossaryOut: {
+            /** Terms */
+            terms: {
+                [key: string]: string;
+            };
         };
         /** GrantOut */
         GrantOut: {
@@ -3997,6 +4076,26 @@ export interface components {
              */
             manager_label: string | null;
         };
+        /**
+         * OverviewBreakdownsOut
+         * @description The top bar's and Overview's driver tooltips, fetched when one first opens.
+         */
+        OverviewBreakdownsOut: {
+            /** @description Last month's change in cash by kind */
+            cash: components["schemas"]["BreakdownOut"];
+            /** @description Cash over this month's projected net burn */
+            runway: components["schemas"]["BreakdownOut"];
+            /** @description Last month's revenue by product */
+            mrr: components["schemas"]["BreakdownOut"];
+            /** @description 12 x MRR by product */
+            arr: components["schemas"]["BreakdownOut"];
+            /** @description Last month's fall in cash by cost line */
+            burn: components["schemas"]["BreakdownOut"];
+            /** @description Staff by org unit */
+            headcount: components["schemas"]["BreakdownOut"];
+            /** @description The company-wide average of the morale terms */
+            avg_morale: components["schemas"]["BreakdownOut"];
+        };
         /** OverviewOut */
         OverviewOut: {
             /** Save Id */
@@ -4659,6 +4758,8 @@ export interface components {
              * @description Nobody works on it, so quality is falling
              */
             rotting: boolean;
+            /** @description Quality now, last month's change and the pace (M7b) */
+            quality_breakdown?: components["schemas"]["BreakdownOut"] | null;
             launch: components["schemas"]["LaunchReadinessOut"];
             /**
              * History
@@ -4745,6 +4846,8 @@ export interface components {
              * @description 'Sales capacity limited new customers in <segment>' when it bound
              */
             note: string | null;
+            /** @description Share and the appeal inputs behind it (M7b tooltip) */
+            share_breakdown?: components["schemas"]["BreakdownOut"] | null;
         };
         /** ProductSeriesOut */
         ProductSeriesOut: {
@@ -6324,6 +6427,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OverviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getOverviewBreakdowns: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverviewBreakdownsOut"];
                 };
             };
             /** @description Bad Request */
@@ -11716,6 +11877,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProductsMetaOut"];
+                };
+            };
+        };
+    };
+    getGlossary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlossaryOut"];
                 };
             };
         };

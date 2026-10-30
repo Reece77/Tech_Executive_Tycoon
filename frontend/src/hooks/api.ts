@@ -57,6 +57,8 @@ export type GameOver = Schemas['GameOverOut'];
 export type Holiday = Schemas['HolidayOut'];
 export type Backup = Schemas['BackupOut'];
 export type HistoryRow = Schemas['HistoryRowOut'];
+export type Breakdown = Schemas['BreakdownOut'];
+export type OverviewBreakdowns = Schemas['OverviewBreakdownsOut'];
 export type Timeline = Schemas['TimelineOut'];
 export type HistoryCharts = Schemas['ChartsOut'];
 export type KpiPoint = Schemas['KpiPointOut'];
@@ -1299,5 +1301,26 @@ export function useHallOfFame(saveId: string) {
     queryKey: ['saves', saveId, 'history', 'hall-of-fame'],
     queryFn: async () =>
       unwrap(await api.GET('/api/saves/{save_id}/history/hall-of-fame', path(saveId))),
+  });
+}
+
+// --- Tooltips (M7b) -----------------------------------------------------------------------
+
+/** Definitions of every KPI and column header; loaded once. */
+export function useGlossary() {
+  return useQuery({
+    queryKey: ['meta', 'glossary'],
+    queryFn: async () => unwrap(await api.GET('/api/meta/glossary')).terms,
+    staleTime: Infinity,
+  });
+}
+
+/** The top bar's and Overview's driver breakdowns; fetched when a tooltip first opens. */
+export function useOverviewBreakdowns(saveId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'overview-breakdowns'],
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/overview/breakdowns', path(saveId))),
+    enabled: enabled && saveId !== '',
   });
 }

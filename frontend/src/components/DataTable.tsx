@@ -1,6 +1,7 @@
 import type { ReactTable, RowData } from '@tanstack/react-table';
 import type { HTMLAttributes } from 'react';
-import type { GameTableFeatures } from '../lib/table';
+import { columnTerm, type GameTableFeatures } from '../lib/table';
+import { Term } from './Term';
 
 const ARROWS = { asc: ' ▲', desc: ' ▼' } as const;
 
@@ -42,11 +43,15 @@ export function DataTable<T extends RowData>({
                   >
                     {header.column.getCanSort() && toggle ? (
                       <button type="button" onClick={toggle}>
-                        <table.FlexRender header={header} />
+                        <Term term={columnTerm(header.column)}>
+                          <table.FlexRender header={header} />
+                        </Term>
                         {sorted ? ARROWS[sorted] : ''}
                       </button>
                     ) : (
-                      <table.FlexRender header={header} />
+                      <Term term={columnTerm(header.column)}>
+                        <table.FlexRender header={header} />
+                      </Term>
                     )}
                   </th>
                 );

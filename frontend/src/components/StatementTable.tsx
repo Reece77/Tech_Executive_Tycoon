@@ -4,6 +4,12 @@ import type { StatementPeriod } from '../hooks/api';
 import { formatThousands, pnlLines, type StatementLine } from '../lib/finance';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 import { DataTable } from './DataTable';
+import { Term } from './Term';
+
+/** The glossary id of a P&L line: an account code, or a computed line (M7b). */
+function lineTerm(id: string): string {
+  return /^\d/.test(id) ? `account.${id}` : `line.${id}`;
+}
 
 const helper = createColumnHelper<GameTableFeatures, StatementLine>();
 
@@ -16,6 +22,7 @@ export function StatementTable({ periods }: { periods: readonly StatementPeriod[
         helper.display({
           id: 'label',
           header: '$k',
+          meta: { term: 'statement_line' },
           cell: ({ row }) => (
             <span
               style={
@@ -24,13 +31,14 @@ export function StatementTable({ periods }: { periods: readonly StatementPeriod[
                   : { fontWeight: row.original.total ? 600 : 400 }
               }
             >
-              {row.original.label}
+              <Term term={lineTerm(row.original.id)}>{row.original.label}</Term>
             </span>
           ),
         }),
         ...periods.map((p, i) =>
           helper.display({
             id: `p${p.first_turn}`,
+            meta: { term: 'period' },
             header: () => (
               <span className="tst-num" style={{ display: 'block', textAlign: 'right' }}>
                 {p.label}

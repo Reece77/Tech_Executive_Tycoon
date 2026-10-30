@@ -16,14 +16,21 @@ const right = { display: 'block', textAlign: 'right' } as const;
 function Tiles({ cap }: { cap: CapTableData }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-      <KpiTile label="Fully diluted shares" value={formatShares(cap.fd_shares)} testId="kpi-fd" />
       <KpiTile
+        term="kpi.fd_shares"
+        label="Fully diluted shares"
+        value={formatShares(cap.fd_shares)}
+        testId="kpi-fd"
+      />
+      <KpiTile
+        term="kpi.share_price"
         label={cap.last_round_label ? `Share price (${cap.last_round_label})` : 'Share price'}
         value={formatSharePrice(cap.share_price_dollars)}
         note={cap.last_round_label ? undefined : 'Set by your first priced round'}
         testId="kpi-price"
       />
       <KpiTile
+        term="kpi.post_money"
         label="Post-money valuation"
         value={cap.post_money_cents === null ? '—' : formatMoneyShort(cap.post_money_cents)}
         note={
@@ -34,6 +41,7 @@ function Tiles({ cap }: { cap: CapTableData }) {
         testId="kpi-post"
       />
       <KpiTile
+        term="kpi.founder_owns"
         label="You own"
         value={formatFraction(cap.founder_fraction)}
         note={`${formatShares(cap.founder_shares)} common shares`}

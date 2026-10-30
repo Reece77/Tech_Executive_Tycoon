@@ -168,6 +168,7 @@ function skillColumns(saveId: string, meta: NewGameMeta) {
         {
           id: skill.key,
           header: skill.label,
+          meta: { term: 'skill_range' },
           sortFn: 'basic',
           sortDescFirst: true,
           cell: ({ row }) => {
@@ -315,24 +316,28 @@ function PeopleBody({
       </ScreenTitle>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
         <KpiTile
+          term="kpi.headcount"
           label="Headcount"
           value={String(team.headcount)}
           note={team.on_notice ? `${team.on_notice} on notice` : 'None on notice'}
           testId="people-headcount"
         />
         <KpiTile
+          term="kpi.people_cost"
           label="Monthly people cost"
           value={formatMoneyWhole(team.people_cost_cents)}
           note="Salaries, benefits, office"
           testId="people-cost"
         />
         <KpiTile
+          term="kpi.avg_morale"
           label="Average morale"
           value={team.avg_morale === null ? 'n/a' : formatWhole(team.avg_morale)}
           note="Employees only"
           testId="people-morale"
         />
         <KpiTile
+          term="kpi.mission"
           label="Company mission"
           small
           value={overview.mission.map((k) => interestLabel.get(k) ?? k).join(' · ') || 'None'}

@@ -103,6 +103,7 @@ test('(c) search History for a hired person and open their profile', async ({ pa
   await page.goto(`/game/${save}/inbox`);
   await page.keyboard.press('9');
   await expect(page).toHaveURL(/\/history$/);
+  await expect(page.getByTestId('history-search')).toBeVisible();
   await page.keyboard.press('/');
   await expect(page.getByTestId('history-search')).toBeFocused();
   await page.keyboard.type(hire.name.split(' ')[1]);
@@ -114,4 +115,22 @@ test('(c) search History for a hired person and open their profile', async ({ pa
   await row.getByTestId('history-person-link').click();
   await expect(page).toHaveURL(new RegExp(`/people/${hire.person_id}$`));
   await expect(page.getByRole('heading', { name: hire.name })).toBeVisible();
+});
+
+test('(d) hover a top-bar number and see its breakdown', async ({ page }) => {
+  const save = `m7b-tooltip-${stamp}`;
+  makeSave(save); // two months played with three engineers on the payroll
+  await page.goto(`/game/${save}/people`);
+  await page.getByTestId('top-cash').hover();
+  const tip = page.getByRole('tooltip');
+  await expect(tip).toContainText("Last month's change in cash");
+  await expect(tip.getByTestId('breakdown')).toContainText('Payroll');
+  await expect(tip).toContainText(/Cash (rose|fell) \$[\d,.]+ in Feb 2010/);
+  await page.mouse.move(0, 0);
+  await page.getByTestId('top-runway').hover();
+  await expect(page.getByRole('tooltip')).toContainText('Projected net burn');
+  // Definitions: column headers have their glossary text.
+  await page.mouse.move(0, 0);
+  await page.getByRole('table', { name: 'Roster' }).getByText('Morale', { exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('How happy the person is');
 });

@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
+import { OverviewTip } from '../components/Term';
 import { CashChart } from '../components/CashChart';
 import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
-import { useOverview, type Overview } from '../hooks/api';
+import { useOverview, type Overview, type OverviewBreakdowns } from '../hooks/api';
 import { formatMoneyShort, formatMoneyWhole, formatRunway, formatWhole } from '../lib/format';
 import { formatFraction } from '../lib/finance';
 import { MANAGER_LABELS } from '../lib/org';
@@ -30,6 +32,7 @@ function FundingTile({ saveId, funding: f }: { saveId: string; funding: Overview
       data-testid="kpi-funding-link"
     >
       <KpiTile
+        term="kpi.funding"
         label="Funding"
         value={
           f.last_round_label
@@ -47,6 +50,11 @@ function FundingTile({ saveId, funding: f }: { saveId: string; funding: Overview
 
 export function OverviewScreen() {
   const { saveId = '' } = useParams();
+  const tip = (which: keyof OverviewBreakdowns, title: string) => (value: ReactNode) => (
+    <OverviewTip saveId={saveId} which={which} title={title}>
+      {value}
+    </OverviewTip>
+  );
   const { data, error, isPending } = useOverview(saveId);
 
   if (isPending) return <Loading />;
@@ -65,35 +73,41 @@ export function OverviewScreen() {
         }}
       >
         <KpiTile
+          term="kpi.cash"
+          drivers={tip('cash', "Last month's change in cash")}
           label="Cash"
           value={formatMoneyWhole(data.cash_cents)}
           note={lastMonth ? `End of ${lastMonth.split(' ')[0]}` : 'Starting cash'}
-          hint="Balance of the cash account"
           testId="kpi-cash"
         />
         <KpiTile
+          term="kpi.burn"
+          drivers={tip('burn', 'Burn by cost line')}
           label="Monthly burn"
           value={formatMoneyWhole(data.monthly_burn_cents)}
           note={`${lastMonth ? `${lastMonth.split(' ')[0]}; ` : ''}${month} projected ${formatMoneyWhole(data.month_total_cents)}`}
-          hint="Net cash spent in the last closed month"
           testId="kpi-burn"
         />
         <KpiTile
+          term="kpi.runway"
+          drivers={tip('runway', 'Runway')}
           label="Runway"
           value={formatRunway(data.runway_months)}
           warn={data.runway_low}
           note={`At ${month}'s costs`}
-          hint="Whole months of cash left at this month's projected costs"
           testId="kpi-runway"
         />
         <KpiTile
+          term="kpi.mrr"
+          drivers={tip('mrr', 'MRR by product')}
           label="MRR"
           value={formatMoneyWhole(data.mrr_cents)}
           note={lastMonth ? `Revenue in ${lastMonth.split(' ')[0]}` : 'No month closed yet'}
-          hint="Revenue in the last closed month"
           testId="kpi-mrr"
         />
         <KpiTile
+          term="kpi.arr"
+          drivers={tip('arr', 'ARR by product')}
           label="ARR"
           value={formatMoneyShort(data.arr_cents)}
           note={
@@ -101,16 +115,18 @@ export function OverviewScreen() {
               ? `Stage ${data.stage} since ${data.stage_since_label}`
               : '12 × MRR; stage 2 from $1M'
           }
-          hint="12 × MRR; stage 2 from $1M ARR or a closed seed"
           testId="kpi-arr"
         />
         <KpiTile
+          term="kpi.headcount"
+          drivers={tip('headcount', 'Staff by unit')}
           label="Headcount"
           value={String(data.team.headcount)}
           note={data.team.on_notice ? `${data.team.on_notice} on notice` : 'Including you'}
           testId="kpi-headcount"
         />
         <KpiTile
+          term="kpi.payroll"
           label="Monthly payroll"
           value={formatMoneyWhole(data.team.payroll_cents)}
           note="Salaries and benefits"
@@ -118,6 +134,8 @@ export function OverviewScreen() {
           testId="kpi-payroll"
         />
         <KpiTile
+          term="kpi.avg_morale"
+          drivers={tip('avg_morale', 'Average morale terms')}
           label="Average morale"
           value={data.team.avg_morale === null ? 'n/a' : formatWhole(data.team.avg_morale)}
           note="Employees, not the founder"
@@ -126,6 +144,7 @@ export function OverviewScreen() {
         <FundingTile saveId={saveId} funding={data.funding} />
         {data.org && (
           <KpiTile
+            term="kpi.org"
             label="Org"
             value={`${data.org.units} ${data.org.units === 1 ? 'unit' : 'units'}`}
             warn={data.org.managers_over_span > 0}

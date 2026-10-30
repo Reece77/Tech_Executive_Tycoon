@@ -1,18 +1,23 @@
+import type { ReactNode } from 'react';
+import { Term } from './Term';
+
 interface Props {
   label: string;
+  term: string; // glossary id of the label (M7b): every KPI has a definition
   value: string;
   note?: string;
   warn?: boolean;
   hint?: string; // tooltip: what drives the number
   testId?: string;
   small?: boolean; // text values such as the mission
+  drivers?: (value: ReactNode) => ReactNode; // wraps the value in its breakdown tooltip
 }
 
-export function KpiTile({ label, value, note, warn, hint, testId, small }: Props) {
+export function KpiTile({ label, term, value, note, warn, hint, testId, small, drivers }: Props) {
   return (
     <div className="tst-panel" style={{ padding: '12px 16px', flex: '1 1 150px' }} title={hint}>
       <div className="tst-muted" style={{ fontSize: 12 }}>
-        {label}
+        <Term term={term}>{label}</Term>
       </div>
       <div
         className={small ? undefined : 'tst-num'}
@@ -22,9 +27,9 @@ export function KpiTile({ label, value, note, warn, hint, testId, small }: Props
           paddingTop: small ? 4 : 0,
           color: warn ? 'var(--tst-warn)' : undefined,
         }}
-        data-testid={testId}
+        data-testid={drivers ? undefined : testId}
       >
-        {value}
+        {drivers ? drivers(<span data-testid={testId}>{value}</span>) : value}
       </div>
       {note && (
         <div className="tst-muted" style={{ fontSize: 12 }}>

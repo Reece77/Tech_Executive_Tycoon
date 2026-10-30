@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { FinanceSummary, Overview } from '../hooks/api';
 import { formatMoneyWhole, formatRunway } from '../lib/format';
+import { OverviewTip, Term } from './Term';
 
 interface Props {
   overview: Overview | undefined;
@@ -43,7 +44,7 @@ function InsolventBadge({ saveId, summary }: { saveId: string; summary?: Finance
   );
 }
 
-function Stat({ label, children }: { label: string; children: ReactNode }) {
+function Stat({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <span className="tst-ptitle" style={{ margin: 0, fontSize: 11, fontWeight: 400 }}>
@@ -139,32 +140,45 @@ export function TopBar({
             {overview?.date_label ?? '…'}
           </span>
         </Stat>
-        <Stat label="Cash">
-          <span
-            className="tst-num"
-            style={{
-              fontSize: 15,
-              color: overview && overview.cash_cents < 0 ? 'var(--tst-warn)' : undefined,
-            }}
-            data-testid="top-cash"
-          >
-            {overview ? formatMoneyWhole(overview.cash_cents) : '…'}
-          </span>
+        <Stat label={<Term term="kpi.cash">Cash</Term>}>
+          {overview ? (
+            <OverviewTip saveId={overview.save_id} which="cash" title="Last month's change in cash">
+              <span
+                className="tst-num"
+                style={{
+                  fontSize: 15,
+                  color: overview.cash_cents < 0 ? 'var(--tst-warn)' : undefined,
+                }}
+                data-testid="top-cash"
+              >
+                {formatMoneyWhole(overview.cash_cents)}
+              </span>
+            </OverviewTip>
+          ) : (
+            <span className="tst-num" style={{ fontSize: 15 }} data-testid="top-cash">
+              …
+            </span>
+          )}
         </Stat>
         {overview && !ended && overview.cash_cents < 0 && (
           <InsolventBadge saveId={overview.save_id} summary={summary} />
         )}
-        <Stat label="Runway">
-          <span
-            className="tst-num"
-            style={{
-              fontSize: 15,
-              color: overview?.runway_low ? 'var(--tst-warn)' : undefined,
-            }}
-            data-testid="top-runway"
-          >
-            {overview ? formatRunway(overview.runway_months) : '…'}
-          </span>
+        <Stat label={<Term term="kpi.runway">Runway</Term>}>
+          {overview ? (
+            <OverviewTip saveId={overview.save_id} which="runway" title="Runway">
+              <span
+                className="tst-num"
+                style={{ fontSize: 15, color: overview.runway_low ? 'var(--tst-warn)' : undefined }}
+                data-testid="top-runway"
+              >
+                {formatRunway(overview.runway_months)}
+              </span>
+            </OverviewTip>
+          ) : (
+            <span className="tst-num" style={{ fontSize: 15 }} data-testid="top-runway">
+              …
+            </span>
+          )}
         </Stat>
         {overview && !ended && (
           <EnergyMeter energy={overview.energy.energy} max={overview.energy.max} />

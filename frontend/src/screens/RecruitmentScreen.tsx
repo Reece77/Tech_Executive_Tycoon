@@ -189,6 +189,7 @@ function RecruitmentBody({
             {
               id: key,
               header: meta.skills.find((s) => s.key === key)?.label ?? key,
+              meta: { term: 'skill_range' },
               sortFn: 'basic',
               sortDescFirst: true,
               cell: ({ row }) => {
@@ -211,6 +212,7 @@ function RecruitmentBody({
                 {
                   id: `personality-${key}`,
                   header: humanize(key),
+                  meta: { term: 'personality_range' },
                   sortFn: 'basic',
                   sortDescFirst: true,
                   cell: ({ row }) => {

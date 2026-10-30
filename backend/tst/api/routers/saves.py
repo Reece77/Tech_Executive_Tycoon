@@ -7,9 +7,9 @@ from pathlib import Path
 
 from fastapi import APIRouter, Response, status
 
-from tst.api import finance_views, org_views, views
+from tst.api import breakdowns, finance_views, org_views, views
 from tst.api.deps import DataDep, SettingsDep
-from tst.api.schemas.common import ErrorOut
+from tst.api.schemas.common import ErrorOut, OverviewBreakdownsOut
 from tst.api.schemas.saves import (
     BackupOut,
     CostLineOut,
@@ -30,7 +30,7 @@ from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
 from tst.sim.org.rules import is_remote
 from tst.sim.products.phases import projected_revenue
 from tst.sim.setup import DEFAULT_FOUNDER
-from tst.sim.state import GameState, stage_since
+from tst.sim.state import GameState, company_cash, stage_since
 
 router = APIRouter(prefix="/api/saves", tags=["saves"])
 
@@ -302,3 +302,28 @@ def advance(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
     path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
     repository.run_turn(path, data)
     return _overview(save_id, settings, data)
+
+
+@router.get(
+    "/{save_id}/overview/breakdowns",
+    response_model=OverviewBreakdownsOut,
+    responses=ERRORS,
+    operation_id="getOverviewBreakdowns",
+)
+def get_overview_breakdowns(
+    save_id: str, settings: SettingsDep, data: DataDep
+) -> OverviewBreakdownsOut:
+    """What drives the top bar's and Overview's numbers (M7b tooltips): fetched when a
+    tooltip first opens, so Continue does not pay for them."""
+    with repository.read_session(_existing(settings, save_id)) as session:
+        state = repository.read_state(session)
+        cash = company_cash(repository.current_balances(session, state.turn), state.player.id)
+        return OverviewBreakdownsOut(
+            cash=breakdowns.cash_change(session, state),
+            runway=breakdowns.runway(state, cash, data),
+            mrr=breakdowns.revenue_by_product(session, state, annual=False),
+            arr=breakdowns.revenue_by_product(session, state, annual=True),
+            burn=breakdowns.burn(session, state),
+            headcount=breakdowns.headcount_by_unit(state),
+            avg_morale=breakdowns.average_morale(state, data, cash),
+        )

@@ -14,6 +14,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { GlossaryProvider } from './components/Term';
 
 // Mantine palettes mapped onto the wireframe tokens (src/styles/tokens.css).
 const theme = createTheme({
@@ -76,7 +77,9 @@ createRoot(root).render(
   <StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="dark" forceColorScheme="dark">
       <QueryClientProvider client={queryClient}>
-        <App />
+        <GlossaryProvider>
+          <App />
+        </GlossaryProvider>
       </QueryClientProvider>
     </MantineProvider>
   </StrictMode>,

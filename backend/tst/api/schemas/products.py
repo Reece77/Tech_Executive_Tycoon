@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.common import BreakdownOut
 from tst.api.schemas.people import EnergyOut
 
 
@@ -108,6 +109,9 @@ class ProductSegmentOut(BaseModel):
     note: str | None = Field(
         description="'Sales capacity limited new customers in <segment>' when it bound"
     )
+    share_breakdown: BreakdownOut | None = Field(
+        default=None, description="Share and the appeal inputs behind it (M7b tooltip)"
+    )
 
 
 class ProductMonthOut(BaseModel):
@@ -172,6 +176,9 @@ class ProductOut(BaseModel):
     marketers: list[NamedOut]
     pace: str = Field(description="fast | steady | slow")
     rotting: bool = Field(description="Nobody works on it, so quality is falling")
+    quality_breakdown: BreakdownOut | None = Field(
+        default=None, description="Quality now, last month's change and the pace (M7b)"
+    )
     launch: LaunchReadinessOut
     history: list[ProductMonthOut] = Field(description="Last 12 months, oldest first")
     monthly: list[ProductTotalMonthOut] = Field(

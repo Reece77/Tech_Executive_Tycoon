@@ -5,6 +5,7 @@ import { Alert, Button } from '@mantine/core';
 import { Link, useNavigate, useParams } from 'react-router';
 import { AttributeRange } from '../components/AttributeRange';
 import { KpiTile } from '../components/KpiTile';
+import { Term } from '../components/Term';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOpenSearch, useRival, type RivalProfile } from '../hooks/api';
 import { formatMoneyShort, formatMoneyWhole, formatWhole, humanize } from '../lib/format';
@@ -49,17 +50,20 @@ function RivalBody({ saveId, r }: { saveId: string; r: RivalProfile }) {
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
         <KpiTile
+          term="kpi.rival_staff"
           label="Staff in your markets"
           value={`~${formatWhole(r.staff_in_your_markets)}`}
           note={`~${formatWhole(r.staff_estimate)} in all`}
         />
         <KpiTile
+          term="kpi.rival_revenue"
           label="Revenue in your markets"
           value={formatMoneyShort(r.revenue_in_your_markets_cents)}
           note="a month, from public prices"
         />
-        <KpiTile label="Money" value={r.money_label ?? '—'} small />
+        <KpiTile term="kpi.rival_money" label="Money" value={r.money_label ?? '—'} small />
         <KpiTile
+          term="kpi.rival_stance"
           label="Stance"
           value={r.stance}
           note={r.stance_reason}
@@ -71,14 +75,30 @@ function RivalBody({ saveId, r }: { saveId: string; r: RivalProfile }) {
         <table className="tst-table" aria-label="Rival products">
           <thead>
             <tr>
-              <th>Product</th>
-              <th>Segment</th>
-              <th>Quality</th>
-              <th>Features</th>
-              <th>Brand</th>
-              <th>Price</th>
-              <th>Customers</th>
-              <th>Running now</th>
+              <th>
+                <Term term="name">Product</Term>
+              </th>
+              <th>
+                <Term term="segment">Segment</Term>
+              </th>
+              <th>
+                <Term term="quality">Quality</Term>
+              </th>
+              <th>
+                <Term term="feature_score">Features</Term>
+              </th>
+              <th>
+                <Term term="brand">Brand</Term>
+              </th>
+              <th>
+                <Term term="price">Price</Term>
+              </th>
+              <th>
+                <Term term="customers">Customers</Term>
+              </th>
+              <th>
+                <Term term="running_now">Running now</Term>
+              </th>
             </tr>
           </thead>
           <tbody>

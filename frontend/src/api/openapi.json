@@ -705,6 +705,79 @@
         }
       }
     },
+    "/api/saves/{save_id}/overview/breakdowns": {
+      "get": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Get Overview Breakdowns",
+        "description": "What drives the top bar's and Overview's numbers (M7b tooltips): fetched when a\ntooltip first opens, so Continue does not pay for them.",
+        "operationId": "getOverviewBreakdowns",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewBreakdownsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/people": {
       "get": {
         "tags": [
@@ -8129,6 +8202,28 @@
           }
         }
       }
+    },
+    "/api/meta/glossary": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Get Glossary",
+        "description": "Definitions of every KPI label and table column header (M7b tooltips).",
+        "operationId": "getGlossary",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlossaryOut"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8781,6 +8876,65 @@
           "nominee_choices"
         ],
         "title": "BoardOut"
+      },
+      "BreakdownItemOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "cents",
+              "count",
+              "points",
+              "percent",
+              "months"
+            ],
+            "title": "Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "amount",
+          "unit"
+        ],
+        "title": "BreakdownItemOut",
+        "description": "One driver of a number (M7b tooltips)."
+      },
+      "BreakdownOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BreakdownItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "BreakdownOut",
+        "description": "Why a number is what it is: its drivers and an optional note, built by the backend;\nthe front end only displays them (M7b; spec 13)."
       },
       "CandidacyOut": {
         "properties": {
@@ -9900,6 +10054,17 @@
             "title": "Market Rate Cents",
             "description": "Role and level band mid for the region"
           },
+          "salary_breakdown": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BreakdownOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Salary against the market rate (M7b tooltip)"
+          },
           "monthly_cost_cents": {
             "type": "integer",
             "title": "Monthly Cost Cents",
@@ -10912,6 +11077,23 @@
         ],
         "title": "GameOverOut",
         "description": "How the game ended (ADR-0018), for the game over screen."
+      },
+      "GlossaryOut": {
+        "properties": {
+          "terms": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Terms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "terms"
+        ],
+        "title": "GlossaryOut",
+        "description": "Definitions of every KPI and column (backend/data/glossary.yaml; M7b)."
       },
       "GrantOut": {
         "properties": {
@@ -13605,6 +13787,50 @@
         "title": "OrgTileOut",
         "description": "The Overview's Org tile (M2b)."
       },
+      "OverviewBreakdownsOut": {
+        "properties": {
+          "cash": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Last month's change in cash by kind"
+          },
+          "runway": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Cash over this month's projected net burn"
+          },
+          "mrr": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Last month's revenue by product"
+          },
+          "arr": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "12 x MRR by product"
+          },
+          "burn": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Last month's fall in cash by cost line"
+          },
+          "headcount": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Staff by org unit"
+          },
+          "avg_morale": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "The company-wide average of the morale terms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cash",
+          "runway",
+          "mrr",
+          "arr",
+          "burn",
+          "headcount",
+          "avg_morale"
+        ],
+        "title": "OverviewBreakdownsOut",
+        "description": "The top bar's and Overview's driver tooltips, fetched when one first opens."
+      },
       "OverviewOut": {
         "properties": {
           "save_id": {
@@ -15130,6 +15356,17 @@
             "title": "Rotting",
             "description": "Nobody works on it, so quality is falling"
           },
+          "quality_breakdown": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BreakdownOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quality now, last month's change and the pace (M7b)"
+          },
           "launch": {
             "$ref": "#/components/schemas/LaunchReadinessOut"
           },
@@ -15338,6 +15575,17 @@
             ],
             "title": "Note",
             "description": "'Sales capacity limited new customers in <segment>' when it bound"
+          },
+          "share_breakdown": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BreakdownOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Share and the appeal inputs behind it (M7b tooltip)"
           }
         },
         "type": "object",

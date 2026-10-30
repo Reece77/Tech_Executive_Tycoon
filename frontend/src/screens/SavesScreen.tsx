@@ -3,6 +3,7 @@ import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
+import { Term } from '../components/Term';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import {
   useBackups,
@@ -267,10 +268,18 @@ function BackupsDialog({
         <table className="tst-table" aria-label="Backups" style={{ width: '100%' }}>
           <thead>
             <tr>
-              <th>Game date</th>
-              <th>Kind</th>
-              <th>Taken</th>
-              <th>Size</th>
+              <th>
+                <Term term="turn">Game date</Term>
+              </th>
+              <th>
+                <Term term="backup_kind">Kind</Term>
+              </th>
+              <th>
+                <Term term="backup_taken">Taken</Term>
+              </th>
+              <th>
+                <Term term="size_bytes">Size</Term>
+              </th>
               <th />
             </tr>
           </thead>

@@ -13,6 +13,7 @@ import {
   YAxis,
 } from 'recharts';
 import { DataTable } from '../components/DataTable';
+import { Term } from '../components/Term';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import {
   useHallOfFame,
@@ -427,9 +428,15 @@ function ChartsTab({ saveId }: { saveId: string }) {
             <table className="tst-table" aria-label="Products now" style={{ marginTop: 8 }}>
               <thead>
                 <tr>
-                  <th>Product</th>
-                  <th>MRR</th>
-                  <th>Customers</th>
+                  <th>
+                    <Term term="name">Product</Term>
+                  </th>
+                  <th>
+                    <Term term="mrr_cents">MRR</Term>
+                  </th>
+                  <th>
+                    <Term term="customers">Customers</Term>
+                  </th>
                 </tr>
               </thead>
               <tbody>
