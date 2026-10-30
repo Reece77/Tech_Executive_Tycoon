@@ -95,11 +95,14 @@ def test_cooldowns(loaded: LoadedData) -> None:
         return {c.template.id for c in candidates(s, hits, loaded.balance, loaded.game_data)}
 
     assert "low_morale_checkin" in ids(state)
-    # The same template within 24 months: out; at 24 months it may run again.
-    assert "low_morale_checkin" not in ids(_past(state, turn=state.turn - 22))
-    assert "low_morale_checkin" in ids(_past(state, turn=state.turn - 23))
-    # Anyone named in the last 6 months: none of their events.
-    named = _past(state, template_id="anniversary_card", person_ids=(STAR,), turn=state.turn - 4)
+    # The same template within its cooldown: out; once the cooldown has passed it may run
+    # again (the event is queued for next month, so turn - (cooldown - 1) is the first back).
+    cool = loaded.balance.events.template_cooldown_turns
+    assert "low_morale_checkin" not in ids(_past(state, turn=state.turn - (cool - 2)))
+    assert "low_morale_checkin" in ids(_past(state, turn=state.turn - (cool - 1)))
+    # Anyone named within the person cooldown: none of their events.
+    near = state.turn - (loaded.balance.events.person_cooldown_turns - 2)
+    named = _past(state, template_id="anniversary_card", person_ids=(STAR,), turn=near)
     assert not any(
         STAR in c.hit.person_ids for c in candidates(named, hits, loaded.balance, loaded.game_data)
     )
@@ -158,3 +161,26 @@ def test_events_are_seeded_and_follow_the_month(loaded: LoadedData) -> None:
         len([s for s in stories.values() if s.status == "active"])
         <= loaded.balance.events.max_storylines
     )
+
+
+def test_quiet_month_templates_fill_when_every_candidate_is_in_cooldown(
+    loaded: LoadedData,
+) -> None:
+    """16.1 (Reece, 2026-10-29): when the triggered candidates run out, quiet-month templates
+    may fill the month's slots, at minor severity only; none when quiet_month holds anyway."""
+    import numpy as np
+
+    from tst.sim.events.director import fill_candidates, pick
+    from tst.sim.events.triggers import TriggerHit
+
+    state = _staffed(loaded)
+    hits = [TriggerHit("star_performer", 0.4, (STAR,), None)]
+    blocked = _past(state, template_id="anniversary_card", person_ids=(STAR,), turn=state.turn)
+    assert candidates(blocked, hits, loaded.balance, loaded.game_data) == []
+    fill = fill_candidates(blocked, hits, loaded.balance, loaded.game_data)
+    assert fill and {c.template.trigger for c in fill} == {"quiet_month"}
+    assert {c.severity for c in fill} == {"minor"}
+    chosen = pick(np.random.default_rng(0), [], 2, fill)
+    assert len(chosen) == 2 and chosen[0].template.id != chosen[1].template.id
+    quiet = [TriggerHit("quiet_month", 0.2)]
+    assert fill_candidates(blocked, quiet, loaded.balance, loaded.game_data) == []

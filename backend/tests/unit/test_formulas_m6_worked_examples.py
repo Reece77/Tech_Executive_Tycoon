@@ -91,19 +91,21 @@ def test_labels_and_start_clamp(loaded: LoadedData) -> None:
 
 
 def test_trigger_table_and_caps_are_data(loaded: LoadedData) -> None:
-    """16.2 and 16.3 as data: every trigger and every sized effect, with the spec's values."""
+    """16.2 and 16.3 as data: every trigger and every sized effect, with the spec's values or
+    the M6.9 tuning (formulas.md 16.1, 16.2; Reece 2026-10-29)."""
     events = loaded.balance.events
     assert set(events.trigger) == set(TRIGGERS)
     t = events.trigger
     assert (t["low_morale"].below, t["low_morale"].span) == (35, 20)
     assert (t["unhappy_unit"].below, t["unhappy_unit"].span) == (45, 15)
-    assert (t["underpaid"].below, t["underpaid"].span) == (0.9, 0.2)
-    assert (t["team_clash"].at_most, t["team_clash"].span) == (-50, 30)
-    assert (t["board_unhappy"].below, t["board_unhappy"].span) == (40, 15)
+    assert (t["underpaid"].below, t["underpaid"].span) == (0.95, 0.2)  # tuned from 0.9
+    assert (t["team_clash"].at_most, t["team_clash"].span) == (-25, 30)  # tuned from -50
+    assert (t["board_unhappy"].below, t["board_unhappy"].span) == (50, 15)  # tuned from 40
     assert t["runway_short"].months == [6, 3] and t["runway_short"].strength == [0.6, 1.0]
-    assert t["star_performer"].top_fraction == 0.10 and t["star_performer"].tenure_months == 12
+    assert t["star_performer"].top_fraction == 0.30  # tuned from 0.10
+    assert t["star_performer"].tenure_months == 12
     fixed = {
-        "team_bond": 0.3,
+        "team_bond": 0.3,  # at_least tuned from 60 to 30
         "office_politics": 0.6,
         "tag_noticed": 0.5,
         "anniversary": 0.2,
@@ -119,7 +121,7 @@ def test_trigger_table_and_caps_are_data(loaded: LoadedData) -> None:
     }
     assert {k: t[k].strength for k in fixed} == fixed
     caps = {
-        "morale_delta": [5, 10, 20],
+        "morale_delta": [3, 10, 20],  # minor tuned from 5
         "relationship_delta": [10, 20, 40],
         "cash_delta": [100, 300, 1000],
         "brand_delta": [2, 5, 10],
@@ -133,5 +135,6 @@ def test_trigger_table_and_caps_are_data(loaded: LoadedData) -> None:
     assert events.caps == caps
     assert set(caps) | {"reveal_tag", "resign", "follow_up"} == set(EFFECT_TYPES)
     assert SEVERITIES == ("minor", "major", "critical")
-    assert events.count_weights == [0.15, 0.50, 0.28, 0.07]
-    assert sum(n * w for n, w in enumerate(events.count_weights)) == pytest.approx(1.27)
+    assert events.count_weights == [0.08, 0.40, 0.38, 0.14]  # tuned from [0.15, 0.50, 0.28, 0.07]
+    assert sum(n * w for n, w in enumerate(events.count_weights)) == pytest.approx(1.58)
+    assert (events.template_cooldown_turns, events.person_cooldown_turns) == (12, 4)

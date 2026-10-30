@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from tst.config import get_settings
 from tst.db.mappers import event_from_row
 from tst.db.models import EventRow, InboxItemRow, LLMCallLogRow, LLMTextRow
-from tst.db.state_io import has_table, load_state, sync_state
+from tst.db.state_io import has_table, sync_state
 from tst.events.context import Kpis
 from tst.events.service import Writer, write_event, write_text
 from tst.llm.base import LLMAdapter
@@ -135,13 +135,13 @@ def write_pending(
 ) -> int:
     """Write every pending event and text of the save; returns how many events were written.
     `committed` is the state the turn just wrote, which saves loading it again (run_turn)."""
-    from tst.db.repository import write_session
+    from tst.db.repository import load_current, remember, write_session
 
     save_dir = path.parent
     with write_session(path) as session:
         if committed is None and not has_pending(session):
             return 0
-        state = committed if committed is not None else load_state(session)
+        state = committed if committed is not None else load_current(session)
         before = state
         if copy_from is not None:
             state = _copy(session, state, copy_from)
@@ -187,6 +187,7 @@ def write_pending(
         opened = [e for e in state.events if e.id in was_pending and e.status == "open"]
         session.add_all(event_inbox_row(e) for e in opened)
         sync_state(session, before, state)
+    remember(path, state)
     if writer is not None and (writer.records or writer.spent_cents):
         add_spend(
             save_dir,

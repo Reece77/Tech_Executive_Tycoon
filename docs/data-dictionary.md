@@ -747,6 +747,6 @@ Rebuilt by `0015_relationships` (the M1a table with `affinity` and `updated_turn
 
 ## Files next to the saves
 
-- `saves/index.json`: list of `{slug, company_name, scenario_id, difficulty, current_turn}`, rebuilt from the save files after each create and turn. The save files are the source of truth; a missing or corrupt index is rebuilt.
+- `saves/index.json`: list of `{slug, company_name, scenario_id, difficulty, current_turn}`; the save's own entry is updated after each create and turn (M6), and the whole list is rebuilt from the save files when it is missing or unreadable. The save files are the source of truth; a missing or corrupt index is rebuilt.
 - `saves/backups/<slug>/<slug>.turn-<NNN>.sqlite`: periodic backup after every 12th committed turn; the newest 10 are kept.
 - `saves/backups/<slug>/<slug>.turn-<NNN>.pre-migration-<rev>.sqlite`: backup taken before upgrading an older save; never pruned.

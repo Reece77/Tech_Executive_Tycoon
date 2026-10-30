@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import threading
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from tst.db import migrate
 from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
-from tst.db.events import write_pending
+from tst.db.events import has_pending, write_pending
 from tst.db.inbox import inbox_rows
 from tst.db.mappers import (
     company_snapshot_from_row,
@@ -44,7 +45,7 @@ from tst.db.models import (
     TurnSnapshotRow,
 )
 from tst.db.session import make_engine, make_sessionmaker
-from tst.db.state_io import META_ID, has_table, load_state, read_meta, sync_state
+from tst.db.state_io import META_ID, has_table, live_view, load_state, read_meta, sync_state
 from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.actions import (
@@ -126,7 +127,7 @@ def existing_save_path(save_dir: Path, slug: str) -> Path:
     path = save_path(save_dir, slug)
     if not path.is_file():
         raise SaveNotFoundError(f"no save named {slug!r}")
-    if migrate.current_revision(path) == migrate.head_revision():
+    if migrate.is_current(path):
         return path
     lock = _lock(path)
     if not lock.acquire(blocking=False):
@@ -170,6 +171,44 @@ def is_locked_error(exc: BaseException) -> bool:
     return isinstance(exc, OperationalError) and "locked" in str(exc).lower()
 
 
+def _stamp(path: Path) -> tuple[int, int, int, int]:
+    """The save file and its WAL as they are on disk: any commit changes one of them."""
+    main = path.stat()
+    wal = path.with_name(path.name + "-wal")
+    w = wal.stat() if wal.exists() else None
+    return (main.st_size, main.st_mtime_ns, w.st_size if w else -1, w.st_mtime_ns if w else -1)
+
+
+_LAST: dict[str, tuple[tuple[int, int, int, int], GameState]] = {}
+CACHED_STATE = "tst_cached_state"
+
+
+def remember(path: Path, state: GameState) -> None:
+    """Keep the state just written to a save (after its session closed), as `load_state`
+    would read it back (M6 sub-task 0: a turn or action then skips a full load)."""
+    _LAST[str(path.resolve())] = (_stamp(path), live_view(state))
+
+
+def _recall(path: Path) -> GameState | None:
+    entry = _LAST.get(str(path.resolve()))
+    if entry is None or not path.exists() or entry[0] != _stamp(path):
+        return None
+    return entry[1]
+
+
+def load_current(session: Session) -> GameState:
+    """The save's state: the one this process last wrote if the file has not changed since,
+    else read from the database. TST_STATE_CACHE_CHECK=1 reads it anyway and compares."""
+    cached = session.info.get(CACHED_STATE)
+    if cached is None:
+        return load_state(session)
+    if os.environ.get("TST_STATE_CACHE_CHECK") == "1":
+        fresh = load_state(session)
+        if fresh != cached:
+            raise RuntimeError("the remembered state differs from the save")
+    return cast(GameState, cached)
+
+
 @contextmanager
 def write_session(path: Path) -> Iterator[Session]:
     """A session in one write transaction on a save. A second write to the same save while
@@ -179,7 +218,9 @@ def write_session(path: Path) -> Iterator[Session]:
     if not lock.acquire(blocking=False):
         raise SaveBusyError(BUSY_MESSAGE)
     try:
+        cached = _recall(path)  # before the connection opens (it can create the WAL file)
         with open_session(path) as session, session.begin():
+            session.info[CACHED_STATE] = cached
             yield session
     except OperationalError as exc:
         if is_locked_error(exc):
@@ -274,7 +315,7 @@ def create_save(
         ):
             leftover.unlink(missing_ok=True)
         raise
-    refresh_index(save_dir)
+    update_index(path)
     return path
 
 
@@ -502,6 +543,32 @@ def apply_turn_result(
     session.flush()
 
 
+class _PendingEvents(Exception):
+    """Events or texts from an earlier turn are still unwritten (the service did not finish)."""
+
+
+def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnResult:
+    with write_session(save_path) as session:
+        if has_pending(session):
+            raise _PendingEvents
+        meta = read_meta(session)
+        if meta.data_hashes != data.hashes:
+            log.warning("Data files changed since %s was created: %s", meta.name, data.hashes)
+        state = load_current(session)
+        balances = ledger_balances(session, state.turn)
+        result = advance_turn(
+            state,
+            decisions,
+            RngFactory(state.save_meta.master_seed),
+            data.balance,
+            data.game_data,
+            balances,
+        )
+        apply_turn_result(session, result, decisions, state, data)
+    remember(save_path, result.new_state)
+    return result
+
+
 def run_turn(
     save_path: Path,
     data: LoadedData,
@@ -516,22 +583,11 @@ def run_turn(
     so no adapter is called."""
     decisions = decisions or Decisions()
     migrate.ensure_current(save_path)
-    write_pending(save_path, data, adapter=adapter, copy_from=events_from)  # a failed earlier write
-    with write_session(save_path) as session:
-        meta = read_meta(session)
-        if meta.data_hashes != data.hashes:
-            log.warning("Data files changed since %s was created: %s", meta.name, data.hashes)
-        state = load_state(session)
-        balances = ledger_balances(session, state.turn)
-        result = advance_turn(
-            state,
-            decisions,
-            RngFactory(state.save_meta.master_seed),
-            data.balance,
-            data.game_data,
-            balances,
-        )
-        apply_turn_result(session, result, decisions, state, data)
+    try:
+        result = _play_turn(save_path, data, decisions)
+    except _PendingEvents:  # an earlier write did not finish: write them, then play
+        write_pending(save_path, data, adapter=adapter, copy_from=events_from)
+        result = _play_turn(save_path, data, decisions)
 
     if result.event_requests or result.text_requests:
         write_pending(
@@ -541,7 +597,7 @@ def run_turn(
     backup = data.balance.backup
     if committed % backup.every_n_turns == 0:
         periodic_backup(save_path, committed, backup.keep_periodic)
-    refresh_index(save_path.parent)
+    update_index(save_path)
     return result
 
 
@@ -562,7 +618,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
     """Apply one player action in its own short transaction and log it to decision_log."""
     migrate.ensure_current(save_path)
     with write_session(save_path) as session:
-        state = load_state(session)
+        state = load_current(session)
         balances = ledger_balances(session, state.turn)
         seq = next_action_seq(session, state.turn)
         result = apply_action(
@@ -593,6 +649,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
                 actor_id=action.actor_id,
             )
         )
+    remember(save_path, result.new_state)
     return result
 
 
@@ -720,6 +777,23 @@ def refresh_index(save_dir: Path) -> list[SaveSummary]:
         json.dumps([asdict(s) for s in summaries], indent=2) + "\n", encoding="utf-8"
     )
     return summaries
+
+
+def update_index(path: Path) -> None:
+    """Refresh one save's entry in saves/index.json after it was created or played; the
+    whole index is rebuilt only when it is missing or unreadable (M6 sub-task 0: rebuilding
+    opened every save after every turn)."""
+    save_dir = path.parent
+    index = save_dir / INDEX_FILE
+    try:
+        items = [SaveSummary(**item) for item in json.loads(index.read_text(encoding="utf-8"))]
+    except (OSError, ValueError, TypeError):
+        refresh_index(save_dir)
+        return
+    slug = slug_of(path)
+    mine = summarize(path)
+    items = sorted([s for s in items if s.slug != slug] + [mine], key=lambda s: s.slug)
+    index.write_text(json.dumps([asdict(s) for s in items], indent=2) + "\n", encoding="utf-8")
 
 
 def list_saves(save_dir: Path) -> list[SaveSummary]:

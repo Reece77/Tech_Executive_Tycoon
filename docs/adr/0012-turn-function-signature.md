@@ -39,6 +39,8 @@ def advance_turn(
 - In M0, `EventRequest` is an empty frozen dataclass and phase 12 returns no requests.
 - `GameData` (seed data, ADR-0008) joins the inputs in M1a as a sixth argument, `data: GameData`, placed after `balance`.
 
+**Amended (M6, 2026-10-29):** `EventRequest` carries the queued event's id, template, severity, tone and eligible targets; `TurnResult` also gained `delegate_actions` (M2), `product_months` (M3), `rival_moves` (M5) and `text_requests` (M6: headlines, minutes and exit lines for the post-commit service).
+
 ## Consequences
 
 - The M0 brief and ADR-0002 now agree with this ADR.

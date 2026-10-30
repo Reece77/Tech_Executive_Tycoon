@@ -7,6 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests.golden.test_golden import ledger_rows, snapshots
+from tests.helpers import answer_critical
 from tst.db.repository import (
     create_save,
     load_state,
@@ -86,6 +87,7 @@ def build(save_dir: Path, loaded: LoadedData) -> Path:
                 run_action(path, loaded, MakeOffer(1, c.person_id, round(ask * 1.6), 0))
                 poached = True
                 break
+        answer_critical(path, loaded)  # M6: a critical event is answered before Continue
         run_turn(path, loaded)
     return path
 

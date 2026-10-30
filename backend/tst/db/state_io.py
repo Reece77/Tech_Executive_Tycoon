@@ -667,3 +667,53 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         meta.game_state = new.save_meta.game_state
         meta.ended_turn = new.save_meta.ended_turn
     session.flush()
+
+
+# --- The last state written, per save (M6 sub-task 0) -----------------------------------------
+
+
+def live_view(state: GameState) -> GameState:
+    """What `load_state` would return after `state` was written: the same live set, by the
+    same rules (tests/integration/test_state_cache.py checks the two agree)."""
+    staff = tuple(e for e in state.employments if e.status in STAFF_STATUSES)
+    candidates = tuple(c for c in state.candidates if c.status == "open")
+    offers = tuple(o for o in state.offers if o.status == "pending")
+    plans = tuple(p for p in state.plans if p.status != "closed")
+    free_agents = tuple(a for a in state.free_agents if a.status == "available")
+    live = (
+        {e.person_id for e in staff}
+        | {c.person_id for c in candidates}
+        | {o.actor_id for o in offers}
+        | {p.owner_id for p in plans}
+        | {s.person_id for s in state.seats if s.person_id is not None}
+        | {a.person_id for a in free_agents}
+    )
+    products = tuple(p for p in state.products if p.status != "retired")
+    product_ids = {p.id for p in products}
+    turn = state.turn
+    return replace(
+        state,
+        people=tuple(p for p in state.people if p.id in live),
+        employments=staff,
+        reveals=tuple(r for r in state.reveals if r.person_id in live and r.attributes),
+        searches=tuple(s for s in state.searches if s.status == "open"),
+        candidates=candidates,
+        offers=offers,
+        units=tuple(u for u in state.units if u.status == "active"),
+        plans=plans,
+        products=products,
+        product_segments=tuple(s for s in state.product_segments if s.product_id in product_ids),
+        person_states=tuple(p for p in state.person_states if p.person_id in live),
+        rival_effects=tuple(e for e in state.rival_effects if e.end_turn >= turn - 1),
+        rival_moves=tuple(m for m in state.rival_moves if m.turn >= turn - RIVAL_MOVE_MEMORY),
+        approaches=tuple(a for a in state.approaches if a.status in ("pending", "accepted")),
+        segment_shares=tuple(s for s in state.segment_shares if s.product_id in product_ids),
+        free_agents=free_agents,
+        events=tuple(
+            e
+            for e in state.events
+            if e.turn > turn - EVENT_MEMORY or e.status in ("pending", "open")
+        ),
+        storylines=tuple(s for s in state.storylines if s.status == "active"),
+        queued=tuple(q for q in state.queued if not q.done),
+    )

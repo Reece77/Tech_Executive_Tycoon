@@ -213,6 +213,25 @@ RIVAL_FORBIDDEN_NAMES = frozenset(
 )
 
 
+# formulas.md 16.9 (M6): never a trigger's strength, an effect's cap, the cash base of the caps,
+# or a relationship's number; effects are words and relationships labels.
+EVENT_FORBIDDEN_NAMES = frozenset(
+    {
+        "strength",
+        "trigger_strength",
+        "cap",
+        "caps",
+        "effect_cap",
+        "cash_base_cents",
+        "affinity",
+        "relationship_value",
+        "start_value",
+        "api_key",
+        "anthropic_api_key",
+    }
+)
+
+
 def forbidden(name: str) -> bool:
     """ADR-0007 exact-name rule (potential_phrase is allowed), plus the 11.13 names."""
     return (
@@ -220,6 +239,7 @@ def forbidden(name: str) -> bool:
         or name in PRODUCT_FORBIDDEN_NAMES
         or name in FINANCE_FORBIDDEN_NAMES
         or name in RIVAL_FORBIDDEN_NAMES
+        or name in EVENT_FORBIDDEN_NAMES
         or name.startswith(FORBIDDEN_PREFIXES)
     )
 

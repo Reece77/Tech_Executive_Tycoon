@@ -27,12 +27,25 @@ from tst.sim.state import (
 )
 from tst.sim.state import with_product as put_product
 
+_FRESH: dict[tuple[int, int, str, tuple[str, ...] | None], GameState] = {}
+
 
 def fresh_game(
     loaded: LoadedData,
     seed: int = 3,
     scenario: str = "ex_big_tech_founders",
     mission: tuple[str, ...] | None = None,
+) -> GameState:
+    """A new game's state. new_game is pure and the state immutable, so one per arguments
+    is built and shared (tests build hundreds; M6 sub-task 0)."""
+    key = (id(loaded), seed, scenario, mission)
+    if key not in _FRESH:
+        _FRESH[key] = _new_game(loaded, seed, scenario, mission)
+    return _FRESH[key]
+
+
+def _new_game(
+    loaded: LoadedData, seed: int, scenario: str, mission: tuple[str, ...] | None
 ) -> GameState:
     scenario_def = loaded.game_data.scenario(scenario)
     assert scenario_def is not None
@@ -328,3 +341,42 @@ def play_turn(path: Path, loaded: LoadedData) -> Any:
 
     answer_critical(path, loaded)
     return run_turn(path, loaded)
+
+
+def open_event(
+    path: Path,
+    loaded: LoadedData,
+    template: str = "low_morale_checkin",
+    *,
+    severity: str = "major",
+    person_ids: tuple[int, ...] = (),
+) -> int:
+    """Stand in for the director: queue one event for this month in a save and let the event
+    service write it with templates (M6). Returns the event id."""
+    from tst.db.events import write_pending
+    from tst.db.repository import load_state, write_session
+    from tst.db.state_io import sync_state
+    from tst.llm.offline import TemplateAdapter
+    from tst.sim.events.models import GameEvent
+    from tst.sim.state import with_event
+
+    spec = loaded.game_data.event_template(template)
+    with write_session(path) as session:
+        state = load_state(session)
+        event_id, ids = state.next_ids.take("event")
+        event = GameEvent(
+            id=event_id,
+            company_id=1,
+            turn=state.turn,
+            template_id=template,
+            category=spec.category,
+            severity=severity,  # type: ignore[arg-type]
+            trigger=spec.trigger,
+            strength=1.0,
+            person_ids=person_ids,
+            months=2 if spec.trigger == "runway_short" else None,
+            cash_base_cents=50_000_000,
+        )
+        sync_state(session, state, with_event(replace(state, next_ids=ids), event))
+    write_pending(path, loaded, adapter=TemplateAdapter())
+    return event_id

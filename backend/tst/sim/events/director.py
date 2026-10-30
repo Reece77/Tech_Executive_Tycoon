@@ -208,6 +208,23 @@ def candidates(
     return out
 
 
+def fill_candidates(
+    state: GameState, hits: list[TriggerHit], balance: Balance, data: GameData
+) -> list[Candidate]:
+    """Quiet-month templates as fill for a month whose triggered candidates are all in
+    cooldown (16.1, Reece 2026-10-29): minor severity only, same cooldowns and weights;
+    none when quiet_month already holds."""
+    if any(h.trigger == "quiet_month" for h in hits):
+        return []
+    strength = balance.events.trigger["quiet_month"].strength
+    quiet = TriggerHit("quiet_month", strength if isinstance(strength, float) else 0.0)
+    return [
+        replace(c, severity="minor")
+        for c in candidates(state, [quiet], balance, data)
+        if "minor" in c.template.severities
+    ]
+
+
 def draw_count(gen: np.random.Generator, balance: Balance) -> int:
     u = float(gen.random())
     total = 0.0
@@ -218,12 +235,23 @@ def draw_count(gen: np.random.Generator, balance: Balance) -> int:
     return len(balance.events.count_weights) - 1
 
 
-def pick(gen: np.random.Generator, pool: list[Candidate], slots: int) -> list[Candidate]:
+def pick(
+    gen: np.random.Generator,
+    pool: list[Candidate],
+    slots: int,
+    fill: list[Candidate] | None = None,
+) -> list[Candidate]:
     """Draw without replacement by weight; a pick removes its template, anyone it names,
-    other starts of its storyline and, if critical, every other critical candidate."""
+    other starts of its storyline and, if critical, every other critical candidate. When
+    the triggered candidates run out (all in cooldown) and slots remain, the quiet-month
+    `fill` candidates take over (16.1, Reece 2026-10-29)."""
     chosen: list[Candidate] = []
     for _ in range(slots):
         total = sum(c.weight for c in pool)
+        if total <= 0 and fill:
+            used = {c.template.id for c in chosen}
+            pool, fill = [c for c in fill if c.template.id not in used], None
+            total = sum(c.weight for c in pool)
         if total <= 0:
             break
         u = float(gen.random()) * total
@@ -321,10 +349,11 @@ def direct(
 
     gen = rng.stream(state.turn, "events")
     count = draw_count(gen, balance)
-    pool = candidates(
-        state, triggers(state, start, balance, data, cash, rival_moves), balance, data
-    )
-    for c in pick(gen, pool, max(0, count - len(queue))):
+    hits = triggers(state, start, balance, data, cash, rival_moves)
+    pool = candidates(state, hits, balance, data)
+    for c in pick(
+        gen, pool, max(0, count - len(queue)), fill_candidates(state, hits, balance, data)
+    ):
         queue.append((c.template, c.targets, c.severity, c.hit.strength, c.hit.trigger, None, None))
 
     base = cash_base_cents(cash, revenue, ev)

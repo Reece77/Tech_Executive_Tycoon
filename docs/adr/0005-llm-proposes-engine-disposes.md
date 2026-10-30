@@ -27,6 +27,8 @@ LLM-written events make each company's story feel specific, but model output can
 6. **Budget: $10 a calendar month (Reece, 2026-10-27).** The setting `llm.monthly_budget_cents` (default 1000) is in real dollars, not tokens: each call's cost = input and output tokens from the API response × per-model prices held in settings (`llm.price_per_mtok_cents.<model>`, editable when prices change). Spend resets on the 1st of each real calendar month (the only wall-clock use, outside the sim). An on-screen meter shows spend against the budget; at 100% the director falls back to templates silently and logs it. The budget can be changed in settings, including to 0 for offline play.
 7. **Model choice:** a small, fast model for flavor text; a larger model for multi-turn storylines. Model ids are settings, not code constants.
 
+**Note (M6, 2026-10-29):** the director runs in phase 12 inside the pure turn, so it lives in `tst/sim/events/` (with triggers, effects and rendering); `tst/events/` holds the context builder, validator and service. Adapters take an `EventPrompt` (prompt plus the template's draft as fallback) and return a `Completion` with token usage for the meter.
+
 ## Consequences
 
 - Event effects are always legal and bounded, so balance testing can run with `MockLLMAdapter` and remain meaningful.
