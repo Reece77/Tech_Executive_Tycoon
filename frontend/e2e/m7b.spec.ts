@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 // M7b flows: (a) a Holiday stops on a major event and the summary appears; (b) rename,
 // duplicate and restore a save; (c) search History for a hire and open their profile;
@@ -171,4 +172,31 @@ test('(e) save a People view, reload, and find it still selected', async ({ page
   await page.locator('main').click({ position: { x: 5, y: 5 } });
   await page.keyboard.press('?');
   await expect(page.getByTestId('shortcut-list')).toContainText('Go on holiday');
+});
+
+test('(f) with the mock adapter, ask the COO a question and see an answer', async ({ page }) => {
+  const save = `m7b-coo-${stamp}`;
+  makeSave(save);
+  // The e2e API has no key (templates). For this flow the settings file beside the saves
+  // chooses the mock adapter, which tests use instead of Claude (CLAUDE.md section 8).
+  const file = join(process.env.TST_E2E_SAVE_DIR ?? '', 'llm_settings.json');
+  const before = existsSync(file) ? readFileSync(file, 'utf8') : null;
+  writeFileSync(file, JSON.stringify({ adapter: 'mock' }));
+  try {
+    await page.goto(`/game/${save}/inbox`);
+    await page.getByTestId('coo-button').click();
+    const panel = page.getByTestId('coo-panel');
+    await expect(panel).toBeVisible();
+    await expect(page.getByRole('dialog')).toContainText('Briefing');
+    await expect(panel).toContainText('only knows what you know');
+    await page.getByTestId('coo-question').fill('What should I worry about this month?');
+    await page.getByTestId('coo-ask').click();
+    const answer = panel.getByTestId('coo-answer').first();
+    await expect(answer).toContainText('[mock]');
+    await expect(answer).toContainText('What should I worry about this month?');
+    await expect(answer).toContainText('cost');
+  } finally {
+    if (before === null) rmSync(file, { force: true });
+    else writeFileSync(file, before);
+  }
 });

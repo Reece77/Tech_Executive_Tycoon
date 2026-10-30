@@ -13,6 +13,7 @@ interface Props {
   away?: boolean; // a holiday is running (M7b)
   onContinue: () => void;
   onHoliday?: () => void;
+  onCoo?: () => void;
 }
 
 const BADGE = {
@@ -94,6 +95,7 @@ export function TopBar({
   away = false,
   onContinue,
   onHoliday,
+  onCoo,
 }: Props) {
   const ended = overview !== undefined && overview.game_state !== 'active';
   return (
@@ -187,6 +189,11 @@ export function TopBar({
           <Link to={`/game/${overview.save_id}/over`} style={BADGE} data-testid="game-over-badge">
             Game over
           </Link>
+        )}
+        {overview && onCoo && (
+          <Button variant="default" h={44} onClick={onCoo} data-testid="coo-button">
+            Ask COO
+          </Button>
         )}
         {overview && (
           <Button

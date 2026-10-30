@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 18
+SCHEMA_VERSION = 19
 
 
 class Base(DeclarativeBase):
@@ -792,3 +792,20 @@ class LLMCallLogRow(Base):
     created_at: Mapped[str] = mapped_column(String(32), nullable=False)
     prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
     response: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class CooAnswerRow(Base):
+    """One "Ask my COO" question and answer (M7b, 0019; formulas.md 17.3): read-only, never
+    fed into events; the newest `coo.keep_answers` per save are kept."""
+
+    __tablename__ = "coo_answer"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    person_id: Mapped[int | None] = mapped_column(ForeignKey("person.id"), nullable=True)
+    speaker: Mapped[str] = mapped_column(String(120), nullable=False)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str] = mapped_column(String(16), nullable=False)  # claude|mock|offline
+    cost_cents: Mapped[float] = mapped_column(Float, nullable=False)  # real cents, not game money
+    created_at: Mapped[str] = mapped_column(String(32), nullable=False)

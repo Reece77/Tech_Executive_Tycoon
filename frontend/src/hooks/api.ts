@@ -59,6 +59,8 @@ export type Backup = Schemas['BackupOut'];
 export type HistoryRow = Schemas['HistoryRowOut'];
 export type Breakdown = Schemas['BreakdownOut'];
 export type TableViews = Schemas['TableViews'];
+export type Coo = Schemas['CooOut'];
+export type CooAnswer = Schemas['CooAnswerOut'];
 export type TableView = Schemas['TableView'];
 export type UiSettings = Schemas['UISettings'];
 export type OverviewBreakdowns = Schemas['OverviewBreakdownsOut'];
@@ -1356,5 +1358,29 @@ export function useSaveTableViews() {
       });
     },
     onSuccess: (data) => client.setQueryData(['settings', 'ui'], data),
+  });
+}
+
+// --- Ask my COO (M7b, formulas.md 17.3) ---------------------------------------------------
+
+export function useCoo(saveId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'coo'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/coo', path(saveId))),
+    enabled: enabled && saveId !== '',
+  });
+}
+
+export function useAskCoo(saveId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (question: string) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/coo/ask', { ...path(saveId), body: { question } }),
+      ),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['saves', saveId, 'coo'] });
+      void client.invalidateQueries({ queryKey: ['settings', 'llm'] });
+    },
   });
 }

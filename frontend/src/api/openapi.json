@@ -7986,6 +7986,162 @@
         }
       }
     },
+    "/api/saves/{save_id}/coo": {
+      "get": {
+        "tags": [
+          "coo"
+        ],
+        "summary": "Get Coo",
+        "description": "Who answers, the engine's briefing (always available) and the last answers.",
+        "operationId": "getCoo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CooOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/coo/ask": {
+      "post": {
+        "tags": [
+          "coo"
+        ],
+        "summary": "Ask Coo",
+        "description": "Ask a question (at most coo.max_question_chars). Offline, over budget or after an\nerror the reply is \"I can't think that through right now\" with the briefing.",
+        "operationId": "askCoo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CooQuestionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CooAnswerOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -9684,6 +9840,184 @@
           "unread_inbox"
         ],
         "title": "ChooseEventOut"
+      },
+      "CooAnswerOut": {
+        "properties": {
+          "answer_id": {
+            "type": "integer",
+            "title": "Answer Id"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "speaker": {
+            "type": "string",
+            "title": "Speaker"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "claude | mock | offline"
+          },
+          "cost_cents": {
+            "type": "number",
+            "title": "Cost Cents",
+            "description": "Real money this answer cost, in cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer_id",
+          "turn",
+          "date_label",
+          "speaker",
+          "question",
+          "answer",
+          "source",
+          "cost_cents"
+        ],
+        "title": "CooAnswerOut"
+      },
+      "CooIssueOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "link_kind": {
+            "type": "string",
+            "title": "Link Kind",
+            "description": "finance | event | product | person | org | recruitment | board | rival"
+          },
+          "link_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "text",
+          "link_kind",
+          "link_id"
+        ],
+        "title": "CooIssueOut"
+      },
+      "CooOut": {
+        "properties": {
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id",
+            "description": "Null: the founder's notebook"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Label"
+          },
+          "briefing": {
+            "items": {
+              "$ref": "#/components/schemas/CooIssueOut"
+            },
+            "type": "array",
+            "title": "Briefing",
+            "description": "Up to five issues; empty: nothing urgent"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/CooAnswerOut"
+            },
+            "type": "array",
+            "title": "Answers",
+            "description": "The last answers, newest first"
+          },
+          "max_question_chars": {
+            "type": "integer",
+            "title": "Max Question Chars"
+          },
+          "spend_cents": {
+            "type": "number",
+            "title": "Spend Cents",
+            "description": "AI spend this calendar month"
+          },
+          "budget_cents": {
+            "type": "integer",
+            "title": "Budget Cents"
+          },
+          "offline": {
+            "type": "boolean",
+            "title": "Offline",
+            "description": "Answers come from the offline reply (no AI in use)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role_label",
+          "briefing",
+          "answers",
+          "max_question_chars",
+          "spend_cents",
+          "budget_cents",
+          "offline"
+        ],
+        "title": "CooOut"
+      },
+      "CooQuestionIn": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "CooQuestionIn"
       },
       "CostLineOut": {
         "properties": {

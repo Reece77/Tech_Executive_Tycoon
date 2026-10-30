@@ -1,6 +1,7 @@
 import { Alert } from '@mantine/core';
 import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router';
+import { CooPanel } from '../components/CooPanel';
 import { CriticalEventModal } from '../components/EventCard';
 import { HolidayDialog, HolidayStrip } from '../components/Holiday';
 import { LeftNav } from '../components/LeftNav';
@@ -26,6 +27,7 @@ export function GameLayout() {
   const away = holiday.data?.status === 'running';
   const [holidayOpen, setHolidayOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [cooOpen, setCooOpen] = useState(false);
   const canHoliday = overview.data !== undefined && !ended && !blocked && !away;
 
   const onContinue = () => {
@@ -60,7 +62,9 @@ export function GameLayout() {
         away={away}
         onContinue={onContinue}
         onHoliday={onHoliday}
+        onCoo={() => setCooOpen(true)}
       />
+      {cooOpen && <CooPanel saveId={saveId} onClose={() => setCooOpen(false)} />}
       <HolidayStrip saveId={saveId} />
       {holidayOpen && holiday.data && (
         <HolidayDialog

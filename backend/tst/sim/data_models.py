@@ -69,6 +69,11 @@ class CooBalance(_Frozen):
     max_question_chars: int = Field(gt=0)
     max_answer_words: int = Field(gt=0)
     keep_answers: int = Field(gt=0)
+    max_issues: int = Field(gt=0)
+    runway_months: int = Field(ge=0)
+    morale_below: float = Field(ge=0)
+    role_open_months: int = Field(ge=0)
+    board_below: float = Field(ge=0)
 
 
 DIFFICULTY_LEVELS = ("easy", "standard", "hard", "ironman")  # ADR-0011

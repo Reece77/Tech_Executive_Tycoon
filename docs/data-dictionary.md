@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 18 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`, `0014_free_agents`, `0015_relationships`, `0016_events`, `0017_save_display_name`, `0018_person_rating_log`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 19 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`, `0014_free_agents`, `0015_relationships`, `0016_events`, `0017_save_display_name`, `0018_person_rating_log`, `0019_coo_answer`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -761,3 +761,19 @@ Rebuilt by `0015_relationships` (the M1a table with `affinity` and `updated_turn
 - `saves/index.json`: list of `{slug, company_name, scenario_id, difficulty, current_turn}`; the save's own entry is updated after each create and turn (M6), and the whole list is rebuilt from the save files when it is missing or unreadable. The save files are the source of truth; a missing or corrupt index is rebuilt.
 - `saves/backups/<slug>/<slug>.turn-<NNN>.sqlite`: periodic backup after every 12th committed turn; the newest 10 are kept.
 - `saves/backups/<slug>/<slug>.turn-<NNN>.pre-migration-<rev>.sqlite`: backup taken before upgrading an older save; never pruned.
+
+## coo_answer
+
+"Ask my COO" questions and answers (M7b, migration `0019_coo_answer`; formulas.md 17.3). Read-only: never fed into events and never part of the game state; the newest `coo.keep_answers` (20) per save are kept and older rows deleted when a new one is written.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Autoincrement. |
+| `turn` | INTEGER | no | The month the question was asked in. |
+| `person_id` | INTEGER FK → person.id | yes | Who answered; null for the founder's notebook. |
+| `speaker` | VARCHAR(120) | no | "Name, Role" or "Founder's notebook", as shown then. |
+| `question` | TEXT | no | The player's question, at most `coo.max_question_chars` characters. |
+| `answer` | TEXT | no | At most `coo.max_answer_words` words; offline, over budget or after an error, "I can't think that through right now" with the briefing. |
+| `source` | VARCHAR(16) | no | `claude`, `mock` or `offline`. |
+| `cost_cents` | FLOAT | no | Real cents the call cost (counts toward the monthly AI budget), not game money. |
+| `created_at` | VARCHAR(32) | no | Wall-clock time (UTC, ISO 8601), as `llm_call_log`. |

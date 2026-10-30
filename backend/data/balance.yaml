@@ -41,6 +41,11 @@ coo: # "Ask my COO" (formulas.md 17.3)
   max_question_chars: 300 # characters in the player's question
   max_answer_words: 200 # words in the answer
   keep_answers: 20 # questions and answers kept per save, oldest deleted first
+  max_issues: 5 # count; issues in the briefing, most urgent first
+  runway_months: 12 # months; runway under this is an issue
+  morale_below: 40 # morale points; an employee's shown morale under this is an issue
+  role_open_months: 3 # months; a search open longer than this is an issue
+  board_below: 50 # confidence points; average board confidence under this is an issue
 
 # --- People (formulas.md sections 2-3) ------------------------------------------------
 people:

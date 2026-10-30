@@ -1713,6 +1713,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/coo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Coo
+         * @description Who answers, the engine's briefing (always available) and the last answers.
+         */
+        get: operations["getCoo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/coo/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask Coo
+         * @description Ask a question (at most coo.max_question_chars). Offline, over budget or after an
+         *     error the reply is "I can't think that through right now" with the briefing.
+         */
+        post: operations["askCoo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -2475,6 +2516,86 @@ export interface components {
             energy: number;
             /** Unread Inbox */
             unread_inbox: number;
+        };
+        /** CooAnswerOut */
+        CooAnswerOut: {
+            /** Answer Id */
+            answer_id: number;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Speaker */
+            speaker: string;
+            /** Question */
+            question: string;
+            /** Answer */
+            answer: string;
+            /**
+             * Source
+             * @description claude | mock | offline
+             */
+            source: string;
+            /**
+             * Cost Cents
+             * @description Real money this answer cost, in cents
+             */
+            cost_cents: number;
+        };
+        /** CooIssueOut */
+        CooIssueOut: {
+            /** Key */
+            key: string;
+            /** Text */
+            text: string;
+            /**
+             * Link Kind
+             * @description finance | event | product | person | org | recruitment | board | rival
+             */
+            link_kind: string;
+            /** Link Id */
+            link_id: number | null;
+        };
+        /** CooOut */
+        CooOut: {
+            /**
+             * Person Id
+             * @description Null: the founder's notebook
+             */
+            person_id: number | null;
+            /** Name */
+            name: string;
+            /** Role Label */
+            role_label: string | null;
+            /**
+             * Briefing
+             * @description Up to five issues; empty: nothing urgent
+             */
+            briefing: components["schemas"]["CooIssueOut"][];
+            /**
+             * Answers
+             * @description The last answers, newest first
+             */
+            answers: components["schemas"]["CooAnswerOut"][];
+            /** Max Question Chars */
+            max_question_chars: number;
+            /**
+             * Spend Cents
+             * @description AI spend this calendar month
+             */
+            spend_cents: number;
+            /** Budget Cents */
+            budget_cents: number;
+            /**
+             * Offline
+             * @description Answers come from the offline reply (no AI in use)
+             */
+            offline: boolean;
+        };
+        /** CooQuestionIn */
+        CooQuestionIn: {
+            /** Question */
+            question: string;
         };
         /** CostLineOut */
         CostLineOut: {
@@ -11742,6 +11863,126 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HallOfFameOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getCoo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CooOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    askCoo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CooQuestionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CooAnswerOut"];
                 };
             };
             /** @description Bad Request */

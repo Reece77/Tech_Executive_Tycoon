@@ -71,4 +71,5 @@ class AnthropicAdapter:
         return self._call(model, prompt.system, user, EVENT_MAX_TOKENS, schema=True)
 
     def generate_text(self, prompt: TextPrompt) -> Completion:
-        return self._call(self.model_events, prompt.system, prompt.user, TEXT_MAX_TOKENS, False)
+        model = self.model_story if prompt.kind == "coo" else self.model_events  # 17.3
+        return self._call(model, prompt.system, prompt.user, TEXT_MAX_TOKENS, False)
