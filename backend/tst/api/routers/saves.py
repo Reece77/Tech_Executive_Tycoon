@@ -55,9 +55,9 @@ def _save_out(summary: repository.SaveSummary) -> SaveOut:
 
 def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
     path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
-    with repository.open_session(path) as session:
+    with repository.read_session(path) as session:
         ov = repository.player_overview(session, history=HISTORY_TURNS, data=data)
-        state = repository.load_state(session)
+        state = repository.read_state(session)
         player = state.player
         latest = ov.history[-1][1] if ov.history else None
         costs = repository.costs_for_turn(session, player.id, state.turn - 1)

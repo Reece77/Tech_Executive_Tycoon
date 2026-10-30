@@ -209,6 +209,40 @@ def load_current(session: Session) -> GameState:
     return cast(GameState, cached)
 
 
+_READ_LOCKS: dict[Path, threading.Lock] = {}
+LOADED_STATE = "tst_loaded_state"
+
+
+@contextmanager
+def read_session(path: Path) -> Iterator[Session]:
+    """A session for a read-only route. Reads of one save take turns in this process, and the
+    file's stamp is taken only while none of them has a connection open (a reader's
+    connection creates the WAL and its close removes it), so `read_state` can reuse the state
+    this process remembers. A screen's parallel requests then share one load instead of each
+    making their own (M6: seven concurrent loads took about 6 s each)."""
+    with _LOCKS_GUARD:
+        lock = _READ_LOCKS.setdefault(path.resolve(), threading.Lock())
+    with lock:
+        before = _stamp(path)
+        cached = _recall(path)
+        with open_session(path) as session:
+            session.info[CACHED_STATE] = cached
+            yield session
+            loaded = session.info.get(LOADED_STATE)
+        if cached is None and loaded is not None and _stamp(path) == before:
+            _LAST[str(path.resolve())] = (before, loaded)  # no commit landed during the read
+
+
+def read_state(session: Session) -> GameState:
+    """The save's state on a read: the remembered one when `read_session` found it current
+    (TST_STATE_CACHE_CHECK=1 compares), else loaded, for `read_session` to remember."""
+    if session.info.get(CACHED_STATE) is not None:
+        return load_current(session)
+    state = load_state(session)
+    session.info[LOADED_STATE] = state
+    return state
+
+
 @contextmanager
 def write_session(path: Path) -> Iterator[Session]:
     """A session in one write transaction on a save. A second write to the same save while
@@ -452,7 +486,7 @@ class Overview:
 def player_overview(session: Session, history: int, data: LoadedData) -> Overview:
     """What the player sees on the Overview screen and in `tst inspect`."""
     meta = read_meta(session)
-    state = load_state(session)
+    state = read_state(session)
     player = state.player
     cash = company_cash(ledger_balances(session), player.id)
     snaps = recent_snapshots(session, player.id, history)

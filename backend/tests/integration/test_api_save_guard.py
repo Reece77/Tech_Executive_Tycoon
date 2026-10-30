@@ -4,6 +4,7 @@ the latest migration is upgraded when a game route opens it (or refused with
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -53,3 +54,32 @@ def test_a_save_that_cannot_be_upgraded_is_refused_clearly(
         monkeypatch.setattr(migrate, "head_revision", lambda: "9999_future")
         body = api.get(f"{BASE}/overview", status=409)
         assert body["code"] == "upgrade_needed" and "older version" in body["message"]
+
+
+def test_parallel_reads_share_one_load_and_see_every_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A screen's parallel reads reuse the state this process remembers (one load between
+    them, not one each), and a write is never followed by a stale read (M6 e2e: seven
+    concurrent loads took about 6 s each)."""
+    loads = 0
+    original = repository.load_state
+
+    def counting(session):  # type: ignore[no-untyped-def]
+        nonlocal loads
+        loads += 1
+        return original(session)
+
+    monkeypatch.setattr(repository, "load_state", counting)
+    reads = ["overview", "events", "people", "recruitment/searches", "finance/summary"]
+    with hiring_client(tmp_path) as api:
+        for turn in (0, 1, 2):
+            loads = 0
+            with ThreadPoolExecutor(max_workers=len(reads)) as pool:
+                bodies = list(pool.map(lambda p: api.get(f"{BASE}/{p}"), reads * 2))
+            assert loads <= 1
+            assert bodies[0]["turn"] == turn  # the write before these reads is visible
+            with repository.open_session(_path(tmp_path)) as session:
+                fresh = original(session)
+            assert repository._recall(_path(tmp_path)) in (None, fresh)
+            api.post(f"{BASE}/advance")

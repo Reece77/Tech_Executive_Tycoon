@@ -110,8 +110,8 @@ def get_portfolio(save_id: str, settings: SettingsDep, data: DataDep) -> Portfol
     """The Products screen's tiles: MRR and its change, ARR, customers, hosting and
     marketing this month."""
     path = _path(settings, save_id)
-    with repository.open_session(path) as session:
-        state = repository.load_state(session)
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
         snapshots = repository.recent_snapshots(session, state.player.id, 2)
     stage = state.player.stage
     label = views.STAGE_LABELS.get(stage, f"Stage {stage}")
