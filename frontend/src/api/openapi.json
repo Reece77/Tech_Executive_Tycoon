@@ -6875,6 +6875,233 @@
         }
       }
     },
+    "/api/saves/{save_id}/holiday": {
+      "get": {
+        "tags": [
+          "holiday"
+        ],
+        "summary": "Get Holiday",
+        "description": "The save's holiday: running (months done, the date), or the last one this session.",
+        "operationId": "getHoliday",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "holiday"
+        ],
+        "summary": "Start Holiday",
+        "description": "Start a holiday: one Continue a month until a stop reason (17.1). 409 if the save is\nbusy, the game is over or a critical event is open.",
+        "operationId": "startHoliday",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HolidayIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/holiday/stop": {
+      "post": {
+        "tags": [
+          "holiday"
+        ],
+        "summary": "Stop Holiday",
+        "description": "Stop after the month in progress; nothing is rolled back.",
+        "operationId": "stopHoliday",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -10233,6 +10460,169 @@
           "fraction"
         ],
         "title": "HolderOut"
+      },
+      "HolidayIn": {
+        "properties": {
+          "months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months",
+            "description": "1 to max_months; omit for the default"
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "minor",
+                  "major",
+                  "critical"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop",
+            "description": "Stop after an event at or above this severity"
+          }
+        },
+        "type": "object",
+        "title": "HolidayIn"
+      },
+      "HolidayOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "idle",
+              "running",
+              "finished",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months",
+            "description": "Months chosen (0 when idle)"
+          },
+          "months_done": {
+            "type": "integer",
+            "title": "Months Done"
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn",
+            "description": "The save's current turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "game_over | event | runway | offer | months | stopped, once finished"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Text"
+          },
+          "summary_item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary Item Id",
+            "description": "The 'While you were away' inbox item"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "stop_requested": {
+            "type": "boolean",
+            "title": "Stop Requested"
+          },
+          "max_months": {
+            "type": "integer",
+            "title": "Max Months"
+          },
+          "default_months": {
+            "type": "integer",
+            "title": "Default Months"
+          },
+          "default_stop": {
+            "type": "string",
+            "title": "Default Stop"
+          },
+          "stop_runway_months": {
+            "type": "integer",
+            "title": "Stop Runway Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "months",
+          "months_done",
+          "stop",
+          "turn",
+          "date_label",
+          "reason",
+          "reason_text",
+          "summary_item_id",
+          "error",
+          "stop_requested",
+          "max_months",
+          "default_months",
+          "default_stop",
+          "stop_runway_months"
+        ],
+        "title": "HolidayOut"
       },
       "InboxBulkOut": {
         "properties": {

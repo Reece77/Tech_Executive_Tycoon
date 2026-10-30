@@ -9,7 +9,9 @@ interface Props {
   summary?: FinanceSummary;
   advancing: boolean;
   blocked?: boolean; // an open critical event (M6)
+  away?: boolean; // a holiday is running (M7b)
   onContinue: () => void;
+  onHoliday?: () => void;
 }
 
 const BADGE = {
@@ -83,7 +85,15 @@ export function EnergyMeter({ energy, max }: { energy: number; max: number }) {
   );
 }
 
-export function TopBar({ overview, summary, advancing, blocked = false, onContinue }: Props) {
+export function TopBar({
+  overview,
+  summary,
+  advancing,
+  blocked = false,
+  away = false,
+  onContinue,
+  onHoliday,
+}: Props) {
   const ended = overview !== undefined && overview.game_state !== 'active';
   return (
     <header
@@ -175,13 +185,25 @@ export function TopBar({ overview, summary, advancing, blocked = false, onContin
             Settings
           </Button>
         )}
+        {onHoliday && (
+          <Button
+            variant="default"
+            h={44}
+            onClick={onHoliday}
+            disabled={!overview || advancing || ended || blocked || away}
+            title="Skip quiet months: Continue until something needs you"
+            data-testid="holiday-button"
+          >
+            Holiday <span style={{ fontWeight: 400, opacity: 0.75, marginLeft: 6 }}>· H</span>
+          </Button>
+        )}
         <Button
           size="md"
           radius="md"
           h={44}
           px={28}
           onClick={onContinue}
-          disabled={!overview || advancing || ended || blocked}
+          disabled={!overview || advancing || ended || blocked || away}
           title={blocked ? 'Answer the critical event first' : undefined}
           leftSection={advancing ? <Loader size="xs" color="dark" /> : undefined}
           data-testid="continue"

@@ -14,10 +14,12 @@ from typing import Annotated, Any
 
 import typer
 
+from tst import holiday as hol
 from tst.api import finance_views, org_views, product_views, views
 from tst.config import Settings
 from tst.db import inbox as inbox_db
 from tst.db import repository
+from tst.db.models import InboxItemRow
 from tst.loader import DataLoadError, LoadedData, load_all
 from tst.sim.actions import (
     AcceptBridge,
@@ -147,6 +149,46 @@ def advance(
         raise _fail(exc.message) from exc
     assert result is not None
     typer.echo(f"Advanced {turns} turn(s); now {format_turn(result.new_state.turn)}")
+
+
+@app.command()
+def holiday(
+    save: Annotated[str, typer.Option(help="Save slug")],
+    months: Annotated[int | None, typer.Option(help="Months (1 to holiday.max_months)")] = None,
+    stop: Annotated[
+        str | None, typer.Option(help="minor|major|critical: stop after an event this severe")
+    ] = None,
+) -> None:
+    """Continue month after month until a stop reason (formulas.md 17.1), then summarise."""
+    settings, data = _context()
+    keys = data.balance.holiday
+    level = stop or keys.default_stop
+    if level not in hol.STOP_LEVELS:
+        raise _fail(f"--stop takes {', '.join(hol.STOP_LEVELS)}")
+    try:
+        path = repository.existing_save_path(settings.resolved_save_dir(), save)
+        token = repository.reserve(path)
+        try:
+            with repository.holding(token):
+                result = hol.run_holiday(
+                    path,
+                    data,
+                    months if months is not None else keys.default_months,
+                    level,
+                )
+        finally:
+            repository.release(path, token)
+    except CriticalEventOpenError as exc:
+        raise _fail(f"{exc.message} (tst events --save {save}; tst choose)") from exc
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    typer.echo(
+        f"Holiday: {result.months_played} month(s), now {format_turn(result.end.turn)};"
+        f" stopped because {hol.REASON_TEXT[result.reason]}"
+    )
+    with repository.open_session(path) as session:
+        item = session.get(InboxItemRow, result.summary_item_id)
+        typer.echo(item.body if item else "")
 
 
 @app.command()

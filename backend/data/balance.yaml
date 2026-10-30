@@ -31,6 +31,17 @@ backup:
   every_n_turns: 12 # turns; periodic save backup after every Nth committed turn (ADR-0004)
   keep_periodic: 10 # count; periodic backups kept per save, oldest deleted first (ADR-0004)
 
+holiday: # auto-advance: ordinary Continues until a stop reason (formulas.md 17.1)
+  max_months: 24 # months; the longest holiday the player can choose
+  default_months: 6 # months; the dialog's starting value
+  default_stop: major # minor | major | critical; stop after an event at or above this severity
+  stop_runway_months: 6 # months; stop the first time runway falls below this during a holiday
+
+coo: # "Ask my COO" (formulas.md 17.3)
+  max_question_chars: 300 # characters in the player's question
+  max_answer_words: 200 # words in the answer
+  keep_answers: 20 # questions and answers kept per save, oldest deleted first
+
 # --- People (formulas.md sections 2-3) ------------------------------------------------
 people:
   level_ca: # target current ability by level: Normal(mean, sd) in CA points (formulas.md 2.1)

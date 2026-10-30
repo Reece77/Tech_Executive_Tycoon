@@ -54,6 +54,8 @@ export type Board = Schemas['BoardOut'];
 export type Director = Schemas['DirectorOut'];
 export type FinanceSummary = Schemas['FinanceSummaryOut'];
 export type GameOver = Schemas['GameOverOut'];
+export type Holiday = Schemas['HolidayOut'];
+export type HolidayIn = Schemas['HolidayIn'];
 export type StatementPeriodKind = 'month' | 'quarter' | 'year';
 
 /** One product action, as the product screens build it; maps to its route. */
@@ -1142,5 +1144,49 @@ export function useUpdateLlmSettings() {
   return useMutation({
     mutationFn: async (body: LlmSettingsIn) => unwrap(await api.PUT('/api/settings/llm', { body })),
     onSuccess: (data) => client.setQueryData(['settings', 'llm'], data),
+  });
+}
+
+// --- Holiday (M7b, formulas.md 17.1) ------------------------------------------------------
+
+const HOLIDAY_POLL_MS = 400; // how often a running holiday is checked
+
+/** The save's holiday job; polled while it runs. When it ends, every screen refetches. */
+export function useHoliday(saveId: string) {
+  const client = useQueryClient();
+  const invalidate = useInvalidateSave(saveId);
+  return useQuery({
+    queryKey: ['holiday', saveId],
+    queryFn: async () => {
+      const before = client.getQueryData<Holiday>(['holiday', saveId]);
+      const next = unwrap(await api.GET('/api/saves/{save_id}/holiday', path(saveId)));
+      if (before?.status === 'running' && next.status !== 'running') {
+        void client.invalidateQueries({ queryKey: keys.saves, exact: true });
+        void invalidate();
+      } else if (next.status === 'running' && before?.months_done !== next.months_done) {
+        void invalidate(); // each finished month shows in the top bar
+      }
+      return next;
+    },
+    enabled: saveId !== '',
+    refetchInterval: (query) => (query.state.data?.status === 'running' ? HOLIDAY_POLL_MS : false),
+  });
+}
+
+export function useStartHoliday(saveId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: HolidayIn) =>
+      unwrap(await api.POST('/api/saves/{save_id}/holiday', { ...path(saveId), body })),
+    onSuccess: (data) => client.setQueryData(['holiday', saveId], data),
+  });
+}
+
+export function useStopHoliday(saveId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async () =>
+      unwrap(await api.POST('/api/saves/{save_id}/holiday/stop', path(saveId))),
+    onSuccess: (data) => client.setQueryData(['holiday', saveId], data),
   });
 }

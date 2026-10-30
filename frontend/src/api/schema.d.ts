@@ -1478,6 +1478,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/holiday": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Holiday
+         * @description The save's holiday: running (months done, the date), or the last one this session.
+         */
+        get: operations["getHoliday"];
+        put?: never;
+        /**
+         * Start Holiday
+         * @description Start a holiday: one Continue a month until a stop reason (17.1). 409 if the save is
+         *     busy, the game is over or a critical event is open.
+         */
+        post: operations["startHoliday"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/holiday/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop Holiday
+         * @description Stop after the month in progress; nothing is rolled back.
+         */
+        post: operations["stopHoliday"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -2861,6 +2906,67 @@ export interface components {
              * @default false
              */
             is_founder?: boolean;
+        };
+        /** HolidayIn */
+        HolidayIn: {
+            /**
+             * Months
+             * @description 1 to max_months; omit for the default
+             */
+            months?: number | null;
+            /**
+             * Stop
+             * @description Stop after an event at or above this severity
+             */
+            stop?: ("minor" | "major" | "critical") | null;
+        };
+        /** HolidayOut */
+        HolidayOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "idle" | "running" | "finished" | "failed";
+            /**
+             * Months
+             * @description Months chosen (0 when idle)
+             */
+            months: number;
+            /** Months Done */
+            months_done: number;
+            /** Stop */
+            stop: string | null;
+            /**
+             * Turn
+             * @description The save's current turn
+             */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Reason
+             * @description game_over | event | runway | offer | months | stopped, once finished
+             */
+            reason: string | null;
+            /** Reason Text */
+            reason_text: string | null;
+            /**
+             * Summary Item Id
+             * @description The 'While you were away' inbox item
+             */
+            summary_item_id: number | null;
+            /** Error */
+            error: string | null;
+            /** Stop Requested */
+            stop_requested: boolean;
+            /** Max Months */
+            max_months: number;
+            /** Default Months */
+            default_months: number;
+            /** Default Stop */
+            default_stop: string;
+            /** Stop Runway Months */
+            stop_runway_months: number;
         };
         /**
          * InboxBulkOut
@@ -10151,6 +10257,184 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TeamMoodOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getHoliday: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HolidayOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startHoliday: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HolidayIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HolidayOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    stopHoliday: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HolidayOut"];
                 };
             };
             /** @description Bad Request */

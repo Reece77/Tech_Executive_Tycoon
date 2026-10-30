@@ -9,6 +9,7 @@ import re
 import threading
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -170,6 +171,52 @@ def _lock(path: Path) -> threading.Lock:
         return _LOCKS.setdefault(path.resolve(), threading.Lock())
 
 
+# Saves reserved by a long job (M7b Holiday): each month is its own write transaction, and
+# any other write to the save between them is refused as busy. Keyed by resolved path; the
+# value is the job's token, which the job's thread sets in `_HOLDER` to write.
+_HOLDS: dict[str, object] = {}
+_HOLDER: ContextVar[object | None] = ContextVar("tst_save_holder", default=None)
+
+
+def reserve(path: Path) -> object:
+    """Reserve a save for a job; SaveBusyError if a write or another job has it."""
+    key = str(path.resolve())
+    with _LOCKS_GUARD:
+        if key in _HOLDS or _LOCKS.get(path.resolve(), threading.Lock()).locked():
+            raise SaveBusyError(BUSY_MESSAGE)
+        token = object()
+        _HOLDS[key] = token
+        return token
+
+
+def release(path: Path, token: object) -> None:
+    with _LOCKS_GUARD:
+        if _HOLDS.get(str(path.resolve())) is token:
+            del _HOLDS[str(path.resolve())]
+
+
+@contextmanager
+def holding(token: object) -> Iterator[None]:
+    """Write as the job that reserved the save (in the job's own thread)."""
+    reset = _HOLDER.set(token)
+    try:
+        yield
+    finally:
+        _HOLDER.reset(reset)
+
+
+def is_reserved(path: Path) -> bool:
+    with _LOCKS_GUARD:
+        return str(path.resolve()) in _HOLDS
+
+
+def _check_reserved(path: Path) -> None:
+    with _LOCKS_GUARD:
+        held = _HOLDS.get(str(path.resolve()))
+    if held is not None and held is not _HOLDER.get():
+        raise SaveBusyError(BUSY_MESSAGE)
+
+
 def is_locked_error(exc: BaseException) -> bool:
     """SQLite's answer when another connection (another process) holds the write lock."""
     return isinstance(exc, OperationalError) and "locked" in str(exc).lower()
@@ -281,7 +328,8 @@ def read_state(session: Session) -> GameState:
 def write_session(path: Path) -> Iterator[Session]:
     """A session in one write transaction on a save. A second write to the same save while
     one is in progress raises SaveBusyError at once instead of waiting or failing deep inside
-    SQLite (M6 sub-task 0)."""
+    SQLite (M6 sub-task 0). A save reserved by a job (Holiday) is busy to every other writer."""
+    _check_reserved(path)
     lock = _lock(path)
     if not lock.acquire(blocking=False):
         raise SaveBusyError(BUSY_MESSAGE)
