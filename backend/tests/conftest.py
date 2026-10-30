@@ -47,9 +47,16 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
+# On the 2-core CI runner a test costs about 0.93x its local duration plus 1.2 s (fixtures,
+# caches built once per worker, save setup), fitted from two shards with equal local time:
+# 176 tests took 467 s and 668 took 761 s. So each test also weighs this much when sharding.
+SHARD_OVERHEAD_S = 1.3
+
+
 def shard_of(nodeids: list[str], durations: dict[str, float], shards: int) -> dict[str, int]:
-    """Longest first, each to the shard with the least time so far (ties: the lowest shard).
-    A test missing from the durations file counts as the mean of the known ones."""
+    """Heaviest first, each to the shard with the least weight so far (ties: the lowest
+    shard); a test weighs its duration plus SHARD_OVERHEAD_S. A test missing from the
+    durations file counts as the mean of the known ones."""
     known = [durations[n] for n in nodeids if n in durations]
     default = sum(known) / len(known) if known else 1.0
     totals = [0.0] * shards
@@ -57,7 +64,7 @@ def shard_of(nodeids: list[str], durations: dict[str, float], shards: int) -> di
     for n in sorted(nodeids, key=lambda n: (-durations.get(n, default), n)):
         k = min(range(shards), key=lambda i: (totals[i], i))
         shard[n] = k
-        totals[k] += durations.get(n, default)
+        totals[k] += durations.get(n, default) + SHARD_OVERHEAD_S
     return shard
 
 
