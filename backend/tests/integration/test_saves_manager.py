@@ -136,9 +136,7 @@ def test_a_pre_upgrade_backup_restores_at_head(
     assert migrate.current_revision(restored) == migrate.head_revision()
 
 
-def test_ironman_refuses_duplicate_and_restore_but_deletes(
-    api: TestClient, tmp_path: Path
-) -> None:
+def test_ironman_refuses_duplicate_and_restore_but_deletes(api: TestClient, tmp_path: Path) -> None:
     made = _create(api, "iron", difficulty="ironman")
     assert made["ironman"] is True
     path = repository.save_path(tmp_path, "iron")

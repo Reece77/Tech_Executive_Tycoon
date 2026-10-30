@@ -3,6 +3,7 @@ import { CompetitorsScreen } from './screens/CompetitorsScreen';
 import { FinanceScreen } from './screens/FinanceScreen';
 import { GameLayout } from './screens/GameLayout';
 import { GameOverScreen } from './screens/GameOverScreen';
+import { HistoryScreen } from './screens/HistoryScreen';
 import { InboxScreen } from './screens/InboxScreen';
 import { MainMenu } from './screens/MainMenu';
 import { MarketScreen } from './screens/MarketScreen';
@@ -45,6 +46,8 @@ export default function App() {
           <Route path="competitors/:rivalId" element={<RivalScreen />} />
           <Route path="settings" element={<SettingsScreen />} />
           <Route path="saves" element={<SavesScreen />} />
+          <Route path="history" element={<HistoryScreen />} />
+          <Route path="history/:tab" element={<HistoryScreen />} />
           <Route path=":section" element={<PlaceholderScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

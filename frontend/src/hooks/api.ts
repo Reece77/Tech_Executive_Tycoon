@@ -56,6 +56,12 @@ export type FinanceSummary = Schemas['FinanceSummaryOut'];
 export type GameOver = Schemas['GameOverOut'];
 export type Holiday = Schemas['HolidayOut'];
 export type Backup = Schemas['BackupOut'];
+export type HistoryRow = Schemas['HistoryRowOut'];
+export type Timeline = Schemas['TimelineOut'];
+export type HistoryCharts = Schemas['ChartsOut'];
+export type KpiPoint = Schemas['KpiPointOut'];
+export type HallOfFame = Schemas['HallOfFameOut'];
+export type StorylineHistory = Schemas['StorylineHistoryOut'];
 export type HolidayIn = Schemas['HolidayIn'];
 export type StatementPeriodKind = 'month' | 'quarter' | 'year';
 
@@ -1244,5 +1250,54 @@ export function useStopHoliday(saveId: string) {
     mutationFn: async () =>
       unwrap(await api.POST('/api/saves/{save_id}/holiday/stop', path(saveId))),
     onSuccess: (data) => client.setQueryData(['holiday', saveId], data),
+  });
+}
+
+// --- History (M7b, formulas.md 17.2) --------------------------------------------------------
+
+export interface TimelineQuery {
+  search?: string;
+  year?: number;
+  category?: 'people' | 'products' | 'finance' | 'rivals' | 'events';
+  source?: 'player' | 'delegate' | 'default';
+  person_id?: number;
+  product_id?: number;
+  offset?: number;
+  limit?: number;
+}
+
+export function useTimeline(saveId: string, query: TimelineQuery) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'history', 'timeline', query],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/history/timeline', {
+          params: { path: { save_id: saveId }, query },
+        }),
+      ),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useHistoryCharts(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'history', 'charts'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/history/charts', path(saveId))),
+  });
+}
+
+export function useHistoryStorylines(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'history', 'storylines'],
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/history/storylines', path(saveId))),
+  });
+}
+
+export function useHallOfFame(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'history', 'hall-of-fame'],
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/history/hall-of-fame', path(saveId))),
   });
 }

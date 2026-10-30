@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 17 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`, `0014_free_agents`, `0015_relationships`, `0016_events`, `0017_save_display_name`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 18 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`, `0014_free_agents`, `0015_relationships`, `0016_events`, `0017_save_display_name`, `0018_person_rating_log`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -317,6 +317,16 @@ Month-end morale per employee, append-only. Primary key `(person_id, turn)`.
 | `person_id` | INTEGER FK → person.id | no | Employee. |
 | `turn` | INTEGER | no | Turn closed. |
 | `morale` | FLOAT | no | Morale after phase 8. |
+
+### person_rating_log
+
+Month-end shown rating per player employee, append-only (M7b, migration `0018_person_rating_log`). Primary key `(person_id, turn)`. Written with each turn for the player's staff, the founder excepted; History's best hires and notable departures read it (formulas.md 17.2). It holds only what the player could see (ADR-0007). Saves from before 0018 start logging at their next turn.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER FK → person.id | no | Employee. |
+| `turn` | INTEGER | no | Turn closed. |
+| `rating` | FLOAT | no | The mean midpoint of the displayed ranges of the role's primary skills, 1–20. |
 
 ## Organization (migration `0005_org`, M2a)
 

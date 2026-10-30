@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 17
+SCHEMA_VERSION = 18
 
 
 class Base(DeclarativeBase):
@@ -347,6 +347,18 @@ class PersonMoraleLogRow(Base):
     person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
     turn: Mapped[int] = mapped_column(Integer, primary_key=True)
     morale: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class PersonRatingLogRow(Base):
+    """Month-end shown rating per player employee, append-only (M7b, 0018): the mean
+    midpoint of the displayed ranges of the role's primary skills. History's best hires and
+    notable departures read it; it holds only what the player could see (ADR-0007)."""
+
+    __tablename__ = "person_rating_log"
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    rating: Mapped[float] = mapped_column(Float, nullable=False)
 
 
 # --- Inbox (M1b, migration 0004_inbox) -------------------------------------------------------

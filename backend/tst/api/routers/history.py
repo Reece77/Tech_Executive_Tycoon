@@ -1,0 +1,87 @@
+"""History routes (docs/formulas.md 17.2; M7b): read-only, from stored rows, shown values only."""
+
+from __future__ import annotations
+
+from typing import Annotated, Literal
+
+from fastapi import APIRouter, Query
+
+from tst.api import history_views
+from tst.api.deps import DataDep, SettingsDep
+from tst.api.routers.game import _path
+from tst.api.routers.saves import ERRORS
+from tst.api.schemas.history import ChartsOut, HallOfFameOut, StorylineHistoryOut, TimelineOut
+from tst.db import repository
+
+router = APIRouter(prefix="/api/saves/{save_id}/history", tags=["history"])
+
+PAGE = 50  # tunable-exempt: rows per timeline page
+
+
+@router.get("/timeline", response_model=TimelineOut, responses=ERRORS, operation_id="getTimeline")
+def get_timeline(
+    save_id: str,
+    settings: SettingsDep,
+    data: DataDep,
+    search: str = "",
+    year: int | None = None,
+    category: Annotated[
+        Literal["people", "products", "finance", "rivals", "events"] | None, Query()
+    ] = None,
+    source: Annotated[Literal["player", "delegate", "default"] | None, Query()] = None,
+    person_id: int | None = None,
+    product_id: int | None = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=500)] = PAGE,
+) -> TimelineOut:
+    """Everything that happened to your company, newest first, with a summary line per
+    month. Search matches titles, bodies and names (case-insensitive)."""
+    with repository.read_session(_path(settings, save_id)) as session:
+        company = repository.read_state(session).player.id
+        return history_views.timeline(
+            session,
+            company,
+            data,
+            search=search,
+            year=year,
+            category=category,
+            source=source,
+            person_id=person_id,
+            product_id=product_id,
+            offset=offset,
+            limit=limit,
+        )
+
+
+@router.get("/charts", response_model=ChartsOut, responses=ERRORS, operation_id="getHistoryCharts")
+def get_charts(save_id: str, settings: SettingsDep) -> ChartsOut:
+    """Every month-end KPI, and each product's MRR and customers, oldest first."""
+    with repository.read_session(_path(settings, save_id)) as session:
+        company = repository.read_state(session).player.id
+        return history_views.charts(session, company)
+
+
+@router.get(
+    "/storylines",
+    response_model=list[StorylineHistoryOut],
+    responses=ERRORS,
+    operation_id="getHistoryStorylines",
+)
+def get_storylines(save_id: str, settings: SettingsDep) -> list[StorylineHistoryOut]:
+    """Each storyline with its steps: month, title and the choice taken."""
+    with repository.read_session(_path(settings, save_id)) as session:
+        company = repository.read_state(session).player.id
+        return history_views.storylines(session, company)
+
+
+@router.get(
+    "/hall-of-fame",
+    response_model=HallOfFameOut,
+    responses=ERRORS,
+    operation_id="getHallOfFame",
+)
+def get_hall_of_fame(save_id: str, settings: SettingsDep, data: DataDep) -> HallOfFameOut:
+    """Records computed from history when the screen opens; shown values only."""
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
+        return history_views.hall_of_fame(session, state.player.id, state.turn, data)

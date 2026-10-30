@@ -92,3 +92,26 @@ test('(b) rename, duplicate and restore a save, and find the restored copy', asy
     'Jan 2011',
   );
 });
+
+test('(c) search History for a hired person and open their profile', async ({ page, request }) => {
+  const save = `m7b-history-${stamp}`;
+  makeSave(save); // three engineers hired through the normal actions
+  type Person = { person_id: number; name: string; is_founder: boolean };
+  const people = (await (await request.get(`/api/saves/${save}/people`)).json()) as Person[];
+  const hire = people.find((p) => !p.is_founder);
+  if (!hire) throw new Error('the fixture hires three engineers');
+  await page.goto(`/game/${save}/inbox`);
+  await page.keyboard.press('9');
+  await expect(page).toHaveURL(/\/history$/);
+  await page.keyboard.press('/');
+  await expect(page.getByTestId('history-search')).toBeFocused();
+  await page.keyboard.type(hire.name.split(' ')[1]);
+  const row = page
+    .getByTestId('history-row')
+    .filter({ hasText: `${hire.name} accepted your offer` });
+  await expect(row).toHaveCount(1);
+  await expect(page.getByTestId('history-count')).toContainText('match');
+  await row.getByTestId('history-person-link').click();
+  await expect(page).toHaveURL(new RegExp(`/people/${hire.person_id}$`));
+  await expect(page.getByRole('heading', { name: hire.name })).toBeVisible();
+});

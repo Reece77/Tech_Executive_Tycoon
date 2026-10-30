@@ -7,7 +7,18 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 
-from tst.api.routers import events, finance, game, holiday, meta, org, products, rivals, saves
+from tst.api.routers import (
+    events,
+    finance,
+    game,
+    history,
+    holiday,
+    meta,
+    org,
+    products,
+    rivals,
+    saves,
+)
 from tst.api.schemas.common import ErrorOut
 from tst.db.repository import BUSY_MESSAGE, is_locked_error
 from tst.db.saves import IronmanSaveError
@@ -55,6 +66,7 @@ def create_app() -> FastAPI:
     app.include_router(rivals.router)
     app.include_router(events.router)
     app.include_router(holiday.router)
+    app.include_router(history.router)
     app.include_router(events.settings_router)
     app.include_router(meta.router)
 

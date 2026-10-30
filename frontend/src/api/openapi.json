@@ -7492,6 +7492,427 @@
         }
       }
     },
+    "/api/saves/{save_id}/history/timeline": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Get Timeline",
+        "description": "Everything that happened to your company, newest first, with a summary line per\nmonth. Search matches titles, bodies and names (case-insensitive).",
+        "operationId": "getTimeline",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Search"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "people",
+                    "products",
+                    "finance",
+                    "rivals",
+                    "events"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "player",
+                    "delegate",
+                    "default"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Person Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/history/charts": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Get Charts",
+        "description": "Every month-end KPI, and each product's MRR and customers, oldest first.",
+        "operationId": "getHistoryCharts",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChartsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/history/storylines": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Get Storylines",
+        "description": "Each storyline with its steps: month, title and the choice taken.",
+        "operationId": "getHistoryStorylines",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StorylineHistoryOut"
+                  },
+                  "title": "Response Gethistorystorylines"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/history/hall-of-fame": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Get Hall Of Fame",
+        "description": "Records computed from history when the screen opens; shown values only.",
+        "operationId": "getHallOfFame",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HallOfFameOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -8071,6 +8492,46 @@
           "total_liabilities_and_equity_cents"
         ],
         "title": "BalanceSheetOut"
+      },
+      "BiggestRoundOut": {
+        "properties": {
+          "series": {
+            "type": "string",
+            "title": "Series"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "series",
+          "amount_cents",
+          "lead",
+          "turn",
+          "date_label"
+        ],
+        "title": "BiggestRoundOut"
       },
       "BoardMeetingOut": {
         "properties": {
@@ -8716,6 +9177,31 @@
           "level_mix"
         ],
         "title": "ChannelOut"
+      },
+      "ChartsOut": {
+        "properties": {
+          "kpis": {
+            "items": {
+              "$ref": "#/components/schemas/KpiPointOut"
+            },
+            "type": "array",
+            "title": "Kpis",
+            "description": "Every month-end snapshot, oldest first"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSeriesOut"
+            },
+            "type": "array",
+            "title": "Products"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kpis",
+          "products"
+        ],
+        "title": "ChartsOut"
       },
       "CheckOut": {
         "properties": {
@@ -9868,6 +10354,56 @@
         ],
         "title": "FireOut"
       },
+      "FirstOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turn",
+            "description": "Null: not yet"
+          },
+          "date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Label"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "turn",
+          "date_label",
+          "detail"
+        ],
+        "title": "FirstOut"
+      },
       "FounderIn": {
         "properties": {
           "background": {
@@ -10483,6 +11019,110 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "HallOfFameOut": {
+        "properties": {
+          "peak_arr": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PeakOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "peak_headcount": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PeakOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "biggest_round": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BiggestRoundOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "firsts": {
+            "items": {
+              "$ref": "#/components/schemas/FirstOut"
+            },
+            "type": "array",
+            "title": "Firsts"
+          },
+          "longest_serving": {
+            "items": {
+              "$ref": "#/components/schemas/PersonRecordOut"
+            },
+            "type": "array",
+            "title": "Longest Serving"
+          },
+          "best_hires": {
+            "items": {
+              "$ref": "#/components/schemas/PersonRecordOut"
+            },
+            "type": "array",
+            "title": "Best Hires"
+          },
+          "notable_departures": {
+            "items": {
+              "$ref": "#/components/schemas/PersonRecordOut"
+            },
+            "type": "array",
+            "title": "Notable Departures"
+          },
+          "best_product_mrr": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductRecordOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "best_product_quality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductRecordOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rivals_outlasted": {
+            "items": {
+              "$ref": "#/components/schemas/RivalOutlastedOut"
+            },
+            "type": "array",
+            "title": "Rivals Outlasted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "peak_arr",
+          "peak_headcount",
+          "biggest_round",
+          "firsts",
+          "longest_serving",
+          "best_hires",
+          "notable_departures",
+          "best_product_mrr",
+          "best_product_quality",
+          "rivals_outlasted"
+        ],
+        "title": "HallOfFameOut",
+        "description": "The records of 17.2. Ratings are shown ratings: the midpoint of the ranges you see."
+      },
       "HiringMetaOut": {
         "properties": {
           "channels": {
@@ -10833,6 +11473,148 @@
         "type": "object",
         "title": "HiringPlanPatchIn",
         "description": "Fields to change; omitted fields keep their value. `unit_id: null` means the root."
+      },
+      "HistoryRowOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Unique per row: event-N, decision-N, inbox-N or month-N"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "entry",
+              "month"
+            ],
+            "title": "Kind",
+            "description": "month: a dimmed month summary line"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "people | products | finance | rivals | events"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "player | delegate | default"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor",
+            "description": "\"You\", the delegate's name, or \"Default (at Continue)\""
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "person_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Name"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "kind",
+          "turn",
+          "date_label",
+          "category",
+          "title"
+        ],
+        "title": "HistoryRowOut"
       },
       "HolderOut": {
         "properties": {
@@ -11293,6 +12075,132 @@
         ],
         "title": "KnowledgeOut",
         "description": "How the viewing company has come to know someone (not what it knows)."
+      },
+      "KpiPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "cash_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cash Cents"
+          },
+          "monthly_burn_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Burn Cents"
+          },
+          "payroll_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payroll Cents"
+          },
+          "headcount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headcount"
+          },
+          "avg_morale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Morale"
+          },
+          "mrr_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mrr Cents"
+          },
+          "arr_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arr Cents"
+          },
+          "founder_bp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Founder Bp"
+          },
+          "board_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Board Confidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "cash_cents",
+          "monthly_burn_cents",
+          "payroll_cents",
+          "headcount",
+          "avg_morale",
+          "mrr_cents",
+          "arr_cents",
+          "founder_bp",
+          "board_confidence"
+        ],
+        "title": "KpiPointOut"
       },
       "LLMSettingsIn": {
         "properties": {
@@ -11987,24 +12895,6 @@
           "parent_id"
         ],
         "title": "MoveUnitIn"
-      },
-      "NamedOut": {
-        "properties": {
-          "person_id": {
-            "type": "integer",
-            "title": "Person Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          }
-        },
-        "type": "object",
-        "required": [
-          "person_id",
-          "name"
-        ],
-        "title": "NamedOut"
       },
       "NewGameMetaOut": {
         "properties": {
@@ -13128,6 +14018,29 @@
         "title": "PayPreviewOut",
         "description": "A raise or promotion before it happens, from known values only."
       },
+      "PeakOut": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "title": "Value"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "turn",
+          "date_label"
+        ],
+        "title": "PeakOut"
+      },
       "PendingOfferOut": {
         "properties": {
           "offer_id": {
@@ -13450,6 +14363,60 @@
           "morale_history"
         ],
         "title": "PersonProfileOut"
+      },
+      "PersonRecordOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current",
+            "description": "Still on the staff"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months",
+            "description": "Tenure in months"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "description": "Longest serving: months; best hires: the rise in shown rating; departures: the shown rating at departure"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail",
+            "description": "Best hires: from \u2192 to; departures: the reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role",
+          "current",
+          "months",
+          "value",
+          "detail"
+        ],
+        "title": "PersonRecordOut"
       },
       "PersonSummaryOut": {
         "properties": {
@@ -14134,21 +15101,21 @@
           },
           "builders": {
             "items": {
-              "$ref": "#/components/schemas/NamedOut"
+              "$ref": "#/components/schemas/tst__api__schemas__products__NamedOut"
             },
             "type": "array",
             "title": "Builders"
           },
           "sellers": {
             "items": {
-              "$ref": "#/components/schemas/NamedOut"
+              "$ref": "#/components/schemas/tst__api__schemas__products__NamedOut"
             },
             "type": "array",
             "title": "Sellers"
           },
           "marketers": {
             "items": {
-              "$ref": "#/components/schemas/NamedOut"
+              "$ref": "#/components/schemas/tst__api__schemas__products__NamedOut"
             },
             "type": "array",
             "title": "Marketers"
@@ -14219,6 +15186,59 @@
           "monthly"
         ],
         "title": "ProductOut"
+      },
+      "ProductPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents",
+            "description": "Revenue that month, every segment"
+          },
+          "customers": {
+            "type": "integer",
+            "title": "Customers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "mrr_cents",
+          "customers"
+        ],
+        "title": "ProductPointOut"
+      },
+      "ProductRecordOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "description": "Peak MRR in cents, or the highest quality shown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "value"
+        ],
+        "title": "ProductRecordOut"
       },
       "ProductSegmentOut": {
         "properties": {
@@ -14338,6 +15358,32 @@
           "note"
         ],
         "title": "ProductSegmentOut"
+      },
+      "ProductSeriesOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPointOut"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "points"
+        ],
+        "title": "ProductSeriesOut"
       },
       "ProductTotalMonthOut": {
         "properties": {
@@ -14618,6 +15664,34 @@
           "approach"
         ],
         "title": "RivalMoveOut"
+      },
+      "RivalOutlastedOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "turn",
+          "date_label",
+          "market"
+        ],
+        "title": "RivalOutlastedOut"
       },
       "RivalProfileOut": {
         "properties": {
@@ -16240,6 +17314,117 @@
         ],
         "title": "StatementsOut"
       },
+      "StoryStepOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "choice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Choice"
+          },
+          "by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "By",
+            "description": "\"You\" or \"Default (at Continue)\"; null while open"
+          },
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "title",
+          "choice",
+          "by",
+          "event_id"
+        ],
+        "title": "StoryStepOut"
+      },
+      "StorylineHistoryOut": {
+        "properties": {
+          "storyline_id": {
+            "type": "integer",
+            "title": "Storyline Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "started_turn": {
+            "type": "integer",
+            "title": "Started Turn"
+          },
+          "started_label": {
+            "type": "string",
+            "title": "Started Label"
+          },
+          "ended_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Label"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StoryStepOut"
+            },
+            "type": "array",
+            "title": "Steps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "storyline_id",
+          "title",
+          "status",
+          "started_turn",
+          "started_label",
+          "ended_label",
+          "summary",
+          "steps"
+        ],
+        "title": "StorylineHistoryOut"
+      },
       "StorylineOut": {
         "properties": {
           "storyline_id": {
@@ -16518,6 +17703,60 @@
         ],
         "title": "TimelineItemOut"
       },
+      "TimelineOut": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Rows matching the filters, before paging"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryRowOut"
+            },
+            "type": "array",
+            "title": "Rows",
+            "description": "Newest first"
+          },
+          "years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Years",
+            "description": "Years with history, for the year filter"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__history__NamedOut"
+            },
+            "type": "array",
+            "title": "People",
+            "description": "People named in the history, for the filter"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__history__NamedOut"
+            },
+            "type": "array",
+            "title": "Products"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "offset",
+          "rows",
+          "years",
+          "people",
+          "products"
+        ],
+        "title": "TimelineOut"
+      },
       "UnitOut": {
         "properties": {
           "unit_id": {
@@ -16687,6 +17926,42 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "tst__api__schemas__history__NamedOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "NamedOut"
+      },
+      "tst__api__schemas__products__NamedOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name"
+        ],
+        "title": "NamedOut"
       }
     }
   }

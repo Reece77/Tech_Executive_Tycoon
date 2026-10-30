@@ -1611,6 +1611,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/history/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Timeline
+         * @description Everything that happened to your company, newest first, with a summary line per
+         *     month. Search matches titles, bodies and names (case-insensitive).
+         */
+        get: operations["getTimeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/history/charts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Charts
+         * @description Every month-end KPI, and each product's MRR and customers, oldest first.
+         */
+        get: operations["getHistoryCharts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/history/storylines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Storylines
+         * @description Each storyline with its steps: month, title and the choice taken.
+         */
+        get: operations["getHistoryStorylines"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/history/hall-of-fame": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Hall Of Fame
+         * @description Records computed from history when the screen opens; shown values only.
+         */
+        get: operations["getHallOfFame"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -1913,6 +1994,19 @@ export interface components {
             /** Total Liabilities And Equity Cents */
             total_liabilities_and_equity_cents: number;
         };
+        /** BiggestRoundOut */
+        BiggestRoundOut: {
+            /** Series */
+            series: string;
+            /** Amount Cents */
+            amount_cents: number;
+            /** Lead */
+            lead: string | null;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+        };
         /**
          * BoardMeetingOut
          * @description The last quarterly board meeting, from the inbox (14.6).
@@ -2185,6 +2279,16 @@ export interface components {
             level_mix: {
                 [key: string]: number;
             };
+        };
+        /** ChartsOut */
+        ChartsOut: {
+            /**
+             * Kpis
+             * @description Every month-end snapshot, oldest first
+             */
+            kpis: components["schemas"]["KpiPointOut"][];
+            /** Products */
+            products: components["schemas"]["ProductSeriesOut"][];
         };
         /**
          * CheckOut
@@ -2625,6 +2729,20 @@ export interface components {
             /** Severance Cents */
             severance_cents: number;
         };
+        /** FirstOut */
+        FirstOut: {
+            /** Label */
+            label: string;
+            /**
+             * Turn
+             * @description Null: not yet
+             */
+            turn: number | null;
+            /** Date Label */
+            date_label: string | null;
+            /** Detail */
+            detail: string | null;
+        };
         /**
          * FounderIn
          * @description Founder build (docs/formulas.md section 5). Omitted fields use the defaults.
@@ -2866,6 +2984,27 @@ export interface components {
             detail?: components["schemas"]["ValidationError"][];
         };
         /**
+         * HallOfFameOut
+         * @description The records of 17.2. Ratings are shown ratings: the midpoint of the ranges you see.
+         */
+        HallOfFameOut: {
+            peak_arr: components["schemas"]["PeakOut"] | null;
+            peak_headcount: components["schemas"]["PeakOut"] | null;
+            biggest_round: components["schemas"]["BiggestRoundOut"] | null;
+            /** Firsts */
+            firsts: components["schemas"]["FirstOut"][];
+            /** Longest Serving */
+            longest_serving: components["schemas"]["PersonRecordOut"][];
+            /** Best Hires */
+            best_hires: components["schemas"]["PersonRecordOut"][];
+            /** Notable Departures */
+            notable_departures: components["schemas"]["PersonRecordOut"][];
+            best_product_mrr: components["schemas"]["ProductRecordOut"] | null;
+            best_product_quality: components["schemas"]["ProductRecordOut"] | null;
+            /** Rivals Outlasted */
+            rivals_outlasted: components["schemas"]["RivalOutlastedOut"][];
+        };
+        /**
          * HiringMetaOut
          * @description Rules and costs the Recruitment and People screens display (formulas.md 6-8).
          */
@@ -2991,6 +3130,53 @@ export interface components {
             unit_id?: number | null;
             /** Focus */
             focus?: string | null;
+        };
+        /** HistoryRowOut */
+        HistoryRowOut: {
+            /**
+             * Key
+             * @description Unique per row: event-N, decision-N, inbox-N or month-N
+             */
+            key: string;
+            /**
+             * Kind
+             * @description month: a dimmed month summary line
+             * @enum {string}
+             */
+            kind: "entry" | "month";
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Category
+             * @description people | products | finance | rivals | events
+             */
+            category: string | null;
+            /** Title */
+            title: string;
+            /** Detail */
+            detail?: string | null;
+            /**
+             * Source
+             * @description player | delegate | default
+             */
+            source?: string | null;
+            /**
+             * Actor
+             * @description "You", the delegate's name, or "Default (at Continue)"
+             */
+            actor?: string | null;
+            /** Person Id */
+            person_id?: number | null;
+            /** Person Name */
+            person_name?: string | null;
+            /** Product Id */
+            product_id?: number | null;
+            /** Product Name */
+            product_name?: string | null;
+            /** Event Id */
+            event_id?: number | null;
         };
         /** HolderOut */
         HolderOut: {
@@ -3186,6 +3372,31 @@ export interface components {
              * @description Interests and work style are visible
              */
             profile_known: boolean;
+        };
+        /** KpiPointOut */
+        KpiPointOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Cash Cents */
+            cash_cents: number | null;
+            /** Monthly Burn Cents */
+            monthly_burn_cents: number | null;
+            /** Payroll Cents */
+            payroll_cents: number | null;
+            /** Headcount */
+            headcount: number | null;
+            /** Avg Morale */
+            avg_morale: number | null;
+            /** Mrr Cents */
+            mrr_cents: number | null;
+            /** Arr Cents */
+            arr_cents: number | null;
+            /** Founder Bp */
+            founder_bp: number | null;
+            /** Board Confidence */
+            board_confidence: number | null;
         };
         /** LLMSettingsIn */
         LLMSettingsIn: {
@@ -3502,13 +3713,6 @@ export interface components {
              * @description A department, or null for the company root
              */
             parent_id: number | null;
-        };
-        /** NamedOut */
-        NamedOut: {
-            /** Person Id */
-            person_id: number;
-            /** Name */
-            name: string;
         };
         /** NewGameMetaOut */
         NewGameMetaOut: {
@@ -4019,6 +4223,15 @@ export interface components {
              */
             morale_change: number;
         };
+        /** PeakOut */
+        PeakOut: {
+            /** Value */
+            value: number;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+        };
         /** PendingOfferOut */
         PendingOfferOut: {
             /** Offer Id */
@@ -4126,6 +4339,35 @@ export interface components {
              * @description Last 12 months, oldest first
              */
             morale_history: components["schemas"]["MoralePointOut"][];
+        };
+        /** PersonRecordOut */
+        PersonRecordOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /**
+             * Current
+             * @description Still on the staff
+             */
+            current: boolean;
+            /**
+             * Months
+             * @description Tenure in months
+             */
+            months: number;
+            /**
+             * Value
+             * @description Longest serving: months; best hires: the rise in shown rating; departures: the shown rating at departure
+             */
+            value: number;
+            /**
+             * Detail
+             * @description Best hires: from → to; departures: the reason
+             */
+            detail: string | null;
         };
         /** PersonSummaryOut */
         PersonSummaryOut: {
@@ -4402,11 +4644,11 @@ export interface components {
             /** Assigned Units */
             assigned_units: components["schemas"]["AssignedUnitOut"][];
             /** Builders */
-            builders: components["schemas"]["NamedOut"][];
+            builders: components["schemas"]["tst__api__schemas__products__NamedOut"][];
             /** Sellers */
-            sellers: components["schemas"]["NamedOut"][];
+            sellers: components["schemas"]["tst__api__schemas__products__NamedOut"][];
             /** Marketers */
-            marketers: components["schemas"]["NamedOut"][];
+            marketers: components["schemas"]["tst__api__schemas__products__NamedOut"][];
             /**
              * Pace
              * @description fast | steady | slow
@@ -4428,6 +4670,32 @@ export interface components {
              * @description Last 12 months summed over segments, oldest first
              */
             monthly: components["schemas"]["ProductTotalMonthOut"][];
+        };
+        /** ProductPointOut */
+        ProductPointOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Mrr Cents
+             * @description Revenue that month, every segment
+             */
+            mrr_cents: number;
+            /** Customers */
+            customers: number;
+        };
+        /** ProductRecordOut */
+        ProductRecordOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Value
+             * @description Peak MRR in cents, or the highest quality shown
+             */
+            value: number;
         };
         /** ProductSegmentOut */
         ProductSegmentOut: {
@@ -4477,6 +4745,15 @@ export interface components {
              * @description 'Sales capacity limited new customers in <segment>' when it bound
              */
             note: string | null;
+        };
+        /** ProductSeriesOut */
+        ProductSeriesOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Points */
+            points: components["schemas"]["ProductPointOut"][];
         };
         /**
          * ProductTotalMonthOut
@@ -4608,6 +4885,17 @@ export interface components {
              * @description An approach to one of the player's people
              */
             approach: boolean;
+        };
+        /** RivalOutlastedOut */
+        RivalOutlastedOut: {
+            /** Name */
+            name: string;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Market */
+            market: string;
         };
         /** RivalProfileOut */
         RivalProfileOut: {
@@ -5260,6 +5548,43 @@ export interface components {
              */
             periods: components["schemas"]["StatementPeriodOut"][];
         };
+        /** StoryStepOut */
+        StoryStepOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Title */
+            title: string;
+            /** Choice */
+            choice: string | null;
+            /**
+             * By
+             * @description "You" or "Default (at Continue)"; null while open
+             */
+            by: string | null;
+            /** Event Id */
+            event_id: number;
+        };
+        /** StorylineHistoryOut */
+        StorylineHistoryOut: {
+            /** Storyline Id */
+            storyline_id: number;
+            /** Title */
+            title: string;
+            /** Status */
+            status: string;
+            /** Started Turn */
+            started_turn: number;
+            /** Started Label */
+            started_label: string;
+            /** Ended Label */
+            ended_label: string | null;
+            /** Summary */
+            summary: string;
+            /** Steps */
+            steps: components["schemas"]["StoryStepOut"][];
+        };
         /** StorylineOut */
         StorylineOut: {
             /** Storyline Id */
@@ -5384,6 +5709,33 @@ export interface components {
              */
             critical: boolean;
         };
+        /** TimelineOut */
+        TimelineOut: {
+            /**
+             * Total
+             * @description Rows matching the filters, before paging
+             */
+            total: number;
+            /** Offset */
+            offset: number;
+            /**
+             * Rows
+             * @description Newest first
+             */
+            rows: components["schemas"]["HistoryRowOut"][];
+            /**
+             * Years
+             * @description Years with history, for the year filter
+             */
+            years: number[];
+            /**
+             * People
+             * @description People named in the history, for the filter
+             */
+            people: components["schemas"]["tst__api__schemas__history__NamedOut"][];
+            /** Products */
+            products: components["schemas"]["tst__api__schemas__history__NamedOut"][];
+        };
         /** UnitOut */
         UnitOut: {
             /**
@@ -5437,6 +5789,20 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** NamedOut */
+        tst__api__schemas__history__NamedOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+        };
+        /** NamedOut */
+        tst__api__schemas__products__NamedOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
         };
     };
     responses: never;
@@ -10887,6 +11253,247 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HolidayOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getTimeline: {
+        parameters: {
+            query?: {
+                search?: string;
+                year?: number | null;
+                category?: ("people" | "products" | "finance" | "rivals" | "events") | null;
+                source?: ("player" | "delegate" | "default") | null;
+                person_id?: number | null;
+                product_id?: number | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TimelineOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getHistoryCharts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChartsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getHistoryStorylines: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorylineHistoryOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getHallOfFame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallOfFameOut"];
                 };
             };
             /** @description Bad Request */

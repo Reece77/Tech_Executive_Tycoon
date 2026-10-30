@@ -128,3 +128,10 @@ def revealed_range(person: Person, reveal: RevealState, attribute: str) -> tuple
     else:
         true_value, lo, hi = person.personality[attribute], ATTR_MIN, ATTR_MAX
     return displayed_range(true_value, rec.hw, rec.offset, lo, hi)
+
+
+def shown_rating(person: Person, reveal: RevealState, skills: tuple[str, ...]) -> float:
+    """A person's rating as an observer sees it (M7b, formulas.md 17.2): the mean midpoint of
+    the displayed ranges of `skills` (their role's primary skills). Displayed values only."""
+    mids = [sum(revealed_range(person, reveal, key)) / 2 for key in skills]
+    return sum(mids) / len(mids) if mids else 0.0
