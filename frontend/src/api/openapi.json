@@ -8048,6 +8048,82 @@
         }
       }
     },
+    "/api/settings/ui": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get Ui Settings",
+        "description": "Saved column views per table (M7b), shared by every save.",
+        "operationId": "getUiSettings",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UISettings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/ui/tables/{table_id}": {
+      "put": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Update Table Views",
+        "description": "Replace one table's saved views and the view last used.",
+        "operationId": "updateTableViews",
+        "parameters": [
+          {
+            "name": "table_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+              "title": "Table Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TableViews"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UISettings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/meta/scenarios": {
       "get": {
         "tags": [
@@ -17445,6 +17521,26 @@
         ],
         "title": "SnapshotPointOut"
       },
+      "SortKey": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Id"
+          },
+          "desc": {
+            "type": "boolean",
+            "title": "Desc",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "SortKey"
+      },
       "StageReachedOut": {
         "properties": {
           "stage": {
@@ -17711,6 +17807,64 @@
           "started_label"
         ],
         "title": "StorylineOut"
+      },
+      "TableView": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "visibility": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Visibility",
+            "description": "Column id -> shown; missing columns are shown"
+          },
+          "order": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Order",
+            "description": "Column ids, left to right"
+          },
+          "sort": {
+            "items": {
+              "$ref": "#/components/schemas/SortKey"
+            },
+            "type": "array",
+            "title": "Sort"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "TableView"
+      },
+      "TableViews": {
+        "properties": {
+          "views": {
+            "items": {
+              "$ref": "#/components/schemas/TableView"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Views"
+          },
+          "current": {
+            "type": "string",
+            "title": "Current",
+            "description": "The view last used",
+            "default": "Default"
+          }
+        },
+        "type": "object",
+        "title": "TableViews"
       },
       "TagOut": {
         "properties": {
@@ -18004,6 +18158,19 @@
           "products"
         ],
         "title": "TimelineOut"
+      },
+      "UISettings": {
+        "properties": {
+          "tables": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TableViews"
+            },
+            "type": "object",
+            "title": "Tables"
+          }
+        },
+        "type": "object",
+        "title": "UISettings"
       },
       "UnitOut": {
         "properties": {

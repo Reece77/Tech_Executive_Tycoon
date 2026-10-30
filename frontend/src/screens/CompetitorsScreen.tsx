@@ -21,6 +21,7 @@ import {
 import { formatMoneyWhole, formatWhole } from '../lib/format';
 import { MoveTag, StartupChip, StyleChip } from '../lib/rivals';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
+import { useTableViews } from '../hooks/useTableViews';
 
 const helper = createColumnHelper<GameTableFeatures, RivalRow>();
 const VIEWS: { key: RivalView; label: string }[] = [
@@ -187,14 +188,22 @@ function RivalTable({ saveId, rows }: { saveId: string; rows: RivalRow[] }) {
       ]),
     [saveId],
   );
+  const views = useTableViews('competitors');
   const table = useTable({
     features: gameTableFeatures,
     columns,
     data: rows,
     getRowId: (r) => String(r.company_id),
+    ...views.tableProps,
   });
   return (
-    <DataTable table={table} label="Rivals" rowTestId="rival-row" empty="No rivals in this view." />
+    <DataTable
+      views={views}
+      table={table}
+      label="Rivals"
+      rowTestId="rival-row"
+      empty="No rivals in this view."
+    />
   );
 }
 

@@ -1,9 +1,12 @@
-import { Button, Checkbox, Menu, NativeSelect, TextInput, UnstyledButton } from '@mantine/core';
+import { NativeSelect, TextInput, UnstyledButton } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { AttributeRange } from '../components/AttributeRange';
 import { DataTable } from '../components/DataTable';
+import { ViewsMenu } from '../components/ViewsMenu';
+import { TABLE_SEARCH_ATTR } from '../hooks/useGameHotkeys';
+import { useTableViews } from '../hooks/useTableViews';
 import { KpiTile } from '../components/KpiTile';
 import { MoraleBar } from '../components/MoraleBar';
 import { LeadsChip } from '../components/OrgNode';
@@ -226,11 +229,13 @@ function PeopleBody({
       (p) => p.name.toLowerCase().includes(q) || (p.role_label ?? '').toLowerCase().includes(q),
     );
   }, [people, filter, unitFilter]);
+  const views = useTableViews(`people.${view}`);
   const table = useTable({
     features: gameTableFeatures,
     columns,
     data,
     getRowId: (p) => String(p.person_id),
+    ...views.tableProps,
   });
 
   const interestLabel = new Map(meta.interests.map((i) => [i.key, i.label]));
@@ -268,28 +273,7 @@ function PeopleBody({
                 </UnstyledButton>
               ))}
             </div>
-            <Menu closeOnItemClick={false} position="bottom-start">
-              <Menu.Target>
-                <Button variant="default" size="sm" h={36}>
-                  Columns
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown mah={360} style={{ overflowY: 'auto' }}>
-                {table
-                  .getAllLeafColumns()
-                  .filter((c) => c.getCanHide())
-                  .map((c) => (
-                    <Menu.Item key={c.id} onClick={() => c.toggleVisibility()}>
-                      <Checkbox
-                        size="xs"
-                        readOnly
-                        checked={c.getIsVisible()}
-                        label={typeof c.columnDef.header === 'string' ? c.columnDef.header : c.id}
-                      />
-                    </Menu.Item>
-                  ))}
-              </Menu.Dropdown>
-            </Menu>
+            <ViewsMenu table={table} views={views} label="People" />
             <NativeSelect
               ml="auto"
               w={180}
@@ -302,8 +286,9 @@ function PeopleBody({
             <TextInput
               w={200}
               type="search"
-              placeholder="Name or role"
+              placeholder="Name or role  ( / )"
               aria-label="Filter by name or role"
+              {...{ [TABLE_SEARCH_ATTR]: '' }}
               leftSection={<span style={{ fontSize: 12 }}>Filter</span>}
               leftSectionWidth={48}
               value={filter}

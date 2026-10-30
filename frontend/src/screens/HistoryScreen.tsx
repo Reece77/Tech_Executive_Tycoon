@@ -25,6 +25,7 @@ import {
   type TimelineQuery,
 } from '../hooks/api';
 import { TABLE_SEARCH_ATTR } from '../hooks/useGameHotkeys';
+import { useTableViews } from '../hooks/useTableViews';
 import { formatMoneyShort, formatMoneyWhole, formatWhole, humanize } from '../lib/format';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 
@@ -160,11 +161,13 @@ function TimelineTab({ saveId }: { saveId: string }) {
   };
   const timeline = useTimeline(saveId, query);
   const columns = useMemo(() => timelineColumns(saveId), [saveId]);
+  const views = useTableViews('history.timeline');
   const table = useTable({
     features: gameTableFeatures,
     columns,
     data: timeline.data?.rows ?? [],
     getRowId: (r) => r.key,
+    ...views.tableProps,
   });
   const reset = (set: (v: string) => void) => (v: string) => {
     set(v);
@@ -237,6 +240,7 @@ function TimelineTab({ saveId }: { saveId: string }) {
             {t?.total ?? 0} rows{query.search ? ` match "${query.search}"` : ''} · newest first
           </p>
           <DataTable
+            views={views}
             table={table}
             label="Timeline"
             rowTestId="history-row"

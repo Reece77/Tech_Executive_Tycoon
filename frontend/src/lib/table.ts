@@ -2,6 +2,7 @@ import {
   type CellData,
   type RowData,
   type TableFeatures,
+  columnOrderingFeature,
   columnVisibilityFeature,
   createSortedRowModel,
   rowSortingFeature,
@@ -10,10 +11,11 @@ import {
   tableFeatures,
 } from '@tanstack/react-table';
 
-/** Shared features for game tables: sortable headers and hideable columns. */
+/** Shared features for game tables: sortable headers, hideable and reorderable columns. */
 export const gameTableFeatures = tableFeatures({
   rowSortingFeature,
   columnVisibilityFeature,
+  columnOrderingFeature,
   sortedRowModel: createSortedRowModel(),
   sortFns: { basic: sortFn_basic, alphanumeric: sortFn_alphanumeric },
 });

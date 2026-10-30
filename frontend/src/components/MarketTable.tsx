@@ -5,17 +5,23 @@ import type { MarketProduct, MarketSegment } from '../hooks/api';
 import { formatMoneyWhole } from '../lib/format';
 import { formatAppeal, formatCount, formatPercent, formatScore } from '../lib/products';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
+import type { TableViewsApi } from '../hooks/useTableViews';
 import { DataTable } from './DataTable';
 
 const helper = createColumnHelper<GameTableFeatures, MarketProduct>();
 
 /** Every product selling in one segment, sorted by appeal; the player's rows highlighted. */
+/** The Market table's default sort: most appealing first. */
+const MARKET_SORT = [{ id: 'appeal', desc: true }];
+
 export function MarketTable({
   segment,
   productHref,
+  views,
 }: {
   segment: MarketSegment;
   productHref?: (productId: number) => string;
+  views?: TableViewsApi; // saved column views (M7b), from the screen
 }) {
   const columns = useMemo(
     () =>
@@ -114,10 +120,12 @@ export function MarketTable({
     columns,
     data: segment.products,
     getRowId: (p) => String(p.product_id),
-    initialState: { sorting: [{ id: 'appeal', desc: true }] },
+    initialState: { sorting: MARKET_SORT },
+    ...(views?.tableProps ?? {}),
   });
   return (
     <DataTable
+      views={views}
       table={table}
       label={`${segment.label} market`}
       rowTestId="market-row"

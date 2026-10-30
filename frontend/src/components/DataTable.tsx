@@ -1,7 +1,9 @@
 import type { ReactTable, RowData } from '@tanstack/react-table';
 import type { HTMLAttributes } from 'react';
 import { columnTerm, type GameTableFeatures } from '../lib/table';
+import type { TableViewsApi } from '../hooks/useTableViews';
 import { Term } from './Term';
+import { ViewsMenu } from './ViewsMenu';
 
 const ARROWS = { asc: ' ▲', desc: ' ▼' } as const;
 
@@ -12,6 +14,7 @@ interface Props<T extends RowData> {
   selectedRowId?: string;
   empty?: string;
   rowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement>; // e.g. draggable rows (Org)
+  views?: TableViewsApi; // saved column views (M7b): the menu shows above the table
 }
 
 /** Table markup for a TanStack table: header click sorts, wide tables scroll in the panel. */
@@ -22,9 +25,10 @@ export function DataTable<T extends RowData>({
   selectedRowId,
   empty,
   rowProps,
+  views,
 }: Props<T>) {
   const rows = table.getRowModel().rows;
-  return (
+  const body = (
     <div className="tst-table-wrap">
       <table className="tst-table" aria-label={label}>
         <thead>
@@ -84,6 +88,15 @@ export function DataTable<T extends RowData>({
           )}
         </tbody>
       </table>
+    </div>
+  );
+  if (!views) return body;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <ViewsMenu table={table} views={views} label={label} />
+      </div>
+      {body}
     </div>
   );
 }

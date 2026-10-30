@@ -134,3 +134,41 @@ test('(d) hover a top-bar number and see its breakdown', async ({ page }) => {
   await page.getByRole('table', { name: 'Roster' }).getByText('Morale', { exact: true }).hover();
   await expect(page.getByRole('tooltip')).toContainText('How happy the person is');
 });
+
+test('(e) save a People view, reload, and find it still selected', async ({ page }) => {
+  const save = `m7b-views-${stamp}`;
+  const other = `m7b-views-other-${stamp}`;
+  makeSave(save);
+  makeSave(other);
+  const view = `Pay review ${stamp}`;
+  await page.goto(`/game/${save}/people`);
+  const roster = page.getByRole('table', { name: 'Roster' });
+  await expect(roster.getByRole('columnheader', { name: 'Age', exact: true })).toBeVisible();
+  const menu = page.getByTestId('views-people.overview');
+  await menu.click();
+  await page.getByTestId('column-age').click(); // hide Age
+  await page.keyboard.press('Escape');
+  await expect(roster.getByRole('columnheader', { name: 'Age', exact: true })).toHaveCount(0);
+  await expect(menu).toContainText('(changed)');
+  await menu.click();
+  await page.getByTestId('view-save-as').click();
+  await page.getByTestId('view-name').fill(view);
+  await page.getByTestId('view-save').click();
+  await expect(menu).toHaveText(`View: ${view} ▾`);
+
+  await page.reload();
+  await expect(page.getByTestId('views-people.overview')).toHaveText(`View: ${view} ▾`);
+  await expect(roster.getByRole('columnheader', { name: 'Age', exact: true })).toHaveCount(0);
+
+  // Views are shared by every save (saves/ui_settings.json), and Default brings Age back.
+  await page.goto(`/game/${other}/people`);
+  await expect(page.getByTestId('views-people.overview')).toHaveText(`View: ${view} ▾`);
+  await page.getByTestId('views-people.overview').click();
+  await page.getByTestId('view-option').filter({ hasText: 'Default' }).click();
+  await page.keyboard.press('Escape');
+  await expect(roster.getByRole('columnheader', { name: 'Age', exact: true })).toBeVisible();
+  // ? lists every shortcut.
+  await page.locator('main').click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press('?');
+  await expect(page.getByTestId('shortcut-list')).toContainText('Go on holiday');
+});

@@ -58,6 +58,9 @@ export type Holiday = Schemas['HolidayOut'];
 export type Backup = Schemas['BackupOut'];
 export type HistoryRow = Schemas['HistoryRowOut'];
 export type Breakdown = Schemas['BreakdownOut'];
+export type TableViews = Schemas['TableViews'];
+export type TableView = Schemas['TableView'];
+export type UiSettings = Schemas['UISettings'];
 export type OverviewBreakdowns = Schemas['OverviewBreakdownsOut'];
 export type Timeline = Schemas['TimelineOut'];
 export type HistoryCharts = Schemas['ChartsOut'];
@@ -1322,5 +1325,36 @@ export function useOverviewBreakdowns(saveId: string, enabled: boolean) {
     queryFn: async () =>
       unwrap(await api.GET('/api/saves/{save_id}/overview/breakdowns', path(saveId))),
     enabled: enabled && saveId !== '',
+  });
+}
+
+// --- Saved column views (M7b) -------------------------------------------------------------
+
+export function useUiSettings() {
+  return useQuery({
+    queryKey: ['settings', 'ui'],
+    queryFn: async () => unwrap(await api.GET('/api/settings/ui')),
+    staleTime: Infinity,
+  });
+}
+
+export function useSaveTableViews() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ tableId, views }: { tableId: string; views: TableViews }) =>
+      unwrap(
+        await api.PUT('/api/settings/ui/tables/{table_id}', {
+          params: { path: { table_id: tableId } },
+          body: views,
+        }),
+      ),
+    // Shown at once; the server's copy replaces it when it answers.
+    onMutate: ({ tableId, views }) => {
+      const before = client.getQueryData<UiSettings>(['settings', 'ui']);
+      client.setQueryData<UiSettings>(['settings', 'ui'], {
+        tables: { ...(before?.tables ?? {}), [tableId]: views },
+      });
+    },
+    onSuccess: (data) => client.setQueryData(['settings', 'ui'], data),
   });
 }

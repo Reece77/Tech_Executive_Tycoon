@@ -6,6 +6,7 @@ import { DataTable } from '../../components/DataTable';
 import { KpiTile } from '../../components/KpiTile';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import { useCapTable, type CapTable as CapTableData, type Grant } from '../../hooks/api';
+import { useTableViews } from '../../hooks/useTableViews';
 import { formatMoneyShort } from '../../lib/format';
 import { formatFraction, formatSharePrice, formatShares } from '../../lib/finance';
 import { gameTableFeatures, type GameTableFeatures } from '../../lib/table';
@@ -183,6 +184,7 @@ function Grants({ saveId, cap }: { saveId: string; cap: CapTableData }) {
 
 export function CapTableTab({ saveId }: { saveId: string }) {
   const { data: cap, error, isPending } = useCapTable(saveId);
+  const views = useTableViews('captable');
   if (isPending) return <Loading />;
   if (error) return <LoadError title="Could not load the cap table" error={error} />;
   const years = cap.vesting_months / 12;
@@ -201,7 +203,7 @@ export function CapTableTab({ saveId }: { saveId: string }) {
           }}
         >
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>Holders</h2>
-          <CapTable cap={cap} />
+          <CapTable cap={cap} views={views} />
           <p className="tst-muted" style={{ margin: 0, fontSize: 12 }}>
             A SAFE converts at the next priced round: its holders get their share of the company as
             it stood just before the new money. Each priced round tops the unallocated pool back up

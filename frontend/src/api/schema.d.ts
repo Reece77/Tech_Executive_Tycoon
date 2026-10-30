@@ -1737,6 +1737,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/settings/ui": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Ui Settings
+         * @description Saved column views per table (M7b), shared by every save.
+         */
+        get: operations["getUiSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/ui/tables/{table_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Table Views
+         * @description Replace one table's saved views and the view last used.
+         */
+        put: operations["updateTableViews"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/scenarios": {
         parameters: {
             query?: never;
@@ -5597,6 +5637,16 @@ export interface components {
              */
             board_confidence: number | null;
         };
+        /** SortKey */
+        SortKey: {
+            /** Id */
+            id: string;
+            /**
+             * Desc
+             * @default false
+             */
+            desc?: boolean;
+        };
         /** StageReachedOut */
         StageReachedOut: {
             /** Stage */
@@ -5705,6 +5755,36 @@ export interface components {
             status: string;
             /** Started Label */
             started_label: string;
+        };
+        /** TableView */
+        TableView: {
+            /** Name */
+            name: string;
+            /**
+             * Visibility
+             * @description Column id -> shown; missing columns are shown
+             */
+            visibility?: {
+                [key: string]: boolean;
+            };
+            /**
+             * Order
+             * @description Column ids, left to right
+             */
+            order?: string[];
+            /** Sort */
+            sort?: components["schemas"]["SortKey"][];
+        };
+        /** TableViews */
+        TableViews: {
+            /** Views */
+            views?: components["schemas"]["TableView"][];
+            /**
+             * Current
+             * @description The view last used
+             * @default Default
+             */
+            current?: string;
         };
         /** TagOut */
         TagOut: {
@@ -5838,6 +5918,13 @@ export interface components {
             people: components["schemas"]["tst__api__schemas__history__NamedOut"][];
             /** Products */
             products: components["schemas"]["tst__api__schemas__history__NamedOut"][];
+        };
+        /** UISettings */
+        UISettings: {
+            /** Tables */
+            tables?: {
+                [key: string]: components["schemas"]["TableViews"];
+            };
         };
         /** UnitOut */
         UnitOut: {
@@ -11735,6 +11822,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LLMSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    getUiSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UISettings"];
+                };
+            };
+        };
+    };
+    updateTableViews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                table_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TableViews"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UISettings"];
                 };
             };
             /** @description Validation Error */

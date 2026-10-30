@@ -26,6 +26,7 @@ import {
   REACH_TEXT,
 } from '../lib/products';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
+import { useTableViews } from '../hooks/useTableViews';
 
 const helper = createColumnHelper<GameTableFeatures, Product>();
 
@@ -260,14 +261,17 @@ function PortfolioTable({ saveId, products }: { saveId: string; products: Produc
       ]),
     [saveId],
   );
+  const views = useTableViews('products');
   const table = useTable({
     features: gameTableFeatures,
     columns,
     data: products,
     getRowId: (p) => String(p.product_id),
+    ...views.tableProps,
   });
   return (
     <DataTable
+      views={views}
       table={table}
       label="Your products"
       rowTestId="product-row"
