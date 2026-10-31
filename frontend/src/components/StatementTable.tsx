@@ -25,11 +25,16 @@ export function StatementTable({ periods }: { periods: readonly StatementPeriod[
           meta: { term: 'statement_line' },
           cell: ({ row }) => (
             <span
-              style={
-                row.original.indent
+              style={{
+                // Long labels wrap so twelve months fit at 1440 wide (M7c).
+                display: 'inline-block',
+                minWidth: 120,
+                maxWidth: 180,
+                whiteSpace: 'normal',
+                ...(row.original.indent
                   ? { paddingLeft: 12, color: 'var(--tst-text-2)' }
-                  : { fontWeight: row.original.total ? 600 : 400 }
-              }
+                  : { fontWeight: row.original.total ? 600 : 400 }),
+              }}
             >
               <Term term={lineTerm(row.original.id)}>{row.original.label}</Term>
             </span>

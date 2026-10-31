@@ -95,3 +95,40 @@ test('(d) the People table fits at 1440 x 900 without scrolling sideways', async
   }));
   expect(scroll).toBeLessThanOrEqual(client + 1);
 });
+
+test('(e) twelve months of statements fit at 1440 x 900', async ({ page }) => {
+  // Playtest bug: the latest month was cut off at the right of the P&L.
+  const save = `m7c-pnl-${stamp}`;
+  makeSave(save);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/\/finance\/statements\?period=month/, async (route) => {
+    const out = (await (await route.fetch()).json()) as {
+      periods: { label: string; first_turn: number; last_turn: number }[];
+    };
+    const last = out.periods[out.periods.length - 1];
+    // Every amount × 40: a company the size of the playtest's in late 2011 ($130k a month).
+    const scale = (v: unknown, key = ''): unknown => {
+      if (typeof v === 'number') return key.endsWith('_cents') ? v * 40 : v;
+      if (Array.isArray(v)) return v.map((x) => scale(x, key));
+      if (v && typeof v === 'object') {
+        return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, scale(x, k)]));
+      }
+      return v;
+    };
+    out.periods = Array.from({ length: 12 }, (_, i) => ({
+      ...(scale(last) as typeof last),
+      label: `${['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'][i]} 2011`,
+      first_turn: i,
+      last_turn: i,
+    }));
+    await route.fulfill({ json: out });
+  });
+  await page.goto(`/game/${save}/finance/statements`);
+  await expect(page.getByTestId('pnl-net').nth(11)).toBeVisible();
+  const wrap = page.locator('.tst-table-wrap').first();
+  const { scroll, client } = await wrap.evaluate((el) => ({
+    scroll: el.scrollWidth,
+    client: el.clientWidth,
+  }));
+  expect(scroll).toBeLessThanOrEqual(client + 1);
+});
