@@ -169,12 +169,13 @@ test('agent playtest: 120 months through the browser', async ({ page, request })
       // A quiet stretch: Holiday for up to 4 months in the middle of years 3-9.
       if (year >= 2 && month % 12 === 4) {
         const before = month;
-        await step('holiday', () => holiday(page));
+        await step('holiday', () => holiday(page, save));
         const now = await api<{ turn: number }>(request, `/saves/${save}/overview`);
         month = Math.max(before, now.turn - 1);
         continue;
       }
       await step('continue', async () => {
+        if (!page.url().includes(`/game/${save}`)) await page.goto(`/game/${save}/inbox`);
         await handleCritical(page, request, save);
         await continueMonth(page);
       });
@@ -337,9 +338,9 @@ async function raiseSafe(
   await go('finance/fundraising');
   const raise = page.getByTestId('raise-safe');
   if (!(await raise.isVisible())) return '';
-  await page.getByTestId('safe-amount').locator('input').fill('1500000');
+  await page.getByTestId('safe-amount').fill('1500000');
   for (const cap of ['20000000', '15000000', '10000000', '7000000', '5000000']) {
-    await page.getByTestId('safe-cap').locator('input').fill(cap);
+    await page.getByTestId('safe-cap').fill(cap);
     await page.waitForTimeout(600); // the hint is debounced
     const hint = await page.getByTestId('safe-hint').getAttribute('data-hint');
     if (hint === 'likely' && (await raise.isEnabled())) {
@@ -496,6 +497,23 @@ async function secondProduct(
   await page.getByTestId('new-team').click();
   await page.getByTestId('unit-name-input').fill('Forge team');
   await page.getByTestId('preview-confirm').click();
+  // Move three software engineers from the company onto the new team.
+  let moved = 0;
+  for (let i = 0; i < 3; i++) {
+    await go('org');
+    const engineer = page
+      .getByTestId('unit-panel')
+      .locator('tr')
+      .filter({ hasText: 'Software engineer' })
+      .filter({ has: page.locator('[data-testid="move-to"]:enabled') })
+      .first();
+    if ((await engineer.count()) === 0) break;
+    await engineer.getByTestId('move-to').click();
+    await page.getByRole('menuitem', { name: 'Forge team' }).click();
+    await page.getByTestId('preview-confirm').click();
+    await expect(page.getByTestId('preview-confirm')).toBeHidden();
+    moved++;
+  }
   await go('products');
   await page.getByTestId('new-product').click();
   await page.getByTestId('new-product-name').fill('Forge');
@@ -508,14 +526,18 @@ async function secondProduct(
   await expect(page.getByTestId('price-preview')).toBeHidden();
   await page.getByTestId('assign-unit').click();
   const choose = page.getByTestId('assign-unit-select');
-  if (await choose.isVisible()) await choose.selectOption({ label: 'Forge team' });
+  if (await choose.isVisible()) {
+    const option = choose.locator('option').filter({ hasText: 'Forge team' }).first();
+    await choose.selectOption((await option.getAttribute('value')) ?? '');
+  }
   await page.getByTestId('assign-confirm').click();
-  // Move a third of the engineers onto the new team.
-  await go('org');
-  return 'second product Forge (dev tools, SMB $30) with the Forge team';
+  await expect(page.getByTestId('assign-confirm')).toBeHidden();
+  return `second product Forge (dev tools, SMB $30), built by the Forge team (${moved} engineers moved)`;
 }
 
-async function holiday(page: Page) {
+async function holiday(page: Page, save: string) {
+  await page.goto(`/game/${save}/inbox`);
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
   await page.keyboard.press('h');
   const dialog = page.getByRole('dialog', { name: 'Go on holiday' });
   await expect(dialog).toBeVisible();
@@ -528,7 +550,7 @@ async function holiday(page: Page) {
 
 async function savesManager(page: Page, save: string) {
   await page.goto('/');
-  const row = page.getByTestId('save-row').filter({ hasText: 'Agent Co' }).first();
+  const row = page.getByTestId('save-row').filter({ has: page.getByTestId(`backups-${save}`) });
   await row.getByTestId(`duplicate-${save}`).click();
   await page.getByTestId('duplicate-submit-name').fill('Agent side run');
   await page.getByTestId('duplicate-submit').click();
