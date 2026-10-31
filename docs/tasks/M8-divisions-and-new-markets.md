@@ -2,7 +2,7 @@
 
 **Goal:** a company that reaches stage 3 becomes a scale-up. It can form divisions with presidents and their own P&L, fill an executive team, and feel coordination and support costs. Every company, from January 2010, can enter two new markets: Fintech, and AI models and inference, whose demand and compute cost follow history. Named real entrants such as Stripe and OpenAI arrive in their real year.
 
-**Spec sections:** §2, §3 (stage 3), §6 (corporate structure), §7.1 (categories), §8 (cloud as a priced input), §9 · **ADRs:** 0002, 0003, 0010, 0013 (new stream), 0017, 0019 · **Formulas:** `docs/formulas.md` §18 (all), with §11, §13 and §15 for what it extends · **Wireframes:** `docs/wireframes.md` (M8 screens) and `docs/wireframes/source/OrgDivisions.dc.html`, `DivisionPL.dc.html` · **Roadmap:** `docs/v2-roadmap.md` · **Depends on:** v1 done (`m7c-done` and the v1 retrospective)
+**Spec sections:** §2, §3 (stage 3), §6 (corporate structure), §7.1 (categories), §8 (cloud as a priced input), §9 · **ADRs:** 0002, 0003, 0010, 0013 (new stream), 0017, 0019 · **Formulas:** `docs/formulas.md` §18 (all), with §11, §13 and §15 for what it extends · **Wireframes:** `docs/wireframes.md` (M8 screens) and `docs/wireframes/source/OrgDivisions.dc.html`, `DivisionPL.dc.html` · **Roadmap:** `docs/v2-roadmap.md` · **Depends on:** M7b (`m7b-done`). M7c (fixes and the agent playtest) runs after M8 (Reece, 2026-10-31); the v1 retrospective follows Reece's playtest
 
 ## Context
 
@@ -22,7 +22,7 @@ Regions and cities (M9). Debt, Series C onward and macro (M10). The R&D tree (M1
 
 ## Sub-tasks (commit after each)
 
-0. **Carried:** any M7c or v1-retrospective item named in the instructions. Refresh `tests/durations.json` after each sub-task, and add a third CI shard if any job passes 17 minutes.
+0. **Carried:** any item named in the instructions. Refresh `tests/durations.json` after each sub-task, and add a third CI shard if any job passes 17 minutes.
 1. **Data and formula tests.**
    - **New data:**
      - `balance.yaml` keys `org.*` (`max_divisions`, `layer_tax`, `cross_division_factor`, `support_ratio`, `embedded_bonus`) and `exec_seats.*` (weights and effect coefficients);
