@@ -152,3 +152,8 @@ def allocate_shared(
     if total <= 0 or corporate_costs == 0:
         return {d: 0 for d in central}
     return {d: round(corporate_costs * h / total) for d, h in central.items()}
+
+
+def support_churn(c: float, k_coo: float, org: OrgBalance) -> float:
+    """A pool's products churn x (1 + 0.4 (1 - c) k_COO) (18.4)."""
+    return 1 + org.support_churn * (1 - c) * k_coo

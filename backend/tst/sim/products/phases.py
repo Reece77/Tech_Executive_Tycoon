@@ -16,10 +16,11 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
-from tst.sim.data_models import Balance, GameData
+from tst.sim.data_models import SCORE_MAX, Balance, GameData
 from tst.sim.ledger import CASH, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
 from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.money import Cents
+from tst.sim.org.executives import CRO, side_factor
 from tst.sim.org.rules import OrgView, org_view
 from tst.sim.products import formulas as f
 from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegment
@@ -70,12 +71,20 @@ def current_feature(product: Product, data: GameData, turn: int) -> float:
 
 
 def segment_appeal(
-    product: Product, seg: ProductSegment, data: GameData, turn: int
+    product: Product,
+    seg: ProductSegment,
+    data: GameData,
+    turn: int,
+    pricing_power: float = 1.0,
 ) -> float | None:
-    """Appeal in one segment from the product's current scores; None without a price."""
+    """Appeal in one segment from the product's current scores; None without a price. In a
+    sales-led segment the reference price is x `pricing_power`, the CRO's pricing power
+    (18.3); 1 for v1 companies and rivals."""
     if seg.price_cents is None:
         return None
     reference = data.category(product.category).market(seg.segment).reference_price_cents
+    if pricing_power != 1 and data.segment(seg.segment).reach == "sales":
+        reference = round(reference * pricing_power)
     return f.appeal(
         data.segment(seg.segment).weights,
         product.quality,
@@ -83,6 +92,11 @@ def segment_appeal(
         product.brand,
         current_feature(product, data, turn),
     )
+
+
+def pricing_power(state: GameState, product: Product, balance: Balance) -> float:
+    """The CRO's pricing power for the product's company (18.3); 1 before stage 3."""
+    return side_factor(state, product.company_id, CRO, "pricing", balance)
 
 
 # --- Phase 3: development -------------------------------------------------------------------
@@ -163,6 +177,12 @@ def run_markets(
         if product is not None and product.status in SELLING and seg.price_cents is not None:
             by_market.setdefault((product.category, seg.segment), []).append(seg)
 
+    def power(product: Product) -> float:
+        return 1.0 if product.is_static else team(product).pricing_power
+
+    def churn_mult(product: Product) -> float:
+        return 1.0 if product.is_static else team(product).churn_mult
+
     def team(product: Product) -> Team:
         if product.id not in teams:
             view = views[product.company_id]
@@ -177,7 +197,14 @@ def run_markets(
                 continue
             seg_def = data.segment(market_def.segment)
             appeals = {
-                s.product_id: segment_appeal(products[s.product_id], s, data, turn) for s in entries
+                s.product_id: segment_appeal(
+                    products[s.product_id],
+                    s,
+                    data,
+                    turn,
+                    power(products[s.product_id]),
+                )
+                for s in entries
             }
             live = [s for s in entries if products[s.product_id].status == "live"]
             best = max((appeals[s.product_id] or 0.0 for s in live), default=0.0)
@@ -186,7 +213,7 @@ def run_markets(
             churned = {
                 s.product_id: s.customers
                 * f.churn_rate(
-                    seg_def.base_churn,
+                    seg_def.base_churn * churn_mult(products[s.product_id]),  # 18.3, 18.4
                     best,
                     appeals[s.product_id] or 0.0,
                     products[s.product_id].quality,
@@ -213,7 +240,8 @@ def run_markets(
                 if product.is_static:
                     won[s.product_id] = wanted
                 elif seg_def.reach == "self_serve":
-                    won[s.product_id] = wanted * f.awareness(product.brand, mb)
+                    aware = min(1.0, f.awareness(product.brand, mb) * team(product).awareness_mult)
+                    won[s.product_id] = wanted * aware  # CMO (18.3)
                 else:
                     cap = team(product).capacity(seg_def.key, balance)
                     won[s.product_id] = min(wanted, cap)
@@ -387,6 +415,8 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
         mk = f.marketing_points(product.marketing_budget_cents, team.mu, pb)
         mk *= team.marketing_mult  # support and CMO (M8, 18.5)
         target = f.target_brand(mk, category.brand_constant)
+        if team.brand_mult != 1:  # CMO (18.3), at most 100
+            target = min(float(SCORE_MAX), target * team.brand_mult)
         state = with_product(state, replace(product, brand=f.next_brand(product.brand, target, pb)))
     year = turn_to_ym(state.turn)[0]
     for market in state.markets:
@@ -442,7 +472,7 @@ def arr_of(mrr_cents: Cents) -> Cents:
 
 
 def month_history(
-    state: GameState, flows: Mapping[FlowKey, Flow], data: GameData
+    state: GameState, flows: Mapping[FlowKey, Flow], data: GameData, balance: Balance
 ) -> tuple[ProductMonth, ...]:
     """Month-end rows for every product that was not already retired, by product and segment."""
     turn = state.turn
@@ -461,7 +491,9 @@ def month_history(
                 quality=product.quality,
                 feature_score=current_feature(product, data, turn),
                 brand=product.brand,
-                appeal=segment_appeal(product, seg, data, turn),
+                appeal=segment_appeal(
+                    product, seg, data, turn, pricing_power(state, product, balance)
+                ),
                 customers=seg.customers,
                 new=flow.new,
                 churned=flow.churned,

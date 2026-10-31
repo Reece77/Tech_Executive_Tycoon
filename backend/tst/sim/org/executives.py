@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from tst.sim.data_models import LEVELS, Balance
 from tst.sim.org.formulas import coo_factor, seat_effect, seat_multiplier, seat_score
 from tst.sim.org.models import SEATS
+from tst.sim.people.reveal import revealed_range
 from tst.sim.state import GameState
 
 COO = "coo"
@@ -64,3 +65,31 @@ def k_coo(state: GameState, company_id: int, balance: Balance) -> float:
 def cfo_confidence(state: GameState, company_id: int, balance: Balance) -> float:
     """Each director's extra monthly confidence: 0.5 e (18.3)."""
     return balance.exec_seats.seats[CFO].confidence * effect_of(state, company_id, CFO, balance)
+
+
+def side_factor(state: GameState, company_id: int, seat: str, key: str, balance: Balance) -> float:
+    """1 + coefficient x e for a seat's second effect (18.3, redesigned 2026-10-31): `key` is
+    qcap, brand, awareness or pricing; churn falls instead (see churn_factor)."""
+    coefficient = float(getattr(balance.exec_seats.seats[seat], key))
+    return seat_multiplier(effect_of(state, company_id, seat, balance), coefficient)
+
+
+def churn_factor(state: GameState, company_id: int, balance: Balance) -> float:
+    """CPO: base churn x (1 - 0.15 e) (18.3)."""
+    coefficient = balance.exec_seats.seats[CPO].churn
+    return 1 - coefficient * effect_of(state, company_id, CPO, balance)
+
+
+def displayed_score(
+    state: GameState, company_id: int, person_id: int, seat: str, b: Balance
+) -> float:
+    """s from the company's displayed ranges' midpoints (18.8): what the player can judge."""
+    reveal = state.reveal(company_id, person_id)
+    if reveal is None:
+        return b.exec_seats.score_mid
+    person = state.person(person_id)
+    total = 0.0
+    for key, w in b.exec_seats.seats[seat].weights.items():
+        lo, hi = revealed_range(person, reveal, key)
+        total += w * (lo + hi) / 2
+    return total

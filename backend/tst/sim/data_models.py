@@ -432,6 +432,7 @@ class OrgBalance(_Frozen):
     support_shortfall: float = Field(ge=0, le=1)
     support_morale: float
     embedded_bonus: float = Field(gt=0)
+    support_churn: float = Field(ge=0)  # churn x (1 + support_churn (1 - c) k_COO) (18.4)
 
     @model_validator(mode="after")
     def _check(self) -> OrgBalance:
@@ -460,6 +461,12 @@ class SeatDef(_Frozen):
     weights: dict[str, float]
     effect: float = Field(ge=0)
     confidence: float = Field(default=0.0, ge=0)  # CFO: director confidence a month per e
+    # M8 redesign (Reece, 2026-10-31): effects that still matter at a plateau (18.3)
+    qcap: float = Field(default=0.0, ge=0)  # CTO: Q_cap x (1 + qcap e)
+    churn: float = Field(default=0.0, ge=0)  # CPO: base churn x (1 - churn e)
+    brand: float = Field(default=0.0, ge=0)  # CMO: B* x (1 + brand e), at most 100
+    awareness: float = Field(default=0.0, ge=0)  # CMO: awareness x (1 + awareness e)
+    pricing: float = Field(default=0.0, ge=0)  # CRO: p_ref x (1 + pricing e) in sales segments
 
     @model_validator(mode="after")
     def _check(self) -> SeatDef:

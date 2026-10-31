@@ -1338,14 +1338,16 @@ First v2 milestone (ADR-0019). Everything in §18.1–§18.5 takes effect only f
 
 | Seat | Effect (company-wide) |
 | --- | --- |
-| CTO | builder output × (1 + 0.10 e) |
-| CPO | feature points gained × (1 + 0.15 e) |
-| CMO | marketing points `mk` (§11.5) × (1 + 0.20 e) |
-| CRO | seller capacity × (1 + 0.20 e) |
+| CTO | builder output × (1 + 0.10 e) and `Q_cap` (§11.4) × (1 + 0.10 e) |
+| CPO | feature points gained × (1 + 0.15 e) and base churn (§11.6) × (1 − 0.15 e) |
+| CMO | marketing points `mk` (§11.5) × (1 + 0.20 e), brand target `B*` × (1 + 0.10 e) (at most 100) and awareness (§11.7) × (1 + 0.20 e) |
+| CRO | seller capacity × (1 + 0.20 e), and `p_ref` in `price_score` (§11.6) × (1 + 0.10 e) in sales-led segments (pricing power) |
 | CFO | investors' `V_base` (§14.3) × (1 + 0.08 e); each director's monthly confidence + 0.5 e |
 | COO | `k_COO = 1 − 0.5 e`, applied to the layer tax (§18.2) and the support shortfall (§18.4) |
 
-- The coefficients are `exec_seats.*.effect` keys in `balance.yaml`.
+**Redesign (Reece, 2026-10-31).** The first version (output, features, marketing points and capacity only) barely moved ARR at a plateau: quality sits at `Q_cap`, features at 100 and brand near 91, so target 2 measured 0.995. Each seat's second effect reaches what limits a mature product. `e`, the vacancy rule and the API rules are unchanged.
+
+- The coefficients are `exec_seats.seats.<seat>` keys in `balance.yaml`: `effect` for the first effect, then `qcap`, `churn`, `brand`, `awareness` and `pricing`.
 - **Exec hiring:** from stage 3, searches may target exec level (job post, recruiter or network). Candidates are generated at exec level and ask the exec market rate.
 
 ### 18.4 Support staff and shared services (stage 3)
@@ -1359,6 +1361,7 @@ c = \min\left(1,\; \frac{n}{h / \rho}\right)
 
   with `ρ = org.support_ratio` (15).
 - **Shortfall.** For everyone in a pool with `c < 1`, builder output, seller capacity and marketing points are multiplied by `1 − 0.15 (1 − c) k_COO`. A morale term `W_support = −6 (1 − c)` joins §9; it shows in the morale breakdown as "Admin and support".
+- **Churn and delegates (2026-10-31).** The base churn of the pool's products (a product's pool is its division's if embedded, else central) is × `1 + 0.4 (1 − c) k_COO` (`org.support_churn`), and each delegate's monthly energy is × `c` of their pool, rounded down.
 - **Shared services** per division: `central` (default) or `embedded` (immediate action, energy 2).
   - **Central pool:** corporate and every central division share one pool, which uses the central support staff.
   - **Embedded division:** its own pool, covered only by its own support staff. Its builder output and seller capacity get × `org.embedded_bonus` (1.05), for faster decisions.
@@ -1367,7 +1370,7 @@ c = \min\left(1,\; \frac{n}{h / \rho}\right)
 
 ### 18.5 Order of effects
 
-In phase 3, builder output `o` (§11.3) = Σ person output × `λ` × support factor × embedded bonus × CTO, then × `coord(n)` × cross-division factor × `ε`. Features gain `o` × CPO. Seller capacity (phase 5) = §11.3 capacity × the same `λ`, support and embedded factors × CRO. Marketing points (phase 9) × support factor × CMO.
+In phase 3, builder output `o` (§11.3) = Σ person output × `λ` × support factor × embedded bonus × CTO, then × `coord(n)` × cross-division factor × `ε`; `Q_cap` × CTO. Features gain `o` × CPO. In phase 5, base churn × CPO × support churn, awareness × CMO, and `p_ref` × CRO in sales-led segments. Seller capacity (phase 5) = §11.3 capacity × the same `λ`, support and embedded factors × CRO. Marketing points (phase 9) × support factor × CMO, and `B*` × CMO (at most 100).
 
 ### 18.6 New markets (data: `categories.yaml`, appended)
 
@@ -1430,7 +1433,9 @@ Named rival startups founded in their real month. Each is a §15.4 startup with 
 2. **Seats matter.** From each seed's steady save at stage 3, play 36 more months with six seat holders of score ≥ 14 and again with all seats vacant. The median ARR at the end is at least 15% higher with the seats filled (10 seeds).
 3. **Support matters.** From the same saves, coverage 1.0 against 0.5: the median ARR is at least 8% higher at full coverage.
 4. **New markets earn.** The M3a earn-and-burn script in fintech reaches 50–150% of the B2B SaaS run's ARR at turn 36. AI's total addressable demand in January 2024 is 100–400 times January 2010's.
-5. **The ceiling lifts.** blitzscale with its second product in fintech: median turn-120 ARR at least 1.2 times the single-category blitzscale (M7a's ceiling of about $45–57M).
+5. **The ceiling lifts.** blitzscale with its second product in fintech: median turn-120 ARR at least 1.2 times the standard blitzscale, over seeds where both runs still have their founder.
+
+**Scripts (2026-10-31).** The strategies staff their second product (the M7a check compared a hire's start turn with the current turn; offers resolve a turn later) and, from stage 3, appoint the best senior-or-above employee by displayed fit to each vacant seat, or run an exec-level network search for the seat's role if nobody fits (`tst/balance/strategies.py`). Target 2's and 3's arms turn those appointments off and set the seats themselves.
 6. Every entrant is founded in its month on every seed.
 
 ### 18.10 Worked examples
@@ -1440,5 +1445,9 @@ Named rival startups founded in their real month. Each is a §15.4 startup with 
 **Support shortfall.** 120 staff with 5 support staff: need 8, `c = 0.625`. Output × (1 − 0.15 × 0.375) = × 0.944, and morale −2.25. With a COO at `e = 0.5`, `k_COO = 0.75`, so output × 0.958.
 
 **Layer tax.** A team under a department under a division is at depth 3: `λ = 1 − 0.03 × 1 = 0.97`. With the COO above, 0.9775.
+
+**Redesigned seats (2026-10-31).** A holder at `s = 14` (`e = 0.5`): CTO `Q_cap` 50 → 52.5; CPO base churn 3% → 2.775%; CMO `B*` 80 → 84 (98 → 100, capped) and awareness × 1.10; CRO mid-market `p_ref` $800 → $840. Vacant at stage 3: CPO churn × 1.075, CRO `p_ref` × 0.95.
+
+**Support churn and delegates.** 120 staff with 5 support staff (`c = 0.625`): the pool's churn × (1 + 0.4 × 0.375) = × 1.15; with the COO at `e = 0.5`, × 1.1125. A delegate's 100 energy becomes 62.
 
 **Allocation.** Corporate 12 staff with $520,000 of operating costs this month; the Platform division (128, central) and the Fintech division (46, embedded). Platform's allocation = $520,000 × 128 / (12 + 128) = **$475,429**; Fintech's is $0; corporate keeps $44,571.

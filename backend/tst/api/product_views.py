@@ -40,6 +40,7 @@ from tst.sim.products.formulas import hosting_cents
 from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegment
 from tst.sim.products.phases import (
     current_feature,
+    pricing_power,
     product_costs,
     segment_appeal,
     shown_turn,
@@ -72,7 +73,8 @@ def _rows(state: GameState, category: str, segment: str, data: LoadedData) -> li
             continue
         if product.status not in SELLING or seg.price_cents is None:
             continue
-        appeal = segment_appeal(product, seg, data.game_data, turn)
+        power = pricing_power(state, product, data.balance)  # CRO (M8, 18.3)
+        appeal = segment_appeal(product, seg, data.game_data, turn, power)
         assert appeal is not None
         rows.append(_Row(product, seg, appeal))
     return rows
@@ -82,10 +84,11 @@ def _best(rows: Sequence[_Row]) -> float:
     return max((r.appeal for r in rows if r.product.status == "live"), default=0.0)
 
 
-def _churn(row: _Row, rows: Sequence[_Row], data: LoadedData) -> float:
+def _churn(row: _Row, rows: Sequence[_Row], data: LoadedData, mult: float = 1.0) -> float:
+    """`mult`: the CPO and support factors on base churn (M8, 18.3, 18.4)."""
     seg_def = data.game_data.segment(row.seg.segment)
     return f.churn_rate(
-        seg_def.base_churn,
+        seg_def.base_churn * mult,
         _best(rows),
         row.appeal,
         row.product.quality,
@@ -246,9 +249,17 @@ def product_out(
                 price_cents=seg.price_cents,
                 price_score=_price_score(product, seg, data),
                 customers=seg.customers,
-                appeal=(appeal := segment_appeal(product, seg, game, shown_turn(state))),
+                appeal=(
+                    appeal := segment_appeal(
+                        product,
+                        seg,
+                        game,
+                        shown_turn(state),
+                        pricing_power(state, product, data.balance),
+                    )
+                ),
                 share_of_served=(share := seg.customers / served if served else 0.0),
-                churn_rate=None if mine is None else _churn(mine, rows, data),
+                churn_rate=None if mine is None else _churn(mine, rows, data, team.churn_mult),
                 mrr_cents=_mrr(seg),
                 note=(
                     f"Sales capacity limited new customers in {seg_def.label}"
@@ -483,7 +494,7 @@ def price_preview(
         current_feature(product, game, turn),
     )
     shares, _ = f.choice_shares([appeal, *others], seg_def.outside_option, data.balance.market)
-    current = segment_appeal(product, seg, game, turn)
+    current = segment_appeal(product, seg, game, turn, pricing_power(state, product, data.balance))
     current_share = None
     if current is not None:
         now, _ = f.choice_shares([current, *others], seg_def.outside_option, data.balance.market)

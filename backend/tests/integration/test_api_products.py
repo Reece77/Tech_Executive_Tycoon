@@ -296,6 +296,7 @@ def test_products_meta(setup: tuple[Client, Path]) -> None:
         "sunset_product": 3,
         "cancel_product": 3,
         "scout_search": 20,
+        "set_product_division": 1,  # M8
     }
     assert (meta["start_quality"], meta["launch_min_quality"], meta["launch_min_feature"]) == (
         10,

@@ -302,6 +302,7 @@ org:
   support_shortfall: 0.15 # fraction of output lost at zero coverage (18.4)
   support_morale: -6 # morale points at zero coverage, scaled by (1 - c) ("Admin and support", 18.4)
   embedded_bonus: 1.05 # multiplier on builder output and seller capacity in an embedded division (18.4)
+  support_churn: 0.4 # base churn of a pool's products x (1 + support_churn (1 - c) k_COO); delegate energy x c (18.4)
 
 delegates: # delegated hiring (formulas.md section 13.10, ADR-0015)
   energy_per_month: 100 # energy; each delegate's monthly budget, reset with the founder's
@@ -500,7 +501,7 @@ rivals:
     team: [3, 8] # individual employees besides the founder (15.4)
     cash_cents: [100000000, 300000000] # cents [min, max] of starting cash (15.4)
     raise_months: 12 # months of costs raised when funding comes (15.4; M7a: 18 -> 12, T7)
-    raise_chance: 0.25 # probability per quarter before climate (15.4; M7a: 0.6 -> 0.25 so 20-60% of startups survive five years, T7)
+    raise_chance: 0.18 # probability per quarter before climate (15.4; M7a: 0.6 -> 0.25 so 20-60% of startups survive five years, T7; M8: 0.25 -> 0.18, six categories spread the startup cap thinner)
     low_cash_months: 6 # months of costs in cash below which a startup tries to raise (15.4)
     salary_mult: 1.0 # multiplier on market rate for startup salaries (15.4)
     personalities: [aggressive, fast_follower, cost_leader] # 15.4: any but premium
@@ -596,10 +597,11 @@ exec_seats:
   appoint_morale: 5 # morale points, once, for the appointee (18.3)
   remove_morale: -10 # morale points, once, for a removed executive (18.3)
   fit_bands: [11, 14] # displayed seat score: below the first "weak fit", from the second "strong fit", else "fair fit" (18.8)
-  seats: # skill weights of s (sum to 1) and the effect coefficient per unit of e (18.3)
+  seats: # skill weights of s (sum to 1) and coefficients per unit of e (18.3): effect is the first effect;
+    # qcap (CTO, Q_cap), churn (CPO, base churn down), brand (CMO, B*), awareness (CMO), pricing (CRO, p_ref in sales segments)
     coo: { label: COO, effect: 0.5, weights: { operations: 0.35, leadership: 0.25, strategy: 0.20, communication: 0.20 } } # k_COO = 1 - effect x e
     cfo: { label: CFO, effect: 0.08, confidence: 0.5, weights: { finance: 0.45, strategy: 0.20, negotiation: 0.20, communication: 0.15 } } # V_base x (1 + effect e); director confidence + confidence x e a month
-    cto: { label: CTO, effect: 0.10, weights: { software_engineering: 0.25, infrastructure: 0.15, ml_research: 0.10, leadership: 0.25, strategy: 0.25 } } # builder output x (1 + effect e)
-    cpo: { label: CPO, effect: 0.15, weights: { product: 0.45, design: 0.15, strategy: 0.20, leadership: 0.20 } } # feature points gained x (1 + effect e)
-    cmo: { label: CMO, effect: 0.20, weights: { marketing: 0.45, communication: 0.20, strategy: 0.20, leadership: 0.15 } } # marketing points x (1 + effect e)
-    cro: { label: CRO, effect: 0.20, weights: { sales: 0.40, negotiation: 0.25, leadership: 0.20, communication: 0.15 } } # seller capacity x (1 + effect e)
+    cto: { label: CTO, effect: 0.10, qcap: 0.10, weights: { software_engineering: 0.25, infrastructure: 0.15, ml_research: 0.10, leadership: 0.25, strategy: 0.25 } } # builder output and Q_cap x (1 + 0.10 e)
+    cpo: { label: CPO, effect: 0.15, churn: 0.15, weights: { product: 0.45, design: 0.15, strategy: 0.20, leadership: 0.20 } } # feature points gained x (1 + 0.15 e); base churn x (1 - 0.15 e)
+    cmo: { label: CMO, effect: 0.20, brand: 0.10, awareness: 0.20, weights: { marketing: 0.45, communication: 0.20, strategy: 0.20, leadership: 0.15 } } # marketing points x (1 + 0.20 e); B* x (1 + 0.10 e); awareness x (1 + 0.20 e)
+    cro: { label: CRO, effect: 0.20, pricing: 0.10, weights: { sales: 0.40, negotiation: 0.25, leadership: 0.20, communication: 0.15 } } # seller capacity x (1 + 0.20 e); p_ref x (1 + 0.10 e) in sales segments

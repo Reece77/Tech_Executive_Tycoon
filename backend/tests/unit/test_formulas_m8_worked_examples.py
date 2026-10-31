@@ -13,6 +13,7 @@ from tst.sim.org.formulas import (
     layer_factor,
     seat_effect,
     seat_multiplier,
+    support_churn,
     support_factor,
     support_morale,
     support_need,
@@ -140,3 +141,28 @@ def test_new_incumbents(loaded: LoadedData) -> None:
     mix = loaded.balance.rivals.function_mix
     assert mix["fintech"] == {"builder": 0.50, "seller": 0.30, "marketer": 0.20}
     assert mix["ai_models"] == {"builder": 0.75, "seller": 0.10, "marketer": 0.15}
+
+
+def test_redesigned_seat_effects(loaded: LoadedData) -> None:
+    """18.10 (2026-10-31): a holder at s = 14 (e = 0.5) and a vacant seat (e = -0.5)."""
+    seats = loaded.balance.exec_seats.seats
+    e = 0.5
+    assert seat_multiplier(e, seats["cto"].qcap) == pytest.approx(1.05)  # Q_cap 50 -> 52.5
+    assert 1 - seats["cpo"].churn * e == pytest.approx(0.925)  # base churn 3% -> 2.775%
+    assert seat_multiplier(e, seats["cmo"].brand) == pytest.approx(1.05)  # B* 80 -> 84
+    assert min(100.0, 98 * seat_multiplier(e, seats["cmo"].brand)) == 100.0  # capped
+    assert seat_multiplier(e, seats["cmo"].awareness) == pytest.approx(1.10)
+    assert seat_multiplier(e, seats["cro"].pricing) == pytest.approx(1.05)  # p_ref $800 -> $840
+    assert 1 - seats["cpo"].churn * -0.5 == pytest.approx(1.075)  # vacant CPO
+    assert seat_multiplier(-0.5, seats["cro"].pricing) == pytest.approx(0.95)
+
+
+def test_support_churn_and_delegate_energy(loaded: LoadedData) -> None:
+    """120 staff, 5 support (c = 0.625): churn x 1.15; with the COO at e = 0.5, x 1.1125.
+    A delegate's 100 energy becomes 62."""
+    org = loaded.balance.org
+    c = coverage(120, 5, org)
+    assert support_churn(c, 1.0, org) == pytest.approx(1.15)
+    assert support_churn(c, 0.75, org) == pytest.approx(1.1125)
+    assert support_churn(1.0, 1.25, org) == 1.0
+    assert int(loaded.balance.delegates.energy_per_month * c) == 62

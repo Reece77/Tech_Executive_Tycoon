@@ -48,6 +48,11 @@ class Team:
     output_mult: float = 1.0
     feature_mult: float = 1.0
     marketing_mult: float = 1.0
+    qcap_mult: float = 1.0  # CTO (18.3)
+    churn_mult: float = 1.0  # CPO and the support shortfall (18.3, 18.4)
+    brand_mult: float = 1.0  # CMO on B* (18.3)
+    awareness_mult: float = 1.0  # CMO (18.3)
+    pricing_power: float = 1.0  # CRO on p_ref in sales segments (18.3)
 
     @property
     def mavericks(self) -> int:
@@ -60,10 +65,12 @@ class Team:
         return f.coord_factor(n, balance.products) * total * self.output_mult
 
     def qcap(self, balance: Balance) -> float | None:
+        """Q_cap (11.4) x the CTO's factor (18.3)."""
         pb = balance.products
-        return f.quality_cap(
+        cap = f.quality_cap(
             [(b.output, f.qcap_skill(b.d, b.perfectionist, pb)) for b in self.builders], pb
         )
+        return cap if cap is None or self.qcap_mult == 1 else cap * self.qcap_mult
 
     @property
     def mu(self) -> float:
@@ -140,4 +147,9 @@ def product_team(
         output_mult=mods.output_factor(state, view, product) if mods else 1.0,
         feature_mult=mods.cpo if mods else 1.0,
         marketing_mult=mods.marketing_factor(state, product) if mods else 1.0,
+        qcap_mult=mods.qcap if mods else 1.0,
+        churn_mult=mods.churn_factor(state, product) if mods else 1.0,
+        brand_mult=mods.brand if mods else 1.0,
+        awareness_mult=mods.awareness if mods else 1.0,
+        pricing_power=mods.pricing if mods else 1.0,
     )

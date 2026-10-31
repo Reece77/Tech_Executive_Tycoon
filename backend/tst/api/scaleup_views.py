@@ -43,7 +43,6 @@ from tst.sim.org.divisions import (
 from tst.sim.org.formulas import seat_effect, support_factor, support_morale
 from tst.sim.org.models import SEATS
 from tst.sim.org.rules import org_view
-from tst.sim.people.reveal import revealed_range
 from tst.sim.snapshot import DivisionMonth
 from tst.sim.state import GameState
 
@@ -52,10 +51,10 @@ NOTE = "Fit and effects are estimates from what you know about each person."
 EFFECT_LABELS = {
     "coo": "layer tax and support shortfall",
     "cfo": "investors' valuation and board confidence",
-    "cto": "builder output",
-    "cpo": "features gained",
-    "cmo": "marketing points",
-    "cro": "seller capacity",
+    "cto": "builder output and the quality cap",
+    "cpo": "features gained (and lower churn)",
+    "cmo": "marketing points (and brand and awareness)",
+    "cro": "seller capacity (and pricing power in sales-led segments)",
 }
 FIT_WORDS = ("weak fit", "fair fit", "strong fit")
 
@@ -64,15 +63,7 @@ def estimated_score(
     state: GameState, company_id: int, person_id: int, seat: str, b: Balance
 ) -> float:
     """s from the displayed ranges' midpoints (18.8)."""
-    reveal = state.reveal(company_id, person_id)
-    person = state.person(person_id)
-    if reveal is None:
-        return b.exec_seats.score_mid
-    total = 0.0
-    for key, w in b.exec_seats.seats[seat].weights.items():
-        lo, hi = revealed_range(person, reveal, key)
-        total += w * (lo + hi) / 2
-    return total
+    return ex.displayed_score(state, company_id, person_id, seat, b)
 
 
 def fit_word(score: float, b: Balance) -> str:

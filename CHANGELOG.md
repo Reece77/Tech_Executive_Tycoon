@@ -4,6 +4,19 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M8 Divisions, executives and new markets (formulas.md §18; the first v2 milestone):
+  - Division units from stage 3, with presidents, `product.division_id` and `set_product_division`. Each ledger line has a division (migration `0020_divisions`), and division statements derive from it with the shared-services allocation (Finance → Divisions tab, `GET /finance/divisions`).
+  - Coordination cost: the layer tax and the cross-division factor.
+  - Executive seats (COO, CFO, CTO, CPO, CMO, CRO): appoint and remove actions, exec-level searches, effects in phases 3, 5, 7, 9 and 10, vacancy penalties from stage 3, and fit and estimated effects from displayed ranges only (planted-value test).
+  - Support staff and shared services: coverage by pool, the shortfall on output, churn and delegate energy, "Admin and support" morale, embedded divisions.
+  - Fintech and AI models and inference, open from 2010, with five incumbents (PayPal, Intuit, Fiserv, IBM, Nuance), AI demand by year and the compute index. Scheduled entrants arrive in their real month on stream `entrants` (id 20): Square, Stripe, Plaid, OpenAI, Anthropic.
+  - Screens: Org (divisions, support, cross-division work, executive team, Appoint dialog), product division picker, the Overview support tile, and Exec level in Recruitment. CLI `tst divisions`, `tst execs`, `tst appoint`. History lists appointments and divisions.
+  - Seat effects redesigned on 2026-10-31 (Reece) so they matter at a plateau; the support shortfall now also raises churn.
+  - Balance scripts staff their second product (M7a bug) and appoint executives at stage 3. `rivals.startup.raise_chance` 0.25 → 0.18; AI growth 2016–2019 is 50%.
+  - Results are in the M8 brief and balance-targets.md. v1 T2 now fails (steady wins 10/10), recorded for M15 with Reece's approval.
+  - **Golden snapshots regenerated:** the five new incumbents (and their key people and product ids), the new categories' rival startups, Square from March 2010, and the lower startup refinancing chance all change rivals' moves and the player's markets from turn 0.
+  - Front-end mutations retry briefly on a busy save. Playwright `e2e/m8.spec.ts` covers (a) to (d).
+
 - CI: runs of `check` on main each get their own concurrency group, so a later push to main no longer cancels a milestone merge's check before `tag-milestone` can tag it (a docs push cancelled M7b's merge check once). Branch runs still cancel their older runs.
 - Docs: M8 brief (divisions, executives, support, Fintech and AI, scheduled entrants), formulas.md §18, M8 wireframes (OrgDivisions, DivisionPL). Reece, 2026-10-30: seats at stage 3; support staff needed from stage 3; Fintech and AI open from 2010; scheduled real entrants.
 - Docs: v2 roadmap draft (`docs/v2-roadmap.md`: M8–M15 in two lanes, lane rules) and ADR-0019 (Reece's v2 scope decisions).

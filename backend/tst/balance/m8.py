@@ -133,7 +133,7 @@ def _play(game: Game, months: int, coverage: float | None = None) -> int:
             break
         if coverage is not None:
             hold_coverage(game, coverage)
-        steady(game)
+        steady(game, appoint=False)  # the arm decides the seats, not the script
         game.turn()
     return game.snapshots[-1].arr_cents if game.snapshots and not game.state.ended else 0
 
@@ -201,8 +201,9 @@ def run(arm: str, seeds: tuple[int, ...] = SEEDS, jobs: int = 1) -> list[ArmResu
 
 
 def ratio(results: list[ArmResult]) -> float:
-    """Median of arm A over the median of arm B, over seeds that reached the fork."""
-    used = [r for r in results if r.arr_b > 0 or r.arr_a > 0]
+    """Median of arm A over the median of arm B, over seeds where both arms reached the fork
+    and kept going (a bankrupt or removed founder has no ARR to compare)."""
+    used = [r for r in results if r.arr_b > 0 and r.arr_a > 0]  # both arms still playing
     if not used:
         return 0.0
     b = median(r.arr_b for r in used)

@@ -7,6 +7,7 @@ stream keyed by the entity it belongs to (ADR-0013).
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from dataclasses import replace
 
@@ -45,10 +46,10 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
-from tst.sim.org.divisions import division_of_unit
+from tst.sim.org.divisions import division_of_unit, is_scaleup
 from tst.sim.org.morale import morale_terms
 from tst.sim.org.rules import is_remote, org_view
-from tst.sim.org.scaleup import support_morale_terms
+from tst.sim.org.scaleup import delegate_energy_factor, support_morale_terms
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
@@ -700,9 +701,12 @@ def _actor(state: GameState, search: Search) -> Person | None:
     return None
 
 
-def reset_energy(state: GameState, balance: Balance) -> GameState:
-    """Founder and delegate energy reset after phase 12 for the new month (ADR-0014, 0015)."""
+def reset_energy(state: GameState, balance: Balance, data: GameData | None = None) -> GameState:
+    """Founder and delegate energy reset after phase 12 for the new month (ADR-0014, 0015).
+    From stage 3 a delegate's energy is x the coverage c of their support pool (M8, 18.4)."""
     founders = {p.id for p in state.people if p.is_founder}
+    player = state.player
+    view = org_view(state, player.id) if data and is_scaleup(player, balance) else None
     for ps in state.person_states:
         if ps.energy is not None:
             cap = (
@@ -710,5 +714,9 @@ def reset_energy(state: GameState, balance: Balance) -> GameState:
                 if ps.person_id in founders
                 else balance.delegates.energy_per_month
             )
+            delegate = ps.person_id not in founders
+            if view is not None and data is not None and delegate and ps.person_id in view.unit_of:
+                factor = delegate_energy_factor(state, view, ps.person_id, balance, data)
+                cap = math.floor(cap * factor)
             state = with_person_state(state, replace(ps, energy=cap))
     return state

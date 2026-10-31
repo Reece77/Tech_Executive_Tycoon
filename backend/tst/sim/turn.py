@@ -291,7 +291,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
         ctx,
         state=state,
         snapshot=TurnSnapshot(turn=ctx.turn, companies=tuple(snaps)),
-        product_months=products.month_history(ctx.state, ctx.flows, ctx.data),
+        product_months=products.month_history(ctx.state, ctx.flows, ctx.data, ctx.balance),
     )
     return ctx.log(*items, *market_news(state, ctx.rival_moves))  # M5 (15.5)
 
@@ -379,7 +379,7 @@ def advance_turn(
     if ctx.snapshot is None:
         raise RuntimeError("snapshot phase did not run")
     # Founder and delegate energy reset for the new month after phase 12 (ADR-0014).
-    final = phases.reset_energy(ctx.state, balance)
+    final = phases.reset_energy(ctx.state, balance, data)
     founder = final.founder_of(final.player.id)
     bonus = energy_next_month(ctx.state, founder.id) if founder else 0
     if founder is not None and bonus:  # events' energy_delta, next month (16.3)

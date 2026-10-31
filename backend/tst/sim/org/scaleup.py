@@ -24,7 +24,12 @@ from tst.sim.org.divisions import (
     support_pools,
     unit_depth,
 )
-from tst.sim.org.formulas import layer_factor, support_factor, support_morale
+from tst.sim.org.formulas import (
+    layer_factor,
+    support_churn,
+    support_factor,
+    support_morale,
+)
 from tst.sim.org.rules import OrgView
 from tst.sim.products.models import Product
 from tst.sim.state import GameState
@@ -38,6 +43,13 @@ class Modifiers:
     cpo: float
     cmo: float
     cross_division: float
+    # 18.3 redesign (2026-10-31) and 18.4 churn
+    qcap: float = 1.0  # CTO on Q_cap
+    churn: float = 1.0  # CPO on base churn
+    brand: float = 1.0  # CMO on B*
+    awareness: float = 1.0  # CMO on awareness
+    pricing: float = 1.0  # CRO on p_ref in sales segments
+    pool_churn: Mapping[int | None, float] | None = None  # pool -> support churn factor
 
     def output_factor(self, state: GameState, view: OrgView, product: Product) -> float:
         """The cross-division factor when the product's units span divisions (18.2)."""
@@ -45,6 +57,11 @@ class Modifiers:
 
     def marketing_factor(self, state: GameState, product: Product) -> float:
         return self.pool_support.get(product_pool(state, product), 1.0) * self.cmo
+
+    def churn_factor(self, state: GameState, product: Product) -> float:
+        """CPO x the support shortfall of the product's pool (18.3, 18.4)."""
+        pool = (self.pool_churn or {}).get(product_pool(state, product), 1.0)
+        return self.churn * pool
 
 
 def modifiers(
@@ -77,6 +94,12 @@ def modifiers(
         cpo=ex.multiplier(state, company.id, ex.CPO, balance),
         cmo=ex.multiplier(state, company.id, ex.CMO, balance),
         cross_division=org.cross_division_factor,
+        qcap=ex.side_factor(state, company.id, ex.CTO, "qcap", balance),
+        churn=ex.churn_factor(state, company.id, balance),
+        brand=ex.side_factor(state, company.id, ex.CMO, "brand", balance),
+        awareness=ex.side_factor(state, company.id, ex.CMO, "awareness", balance),
+        pricing=ex.side_factor(state, company.id, ex.CRO, "pricing", balance),
+        pool_churn={key: support_churn(p.coverage, k, org) for key, p in pools.items()},
     )
 
 
@@ -92,3 +115,13 @@ def support_morale_terms(
         person_id: support_morale(pools[pool_of(view, person_id)].coverage, balance.org)
         for person_id in view.unit_of
     }
+
+
+def delegate_energy_factor(
+    state: GameState, view: OrgView, person_id: int, balance: Balance, data: GameData
+) -> float:
+    """A delegate's monthly energy x c of their pool (18.4); 1 before stage 3."""
+    if not is_scaleup(state.company(view.company_id), balance):
+        return 1.0
+    pools = support_pools(state, view, balance, data)
+    return pools[pool_of(view, person_id)].coverage

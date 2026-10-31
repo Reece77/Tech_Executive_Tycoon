@@ -15,6 +15,7 @@ from tst.balance.game import PLAYER, Game
 from tst.sim.actions import (
     AcceptBridge,
     AcceptTermSheet,
+    AppointExecutive,
     AssignUnit,
     CloseSearch,
     CreateProduct,
@@ -29,10 +30,13 @@ from tst.sim.actions import (
     StartRound,
 )
 from tst.sim.actions.products import launch_problems
+from tst.sim.actions.scaleup import appoint_problem
 from tst.sim.finance.captable import open_round
 from tst.sim.finance.fundraising import arr_cents, next_series, series_problem
 from tst.sim.finance.statements import projected_runway
 from tst.sim.hiring.phases import monthly_costs
+from tst.sim.org.executives import displayed_score, seats_in_play
+from tst.sim.org.models import SEATS
 from tst.sim.products.models import Product
 
 type Strategy = Callable[[Game], None]
@@ -60,6 +64,60 @@ INTERVIEW_ENERGY_RESERVE: Final = 0  # energy kept back after interviews
 
 
 # --- Shared steps ----------------------------------------------------------------------------
+
+# M8 (Reece, 2026-10-31): at stage 3 the scripts fill executive seats. Each vacant seat takes
+# the best senior-or-above employee by displayed fit; if nobody fits (a "weak fit" or no
+# one eligible), an exec-level network search for the seat's role, hired at 1.05x the ask.
+SEAT_ROLES: Final = {
+    "coo": "operations_manager",
+    "cfo": "finance_manager",
+    "cto": "software_engineer",
+    "cpo": "product_manager",
+    "cmo": "marketer",
+    "cro": "account_executive",
+}
+
+
+def appoint_executives(game: Game) -> None:
+    """Fill vacant seats from stage 3 (see SEAT_ROLES)."""
+    state = game.state
+    b = game.loaded.balance
+    if not seats_in_play(state, PLAYER, b):
+        return
+    for seat in SEATS:
+        state = game.state
+        if state.seat_holder(PLAYER, seat) is not None:
+            continue
+        options = [
+            (displayed_score(state, PLAYER, e.person_id, seat, b), e.person_id)
+            for e in state.staff(PLAYER)
+            if appoint_problem(state, PLAYER, seat, e.person_id, b) is None
+        ]
+        fitting = [o for o in options if o[0] >= b.exec_seats.fit_bands.lo]
+        if fitting:
+            game.act(AppointExecutive(game.founder_id, seat, max(fitting)[1]))
+            continue
+        _exec_search(game, SEAT_ROLES[seat])
+
+
+def _exec_search(game: Game, role: str) -> None:
+    """Hire an exec for `role`: offer to an open exec candidate, else open the search."""
+    state = game.state
+    for candidate in state.open_candidates(PLAYER):
+        person = state.person(candidate.person_id)
+        if person.role != role or person.level != "exec":
+            continue
+        if state.pending_offer_for(person.id) is not None:
+            return
+        if candidate.interviewed_turn is None and not game.act(
+            Interview(game.founder_id, person.id)
+        ):
+            return
+        ask = person.salary_expectation_cents or 0
+        game.act(MakeOffer(game.founder_id, person.id, round(ask * OFFER_RATIO), 0))
+        return
+    if not any(s.role == role and s.level == "exec" for s in state.open_searches(PLAYER)):
+        game.act(OpenSearch(game.founder_id, role, "network", level="exec"))
 
 
 def _products(game: Game) -> list[Product]:
@@ -174,7 +232,10 @@ def hire(game: Game, wanted: int, per_month: int, order: tuple[str, ...] = HIRE_
     team = next((u for u in game.state.units if u.name == SECOND_TEAM), None)
     if team is not None:  # alternate new hires between the root and the second team
         for i, employment in enumerate(game.state.staff(PLAYER)):
-            if employment.unit_id is None and i % 2 and employment.start_turn == state.turn:
+            # M8 fix: offers made last month resolve at the start of this one, so a new hire
+            # joined last turn (the old check, start_turn == state.turn, never matched).
+            joined = employment.start_turn == state.turn - 1
+            if employment.unit_id is None and i % 2 and joined:
                 game.act(MovePerson(game.founder_id, employment.person_id, team.id))
 
 
@@ -250,6 +311,7 @@ def bootstrap_frugal(game: Game) -> None:
             wanted = min(headcount(game) + 1, BOOTSTRAP_MAX)
     hire(game, wanted, per_month=1, order=BOOTSTRAP_ORDER)
     set_marketing(game, round(BOOTSTRAP_MARKETING * last_revenue(game)))
+    appoint_executives(game)  # M8: from stage 3
 
 
 STEADY_START = 5  # the M3a earn-and-burn team
@@ -261,7 +323,7 @@ STEADY_MARKETING_MIN = 1_000_000  # $10,000 a month, then 20% of revenue
 STEADY_MARKETING = 0.20
 
 
-def steady(game: Game) -> None:
+def steady(game: Game, appoint: bool = True) -> None:
     """The M3a team on one product; a seed at launch or when runway falls below 12 months,
     whichever comes first, and a Series A when allowed, best pre-money; grows while runway
     stays above 18 months; a second product at $5M ARR."""
@@ -279,6 +341,8 @@ def steady(game: Game) -> None:
         wanted = headcount(game) + 1
     hire(game, wanted, per_month=2)
     set_marketing(game, max(STEADY_MARKETING_MIN, round(STEADY_MARKETING * last_revenue(game))))
+    if appoint:  # M8 target 2's vacant arm turns this off
+        appoint_executives(game)  # from stage 3
 
 
 BLITZ_EARLY = 15  # employees by month 12
@@ -305,6 +369,7 @@ def blitzscale(game: Game, second: tuple[str, str, tuple[str, ...]] = SECOND_PRO
         grow = months is None or months > BLITZ_RUNWAY
         hire(game, headcount(game) + (2 if grow else 0), per_month=2)
     set_marketing(game, max(BLITZ_MARKETING_MIN, round(BLITZ_MARKETING * last_revenue(game))))
+    appoint_executives(game)  # M8: from stage 3
 
 
 STRATEGIES: Final[dict[str, Strategy]] = {

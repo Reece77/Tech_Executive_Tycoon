@@ -336,3 +336,79 @@ def test_exec_search_generates_exec_candidates(loaded: LoadedData) -> None:
     state, _ = candidate_batches(state, RngFactory(3), loaded.balance, loaded.game_data)
     levels = {state.person(c.person_id).level for c in state.candidates}
     assert levels == {"exec"}
+
+
+# --- Redesigned seat effects and the support churn (18.3, 18.4; 2026-10-31) -----------------
+
+
+def _filled(loaded: LoadedData, seats: tuple[str, ...], skill: float = 18.0) -> GameState:
+    """Stage 3 with the given seats held at s = skill; persons from 10 on."""
+    state, _, _ = _deep_team(loaded, game(loaded, staff=14))
+    for pid, seat in zip(range(10, 10 + len(seats)), seats, strict=True):
+        state = skilled(state, pid, skill)
+        state = run(loaded, state, AppointExecutive(FOUNDER, seat, pid))
+    return state
+
+
+def _team(loaded: LoadedData, state: GameState):  # type: ignore[no-untyped-def]
+    return team_of(state, org_view(state, 1), state.products[-1], loaded.balance, loaded.game_data)
+
+
+def test_cto_raises_the_quality_cap(loaded: LoadedData) -> None:
+    vacant = _team(loaded, _filled(loaded, ()))
+    held = _team(loaded, _filled(loaded, ("cto",)))
+    assert vacant.qcap_mult == pytest.approx(0.95)
+    assert held.qcap_mult == pytest.approx(1.10)  # s = 18: e = 1
+    # the CTO scales every builder's output alike, so d-bar is the same: only the factor moves
+    held_cap, vacant_cap = held.qcap(loaded.balance), vacant.qcap(loaded.balance)
+    assert held_cap is not None and vacant_cap is not None
+    assert held_cap / vacant_cap == pytest.approx(1.10 / 0.95)
+
+
+def test_cpo_lowers_churn_and_support_raises_it(loaded: LoadedData) -> None:
+    """CPO e = 1: base churn x 0.85. Coverage c with the COO vacant (k = 1.25): x (1 + 0.4 (1 -
+    c) 1.25)."""
+    state = _filled(loaded, ("cpo",))
+    team = _team(loaded, state)
+    pool = support_pools(state, org_view(state, 1), loaded.balance, loaded.game_data)[None]
+    support = 1 + 0.4 * (1 - pool.coverage) * 1.25
+    assert team.churn_mult == pytest.approx(0.85 * support)
+
+
+def test_cmo_lifts_brand_target_and_awareness(loaded: LoadedData) -> None:
+    team = _team(loaded, _filled(loaded, ("cmo",)))
+    assert team.brand_mult == pytest.approx(1.10)
+    assert team.awareness_mult == pytest.approx(1.20)
+    vacant = _team(loaded, _filled(loaded, ()))
+    assert vacant.brand_mult == pytest.approx(0.95)
+    assert vacant.awareness_mult == pytest.approx(0.90)
+
+
+def test_cro_pricing_power_only_in_sales_segments(loaded: LoadedData) -> None:
+    from tst.sim.products.models import ProductSegment
+    from tst.sim.products.phases import pricing_power, segment_appeal
+
+    state = _filled(loaded, ("cro",))
+    product = state.products[-1]
+    power = pricing_power(state, product, loaded.balance)
+    assert power == pytest.approx(1.10)
+    data = loaded.game_data
+    mid = ProductSegment(product.id, "mid_market", 70_000)
+    smb = ProductSegment(product.id, "smb", 4_000)
+    assert segment_appeal(product, mid, data, 1, power) > segment_appeal(product, mid, data, 1)  # type: ignore[operator]
+    assert segment_appeal(product, smb, data, 1, power) == segment_appeal(product, smb, data, 1)
+
+
+def test_delegate_energy_follows_coverage(loaded: LoadedData) -> None:
+    from tst.sim.hiring.phases import reset_energy
+    from tst.sim.org.scaleup import delegate_energy_factor
+
+    state = game(loaded, staff=30)  # no support staff: c = 0
+    state = with_person_state(state, replace(state.person_state(2), energy=0))
+    out = reset_energy(state, loaded.balance, loaded.game_data)
+    assert out.person_state(2).energy == 0  # 100 x c, c = 0
+    assert (
+        delegate_energy_factor(state, org_view(state, 1), 2, loaded.balance, loaded.game_data) == 0
+    )
+    early = with_company(state, replace(state.player, stage=2))
+    assert reset_energy(early, loaded.balance, loaded.game_data).person_state(2).energy == 100
