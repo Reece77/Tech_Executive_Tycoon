@@ -22,5 +22,6 @@ Each ADR records one decision that coding agents must not re-decide. Status is A
 | [0016](0016-offers-need-an-interview.md) | Offers require an interview by the company (founder or delegate) | Accepted |
 | [0017](0017-static-incumbents-and-product-phases.md) | Static 2010 incumbents until M5; products run in phases 3, 5, 6, 9 and 10 | Accepted |
 | [0018](0018-shares-and-game-over.md) | Equity in shares, post-money SAFEs, game-over states | Accepted |
+| [0019](0019-v2-scope-decisions.md) | v2 scope: divisions first, simplified facilities, cities early, CEO/Chair with IPO, two lanes | Accepted |
 
 Template: [0000-template.md](0000-template.md).

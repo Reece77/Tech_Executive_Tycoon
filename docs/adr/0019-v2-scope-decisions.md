@@ -1,0 +1,31 @@
+# ADR-0019: v2 scope decisions
+
+- Status: Accepted
+- Date: 2026-10-30
+- Spec sections: §2, §3, §6, §8, §10, §17
+
+## Context
+
+The spec leaves v2's milestones "defined at v1 retrospective" (§17) and leaves several scope questions open. Reece answered them on 2026-10-29 and 2026-10-30, so the v2 roadmap (`docs/v2-roadmap.md`) could be drafted while v1 was finishing.
+
+## Decision
+
+1. **Order.** v2 starts with divisions, executive seats and new software markets (M8). Named cities and regions come next (M9), alongside capital and macro (M10).
+2. **Facilities are simplified.** A facility (data centre, assembly plant, and later fabs, refineries and mines) has capacity, utilization, inputs, output quality, operating cost and staff, and is sourced by spot purchase, contract or ownership (spec §8). There are no Capitalism Lab unit layouts inside facilities.
+3. **Cities.** ADR-0011's "named cities with offices in v2" comes in the milestone after divisions, so that hiring, wages and demand by region are in place before R&D, hardware and the IPO.
+4. **CEO and Chair.** Appointing a CEO and stepping up to Chair (spec §3) is built with the IPO milestone.
+5. **Personal stock trading** is v3 or later.
+6. **Sandbox and the company score** are v2. They are planned for M15 unless the v1 retrospective moves them.
+7. **Parallel lanes.** v2 pairs milestones whose systems are separate and builds each pair in two Claude Code sessions, under the lane rules in `docs/v2-roadmap.md`.
+
+## Consequences
+
+- Each v2 brief names its lane, the folders it owns, its merge order and its reserved RNG stream ids.
+- Facility formulas stay small enough to tune with the balance runner. Depth comes from sourcing choices and supply shocks rather than layout.
+- CLAUDE.md §3's v2 list (divisions, IPO, hardware, R&D tree) becomes in scope only through the brief that names each system.
+
+## Alternatives considered
+
+- **Capitalism Lab unit layouts inside facilities:** much deeper, but would roughly double v2's work, and the game's identity is people and structure.
+- **One global market until late v2:** simpler, but leaves the growth ceiling in place and puts hiring by city after the systems that depend on it.
+- **CEO step-up with divisions:** possible, but stepping back fits public-company life better.
