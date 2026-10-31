@@ -52,10 +52,16 @@ def release_job_posts(state: GameState, plan: HiringPlan) -> tuple[GameState, li
 
 
 def detach_departed(state: GameState, data: GameData) -> tuple[GameState, tuple[LogItem, ...]]:
-    staff = {e.person_id for e in state.employments if e.counts_as_staff}
+    # Staff of each company: a person poached in phase 1 is already on the rival's staff, so
+    # "on anyone's staff" would keep their old seat (M8r, Codex review 1 finding 3).
+    staff = {(e.company_id, e.person_id) for e in state.employments if e.counts_as_staff}
     logs: list[LogItem] = []
     for unit in state.units:
-        if unit.status == "active" and unit.leader_id is not None and unit.leader_id not in staff:
+        if (
+            unit.status == "active"
+            and unit.leader_id is not None
+            and (unit.company_id, unit.leader_id) not in staff
+        ):
             logs.append(
                 inbox_item(
                     state.turn,
@@ -67,7 +73,7 @@ def detach_departed(state: GameState, data: GameData) -> tuple[GameState, tuple[
             )
             state = with_unit(state, replace(unit, leader_id=None))
     for seat in state.exec_seats:  # a departed executive's seat empties (M8, 18.3)
-        if seat.person_id is not None and seat.person_id not in staff:
+        if seat.person_id is not None and (seat.company_id, seat.person_id) not in staff:
             logs.append(
                 inbox_item(
                     state.turn,
@@ -79,7 +85,7 @@ def detach_departed(state: GameState, data: GameData) -> tuple[GameState, tuple[
             )
             state = with_exec_seat(state, replace(seat, person_id=None, since_turn=state.turn))
     for plan in state.plans:
-        if plan.status in ("active", "filled") and plan.owner_id not in staff:
+        if plan.status in ("active", "filled") and (plan.company_id, plan.owner_id) not in staff:
             state = with_plan(state, replace(plan, status="paused"))
             logs.append(
                 inbox_item(

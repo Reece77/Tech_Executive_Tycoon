@@ -41,7 +41,8 @@ def effect_of(state: GameState, company_id: int, seat: str, balance: Balance) ->
     if not seats_in_play(state, company_id, balance):
         return 0.0
     holder = state.seat_holder(company_id, seat)
-    if holder is None or state.employment_of(holder) is None:
+    employment = state.employment_of(holder) if holder is not None else None
+    if employment is None or employment.company_id != company_id:  # gone, or poached (M8r)
         return balance.exec_seats.vacant_effect
     return seat_effect(true_score(state, holder, seat, balance), balance.exec_seats)
 
