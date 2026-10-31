@@ -1287,3 +1287,155 @@ None of this changes the simulation: Holiday runs ordinary turns, History reads 
 - **Offline, over budget or after an error:** the reply is "I can't think that through right now" plus the briefing.
 - **Stored:** the last `coo.keep_answers` (20) questions and answers per save, read-only, never fed into events.
 - **Never** changes state or costs energy. The hidden-value prompt test (§16.5) covers COO prompts too.
+
+## 18. Divisions, executives and new markets (M8)
+
+First v2 milestone (ADR-0019). Everything in §18.1–§18.5 takes effect only from **stage 3** (ARR ≥ $20M or a Series B, §11.11, §14.8), except the layer tax (§18.2), which can't apply before stage 3 because v1 trees are at most two levels deep. So v1's early game and its balance targets are unchanged. The new markets (§18.6) are open from January 2010.
+
+### 18.1 Divisions
+
+- **New unit type `division`** (stage 3): its parent is the company root. At most `org.max_divisions` (6). Departments and teams can be moved under a division with the existing move action (§13.7), and it costs the usual morale.
+- **President:** the division's leader. They must be a member of the division at senior level or above, and can't hold an executive seat (§18.3). The president is the manager of everyone in the division who has no nearer leader (§13.1).
+- **Products belong to a division** (`product.division_id`; null means corporate). Setting it is an immediate action (energy 1) and changes no rule except the reporting below and the cross-division factor in §18.2.
+- **Division P&L** (reporting, derived from the ledger). Every ledger line gains a nullable `division_id`:
+  - a product's revenue, hosting and marketing go to its division;
+  - an employee's salary, benefits, office, tools and recruiting fee go to the division containing their unit;
+  - everything else, including the founder, investor flows and event effects, is corporate.
+
+  A division's statement is its revenue minus its direct costs, then a **shared-services allocation**: this month's corporate operating costs × `h_div / (h_corporate + Σ h_central divisions)`, so only divisions using central services (§18.4) take a share and corporate keeps its own. The allocation is a reporting line, not a ledger entry: no cash moves between divisions.
+
+### 18.2 Coordination cost
+
+- **Layer tax.** Depth counts from the root: root 0, division 1, department 2, team 3, a team under a team 4. Each person's builder output (§11.3) and seller capacity are multiplied by
+
+```latex
+\lambda = \max\big(0.85,\; 1 - \tau \cdot \max(0,\, depth - 2) \cdot k_{COO}\big)
+```
+
+  with `τ = org.layer_tax` (0.03) and `k_COO` from §18.3 (1 when the seat isn't in play).
+- **Cross-division products.** If a product's assigned units sit in more than one division (counting corporate as one), its output is multiplied by `org.cross_division_factor` (0.90).
+
+### 18.3 Executive seats (stage 3)
+
+- **Seats:** COO, CFO, CTO, CPO, CMO and CRO. The founder remains CEO until M13.
+- **Appoint** (immediate action, energy 5): any employee except the founder, at senior level or above, holding no other seat and not a president. They become **exec** level, so their role's exec market rate applies from then on (§13.8 applies: raise them too). Appointment gives +5 morale once.
+- **Remove** (energy 5): −10 morale once. Their level stays exec.
+- **Seat score** `s`, from true skills with these weights (data: `exec_seats` in `balance.yaml`):
+
+| Seat | Skill weights |
+| --- | --- |
+| COO | operations 0.35, leadership 0.25, strategy 0.20, communication 0.20 |
+| CFO | finance 0.45, strategy 0.20, negotiation 0.20, communication 0.15 |
+| CTO | software engineering 0.25, infrastructure 0.15, ML research 0.10, leadership 0.25, strategy 0.25 |
+| CPO | product 0.45, design 0.15, strategy 0.20, leadership 0.20 |
+| CMO | marketing 0.45, communication 0.20, strategy 0.20, leadership 0.15 |
+| CRO | sales 0.40, negotiation 0.25, leadership 0.20, communication 0.15 |
+
+- **Effect strength:** `e = clamp((s − 10) / 8, −0.5, 1)`. A **vacant seat at stage 3 or later counts as `e = −0.5`**. Before stage 3, `e = 0` for every seat.
+
+| Seat | Effect (company-wide) |
+| --- | --- |
+| CTO | builder output × (1 + 0.10 e) |
+| CPO | feature points gained × (1 + 0.15 e) |
+| CMO | marketing points `mk` (§11.5) × (1 + 0.20 e) |
+| CRO | seller capacity × (1 + 0.20 e) |
+| CFO | investors' `V_base` (§14.3) × (1 + 0.08 e); each director's monthly confidence + 0.5 e |
+| COO | `k_COO = 1 − 0.5 e`, applied to the layer tax (§18.2) and the support shortfall (§18.4) |
+
+- The coefficients are `exec_seats.*.effect` keys in `balance.yaml`.
+- **Exec hiring:** from stage 3, searches may target exec level (job post, recruiter or network). Candidates are generated at exec level and ask the exec market rate.
+
+### 18.4 Support staff and shared services (stage 3)
+
+- **Support staff** are employees whose role's product function is `none` (finance manager, recruiter, operations manager), seat holders included.
+- **Coverage** for a pool of `h` people with `n` support staff:
+
+```latex
+c = \min\left(1,\; \frac{n}{h / \rho}\right)
+```
+
+  with `ρ = org.support_ratio` (15).
+- **Shortfall.** For everyone in a pool with `c < 1`, builder output, seller capacity and marketing points are multiplied by `1 − 0.15 (1 − c) k_COO`. A morale term `W_support = −6 (1 − c)` joins §9; it shows in the morale breakdown as "Admin and support".
+- **Shared services** per division: `central` (default) or `embedded` (immediate action, energy 2).
+  - **Central pool:** corporate and every central division share one pool, which uses the central support staff.
+  - **Embedded division:** its own pool, covered only by its own support staff. Its builder output and seller capacity get × `org.embedded_bonus` (1.05), for faster decisions.
+  - Embedded divisions take no shared-services allocation (§18.1).
+- **Before stage 3,** `c = 1` and there is no morale term.
+
+### 18.5 Order of effects
+
+In phase 3, builder output `o` (§11.3) = Σ person output × `λ` × support factor × embedded bonus × CTO, then × `coord(n)` × cross-division factor × `ε`. Features gain `o` × CPO. Seller capacity (phase 5) = §11.3 capacity × the same `λ`, support and embedded factors × CRO. Marketing points (phase 9) × support factor × CMO.
+
+### 18.6 New markets (data: `categories.yaml`, appended)
+
+**Fintech** (`fintech`): growth 25%, F₀ 60, ΔF 4.0, σ 6, K 80; launch also needs quality ≥ 30 (`launch_quality`, compliance). Development skill: software engineering 0.30, security 0.20, finance 0.20, legal 0.15, data 0.15.
+
+| Segment | D₀ | p_ref / month | h / month |
+| --- | --- | --- | --- |
+| Consumer | 20,000,000 | $0.60 (revenue per user) | $0.05 |
+| SMB | 300,000 | $60 | $5 |
+| Mid-market | 25,000 | $1,200 | $80 |
+| Enterprise | 2,500 | $15,000 | $900 |
+
+**AI models and inference** (`ai_models`): F₀ 30, ΔF 6.0, σ 8, K 70. Development skill: ML research 0.40, software engineering 0.20, data 0.20, infrastructure 0.20.
+- **Growth by year** (`growth_by_year`) instead of a constant `g`: 30% a year for 2010–2015, 60% for 2016–2019, 40% for 2020–2021, 150% in 2022, 200% in 2023, 120% in 2024, 60% for 2025–2029, then 25%.
+- **Hosting** is `h × compute_index(year)` from `compute_index.yaml`: 1.0 in 2010, falling 15% a year to 2016, ×1.1 a year in 2017–2018, flat in 2019–2021, ×1.6 in 2023 and ×1.3 in 2024 (the GPU shortage), then falling 15% a year. Only AI uses the index in M8.
+
+| Segment | D₀ | p_ref / month | h / month (× index) |
+| --- | --- | --- | --- |
+| Consumer | 200,000 | $0.50 | $0.20 |
+| SMB | 20,000 | $100 | $40 |
+| Mid-market | 2,000 | $2,000 | $600 |
+| Enterprise | 300 | $25,000 | $6,000 |
+
+**Incumbents** (appended to `incumbents.yaml`; starting shares by the M3a steady-state method, recorded in the brief):
+
+| Company | Personality | Builder skill | Product (category: segments) | Quality / features / brand |
+| --- | --- | --- | --- | --- |
+| PayPal | fast_follower | 12 | PayPal (fintech: consumer, SMB) | 62 / 70 / 85 |
+| Intuit | premium | 13 | QuickBooks Online (fintech: SMB, mid-market) | 68 / 75 / 75 |
+| Fiserv | cost_leader | 11 | Fiserv Banking (fintech: mid-market, enterprise) | 58 / 72 / 60 |
+| IBM | premium | 13 | Watson (AI: mid-market, enterprise) | 45 / 40 / 70 |
+| Nuance | fast_follower | 12 | Dragon (AI: consumer, SMB) | 50 / 45 / 55 |
+
+Their function mixes (builders / sellers / marketers): fintech 50 / 30 / 20, AI 75 / 10 / 15.
+
+### 18.7 Scheduled entrants (data: `entrants.yaml`; phase 9, stream `entrants` id 20, key `(entrant_index,)`)
+
+Named rival startups founded in their real month. Each is a §15.4 startup with a fixed name, personality, cash, staff count and product (category and segments). Its people are generated at senior level from the stream, so each entrant starts strong. Entrants don't count toward the cap of 8 startups and fund and fail by §15.4. Founding needs no draw, so every seed sees each entrant.
+
+| Entrant | Founded | Personality | Cash | Staff | Product |
+| --- | --- | --- | --- | --- | --- |
+| Square | Mar 2010 | aggressive | $10M | 8 | fintech: SMB |
+| Stripe | Sep 2011 | aggressive | $2M | 6 | fintech: SMB, mid-market |
+| Plaid | May 2013 | fast_follower | $3M | 6 | fintech: mid-market, enterprise |
+| OpenAI | Dec 2015 | aggressive | $50M | 12 | AI: consumer, SMB, enterprise |
+| Anthropic | Jan 2021 | premium | $120M | 12 | AI: SMB, mid-market, enterprise |
+
+### 18.8 What the API may show
+
+- Division statements and allocations.
+- Coverage as counts (support staff against need) and the shortfall's effect.
+- The layer tax and cross-division factor in a product's output breakdown.
+- **Seats:** the holder, and their fit as words from the company's displayed ranges ("strong fit for CTO"), with an **estimated** effect computed from the displayed midpoints and labelled as an estimate. Never `s` or `e` from true values.
+- Vacant seats at stage 3 show their penalty.
+- Entrants appear like any rival.
+
+### 18.9 Balance targets (M8 acceptance, printed)
+
+1. All v1 targets still pass: `make balance` T1–T3, E1–E3 and the M5/M6 guards.
+2. **Seats matter.** From each seed's steady save at stage 3, play 36 more months with six seat holders of score ≥ 14 and again with all seats vacant. The median ARR at the end is at least 15% higher with the seats filled (10 seeds).
+3. **Support matters.** From the same saves, coverage 1.0 against 0.5: the median ARR is at least 8% higher at full coverage.
+4. **New markets earn.** The M3a earn-and-burn script in fintech reaches 50–150% of the B2B SaaS run's ARR at turn 36. AI's total addressable demand in January 2024 is 100–400 times January 2010's.
+5. **The ceiling lifts.** blitzscale with its second product in fintech: median turn-120 ARR at least 1.2 times the single-category blitzscale (M7a's ceiling of about $45–57M).
+6. Every entrant is founded in its month on every seed.
+
+### 18.10 Worked examples
+
+**Seat effect.** A CTO with `s = 14` has `e = 0.5`, so builder output × 1.05. The seat vacant at stage 3 gives × 0.95.
+
+**Support shortfall.** 120 staff with 5 support staff: need 8, `c = 0.625`. Output × (1 − 0.15 × 0.375) = × 0.944, and morale −2.25. With a COO at `e = 0.5`, `k_COO = 0.75`, so output × 0.958.
+
+**Layer tax.** A team under a department under a division is at depth 3: `λ = 1 − 0.03 × 1 = 0.97`. With the COO above, 0.9775.
+
+**Allocation.** Corporate 12 staff with $520,000 of operating costs this month; the Platform division (128, central) and the Fintech division (46, embedded). Platform's allocation = $520,000 × 128 / (12 + 128) = **$475,429**; Fintech's is $0; corporate keeps $44,571.
