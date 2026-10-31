@@ -4,7 +4,7 @@ import { FinanceScreen } from './screens/FinanceScreen';
 import { GameLayout } from './screens/GameLayout';
 import { GameOverScreen } from './screens/GameOverScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
-import { InboxScreen } from './screens/InboxScreen';
+import { EventRedirect, InboxScreen } from './screens/InboxScreen';
 import { MainMenu } from './screens/MainMenu';
 import { MarketScreen } from './screens/MarketScreen';
 import { NewGameScreen } from './screens/NewGameScreen';
@@ -31,6 +31,8 @@ export default function App() {
         <Route path="/game/:saveId" element={<GameLayout />}>
           <Route index element={<Navigate to="inbox" replace />} />
           <Route path="inbox" element={<InboxScreen />} />
+          <Route path="inbox/:itemId" element={<InboxScreen />} />
+          <Route path="events/:eventId" element={<EventRedirect />} />
           <Route path="overview" element={<OverviewScreen />} />
           <Route path="people" element={<PeopleScreen />} />
           <Route path="people/:personId" element={<PersonScreen />} />

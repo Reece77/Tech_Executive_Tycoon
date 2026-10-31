@@ -848,3 +848,14 @@ What the player knew of an employee when they left, frozen at departure (the "Fo
 | `knowledge` | JSON | no | `{"ranges": {attribute: [min, max]}, "tags": [[tag, noticed_turn]], "interests": [..] or null, "work_style": .. or null}`; potential is the `potential_ability` range, shown only as a phrase. |
 
 `save_meta.schema_version` is 21.
+
+## inbox_event_link (migration `0021_former_staff`, M7c)
+
+The events an inbox message links to: the "While you were away" summary lists the events decided for the player while on holiday, each opening that event's card (`/game/:save/events/:id`).
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `item_id` | INTEGER PK FK → inbox_item.id | no | The message. |
+| `position` | INTEGER PK | no | Order in the message. |
+| `event_id` | INTEGER | no | The event (no FK). |
+| `label` | VARCHAR(200) | no | Its title as listed. |

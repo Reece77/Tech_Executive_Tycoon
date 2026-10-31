@@ -405,6 +405,16 @@ def get_inbox(
         )
 
 
+@router.get(
+    "/inbox/{item_id}", response_model=InboxItemOut, responses=ERRORS, operation_id="getInboxItem"
+)
+def get_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
+    """One message, archived or not, wherever it falls in the pages (M7c deep links)."""
+    with repository.read_session(_path(settings, save_id)) as session:
+        player = repository.read_state(session).player
+        return views.inbox_item(inbox.get_item(session, player.id, item_id))
+
+
 @router.post(
     "/inbox/read-all",
     response_model=InboxBulkOut,

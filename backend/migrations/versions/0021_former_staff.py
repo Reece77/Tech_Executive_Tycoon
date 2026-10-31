@@ -1,4 +1,7 @@
-"""M7c: former staff profiles. `former_staff` keeps what the player knew of an employee when
+"""M7c: former staff profiles, and `inbox_event_link` (the events a "While you were away"
+summary links to).
+
+Former staff profiles. `former_staff` keeps what the player knew of an employee when
 they left (displayed ranges, noticed tags, interests and work style once known), frozen at
 departure, plus the last role, level, unit, the reason and the rival who poached them.
 
@@ -38,6 +41,13 @@ def upgrade() -> None:
         sa.Column("reason", sa.String(16), nullable=False),
         sa.Column("rival_id", sa.Integer(), nullable=True),
         sa.Column("knowledge", sa.JSON(), nullable=False),
+    )
+    op.create_table(
+        "inbox_event_link",
+        sa.Column("item_id", sa.Integer(), sa.ForeignKey("inbox_item.id"), primary_key=True),
+        sa.Column("position", sa.Integer(), primary_key=True),
+        sa.Column("event_id", sa.Integer(), nullable=False),
+        sa.Column("label", sa.String(200), nullable=False),
     )
     _backfill()
     op.execute("UPDATE save_meta SET schema_version = 21")
@@ -102,5 +112,6 @@ def _backfill() -> None:
 
 
 def downgrade() -> None:
+    op.drop_table("inbox_event_link")
     op.drop_table("former_staff")
     op.execute("UPDATE save_meta SET schema_version = 20")

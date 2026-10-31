@@ -18,7 +18,7 @@ export function FormerProfileView({ saveId, p }: { saveId: string; p: FormerProf
         ← People
       </Link>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'baseline' }}>
-        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700 }} data-testid="person-name">
+        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700 }} data-testid="profile-name">
           {p.name}
         </h1>
         <span

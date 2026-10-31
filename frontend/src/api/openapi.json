@@ -1980,6 +1980,88 @@
         }
       }
     },
+    "/api/saves/{save_id}/inbox/{item_id}": {
+      "get": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Get Inbox Item",
+        "description": "One message, archived or not, wherever it falls in the pages (M7c deep links).",
+        "operationId": "getInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/inbox/read-all": {
       "post": {
         "tags": [
@@ -7001,6 +7083,7 @@
           "events"
         ],
         "summary": "Get Event",
+        "description": "Any written event, open or answered. The live state keeps only the last 24 months'\nevents, so an older one is read from its row (M7c: History links to old events).",
         "operationId": "getEvent",
         "parameters": [
           {
@@ -7029,6 +7112,88 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EventOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/events/{event_id}/item": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Get Event Item",
+        "description": "The inbox message that carries an event's card (M7c deep links).",
+        "operationId": "getEventItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Event Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
                 }
               }
             }
@@ -11649,6 +11814,24 @@
         ],
         "title": "EventChoiceOut"
       },
+      "EventLinkOut": {
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "label"
+        ],
+        "title": "EventLinkOut"
+      },
       "EventOut": {
         "properties": {
           "event_id": {
@@ -13757,6 +13940,14 @@
             ],
             "title": "Quote",
             "description": "An exit-interview line (M6, 16.8)"
+          },
+          "event_links": {
+            "items": {
+              "$ref": "#/components/schemas/EventLinkOut"
+            },
+            "type": "array",
+            "title": "Event Links",
+            "description": "Events this message links to (M7c)"
           }
         },
         "type": "object",

@@ -247,6 +247,11 @@ class FireOut(ActionOut):
     severance_cents: int
 
 
+class EventLinkOut(BaseModel):
+    event_id: int
+    label: str
+
+
 class InboxItemOut(BaseModel):
     item_id: int
     turn: int
@@ -259,6 +264,9 @@ class InboxItemOut(BaseModel):
     read: bool
     archived: bool = Field(description="Hidden from the inbox unless the archive is shown (M4c)")
     quote: str | None = Field(default=None, description="An exit-interview line (M6, 16.8)")
+    event_links: list[EventLinkOut] = Field(
+        default_factory=list, description="Events this message links to (M7c)"
+    )
 
 
 class InboxBulkOut(BaseModel):

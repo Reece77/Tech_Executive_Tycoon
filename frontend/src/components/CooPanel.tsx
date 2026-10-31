@@ -11,7 +11,7 @@ function issueHref(saveId: string, issue: Coo['briefing'][number]): string {
   const base = `/game/${saveId}`;
   switch (issue.link_kind) {
     case 'event':
-      return `${base}/inbox`;
+      return issue.link_id != null ? `${base}/events/${issue.link_id}` : `${base}/inbox`;
     case 'product':
       return `${base}/products/${issue.link_id}`;
     case 'person':

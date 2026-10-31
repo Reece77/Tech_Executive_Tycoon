@@ -911,3 +911,15 @@ class FormerStaffRow(Base):
     # {"ranges": {attr: [lo, hi]}, "tags": [[tag, turn]], "interests": [...] | null,
     #  "work_style": str | null}; potential is a range under "potential_ability"
     knowledge: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class InboxEventLinkRow(Base):
+    """An event an inbox message links to (M7c): the "While you were away" summary lists the
+    events decided for the player, each opening that event's card."""
+
+    __tablename__ = "inbox_event_link"
+
+    item_id: Mapped[int] = mapped_column(ForeignKey("inbox_item.id"), primary_key=True)
+    position: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_id: Mapped[int] = mapped_column(Integer, nullable=False)  # event (no FK)
+    label: Mapped[str] = mapped_column(String(200), nullable=False)

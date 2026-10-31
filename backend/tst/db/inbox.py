@@ -61,6 +61,7 @@ class InboxMessage:
     link_id: int | None
     read: bool
     archived: bool = False
+    event_links: tuple[tuple[int, str], ...] = ()  # (event id, label), M7c
 
 
 def render(item: LogItem, templates: dict[str, InboxTemplate]) -> tuple[str, str]:
@@ -125,7 +126,7 @@ def list_inbox(
     stmt = stmt.order_by(InboxItemRow.id.desc()).offset(offset)
     if limit is not None:
         stmt = stmt.limit(limit)
-    return [_message(r) for r in session.scalars(stmt)]
+    return _with_links(session, [_message(r) for r in session.scalars(stmt)])
 
 
 def inbox_total(
@@ -224,3 +225,48 @@ def _message(row: InboxItemRow) -> InboxMessage:
         read=row.read,
         archived=row.archived,
     )
+
+
+def get_item(session: Session, company_id: int, item_id: int) -> InboxMessage:
+    """One inbox item, archived or not (M7c deep links)."""
+    row = session.get(InboxItemRow, item_id)
+    if row is None or row.company_id != company_id:
+        raise UnknownInboxItemError(f"no inbox item {item_id}")
+    return _with_links(session, [_message(row)])[0]
+
+
+def event_item(session: Session, company_id: int, event_id: int) -> InboxMessage:
+    """The inbox item that carries an event's card (M7c deep links)."""
+    row = session.scalars(
+        select(InboxItemRow)
+        .where(
+            InboxItemRow.company_id == company_id,
+            InboxItemRow.link_kind == "event",
+            InboxItemRow.link_id == event_id,
+        )
+        .order_by(InboxItemRow.id)
+        .limit(1)
+    ).first()
+    if row is None:
+        raise UnknownInboxItemError(f"no inbox item for event {event_id}")
+    return _message(row)
+
+
+def _with_links(session: Session, messages: list[InboxMessage]) -> list[InboxMessage]:
+    """Attach each message's event links (M7c); saves before 0021 have none."""
+    from dataclasses import replace
+
+    from tst.db.models import InboxEventLinkRow
+    from tst.db.state_io import has_table
+
+    ids = [m.id for m in messages]
+    if not ids or not has_table(session, InboxEventLinkRow):
+        return messages
+    links: dict[int, list[tuple[int, str]]] = {}
+    for row in session.scalars(
+        select(InboxEventLinkRow)
+        .where(InboxEventLinkRow.item_id.in_(ids))
+        .order_by(InboxEventLinkRow.item_id, InboxEventLinkRow.position)
+    ):
+        links.setdefault(row.item_id, []).append((row.event_id, row.label))
+    return [replace(m, event_links=tuple(links.get(m.id, ()))) for m in messages]

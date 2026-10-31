@@ -1,11 +1,13 @@
 import { Button } from '@mantine/core';
 import { useState, type ReactNode } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
 import { EventCard } from '../components/EventCard';
 import { KindBadge } from '../components/KindBadge';
 import { ApproachPanel } from './CompetitorsScreen';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import {
+  useEventItem,
+  useInboxItem,
   INBOX_PAGE,
   useApproaches,
   useArchive,
@@ -41,7 +43,8 @@ const FILTERS: { key: InboxFilter; label: string }[] = [
 ];
 
 export function InboxScreen() {
-  const { saveId = '' } = useParams();
+  const { saveId = '', itemId } = useParams();
+  const navigate = useNavigate();
   const [offset, setOffset] = useState(0);
   const [filter, setFilter] = useState<InboxFilter>('all');
   // Filters run in the API, so they apply across every page, not only the one shown (M3b).
@@ -56,17 +59,23 @@ export function InboxScreen() {
   const setRead = useSetRead(saveId);
   const archive = useArchive(saveId);
   const bulk = useInboxBulk(saveId);
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  // M7c: /inbox/:itemId (and the older ?item=) open that message even off the first page.
+  const selectedId = Number(itemId ?? params.get('item'));
+  const onPage = inbox.data?.items.some((m) => m.item_id === selectedId) ?? false;
+  const pinned = useInboxItem(saveId, selectedId, !inbox.isPending && !onPage);
 
   if (inbox.isPending) return <Loading />;
   if (inbox.error) return <LoadError title="Could not load the inbox" error={inbox.error} />;
 
   const items = inbox.data.items;
-  const selectedId = Number(params.get('item'));
-  const selected = items.find((m) => m.item_id === selectedId) ?? items[0];
+  const selected =
+    items.find((m) => m.item_id === selectedId) ??
+    (pinned.data?.item_id === selectedId ? pinned.data : undefined) ??
+    (selectedId > 0 && pinned.isPending && !onPage ? undefined : items[0]);
 
   const open = (item: InboxItem) => {
-    setParams({ item: String(item.item_id) }, { replace: true });
+    navigate(`/game/${saveId}/inbox/${item.item_id}`, { replace: true });
     if (!item.read) setRead.mutate({ itemId: item.item_id, read: true });
   };
 
@@ -232,7 +241,7 @@ export function InboxScreen() {
             onArchive={(archived) =>
               archive.mutate(
                 { itemId: selected.item_id, archived },
-                { onSuccess: () => setParams({}, { replace: true }) },
+                { onSuccess: () => navigate(`/game/${saveId}/inbox`, { replace: true }) },
               )
             }
           />
@@ -321,6 +330,22 @@ function MessageDetail({
       >
         {item.body}
       </p>
+      {(item.event_links ?? []).length > 0 && (
+        <div data-testid="message-event-links">
+          <div className="tst-muted" style={{ fontSize: 12 }}>
+            Open an event:
+          </div>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+            {(item.event_links ?? []).map((e) => (
+              <li key={e.event_id}>
+                <Link to={`/game/${saveId}/events/${e.event_id}`} data-testid="message-event-link">
+                  {e.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {item.quote && (
         <blockquote
           style={{ margin: 0, fontSize: 14, fontStyle: 'italic', color: 'var(--tst-text)' }}
@@ -510,4 +535,13 @@ function Fact({
       </dd>
     </div>
   );
+}
+
+/** /game/:save/events/:eventId (M7c): the event's own inbox message, with its card. */
+export function EventRedirect() {
+  const { saveId = '', eventId = '' } = useParams();
+  const item = useEventItem(saveId, Number(eventId));
+  if (item.error) return <LoadError title="Could not find this event" error={item.error} />;
+  if (!item.data) return <Loading />;
+  return <Navigate to={`/game/${saveId}/inbox/${item.data.item_id}`} replace />;
 }
