@@ -1,4 +1,4 @@
-# Wireframes (M1 to M6)
+# Wireframes (M1 to M7b)
 
 Six desktop screens, built in M1c: New-game setup, Inbox, Overview, People, Person profile, and Recruitment with the offer panel. The editable canvas is the Claude Design artifact "Tech Startup Tycoon M1b Wireframes" (ask Reece for the link). The artboard sources are copied in `docs/wireframes/source/` for reference; they use the design canvas's runtime and are not meant to run in the app.
 
@@ -160,6 +160,29 @@ Four artboards in the canvas's eighth row. Kestrel in September 2014, 41 staff. 
 - *Driver tooltips:* hovering the top bar's cash shows last month's change by revenue, payroll, marketing, other costs and event effects.
 - *Saved views:* the "Views for People" menu lists the built-in Default (which can't be deleted) and saved views with their sort, plus "Save current as…" and "Columns".
 - *Ask COO panel:* it is named for the person answering (Dana Okafor, Operations Manager). It shows the briefing (up to five issues with links), a question box (300 characters) and the answer with its date and cost against the budget. A note says Dana only knows what you know, and that offline you still get the briefing.
+
+## M8 screens (v2)
+
+Two artboards in the canvas's ninth row. Kestrel in June 2017 at stage 3, with 186 staff: corporate 12, the Platform division 128 (central services) and the Fintech division 46 (embedded services). Nav key 0 opens Saves (from M7b).
+
+**Org: divisions, support and the executive team.**
+- *Structure:* the corporate card (staff, units, "led by you") above one card per division. Each division card shows its president, a services chip (central or embedded), its products, last month's operating profit and its units, plus one line on its main structural effect: the layer tax for teams at depth 3, or the embedded bonus.
+- *Support coverage:* support staff against need for each pool, the effect of any shortfall on output and morale, and the rule (one per 15 staff: finance, recruiting or operations roles).
+- *Cross-division work:* a panel names any product built by units in two divisions, its −10% output, and the move that removes it.
+- *Executive team panel:* the CEO (you, until M13), then COO, CFO, CTO, CPO, CMO and CRO. Each seat shows its holder with fit as words and an estimated effect labelled "(est.)", or "vacant" with its penalty in red.
+- *Appoint dialog:* lists suitable staff with fit and estimate, links to an exec-level search, and states that appointing makes the person exec level (with the new market rate, so raise them too), +5 morale, energy 5.
+- *Note:* "Fit and effects are estimates from what you know about each person."
+
+**Finance: Divisions tab** (between Statements and Cap table).
+- *Statement table:* month, quarter or year, with a column per division plus Corporate and Company. Lines: revenue, salaries and benefits, hosting, marketing, office, tools and G&A, and direct profit.
+- *Shared services:* the line is negative for central divisions and positive for corporate, shows "embedded" for embedded divisions, and is followed by operating profit. Its tooltip explains the headcount share and that no cash moves.
+- *Summary cards:* operating margin and 12-month revenue growth for each division.
+
+**Not drawn (text only):**
+- *Products:* the owning division on the product profile, with a picker (energy 1); Fintech and AI in New product, with AI's note "compute costs follow the market".
+- *Overview:* a support coverage tile from stage 3.
+- *Recruitment:* "Exec" in the level filter from stage 3.
+- *Competitors:* entrants appear like any rival, with a "Founded Sep 2011" line.
 
 ## Rules carried from the docs
 

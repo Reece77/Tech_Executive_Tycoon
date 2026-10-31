@@ -3,13 +3,17 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { FinanceSummary, Overview } from '../hooks/api';
 import { formatMoneyWhole, formatRunway } from '../lib/format';
+import { OverviewTip, Term } from './Term';
 
 interface Props {
   overview: Overview | undefined;
   summary?: FinanceSummary;
   advancing: boolean;
   blocked?: boolean; // an open critical event (M6)
+  away?: boolean; // a holiday is running (M7b)
   onContinue: () => void;
+  onHoliday?: () => void;
+  onCoo?: () => void;
 }
 
 const BADGE = {
@@ -41,7 +45,7 @@ function InsolventBadge({ saveId, summary }: { saveId: string; summary?: Finance
   );
 }
 
-function Stat({ label, children }: { label: string; children: ReactNode }) {
+function Stat({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <span className="tst-ptitle" style={{ margin: 0, fontSize: 11, fontWeight: 400 }}>
@@ -83,7 +87,16 @@ export function EnergyMeter({ energy, max }: { energy: number; max: number }) {
   );
 }
 
-export function TopBar({ overview, summary, advancing, blocked = false, onContinue }: Props) {
+export function TopBar({
+  overview,
+  summary,
+  advancing,
+  blocked = false,
+  away = false,
+  onContinue,
+  onHoliday,
+  onCoo,
+}: Props) {
   const ended = overview !== undefined && overview.game_state !== 'active';
   return (
     <header
@@ -129,32 +142,45 @@ export function TopBar({ overview, summary, advancing, blocked = false, onContin
             {overview?.date_label ?? '…'}
           </span>
         </Stat>
-        <Stat label="Cash">
-          <span
-            className="tst-num"
-            style={{
-              fontSize: 15,
-              color: overview && overview.cash_cents < 0 ? 'var(--tst-warn)' : undefined,
-            }}
-            data-testid="top-cash"
-          >
-            {overview ? formatMoneyWhole(overview.cash_cents) : '…'}
-          </span>
+        <Stat label={<Term term="kpi.cash">Cash</Term>}>
+          {overview ? (
+            <OverviewTip saveId={overview.save_id} which="cash" title="Last month's change in cash">
+              <span
+                className="tst-num"
+                style={{
+                  fontSize: 15,
+                  color: overview.cash_cents < 0 ? 'var(--tst-warn)' : undefined,
+                }}
+                data-testid="top-cash"
+              >
+                {formatMoneyWhole(overview.cash_cents)}
+              </span>
+            </OverviewTip>
+          ) : (
+            <span className="tst-num" style={{ fontSize: 15 }} data-testid="top-cash">
+              …
+            </span>
+          )}
         </Stat>
         {overview && !ended && overview.cash_cents < 0 && (
           <InsolventBadge saveId={overview.save_id} summary={summary} />
         )}
-        <Stat label="Runway">
-          <span
-            className="tst-num"
-            style={{
-              fontSize: 15,
-              color: overview?.runway_low ? 'var(--tst-warn)' : undefined,
-            }}
-            data-testid="top-runway"
-          >
-            {overview ? formatRunway(overview.runway_months) : '…'}
-          </span>
+        <Stat label={<Term term="kpi.runway">Runway</Term>}>
+          {overview ? (
+            <OverviewTip saveId={overview.save_id} which="runway" title="Runway">
+              <span
+                className="tst-num"
+                style={{ fontSize: 15, color: overview.runway_low ? 'var(--tst-warn)' : undefined }}
+                data-testid="top-runway"
+              >
+                {formatRunway(overview.runway_months)}
+              </span>
+            </OverviewTip>
+          ) : (
+            <span className="tst-num" style={{ fontSize: 15 }} data-testid="top-runway">
+              …
+            </span>
+          )}
         </Stat>
         {overview && !ended && (
           <EnergyMeter energy={overview.energy.energy} max={overview.energy.max} />
@@ -163,6 +189,11 @@ export function TopBar({ overview, summary, advancing, blocked = false, onContin
           <Link to={`/game/${overview.save_id}/over`} style={BADGE} data-testid="game-over-badge">
             Game over
           </Link>
+        )}
+        {overview && onCoo && (
+          <Button variant="default" h={44} onClick={onCoo} data-testid="coo-button">
+            Ask COO
+          </Button>
         )}
         {overview && (
           <Button
@@ -175,13 +206,25 @@ export function TopBar({ overview, summary, advancing, blocked = false, onContin
             Settings
           </Button>
         )}
+        {onHoliday && (
+          <Button
+            variant="default"
+            h={44}
+            onClick={onHoliday}
+            disabled={!overview || advancing || ended || blocked || away}
+            title="Skip quiet months: Continue until something needs you"
+            data-testid="holiday-button"
+          >
+            Holiday <span style={{ fontWeight: 400, opacity: 0.75, marginLeft: 6 }}>· H</span>
+          </Button>
+        )}
         <Button
           size="md"
           radius="md"
           h={44}
           px={28}
           onClick={onContinue}
-          disabled={!overview || advancing || ended || blocked}
+          disabled={!overview || advancing || ended || blocked || away}
           title={blocked ? 'Answer the critical event first' : undefined}
           leftSection={advancing ? <Loader size="xs" color="dark" /> : undefined}
           data-testid="continue"

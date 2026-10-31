@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Path, Query
 from sqlalchemy import select
 
 from tst.api import event_views
@@ -35,6 +35,7 @@ from tst.llm.settings import (
 )
 from tst.sim.actions import ChooseEvent
 from tst.sim.errors import NotFoundError
+from tst.ui_settings import TABLE_ID, TableViews, UISettings, load_ui, save_table
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["events"])
 settings_router = APIRouter(prefix="/api/settings", tags=["settings"])
@@ -210,3 +211,19 @@ def update_llm_settings(body: LLMSettingsIn, settings: SettingsDep) -> LLMSettin
     )
     save_settings(save_dir, updated)
     return _settings_out(settings)
+
+
+@settings_router.get("/ui", response_model=UISettings, operation_id="getUiSettings")
+def get_ui_settings(settings: SettingsDep) -> UISettings:
+    """Saved column views per table (M7b), shared by every save."""
+    return load_ui(settings.resolved_save_dir())
+
+
+@settings_router.put(
+    "/ui/tables/{table_id}", response_model=UISettings, operation_id="updateTableViews"
+)
+def update_table_views(
+    table_id: Annotated[str, Path(pattern=TABLE_ID)], body: TableViews, settings: SettingsDep
+) -> UISettings:
+    """Replace one table's saved views and the view last used."""
+    return save_table(settings.resolved_save_dir(), table_id, body)

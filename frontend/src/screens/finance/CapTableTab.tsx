@@ -6,6 +6,7 @@ import { DataTable } from '../../components/DataTable';
 import { KpiTile } from '../../components/KpiTile';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import { useCapTable, type CapTable as CapTableData, type Grant } from '../../hooks/api';
+import { useTableViews } from '../../hooks/useTableViews';
 import { formatMoneyShort } from '../../lib/format';
 import { formatFraction, formatSharePrice, formatShares } from '../../lib/finance';
 import { gameTableFeatures, type GameTableFeatures } from '../../lib/table';
@@ -16,14 +17,21 @@ const right = { display: 'block', textAlign: 'right' } as const;
 function Tiles({ cap }: { cap: CapTableData }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-      <KpiTile label="Fully diluted shares" value={formatShares(cap.fd_shares)} testId="kpi-fd" />
       <KpiTile
+        term="kpi.fd_shares"
+        label="Fully diluted shares"
+        value={formatShares(cap.fd_shares)}
+        testId="kpi-fd"
+      />
+      <KpiTile
+        term="kpi.share_price"
         label={cap.last_round_label ? `Share price (${cap.last_round_label})` : 'Share price'}
         value={formatSharePrice(cap.share_price_dollars)}
         note={cap.last_round_label ? undefined : 'Set by your first priced round'}
         testId="kpi-price"
       />
       <KpiTile
+        term="kpi.post_money"
         label="Post-money valuation"
         value={cap.post_money_cents === null ? '—' : formatMoneyShort(cap.post_money_cents)}
         note={
@@ -34,6 +42,7 @@ function Tiles({ cap }: { cap: CapTableData }) {
         testId="kpi-post"
       />
       <KpiTile
+        term="kpi.founder_owns"
         label="You own"
         value={formatFraction(cap.founder_fraction)}
         note={`${formatShares(cap.founder_shares)} common shares`}
@@ -175,6 +184,7 @@ function Grants({ saveId, cap }: { saveId: string; cap: CapTableData }) {
 
 export function CapTableTab({ saveId }: { saveId: string }) {
   const { data: cap, error, isPending } = useCapTable(saveId);
+  const views = useTableViews('captable');
   if (isPending) return <Loading />;
   if (error) return <LoadError title="Could not load the cap table" error={error} />;
   const years = cap.vesting_months / 12;
@@ -193,7 +203,7 @@ export function CapTableTab({ saveId }: { saveId: string }) {
           }}
         >
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>Holders</h2>
-          <CapTable cap={cap} />
+          <CapTable cap={cap} views={views} />
           <p className="tst-muted" style={{ margin: 0, fontSize: 12 }}>
             A SAFE converts at the next priced round: its holders get their share of the company as
             it stood just before the new money. Each priced round tops the unallocated pool back up

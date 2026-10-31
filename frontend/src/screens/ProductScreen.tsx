@@ -13,6 +13,7 @@ import {
   YAxis,
 } from 'recharts';
 import { KpiTile } from '../components/KpiTile';
+import { BreakdownTip } from '../components/Term';
 import { LifecycleChip } from '../components/LifecycleChip';
 import { ScoreBar, ScoreLegend, type ScoreBarItem } from '../components/ScoreBar';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
@@ -193,6 +194,7 @@ function Tiles({ p }: { p: Product }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
       <KpiTile
+        term="kpi.mrr"
         label="MRR"
         value={formatMoneyWhole(p.mrr_cents)}
         note={
@@ -203,18 +205,34 @@ function Tiles({ p }: { p: Product }) {
         testId="product-mrr"
       />
       <KpiTile
+        term="kpi.customers"
         label={noun}
         value={formatCount(p.customers)}
         note={`${formatFlow(p.new_last_month, '+')} new, ${formatFlow(p.churned_last_month, '-')} lost`}
         testId="product-customers-total"
       />
       <KpiTile
+        term="quality"
+        label="Quality"
+        value={formatScore(p.quality)}
+        note={p.rotting ? 'Falling: nobody works on it' : `Pace: ${p.pace}`}
+        warn={p.rotting}
+        drivers={(v) => (
+          <BreakdownTip breakdown={p.quality_breakdown} title="Quality" testId="quality-drivers">
+            {v}
+          </BreakdownTip>
+        )}
+        testId="product-quality"
+      />
+      <KpiTile
+        term="kpi.hosting"
         label="Hosting"
         value={formatMoneyWhole(p.hosting_cents)}
         note="this month"
         testId="product-hosting"
       />
       <KpiTile
+        term="kpi.development"
         label="Development"
         value={paceText(p.pace, p.builders.length)}
         small

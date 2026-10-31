@@ -1,13 +1,11 @@
 import { Button, Container, Group, Stack, Title } from '@mantine/core';
 import { Link } from 'react-router';
-import { LoadError, Loading, Panel } from '../components/ScreenState';
-import { SavesTable } from '../components/SavesTable';
-import { useSaves } from '../hooks/api';
+import { Panel } from '../components/ScreenState';
+import { SavesManager } from './SavesScreen';
 
 export function MainMenu() {
-  const saves = useSaves();
   return (
-    <Container size="md" py="xl">
+    <Container size="xl" py="xl">
       <Stack gap="xl">
         <Group justify="space-between">
           <Title order={2}>Tech Startup Tycoon</Title>
@@ -15,14 +13,8 @@ export function MainMenu() {
             New game
           </Button>
         </Group>
-        <Panel title="Saved games">
-          {saves.isPending ? (
-            <Loading />
-          ) : saves.error ? (
-            <LoadError title="Could not load saves" error={saves.error} />
-          ) : (
-            <SavesTable saves={saves.data} />
-          )}
+        <Panel title="Saves">
+          <SavesManager />
         </Panel>
       </Stack>
     </Container>

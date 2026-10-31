@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OrgDivisions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+.tab{font-size:14px;padding:8px 14px;border-bottom:2px solid transparent;color:#9BA7B6;text-decoration:none}
+.tab.on{color:#E8ECF1;border-color:#5AA2FF}
+.chip{font-size:12px;color:#C9D1DB;border:1px solid #2A3442;border-radius:12px;padding:3px 10px;background:#11161D}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1B232E;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.btnp{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;color:#9BA7B6;font-size:12px;padding:6px 8px;border-bottom:1px solid #2A3442}
+.tbl td{padding:7px 8px;border-bottom:1px solid #1F2732;vertical-align:top}
+.tip{position:absolute;background:#1F2834;border:1px solid #3A4656;border-radius:8px;padding:12px 14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+.dim{color:#9BA7B6}.pos{color:#5FD08B}.neg{color:#F07C7C}.warn{color:#E8B85A}
+.sev{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 3 · Scale-up</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Jun 2017</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">$38,400,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">19 mo</span></div>
+      <a href="Coo.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Ask COO</a>
+      <a href="Settings.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <a href="Holiday.dc.html" style="font-size: 14px; color: #E8ECF1; text-decoration: none; border: 1px solid #3A4656; border-radius: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px">Holiday <span class="key">H</span></a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html" aria-current="page" style="background:#1B232E;color:#E8ECF1"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="History.dc.html"><span class="key">9</span>History</a>
+      <a class="navlink" href="Saves.dc.html"><span class="key">0</span>Saves</a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; position: relative">
+<!--H:1180-->
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">Org</h1>
+        <span class="meta">186 staff · 2 divisions · stage 3</span>
+        <div style="margin-left: auto; display: flex; gap: 8px"><button class="btn" type="button">New division</button><button class="btn" type="button">New department</button><button class="btn" type="button">New team</button></div>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 16px; align-items: start">
+        <section class="panel" aria-label="Org tree" style="display: flex; flex-direction: column; gap: 12px">
+          <h2 class="ptitle" style="margin: 0">Structure</h2>
+          <div style="border: 1px solid #2A3442; border-radius: 8px; padding: 12px 14px; background: #11161D">
+            <div style="display: flex; justify-content: space-between; align-items: baseline"><b>Kestrel Systems (corporate)</b><span class="dim" style="font-size: 12px">12 staff · led by you</span></div>
+            <div class="dim" style="font-size: 12px; margin-top: 4px">Finance (3) · People Ops (3) · Office of the founder (6)</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px">
+            <div style="border: 1px solid #3A5A86; border-radius: 8px; padding: 12px 14px">
+              <div style="display: flex; justify-content: space-between; align-items: baseline"><b>Platform Division</b><span class="chip">Central services</span></div>
+              <div style="font-size: 13px; margin: 6px 0">President <a href="#">Priya Raman</a> · 128 staff</div>
+              <div class="row" style="font-size: 13px"><span>Products</span><span>Kestrel Ledger</span></div>
+              <div class="row" style="font-size: 13px"><span>Operating profit (Jun)</span><span class="num pos">$505,000</span></div>
+              <div class="row" style="font-size: 13px; border-bottom: 0"><span>Units</span><span class="dim">Engineering (74) · Sales (38) · Marketing (14)</span></div>
+              <div class="dim" style="font-size: 12px; margin-top: 6px">Teams under Engineering sit at depth 3: <span class="warn">output −2%</span> (layer tax, softened by COO)</div>
+            </div>
+            <div style="border: 1px solid #3A5A86; border-radius: 8px; padding: 12px 14px">
+              <div style="display: flex; justify-content: space-between; align-items: baseline"><b>Fintech Division</b><span class="chip" style="border-color: #5AA2FF">Embedded services</span></div>
+              <div style="font-size: 13px; margin: 6px 0">President <a href="#">Luis Ortega</a> · 46 staff</div>
+              <div class="row" style="font-size: 13px"><span>Products</span><span>Kestrel Pay</span></div>
+              <div class="row" style="font-size: 13px"><span>Operating profit (Jun)</span><span class="num neg">−$220,000</span></div>
+              <div class="row" style="font-size: 13px; border-bottom: 0"><span>Units</span><span class="dim">Pay Engineering (30) · Pay Sales (10) · Pay Ops (3)</span></div>
+              <div class="dim" style="font-size: 12px; margin-top: 6px">Embedded: <span class="pos">+5% output</span>, no shared-services charge, needs its own support staff</div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px">
+            <div class="panel" style="padding: 12px 14px">
+              <h3 class="ptitle">Support coverage</h3>
+              <div class="row" style="font-size: 13px"><span>Central (corporate + Platform, 140 staff)</span><span class="num warn">8 of 9.3 needed</span></div>
+              <div class="dim" style="font-size: 12px; margin: 4px 0 8px">Output and marketing −1.6% · morale −0.9 ("Admin and support")</div>
+              <div class="row" style="font-size: 13px; border-bottom: 0"><span>Fintech (embedded, 46 staff)</span><span class="num">3 of 3.1 needed</span></div>
+              <div class="dim" style="font-size: 12px; margin-top: 4px">One support person per 15 staff: finance, recruiting or operations roles</div>
+            </div>
+            <div class="panel" style="padding: 12px 14px">
+              <h3 class="ptitle">Cross-division work</h3>
+              <div style="font-size: 13px">Kestrel Pay is built by Pay Engineering and Engineering's API team</div>
+              <div class="dim" style="font-size: 12px; margin-top: 6px"><span class="warn">Output −10%</span> while two divisions work on one product. Move the API team into Fintech to remove it.</div>
+            </div>
+          </div>
+        </section>
+        <aside class="panel" aria-label="Executive team" style="display: flex; flex-direction: column; gap: 4px">
+          <h2 class="ptitle">Executive team</h2>
+          <div class="row"><span><b>CEO</b> · You</span><span class="dim" style="font-size: 12px">until you appoint one (later)</span></div>
+          <div class="row"><span><b>COO</b> · <a href="#">Dana Okafor</a><br><span class="dim" style="font-size: 12px">strong fit</span></span><span class="num pos" style="font-size: 12px; text-align: right">support and layer<br>penalties −25% (est.)</span></div>
+          <div class="row"><span><b>CFO</b> · <span class="warn">vacant</span></span><span class="num neg" style="font-size: 12px; text-align: right">investors value you 4% lower<br>board confidence −0.25 a month</span></div>
+          <div class="row"><span><b>CTO</b> · <a href="#">Tom Ellis</a><br><span class="dim" style="font-size: 12px">good fit</span></span><span class="num pos" style="font-size: 12px">builder output +4% (est.)</span></div>
+          <div class="row"><span><b>CPO</b> · <a href="#">Maya Chen</a><br><span class="dim" style="font-size: 12px">fair fit</span></span><span class="num pos" style="font-size: 12px">features +2% (est.)</span></div>
+          <div class="row"><span><b>CMO</b> · <span class="warn">vacant</span></span><span class="num neg" style="font-size: 12px">marketing −10%</span></div>
+          <div class="row" style="border-bottom: 0"><span><b>CRO</b> · <a href="#">Ana Souza</a><br><span class="dim" style="font-size: 12px">strong fit</span></span><span class="num pos" style="font-size: 12px">seller capacity +12% (est.)</span></div>
+          <div style="border: 1px solid #3A4656; border-radius: 8px; padding: 12px; margin-top: 10px; background: #11161D">
+            <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px">Appoint a CFO</div>
+            <div class="row" style="font-size: 13px"><span>Rahul Mehta · Finance Manager, staff</span><span class="dim">good fit · +3% (est.)</span></div>
+            <div class="row" style="font-size: 13px; border-bottom: 0"><span>Search for an exec-level CFO</span><a href="RecruitmentPlans.dc.html">Open search</a></div>
+            <p class="dim" style="font-size: 12px; margin: 8px 0">Appointing makes them exec level: their market rate rises to $170,000 (2010 dollars), so raise them too. +5 morale. Energy 5.</p>
+            <button class="btnp" type="button">Appoint Rahul</button>
+          </div>
+          <p class="meta" style="font-size: 11px; margin: 6px 0 0">Fit and effects are estimates from what you know about each person.</p>
+        </aside>
+      </div>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

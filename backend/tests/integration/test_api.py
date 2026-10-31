@@ -48,10 +48,19 @@ def test_create_list_get(client: TestClient) -> None:
         "difficulty": "standard",
         "turn": 0,
         "date_label": "Jan 2010",
+        "display_name": "dev",  # M7b: the saves manager's columns
+        "game_state": "active",
+        "ironman": False,
+        "busy": False,
     }
-    assert res.json() == expected
-    assert client.get("/api/saves").json() == [expected]
-    assert client.get("/api/saves/dev").json() == expected
+
+    def stable(body: dict[str, Any]) -> dict[str, Any]:
+        assert body["size_bytes"] > 0 and body["last_played"]  # vary with the file
+        return {k: v for k, v in body.items() if k not in ("size_bytes", "last_played")}
+
+    assert stable(res.json()) == expected
+    assert [stable(s) for s in client.get("/api/saves").json()] == [expected]
+    assert stable(client.get("/api/saves/dev").json()) == expected
 
 
 def test_overview_and_advance(client: TestClient, save_dir: Path) -> None:
@@ -284,7 +293,8 @@ def test_openapi_declares_response_models(client: TestClient) -> None:
     spec = client.get("/openapi.json").json()
     for path, ops in spec["paths"].items():
         for op in ops.values():
-            assert "200" in op["responses"] or "201" in op["responses"], path
+            # 202: a holiday starts as a job; 204: a deleted save has no body (M7b)
+            assert {"200", "201", "202", "204"} & set(op["responses"]), path
             assert op.get("operationId"), path
 
 

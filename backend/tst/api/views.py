@@ -10,6 +10,7 @@ from collections.abc import Mapping, Sequence
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tst.api import breakdowns
 from tst.api.schemas.people import (
     AttributeOut,
     CandidacyOut,
@@ -278,6 +279,7 @@ def person_summary(
             else format_turn(employment.end_turn),
             tenure_months=state.turn - employment.start_turn,
             market_rate_cents=market_rate,
+            salary_breakdown=breakdowns.salary(employment.salary_cents, market_rate),
             monthly_cost_cents=employment_monthly_cost_cents(
                 employment, data.balance, remote=is_remote(state, employment)
             ),

@@ -43,9 +43,7 @@ test('create a game and continue two months', async ({ page }) => {
   await expect(page.getByTestId('kpi-runway')).toHaveText(/^4[2-4] months$/);
 });
 
-test('Space advances one month; keys jump screens; later screens say when they arrive', async ({
-  page,
-}) => {
+test('Space advances one month; keys jump screens', async ({ page }) => {
   await setupGame(page, { company: `Keys ${Date.now()}` });
   await expect(page.getByTestId('game-date')).toHaveText('Jan 2010');
 
@@ -66,7 +64,9 @@ test('Space advances one month; keys jump screens; later screens say when they a
   await page.keyboard.press('8');
   await expect(page).toHaveURL(/\/competitors$/); // live from M5
   await page.keyboard.press('9');
-  await expect(page.getByText('Arrives in M7.')).toBeVisible();
+  await expect(page).toHaveURL(/\/history$/); // live from M7b
+  await page.keyboard.press('0');
+  await expect(page).toHaveURL(/\/saves$/); // M7b
 
   // Reloading keeps the game: state lives in the save file, not the browser.
   await page.reload();

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from tst.api.schemas.people import EnergyOut, InboxItemOut
@@ -55,12 +58,31 @@ class CreateSaveIn(BaseModel):
 
 
 class SaveOut(BaseModel):
-    save_id: str
+    save_id: str = Field(description="The file's slug: the save's id in every route")
+    display_name: str = Field(description="The save's name on the Saves screen (M7b)")
     company_name: str
     scenario_id: str
     difficulty: str
     turn: int
     date_label: str
+    game_state: str = Field(description="active | bankrupt | founder_removed")
+    last_played: datetime = Field(description="When the file last changed (UTC)")
+    size_bytes: int
+    ironman: bool = Field(description="No duplicate or restore (ADR-0004)")
+    busy: bool = Field(description="A turn, action or holiday is writing to it now")
+
+
+class SaveNameIn(BaseModel):
+    name: str = Field(min_length=1, max_length=80, description="The save's display name")
+
+
+class BackupOut(BaseModel):
+    backup_id: str = Field(description="The backup's file name")
+    kind: Literal["periodic", "pre_upgrade"]
+    turn: int = Field(description="The game turn the backup was taken at")
+    date_label: str
+    created: datetime = Field(description="When the backup file was written (UTC)")
+    size_bytes: int
 
 
 class SnapshotPointOut(BaseModel):

@@ -1,9 +1,12 @@
-import { Button, Checkbox, Menu, NativeSelect, TextInput, UnstyledButton } from '@mantine/core';
+import { NativeSelect, TextInput, UnstyledButton } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { AttributeRange } from '../components/AttributeRange';
 import { DataTable } from '../components/DataTable';
+import { ViewsMenu } from '../components/ViewsMenu';
+import { TABLE_SEARCH_ATTR } from '../hooks/useGameHotkeys';
+import { useTableViews } from '../hooks/useTableViews';
 import { KpiTile } from '../components/KpiTile';
 import { MoraleBar } from '../components/MoraleBar';
 import { LeadsChip } from '../components/OrgNode';
@@ -168,6 +171,7 @@ function skillColumns(saveId: string, meta: NewGameMeta) {
         {
           id: skill.key,
           header: skill.label,
+          meta: { term: 'skill_range' },
           sortFn: 'basic',
           sortDescFirst: true,
           cell: ({ row }) => {
@@ -225,11 +229,13 @@ function PeopleBody({
       (p) => p.name.toLowerCase().includes(q) || (p.role_label ?? '').toLowerCase().includes(q),
     );
   }, [people, filter, unitFilter]);
+  const views = useTableViews(`people.${view}`);
   const table = useTable({
     features: gameTableFeatures,
     columns,
     data,
     getRowId: (p) => String(p.person_id),
+    ...views.tableProps,
   });
 
   const interestLabel = new Map(meta.interests.map((i) => [i.key, i.label]));
@@ -267,28 +273,7 @@ function PeopleBody({
                 </UnstyledButton>
               ))}
             </div>
-            <Menu closeOnItemClick={false} position="bottom-start">
-              <Menu.Target>
-                <Button variant="default" size="sm" h={36}>
-                  Columns
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown mah={360} style={{ overflowY: 'auto' }}>
-                {table
-                  .getAllLeafColumns()
-                  .filter((c) => c.getCanHide())
-                  .map((c) => (
-                    <Menu.Item key={c.id} onClick={() => c.toggleVisibility()}>
-                      <Checkbox
-                        size="xs"
-                        readOnly
-                        checked={c.getIsVisible()}
-                        label={typeof c.columnDef.header === 'string' ? c.columnDef.header : c.id}
-                      />
-                    </Menu.Item>
-                  ))}
-              </Menu.Dropdown>
-            </Menu>
+            <ViewsMenu table={table} views={views} label="People" />
             <NativeSelect
               ml="auto"
               w={180}
@@ -301,8 +286,9 @@ function PeopleBody({
             <TextInput
               w={200}
               type="search"
-              placeholder="Name or role"
+              placeholder="Name or role  ( / )"
               aria-label="Filter by name or role"
+              {...{ [TABLE_SEARCH_ATTR]: '' }}
               leftSection={<span style={{ fontSize: 12 }}>Filter</span>}
               leftSectionWidth={48}
               value={filter}
@@ -315,24 +301,28 @@ function PeopleBody({
       </ScreenTitle>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
         <KpiTile
+          term="kpi.headcount"
           label="Headcount"
           value={String(team.headcount)}
           note={team.on_notice ? `${team.on_notice} on notice` : 'None on notice'}
           testId="people-headcount"
         />
         <KpiTile
+          term="kpi.people_cost"
           label="Monthly people cost"
           value={formatMoneyWhole(team.people_cost_cents)}
           note="Salaries, benefits, office"
           testId="people-cost"
         />
         <KpiTile
+          term="kpi.avg_morale"
           label="Average morale"
           value={team.avg_morale === null ? 'n/a' : formatWhole(team.avg_morale)}
           note="Employees only"
           testId="people-morale"
         />
         <KpiTile
+          term="kpi.mission"
           label="Company mission"
           small
           value={overview.mission.map((k) => interestLabel.get(k) ?? k).join(' · ') || 'None'}

@@ -9,6 +9,7 @@ import re
 import threading
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -38,6 +39,7 @@ from tst.db.models import (
     LedgerLineRow,
     LLMTextRow,
     PersonMoraleLogRow,
+    PersonRatingLogRow,
     PersonRow,
     ProductMonthRow,
     SaveMetaRow,
@@ -80,6 +82,7 @@ from tst.sim.finance.statements import projected_runway
 from tst.sim.ledger import AccountCode, apply_entries
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
+from tst.sim.people.reveal import shown_rating
 from tst.sim.products.models import ProductMonth
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rng import RngFactory
@@ -168,6 +171,52 @@ BUSY_MESSAGE = "This save is busy with another change; try again when it finishe
 def _lock(path: Path) -> threading.Lock:
     with _LOCKS_GUARD:
         return _LOCKS.setdefault(path.resolve(), threading.Lock())
+
+
+# Saves reserved by a long job (M7b Holiday): each month is its own write transaction, and
+# any other write to the save between them is refused as busy. Keyed by resolved path; the
+# value is the job's token, which the job's thread sets in `_HOLDER` to write.
+_HOLDS: dict[str, object] = {}
+_HOLDER: ContextVar[object | None] = ContextVar("tst_save_holder", default=None)
+
+
+def reserve(path: Path) -> object:
+    """Reserve a save for a job; SaveBusyError if a write or another job has it."""
+    key = str(path.resolve())
+    with _LOCKS_GUARD:
+        if key in _HOLDS or _LOCKS.get(path.resolve(), threading.Lock()).locked():
+            raise SaveBusyError(BUSY_MESSAGE)
+        token = object()
+        _HOLDS[key] = token
+        return token
+
+
+def release(path: Path, token: object) -> None:
+    with _LOCKS_GUARD:
+        if _HOLDS.get(str(path.resolve())) is token:
+            del _HOLDS[str(path.resolve())]
+
+
+@contextmanager
+def holding(token: object) -> Iterator[None]:
+    """Write as the job that reserved the save (in the job's own thread)."""
+    reset = _HOLDER.set(token)
+    try:
+        yield
+    finally:
+        _HOLDER.reset(reset)
+
+
+def is_reserved(path: Path) -> bool:
+    with _LOCKS_GUARD:
+        return str(path.resolve()) in _HOLDS
+
+
+def _check_reserved(path: Path) -> None:
+    with _LOCKS_GUARD:
+        held = _HOLDS.get(str(path.resolve()))
+    if held is not None and held is not _HOLDER.get():
+        raise SaveBusyError(BUSY_MESSAGE)
 
 
 def is_locked_error(exc: BaseException) -> bool:
@@ -281,7 +330,8 @@ def read_state(session: Session) -> GameState:
 def write_session(path: Path) -> Iterator[Session]:
     """A session in one write transaction on a save. A second write to the same save while
     one is in progress raises SaveBusyError at once instead of waiting or failing deep inside
-    SQLite (M6 sub-task 0)."""
+    SQLite (M6 sub-task 0). A save reserved by a job (Holiday) is busy to every other writer."""
+    _check_reserved(path)
     lock = _lock(path)
     if not lock.acquire(blocking=False):
         raise SaveBusyError(BUSY_MESSAGE)
@@ -570,6 +620,7 @@ def apply_turn_result(
     )
 
     player = result.new_state.player
+    insert_rows(session, rating_rows(result.new_state, played, data))  # M7b History
     session.add(decisions_to_row(played, player.id, decisions))
     first = next_action_seq(session, played)
     session.add_all(
@@ -617,6 +668,22 @@ def apply_turn_result(
     )
     meta.current_turn = result.new_state.turn
     session.flush()
+
+
+def rating_rows(state: GameState, turn: int, data: LoadedData) -> list[PersonRatingLogRow]:
+    """Each player employee's shown rating at this month end (M7b, 17.2): the founder is
+    not rated; someone with no role or no reveal record is skipped."""
+    rows = []
+    player = state.player.id
+    for e in state.staff(player):
+        person = state.person(e.person_id)
+        reveal = state.reveal(player, e.person_id)
+        if person.is_founder or reveal is None:
+            continue
+        role = data.game_data.role(e.role)
+        rating = shown_rating(person, reveal, role.primary)
+        rows.append(PersonRatingLogRow(person_id=e.person_id, turn=turn, rating=rating))
+    return rows
 
 
 class _PendingEvents(Exception):
@@ -880,6 +947,25 @@ def update_index(path: Path, state: GameState | None = None) -> None:
     )
     items = sorted([s for s in items if s.slug != slug] + [mine], key=lambda s: s.slug)
     index.write_text(json.dumps([asdict(s) for s in items], indent=2) + "\n", encoding="utf-8")
+
+
+def remove_from_index(path: Path) -> None:
+    """Drop a deleted save's entry from saves/index.json (M7b)."""
+    index = path.parent / INDEX_FILE
+    try:
+        items = [SaveSummary(**item) for item in json.loads(index.read_text(encoding="utf-8"))]
+    except (OSError, ValueError, TypeError):
+        refresh_index(path.parent)
+        return
+    slug = slug_of(path)
+    kept = [s for s in items if s.slug != slug]
+    index.write_text(json.dumps([asdict(s) for s in kept], indent=2) + "\n", encoding="utf-8")
+
+
+def forget(path: Path) -> None:
+    """Forget what this process remembers about a save file that is about to go (M7b)."""
+    _LAST.pop(str(path.resolve()), None)
+    migrate.forget(path)
 
 
 def list_saves(save_dir: Path) -> list[SaveSummary]:

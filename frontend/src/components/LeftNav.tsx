@@ -11,7 +11,7 @@ export function LeftNav({ saveId, unread }: { saveId: string; unread: number }) 
           className="tst-navlink"
           data-dimmed={item.arrivesIn ? 'true' : undefined}
         >
-          <span className="tst-key">{index + 1}</span>
+          <span className="tst-key">{(index + 1) % 10}</span>
           {item.label}
           {item.arrivesIn && (
             <span className="tst-muted" style={{ marginLeft: 'auto', fontSize: 11 }}>

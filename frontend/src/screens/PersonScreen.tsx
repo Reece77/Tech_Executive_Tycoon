@@ -6,6 +6,7 @@ import { AttributeRange } from '../components/AttributeRange';
 import { MoraleBar } from '../components/MoraleBar';
 import { RelationshipsPanel } from '../components/Relationships';
 import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../components/PersonOrg';
+import { BreakdownTip } from '../components/Term';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { StatusChip } from '../components/StatusChip';
 import {
@@ -162,7 +163,13 @@ function ProfileBody({
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 28 }}>
           {emp && !p.is_founder && (
             <Stat label="Salary">
-              <span className="tst-num">{formatMoneyWhole(emp.salary_cents)}</span>
+              <BreakdownTip
+                breakdown={emp.salary_breakdown}
+                title="Salary against the market"
+                testId="salary-drivers"
+              >
+                <span className="tst-num">{formatMoneyWhole(emp.salary_cents)}</span>
+              </BreakdownTip>
             </Stat>
           )}
           {p.candidacy && (

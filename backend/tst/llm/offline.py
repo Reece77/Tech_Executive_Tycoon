@@ -67,4 +67,12 @@ class MockLLMAdapter:
 
     def generate_text(self, prompt: TextPrompt) -> Completion:
         self.calls.append(prompt)
-        return Completion(prompt.fallback, self._usage(prompt.system, prompt.user, prompt.fallback))
+        text = mock_coo_answer(prompt.user) if prompt.kind == "coo" else prompt.fallback
+        return Completion(text, self._usage(prompt.system, prompt.user, text))
+
+
+def mock_coo_answer(user: str) -> str:
+    """A deterministic COO answer (M7b): the first briefing line, marked as the mock's."""
+    lines = [ln[2:] for ln in user.splitlines() if ln.startswith("- ")]
+    first = lines[0] if lines else "Nothing urgent."
+    return f"[mock] Looking at the numbers you gave me, the first thing I would watch: {first}"

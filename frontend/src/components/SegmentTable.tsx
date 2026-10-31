@@ -6,6 +6,7 @@ import { formatMoneyWhole } from '../lib/format';
 import { formatCount, formatFlow, formatPercent, REACH_TEXT } from '../lib/products';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 import { DataTable } from './DataTable';
+import { BreakdownTip } from './Term';
 
 const helper = createColumnHelper<GameTableFeatures, ProductSegment>();
 
@@ -71,6 +72,7 @@ export function SegmentTable({
   const columns = useMemo(() => {
     const segment = helper.accessor('label', {
       header: 'Segment',
+      meta: { term: 'segment' },
       sortFn: 'alphanumeric',
       cell: ({ getValue }) => <span style={{ fontWeight: 600 }}>{getValue()}</span>,
     });
@@ -127,7 +129,11 @@ export function SegmentTable({
       helper.accessor('share_of_served', {
         header: 'Share of buyers',
         sortFn: 'basic',
-        cell: ({ getValue }) => <span className="tst-num">{formatPercent(getValue())}</span>,
+        cell: ({ row, getValue }) => (
+          <BreakdownTip breakdown={row.original.share_breakdown} title="Share of buyers">
+            <span className="tst-num">{formatPercent(getValue())}</span>
+          </BreakdownTip>
+        ),
       }),
       helper.accessor('new_last_month', {
         header: 'New',

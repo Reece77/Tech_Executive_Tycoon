@@ -2,10 +2,17 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { MarketTable } from '../components/MarketTable';
 import { LoadError, Loading } from '../components/ScreenState';
 import { useCategories, useMarket } from '../hooks/api';
+import { useTableViews } from '../hooks/useTableViews';
 import { segmentSummary } from '../lib/products';
 
 /** Every product in a category's market, segment by segment, incumbents included. */
 export function MarketScreen() {
+  // One set of views for every segment's table: they share their columns (M7b).
+  const views = useTableViews('market', {
+    sorting: [{ id: 'appeal', desc: true }],
+    columnVisibility: {},
+    columnOrder: [],
+  });
   const { saveId = '', category = '' } = useParams();
   const navigate = useNavigate();
   const categories = useCategories(saveId);
@@ -57,7 +64,11 @@ export function MarketScreen() {
               {segmentSummary(s)}
             </span>
           </div>
-          <MarketTable segment={s} productHref={(id) => `/game/${saveId}/products/${id}`} />
+          <MarketTable
+            segment={s}
+            productHref={(id) => `/game/${saveId}/products/${id}`}
+            views={views}
+          />
         </section>
       ))}
       <p className="tst-muted" style={{ margin: 0, fontSize: 12 }}>

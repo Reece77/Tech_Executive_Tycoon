@@ -48,6 +48,34 @@ class BackupBalance(_Frozen):
     keep_periodic: int = Field(gt=0)
 
 
+class HolidayBalance(_Frozen):
+    """Auto-advance (formulas.md 17.1)."""
+
+    max_months: int = Field(gt=0)
+    default_months: int = Field(gt=0)
+    default_stop: Literal["minor", "major", "critical"]
+    stop_runway_months: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def _check(self) -> HolidayBalance:
+        if self.default_months > self.max_months:
+            raise ValueError("holiday.default_months must not exceed holiday.max_months")
+        return self
+
+
+class CooBalance(_Frozen):
+    """Ask my COO (formulas.md 17.3)."""
+
+    max_question_chars: int = Field(gt=0)
+    max_answer_words: int = Field(gt=0)
+    keep_answers: int = Field(gt=0)
+    max_issues: int = Field(gt=0)
+    runway_months: int = Field(ge=0)
+    morale_below: float = Field(ge=0)
+    role_open_months: int = Field(ge=0)
+    board_below: float = Field(ge=0)
+
+
 DIFFICULTY_LEVELS = ("easy", "standard", "hard", "ironman")  # ADR-0011
 DEFAULT_DIFFICULTY = "standard"
 LEVELS = ("junior", "mid", "senior", "staff", "principal", "exec")  # formulas.md section 2
@@ -804,6 +832,8 @@ class Balance(_Frozen):
     scenario: dict[str, ScenarioBalance]
     difficulty: dict[str, DifficultyBalance]
     backup: BackupBalance
+    holiday: HolidayBalance  # M7b (formulas.md 17.1)
+    coo: CooBalance  # M7b (formulas.md 17.3)
     people: PeopleBalance
     payroll: PayrollBalance
     growth: GrowthBalance

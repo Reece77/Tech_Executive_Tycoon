@@ -162,24 +162,28 @@ export function GameOverScreen() {
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <KpiTile
+            term="kpi.lasted"
             label="Lasted"
             value={formatMonths(g.months_lasted)}
             note={`${g.founded_label} to ${g.ended_label ?? ''}`}
             testId="over-lasted"
           />
           <KpiTile
+            term="kpi.arr_at_end"
             label="ARR at the end"
             value={formatMoneyWhole(g.arr_cents)}
             note={`${g.live_products} live product${g.live_products === 1 ? '' : 's'}, ${g.customers} customers`}
             testId="over-arr"
           />
           <KpiTile
+            term="kpi.peak_headcount"
             label="Peak headcount"
             value={String(g.peak_headcount)}
             note={`${g.final_headcount} at the end`}
             testId="over-headcount"
           />
           <KpiTile
+            term="kpi.founder_owned"
             label="You owned"
             value={formatFraction(g.founder_fraction, 1)}
             note={g.funding_summary ?? 'with no outside money'}

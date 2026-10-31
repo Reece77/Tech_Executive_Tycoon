@@ -12,7 +12,7 @@ from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Inte
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 16
+SCHEMA_VERSION = 19
 
 
 class Base(DeclarativeBase):
@@ -50,6 +50,9 @@ class SaveMetaRow(Base):
     next_rival_effect_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_rival_move_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_approach_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    # M7b: the Saves screen's name for the save; null shows the slug. Deferred: migration 0013
+    # reads save_meta through these models, before 0017 adds the column.
+    display_name: Mapped[str | None] = mapped_column(String(80), nullable=True, deferred=True)
     next_rival_person_id: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default="1000001"
     )
@@ -344,6 +347,18 @@ class PersonMoraleLogRow(Base):
     person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
     turn: Mapped[int] = mapped_column(Integer, primary_key=True)
     morale: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class PersonRatingLogRow(Base):
+    """Month-end shown rating per player employee, append-only (M7b, 0018): the mean
+    midpoint of the displayed ranges of the role's primary skills. History's best hires and
+    notable departures read it; it holds only what the player could see (ADR-0007)."""
+
+    __tablename__ = "person_rating_log"
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    rating: Mapped[float] = mapped_column(Float, nullable=False)
 
 
 # --- Inbox (M1b, migration 0004_inbox) -------------------------------------------------------
@@ -777,3 +792,20 @@ class LLMCallLogRow(Base):
     created_at: Mapped[str] = mapped_column(String(32), nullable=False)
     prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
     response: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class CooAnswerRow(Base):
+    """One "Ask my COO" question and answer (M7b, 0019; formulas.md 17.3): read-only, never
+    fed into events; the newest `coo.keep_answers` per save are kept."""
+
+    __tablename__ = "coo_answer"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    person_id: Mapped[int | None] = mapped_column(ForeignKey("person.id"), nullable=True)
+    speaker: Mapped[str] = mapped_column(String(120), nullable=False)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str] = mapped_column(String(16), nullable=False)  # claude|mock|offline
+    cost_cents: Mapped[float] = mapped_column(Float, nullable=False)  # real cents, not game money
+    created_at: Mapped[str] = mapped_column(String(32), nullable=False)

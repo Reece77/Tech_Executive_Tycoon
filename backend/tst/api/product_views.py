@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
+from tst.api import breakdowns
 from tst.api.schemas.products import (
     AppealWeightsOut,
     AssignedUnitOut,
@@ -233,8 +234,8 @@ def product_out(
                 price_cents=seg.price_cents,
                 price_score=_price_score(product, seg, data),
                 customers=seg.customers,
-                appeal=segment_appeal(product, seg, game, shown_turn(state)),
-                share_of_served=seg.customers / served if served else 0.0,
+                appeal=(appeal := segment_appeal(product, seg, game, shown_turn(state))),
+                share_of_served=(share := seg.customers / served if served else 0.0),
                 churn_rate=None if mine is None else _churn(mine, rows, data),
                 mrr_cents=_mrr(seg),
                 note=(
@@ -245,6 +246,19 @@ def product_out(
                 new_last_month=last[seg.segment].new if seg.segment in last else 0.0,
                 churned_last_month=last[seg.segment].churned if seg.segment in last else 0.0,
                 counts_users=seg.segment == CONSUMER_SEGMENT,
+                share_breakdown=breakdowns.market_share(
+                    appeal,
+                    _price_score(product, seg, data),
+                    product,
+                    current_feature(product, game, shown_turn(state)),
+                    {
+                        "quality": seg_def.weights.quality,
+                        "price": seg_def.weights.price,
+                        "brand": seg_def.weights.brand,
+                        "features": seg_def.weights.features,
+                    },
+                    share,
+                ),
             )
         )
 
@@ -253,6 +267,7 @@ def product_out(
 
     missing = launch_problems(state, product, data.balance, game)
     recent = sorted(history, key=lambda m: (m.turn, m.segment))
+    pace = f.pace(team.base_output(data.balance), category.scope, data.balance.products)
     last_turns = sorted({m.turn for m in recent})[-12:]
     return ProductOut(
         product_id=product.id,
@@ -290,8 +305,14 @@ def product_out(
         builders=names([b.person_id for b in team.builders]),
         sellers=names([s.person_id for s in team.sellers]),
         marketers=names([m.person_id for m in team.marketers]),
-        pace=f.pace(team.base_output(data.balance), category.scope, data.balance.products),
+        pace=pace,
         rotting=product.rotting,
+        quality_breakdown=breakdowns.product_quality(
+            product,
+            [next(iter(m.values())).quality for m in months],
+            pace,
+            product.rotting,
+        ),
         launch=LaunchReadinessOut(
             ready=product.status == "in_development" and not missing,
             missing=missing if product.status == "in_development" else [],

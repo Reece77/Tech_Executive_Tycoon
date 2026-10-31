@@ -1,4 +1,4 @@
-// Left navigation; keys 1-9 jump to these in order. Later screens show dimmed with their milestone.
+// Left navigation; keys 1-9 and 0 jump to these in order. Later screens show dimmed with their milestone.
 export interface NavItem {
   path: string;
   label: string;
@@ -14,5 +14,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { path: 'products', label: 'Products', arrivesIn: null },
   { path: 'finance', label: 'Finance', arrivesIn: null },
   { path: 'competitors', label: 'Competitors', arrivesIn: null },
-  { path: 'history', label: 'History', arrivesIn: 'M7' },
+  { path: 'history', label: 'History', arrivesIn: null },
+  { path: 'saves', label: 'Saves', arrivesIn: null }, // M7b, key 0
 ];

@@ -79,3 +79,20 @@ export function humanize(key: string): string {
   const text = key.replace(/_/g, ' ');
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+/** "38.2 MB", "640 KB": a file size (M7b saves). */
+export function formatBytes(bytes: number): string {
+  if (bytes >= 1_000_000) return `${(bytes / 1_000_000).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1000))} KB`;
+}
+
+/** A wall-clock time from the API (ISO, UTC) in the player's locale: "30 Oct 2026, 14:02". */
+export function formatWhen(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}

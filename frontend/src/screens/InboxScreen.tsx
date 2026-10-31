@@ -309,7 +309,16 @@ function MessageDetail({
       <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }} data-testid="message-title">
         {item.title}
       </h2>
-      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: 'var(--tst-text-2)' }}>
+      <p
+        style={{
+          margin: 0,
+          fontSize: 14,
+          lineHeight: 1.55,
+          color: 'var(--tst-text-2)',
+          whiteSpace: 'pre-line',
+        }}
+        data-testid="message-body"
+      >
         {item.body}
       </p>
       {item.quote && (
@@ -394,6 +403,11 @@ function MessageDetail({
             data-testid="view-finance"
           >
             {item.kind === 'bridge_offered' ? 'View the bridge offer' : 'Open Finance'}
+          </Button>
+        )}
+        {item.link_kind === 'history' && (
+          <Button component={Link} to={`/game/${saveId}/history`} h={44} data-testid="view-history">
+            Open History
           </Button>
         )}
         {item.kind === 'rival_approach' && (

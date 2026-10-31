@@ -30,6 +30,7 @@ import {
 import { formatRatio } from '../lib/format';
 import { CHANNEL_LABELS, FOCUS_LABELS } from '../lib/org';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
+import { useTableViews } from '../hooks/useTableViews';
 import { AttributeRange } from './AttributeRange';
 import { DataTable } from './DataTable';
 import { LoadError } from './ScreenState';
@@ -215,11 +216,13 @@ export function HiringPlansPanel({ saveId, hiring }: { saveId: string; hiring: H
       ]),
     [saveId, close],
   );
+  const views = useTableViews('recruitment.plans');
   const table = useTable({
     features: gameTableFeatures,
     columns,
     data: plans.data ?? [],
     getRowId: (p) => String(p.plan_id),
+    ...views.tableProps,
   });
 
   if (plans.error) return <LoadError title="Could not load hiring plans" error={plans.error} />;
@@ -244,6 +247,7 @@ export function HiringPlansPanel({ saveId, hiring }: { saveId: string; hiring: H
         </Button>
       </div>
       <DataTable
+        views={views}
         table={table}
         label="Hiring plans"
         rowTestId="plan-row"
