@@ -113,7 +113,8 @@ function overviewColumns(saveId: string) {
       id: 'top',
       header: 'Top skills',
       cell: ({ row }) => (
-        <span style={{ display: 'flex', gap: 10 }}>
+        // Wraps when space is short, so the whole table fits at 1440 wide (M7c).
+        <span style={{ display: 'flex', flexWrap: 'wrap', columnGap: 10, rowGap: 2 }}>
           {[...row.original.skills]
             .sort(byStrength)
             .slice(0, TOP_SKILLS)

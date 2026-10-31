@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 // M7c flows: (a) answer an event, follow its History link and see its card with the choice
 // taken; (b) a deep link to an inbox message opens it; (c) fire someone and open their
-// Former employee profile from History. Saves come from tools/e2e_event_save.py.
+// Former employee profile from History; (d) the People table fits at 1440 x 900. Saves come from tools/e2e_event_save.py.
 test.describe.configure({ mode: 'serial' });
 
 const stamp = Date.now();
@@ -65,4 +65,33 @@ test('(c) a former employee opens a read-only profile from History', async ({ pa
   await expect(page.getByTestId('former-badge')).toHaveText('Former employee');
   await expect(page.getByTestId('profile-name')).toHaveText(name);
   await expect(page.getByTestId('former-summary')).toContainText('Let go');
+});
+
+test('(d) the People table fits at 1440 x 900 without scrolling sideways', async ({ page }) => {
+  // Playtest bug: Top skills on one line pushed Status out of view at 1440 wide.
+  const save = `m7c-layout-${stamp}`;
+  makeSave(save);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  // The widest top-three seen in the playtest, on every row, so the check needs no luck.
+  await page.route(/\/api\/saves\/[^/]+\/people$/, async (route) => {
+    const people = (await (await route.fetch()).json()) as {
+      skills: { label: string; short_label: string; range: number[] }[];
+    }[];
+    const wide = ['Judging talent', 'Negotiation', 'Software eng'];
+    for (const p of people) {
+      p.skills.forEach((s, i) => {
+        if (i < 3) Object.assign(s, { label: wide[i], short_label: wide[i], range: [15, 20] });
+        else s.range = [1, 5];
+      });
+    }
+    await route.fulfill({ json: people });
+  });
+  await page.goto(`/game/${save}/people`);
+  await expect(page.getByTestId('person-row').nth(3)).toBeVisible();
+  const wrap = page.locator('.tst-table-wrap').first();
+  const { scroll, client } = await wrap.evaluate((el) => ({
+    scroll: el.scrollWidth,
+    client: el.clientWidth,
+  }));
+  expect(scroll).toBeLessThanOrEqual(client + 1);
 });

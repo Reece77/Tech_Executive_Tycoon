@@ -142,6 +142,7 @@ test('agent playtest: 120 months through the browser', async ({ page, request })
     return 'created Pipeline (B2B SaaS, SMB $40, mid-market $700), built by the company';
   });
 
+  let savesDone = false;
   try {
     for (month = 0; month < MONTHS; month++) {
       const year = Math.floor(month / 12);
@@ -150,7 +151,10 @@ test('agent playtest: 120 months through the browser', async ({ page, request })
       await step('hiring', () => hire(page, request, save, go, targetHeadcount(month)));
       await step('launch', () => launchReady(page, request, save, go));
       if (month === 5) await step('recruiter plan', () => recruiterPlan(page, go));
-      if (month === 30) await step('saves manager', () => savesManager(page, save));
+      if (month >= 30 && !savesDone) {
+        savesDone = true;
+        await step('saves manager', () => savesManager(page, save));
+      }
       const second = await api<{ product_id: number }[]>(request, `/saves/${save}/products`);
       if (second.length < 2 && month >= 24) {
         await step('second product', () => secondProduct(page, request, save, go));
