@@ -8,8 +8,9 @@ from dataclasses import dataclass, replace
 from typing import Literal
 
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
-from tst.sim.data_models import Balance
+from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError, OrgRuleError, ProductRuleError
+from tst.sim.hiring.formulas import market_mid_cents
 from tst.sim.log import inbox_item
 from tst.sim.org.executives import level_allowed, seats_in_play
 from tst.sim.org.models import SEATS, SHARED_SERVICES, ExecSeat, OrgUnit, SharedServices
@@ -39,6 +40,9 @@ class AppointExecutive:
     actor_id: int
     seat: str
     person_id: int
+    # The new annual salary; None: the person's exec market rate, never below their current
+    # pay (18.3; product manager, 2026-10-31).
+    salary_cents: int | None = None
     kind: Literal["appoint_executive"] = "appoint_executive"
 
 
@@ -121,21 +125,46 @@ def appoint_problem(
     return None
 
 
-def appoint_executive(state: GameState, action: AppointExecutive, balance: Balance) -> Outcome:
-    """Energy 5: the appointee becomes exec level (exec market rate from now on) and gains
-    +5 morale once (18.3)."""
+def exec_salary_cents(state: GameState, person_id: int, data: GameData) -> int:
+    """The default salary on appointment: the exec market rate for the person's role and
+    region, never below what they are paid now (18.3; product manager, 2026-10-31)."""
+    employment = state.employment_of(person_id)
+    assert employment is not None
+    band = data.role(employment.role).salary_band_mid_cents[EXEC_LEVEL]
+    region = data.region(state.person(person_id).region)
+    return max(employment.salary_cents, market_mid_cents(band, region.salary_multiplier_bp))
+
+
+def appoint_executive(
+    state: GameState, action: AppointExecutive, balance: Balance, data: GameData
+) -> Outcome:
+    """Energy 5: the appointee becomes exec level at the new salary, at once, and gains +5
+    morale once, plus the raise bonus once under the 13.8 rules (18.3). Without the raise,
+    rivals' offers at the exec market rate took appointees within months (M8r)."""
     company = acting_company(state, action.actor_id)
     _seat(state, company, action.seat, balance)
     if problem := appoint_problem(state, company, action.seat, action.person_id, balance):
         raise OrgRuleError(problem)
-    from tst.sim.actions.org import bump_morale
+    from tst.sim.actions.org import bump_morale, raise_morale_change
 
-    state = spend_energy(state, action.actor_id, "appoint_executive", balance)
     employment = state.employment_of(action.person_id)
     assert employment is not None
-    state = with_employment(state, replace(employment, level=EXEC_LEVEL))
+    salary = action.salary_cents
+    if salary is None:
+        salary = exec_salary_cents(state, action.person_id, data)
+    if isinstance(salary, bool) or not isinstance(salary, int) or salary <= 0:
+        raise InvalidActionError("a salary must be a positive amount in cents")
+    if salary < employment.salary_cents:
+        raise OrgRuleError("an appointment cannot set a salary below their current pay")
+    state = spend_energy(state, action.actor_id, "appoint_executive", balance)
+    raise_bonus = raise_morale_change(employment, salary, state.turn, balance)
+    last = state.turn if raise_bonus > 0 else employment.last_raise_turn
+    state = with_employment(
+        state,
+        replace(employment, level=EXEC_LEVEL, salary_cents=salary, last_raise_turn=last),
+    )
     state = with_exec_seat(state, ExecSeat(company, action.seat, action.person_id, state.turn))
-    state = bump_morale(state, action.person_id, balance.exec_seats.appoint_morale)
+    state = bump_morale(state, action.person_id, balance.exec_seats.appoint_morale + raise_bonus)
     person = state.person(action.person_id)
     label = balance.exec_seats.seats[action.seat].label
     log = inbox_item(

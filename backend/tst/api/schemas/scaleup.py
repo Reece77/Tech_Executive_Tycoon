@@ -89,6 +89,10 @@ class ProductDivisionIn(BaseModel):
 
 class AppointIn(BaseModel):
     person_id: int
+    salary_cents: int | None = Field(
+        default=None,
+        description="New annual salary; null: the exec market rate, never below current pay",
+    )
 
 
 class AppointCandidateOut(BaseModel):
@@ -99,6 +103,11 @@ class AppointCandidateOut(BaseModel):
     fit: str
     estimated_effect_pct: float
     problem: str | None = Field(description="Why they cannot take the seat now, or null")
+    salary_cents: int = Field(description="Their annual salary now")
+    exec_salary_cents: int = Field(
+        description="The default salary on appointment: the exec market rate, never below "
+        "their current pay (18.3)"
+    )
 
 
 class SeatCandidatesOut(BaseModel):

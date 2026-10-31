@@ -9405,6 +9405,16 @@
             ],
             "title": "Problem",
             "description": "Why they cannot take the seat now, or null"
+          },
+          "salary_cents": {
+            "type": "integer",
+            "title": "Salary Cents",
+            "description": "Their annual salary now"
+          },
+          "exec_salary_cents": {
+            "type": "integer",
+            "title": "Exec Salary Cents",
+            "description": "The default salary on appointment: the exec market rate, never below their current pay (18.3)"
           }
         },
         "type": "object",
@@ -9415,7 +9425,9 @@
           "level",
           "fit",
           "estimated_effect_pct",
-          "problem"
+          "problem",
+          "salary_cents",
+          "exec_salary_cents"
         ],
         "title": "AppointCandidateOut"
       },
@@ -9424,6 +9436,18 @@
           "person_id": {
             "type": "integer",
             "title": "Person Id"
+          },
+          "salary_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Cents",
+            "description": "New annual salary; null: the exec market rate, never below current pay"
           }
         },
         "type": "object",

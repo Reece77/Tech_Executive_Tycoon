@@ -25,7 +25,7 @@ from tst.api.schemas.scaleup import (
 )
 from tst.api.views import person_name, role_label
 from tst.loader import LoadedData
-from tst.sim.actions.scaleup import appoint_problem
+from tst.sim.actions.scaleup import appoint_problem, exec_salary_cents
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import AccountType, Balance
 from tst.sim.finance import statements as fs
@@ -225,6 +225,8 @@ def seat_candidates_out(state: GameState, seat: str, data: LoadedData) -> SeatCa
                 fit=fit_word(score, b),
                 estimated_effect_pct=effect_pct(seat, seat_effect(score, b.exec_seats), b),
                 problem=appoint_problem(state, company, seat, person.id, b),
+                salary_cents=e.salary_cents,
+                exec_salary_cents=exec_salary_cents(state, person.id, data.game_data),
             )
         )
     out.sort(key=lambda c: (c.problem is not None, -c.estimated_effect_pct, c.person_id))
@@ -233,8 +235,9 @@ def seat_candidates_out(state: GameState, seat: str, data: LoadedData) -> SeatCa
         candidates=out,
         energy_cost=energy_cost("appoint_executive", b),
         note=(
-            "Appointing makes them exec level, with the exec market rate (so raise them too), "
-            f"and +{b.exec_seats.appoint_morale:.0f} morale. {NOTE}"
+            "Appointing makes them exec level at a new salary, the exec market rate unless you "
+            f"set another (never below their pay now), with +{b.exec_seats.appoint_morale:.0f} "
+            f"morale and a raise's +{b.org.raise_morale:.0f}. {NOTE}"
         ),
     )
 

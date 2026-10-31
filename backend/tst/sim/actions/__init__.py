@@ -318,7 +318,7 @@ def apply_action(
         case SetSharedServices():
             out = set_shared_services(state, action, balance)
         case AppointExecutive():
-            out = appoint_executive(state, action, balance)
+            out = appoint_executive(state, action, balance, data)
         case RemoveExecutive():
             out = remove_executive(state, action, balance)
     return ActionResult(new_state=out.state, ledger_entries=out.entries, log_items=out.log)

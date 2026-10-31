@@ -2198,11 +2198,26 @@ export interface components {
              * @description Why they cannot take the seat now, or null
              */
             problem: string | null;
+            /**
+             * Salary Cents
+             * @description Their annual salary now
+             */
+            salary_cents: number;
+            /**
+             * Exec Salary Cents
+             * @description The default salary on appointment: the exec market rate, never below their current pay (18.3)
+             */
+            exec_salary_cents: number;
         };
         /** AppointIn */
         AppointIn: {
             /** Person Id */
             person_id: number;
+            /**
+             * Salary Cents
+             * @description New annual salary; null: the exec market rate, never below current pay
+             */
+            salary_cents?: number | null;
         };
         /** ApproachOut */
         ApproachOut: {

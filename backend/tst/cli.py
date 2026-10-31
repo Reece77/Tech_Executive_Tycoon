@@ -1612,16 +1612,26 @@ def appoint(
     save: SaveOpt,
     seat: Annotated[str, typer.Option(help="coo|cfo|cto|cpo|cmo|cro")],
     person: Annotated[int, typer.Option(help="Person id")],
+    salary: Annotated[
+        str | None,
+        typer.Option(help="New annual salary in dollars; default: the exec market rate"),
+    ] = None,
 ) -> None:
-    """Appoint an employee (senior or above) to an executive seat: they become exec level
-    and gain +5 morale; energy 5 (18.3)."""
+    """Appoint an employee (senior or above) to an executive seat: they become exec level at
+    a new salary (the exec market rate unless set, never below their pay now) and gain +5
+    morale, plus a raise's bonus; energy 5 (18.3)."""
     from tst.sim.actions import AppointExecutive
 
     path, data, state = _game(save)
     founder = state.founder_of(state.player.id)
     if founder is None:
         raise _fail("the company has no founder")
-    result = _run(path, data, AppointExecutive(founder.id, seat.lower(), person))
+    pay = cents(salary) if salary is not None else None
+    result = _run(path, data, AppointExecutive(founder.id, seat.lower(), person, pay))
     who = result.new_state.person(person)
-    typer.echo(f"{who.first_name} {who.last_name} is now {seat.upper()} (exec level)")
+    employment = result.new_state.employment_of(person)
+    paid = format_money(employment.salary_cents) if employment else "?"
+    typer.echo(
+        f"{who.first_name} {who.last_name} is now {seat.upper()} (exec level, {paid} a year)"
+    )
     typer.echo(f"  {_energy(result.new_state, data)}")

@@ -212,7 +212,8 @@ def test_appoint_and_remove(loaded: LoadedData) -> None:
     state = out.new_state
     assert state.seat_holder(1, "cto") == 2
     assert state.employment_of(2).level == "exec"  # type: ignore[union-attr]
-    assert state.person_state(2).morale == pytest.approx(before + 5)
+    # +5 for the seat and +3 for the raise to the exec market rate (M8r, 2026-10-31).
+    assert state.person_state(2).morale == pytest.approx(before + 5 + 3)
     assert state.person_state(FOUNDER).energy == 60 - 5
     assert out.log_items[0].template == "exec_appointed"
     with pytest.raises(OrgRuleError, match="already hold"):
@@ -222,7 +223,7 @@ def test_appoint_and_remove(loaded: LoadedData) -> None:
     state = act(loaded, state, RemoveExecutive(FOUNDER, "cto")).new_state
     assert state.seat_holder(1, "cto") is None
     assert state.employment_of(2).level == "exec"  # type: ignore[union-attr]
-    assert state.person_state(2).morale == pytest.approx(before + 5 - 10)
+    assert state.person_state(2).morale == pytest.approx(before + 5 + 3 - 10)
     with pytest.raises(OrgRuleError, match="founder"):
         act(loaded, state, AppointExecutive(FOUNDER, "coo", FOUNDER))
 

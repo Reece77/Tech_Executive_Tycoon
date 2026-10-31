@@ -143,3 +143,5 @@ Each finding was fixed on branch `m8r-review-fixes`. Its regression test was wri
 | 7 | P3 Two definitions of burn | 24cc565 | `backend/tests/unit/test_m8r_burn.py`: $10,000 of operating outflow and a $100,000 SAFE store a burn of $10,000; money spent before Continue counts. Golden snapshots regenerated (only `monthly_burn_cents`) |
 
 Decisions and follow-ups are in `docs/tasks/M8r-review-fixes.md`.
+
+Follow-on to finding 3 (product manager, 2026-10-31): fixing it showed that appointees stayed on their old pay and were poached within months. An appointment now sets a salary, by default the exec market rate (formulas.md 18.3). T3 blitzscale (2/10) and M8 target 2 (1.097) still miss and are recorded for M15 (`docs/balance-targets.md`, M8r).

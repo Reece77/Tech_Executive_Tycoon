@@ -1321,7 +1321,7 @@ First v2 milestone (ADR-0019). Everything in §18.1–§18.5 takes effect only f
 ### 18.3 Executive seats (stage 3)
 
 - **Seats:** COO, CFO, CTO, CPO, CMO and CRO. The founder remains CEO until M13.
-- **Appoint** (immediate action, energy 5): any employee except the founder, at senior level or above, holding no other seat and not a president. They become **exec** level, so their role's exec market rate applies from then on (§13.8 applies: raise them too). Appointment gives +5 morale once.
+- **Appoint** (immediate action, energy 5): any employee except the founder, at senior level or above, holding no other seat and not a president. They become **exec** level at a **new salary**, applied at once: by default the exec market rate for their role and region, never below their current pay; the player may set another, never lower than current pay (product manager, 2026-10-31, M8r). Appointment gives +5 morale once, and the §13.8 raise rules apply to the new salary (a raise of at least 5% gives its +3 once, alongside the +5). Without the raise, rivals' offers at the exec market rate took appointees within months once a poached holder left the seat (Codex review 1, finding 3).
 - **Remove** (energy 5): −10 morale once. Their level stays exec.
 - **Seat score** `s`, from true skills with these weights (data: `exec_seats` in `balance.yaml`):
 

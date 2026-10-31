@@ -83,7 +83,7 @@ export type DivisionColumn = Schemas['DivisionColumnOut'];
 export type ScaleupAction =
   | { action: 'services'; unit_id: number; services: 'central' | 'embedded' }
   | { action: 'product_division'; product_id: number; division_id: number | null }
-  | { action: 'appoint'; seat: string; person_id: number }
+  | { action: 'appoint'; seat: string; person_id: number; salary_cents?: number }
   | { action: 'remove'; seat: string };
 
 /** One product action, as the product screens build it; maps to its route. */
@@ -1481,7 +1481,7 @@ async function applyScaleup(saveId: string, a: ScaleupAction) {
       return unwrap(
         await api.POST('/api/saves/{save_id}/scaleup/seats/{seat}/appoint', {
           params: { path: { save_id: saveId, seat: a.seat } },
-          body: { person_id: a.person_id },
+          body: { person_id: a.person_id, salary_cents: a.salary_cents ?? null },
         }),
       );
     case 'remove':

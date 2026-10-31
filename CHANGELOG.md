@@ -12,6 +12,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - 5 (P2) The price preview, the shown price score, the current appeal and actual sales use one reference price (`reference_price`) with the CRO's pricing power (`test_m8r_price_preview.py`).
   - 6 (P2) Event raises and cash effects compute with integers and Fractions (`money.exact`) and round half-to-even once (`test_m8r_event_money.py`, with Hypothesis property tests).
   - 7 (P3) Burn is net cash used before financing over the whole month (formulas.md 14.1); the snapshot, the Overview tile (now read from the snapshot again), its breakdown and the glossary agree (`test_m8r_burn.py`). `advance_turn` takes the month's cash flow already moved by actions (`prior_flow`).
+  - Executives are paid as executives (product manager, 2026-10-31): an appointment sets a salary, by default the exec market rate and never below current pay, applied at once with the raise bonus (formulas.md 18.3; API `salary_cents`, the Appoint dialog's salary field, `tst appoint --salary`). Recorded misses for M15, `xfail(strict=False)`: T3 blitzscale 2/10, M8 target 2 at 1.097, and an executive at the default salary staying six months (4/10 seeds).
   - **Golden snapshots regenerated:** only `monthly_burn_cents` changes (21 values over 10 seeds), in months when funding arrived, which used to store 0 because investor money hid the burn.
 
 - M7c fixes and an agent playtest:

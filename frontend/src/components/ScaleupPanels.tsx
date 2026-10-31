@@ -1,4 +1,4 @@
-import { Alert, Button, Modal } from '@mantine/core';
+import { Alert, Button, Modal, NumberInput } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import {
@@ -11,7 +11,7 @@ import {
   type Scaleup,
   type Seat,
 } from '../hooks/api';
-import { formatMoneyShort } from '../lib/format';
+import { formatMoneyShort, formatMoneyWhole } from '../lib/format';
 import { pct } from '../lib/org';
 import { Panel } from './ScreenState';
 
@@ -250,6 +250,8 @@ function AppointDialog({
   const candidates = useSeatCandidates(saveId, seat);
   const act = useScaleupAction(saveId);
   const data = candidates.data;
+  // The salary to appoint at, in whole dollars, by person; unset: their default (M8r).
+  const [salaries, setSalaries] = useState<Record<number, number>>({});
   return (
     <Modal
       opened
@@ -270,35 +272,62 @@ function AppointDialog({
             </Link>
             .
           </p>
-          {data.candidates.map((c) => (
-            <div key={c.person_id} className="tst-row" data-testid="appoint-candidate">
-              <span style={{ flex: 1 }}>
-                <strong>{c.name}</strong>{' '}
-                <span className="tst-muted">
-                  {c.role} · {c.level} · {c.fit} · {data.seat.effect_label}{' '}
-                  {pct(c.estimated_effect_pct)} (est.)
+          {data.candidates.map((c) => {
+            const dollars = salaries[c.person_id] ?? Math.round(c.exec_salary_cents / 100);
+            return (
+              <div key={c.person_id} className="tst-row" data-testid="appoint-candidate">
+                <span style={{ flex: 1 }}>
+                  <strong>{c.name}</strong>{' '}
+                  <span className="tst-muted">
+                    {c.role} · {c.level} · {c.fit} · {data.seat.effect_label}{' '}
+                    {pct(c.estimated_effect_pct)} (est.)
+                  </span>
+                  {c.problem && (
+                    <div className="tst-muted" style={{ fontSize: 12 }}>
+                      {c.problem}
+                    </div>
+                  )}
                 </span>
-                {c.problem && (
-                  <div className="tst-muted" style={{ fontSize: 12 }}>
-                    {c.problem}
-                  </div>
+                {c.problem === null && (
+                  <NumberInput
+                    aria-label={`Salary for ${c.name}`}
+                    prefix="$"
+                    thousandSeparator=","
+                    allowDecimal={false}
+                    allowNegative={false}
+                    w={140}
+                    size="xs"
+                    value={dollars}
+                    onChange={(v) =>
+                      setSalaries((s) => ({ ...s, [c.person_id]: typeof v === 'number' ? v : 0 }))
+                    }
+                    description={`a year · now ${formatMoneyWhole(c.salary_cents)}`}
+                    inputWrapperOrder={['input', 'description']}
+                    classNames={{ input: 'tst-num' }}
+                    data-testid="appoint-salary"
+                  />
                 )}
-              </span>
-              <Button
-                size="compact-sm"
-                disabled={c.problem !== null || act.isPending}
-                data-testid="appoint-confirm"
-                onClick={() =>
-                  act.mutate(
-                    { action: 'appoint', seat, person_id: c.person_id },
-                    { onSuccess: onClose },
-                  )
-                }
-              >
-                Appoint
-              </Button>
-            </div>
-          ))}
+                <Button
+                  size="compact-sm"
+                  disabled={c.problem !== null || act.isPending}
+                  data-testid="appoint-confirm"
+                  onClick={() =>
+                    act.mutate(
+                      {
+                        action: 'appoint',
+                        seat,
+                        person_id: c.person_id,
+                        salary_cents: dollars * 100,
+                      },
+                      { onSuccess: onClose },
+                    )
+                  }
+                >
+                  Appoint
+                </Button>
+              </div>
+            );
+          })}
           {act.error && <Alert color="warn">{act.error.message}</Alert>}
         </div>
       )}
