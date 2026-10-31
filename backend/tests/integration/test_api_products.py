@@ -12,7 +12,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.helpers import make_person, move_save_directors, with_employee
+from tests.helpers import FIRST_PRODUCT, make_person, move_save_directors, with_employee
 from tests.integration.test_api_hiring import Client
 from tst.api.app import create_app
 from tst.config import Settings, get_settings
@@ -23,7 +23,7 @@ from tst.sim.state import with_person
 
 SAVE = "m3a"
 BASE = f"/api/saves/{SAVE}"
-PRODUCT = 13
+PRODUCT = FIRST_PRODUCT
 
 
 def staff(path: Path, loaded: LoadedData, roles: tuple[str, ...]) -> None:

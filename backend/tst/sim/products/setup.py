@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from tst.sim.calendar import ym_to_turn
+from tst.sim.calendar import turn_to_ym, ym_to_turn
 from tst.sim.data_models import GameData
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.products.formulas import held_feature_points, monthly_growth
@@ -28,9 +28,15 @@ class InitialMarket:
 
 
 def addressable_at(data: GameData, category: str, segment: str, turn: int) -> float:
-    """D0 grown by (1 + g)^(1/12) for each month before `turn` (11.1, no noise)."""
+    """D0 grown by (1 + g)^(1/12) for each month before `turn` (11.1, no noise); g is the
+    month's year's growth for a category with growth_by_year (18.6)."""
     cat = data.category(category)
-    return cat.market(segment).addressable * monthly_growth(cat) ** turn
+    value = cat.market(segment).addressable
+    if not cat.growth_by_year:
+        return value * monthly_growth(cat, 0) ** turn
+    for t in range(turn):
+        value *= monthly_growth(cat, turn_to_ym(t)[0])
+    return value
 
 
 def initial_market(

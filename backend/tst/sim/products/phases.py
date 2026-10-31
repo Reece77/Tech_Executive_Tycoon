@@ -15,7 +15,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
-from tst.sim.calendar import MONTHS_PER_YEAR
+from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, REVENUE_SUBSCRIPTIONS, LedgerEntry
 from tst.sim.log import LinkKind, LogItem, inbox_item
@@ -353,8 +353,10 @@ def product_costs(state: GameState, company_id: int, data: GameData) -> tuple[Ce
         if product.status not in SELLING:
             continue
         category = data.category(product.category)
+        year = turn_to_ym(state.turn)[0]
         for seg in state.segments_of(product.id):
-            hosting += round(seg.customers * category.market(seg.segment).hosting_cents)
+            h = f.hosting_cents(category, seg.segment, data.compute_index, year)
+            hosting += round(seg.customers * h)
     return hosting, marketing
 
 
@@ -373,8 +375,9 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
         mk = f.marketing_points(product.marketing_budget_cents, mu, pb)
         target = f.target_brand(mk, category.brand_constant)
         state = with_product(state, replace(product, brand=f.next_brand(product.brand, target, pb)))
+    year = turn_to_ym(state.turn)[0]
     for market in state.markets:
-        growth = f.monthly_growth(data.category(market.category))
+        growth = f.monthly_growth(data.category(market.category), year)
         state = with_market(state, replace(market, addressable=market.addressable * growth))
     return state
 

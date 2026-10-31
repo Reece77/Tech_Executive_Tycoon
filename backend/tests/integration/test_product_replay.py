@@ -7,6 +7,7 @@ from pathlib import Path
 from sqlalchemy import select
 
 from tests.golden.test_golden import snapshots
+from tests.helpers import FIRST_PRODUCT
 from tst.db.models import ProductMonthRow
 from tst.db.repository import (
     create_save,
@@ -33,7 +34,7 @@ from tst.sim.actions import (
 )
 from tst.sim.actions.products import launch_problems
 
-PRODUCT = 13
+PRODUCT = FIRST_PRODUCT
 
 
 def build(tmp_path: Path, loaded: LoadedData) -> Path:

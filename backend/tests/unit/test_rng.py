@@ -72,6 +72,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "board": 17,
         "rival_spawn": 18,
         "poach": 19,
+        "entrants": 20,
         "misc": 99,
     }
 

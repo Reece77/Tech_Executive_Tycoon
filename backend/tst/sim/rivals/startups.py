@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.finance.fundraising import climate
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
@@ -67,7 +68,7 @@ def found_startups(
         if len(alive_startups(state)) >= sb.max_alive:
             break
         gen = rng.stream(state.turn, "rival_spawn", index)
-        chance = sb.found_rate * mood * (1 + category.growth)
+        chance = sb.found_rate * mood * (1 + category.growth_in(turn_to_ym(state.turn)[0]))
         if float(gen.random()) >= chance:
             continue
         taken = {c.name for c in state.companies}

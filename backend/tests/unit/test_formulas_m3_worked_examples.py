@@ -12,7 +12,12 @@ B2B = "b2b_saas"
 
 def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
     data = loaded.game_data
-    assert [c.key for c in data.categories] == [B2B, "dev_tools", "consumer_apps", "cybersecurity"]
+    assert [c.key for c in data.categories][:4] == [
+        B2B,
+        "dev_tools",
+        "consumer_apps",
+        "cybersecurity",
+    ]
     assert [s.key for s in data.segments] == ["consumer", "smb", "mid_market", "enterprise"]
     b2b = data.category(B2B)
     assert b2b.market("smb").addressable == 400_000
@@ -48,7 +53,7 @@ def test_every_role_has_a_product_function(loaded: LoadedData) -> None:
 
 def test_incumbents_match_formulas_table(loaded: LoadedData) -> None:
     companies = loaded.game_data.incumbents
-    assert [c.name for c in companies] == [
+    assert [c.name for c in companies][:12] == [  # M8 appends five
         "Salesforce",
         "Oracle",
         "Zoho",

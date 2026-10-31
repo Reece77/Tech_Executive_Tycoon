@@ -9,6 +9,7 @@ import pytest
 from sqlalchemy import text
 
 from tests.helpers import (
+    FIRST_PRODUCT,
     fresh_game,
     make_person,
     mark_interviewed,
@@ -250,7 +251,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     products.state = with_product(
         products.state, name="Ledger", customers={"smb": 3000.0}, root=False
     )
-    products.act(LaunchProduct(1, 13))
+    products.act(LaunchProduct(1, FIRST_PRODUCT))
     products.turn()
     # M4a: SAFEs that fill and do not, rounds that close, find no investor or lapse, the
     # board's meetings, warnings and removal vote, insolvency, bridges and bankruptcy.
@@ -337,7 +338,7 @@ def test_product_notes_reach_the_inbox(tmp_path: Path, loaded: LoadedData) -> No
     with open_session(path) as session:
         [message] = [m for m in list_inbox(session, 1) if m.template not in NOT_PRODUCT_NOTES]
     assert message.template == "product_rotting"
-    assert (message.link_kind, message.link_id) == ("product", 13)
+    assert (message.link_kind, message.link_id) == ("product", FIRST_PRODUCT)
     assert message.title == "Pipeline is slipping"
     assert "Assign a unit to it." in message.body
 

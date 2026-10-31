@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select, text
 
+from tests.helpers import FIRST_PRODUCT, INCUMBENTS
 from tst.db import migrate
 from tst.db.models import SCHEMA_VERSION, CompanyRow
 from tst.db.repository import create_save, load_state, open_session, run_turn
@@ -41,7 +42,7 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
     assert (sales_cloud.name, sales_cloud.held_feature) == ("Sales Cloud", 80)
     seg = state.product_segment(sales_cloud.id, "smb")
     assert seg is not None and seg.customers == pytest.approx(40_000)  # 10% (tuned)
-    assert state.next_ids.product == 13
+    assert state.next_ids.product == FIRST_PRODUCT
     assert state.ledger_companies() == state.companies  # rivals keep books from M5 (15.1)
 
 
@@ -50,7 +51,7 @@ def test_products_and_assignments_round_trip(tmp_path: Path, loaded: LoadedData)
     with open_session(path) as session, session.begin():
         before = load_state(session)
         product = Product(
-            id=13,
+            id=FIRST_PRODUCT,
             company_id=1,
             category="b2b_saas",
             name="Pipeline",
@@ -62,21 +63,23 @@ def test_products_and_assignments_round_trip(tmp_path: Path, loaded: LoadedData)
             created_turn=0,
         )
         state = with_product(before, product)
-        state = with_product_segment(state, ProductSegment(13, "smb", 4000))
-        state = with_product_segment(state, ProductSegment(13, "mid_market", None))
-        state = with_unit(state, OrgUnit(1, 1, "team", "Core", None, None, None, 0, product_id=13))
-        state = with_company(state, replace(state.player, root_product_id=13))
-        state = replace(state, next_ids=replace(state.next_ids, product=14, unit=2))
+        state = with_product_segment(state, ProductSegment(FIRST_PRODUCT, "smb", 4000))
+        state = with_product_segment(state, ProductSegment(FIRST_PRODUCT, "mid_market", None))
+        state = with_unit(
+            state, OrgUnit(1, 1, "team", "Core", None, None, None, 0, product_id=FIRST_PRODUCT)
+        )
+        state = with_company(state, replace(state.player, root_product_id=FIRST_PRODUCT))
+        state = replace(state, next_ids=replace(state.next_ids, product=FIRST_PRODUCT + 1, unit=2))
         sync_state(session, before, state)
     with open_session(path) as session:
         loaded_state = load_state(session)
-    assert loaded_state.product(13) == product
-    assert loaded_state.segments_of(13) == (
-        ProductSegment(13, "mid_market", None),
-        ProductSegment(13, "smb", 4000),
+    assert loaded_state.product(FIRST_PRODUCT) == product
+    assert loaded_state.segments_of(FIRST_PRODUCT) == (
+        ProductSegment(FIRST_PRODUCT, "mid_market", None),
+        ProductSegment(FIRST_PRODUCT, "smb", 4000),
     )
-    assert loaded_state.units[0].product_id == 13
-    assert loaded_state.player.root_product_id == 13
+    assert loaded_state.units[0].product_id == FIRST_PRODUCT
+    assert loaded_state.player.root_product_id == FIRST_PRODUCT
     assert loaded_state.next_ids.product == 14
 
 
@@ -109,7 +112,7 @@ def test_upgrade_from_0007_adds_the_market_at_the_saves_turn(
     with open_session(path) as session:
         state = load_state(session)
         players = session.scalars(select(CompanyRow).where(CompanyRow.is_player)).all()
-    assert len(players) == 1 and len(state.companies) == 13
+    assert len(players) == 1 and len(state.companies) == INCUMBENTS + 1
     assert state.turn == 3
     smb = state.market("b2b_saas", "smb")
     assert smb is not None

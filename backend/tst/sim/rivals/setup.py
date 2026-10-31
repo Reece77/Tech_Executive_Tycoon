@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import FUNCTIONS, LEVELS, Balance, GameData
 from tst.sim.hiring.formulas import benefits_cents, market_mid_cents, monthly_salary_cents
 from tst.sim.hiring.models import PersonState
@@ -16,6 +17,7 @@ from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment
 from tst.sim.people.reveal import new_reveal_state
+from tst.sim.products.formulas import hosting_cents
 from tst.sim.products.models import SELLING
 from tst.sim.rivals import formulas as f
 from tst.sim.rivals.models import Function, WorkforcePool
@@ -214,8 +216,11 @@ def setup_incumbents(
         hosting = 0.0
         for product in state.company_products(company.id):
             category = data.category(product.category)
+            year = turn_to_ym(state.turn)[0]
             for seg in state.segments_of(product.id):
-                hosting += seg.customers * category.market(seg.segment).hosting_cents
+                hosting += seg.customers * hosting_cents(
+                    category, seg.segment, data.compute_index, year
+                )
         marketing = sum(p.marketing_budget_cents for p in state.company_products(company.id))
         mix = function_mix(state, company.id, balance)
         functions = key_people_split(rv.key_people, mix)

@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import fresh_game, with_candidates, with_product
+from tests.helpers import FIRST_PRODUCT, fresh_game, with_candidates, with_product
 from tst.loader import LoadedData
 from tst.sim.actions import (
     Action,
@@ -37,7 +37,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
 FOUNDER = 1
-PRODUCT = 13
+PRODUCT = FIRST_PRODUCT
 
 
 def act(state: GameState, action: Action, loaded: LoadedData) -> GameState:

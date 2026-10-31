@@ -15,6 +15,7 @@ from tst.sim.data_models import (
     SCORE_MAX,
     AppealWeights,
     CategoryDef,
+    ComputeIndexFile,
     MarketBalance,
     ProductsBalance,
 )
@@ -230,6 +231,13 @@ def awareness(brand: float, mb: MarketBalance) -> float:
     return mb.awareness_scale * max(brand, mb.awareness_floor) / SCORE_MAX
 
 
-def monthly_growth(category: CategoryDef) -> float:
-    """(1 + g)^(1/12): one month of addressable-demand growth (11.1)."""
-    return float((1 + category.growth) ** (1 / MONTHS_PER_YEAR))
+def monthly_growth(category: CategoryDef, year: int) -> float:
+    """(1 + g)^(1/12): one month of addressable-demand growth (11.1); g is the year's
+    growth_by_year entry for a category that has one (18.6)."""
+    return float((1 + category.growth_in(year)) ** (1 / MONTHS_PER_YEAR))
+
+
+def hosting_cents(category: CategoryDef, segment: str, index: ComputeIndexFile, year: int) -> float:
+    """h per customer per month; x compute_index(year) for an indexed category (18.6)."""
+    h = float(category.market(segment).hosting_cents)
+    return h * index.of(year) if category.compute_indexed else h

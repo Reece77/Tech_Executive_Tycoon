@@ -7,7 +7,7 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import fresh_game, make_person, with_employee, with_product
+from tests.helpers import FIRST_PRODUCT, fresh_game, make_person, with_employee, with_product
 from tst.loader import LoadedData
 from tst.sim.data_models import Balance
 from tst.sim.org.models import OrgUnit
@@ -17,7 +17,7 @@ from tst.sim.products.phases import develop, team_of
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_person, with_unit
 
-PRODUCT = 13  # the first id after the 12 incumbent products
+PRODUCT = FIRST_PRODUCT
 
 
 def quiet(balance: Balance) -> Balance:

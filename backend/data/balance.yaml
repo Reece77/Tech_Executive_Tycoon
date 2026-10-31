@@ -180,6 +180,10 @@ founder: # founder build (formulas.md section 5)
     name_nominee: 2 # name an employee to an empty common board seat (M4c, section 14.6)
     poach_search: 10 # open a "Poach from a rival" search (M5, section 15.6)
     choose_event: 0 # answer an event (M6, section 16.3)
+    appoint_executive: 5 # appoint an executive to a seat (M8, section 18.3)
+    remove_executive: 5 # remove an executive from a seat (M8, section 18.3)
+    set_product_division: 1 # set the division a product belongs to (M8, section 18.1)
+    set_shared_services: 2 # set a division's shared services, central or embedded (M8, section 18.4)
 
 # --- Hiring (formulas.md section 7) -----------------------------------------------------
 hiring:
@@ -287,6 +291,17 @@ org:
     sociable_morale: -3 # morale points for a sociable remote worker
     solitary_at: 7 # attribute points; sociability at or below this prefers remote work
     solitary_morale: 2 # morale points for a solitary remote worker
+  # M8 (formulas.md 18.1-18.4): divisions, coordination cost, support staff
+  division_stage: 3 # company stage from which divisions, seats and support rules apply (18)
+  max_divisions: 6 # division units a company may have at once (18.1)
+  layer_tax: 0.03 # fraction of output lost per layer below depth layer_free_depth (tau, 18.2)
+  layer_floor: 0.85 # multiplier; the layer tax never takes output below this (18.2)
+  layer_free_depth: 2 # depth (root 0, division 1, department 2, team 3) with no layer tax (18.2)
+  cross_division_factor: 0.90 # multiplier on a product's output when its units sit in two or more divisions (18.2)
+  support_ratio: 15 # staff per support employee needed for full coverage (rho, 18.4)
+  support_shortfall: 0.15 # fraction of output lost at zero coverage (18.4)
+  support_morale: -6 # morale points at zero coverage, scaled by (1 - c) ("Admin and support", 18.4)
+  embedded_bonus: 1.05 # multiplier on builder output and seller capacity in an embedded division (18.4)
 
 delegates: # delegated hiring (formulas.md section 13.10, ADR-0015)
   energy_per_month: 100 # energy; each delegate's monthly budget, reset with the founder's
@@ -470,6 +485,8 @@ rivals:
     cybersecurity: { builder: 0.45, seller: 0.40, marketer: 0.15 }
     dev_tools: { builder: 0.70, seller: 0.15, marketer: 0.15 }
     consumer_apps: { builder: 0.75, seller: 0.0, marketer: 0.25 }
+    fintech: { builder: 0.50, seller: 0.30, marketer: 0.20 } # M8 (18.6)
+    ai_models: { builder: 0.75, seller: 0.10, marketer: 0.15 } # M8 (18.6)
   function_roles: { builder: software_engineer, seller: account_executive, marketer: marketer } # roles.yaml key whose mid-level pay prices each pool (15.1)
   pool_morale: 60 # morale points of every pool (15.1)
   pool_skill_other: 12 # attribute points; seller and marketer pool skill (15.1)
@@ -566,3 +583,23 @@ relationships: # pairs of unit-mates and manager links (formulas.md 16.7)
   morale_cap: 5 # W_rel is clamped to plus or minus this
   label_bounds: [-50, -20, 20, 60] # hostile at or below the first; strained below the second; close from the last
   range: [-100, 100] # relationships stay in this range
+
+# --- Executive seats (formulas.md 18.3, M8) ----------------------------------------------
+exec_seats:
+  stage: 3 # company stage from which seats can be filled and vacant seats cost (18.3)
+  min_level: senior # lowest level a seat holder may have (18.3)
+  score_mid: 10 # attribute points; seat score s at which the effect e is 0: e = (s - mid) / span
+  score_span: 8 # attribute points of s per unit of e
+  effect_min: -0.5 # lowest e from a holder (18.3)
+  effect_max: 1.0 # highest e (18.3)
+  vacant_effect: -0.5 # e of a vacant seat at stage 3 or later (18.3)
+  appoint_morale: 5 # morale points, once, for the appointee (18.3)
+  remove_morale: -10 # morale points, once, for a removed executive (18.3)
+  fit_bands: [11, 14] # displayed seat score: below the first "weak fit", from the second "strong fit", else "fair fit" (18.8)
+  seats: # skill weights of s (sum to 1) and the effect coefficient per unit of e (18.3)
+    coo: { label: COO, effect: 0.5, weights: { operations: 0.35, leadership: 0.25, strategy: 0.20, communication: 0.20 } } # k_COO = 1 - effect x e
+    cfo: { label: CFO, effect: 0.08, confidence: 0.5, weights: { finance: 0.45, strategy: 0.20, negotiation: 0.20, communication: 0.15 } } # V_base x (1 + effect e); director confidence + confidence x e a month
+    cto: { label: CTO, effect: 0.10, weights: { software_engineering: 0.25, infrastructure: 0.15, ml_research: 0.10, leadership: 0.25, strategy: 0.25 } } # builder output x (1 + effect e)
+    cpo: { label: CPO, effect: 0.15, weights: { product: 0.45, design: 0.15, strategy: 0.20, leadership: 0.20 } } # feature points gained x (1 + effect e)
+    cmo: { label: CMO, effect: 0.20, weights: { marketing: 0.45, communication: 0.20, strategy: 0.20, leadership: 0.15 } } # marketing points x (1 + effect e)
+    cro: { label: CRO, effect: 0.20, weights: { sales: 0.40, negotiation: 0.25, leadership: 0.20, communication: 0.15 } } # seller capacity x (1 + effect e)

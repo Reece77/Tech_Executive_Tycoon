@@ -36,6 +36,7 @@ STREAM_IDS: Final = MappingProxyType(
         "board": 17,  # key (seat_id,): generating a director (M4)
         "rival_spawn": 18,  # key (category_index,): founding rival startups (M5, 15.4)
         "poach": 19,  # key (approach_id,): an employee's answer to a rival approach (M5, 15.6)
+        "entrants": 20,  # key (entrant_index,): a scheduled entrant's people (M8, 18.7)
         "misc": 99,
     }
 )

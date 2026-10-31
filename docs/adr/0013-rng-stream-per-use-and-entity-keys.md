@@ -38,6 +38,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `board` | 17 | `(seat_id,)` | Generating a board director (formulas.md 14.6) | M4 |
 | `rival_spawn` | 18 | `(category_index,)` | Founding rival startups (§15.4) | M5 |
 | `poach` | 19 | `(approach_id,)` | An employee's answer to a rival's approach (§15.6) | M5 |
+| `entrants` | 20 | `(entrant_index,)` | A scheduled entrant's people, generated at senior level when it is founded (formulas.md 18.7); founding itself draws nothing | M8 |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).

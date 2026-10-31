@@ -10,7 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests.golden.test_golden import ledger_rows, snapshots
-from tests.helpers import play_turn
+from tests.helpers import FIRST_PRODUCT, play_turn
 from tst.db.repository import (
     create_save,
     load_state,
@@ -30,7 +30,7 @@ from tst.sim.actions import (
 from tst.sim.state import GameState
 
 SEED = 16  # investors answer this garage's seed rounds (see test_fundraising)
-PRODUCT = 13
+PRODUCT = FIRST_PRODUCT
 BURN_MARKETING = 200_000_000  # $2M a month: more than the company has
 
 

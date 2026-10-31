@@ -283,6 +283,10 @@ ENERGY_ACTIONS = (
     # M5 rivals (formulas.md 15.6)
     "poach_search",
     "choose_event",  # M6 (formulas.md 16.3): energy 0
+    "appoint_executive",  # M8 (formulas.md 18.3)
+    "remove_executive",  # M8 (18.3)
+    "set_product_division",  # M8 (18.1)
+    "set_shared_services",  # M8 (18.4)
 )
 CHANNELS = ("network", "job_post", "recruiter")  # formulas.md section 7
 HIRING_LEVELS = ("junior", "mid", "senior", "staff")
@@ -417,6 +421,17 @@ class OrgBalance(_Frozen):
     pay_cut_morale: float
     promote_morale: float
     remote: RemoteBalance
+    # M8 (formulas.md 18.1-18.4): divisions, coordination cost and support
+    division_stage: int = Field(ge=0)
+    max_divisions: int = Field(ge=0)
+    layer_tax: float = Field(ge=0)
+    layer_floor: float = Field(ge=0, le=1)
+    layer_free_depth: int = Field(ge=0)
+    cross_division_factor: float = Field(gt=0, le=1)
+    support_ratio: float = Field(gt=0)
+    support_shortfall: float = Field(ge=0, le=1)
+    support_morale: float
+    embedded_bonus: float = Field(gt=0)
 
     @model_validator(mode="after")
     def _check(self) -> OrgBalance:
@@ -434,6 +449,44 @@ class OrgBalance(_Frozen):
                 raise ValueError(
                     f"tag_morale_cap.{tag} must have the same sign as tag_morale.{tag}"
                 )
+        return self
+
+
+class SeatDef(_Frozen):
+    """One executive seat (formulas.md 18.3): skill weights of the seat score s and the
+    coefficient of its effect."""
+
+    label: str = Field(min_length=1)
+    weights: dict[str, float]
+    effect: float = Field(ge=0)
+    confidence: float = Field(default=0.0, ge=0)  # CFO: director confidence a month per e
+
+    @model_validator(mode="after")
+    def _check(self) -> SeatDef:
+        if any(w < 0 for w in self.weights.values()) or not _sums_to_one(self.weights.values()):
+            raise ValueError("exec seat weights must be >= 0 and sum to 1")
+        return self
+
+
+class ExecSeatsBalance(_Frozen):
+    stage: int = Field(ge=0)
+    min_level: str
+    score_mid: float
+    score_span: float = Field(gt=0)
+    effect_min: float
+    effect_max: float
+    vacant_effect: float
+    appoint_morale: float
+    remove_morale: float
+    fit_bands: Span  # displayed seat score: below lo "weak", from hi "strong", else "fair"
+    seats: dict[str, SeatDef] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _check(self) -> ExecSeatsBalance:
+        if self.min_level not in LEVELS:
+            raise ValueError(f"exec_seats.min_level must be one of {list(LEVELS)}")
+        if self.effect_min > self.effect_max:
+            raise ValueError("exec_seats.effect_min exceeds effect_max")
         return self
 
 
@@ -854,6 +907,7 @@ class Balance(_Frozen):
     rivals: RivalsBalance  # M5 (formulas.md 15)
     events: EventsBalance  # M6 (formulas.md 16)
     relationships: RelationshipsBalance  # M6 (formulas.md 16.7)
+    exec_seats: ExecSeatsBalance  # M8 (formulas.md 18.3)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1112,9 +1166,26 @@ class CategoryDef(_Frozen):
     brand_constant: float = Field(gt=0)
     dev_weights: dict[str, float]
     markets: tuple[MarketDef, ...] = Field(min_length=1)
+    launch_quality: float | None = Field(default=None, ge=0, le=SCORE_MAX)  # M8: compliance
+    # M8 (18.6): annual growth from each listed year on, instead of `growth`
+    growth_by_year: dict[int, float] | None = None
+    compute_indexed: bool = False  # M8: hosting x compute_index(year)
+
+    def growth_in(self, year: int) -> float:
+        """Annual demand growth in a calendar year: the latest growth_by_year entry at or
+        before it, else `growth` (18.6)."""
+        if not self.growth_by_year:
+            return self.growth
+        rate = self.growth
+        for start in sorted(self.growth_by_year):
+            if start <= year:
+                rate = self.growth_by_year[start]
+        return rate
 
     @model_validator(mode="after")
     def _check(self) -> CategoryDef:
+        if self.growth_by_year is not None and any(g < 0 for g in self.growth_by_year.values()):
+            raise ValueError(f"category {self.key!r}: growth_by_year must be >= 0")
         if any(w < 0 for w in self.dev_weights.values()) or not _sums_to_one(
             self.dev_weights.values()
         ):
@@ -1201,6 +1272,47 @@ class ClimateFile(_Frozen):
         return self.years.get(year, self.default)
 
 
+class ComputeIndexFile(_Frozen):
+    """AI compute price index by calendar year (formulas.md 18.6): `base` in `base_year`,
+    then each year's multiplier on the year before (`changes`, else `default_change`)."""
+
+    base_year: int
+    base: float = Field(gt=0)
+    default_change: float = Field(gt=0)
+    changes: dict[int, float]
+
+    @model_validator(mode="after")
+    def _check(self) -> ComputeIndexFile:
+        if any(v <= 0 for v in self.changes.values()):
+            raise ValueError("compute_index changes must be positive")
+        if any(y <= self.base_year for y in self.changes):
+            raise ValueError("compute_index changes must be after base_year")
+        return self
+
+    def of(self, year: int) -> float:
+        value = self.base
+        for y in range(self.base_year + 1, year + 1):
+            value *= self.changes.get(y, self.default_change)
+        return value
+
+
+class EntrantDef(_Frozen):
+    """A named rival startup founded in its real month (formulas.md 18.7)."""
+
+    name: str = Field(min_length=1, max_length=80)  # tunable-exempt: name column width
+    year: int
+    month: int = Field(ge=1, le=12)  # tunable-exempt: calendar months
+    personality: str
+    cash_cents: int = Field(gt=0)
+    staff: int = Field(ge=1)  # people, the founder included
+    category: str
+    segments: tuple[str, ...] = Field(min_length=1)
+
+
+class EntrantsFile(_Frozen):
+    entrants: tuple[EntrantDef, ...] = ()
+
+
 class InboxTemplate(_Frozen):
     title: str = Field(min_length=1)
     body: str = Field(min_length=1)
@@ -1285,6 +1397,13 @@ class GameData(_Frozen):
     climate: ClimateFile = ClimateFile(default=1.0, years={})  # M4
     startup_names: tuple[str, ...] = ()  # M5: rival startup names (names.yaml companies)
     event_templates: tuple[EventTemplate, ...] = ()  # M6: events/*.yaml (formulas.md 16.4)
+    compute_index: ComputeIndexFile = ComputeIndexFile(
+        base_year=2010,  # tunable-exempt: empty default index
+        base=1.0,
+        default_change=1.0,
+        changes={},
+    )  # M8 (18.6)
+    entrants: tuple[EntrantDef, ...] = ()  # M8 (18.7)
 
     def event_template(self, template_id: str) -> EventTemplate:
         for template in self.event_templates:
@@ -1391,6 +1510,23 @@ class GameData(_Frozen):
         for (cat_key, seg), total in sorted(shares.items()):
             if total > BP_DENOMINATOR:
                 problems.append(f"incumbents.yaml: starting shares in {cat_key}/{seg} exceed 100%")
+
+        names = {c.name for c in self.incumbents}
+        for entrant in self.entrants:  # M8 (18.7)
+            where = f"entrants.yaml {entrant.name!r}"
+            if entrant.name in names:
+                problems.append(f"{where}: name is taken")
+            names.add(entrant.name)
+            if entrant.personality not in PERSONALITIES:
+                problems.append(f"{where}: unknown personality {entrant.personality!r}")
+            found = categories.get(entrant.category)
+            if found is None:
+                problems.append(f"{where}: unknown category {entrant.category!r}")
+                continue
+            unknown(where, entrant.segments, set(found.segment_keys), "segments")
+        for company in self.incumbents:
+            if company.personality not in PERSONALITIES:
+                problems.append(f"incumbents.yaml {company.name!r}: unknown personality")
 
         firm_keys = {f.key for f in self.investors}
         for scenario in self.scenarios:
