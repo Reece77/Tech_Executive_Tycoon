@@ -4,6 +4,15 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M7c fixes and an agent playtest:
+  - Sub-task 0 (Reece): the v1 T2 balance assertion is `xfail(strict=False)`, "recorded miss: steady wins 10/10 after M8; rebalance in M15"; every other target stays a hard check.
+  - Former staff profiles: a read-only "Former employee" profile (last role, unit, months, reason, the rival who poached them, tenure, the ranges, tags, interests and work style the player knew at departure, and their History). `former_staff` (migration `0021_former_staff`, backfilled for past departures) is written by `sync_state` when one of the player's staff leaves; `GET /people/{id}/former`; the person screen falls back to it, so every existing link resolves. Planted-value test.
+  - Event deep links: `/game/:save/inbox/:item` and `/game/:save/events/:id` open the event's own message with its card (`GET /inbox/{item}`, `GET /events/{id}/item`), from History rows, storyline steps, the COO briefing and "While you were away" (`inbox_event_link`, migration 0021).
+  - The agent playtest: `frontend/e2e/playtest/agent.spec.ts` plays `ex_big_tech_founders` for 120 months through the browser (`make playtest`, not part of `make e2e`); screenshots in `docs/playtests/agent-m7c/`, report in `docs/playtests/agent-m7c.md` (120 months in 14.5 minutes, no 5xx).
+  - Bugs fixed, each with a test: `GET /events/{id}` 404 for answered events older than the live 24 months; "{unit}" unrendered in a company-wide unhappy-unit title; the People table's leftover "Form" placeholder column ("From M3"); `GET /saves` 500 when a save's `-wal` file vanished during the listing; the People table pushed Status out of view at 1440×900; the P&L cut off its latest month at 1440×900; the Overview's monthly burn missed an event paid before Continue (it now reads the month's fall in cash from the ledger, like its breakdown); the burn note projected gross costs (new `OverviewOut.month_net_burn_cents`); duplicate cap-table row keys when SAFEs converted in two rounds. `TST_E2E_API_PORT` and `TST_E2E_WEB_PORT` override the e2e ports.
+  - `make quickstart-saves` (`tools/quickstart_saves.py`): `quick-stage2` (steady, turn 36) and `quick-stage3` (blitzscale with a second product, first month of stage 3).
+  - Golden snapshots unchanged.
+
 - M8 Divisions, executives and new markets (formulas.md §18; the first v2 milestone):
   - Division units from stage 3, with presidents, `product.division_id` and `set_product_division`. Each ledger line has a division (migration `0020_divisions`), and division statements derive from it with the shared-services allocation (Finance → Divisions tab, `GET /finance/divisions`).
   - Coordination cost: the layer tax and the cross-division factor.
