@@ -110,11 +110,6 @@ function overviewColumns(saveId: string) {
       cell: ({ row }) => <MoraleBar morale={row.original.morale} width={64} />,
     }),
     helper.display({
-      id: 'form',
-      header: 'Form',
-      cell: () => <span className="tst-muted">From M3</span>,
-    }),
-    helper.display({
       id: 'top',
       header: 'Top skills',
       cell: ({ row }) => (

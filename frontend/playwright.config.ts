@@ -18,6 +18,7 @@ const channel = process.env.PLAYWRIGHT_CHANNEL;
 
 export default defineConfig({
   testDir: 'e2e',
+  testIgnore: ['playtest/**'], // the agent playtest runs on demand: make playtest (M7c)
   fullyParallel: false,
   workers: 1,
   reporter: 'list',

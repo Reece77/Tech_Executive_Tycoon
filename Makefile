@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: check check-fast check-ci-1 check-ci-2 balance nightly test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
 
 check: check-backend check-api check-frontend
 
@@ -57,3 +57,11 @@ fmt:
 # Playwright smoke test; starts its own API and Vite servers on spare ports.
 e2e:
 	cd frontend && pnpm test:e2e
+
+# The M7c agent playtest: a new game played for 120 months through the browser (out of `make e2e`).
+playtest:
+	cd frontend && pnpm exec playwright test -c playwright.playtest.config.ts
+
+# Quick-start saves for playtests (M7c): steady at turn 36 and blitzscale at its first month of stage 3.
+quickstart-saves:
+	uv run --project backend python tools/quickstart_saves.py

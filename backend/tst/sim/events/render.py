@@ -38,12 +38,10 @@ def placeholder_names(
         names["person"] = full_name(people[0])
     if len(people) > 1:
         names["other"] = full_name(people[1])
-    if people:
-        unit = state.unit(unit_id) if unit_id is not None else None
-        names["unit"] = unit.name if unit is not None else company.name
-    elif unit_id is not None:
-        unit = state.unit(unit_id)
-        names["unit"] = unit.name if unit is not None else company.name
+    # The company root has no unit row: its {unit} is the company (M7c: an unhappy root
+    # had no unit id and no people, and its title showed "{unit}" as written).
+    unit = state.unit(unit_id) if unit_id is not None else None
+    names["unit"] = unit.name if unit is not None else company.name
     product = state.product(product_id) if product_id is not None else None
     if product is not None:
         names["product"] = product.name
