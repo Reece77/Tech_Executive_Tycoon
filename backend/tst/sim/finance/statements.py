@@ -164,6 +164,14 @@ def cash_flow(
     return CashFlow(first_turn, last_turn, operating, investing, financing, change)
 
 
+def cash_before_financing(lines: Lines, types: Mapping[AccountCode, AccountType]) -> Cents:
+    """Net cash from operating and investing over `lines` (any turns): what burn counts.
+    Burn is its negative when below zero, never counting investor or loan money (14.1; M8r,
+    Codex review 1 finding 7)."""
+    flow = cash_flow(lines, types, -(10**9), 10**9)
+    return flow.operating + flow.investing
+
+
 def period_bounds(period: Period, last_turn: int) -> list[tuple[int, int]]:
     """(first, last) turn of every month, quarter or calendar year from turn 0 to last_turn,
     the newest possibly partial. Turn 0 is January 2010, so quarters and years align."""

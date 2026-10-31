@@ -79,8 +79,8 @@ from tst.sim.errors import (
     UnknownScenarioError,
     UpgradeNeededError,
 )
-from tst.sim.finance.statements import projected_runway
-from tst.sim.ledger import CASH, AccountCode, apply_entries
+from tst.sim.finance.statements import cash_before_financing, projected_runway
+from tst.sim.ledger import AccountCode, apply_entries
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
 from tst.sim.people.reveal import shown_rating
@@ -613,7 +613,7 @@ class Overview:
     turn: int  # next turn to play
     date_label: str
     cash_cents: Cents
-    monthly_burn_cents: Cents  # the fall in cash over the last month played; 0 before it
+    monthly_burn_cents: Cents  # net cash used before financing last month; 0 before it
     runway_months: int | None  # at this month's projected phase-6 costs (M1c decision)
     history: list[tuple[int, CompanySnapshot]]  # last N snapshots, oldest first
 
@@ -625,21 +625,8 @@ def player_overview(session: Session, history: int, data: LoadedData) -> Overvie
     player = state.player
     cash = company_cash(ledger_balances(session), player.id)
     snaps = recent_snapshots(session, player.id, history)
+    # Net cash used before financing over the last month played (14.1; M8r).
     burn = snaps[-1][1].monthly_burn_cents if snaps else 0
-    if snaps and snaps[-1][0] > 0:
-        # The fall in cash over the whole month, as its breakdown and the P&L count it: the
-        # snapshot's burn starts after the month's actions, so it missed an event paid by
-        # answering it before Continue (M7c playtest). Turn 0 holds the starting capital.
-        change = session.execute(
-            select(func.coalesce(func.sum(LedgerLineRow.amount_cents), 0))
-            .join(LedgerLineRow.entry)
-            .where(
-                LedgerEntryRow.company_id == player.id,
-                LedgerEntryRow.turn == snaps[-1][0],
-                LedgerLineRow.account_code == CASH,
-            )
-        ).scalar_one()
-        burn = max(-int(change), 0)
     return Overview(
         slug=meta.name,
         company_name=player.name,
@@ -752,6 +739,21 @@ def rating_rows(state: GameState, turn: int, data: LoadedData) -> list[PersonRat
     return rows
 
 
+def month_flow_so_far(session: Session, turn: int, data: LoadedData) -> dict[int, Cents]:
+    """Cash from operating and investing that `turn`'s entries moved before the turn runs
+    (actions such as a paid event), per company: burn covers the whole month (14.1; M8r)."""
+    types = {a.code: a.type for a in data.game_data.accounts}
+    rows = session.execute(
+        select(LedgerEntryRow.company_id, LedgerLineRow.account_code, LedgerLineRow.amount_cents)
+        .join(LedgerLineRow.entry)
+        .where(LedgerEntryRow.turn == turn)
+    ).all()
+    lines: dict[int, list[tuple[int, str, Cents]]] = {}
+    for company, account, amount in rows:
+        lines.setdefault(int(company), []).append((turn, str(account), int(amount)))
+    return {c: cash_before_financing(ls, types) for c, ls in lines.items()}
+
+
 class _PendingEvents(Exception):
     """Events or texts from an earlier turn are still unwritten (the service did not finish)."""
 
@@ -772,6 +774,7 @@ def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnR
             data.balance,
             data.game_data,
             balances,
+            prior_flow=month_flow_so_far(session, state.turn, data),
         )
         apply_turn_result(session, result, decisions, state, data)
         publish(session, result.new_state, apply_entries(balances, result.ledger_entries))

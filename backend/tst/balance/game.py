@@ -19,6 +19,7 @@ from tst.sim.errors import SimError
 from tst.sim.finance import formulas as ff
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.fundraising import arr_cents, base_value, climate, company_growth
+from tst.sim.finance.statements import cash_before_financing
 from tst.sim.ledger import CASH, apply_entries
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
@@ -45,6 +46,7 @@ class Game:
     traction_above_floor: dict[int, bool] = field(default_factory=dict)
     refused: Counter[str] = field(default_factory=Counter)  # action kind -> refusals
     event_requests: int = 0
+    month_lines: list[tuple[int, str, int]] = field(default_factory=list)  # actions this month
     _writer: Writer = field(
         default_factory=lambda: Writer(MockLLMAdapter(), LLMSettings(), lambda: 1_000_000.0)
     )
@@ -81,6 +83,12 @@ class Game:
             return False
         self.state = out.new_state
         self.balances = apply_entries(self.balances, out.ledger_entries)
+        self.month_lines += [
+            (e.turn, line.account, line.amount)
+            for e in out.ledger_entries
+            if e.company_id == PLAYER
+            for line in e.lines
+        ]
         return True
 
     def turn(self) -> None:
@@ -89,6 +97,7 @@ class Game:
         for event in self.state.open_events(PLAYER):
             if event.severity == "critical" and event.status == "open":
                 self.act(ChooseEvent(self.founder_id, event.id, event.choices[0].key))
+        types = {a.code: a.type for a in self.loaded.game_data.accounts}
         result = advance_turn(
             self.state,
             Decisions(),
@@ -96,7 +105,9 @@ class Game:
             self.loaded.balance,
             self.loaded.game_data,
             self.balances,
+            prior_flow={PLAYER: cash_before_financing(self.month_lines, types)},  # as a save
         )
+        self.month_lines = []
         self.state = result.new_state
         self.balances = apply_entries(self.balances, result.ledger_entries)
         snap = result.snapshot.for_company(PLAYER)

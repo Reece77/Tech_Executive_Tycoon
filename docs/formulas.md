@@ -873,7 +873,7 @@ Statements are views over `ledger_line`; they add no state.
 - **Profit and loss** for a month, quarter or year: revenue (`4xxx`), cost of revenue (`6300_compute` hosting, shown under gross margin), operating expenses (`6000`–`6900` except `6300`), operating result, interest (`7000`, zero in v1), tax (`8000`, zero in v1), net result.
 - **Balance sheet** at a month end: assets (`1xxx`), liabilities (`2xxx`, including `2600_safes`), paid-in equity (`3xxx`) and **accumulated result** (the sum of every past net result; there are no closing entries). Invariant, tested every turn: assets = liabilities + paid-in equity + accumulated result.
 - **Cash flow** for a period: operating (net result; there are no accruals in v1), financing (SAFE money, priced rounds, fees on rounds are operating), and the change in cash, which must equal the cash account's movement.
-- **Burn** = −(operating cash flow) when negative; **runway** = cash ÷ this month's projected net burn (projected costs − this month's revenue), shown as "profitable" when the projection is positive.
+- **Burn** = net cash used before financing: −(operating + investing cash flow) over the month when negative, else 0. Investor and loan money (SAFEs, rounds, bridges, debt) never counts, and the month includes cash moved by actions before Continue (a paid event). Decided 2026-10-31 (M8r, Codex review 1 finding 7); the snapshot, the Overview tile and its breakdown all use it; **runway** = cash ÷ this month's projected net burn (projected costs − this month's revenue), shown as "profitable" when the projection is positive.
 
 ### 14.2 Shares and the cap table
 
