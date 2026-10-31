@@ -92,22 +92,25 @@ def cash_change(session: Session, state: GameState) -> BreakdownOut:
 
 
 def burn(session: Session, state: GameState) -> BreakdownOut:
-    """Last month's burn (the fall in cash) by cost line, less revenue and other inflows."""
+    """Last month's burn by cost line, less revenue and event gains: net cash used before
+    financing (14.1; M8r). Investor and loan money is left out."""
     played = state.turn - 1
     if played < 0:
         return BreakdownOut(items=[], note="No month has closed yet.")
     lines: dict[str, int] = defaultdict(int)
     for code, name, memo, cents in cash_effects(session, state.player.id, played):
         category = _category(code, memo)
+        if category == "Financing":
+            continue  # burn is before financing (M8r)
         label = name if category in ("Payroll", "Marketing", "Other costs") else category
         lines[label] -= cents  # burn counts money out as positive
     total = sum(lines.values())
     items = sorted(lines.items(), key=lambda kv: (-kv[1], kv[0]))
     note = (
-        "Burn is how much cash fell over the month; revenue, financing and event gains "
-        "count against it."
+        "Burn is the net cash the business used over the month, before financing: revenue "
+        "and event gains count against it; investor and loan money does not."
         if total > 0
-        else "Cash did not fall last month, so there was no burn."
+        else "The business did not use cash last month (before financing), so there was no burn."
     )
     return BreakdownOut(items=[_money(k, v) for k, v in items if v], note=note)
 

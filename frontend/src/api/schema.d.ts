@@ -2198,11 +2198,26 @@ export interface components {
              * @description Why they cannot take the seat now, or null
              */
             problem: string | null;
+            /**
+             * Salary Cents
+             * @description Their annual salary now
+             */
+            salary_cents: number;
+            /**
+             * Exec Salary Cents
+             * @description The default salary on appointment: the exec market rate, never below their current pay (18.3)
+             */
+            exec_salary_cents: number;
         };
         /** AppointIn */
         AppointIn: {
             /** Person Id */
             person_id: number;
+            /**
+             * Salary Cents
+             * @description New annual salary; null: the exec market rate, never below current pay
+             */
+            salary_cents?: number | null;
         };
         /** ApproachOut */
         ApproachOut: {
@@ -3157,6 +3172,11 @@ export interface components {
             message: string;
             /** Event Id */
             event_id?: number | null;
+            /**
+             * Retryable
+             * @description True: refused before anything was written, so the same request may be sent again (save_busy; M8r). Absent: do not retry automatically.
+             */
+            retryable?: boolean | null;
         };
         /** EventChoiceOut */
         EventChoiceOut: {
@@ -6443,7 +6463,7 @@ export interface components {
             covered: boolean;
             /**
              * Output Effect Pct
-             * @description Change to output, capacity and marketing, %
+             * @description Change to output, capacity and marketing, %; an estimate: the COO's effect from displayed ranges (18.8)
              */
             output_effect_pct: number;
             /**
@@ -6468,7 +6488,7 @@ export interface components {
             pools_short: number;
             /**
              * Output Effect Pct
-             * @description The largest shortfall's change to output, %
+             * @description The largest shortfall's change to output, %; an estimate: the COO's effect from displayed ranges (18.8)
              */
             output_effect_pct: number;
         };

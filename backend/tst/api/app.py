@@ -52,9 +52,13 @@ ERROR_STATUS: dict[type[SimError], int] = {
 
 
 def _error(status_code: int, code: str, message: str) -> JSONResponse:
+    # Busy is only ever raised before a write commits (M8r): safe to send again.
+    retryable = True if code == SaveBusyError.code else None
     return JSONResponse(
         status_code=status_code,
-        content=ErrorOut(code=code, message=message).model_dump(exclude_none=True),
+        content=ErrorOut(code=code, message=message, retryable=retryable).model_dump(
+            exclude_none=True
+        ),
     )
 
 

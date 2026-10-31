@@ -59,6 +59,10 @@ test('(b) appoint a CTO, see the estimate, then vacate the seat', async ({ page 
   await cto.getByTestId('appoint').click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('exec level');
+  // M8r: the salary to appoint at is shown and editable, prefilled with the exec rate.
+  const salary = dialog.getByTestId('appoint-salary').first();
+  await expect(salary).not.toHaveValue('');
+  await expect(salary.locator('xpath=ancestor::div[1]/..')).toContainText('a year');
   await dialog.getByTestId('appoint-confirm').first().click();
   await expect(dialog).toBeHidden();
   await expect(cto).toContainText('(est.)');

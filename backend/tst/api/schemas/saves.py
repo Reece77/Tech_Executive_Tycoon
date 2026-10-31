@@ -131,7 +131,10 @@ class SupportTileOut(BaseModel):
     support_staff: int
     needed: int
     pools_short: int = Field(description="Support pools below full coverage")
-    output_effect_pct: float = Field(description="The largest shortfall's change to output, %")
+    output_effect_pct: float = Field(
+        description="The largest shortfall's change to output, %; an estimate: the COO's effect "
+        "from displayed ranges (18.8)"
+    )
 
 
 class FundingTileOut(BaseModel):

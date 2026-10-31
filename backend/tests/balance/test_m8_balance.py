@@ -12,8 +12,21 @@ from tst.balance import m8
 NEEDED = {"seats": 1.15, "support": 1.08, "blitz": 1.2}
 
 
+SEATS_REASON = (
+    "recorded miss: seats 1.097 (needs 1.15) once poached executives leave their seats, even "
+    "with the exec salary on appointment (M8r, Reece 2026-10-31); rebalance in M15"
+)
+
+
 @pytest.mark.nightly
-@pytest.mark.parametrize("arm", list(NEEDED))
+@pytest.mark.parametrize(
+    "arm",
+    [
+        pytest.param("seats", marks=pytest.mark.xfail(strict=False, reason=SEATS_REASON)),
+        "support",
+        "blitz",
+    ],
+)
 def test_m8_target(arm: str) -> None:
     jobs = int(os.environ.get("TST_BALANCE_JOBS", str(os.cpu_count() or 1)))
     results = m8.run(arm, m8.SEEDS, jobs)

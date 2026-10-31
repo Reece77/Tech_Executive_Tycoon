@@ -113,3 +113,15 @@ The scripts changed: the second product is now staffed (an M7a bug: hires were n
 | M8 targets 2–6 | 1.512; 1.088; 0.97 and 359×; 1.472 (3 seeds); all entrants on time | pass (see the M8 brief) |
 
 Blitzscale's founder is removed on 5 seeds around months 92–108: with its second product staffed and its seats filled it reaches about $64M ARR, but its board confidence decays under the burn. Reece approved merging M8 with this recorded (2026-10-31).
+
+### M8r (2026-10-31)
+
+Codex review 1 finding 3: a poached executive now leaves their seat (before, they kept it and its effect from the rival's payroll). Appointees were exec level but still on their old pay, so rivals' offers at the exec market rate took them within months. Product manager's fix: an appointment sets a salary, by default the exec market rate (formulas.md 18.3). Measured on the commit before finding 3, after it, and with the salary:
+
+| Target | Before | Finding 3 | With exec pay | Result |
+| --- | --- | --- | --- | --- |
+| T3 blitzscale succeeds | 3/10 | 1/10 | 2/10 | **fail**, xfail for M15 |
+| M8 target 2 (seats, needs 1.15) | 1.512 | 0.880 | 1.097 | **fail**, xfail for M15 |
+| An executive at the default salary stays 6 months (10 real stage-3 games) | — | — | 4/10 seeds | **fail**, xfail for M15: at ordinary morale (about 50), any employee reads "might go" against a market-rate offer |
+
+Every other target is unchanged: T1, T3 for bootstrap-frugal (7/10) and steady (10/10), T4 to T8, E3, and S2 (12.0 worker-minutes run alone). T2 stays the recorded M7c miss.

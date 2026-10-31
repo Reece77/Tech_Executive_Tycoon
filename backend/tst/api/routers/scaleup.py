@@ -128,7 +128,9 @@ def appoint(
 ) -> ScaleupActionOut:
     path = _path(settings, save_id)
     founder = _founder_id(_state(path))
-    return _act(path, data, AppointExecutive(founder, _seat(seat), body.person_id))
+    return _act(
+        path, data, AppointExecutive(founder, _seat(seat), body.person_id, body.salary_cents)
+    )
 
 
 @router.post(

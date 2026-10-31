@@ -56,9 +56,17 @@ def _views(state: GameState) -> dict[int, OrgView]:
 
 
 def team_of(
-    state: GameState, view: OrgView, product: Product, balance: Balance, data: GameData
+    state: GameState,
+    view: OrgView,
+    product: Product,
+    balance: Balance,
+    data: GameData,
+    *,
+    estimate: bool = False,
 ) -> Team:
-    return product_team(state, view, product, data.category(product.category), balance, data)
+    return product_team(
+        state, view, product, data.category(product.category), balance, data, estimate=estimate
+    )
 
 
 def shown_turn(state: GameState) -> int:
@@ -68,6 +76,18 @@ def shown_turn(state: GameState) -> int:
 
 def current_feature(product: Product, data: GameData, turn: int) -> float:
     return f.feature_score(product.feature_points, data.category(product.category), turn)
+
+
+def reference_price(
+    product: Product, segment: str, data: GameData, pricing_power: float = 1.0
+) -> int:
+    """The reference price a segment's price score uses: x the CRO's pricing power in a
+    sales-led segment (18.3). Sales, the current appeal and a price preview all use this one
+    (M8r, Codex review 1 finding 5)."""
+    reference = data.category(product.category).market(segment).reference_price_cents
+    if pricing_power != 1 and data.segment(segment).reach == "sales":
+        reference = round(reference * pricing_power)
+    return reference
 
 
 def segment_appeal(
@@ -82,9 +102,7 @@ def segment_appeal(
     (18.3); 1 for v1 companies and rivals."""
     if seg.price_cents is None:
         return None
-    reference = data.category(product.category).market(seg.segment).reference_price_cents
-    if pricing_power != 1 and data.segment(seg.segment).reach == "sales":
-        reference = round(reference * pricing_power)
+    reference = reference_price(product, seg.segment, data, pricing_power)
     return f.appeal(
         data.segment(seg.segment).weights,
         product.quality,
@@ -94,9 +112,12 @@ def segment_appeal(
     )
 
 
-def pricing_power(state: GameState, product: Product, balance: Balance) -> float:
-    """The CRO's pricing power for the product's company (18.3); 1 before stage 3."""
-    return side_factor(state, product.company_id, CRO, "pricing", balance)
+def pricing_power(
+    state: GameState, product: Product, balance: Balance, *, estimate: bool = False
+) -> float:
+    """The CRO's pricing power for the product's company (18.3); 1 before stage 3.
+    `estimate`: from the displayed ranges, for the API (M8r)."""
+    return side_factor(state, product.company_id, CRO, "pricing", balance, estimate=estimate)
 
 
 # --- Phase 3: development -------------------------------------------------------------------

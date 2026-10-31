@@ -8,7 +8,7 @@ import os
 import re
 import threading
 from collections.abc import Iterable, Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -79,8 +79,8 @@ from tst.sim.errors import (
     UnknownScenarioError,
     UpgradeNeededError,
 )
-from tst.sim.finance.statements import projected_runway
-from tst.sim.ledger import CASH, AccountCode, apply_entries
+from tst.sim.finance.statements import cash_before_financing, projected_runway
+from tst.sim.ledger import AccountCode, apply_entries
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
 from tst.sim.people.reveal import shown_rating
@@ -248,8 +248,20 @@ def remember(path: Path, state: GameState, balances: Balances | None = None) -> 
     """Keep the state just written to a save (after its session closed), as `load_state`
     would read it back (M6 sub-task 0: a turn or action then skips a full load), and the
     ledger balances through its turn when the writer knows them (M7a: summing the whole
-    ledger cost about 10 ms a call by turn 120, and grows every month)."""
+    ledger cost about 10 ms a call by turn 120, and grows every month).
+
+    Only `write_session` calls this, while it still holds the save's write lock, so no other
+    write can land between the commit and the stamp (M8r, Codex review 1 finding 1)."""
     _LAST[str(path.resolve())] = (_stamp(path), live_view(state), balances)
+
+
+PUBLISH = "tst_publish"
+
+
+def publish(session: Session, state: GameState, balances: Balances | None = None) -> None:
+    """Ask `write_session` to remember `state` (and its balances) once this write commits,
+    before it releases the lock. A write that publishes nothing clears what was remembered."""
+    session.info[PUBLISH] = (state, balances)
 
 
 def _recall(path: Path) -> tuple[GameState, Balances | None] | None:
@@ -341,6 +353,12 @@ def write_session(path: Path) -> Iterator[Session]:
         with open_session(path) as session, session.begin():
             _cache(session, cached)
             yield session
+            published = session.info.pop(PUBLISH, None)
+        # Committed and closed, and the lock is still ours: publish now or forget (M8r).
+        if published is not None:
+            remember(path, *published)
+        else:
+            _LAST.pop(str(path.resolve()), None)
     except OperationalError as exc:
         if is_locked_error(exc):
             raise SaveBusyError(BUSY_MESSAGE) from exc
@@ -595,7 +613,7 @@ class Overview:
     turn: int  # next turn to play
     date_label: str
     cash_cents: Cents
-    monthly_burn_cents: Cents  # the fall in cash over the last month played; 0 before it
+    monthly_burn_cents: Cents  # net cash used before financing last month; 0 before it
     runway_months: int | None  # at this month's projected phase-6 costs (M1c decision)
     history: list[tuple[int, CompanySnapshot]]  # last N snapshots, oldest first
 
@@ -607,21 +625,8 @@ def player_overview(session: Session, history: int, data: LoadedData) -> Overvie
     player = state.player
     cash = company_cash(ledger_balances(session), player.id)
     snaps = recent_snapshots(session, player.id, history)
+    # Net cash used before financing over the last month played (14.1; M8r).
     burn = snaps[-1][1].monthly_burn_cents if snaps else 0
-    if snaps and snaps[-1][0] > 0:
-        # The fall in cash over the whole month, as its breakdown and the P&L count it: the
-        # snapshot's burn starts after the month's actions, so it missed an event paid by
-        # answering it before Continue (M7c playtest). Turn 0 holds the starting capital.
-        change = session.execute(
-            select(func.coalesce(func.sum(LedgerLineRow.amount_cents), 0))
-            .join(LedgerLineRow.entry)
-            .where(
-                LedgerEntryRow.company_id == player.id,
-                LedgerEntryRow.turn == snaps[-1][0],
-                LedgerLineRow.account_code == CASH,
-            )
-        ).scalar_one()
-        burn = max(-int(change), 0)
     return Overview(
         slug=meta.name,
         company_name=player.name,
@@ -734,6 +739,21 @@ def rating_rows(state: GameState, turn: int, data: LoadedData) -> list[PersonRat
     return rows
 
 
+def month_flow_so_far(session: Session, turn: int, data: LoadedData) -> dict[int, Cents]:
+    """Cash from operating and investing that `turn`'s entries moved before the turn runs
+    (actions such as a paid event), per company: burn covers the whole month (14.1; M8r)."""
+    types = {a.code: a.type for a in data.game_data.accounts}
+    rows = session.execute(
+        select(LedgerEntryRow.company_id, LedgerLineRow.account_code, LedgerLineRow.amount_cents)
+        .join(LedgerLineRow.entry)
+        .where(LedgerEntryRow.turn == turn)
+    ).all()
+    lines: dict[int, list[tuple[int, str, Cents]]] = {}
+    for company, account, amount in rows:
+        lines.setdefault(int(company), []).append((turn, str(account), int(amount)))
+    return {c: cash_before_financing(ls, types) for c, ls in lines.items()}
+
+
 class _PendingEvents(Exception):
     """Events or texts from an earlier turn are still unwritten (the service did not finish)."""
 
@@ -754,9 +774,10 @@ def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnR
             data.balance,
             data.game_data,
             balances,
+            prior_flow=month_flow_so_far(session, state.turn, data),
         )
         apply_turn_result(session, result, decisions, state, data)
-    remember(save_path, result.new_state, apply_entries(balances, result.ledger_entries))
+        publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
     return result
 
 
@@ -774,22 +795,52 @@ def run_turn(
     so no adapter is called."""
     decisions = decisions or Decisions()
     migrate.ensure_current(save_path)
+    # The turn and its event writing hold the save together (M8r, Codex review 1 finding 2):
+    # another write between them is refused, so `save_busy` only ever comes before the month
+    # commits. A Holiday already holds the save for all its months.
+    key = str(save_path.resolve())
+    with _LOCKS_GUARD:
+        held = _HOLDS.get(key) is not None and _HOLDS.get(key) is _HOLDER.get()
+    token = None if held else reserve(save_path)
     try:
-        result = _play_turn(save_path, data, decisions)
-    except _PendingEvents:  # an earlier write did not finish: write them, then play
-        write_pending(save_path, data, adapter=adapter, copy_from=events_from)
-        result = _play_turn(save_path, data, decisions)
+        with holding(token) if token is not None else nullcontext():
+            try:
+                result = _play_turn(save_path, data, decisions)
+            except _PendingEvents:  # an earlier write did not finish: write them, then play
+                write_pending(save_path, data, adapter=adapter, copy_from=events_from)
+                result = _play_turn(save_path, data, decisions)
+            _after_commit(save_path, data, result, adapter, events_from)
+    finally:
+        if token is not None:
+            release(save_path, token)
+    return result
 
-    if result.event_requests or result.text_requests:
-        write_pending(
-            save_path, data, adapter=adapter, copy_from=events_from, committed=result.new_state
-        )
+
+def _after_commit(
+    save_path: Path,
+    data: LoadedData,
+    result: TurnResult,
+    adapter: LLMAdapter | None,
+    events_from: Path | None,
+) -> None:
+    """Everything after the month's commit. The month is played whatever happens here, so a
+    failure is logged, not raised: an unwritten event stays pending and the next turn or
+    request writes it first (`_PendingEvents`)."""
+    try:
+        if result.event_requests or result.text_requests:
+            write_pending(
+                save_path, data, adapter=adapter, copy_from=events_from, committed=result.new_state
+            )
+    except Exception:
+        log.exception("Turn %d committed; its events stay pending", result.new_state.turn)
     committed = result.new_state.turn
     backup = data.balance.backup
-    if committed % backup.every_n_turns == 0:
-        periodic_backup(save_path, committed, backup.keep_periodic)
-    update_index(save_path, result.new_state)
-    return result
+    try:
+        if committed % backup.every_n_turns == 0:
+            periodic_backup(save_path, committed, backup.keep_periodic)
+        update_index(save_path, result.new_state)
+    except Exception:
+        log.exception("Turn %d committed; its backup or index update failed", committed)
 
 
 # --- Player actions (ADR-0014) --------------------------------------------------------------
@@ -840,7 +891,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
                 actor_id=action.actor_id,
             )
         )
-    remember(save_path, result.new_state, apply_entries(balances, result.ledger_entries))
+        publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
     return result
 
 

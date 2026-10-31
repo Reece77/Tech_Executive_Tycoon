@@ -6,7 +6,7 @@
 terms:
   # --- KPIs (tiles on Overview, People, Products, Finance, Competitors, Game over) ---------
   kpi.cash: "Money in the bank now. It moves with revenue, costs, funding and event effects."
-  kpi.burn: "How much cash fell last month. Revenue and new funding count against it."
+  kpi.burn: "Net cash the business used last month, before financing: costs less revenue and event gains. Investor and loan money does not count."
   kpi.runway: "Months of cash left at this month's projected net burn. 'Profitable' means revenue covers projected costs."
   kpi.mrr: "Monthly recurring revenue: what customers paid in the last closed month."
   kpi.arr: "Annual run rate: 12 times last month's recurring revenue."

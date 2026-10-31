@@ -13,6 +13,7 @@ from tst.sim.events.formulas import clamp_effect
 from tst.sim.events.models import EventChoice, GameEvent, QueuedEvent
 from tst.sim.ledger import CASH, GENERAL_ADMIN, OTHER_INCOME, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact
 from tst.sim.org.rules import org_view
 from tst.sim.people.relationships import clamp_relationship, pair_key
 from tst.sim.state import (
@@ -33,6 +34,7 @@ from tst.sim.state import (
 MORALE_MAX = 100.0  # tunable-exempt: morale scale 0-100
 SCORE_MAX = 100.0  # tunable-exempt: brand and quality scale 0-100
 PCT = 100.0  # tunable-exempt: percent
+PERCENT = 100  # tunable-exempt: percent, as an integer for exact money
 
 
 def parse_target(target: str) -> tuple[str, tuple[int, ...]]:
@@ -198,7 +200,8 @@ def apply_choice(
         elif t == "salary_change" and kind == "person" and ids and ids[0] in staff:
             employment = state.employment_of(ids[0])
             if employment is not None and value > 0:
-                salary = round(employment.salary_cents * (1 + value / PCT))
+                # Exactly, rounded half-to-even once (ADR-0003; M8r, finding 6).
+                salary = round(employment.salary_cents * (1 + exact(value) / PERCENT))
                 state = with_employment(state, replace(employment, salary_cents=salary))
         elif t == "resign" and kind == "person" and ids and ids[0] in staff:
             employment = state.employment_of(ids[0])

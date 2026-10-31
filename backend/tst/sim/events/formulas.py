@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from fractions import Fraction
+
 from tst.sim.data_models import EventsBalance, TriggerBalance
 from tst.sim.events.data import NON_NEGATIVE, VALUELESS, Severity
-from tst.sim.money import BP_DENOMINATOR, Cents
+from tst.sim.money import BP_DENOMINATOR, Cents, exact
 
 
 def clamp01(x: float) -> float:
@@ -55,39 +57,59 @@ def severity_for(
 
 def cash_base_cents(cash: Cents, monthly_revenue: Cents, events: EventsBalance) -> Cents:
     """16.3: cash effects are capped in bp of max(cash, 3 x monthly revenue)."""
-    return max(cash, round(events.cash_revenue_months * monthly_revenue), 0)
+    return max(cash, round(exact(events.cash_revenue_months) * monthly_revenue), 0)
+
+
+def cash_cap(
+    severity: Severity, events: EventsBalance, cash_base: Cents, *, gain: bool
+) -> Fraction:
+    """The cash cap in cents, exactly: bp of the base, gains at half the cost cap (16.3)."""
+    cost_cap = cash_base * exact(events.cap("cash_delta", severity)) / BP_DENOMINATOR
+    return cost_cap * exact(events.cash_gain_share) if gain else cost_cap
 
 
 def effect_cap(
     effect: str, severity: Severity, events: EventsBalance, cash_base: Cents, *, gain: bool
 ) -> float:
-    """The largest size of an effect (16.3); cash in cents, gains at half the cost cap."""
+    """The largest size of an effect (16.3); cash in cents, gains at half the cost cap. For
+    display and prompts only: money is clamped with `cash_cap`'s exact value."""
     if effect in VALUELESS or effect == "resign":
         return 0.0
-    cap = events.cap(effect, severity)
-    if effect != "cash_delta":
-        return cap
-    cost_cap = cash_base * cap / BP_DENOMINATOR
-    return cost_cap * events.cash_gain_share if gain else cost_cap
+    if effect == "cash_delta":
+        return float(cash_cap(severity, events, cash_base, gain=gain))
+    return events.cap(effect, severity)
+
+
+def _clamped_cents(
+    value: Fraction, severity: Severity, events: EventsBalance, base: Cents
+) -> float:
+    """Cash clamped to its cap and rounded half-to-even once, as whole cents (ADR-0003)."""
+    cap = cash_cap(severity, events, base, gain=value > 0)
+    return float(round(max(-cap, min(cap, value))))
 
 
 def clamp_effect(
     effect: str, value: float, severity: Severity, events: EventsBalance, cash_base: Cents
 ) -> float:
     """A value clamped to its cap (16.3); growth boosts and raises are never negative, and
-    cash is rounded to whole cents."""
+    cash is rounded to whole cents (exactly; M8r)."""
     if effect in VALUELESS or effect == "resign":
         return 0.0
+    if effect == "cash_delta":
+        return _clamped_cents(exact(value), severity, events, cash_base)
     cap = effect_cap(effect, severity, events, cash_base, gain=value > 0)
     low = 0.0 if effect in NON_NEGATIVE else -cap
-    out = max(low, min(cap, value))
-    return float(round(out)) if effect == "cash_delta" else out
+    return max(low, min(cap, value))
 
 
 def share_value(
     effect: str, share: float, severity: Severity, events: EventsBalance, cash_base: Cents
 ) -> float:
-    """A template effect's value: its share of the cap (16.4)."""
+    """A template effect's value: its share of the cap (16.4). Cash: share x cap exactly,
+    rounded once."""
+    if effect == "cash_delta":
+        cap = cash_cap(severity, events, cash_base, gain=share > 0)
+        return _clamped_cents(exact(share) * cap, severity, events, cash_base)
     return clamp_effect(
         effect,
         share * effect_cap(effect, severity, events, cash_base, gain=share > 0),

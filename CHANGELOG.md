@@ -4,6 +4,17 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M8r fixes from Codex review 1 (each with a regression test written first and seen failing):
+  - 1 (P1) The state cache is published inside `write_session`, after the commit and before the save's lock is released (`repository.publish`); a write that publishes nothing clears it. Two-writer interleaving test (`test_m8r_cache.py`).
+  - 2 (P1) Continue reserves the save across its turn and its event writing, so `save_busy` only comes before anything commits; a failure after the commit is logged and the month counts (events stay pending for the next request). Busy errors carry `retryable: true`; the front end retries only those. Holiday counts every committed month (`test_m8r_continue.py`, `retry.test.ts`).
+  - 3 (P2) A poached executive, unit leader or plan owner leaves their old company's seat, unit or plan; a holder employed by another company counts as vacant (`test_m8r_seats.py`).
+  - 4 (P2) Every seat-derived number the API shows (support shortfall, layer tax, the Overview support tile, a product's team, churn, appeal, pricing power) uses the estimated effect from displayed ranges and is labelled "(est.)"; the engine keeps true values (`effect_of(..., estimate=True)`). Two COOs the player sees alike give byte-identical Org, Overview, scale-up and product responses (`test_api_scaleup.py`).
+  - 5 (P2) The price preview, the shown price score, the current appeal and actual sales use one reference price (`reference_price`) with the CRO's pricing power (`test_m8r_price_preview.py`).
+  - 6 (P2) Event raises and cash effects compute with integers and Fractions (`money.exact`) and round half-to-even once (`test_m8r_event_money.py`, with Hypothesis property tests).
+  - 7 (P3) Burn is net cash used before financing over the whole month (formulas.md 14.1); the snapshot, the Overview tile (now read from the snapshot again), its breakdown and the glossary agree (`test_m8r_burn.py`). `advance_turn` takes the month's cash flow already moved by actions (`prior_flow`).
+  - Executives are paid as executives (product manager, 2026-10-31): an appointment sets a salary, by default the exec market rate and never below current pay, applied at once with the raise bonus (formulas.md 18.3; API `salary_cents`, the Appoint dialog's salary field, `tst appoint --salary`). Recorded misses for M15, `xfail(strict=False)`: T3 blitzscale 2/10, M8 target 2 at 1.097, and an executive at the default salary staying six months (4/10 seeds).
+  - **Golden snapshots regenerated:** only `monthly_burn_cents` changes (21 values over 10 seeds), in months when funding arrived, which used to store 0 because investor money hid the burn.
+
 - M7c fixes and an agent playtest:
   - Sub-task 0 (Reece): the v1 T2 balance assertion is `xfail(strict=False)`, "recorded miss: steady wins 10/10 after M8; rebalance in M15"; every other target stays a hard check.
   - Former staff profiles: a read-only "Former employee" profile (last role, unit, months, reason, the rival who poached them, tenure, the ranges, tags, interests and work style the player knew at departure, and their History). `former_staff` (migration `0021_former_staff`, backfilled for past departures) is written by `sync_state` when one of the player's staff leaves; `GET /people/{id}/former`; the person screen falls back to it, so every existing link resolves. Planted-value test.

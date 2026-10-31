@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.errors import InvalidMoneyError
@@ -45,3 +46,12 @@ def format_money(amount: Cents) -> str:
     sign = "-" if amount < 0 else ""
     dollars, rest = divmod(abs(amount), CENTS_PER_DOLLAR)
     return f"{sign}${dollars:,}.{rest:02d}"
+
+
+def exact(x: float | int | Fraction) -> Fraction:
+    """A number as the exact rational it was written as: 0.1 is 1/10, not the nearest binary
+    float. Money arithmetic runs in Fractions and rounds half-to-even once, at the end
+    (ADR-0003; M8r, Codex review 1 finding 6)."""
+    if isinstance(x, Fraction | int):
+        return Fraction(x)
+    return Fraction(repr(x))

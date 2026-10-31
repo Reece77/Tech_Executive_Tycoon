@@ -23,6 +23,7 @@ from tst.sim.finance import fundraising, insolvency
 from tst.sim.finance.board import average_confidence, board_month, vacate_departed
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
+from tst.sim.finance.statements import cash_before_financing
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -93,6 +94,9 @@ class TurnContext:
     start: GameState | None = None  # the state the turn began from (M6 milestones)
     text_requests: tuple[TextRequest, ...] = ()
     division_months: tuple[DivisionMonth, ...] = ()  # phase 6 (M8, 18.1)
+    # Cash from operating and investing the month already moved before Continue (actions such
+    # as a paid event), per company: burn covers the whole month (14.1; M8r).
+    prior_flow: Mapping[int, Cents] = field(default_factory=dict)
 
     @property
     def turn(self) -> int:
@@ -250,9 +254,17 @@ def stage_checks(ctx: TurnContext) -> TurnContext:
 def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     snaps = []
     items = []
+    types = {a.code: a.type for a in ctx.data.accounts}
     for company in ctx.state.ledger_companies():  # incumbents have no books until M5
-        opening = account_balance(ctx.opening_balances, company.id, CASH)
         closing = account_balance(ctx.balances, company.id, CASH)
+        # Burn: net cash used before financing over the month (14.1; M8r finding 7).
+        lines = [
+            (e.turn, line.account, line.amount)
+            for e in ctx.entries
+            if e.company_id == company.id
+            for line in e.lines
+        ]
+        flow = ctx.prior_flow.get(company.id, 0) + cash_before_financing(lines, types)
         morale = [
             ctx.state.person_state(e.person_id).morale
             for e in ctx.state.staff(company.id)
@@ -263,7 +275,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
             CompanySnapshot(
                 company_id=company.id,
                 cash_cents=closing,
-                monthly_burn_cents=max(opening - closing, 0),
+                monthly_burn_cents=max(-flow, 0),
                 headcount=len(ctx.state.staff(company.id)),
                 payroll_cents=ctx.payroll.get(company.id, 0),
                 avg_morale=sum(known) / len(known) if known else None,
@@ -355,8 +367,12 @@ def advance_turn(
     balance: Balance,
     data: GameData,
     ledger_balances: LedgerBalances,
+    *,
+    prior_flow: Mapping[int, Cents] | None = None,
 ) -> TurnResult:
-    """Resolve turn `state.turn` and return the next state plus everything to persist."""
+    """Resolve turn `state.turn` and return the next state plus everything to persist.
+    `prior_flow`: cash from operating and investing that this month's actions already moved,
+    per company (from the ledger), so the stored burn covers the whole month (14.1; M8r)."""
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
     for event in state.open_events(state.player.id):
@@ -373,6 +389,7 @@ def advance_turn(
         opening_balances=ledger_balances,
         balances=dict(ledger_balances),
         start=state,
+        prior_flow=prior_flow or {},
     )
     for _name, phase in PHASES:
         ctx = phase(ctx)
