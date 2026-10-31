@@ -120,6 +120,15 @@ export class ApiError extends Error {
   }
 }
 
+/** Mutations retry a refused write while another write to the same save finishes (the API
+ * refuses it with `save_busy` before changing anything, so a retry is safe). M8: state loads
+ * grew with the new rivals, and an inbox mark-read could still hold the save when an event
+ * choice arrived. */
+export function retryBusy(failures: number, error: unknown): boolean {
+  return error instanceof ApiError && error.code === 'save_busy' && failures < 5;
+}
+export const BUSY_RETRY_MS = 250;
+
 function unwrap<T>(result: { data?: T; error?: unknown; response: Response }): T {
   if (result.data !== undefined) return result.data;
   const body = result.error as Partial<Schemas['ErrorOut']> | undefined;
