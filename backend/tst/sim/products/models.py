@@ -36,6 +36,7 @@ class Product:
     held_feature: float | None = None
     first_customer_turn: int | None = None  # first month with at least one paying customer
     rotting: bool = False  # last phase 3 found no team working on it (11.4)
+    division_id: int | None = None  # the division it belongs to; None = corporate (M8, 18.1)
 
     @property
     def is_static(self) -> bool:

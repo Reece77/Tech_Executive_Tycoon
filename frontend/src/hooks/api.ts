@@ -71,6 +71,20 @@ export type HallOfFame = Schemas['HallOfFameOut'];
 export type StorylineHistory = Schemas['StorylineHistoryOut'];
 export type HolidayIn = Schemas['HolidayIn'];
 export type StatementPeriodKind = 'month' | 'quarter' | 'year';
+export type Scaleup = Schemas['ScaleupOut'];
+export type Division = Schemas['DivisionOut'];
+export type Seat = Schemas['SeatOut'];
+export type SupportPool = Schemas['SupportPoolOut'];
+export type SeatCandidates = Schemas['SeatCandidatesOut'];
+export type DivisionStatements = Schemas['DivisionStatementsOut'];
+export type DivisionColumn = Schemas['DivisionColumnOut'];
+
+/** One scale-up action (M8): shared services, a product's division, a seat. */
+export type ScaleupAction =
+  | { action: 'services'; unit_id: number; services: 'central' | 'embedded' }
+  | { action: 'product_division'; product_id: number; division_id: number | null }
+  | { action: 'appoint'; seat: string; person_id: number }
+  | { action: 'remove'; seat: string };
 
 /** One product action, as the product screens build it; maps to its route. */
 export type ProductAction =
@@ -85,7 +99,12 @@ export type ProductAction =
 
 /** One reorganization, as the Org screen builds it; maps to the preview body and the action. */
 export type OrgChange =
-  | { change: 'create_unit'; kind: 'team' | 'department'; name: string; parent_id?: number | null }
+  | {
+      change: 'create_unit';
+      kind: 'team' | 'department' | 'division';
+      name: string;
+      parent_id?: number | null;
+    }
   | { change: 'dissolve_unit'; unit_id: number }
   | { change: 'rename_unit'; unit_id: number; name: string }
   | { change: 'move_unit'; unit_id: number; parent_id: number | null }
@@ -100,6 +119,15 @@ export class ApiError extends Error {
     this.code = code;
   }
 }
+
+/** Mutations retry a refused write while another write to the same save finishes (the API
+ * refuses it with `save_busy` before changing anything, so a retry is safe). M8: state loads
+ * grew with the new rivals, and an inbox mark-read could still hold the save when an event
+ * choice arrived. */
+export function retryBusy(failures: number, error: unknown): boolean {
+  return error instanceof ApiError && error.code === 'save_busy' && failures < 5;
+}
+export const BUSY_RETRY_MS = 250;
 
 function unwrap<T>(result: { data?: T; error?: unknown; response: Response }): T {
   if (result.data !== undefined) return result.data;
@@ -154,6 +182,11 @@ export const keys = {
   sheetPreview: (saveId: string, sheetId: number) =>
     ['saves', saveId, 'sheet-preview', sheetId] as const,
   gameOver: (saveId: string) => ['saves', saveId, 'game-over'] as const,
+  scaleup: (saveId: string) => ['saves', saveId, 'scaleup'] as const,
+  seatCandidates: (saveId: string, seat: string) =>
+    ['saves', saveId, 'seat-candidates', seat] as const,
+  divisionStatements: (saveId: string, period: StatementPeriodKind) =>
+    ['saves', saveId, 'division-statements', period] as const,
 };
 
 const path = (saveId: string) => ({ params: { path: { save_id: saveId } } });
@@ -1382,5 +1415,80 @@ export function useAskCoo(saveId: string) {
       void client.invalidateQueries({ queryKey: ['saves', saveId, 'coo'] });
       void client.invalidateQueries({ queryKey: ['settings', 'llm'] });
     },
+  });
+}
+
+// --- Divisions and executives (M8) ------------------------------------------------------------
+
+export function useScaleup(saveId: string) {
+  return useQuery({
+    queryKey: keys.scaleup(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/scaleup', path(saveId))),
+  });
+}
+
+export function useSeatCandidates(saveId: string, seat: string | null) {
+  return useQuery({
+    queryKey: keys.seatCandidates(saveId, seat ?? ''),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/scaleup/seats/{seat}/candidates', {
+          params: { path: { save_id: saveId, seat: seat ?? '' } },
+        }),
+      ),
+    enabled: seat !== null,
+  });
+}
+
+async function applyScaleup(saveId: string, a: ScaleupAction) {
+  switch (a.action) {
+    case 'services':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/scaleup/divisions/{unit_id}/services', {
+          params: { path: { save_id: saveId, unit_id: a.unit_id } },
+          body: { services: a.services },
+        }),
+      );
+    case 'product_division':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/scaleup/products/{product_id}/division', {
+          params: { path: { save_id: saveId, product_id: a.product_id } },
+          body: { division_id: a.division_id },
+        }),
+      );
+    case 'appoint':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/scaleup/seats/{seat}/appoint', {
+          params: { path: { save_id: saveId, seat: a.seat } },
+          body: { person_id: a.person_id },
+        }),
+      );
+    case 'remove':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/scaleup/seats/{seat}/remove', {
+          params: { path: { save_id: saveId, seat: a.seat } },
+        }),
+      );
+  }
+}
+
+export function useScaleupAction(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: (a: ScaleupAction) => applyScaleup(saveId, a),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDivisionStatements(saveId: string, period: StatementPeriodKind) {
+  return useQuery({
+    queryKey: keys.divisionStatements(saveId, period),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/finance/divisions', {
+          params: { path: { save_id: saveId }, query: { period } },
+        }),
+      ),
+    placeholderData: keepPreviousData,
   });
 }

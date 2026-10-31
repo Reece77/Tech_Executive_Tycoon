@@ -10,12 +10,13 @@ from dataclasses import replace
 from typing import Final
 
 from tst.sim.calendar import turn_to_ym
-from tst.sim.data_models import LEVELS, Balance, BoardBalance, GameData, Series
+from tst.sim.data_models import LEVELS, SCORE_MAX, Balance, BoardBalance, GameData, Series
 from tst.sim.finance import formulas as f
 from tst.sim.finance.captable import last_round, mrr_now_and_then
 from tst.sim.finance.models import BoardSeat, SeatKind
 from tst.sim.finance.statements import projected_runway
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.org.executives import cfo_confidence
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Person
 from tst.sim.rng import RngFactory
@@ -239,12 +240,15 @@ def board_month(
         runway = projected_runway(state, company.id, cash_cents.get(company.id, 0), balance, data)
         growth = growth_term(state, company.id, balance)
         runway_pts = f.runway_points(runway, bb)
+        cfo = cfo_confidence(state, company.id, balance)  # M8 (18.3): 0 before stage 3
         for seat in seats:
             if seat.confidence is None:
                 continue
             patience = data.firm(seat.firm).patience if seat.firm else 0.0
             target = f.confidence_target(growth, runway_pts, patience, bb)
             b = f.next_confidence(seat.confidence, target, bb)
+            if cfo:
+                b = min(SCORE_MAX, max(0.0, b + cfo))
             below = seat.months_below + 1 if b < bb.removal_below else 0
             history = (*seat.history, b)[-bb.history_months :]
             state = with_seat(

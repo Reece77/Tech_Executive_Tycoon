@@ -7,7 +7,7 @@ import contextlib
 import time
 from pathlib import Path
 
-from tests.helpers import fund_save
+from tests.helpers import FIRST_PRODUCT, fund_save
 from tests.integration.test_api_org import seed_staff
 from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
 from tst.loader import LoadedData
@@ -45,7 +45,7 @@ def test_product_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
         if i % 3:
             run_action(path, loaded, MovePerson(founder, pid, i % 3))
     for index, (name, category, prices) in enumerate(PRODUCTS):
-        product = 13 + index
+        product = FIRST_PRODUCT + index
         run_action(path, loaded, CreateProduct(founder, name, category, tuple(prices)))
         for segment, price in prices.items():
             run_action(path, loaded, SetPrice(founder, product, segment, price))
@@ -56,7 +56,7 @@ def test_product_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
         state = load_state(session)
     assert state.board(1) and state.safes  # M4a: a board and a SAFE
     assert len(state.staff(1)) == STAFF + 1 and len(state.company_products(1)) == len(PRODUCTS)
-    assert len(state.products) == 12 + len(PRODUCTS)
+    assert len(state.products) == FIRST_PRODUCT - 1 + len(PRODUCTS)
 
     start = time.perf_counter()
     for _ in range(TURNS):

@@ -108,7 +108,7 @@ def test_create_team_costs_energy_and_changes_no_morale(loaded: LoadedData) -> N
         (CreateUnit(FOUNDER, "team", "x" * 65), OrgRuleError, "at most 64"),
         (CreateUnit(FOUNDER, "team", "platform"), OrgRuleError, "already a unit"),
         (CreateUnit(FOUNDER, "squad", "Q"), OrgRuleError, "unknown unit kind"),  # type: ignore[arg-type]
-        (CreateUnit(FOUNDER, "team", "Q", parent_id=1), OrgRuleError, "not a team"),
+        (CreateUnit(FOUNDER, "team", "Q", parent_id=1), OrgRuleError, "a division or a department"),
         (CreateUnit(FOUNDER, "team", "Q", parent_id=9), UnknownUnitError, "no unit 9"),
         (CreateUnit(FOUNDER, "department", "Eng"), OrgRuleError, "departments unlock at 10"),
         (CreateUnit(99, "team", "Q"), UnknownPersonError, "not on staff"),
@@ -131,7 +131,7 @@ def test_departments_unlock_at_ten_staff_or_stage_two(loaded: LoadedData) -> Non
     assert state.units[0].kind == "department"
     state = run(loaded, state, CreateUnit(FOUNDER, "team", "Web", parent_id=1))
     assert state.units[1].parent_id == 1
-    with pytest.raises(OrgRuleError, match="directly under the company"):
+    with pytest.raises(OrgRuleError, match="under the company or a division"):
         act(loaded, state, CreateUnit(FOUNDER, "department", "Sub", parent_id=1))
     staged = with_company(nine, replace(nine.player, stage=2))
     assert run(loaded, staged, CreateUnit(FOUNDER, "department", "Eng")).units
@@ -432,8 +432,8 @@ def test_move_unit_reparents_a_team(loaded: LoadedData) -> None:
 @pytest.mark.parametrize(
     ("action", "error", "message"),
     [
-        (MoveUnit(FOUNDER, 1, None), OrgRuleError, "only teams move"),
-        (MoveUnit(FOUNDER, 2, 3), OrgRuleError, "not a team"),
+        (MoveUnit(FOUNDER, 1, 3), OrgRuleError, "under the company or a division"),  # M8
+        (MoveUnit(FOUNDER, 2, 3), OrgRuleError, "a division or a department"),
         (MoveUnit(FOUNDER, 2, None), OrgRuleError, "already there"),
         (MoveUnit(FOUNDER, 2, 9), UnknownUnitError, "no unit 9"),
         (MoveUnit(FOUNDER, 9, 1), UnknownUnitError, "no unit 9"),

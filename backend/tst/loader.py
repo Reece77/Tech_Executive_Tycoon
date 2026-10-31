@@ -22,6 +22,8 @@ from tst.sim.data_models import (
     Balance,
     CategoriesFile,
     ClimateFile,
+    ComputeIndexFile,
+    EntrantsFile,
     GameData,
     InboxTemplatesFile,
     IncumbentsFile,
@@ -54,6 +56,8 @@ CATEGORIES_FILE = "categories.yaml"
 INCUMBENTS_FILE = "incumbents.yaml"
 INVESTORS_FILE = "investors.yaml"
 CLIMATE_FILE = "climate.yaml"
+COMPUTE_INDEX_FILE = "compute_index.yaml"  # M8 (formulas.md 18.6)
+ENTRANTS_FILE = "entrants.yaml"  # M8 (formulas.md 18.7)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -61,6 +65,8 @@ DATA_FILES = (
     BALANCE_FILE,
     CATEGORIES_FILE,
     CLIMATE_FILE,
+    COMPUTE_INDEX_FILE,
+    ENTRANTS_FILE,
     INBOX_FILE,
     INCUMBENTS_FILE,
     INVESTORS_FILE,
@@ -198,6 +204,13 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
             f"{BALANCE_FILE}: board.director_role {balance.board.director_role!r} "
             "is not in roles.yaml"
         )
+    skills = set(data.skill_keys)  # M8 (formulas.md 18.3)
+    for key, seat in balance.exec_seats.seats.items():
+        if bad := sorted(set(seat.weights) - skills):
+            raise DataLoadError(f"{BALANCE_FILE}: exec_seats.seats.{key} unknown skills {bad}")
+    missing_mix = sorted({c.key for c in data.categories} - set(balance.rivals.function_mix))
+    if missing_mix:
+        raise DataLoadError(f"{BALANCE_FILE}: rivals.function_mix misses categories {missing_mix}")
     rv = balance.rivals  # M5 (formulas.md 15)
     roles = {r.key for r in data.roles}
     bad_roles = sorted(set(rv.function_roles.values()) - roles)
@@ -275,6 +288,8 @@ def load_all(path: Path) -> LoadedData:
     incumbents = _validate(IncumbentsFile, parsed[INCUMBENTS_FILE], INCUMBENTS_FILE)
     investors = _validate(InvestorsFile, parsed[INVESTORS_FILE], INVESTORS_FILE)
     climate = _validate(ClimateFile, parsed[CLIMATE_FILE], CLIMATE_FILE)
+    compute_index = _validate(ComputeIndexFile, parsed[COMPUTE_INDEX_FILE], COMPUTE_INDEX_FILE)
+    entrants = _validate(EntrantsFile, parsed[ENTRANTS_FILE], ENTRANTS_FILE)
     game_data = _validate(
         GameData,
         {
@@ -298,6 +313,8 @@ def load_all(path: Path) -> LoadedData:
             "incumbents": incumbents.companies,
             "investors": investors.firms,
             "climate": climate,
+            "compute_index": compute_index,
+            "entrants": entrants.entrants,
             "event_templates": tuple(event_templates),
         },
         "seed data cross-check",

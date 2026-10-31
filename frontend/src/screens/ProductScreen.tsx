@@ -26,6 +26,8 @@ import {
   useProduct,
   useProductAction,
   useProductsMeta,
+  useScaleup,
+  useScaleupAction,
   type Market,
   type Product,
   type ProductAction,
@@ -117,6 +119,7 @@ function ProductBody({
           {p.launched_label ? ` · launched ${p.launched_label}` : ''}
         </span>
         <LifecycleChip product={p} />
+        <DivisionPicker saveId={saveId} p={p} />
         <Link
           to={`/game/${saveId}/products/markets/${p.category}`}
           style={{ fontSize: 13, marginLeft: 'auto' }}
@@ -959,5 +962,33 @@ function LastYear({
         </p>
       )}
     </Panel>
+  );
+}
+
+/** The owning division with a picker (M8, energy 1); shown once divisions exist. */
+function DivisionPicker({ saveId, p }: { saveId: string; p: Product }) {
+  const scaleup = useScaleup(saveId);
+  const act = useScaleupAction(saveId);
+  const divisions = scaleup.data?.divisions ?? [];
+  if (divisions.length === 0 && p.division_id === null) return null;
+  return (
+    <NativeSelect
+      aria-label="Division"
+      size="xs"
+      data-testid="product-division"
+      value={p.division_id === null ? '' : String(p.division_id)}
+      data={[
+        { value: '', label: 'Corporate' },
+        ...divisions.map((d) => ({ value: String(d.unit_id), label: d.name })),
+      ]}
+      onChange={(e) => {
+        const value = e.currentTarget.value;
+        act.mutate({
+          action: 'product_division',
+          product_id: p.product_id,
+          division_id: value === '' ? null : Number(value),
+        });
+      }}
+    />
   );
 }

@@ -94,3 +94,22 @@ M7a sub-task 4, after Reece's B1–B4 and C1–C3 (2026-10-30), `make balance` (
 | S2 | 8.4 worker-minutes locally | pass |
 
 Keys changed: `resign.base_bp` 50 → 80; `rivals.startup.raise_chance` 0.6 → 0.25, `raise_months` 18 → 12, `found_rate` 0.02 → 0.03. Findings carried forward (M7a brief, Follow-ups): hard difficulty does not threaten a cautious funded strategy; funded companies plateau at about $45–57M ARR (v1 has one market per product line); a 2-person team launches at about month 21.
+
+### M8 (2026-10-31)
+
+The scripts changed: the second product is now staffed (an M7a bug: hires were never moved to the second team), and from stage 3 the scripts appoint executives (formulas.md 18.9, "Scripts"). `rivals.startup.raise_chance` 0.25 → 0.18; T7 counts the 15.4 startups only.
+
+| Target | Measured | Result |
+| --- | --- | --- |
+| T1 | 10/10 | pass |
+| T2 wins | do-nothing 0, bootstrap-frugal 0, steady 10, blitzscale 0 | **fail** (follow-up for M15) |
+| T3 succeed | bootstrap-frugal 7/10, steady 10/10, blitzscale 3/10 | pass |
+| T4 | seed 4 and 1; Series A 28 and 18.5; Series B 36.5 on 8/10 | pass |
+| T5 bankrupt | steady 0/0/0%; blitzscale 20%; bootstrap-frugal 30% | pass |
+| T6 | leavers' median 21 months; 12% a year; 11% in the first year | pass |
+| T7 | incumbents 17/17; startups alive after 5 years 58% of 91 | pass |
+| T8 median ARR | bootstrap-frugal $12.1M, steady $65.9M, blitzscale $64.0M | printed |
+| E3, S2 | as before; 13.0 worker-minutes | pass |
+| M8 targets 2–6 | 1.512; 1.088; 0.97 and 359×; 1.472 (3 seeds); all entrants on time | pass (see the M8 brief) |
+
+Blitzscale's founder is removed on 5 seeds around months 92–108: with its second product staffed and its seats filled it reaches about $64M ARR, but its board confidence decays under the burn. Reece approved merging M8 with this recorded (2026-10-31).

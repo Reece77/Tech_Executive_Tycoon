@@ -180,6 +180,7 @@ class SearchIn(BaseModel):
     role: str
     channel: str  # network | job_post | recruiter | poach (M5)
     rival_id: int | None = Field(default=None, description="The rival of a poach search (M5)")
+    level: str | None = Field(default=None, description="exec: an exec-level search (M8, stage 3)")
 
 
 class SearchOut(BaseModel):
@@ -196,6 +197,7 @@ class SearchOut(BaseModel):
     open_candidates: int
     rival_id: int | None = Field(description="A poach search's rival (M5)")
     rival_name: str | None
+    level: str | None = Field(default=None, description="exec for an exec-level search (M8)")
 
 
 class OfferIn(BaseModel):

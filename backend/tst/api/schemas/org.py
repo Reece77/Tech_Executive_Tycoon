@@ -24,7 +24,7 @@ class OrgMemberOut(BaseModel):
 
 class UnitOut(BaseModel):
     unit_id: int | None = Field(description="Null for the company root")
-    kind: str  # company | department | team
+    kind: str  # company | division (M8) | department | team
     name: str
     parent_id: int | None
     leader_id: int | None
@@ -54,6 +54,7 @@ class OrgOut(BaseModel):
     managers: list[ManagerOut]
     headcount: int
     departments_unlocked: bool
+    divisions_unlocked: bool = Field(default=False, description="Stage 3 (M8, 18.1)")
     managers_over_span: int
 
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Response, status
 
-from tst.api import breakdowns, finance_views, org_views, views
+from tst.api import breakdowns, finance_views, org_views, scaleup_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.schemas.common import ErrorOut, OverviewBreakdownsOut
 from tst.api.schemas.saves import (
@@ -147,6 +147,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         option_pool_left_bp=pool_left_bp(state, player.id),
         network_bonus_candidates=network_bonus(state, player.id, data),
         org=org_views.org_tile(state, player.id, data),
+        support=scaleup_views.support_tile(state, data),
         mrr_cents=latest.mrr_cents if latest else 0,
         arr_cents=latest.arr_cents if latest else 0,
         month_revenue_cents=projected_revenue(state, player.id),

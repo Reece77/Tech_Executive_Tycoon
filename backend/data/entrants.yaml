@@ -1,0 +1,11 @@
+# Scheduled entrants (docs/formulas.md 18.7, M8): named rival startups founded in their real
+# month, on every seed. Each is a 15.4 startup with a fixed name, personality, cash, staff
+# (people, the founder included, all generated at senior level on stream `entrants`) and
+# product. They do not count toward rivals.startup.max_alive. List order is the stream key:
+# append new entries and never reorder.
+entrants:
+  - { name: Square, year: 2010, month: 3, personality: aggressive, cash_cents: 1000000000, staff: 8, category: fintech, segments: [smb] }
+  - { name: Stripe, year: 2011, month: 9, personality: aggressive, cash_cents: 200000000, staff: 6, category: fintech, segments: [smb, mid_market] }
+  - { name: Plaid, year: 2013, month: 5, personality: fast_follower, cash_cents: 300000000, staff: 6, category: fintech, segments: [mid_market, enterprise] }
+  - { name: OpenAI, year: 2015, month: 12, personality: aggressive, cash_cents: 5000000000, staff: 12, category: ai_models, segments: [consumer, smb, enterprise] }
+  - { name: Anthropic, year: 2021, month: 1, personality: premium, cash_cents: 12000000000, staff: 12, category: ai_models, segments: [smb, mid_market, enterprise] }

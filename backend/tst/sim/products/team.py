@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from tst.sim.data_models import Balance, CategoryDef, GameData
 from tst.sim.org.rules import OrgView
+from tst.sim.org.scaleup import modifiers
 from tst.sim.products import formulas as f
 from tst.sim.products.models import Product
 from tst.sim.state import GameState
@@ -42,6 +43,16 @@ class Team:
     builders: tuple[Builder, ...]
     sellers: tuple[Contributor, ...]
     marketers: tuple[Contributor, ...]
+    # M8 (18.2, 18.3, 18.5): cross-division factor on output, CPO on features gained, support
+    # and CMO on marketing points; all 1 for v1 companies and rivals.
+    output_mult: float = 1.0
+    feature_mult: float = 1.0
+    marketing_mult: float = 1.0
+    qcap_mult: float = 1.0  # CTO (18.3)
+    churn_mult: float = 1.0  # CPO and the support shortfall (18.3, 18.4)
+    brand_mult: float = 1.0  # CMO on B* (18.3)
+    awareness_mult: float = 1.0  # CMO (18.3)
+    pricing_power: float = 1.0  # CRO on p_ref in sales segments (18.3)
 
     @property
     def mavericks(self) -> int:
@@ -50,13 +61,16 @@ class Team:
     def base_output(self, balance: Balance) -> float:
         """coord(n) x sum o_i: the team's output before monthly noise."""
         n = len(self.builders)
-        return f.coord_factor(n, balance.products) * sum(b.output for b in self.builders)
+        total = sum(b.output for b in self.builders)
+        return f.coord_factor(n, balance.products) * total * self.output_mult
 
     def qcap(self, balance: Balance) -> float | None:
+        """Q_cap (11.4) x the CTO's factor (18.3)."""
         pb = balance.products
-        return f.quality_cap(
+        cap = f.quality_cap(
             [(b.output, f.qcap_skill(b.d, b.perfectionist, pb)) for b in self.builders], pb
         )
+        return cap if cap is None or self.qcap_mult == 1 else cap * self.qcap_mult
 
     @property
     def mu(self) -> float:
@@ -90,6 +104,7 @@ def product_team(
     sellers: list[Contributor] = []
     marketers: list[Contributor] = []
     units = assigned_units(state, product)
+    mods = modifiers(state, view, balance, data)  # M8 (18.5); None for v1 companies
     for unit_id in units:
         for person_id in view.members.get(unit_id, ()):
             person = state.person(person_id)
@@ -109,14 +124,16 @@ def product_team(
                     Builder(
                         person_id=person_id,
                         d=d,
-                        output=f.builder_output(d, m, t),
+                        output=f.builder_output(d, m, t)
+                        * (mods.builder.get(person_id, 1.0) if mods else 1.0),
                         perfectionist=PERFECTIONIST in person.tags,
                         maverick=MAVERICK in person.tags,
                     )
                 )
             elif function == "seller":
                 sell = f.sell_skill(skills["sales"], skills["negotiation"], skills["communication"])
-                sellers.append(Contributor(person_id, f.contribution(sell, m)))
+                factor = mods.seller.get(person_id, 1.0) if mods else 1.0
+                sellers.append(Contributor(person_id, f.contribution(sell, m) * factor))
             elif function == "marketer":
                 mkt = f.marketing_skill(
                     skills["marketing"], skills["communication"], skills["design"]
@@ -127,4 +144,12 @@ def product_team(
         builders=tuple(builders),
         sellers=tuple(sellers),
         marketers=tuple(marketers),
+        output_mult=mods.output_factor(state, view, product) if mods else 1.0,
+        feature_mult=mods.cpo if mods else 1.0,
+        marketing_mult=mods.marketing_factor(state, product) if mods else 1.0,
+        qcap_mult=mods.qcap if mods else 1.0,
+        churn_mult=mods.churn_factor(state, product) if mods else 1.0,
+        brand_mult=mods.brand if mods else 1.0,
+        awareness_mult=mods.awareness if mods else 1.0,
+        pricing_power=mods.pricing if mods else 1.0,
     )

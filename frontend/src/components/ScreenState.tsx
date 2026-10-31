@@ -24,15 +24,17 @@ export function Panel({
   label,
   style,
   action,
+  testId,
 }: {
   title?: string;
   label?: string;
   children: ReactNode;
   style?: CSSProperties;
   action?: ReactNode;
+  testId?: string;
 }) {
   return (
-    <section className="tst-panel" aria-label={label ?? title} style={style}>
+    <section className="tst-panel" aria-label={label ?? title} style={style} data-testid={testId}>
       {(title || action) && (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
           {title && <h2 className="tst-ptitle">{title}</h2>}

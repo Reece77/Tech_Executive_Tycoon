@@ -129,3 +129,16 @@ templates:
   poach_declined:
     title: "{name} stays"
     body: "{name} turned down {rival}'s offer."
+  # M8 (formulas.md 18)
+  division_created:
+    title: "{unit} division formed"
+    body: "{unit} is a new division with its own P&L. Move departments and teams into it, appoint a president, and choose central or embedded shared services."
+  exec_appointed:
+    title: "{name} is your {seat}"
+    body: "{name} now holds the {seat} seat at exec level. Their market rate is the exec rate from now on, so consider a raise."
+  exec_removed:
+    title: "{name} is no longer {seat}"
+    body: "You removed {name} from the {seat} seat. They stay at exec level. The seat is vacant until you appoint someone."
+  exec_left:
+    title: "The {seat} seat is vacant"
+    body: "{name} has left, so the {seat} seat is empty. A vacant seat costs the company until you fill it."

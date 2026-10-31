@@ -7,9 +7,10 @@ Every number comes from `Balance` or from the scale definitions in `tst.sim.scal
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from typing import Literal
 
-from tst.sim.data_models import HiringBalance, OrgBalance
+from tst.sim.data_models import ExecSeatsBalance, HiringBalance, OrgBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.scale import ATTR_NEUTRAL
 
@@ -89,3 +90,70 @@ def pitch(recruiting: float, hiring: HiringBalance) -> float:
 def is_raise_bonus(old_cents: int, new_cents: int, org: OrgBalance) -> bool:
     """A raise of at least raise_threshold_bp of the old salary (exact integer test, 13.8)."""
     return new_cents * BP_DENOMINATOR >= old_cents * (BP_DENOMINATOR + org.raise_threshold_bp)
+
+
+# --- M8: divisions, executives and support (formulas.md 18) ------------------------------
+
+
+def layer_factor(depth: int, k_coo: float, org: OrgBalance) -> float:
+    """lambda = max(0.85, 1 - tau x max(0, depth - 2) x k_COO) (18.2)."""
+    extra = max(0, depth - org.layer_free_depth)
+    return max(org.layer_floor, 1 - org.layer_tax * extra * k_coo)
+
+
+def coverage(headcount: int, support: int, org: OrgBalance) -> float:
+    """c = min(1, n / (h / rho)); a pool with nobody in it is covered (18.4)."""
+    if headcount <= 0:
+        return 1.0
+    return min(1.0, support / (headcount / org.support_ratio))
+
+
+def support_need(headcount: int, org: OrgBalance) -> int:
+    """Support staff a pool needs for full coverage, h / rho rounded up (18.4, shown)."""
+    return math.ceil(headcount / org.support_ratio) if headcount > 0 else 0
+
+
+def support_factor(c: float, k_coo: float, org: OrgBalance) -> float:
+    """1 - 0.15 (1 - c) k_COO on builder output, seller capacity and marketing (18.4)."""
+    return 1 - org.support_shortfall * (1 - c) * k_coo
+
+
+def support_morale(c: float, org: OrgBalance) -> float:
+    """W_support = -6 (1 - c) (18.4)."""
+    return org.support_morale * (1 - c)
+
+
+def seat_effect(score: float, ex: ExecSeatsBalance) -> float:
+    """e = clamp((s - 10) / 8, -0.5, 1) (18.3)."""
+    return min(ex.effect_max, max(ex.effect_min, (score - ex.score_mid) / ex.score_span))
+
+
+def seat_score(skills: Mapping[str, float], weights: Mapping[str, float]) -> float:
+    """s = sum of weight x skill (18.3)."""
+    return sum(w * skills[k] for k, w in weights.items())
+
+
+def seat_multiplier(e: float, coefficient: float) -> float:
+    """1 + coefficient x e: the CTO, CPO, CMO, CRO and CFO effects (18.3)."""
+    return 1 + coefficient * e
+
+
+def coo_factor(e: float, coefficient: float) -> float:
+    """k_COO = 1 - 0.5 e (18.3)."""
+    return 1 - coefficient * e
+
+
+def allocate_shared(
+    corporate_costs: int, corporate_headcount: int, central: Mapping[int, int]
+) -> dict[int, int]:
+    """Each central division's share of corporate operating costs, by headcount:
+    costs x h_div / (h_corporate + sum h_central), rounded; corporate keeps the rest (18.1)."""
+    total = corporate_headcount + sum(central.values())
+    if total <= 0 or corporate_costs == 0:
+        return {d: 0 for d in central}
+    return {d: round(corporate_costs * h / total) for d, h in central.items()}
+
+
+def support_churn(c: float, k_coo: float, org: OrgBalance) -> float:
+    """A pool's products churn x (1 + 0.4 (1 - c) k_COO) (18.4)."""
+    return 1 + org.support_churn * (1 - c) * k_coo

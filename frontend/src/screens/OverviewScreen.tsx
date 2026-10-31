@@ -7,7 +7,7 @@ import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenStat
 import { useOverview, type Overview, type OverviewBreakdowns } from '../hooks/api';
 import { formatMoneyShort, formatMoneyWhole, formatRunway, formatWhole } from '../lib/format';
 import { formatFraction } from '../lib/finance';
-import { MANAGER_LABELS } from '../lib/org';
+import { pct, MANAGER_LABELS } from '../lib/org';
 
 // Phase-6 memo labels (backend/tst/sim/hiring/phases.py) as the wireframe words them.
 const COST_LABELS: Record<string, string> = {
@@ -155,6 +155,21 @@ export function OverviewScreen() {
             }`}
             hint="Departments and teams; managers with more reports than they handle well; the average manager"
             testId="kpi-org"
+          />
+        )}
+        {data.support && (
+          <KpiTile
+            term="kpi.support"
+            label="Support coverage"
+            value={`${data.support.support_staff} of ${data.support.needed}`}
+            warn={data.support.pools_short > 0}
+            note={
+              data.support.pools_short > 0
+                ? `${data.support.pools_short} short · output ${pct(data.support.output_effect_pct)}`
+                : 'Covered'
+            }
+            hint="Finance, recruiting and operations staff and executives against one per 15 staff"
+            testId="kpi-support"
           />
         )}
       </div>

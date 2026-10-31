@@ -223,3 +223,92 @@ companies:
         segments:
           mid_market: { price_cents: 110000, share_bp: 1550 }
           enterprise: { price_cents: 1300000, share_bp: 1900 }
+
+  # --- M8 (formulas.md 18.6): Fintech and AI models and inference ---
+  # Segment totals (bp of D0 served in January 2010): fintech consumer 40%, SMB 50%,
+  # mid-market 55%, enterprise 50%; AI 20%, 20%, 25%, 30%. Split by the M3a steady-state
+  # method (share* / churn at the fixed scores, rounded to 50 bp); values in the M8 brief.
+  - name: PayPal
+    stage: 4
+    founded_year: 1998
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 2000
+    cash_months: 24
+    products:
+      - name: PayPal
+        category: fintech
+        quality: 62
+        features: 70
+        brand: 85
+        segments:
+          consumer: { price_cents: 60, share_bp: 4000 }
+          smb: { price_cents: 6000, share_bp: 2600 }
+
+  - name: Intuit
+    stage: 4
+    founded_year: 1983
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 2500
+    cash_months: 36
+    products:
+      - name: QuickBooks Online
+        category: fintech
+        quality: 68
+        features: 75
+        brand: 75
+        segments:
+          smb: { price_cents: 7000, share_bp: 2400 }
+          mid_market: { price_cents: 140000, share_bp: 3100 }
+
+  - name: Fiserv
+    stage: 4
+    founded_year: 1984
+    personality: cost_leader
+    builder_skill: 11
+    target_margin_bp: 2500
+    cash_months: 36
+    products:
+      - name: Fiserv Banking
+        category: fintech
+        quality: 58
+        features: 72
+        brand: 60
+        segments:
+          mid_market: { price_cents: 110000, share_bp: 2400 }
+          enterprise: { price_cents: 1400000, share_bp: 5000 }
+
+  - name: IBM
+    stage: 4
+    founded_year: 1911
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 60
+    products:
+      - name: Watson
+        category: ai_models
+        quality: 45
+        features: 40
+        brand: 70
+        segments:
+          mid_market: { price_cents: 240000, share_bp: 2500 }
+          enterprise: { price_cents: 3000000, share_bp: 3000 }
+
+  - name: Nuance
+    stage: 4
+    founded_year: 1992
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 18
+    products:
+      - name: Dragon
+        category: ai_models
+        quality: 50
+        features: 45
+        brand: 55
+        segments:
+          consumer: { price_cents: 50, share_bp: 2000 }
+          smb: { price_cents: 10000, share_bp: 2000 }

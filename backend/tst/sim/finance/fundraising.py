@@ -33,6 +33,7 @@ from tst.sim.finance.models import (
 from tst.sim.ledger import CASH, GENERAL_ADMIN, PREFERRED_EQUITY, SAFES, LedgerEntry
 from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.money import BP_DENOMINATOR, Cents
+from tst.sim.org.executives import CFO, multiplier
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -74,7 +75,7 @@ def base_value(state: GameState, company_id: int, balance: Balance, data: GameDa
     """V_base from last month end's MRR and its 6-month growth, the funding climate, a live
     product and headcount (14.3). Never shown (14.9)."""
     live = any(p.status == "live" for p in state.company_products(company_id))
-    return f.base_value_cents(
+    value = f.base_value_cents(
         arr_cents(state, company_id, balance),
         company_growth(state, company_id, balance),
         climate(state, data),
@@ -82,6 +83,8 @@ def base_value(state: GameState, company_id: int, balance: Balance, data: GameDa
         len(state.staff(company_id)),
         balance.finance,
     )
+    cfo = multiplier(state, company_id, CFO, balance)  # M8 (18.3): 1 before stage 3
+    return value if cfo == 1 else round(value * cfo)
 
 
 # --- SAFEs -----------------------------------------------------------------------------------

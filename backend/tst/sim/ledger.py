@@ -48,6 +48,7 @@ ENGINE_ACCOUNTS: Final = (
 class LedgerLine:
     account: AccountCode
     amount: Cents  # debit positive, credit negative
+    division_id: int | None = None  # reporting dimension: None = corporate (M8, 18.1)
 
 
 @dataclass(frozen=True, slots=True)

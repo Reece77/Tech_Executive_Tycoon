@@ -33,6 +33,7 @@ from tst.sim.errors import SimError, UnknownPersonError
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents, pay_term
 from tst.sim.money import BP_DENOMINATOR, Cents
 from tst.sim.org.delegates import activity_text, still_needed
+from tst.sim.org.divisions import is_scaleup
 from tst.sim.org.formulas import (
     manager_label,
     manager_morale_term,
@@ -125,6 +126,7 @@ def org_out(state: GameState, company_id: int, data: LoadedData) -> OrgOut:
         managers=managers,
         headcount=len(state.staff(company_id)),
         departments_unlocked=departments_unlocked(state, company_id, data.balance),
+        divisions_unlocked=is_scaleup(company, data.balance),
         managers_over_span=sum(1 for m in managers if m.over_span),
     )
 
@@ -380,6 +382,8 @@ def morale_breakdown(
             key="relationships", label="Relationships with teammates", value=terms.relationships
         ),
     ]
+    if terms.support:  # W_support from stage 3 (M8, 18.4): coverage is shown as counts
+        shown.append(MoraleTermOut(key="support", label="Admin and support", value=terms.support))
     holders = teammate_tag_holders(state, view, person_id)
     labels = {t.key: t.label for t in data.game_data.tags}
     for tag in ORG_TAGS:

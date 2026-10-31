@@ -13,7 +13,7 @@ from tst.sim.data_models import GameData
 from tst.sim.hiring.models import Search
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.org.models import HiringPlan
-from tst.sim.state import GameState, with_plan, with_search, with_unit
+from tst.sim.state import GameState, with_exec_seat, with_plan, with_search, with_unit
 
 OPEN_PLAN_STATUSES = ("active", "paused")  # plans that still use their role's searches
 
@@ -66,6 +66,18 @@ def detach_departed(state: GameState, data: GameData) -> tuple[GameState, tuple[
                 )
             )
             state = with_unit(state, replace(unit, leader_id=None))
+    for seat in state.exec_seats:  # a departed executive's seat empties (M8, 18.3)
+        if seat.person_id is not None and seat.person_id not in staff:
+            logs.append(
+                inbox_item(
+                    state.turn,
+                    seat.company_id,
+                    "exec_left",
+                    name=_name(state, seat.person_id),
+                    seat=seat.seat.upper(),
+                )
+            )
+            state = with_exec_seat(state, replace(seat, person_id=None, since_turn=state.turn))
     for plan in state.plans:
         if plan.status in ("active", "filled") and plan.owner_id not in staff:
             state = with_plan(state, replace(plan, status="paused"))

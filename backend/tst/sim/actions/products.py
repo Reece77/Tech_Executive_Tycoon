@@ -178,8 +178,9 @@ def launch_problems(
     if product.status != "in_development":
         problems.append(f"it is already {product.status.replace('_', ' ')}")
         return problems
-    if product.quality < pb.launch_min_quality:
-        problems.append(f"quality {product.quality:.0f} of the {pb.launch_min_quality:.0f} needed")
+    needed = max(pb.launch_min_quality, data.category(product.category).launch_quality or 0)
+    if product.quality < needed:  # a category's launch_quality adds compliance (M8, 18.6)
+        problems.append(f"quality {product.quality:.0f} of the {needed:.0f} needed")
     feature = current_feature(product, data, shown_turn(state))
     if feature < pb.launch_min_feature:
         problems.append(f"feature score {feature:.0f} of the {pb.launch_min_feature:.0f} needed")

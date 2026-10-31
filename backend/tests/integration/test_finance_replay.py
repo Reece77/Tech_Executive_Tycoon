@@ -30,7 +30,6 @@ from tst.sim.actions import (
 from tst.sim.state import GameState
 
 SEED = 16  # investors answer this garage's seed rounds (see test_fundraising)
-PRODUCT = 13
 BURN_MARKETING = 200_000_000  # $2M a month: more than the company has
 
 
@@ -58,7 +57,9 @@ def build(tmp_path: Path, loaded: LoadedData) -> Path:
     run_action(path, loaded, AcceptTermSheet(1, best.id))
     play_turn(path, loaded)  # the seed closes; the board forms
     run_action(path, loaded, CreateProduct(1, "Pipeline", "b2b_saas", ("smb",)))
-    run_action(path, loaded, SetMarketing(1, PRODUCT, BURN_MARKETING))
+    # M8: Square (March 2010) may take an id first, so the product's id is read back.
+    product = max(p.id for p in _state(path).company_products(1))
+    run_action(path, loaded, SetMarketing(1, product, BURN_MARKETING))
     for _ in range(3):
         play_turn(path, loaded)
         state = _state(path)
@@ -66,7 +67,7 @@ def build(tmp_path: Path, loaded: LoadedData) -> Path:
         if offers:
             break
     run_action(path, loaded, AcceptBridge(1, offers[0].id))
-    run_action(path, loaded, SetMarketing(1, PRODUCT, 0))
+    run_action(path, loaded, SetMarketing(1, product, 0))
     play_turn(path, loaded)
     play_turn(path, loaded)
     return path

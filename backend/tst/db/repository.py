@@ -35,6 +35,7 @@ from tst.db.models import (
     AccountRow,
     CompanyRow,
     DecisionLogRow,
+    DivisionMonthRow,
     LedgerEntryRow,
     LedgerLineRow,
     LLMTextRow,
@@ -87,7 +88,7 @@ from tst.sim.products.models import ProductMonth
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
-from tst.sim.snapshot import CompanySnapshot
+from tst.sim.snapshot import CompanySnapshot, DivisionMonth
 from tst.sim.state import GameState, company_cash
 from tst.sim.turn import TurnResult, advance_turn
 
@@ -533,6 +534,38 @@ def ledger_lines(session: Session, company_id: int) -> list[tuple[int, str, Cent
     return [(int(t), str(a), int(c)) for t, a, c in session.execute(stmt)]
 
 
+def division_lines(session: Session, company_id: int) -> list[tuple[int, str, Cents, int | None]]:
+    """Every ledger line of a company as (turn, account, amount, division id) (M8, 18.1)."""
+    stmt = (
+        select(
+            LedgerEntryRow.turn,
+            LedgerLineRow.account_code,
+            LedgerLineRow.amount_cents,
+            LedgerLineRow.division_id,
+        )
+        .join(LedgerLineRow.entry)
+        .where(LedgerEntryRow.company_id == company_id)
+        .order_by(LedgerEntryRow.id, LedgerLineRow.id)
+    )
+    return [
+        (int(t), str(a), int(c), None if d is None else int(d))
+        for t, a, c, d in session.execute(stmt)
+    ]
+
+
+def division_months(session: Session, company_id: int) -> list[DivisionMonth]:
+    """Headcount per division at each month's payroll (M8, 18.1)."""
+    rows = session.scalars(
+        select(DivisionMonthRow)
+        .where(DivisionMonthRow.company_id == company_id)
+        .order_by(DivisionMonthRow.turn, DivisionMonthRow.id)
+    )
+    return [
+        DivisionMonth(r.turn, r.company_id, r.division_id, r.name, r.headcount, r.embedded)
+        for r in rows
+    ]
+
+
 def person_names(session: Session, person_ids: Iterable[int]) -> dict[int, str]:
     """First and last names by id, including people who have left (not in the live state)."""
     ids = sorted(set(person_ids))
@@ -660,6 +693,7 @@ def apply_turn_result(
         [
             *snapshot_to_rows(result.snapshot),
             *(product_month_to_row(m) for m in result.product_months),
+            *(DivisionMonthRow(**asdict(m)) for m in result.division_months),  # M8
             *(log_item_to_row(i) for i in result.log_items),
             *inbox_rows(
                 result.log_items, result.new_state.player.id, data.game_data.inbox_templates

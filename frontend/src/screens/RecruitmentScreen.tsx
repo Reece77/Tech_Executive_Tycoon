@@ -449,6 +449,8 @@ function OpenSearchPanel({
   );
   const [channel, setChannel] = useState('job_post');
   const [rivalId, setRivalId] = useState<string | null>(null);
+  const [level, setLevel] = useState<string>('mix');
+  const execOpen = (overview.data?.stage ?? 0) >= 3 && channel !== 'poach'; // M8: from stage 3
   const rivals = useRivals(saveId, 'all');
   const rivalChoices = (rivals.data?.rivals ?? []).filter((r) => !r.failed);
   const chosen = hiring.channels.find((c) => c.key === channel);
@@ -513,6 +515,19 @@ function OpenSearchPanel({
           data-testid="poach-rival-select"
         />
       )}
+      {execOpen && (
+        <Select
+          label="Level"
+          value={level}
+          onChange={(v) => setLevel(v ?? 'mix')}
+          allowDeselect={false}
+          data={[
+            { value: 'mix', label: "The channel's usual mix" },
+            { value: 'exec', label: 'Exec (asks the exec market rate)' },
+          ]}
+          data-testid="search-level"
+        />
+      )}
       {open.error && (
         <Alert color="red" title="Could not open the search" withCloseButton onClose={open.reset}>
           {open.error.message}
@@ -526,7 +541,12 @@ function OpenSearchPanel({
         onClick={() => {
           if (role) {
             open.mutate(
-              { role, channel, rival_id: channel === 'poach' ? Number(rivalId) : null },
+              {
+                role,
+                channel,
+                rival_id: channel === 'poach' ? Number(rivalId) : null,
+                level: execOpen && level === 'exec' ? 'exec' : null,
+              },
               { onSuccess: (search) => onOpened(search.search_id) },
             );
           }

@@ -122,6 +122,8 @@ test('(d) hover a top-bar number and see its breakdown', async ({ page }) => {
   const save = `m7b-tooltip-${stamp}`;
   makeSave(save); // two months played with three engineers on the payroll
   await page.goto(`/game/${save}/people`);
+  // Hover once the screen has loaded, so a late layout shift cannot move the number away.
+  await expect(page.getByRole('table', { name: 'Roster' })).toBeVisible();
   await page.getByTestId('top-cash').hover();
   const tip = page.getByRole('tooltip');
   await expect(tip).toContainText("Last month's change in cash");

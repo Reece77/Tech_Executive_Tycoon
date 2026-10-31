@@ -16,6 +16,10 @@
 # - scope: team output that counts as full speed (sigma, 11.4).
 # - brand_constant: marketing points for half of the maximum brand (K, 11.5).
 # - dev_weights: skill weights of the development skill d (11.3), summing to 1.
+# - launch_quality (M8, optional): launch also needs at least this quality (compliance).
+# - growth_by_year (M8, optional): annual growth from each listed calendar year on; replaces
+#   `growth` for demand (formulas.md 18.6).
+# - compute_indexed (M8, optional): hosting is h x compute_index(year) (compute_index.yaml).
 # - markets: addressable customers in January 2010 (D0), reference monthly price and hosting
 #   cost per customer per month, both in cents.
 segments:
@@ -99,3 +103,38 @@ categories:
       - { segment: smb, addressable: 300000, reference_price_cents: 4000, hosting_cents: 300 }
       - { segment: mid_market, addressable: 30000, reference_price_cents: 100000, hosting_cents: 6000 }
       - { segment: enterprise, addressable: 5000, reference_price_cents: 1200000, hosting_cents: 60000 }
+
+  # --- M8 (formulas.md 18.6), open from January 2010 ---
+  - key: fintech
+    label: Fintech
+    growth: 0.25
+    features_at_start: 60
+    features_per_month: 4.0
+    scope: 6
+    brand_constant: 80
+    launch_quality: 30
+    dev_weights: { software_engineering: 0.30, security: 0.20, finance: 0.20, legal: 0.15, data: 0.15 }
+    markets:
+      # Consumer fintech books revenue per user (11.8): the reference price is revenue per user.
+      - { segment: consumer, addressable: 20000000, reference_price_cents: 60, hosting_cents: 5 }
+      - { segment: smb, addressable: 300000, reference_price_cents: 6000, hosting_cents: 500 }
+      - { segment: mid_market, addressable: 25000, reference_price_cents: 120000, hosting_cents: 8000 }
+      - { segment: enterprise, addressable: 2500, reference_price_cents: 1500000, hosting_cents: 90000 }
+
+  - key: ai_models
+    label: AI models and inference
+    growth: 0.25 # the fallback before the first growth_by_year year (none: 2010 is listed)
+    features_at_start: 30
+    features_per_month: 6.0
+    scope: 8
+    brand_constant: 70
+    compute_indexed: true
+    # M8 tuning (target 4, January 2024 demand 100-400x January 2010): 2016-2019 at 50%, not
+    # the brief's 60% (which gives about 465x).
+    growth_by_year: { 2010: 0.30, 2016: 0.50, 2020: 0.40, 2022: 1.50, 2023: 2.00, 2024: 1.20, 2025: 0.60, 2030: 0.25 }
+    dev_weights: { ml_research: 0.40, software_engineering: 0.20, data: 0.20, infrastructure: 0.20 }
+    markets:
+      - { segment: consumer, addressable: 200000, reference_price_cents: 50, hosting_cents: 20 }
+      - { segment: smb, addressable: 20000, reference_price_cents: 10000, hosting_cents: 4000 }
+      - { segment: mid_market, addressable: 2000, reference_price_cents: 200000, hosting_cents: 60000 }
+      - { segment: enterprise, addressable: 300, reference_price_cents: 2500000, hosting_cents: 600000 }

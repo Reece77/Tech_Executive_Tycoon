@@ -1754,6 +1754,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/scaleup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Scaleup
+         * @description Divisions, support coverage, cross-division products and the executive team.
+         */
+        get: operations["getScaleup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/scaleup/divisions/{unit_id}/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Shared Services */
+        post: operations["setSharedServices"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/scaleup/products/{product_id}/division": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Product Division */
+        post: operations["setProductDivision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/scaleup/seats/{seat}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Seat Candidates
+         * @description Staff with their fit and estimated effect for one seat (the Appoint dialog).
+         */
+        get: operations["getSeatCandidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/scaleup/seats/{seat}/appoint": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Appoint */
+        post: operations["appointExecutive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/scaleup/seats/{seat}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Remove */
+        post: operations["removeExecutive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/divisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Division Statements
+         * @description Each division's statement with its shared-services allocation (18.1); newest first.
+         */
+        get: operations["getDivisionStatements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -1986,6 +2114,31 @@ export interface components {
             brand: number;
             /** Features */
             features: number;
+        };
+        /** AppointCandidateOut */
+        AppointCandidateOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /** Level */
+            level: string;
+            /** Fit */
+            fit: string;
+            /** Estimated Effect Pct */
+            estimated_effect_pct: number;
+            /**
+             * Problem
+             * @description Why they cannot take the seat now, or null
+             */
+            problem: string | null;
+        };
+        /** AppointIn */
+        AppointIn: {
+            /** Person Id */
+            person_id: number;
         };
         /** ApproachOut */
         ApproachOut: {
@@ -2360,6 +2513,16 @@ export interface components {
             annual_growth: number;
             /** Segments */
             segments: components["schemas"]["CategorySegmentOut"][];
+            /**
+             * Note
+             * @description e.g. compute costs follow the market (M8)
+             */
+            note?: string | null;
+            /**
+             * Launch Quality
+             * @description Quality a launch needs (M8)
+             */
+            launch_quality?: number | null;
         };
         /** CategorySegmentOut */
         CategorySegmentOut: {
@@ -2664,6 +2827,22 @@ export interface components {
             /** Parent Id */
             parent_id?: number | null;
         };
+        /** CrossDivisionOut */
+        CrossDivisionOut: {
+            /** Product Id */
+            product_id: number;
+            /** Product Name */
+            product_name: string;
+            /** Division Names */
+            division_names: string[];
+            /** Output Effect Pct */
+            output_effect_pct: number;
+            /**
+             * Fix
+             * @description The move that removes the factor
+             */
+            fix: string;
+        };
         /** DilutionLineOut */
         DilutionLineOut: {
             /** Holder */
@@ -2749,6 +2928,109 @@ export interface components {
              * @description Confidence at the last month ends, oldest first
              */
             history: number[];
+        };
+        /** DivisionColumnOut */
+        DivisionColumnOut: {
+            /**
+             * Division Id
+             * @description Null for corporate or the company
+             */
+            division_id: number | null;
+            /** Name */
+            name: string;
+            /** Embedded */
+            embedded: boolean;
+            /** Headcount */
+            headcount: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Salaries Benefits Cents */
+            salaries_benefits_cents: number;
+            /** Hosting Cents */
+            hosting_cents: number;
+            /** Marketing Cents */
+            marketing_cents: number;
+            /** Office Cents */
+            office_cents: number;
+            /** Tools Ga Cents */
+            tools_ga_cents: number;
+            /** Direct Profit Cents */
+            direct_profit_cents: number;
+            /**
+             * Shared Services Cents
+             * @description Negative for a central division, positive for corporate, 0 if embedded
+             */
+            shared_services_cents: number;
+            /** Operating Profit Cents */
+            operating_profit_cents: number;
+            /** Operating Margin */
+            operating_margin: number | null;
+            /**
+             * Revenue Growth 12M
+             * @description Last 12 months against the 12 before
+             */
+            revenue_growth_12m: number | null;
+        };
+        /** DivisionOut */
+        DivisionOut: {
+            /** Unit Id */
+            unit_id: number;
+            /** Name */
+            name: string;
+            /** President Id */
+            president_id: number | null;
+            /** President Name */
+            president_name: string | null;
+            /**
+             * Services
+             * @description central | embedded (18.4)
+             */
+            services: string;
+            /** Headcount */
+            headcount: number;
+            /**
+             * Unit Ids
+             * @description The departments and teams under it
+             */
+            unit_ids: number[];
+            /** Product Ids */
+            product_ids: number[];
+            /** Product Names */
+            product_names: string[];
+            /**
+             * Operating Profit Cents
+             * @description Last month's operating profit after shared services; null before a month
+             */
+            operating_profit_cents: number | null;
+            /**
+             * Effect Note
+             * @description Its main structural effect, in words
+             */
+            effect_note: string;
+        };
+        /** DivisionPeriodOut */
+        DivisionPeriodOut: {
+            /** First Turn */
+            first_turn: number;
+            /** Last Turn */
+            last_turn: number;
+            /** Label */
+            label: string;
+            /**
+             * Columns
+             * @description Corporate, each division, Company
+             */
+            columns: components["schemas"]["DivisionColumnOut"][];
+        };
+        /** DivisionStatementsOut */
+        DivisionStatementsOut: {
+            /** Period */
+            period: string;
+            /**
+             * Periods
+             * @description Newest first
+             */
+            periods: components["schemas"]["DivisionPeriodOut"][];
         };
         /** EmploymentOut */
         EmploymentOut: {
@@ -4216,6 +4498,12 @@ export interface components {
             headcount: number;
             /** Departments Unlocked */
             departments_unlocked: boolean;
+            /**
+             * Divisions Unlocked
+             * @description Stage 3 (M8, 18.1)
+             * @default false
+             */
+            divisions_unlocked?: boolean;
             /** Managers Over Span */
             managers_over_span: number;
         };
@@ -4384,6 +4672,8 @@ export interface components {
              */
             stage_history: components["schemas"]["StageReachedOut"][];
             funding: components["schemas"]["FundingTileOut"];
+            /** @description From stage 3 (M8) */
+            support?: components["schemas"]["SupportTileOut"] | null;
         };
         /**
          * OwnershipEventOut
@@ -4804,6 +5094,14 @@ export interface components {
             /** Unread Inbox */
             unread_inbox: number;
         };
+        /** ProductDivisionIn */
+        ProductDivisionIn: {
+            /**
+             * Division Id
+             * @description Null makes the product corporate
+             */
+            division_id: number | null;
+        };
         /** ProductMonthOut */
         ProductMonthOut: {
             /** Turn */
@@ -4835,6 +5133,13 @@ export interface components {
             product_id: number;
             /** Name */
             name: string;
+            /**
+             * Division Id
+             * @description Owning division; null = corporate
+             */
+            division_id?: number | null;
+            /** Division Name */
+            division_name?: string | null;
             /** Category */
             category: string;
             /** Category Label */
@@ -5578,6 +5883,39 @@ export interface components {
              */
             busy: boolean;
         };
+        /** ScaleupActionOut */
+        ScaleupActionOut: {
+            scaleup: components["schemas"]["ScaleupOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** ScaleupOut */
+        ScaleupOut: {
+            /** Stage */
+            stage: number;
+            /**
+             * In Play
+             * @description Stage 3 or later: divisions, seats and support apply
+             */
+            in_play: boolean;
+            /** Unlock Stage */
+            unlock_stage: number;
+            /** Max Divisions */
+            max_divisions: number;
+            /** Divisions */
+            divisions: components["schemas"]["DivisionOut"][];
+            /** Support */
+            support: components["schemas"]["SupportPoolOut"][];
+            /** Support Rule */
+            support_rule: string;
+            /** Cross Division */
+            cross_division: components["schemas"]["CrossDivisionOut"][];
+            /** Seats */
+            seats: components["schemas"]["SeatOut"][];
+            /** Note */
+            note: string;
+        };
         /** ScenarioOut */
         ScenarioOut: {
             /** Id */
@@ -5619,6 +5957,11 @@ export interface components {
              * @description The rival of a poach search (M5)
              */
             rival_id?: number | null;
+            /**
+             * Level
+             * @description exec: an exec-level search (M8, stage 3)
+             */
+            level?: string | null;
         };
         /** SearchOut */
         SearchOut: {
@@ -5654,6 +5997,55 @@ export interface components {
             rival_id: number | null;
             /** Rival Name */
             rival_name: string | null;
+            /**
+             * Level
+             * @description exec for an exec-level search (M8)
+             */
+            level?: string | null;
+        };
+        /** SeatCandidatesOut */
+        SeatCandidatesOut: {
+            seat: components["schemas"]["SeatOut"];
+            /** Candidates */
+            candidates: components["schemas"]["AppointCandidateOut"][];
+            /** Energy Cost */
+            energy_cost: number;
+            /** Note */
+            note: string;
+        };
+        /** SeatOut */
+        SeatOut: {
+            /**
+             * Seat
+             * @description coo | cfo | cto | cpo | cmo | cro
+             */
+            seat: string;
+            /** Label */
+            label: string;
+            /**
+             * Effect Label
+             * @description What the seat changes, e.g. 'builder output'
+             */
+            effect_label: string;
+            /** Holder Id */
+            holder_id: number | null;
+            /** Holder Name */
+            holder_name: string | null;
+            /**
+             * Fit
+             * @description Fit as words from what you know: strong, fair, weak
+             */
+            fit: string | null;
+            /**
+             * Estimated Effect Pct
+             * @description Estimated change from displayed midpoints (est.); for COO, on the layer tax and support shortfall
+             */
+            estimated_effect_pct: number | null;
+            /**
+             * Vacancy Penalty Pct
+             * @description The penalty while vacant (stage 3+)
+             */
+            vacancy_penalty_pct: number | null;
         };
         /** SegmentIn */
         SegmentIn: {
@@ -5715,6 +6107,14 @@ export interface components {
              * @description office | remote; null inherits (units only)
              */
             policy: string | null;
+        };
+        /** SharedServicesIn */
+        SharedServicesIn: {
+            /**
+             * Services
+             * @description central | embedded
+             */
+            services: string;
         };
         /** SkillMetaOut */
         SkillMetaOut: {
@@ -5876,6 +6276,57 @@ export interface components {
             status: string;
             /** Started Label */
             started_label: string;
+        };
+        /** SupportPoolOut */
+        SupportPoolOut: {
+            /**
+             * Key
+             * @description central, or the embedded division's id
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /** Headcount */
+            headcount: number;
+            /** Support Staff */
+            support_staff: number;
+            /**
+             * Needed
+             * @description Support staff for full coverage: one per 15 staff
+             */
+            needed: number;
+            /** Covered */
+            covered: boolean;
+            /**
+             * Output Effect Pct
+             * @description Change to output, capacity and marketing, %
+             */
+            output_effect_pct: number;
+            /**
+             * Morale Effect
+             * @description Morale points from 'Admin and support'
+             */
+            morale_effect: number;
+        };
+        /**
+         * SupportTileOut
+         * @description The Overview's support coverage tile, from stage 3 (M8, 18.4): counts, not c.
+         */
+        SupportTileOut: {
+            /** Support Staff */
+            support_staff: number;
+            /** Needed */
+            needed: number;
+            /**
+             * Pools Short
+             * @description Support pools below full coverage
+             */
+            pools_short: number;
+            /**
+             * Output Effect Pct
+             * @description The largest shortfall's change to output, %
+             */
+            output_effect_pct: number;
         };
         /** TableView */
         TableView: {
@@ -11983,6 +12434,431 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CooAnswerOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getScaleup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleupOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setSharedServices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                unit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SharedServicesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setProductDivision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductDivisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getSeatCandidates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                seat: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeatCandidatesOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    appointExecutive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                seat: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppointIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    removeExecutive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                seat: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getDivisionStatements: {
+        parameters: {
+            query?: {
+                period?: "month" | "quarter" | "year";
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DivisionStatementsOut"];
                 };
             };
             /** @description Bad Request */

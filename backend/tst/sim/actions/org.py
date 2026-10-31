@@ -21,6 +21,9 @@ from tst.sim.errors import (
     UnknownUnitError,
 )
 from tst.sim.hiring.models import Candidate
+from tst.sim.log import inbox_item
+from tst.sim.org.divisions import company_divisions, is_scaleup
+from tst.sim.org.executives import level_allowed
 from tst.sim.org.formulas import is_raise_bonus
 from tst.sim.org.models import (
     PLAN_CHANNELS,
@@ -46,6 +49,7 @@ from tst.sim.state import (
     with_offer,
     with_person_state,
     with_plan,
+    with_product,
     with_reveal,
     with_search,
     with_unit,
@@ -273,9 +277,18 @@ def create_unit(state: GameState, action: CreateUnit, balance: Balance) -> Outco
     if action.unit_kind not in UNIT_KINDS:
         raise OrgRuleError(f"unknown unit kind {action.unit_kind!r}")
     name = _clean_name(state, company, action.name)
-    if action.unit_kind == "department":
+    if action.unit_kind == "division":  # M8 (18.1)
         if action.parent_id is not None:
-            raise OrgRuleError("a department sits directly under the company")
+            raise OrgRuleError("a division sits directly under the company")
+        if not is_scaleup(state.company(company), balance):
+            raise OrgRuleError(f"divisions unlock at stage {balance.org.division_stage}")
+        if len(company_divisions(state, company)) >= balance.org.max_divisions:
+            raise OrgRuleError(f"a company has at most {balance.org.max_divisions} divisions")
+    elif action.unit_kind == "department":
+        if action.parent_id is not None:
+            parent = active_unit(state, company, action.parent_id)
+            if parent.kind != "division":
+                raise OrgRuleError("a department sits under the company or a division")
         if not departments_unlocked(state, company, balance):
             raise OrgRuleError(
                 f"departments unlock at {balance.org.department_unlock_headcount} staff "
@@ -283,8 +296,8 @@ def create_unit(state: GameState, action: CreateUnit, balance: Balance) -> Outco
             )
     elif action.parent_id is not None:
         parent = active_unit(state, company, action.parent_id)
-        if parent.kind != "department":
-            raise OrgRuleError("a team sits under the company or a department, not a team")
+        if parent.kind == "team":
+            raise OrgRuleError("a team sits under the company, a division or a department")
     state = spend_energy(state, action.actor_id, "create_unit", balance)
     unit_id, ids = state.next_ids.take("unit")
     unit = OrgUnit(
@@ -297,7 +310,11 @@ def create_unit(state: GameState, action: CreateUnit, balance: Balance) -> Outco
         policy=None,
         created_turn=state.turn,
     )
-    return Outcome(replace(with_unit(state, unit), next_ids=ids))
+    state = replace(with_unit(state, unit), next_ids=ids)
+    if unit.kind != "division":
+        return Outcome(state)
+    log = inbox_item(state.turn, company, "division_created", unit=unit.name)
+    return Outcome(state, log=(log,))
 
 
 def dissolve_unit(state: GameState, action: DissolveUnit, balance: Balance) -> Outcome:
@@ -318,6 +335,9 @@ def dissolve_unit(state: GameState, action: DissolveUnit, balance: Balance) -> O
     for offer in state.pending_offers(company):
         if offer.unit_id == unit.id:
             state = with_offer(state, replace(offer, unit_id=parent))
+    for product in state.company_products(company):  # its products become corporate (M8)
+        if product.division_id == unit.id:
+            state = with_product(state, replace(product, division_id=None))
     dissolved = replace(unit, status="dissolved", dissolved_turn=state.turn, leader_id=None)
     return Outcome(with_unit(state, dissolved))
 
@@ -335,12 +355,14 @@ def move_unit(state: GameState, action: MoveUnit, balance: Balance) -> Outcome:
     """A team moves with its members and leader; nobody's morale changes (13.7)."""
     company = acting_company(state, action.actor_id)
     unit = active_unit(state, company, action.unit_id)
-    if unit.kind != "team":
-        raise OrgRuleError("only teams move; a department sits directly under the company")
+    if unit.kind == "division":
+        raise OrgRuleError("a division sits directly under the company")
     if action.parent_id is not None:
         parent = active_unit(state, company, action.parent_id)
-        if parent.kind != "department":
-            raise OrgRuleError("a team sits under the company or a department, not a team")
+        if unit.kind == "department" and parent.kind != "division":
+            raise OrgRuleError("a department sits under the company or a division (M8)")
+        if unit.kind == "team" and parent.kind == "team":
+            raise OrgRuleError("a team sits under the company, a division or a department")
     if unit.parent_id == action.parent_id:
         raise OrgRuleError(f"{unit.name} is already there")
     state = spend_energy(state, action.actor_id, "move_unit", balance)
@@ -364,6 +386,13 @@ def set_leader(state: GameState, action: SetLeader, balance: Balance) -> Outcome
             raise OrgRuleError(f"a leader must be a member of the unit; move them to {unit.name}")
         if led_unit(state, new) is not None:
             raise OrgRuleError("a person leads at most one unit")
+        if unit.kind == "division":  # a president (M8, 18.1)
+            if not level_allowed(employment.level, balance):
+                raise OrgRuleError(
+                    f"a president is at {balance.exec_seats.min_level} level or above"
+                )
+            if state.seat_of(new) is not None:
+                raise OrgRuleError("an executive cannot also be a division president")
     state = spend_energy(state, action.actor_id, "set_leader", balance)
     reorg = balance.org.reorg
     for e in members(state, unit.id):

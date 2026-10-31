@@ -15,6 +15,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { GlossaryProvider } from './components/Term';
+import { BUSY_RETRY_MS, retryBusy } from './hooks/api';
 
 // Mantine palettes mapped onto the wireframe tokens (src/styles/tokens.css).
 const theme = createTheme({
@@ -67,7 +68,10 @@ const theme = createTheme({
 });
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
+  defaultOptions: {
+    queries: { retry: 1, refetchOnWindowFocus: false },
+    mutations: { retry: retryBusy, retryDelay: BUSY_RETRY_MS },
+  },
 });
 
 const root = document.getElementById('root');

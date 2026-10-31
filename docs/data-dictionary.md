@@ -87,6 +87,7 @@ One line of a ledger entry. The lines of an entry sum to zero. Append-only histo
 | `entry_id` | INTEGER FK → ledger_entry.id | no | Owning entry. |
 | `account_code` | VARCHAR(64) FK → account.code | no | Account posted to. |
 | `amount_cents` | BIGINT | no | Signed cents: debit positive, credit negative. |
+| `division_id` | INTEGER | yes | M8 (migration `0020_divisions`; formulas.md 18.1): the division the line reports to (an `org_unit` id, no FK); null = corporate. A product's revenue, hosting and marketing go to its division; an employee's salary, benefits, office, tools, recruiting fee and severance to the division containing their unit. Lines before M8 stay null. Server default NULL, deferred in the ORM. |
 
 Index `ix_ledger_line_entry (entry_id)`.
 
@@ -777,3 +778,53 @@ Rebuilt by `0015_relationships` (the M1a table with `affinity` and `updated_turn
 | `source` | VARCHAR(16) | no | `claude`, `mock` or `offline`. |
 | `cost_cents` | FLOAT | no | Real cents the call cost (counts toward the monthly AI budget), not game money. |
 | `created_at` | VARCHAR(32) | no | Wall-clock time (UTC, ISO 8601), as `llm_call_log`. |
+
+## Divisions, executives and new markets (migration `0020_divisions`, M8)
+
+Side tables rather than columns on `org_unit`, `product` and `search`: migration 0013 loads and syncs those tables through the current models when it upgrades an older save (as `round_nominee`). The migration also adds `market_segment` rows for categories a save lacks (Fintech, AI models and inference), grown to the save's turn; their incumbents and the scheduled entrants come only with new games.
+
+### unit_services
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `unit_id` | INTEGER PK FK → org_unit.id | no | A division. |
+| `services` | VARCHAR(16) | no | `central` or `embedded` (18.4). No row means central. |
+
+### product_division
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `product_id` | INTEGER PK FK → product.id | no | The product. |
+| `division_id` | INTEGER | yes | Its division (`org_unit` id, no FK); null or no row = corporate (18.1). |
+
+### search_level
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `search_id` | INTEGER PK FK → search.id | no | An exec-level search (18.3, stage 3). |
+| `level` | VARCHAR(16) | no | `exec`: every candidate is generated at this level. |
+
+### exec_seat
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER PK FK → company.id | no | The company (the player's in M8). |
+| `seat` | VARCHAR(8) PK | no | `coo`, `cfo`, `cto`, `cpo`, `cmo` or `cro`. |
+| `person_id` | INTEGER | yes | The holder; null while vacant (a row exists once the seat was first filled). |
+| `since_turn` | INTEGER | no | When the holder was appointed, or the seat became vacant. |
+
+### division_month
+
+Headcount per division at each month's payroll (phase 6), for the shared-services allocation of the division statements (18.1). Written only while the player has divisions. Append-only history.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Autoincrement. |
+| `turn` | INTEGER | no | The month. |
+| `company_id` | INTEGER FK → company.id | no | The player. |
+| `division_id` | INTEGER | yes | The division; null for corporate. |
+| `name` | VARCHAR(64) | no | Its name that month ("Corporate" for null). |
+| `headcount` | INTEGER | no | Staff in it (corporate counts the founder). |
+| `embedded` | BOOLEAN | no | Embedded shared services that month (takes no allocation). |
+
+Index `ix_division_month_company_turn (company_id, turn)`. `save_meta.schema_version` is 20.

@@ -125,6 +125,15 @@ class OrgTileOut(BaseModel):
     )
 
 
+class SupportTileOut(BaseModel):
+    """The Overview's support coverage tile, from stage 3 (M8, 18.4): counts, not c."""
+
+    support_staff: int
+    needed: int
+    pools_short: int = Field(description="Support pools below full coverage")
+    output_effect_pct: float = Field(description="The largest shortfall's change to output, %")
+
+
 class FundingTileOut(BaseModel):
     """The Overview's funding tile (M4b)."""
 
@@ -192,3 +201,4 @@ class OverviewOut(BaseModel):
     stage_since_label: str | None
     stage_history: list[StageReachedOut] = Field(description="Each stage reached, oldest first")
     funding: FundingTileOut
+    support: SupportTileOut | None = Field(default=None, description="From stage 3 (M8)")

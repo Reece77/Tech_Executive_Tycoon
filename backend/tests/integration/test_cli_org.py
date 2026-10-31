@@ -108,8 +108,8 @@ def test_reparent_a_team(save_dir: Path) -> None:
     assert "Costs 2 energy." in preview and "No one's morale changes." in preview
     run("unit", "reparent", "--save", SAVE, "--unit", "2", "--parent", "1")
     assert "\n    Web (team 2" in run("org", "--save", SAVE)  # two levels down, under Eng
-    out = run("unit", "reparent", "--save", SAVE, "--unit", "1", "--parent", "root", code=1)
-    assert "only teams move" in out
+    out = run("unit", "reparent", "--save", SAVE, "--unit", "1", "--parent", "2", code=1)
+    assert "under the company or a division" in out
 
 
 def test_plan_focus(save_dir: Path) -> None:

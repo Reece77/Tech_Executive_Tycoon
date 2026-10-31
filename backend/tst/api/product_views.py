@@ -31,14 +31,16 @@ from tst.api.schemas.products import (
 from tst.api.views import person_name
 from tst.loader import LoadedData
 from tst.sim.actions.products import launch_problems
-from tst.sim.calendar import format_turn
+from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import SegmentDef
 from tst.sim.errors import ProductRuleError
 from tst.sim.org.rules import org_view
 from tst.sim.products import formulas as f
+from tst.sim.products.formulas import hosting_cents
 from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegment
 from tst.sim.products.phases import (
     current_feature,
+    pricing_power,
     product_costs,
     segment_appeal,
     shown_turn,
@@ -71,7 +73,8 @@ def _rows(state: GameState, category: str, segment: str, data: LoadedData) -> li
             continue
         if product.status not in SELLING or seg.price_cents is None:
             continue
-        appeal = segment_appeal(product, seg, data.game_data, turn)
+        power = pricing_power(state, product, data.balance)  # CRO (M8, 18.3)
+        appeal = segment_appeal(product, seg, data.game_data, turn, power)
         assert appeal is not None
         rows.append(_Row(product, seg, appeal))
     return rows
@@ -81,10 +84,11 @@ def _best(rows: Sequence[_Row]) -> float:
     return max((r.appeal for r in rows if r.product.status == "live"), default=0.0)
 
 
-def _churn(row: _Row, rows: Sequence[_Row], data: LoadedData) -> float:
+def _churn(row: _Row, rows: Sequence[_Row], data: LoadedData, mult: float = 1.0) -> float:
+    """`mult`: the CPO and support factors on base churn (M8, 18.3, 18.4)."""
     seg_def = data.game_data.segment(row.seg.segment)
     return f.churn_rate(
-        seg_def.base_churn,
+        seg_def.base_churn * mult,
         _best(rows),
         row.appeal,
         row.product.quality,
@@ -119,7 +123,9 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
         CategoryOut(
             key=cat.key,
             label=cat.label,
-            annual_growth=cat.growth,
+            annual_growth=cat.growth_in(turn_to_ym(state.turn)[0]),
+            note="Compute costs follow the market" if cat.compute_indexed else None,
+            launch_quality=max(data.balance.products.launch_min_quality, cat.launch_quality or 0),
             segments=[
                 CategorySegmentOut(
                     segment=m.segment,
@@ -127,7 +133,11 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
                     reach=data.game_data.segment(m.segment).reach,
                     addressable=_addressable(state, cat.key, m.segment),
                     reference_price_cents=m.reference_price_cents,
-                    hosting_cents=m.hosting_cents,
+                    hosting_cents=round(
+                        hosting_cents(
+                            cat, m.segment, data.game_data.compute_index, turn_to_ym(state.turn)[0]
+                        )
+                    ),
                     weights=_weights(data.game_data.segment(m.segment)),
                     counts_users=m.segment == CONSUMER_SEGMENT,
                 )
@@ -185,7 +195,12 @@ def market_out(state: GameState, category: str, data: LoadedData) -> MarketOut:
                 products=products,
             )
         )
-    return MarketOut(category=cat.key, label=cat.label, annual_growth=cat.growth, segments=segments)
+    return MarketOut(
+        category=cat.key,
+        label=cat.label,
+        annual_growth=cat.growth_in(turn_to_ym(state.turn)[0]),
+        segments=segments,
+    )
 
 
 def lifecycle_label(product: Product, history: Sequence[ProductMonth], data: LoadedData) -> str:
@@ -234,9 +249,17 @@ def product_out(
                 price_cents=seg.price_cents,
                 price_score=_price_score(product, seg, data),
                 customers=seg.customers,
-                appeal=(appeal := segment_appeal(product, seg, game, shown_turn(state))),
+                appeal=(
+                    appeal := segment_appeal(
+                        product,
+                        seg,
+                        game,
+                        shown_turn(state),
+                        pricing_power(state, product, data.balance),
+                    )
+                ),
                 share_of_served=(share := seg.customers / served if served else 0.0),
-                churn_rate=None if mine is None else _churn(mine, rows, data),
+                churn_rate=None if mine is None else _churn(mine, rows, data, team.churn_mult),
                 mrr_cents=_mrr(seg),
                 note=(
                     f"Sales capacity limited new customers in {seg_def.label}"
@@ -269,9 +292,12 @@ def product_out(
     recent = sorted(history, key=lambda m: (m.turn, m.segment))
     pace = f.pace(team.base_output(data.balance), category.scope, data.balance.products)
     last_turns = sorted({m.turn for m in recent})[-12:]
+    division = state.unit(product.division_id) if product.division_id is not None else None
     return ProductOut(
         product_id=product.id,
         name=product.name,
+        division_id=division.id if division is not None else None,
+        division_name=division.name if division is not None else None,
         category=product.category,
         category_label=category.label,
         status=product.status,
@@ -385,7 +411,12 @@ def _hosting(state: GameState, product: Product, data: LoadedData) -> int:
         return 0
     category = data.game_data.category(product.category)
     return sum(
-        round(seg.customers * category.market(seg.segment).hosting_cents)
+        round(
+            seg.customers
+            * hosting_cents(
+                category, seg.segment, data.game_data.compute_index, turn_to_ym(state.turn)[0]
+            )
+        )
         for seg in state.segments_of(product.id)
     )
 
@@ -463,7 +494,7 @@ def price_preview(
         current_feature(product, game, turn),
     )
     shares, _ = f.choice_shares([appeal, *others], seg_def.outside_option, data.balance.market)
-    current = segment_appeal(product, seg, game, turn)
+    current = segment_appeal(product, seg, game, turn, pricing_power(state, product, data.balance))
     current_share = None
     if current is not None:
         now, _ = f.choice_shares([current, *others], seg_def.outside_option, data.balance.market)

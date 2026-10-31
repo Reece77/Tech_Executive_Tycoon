@@ -8,7 +8,7 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import fresh_game, make_person, with_employee, with_product
+from tests.helpers import FIRST_PRODUCT, fresh_game, make_person, with_employee, with_product
 from tst.loader import LoadedData
 from tst.sim.decisions import Decisions
 from tst.sim.ledger import CASH, COMPUTE, MARKETING, REVENUE_SUBSCRIPTIONS
@@ -22,7 +22,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_product_segment
 from tst.sim.turn import TurnResult, advance_turn
 
-PRODUCT = 13
+PRODUCT = FIRST_PRODUCT
 CASH_START = 150_000_000
 
 

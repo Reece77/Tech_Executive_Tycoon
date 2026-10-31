@@ -5,6 +5,7 @@ import { SpanBadge } from './SpanBadge';
 
 const KIND_STYLES: Record<UnitKind, { color: string; background: string }> = {
   company: { color: 'var(--tst-text-2)', background: 'var(--tst-grey-bg)' },
+  division: { color: 'var(--tst-tier-4)', background: 'var(--tst-gold-bg)' },
   department: { color: 'var(--tst-purple)', background: 'var(--tst-purple-bg)' },
   team: { color: 'var(--tst-link)', background: 'var(--tst-accent-bg)' },
 };

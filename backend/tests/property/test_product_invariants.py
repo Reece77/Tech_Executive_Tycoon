@@ -14,7 +14,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from tests.conftest import DATA_DIR
-from tests.helpers import fresh_game, make_person, with_employee, with_product
+from tests.helpers import FIRST_PRODUCT, fresh_game, make_person, with_employee, with_product
 from tst.loader import load_all
 from tst.sim.decisions import Decisions
 from tst.sim.ledger import CASH, apply_entries
@@ -25,7 +25,7 @@ from tst.sim.turn import advance_turn
 
 LOADED = load_all(DATA_DIR)
 BASE = fresh_game(LOADED)
-PRODUCT = 13
+PRODUCT = FIRST_PRODUCT
 ROLES = ("software_engineer", "designer", "marketer", "account_executive", "recruiter")
 TAGS = ("quiet_genius", "toxic_high_performer", "perfectionist", "maverick", "politician", "")
 

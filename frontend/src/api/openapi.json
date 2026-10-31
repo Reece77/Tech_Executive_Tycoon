@@ -8142,6 +8142,603 @@
         }
       }
     },
+    "/api/saves/{save_id}/scaleup": {
+      "get": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Get Scaleup",
+        "description": "Divisions, support coverage, cross-division products and the executive team.",
+        "operationId": "getScaleup",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleupOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/scaleup/divisions/{unit_id}/services": {
+      "post": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Set Shared Services",
+        "operationId": "setSharedServices",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "unit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Unit Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedServicesIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/scaleup/products/{product_id}/division": {
+      "post": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Set Product Division",
+        "operationId": "setProductDivision",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDivisionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/scaleup/seats/{seat}/candidates": {
+      "get": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Seat Candidates",
+        "description": "Staff with their fit and estimated effect for one seat (the Appoint dialog).",
+        "operationId": "getSeatCandidates",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "seat",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Seat"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeatCandidatesOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/scaleup/seats/{seat}/appoint": {
+      "post": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Appoint",
+        "operationId": "appointExecutive",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "seat",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Seat"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/scaleup/seats/{seat}/remove": {
+      "post": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Remove",
+        "operationId": "removeExecutive",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "seat",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Seat"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/divisions": {
+      "get": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Get Division Statements",
+        "description": "Each division's statement with its shared-services allocation (18.1); newest first.",
+        "operationId": "getDivisionStatements",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "month",
+                "quarter",
+                "year"
+              ],
+              "type": "string",
+              "default": "month",
+              "title": "Period"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DivisionStatementsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -8523,6 +9120,70 @@
         ],
         "title": "AppealWeightsOut",
         "description": "How a segment's buyers weigh the four scores (formulas.md 11.6); they sum to 1."
+      },
+      "AppointCandidateOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "fit": {
+            "type": "string",
+            "title": "Fit"
+          },
+          "estimated_effect_pct": {
+            "type": "number",
+            "title": "Estimated Effect Pct"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem",
+            "description": "Why they cannot take the seat now, or null"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role",
+          "level",
+          "fit",
+          "estimated_effect_pct",
+          "problem"
+        ],
+        "title": "AppointCandidateOut"
+      },
+      "AppointIn": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "title": "AppointIn"
       },
       "ApproachOut": {
         "properties": {
@@ -9407,6 +10068,30 @@
             },
             "type": "array",
             "title": "Segments"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "e.g. compute costs follow the market (M8)"
+          },
+          "launch_quality": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Launch Quality",
+            "description": "Quality a launch needs (M8)"
           }
         },
         "type": "object",
@@ -10206,6 +10891,43 @@
         ],
         "title": "CreateUnitIn"
       },
+      "CrossDivisionOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "division_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Division Names"
+          },
+          "output_effect_pct": {
+            "type": "number",
+            "title": "Output Effect Pct"
+          },
+          "fix": {
+            "type": "string",
+            "title": "Fix",
+            "description": "The move that removes the factor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product_name",
+          "division_names",
+          "output_effect_pct",
+          "fix"
+        ],
+        "title": "CrossDivisionOut"
+      },
       "DilutionLineOut": {
         "properties": {
           "holder": {
@@ -10383,6 +11105,264 @@
           "history"
         ],
         "title": "DirectorOut"
+      },
+      "DivisionColumnOut": {
+        "properties": {
+          "division_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Division Id",
+            "description": "Null for corporate or the company"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "embedded": {
+            "type": "boolean",
+            "title": "Embedded"
+          },
+          "headcount": {
+            "type": "integer",
+            "title": "Headcount"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "salaries_benefits_cents": {
+            "type": "integer",
+            "title": "Salaries Benefits Cents"
+          },
+          "hosting_cents": {
+            "type": "integer",
+            "title": "Hosting Cents"
+          },
+          "marketing_cents": {
+            "type": "integer",
+            "title": "Marketing Cents"
+          },
+          "office_cents": {
+            "type": "integer",
+            "title": "Office Cents"
+          },
+          "tools_ga_cents": {
+            "type": "integer",
+            "title": "Tools Ga Cents"
+          },
+          "direct_profit_cents": {
+            "type": "integer",
+            "title": "Direct Profit Cents"
+          },
+          "shared_services_cents": {
+            "type": "integer",
+            "title": "Shared Services Cents",
+            "description": "Negative for a central division, positive for corporate, 0 if embedded"
+          },
+          "operating_profit_cents": {
+            "type": "integer",
+            "title": "Operating Profit Cents"
+          },
+          "operating_margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operating Margin"
+          },
+          "revenue_growth_12m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenue Growth 12M",
+            "description": "Last 12 months against the 12 before"
+          }
+        },
+        "type": "object",
+        "required": [
+          "division_id",
+          "name",
+          "embedded",
+          "headcount",
+          "revenue_cents",
+          "salaries_benefits_cents",
+          "hosting_cents",
+          "marketing_cents",
+          "office_cents",
+          "tools_ga_cents",
+          "direct_profit_cents",
+          "shared_services_cents",
+          "operating_profit_cents",
+          "operating_margin",
+          "revenue_growth_12m"
+        ],
+        "title": "DivisionColumnOut"
+      },
+      "DivisionOut": {
+        "properties": {
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "president_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "President Id"
+          },
+          "president_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "President Name"
+          },
+          "services": {
+            "type": "string",
+            "title": "Services",
+            "description": "central | embedded (18.4)"
+          },
+          "headcount": {
+            "type": "integer",
+            "title": "Headcount"
+          },
+          "unit_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Unit Ids",
+            "description": "The departments and teams under it"
+          },
+          "product_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Product Ids"
+          },
+          "product_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Product Names"
+          },
+          "operating_profit_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operating Profit Cents",
+            "description": "Last month's operating profit after shared services; null before a month"
+          },
+          "effect_note": {
+            "type": "string",
+            "title": "Effect Note",
+            "description": "Its main structural effect, in words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "name",
+          "president_id",
+          "president_name",
+          "services",
+          "headcount",
+          "unit_ids",
+          "product_ids",
+          "product_names",
+          "operating_profit_cents",
+          "effect_note"
+        ],
+        "title": "DivisionOut"
+      },
+      "DivisionPeriodOut": {
+        "properties": {
+          "first_turn": {
+            "type": "integer",
+            "title": "First Turn"
+          },
+          "last_turn": {
+            "type": "integer",
+            "title": "Last Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/DivisionColumnOut"
+            },
+            "type": "array",
+            "title": "Columns",
+            "description": "Corporate, each division, Company"
+          }
+        },
+        "type": "object",
+        "required": [
+          "first_turn",
+          "last_turn",
+          "label",
+          "columns"
+        ],
+        "title": "DivisionPeriodOut"
+      },
+      "DivisionStatementsOut": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "periods": {
+            "items": {
+              "$ref": "#/components/schemas/DivisionPeriodOut"
+            },
+            "type": "array",
+            "title": "Periods",
+            "description": "Newest first"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "periods"
+        ],
+        "title": "DivisionStatementsOut"
       },
       "EmploymentOut": {
         "properties": {
@@ -14149,6 +15129,12 @@
             "type": "boolean",
             "title": "Departments Unlocked"
           },
+          "divisions_unlocked": {
+            "type": "boolean",
+            "title": "Divisions Unlocked",
+            "description": "Stage 3 (M8, 18.1)",
+            "default": false
+          },
           "managers_over_span": {
             "type": "integer",
             "title": "Managers Over Span"
@@ -14462,6 +15448,17 @@
           },
           "funding": {
             "$ref": "#/components/schemas/FundingTileOut"
+          },
+          "support": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SupportTileOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "From stage 3 (M8)"
           }
         },
         "type": "object",
@@ -15525,6 +16522,27 @@
         ],
         "title": "ProductActionOut"
       },
+      "ProductDivisionIn": {
+        "properties": {
+          "division_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Division Id",
+            "description": "Null makes the product corporate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "division_id"
+        ],
+        "title": "ProductDivisionIn"
+      },
       "ProductMonthOut": {
         "properties": {
           "turn": {
@@ -15604,6 +16622,29 @@
           "name": {
             "type": "string",
             "title": "Name"
+          },
+          "division_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Division Id",
+            "description": "Owning division; null = corporate"
+          },
+          "division_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Division Name"
           },
           "category": {
             "type": "string",
@@ -17371,6 +18412,98 @@
         ],
         "title": "SaveOut"
       },
+      "ScaleupActionOut": {
+        "properties": {
+          "scaleup": {
+            "$ref": "#/components/schemas/ScaleupOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scaleup",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "ScaleupActionOut"
+      },
+      "ScaleupOut": {
+        "properties": {
+          "stage": {
+            "type": "integer",
+            "title": "Stage"
+          },
+          "in_play": {
+            "type": "boolean",
+            "title": "In Play",
+            "description": "Stage 3 or later: divisions, seats and support apply"
+          },
+          "unlock_stage": {
+            "type": "integer",
+            "title": "Unlock Stage"
+          },
+          "max_divisions": {
+            "type": "integer",
+            "title": "Max Divisions"
+          },
+          "divisions": {
+            "items": {
+              "$ref": "#/components/schemas/DivisionOut"
+            },
+            "type": "array",
+            "title": "Divisions"
+          },
+          "support": {
+            "items": {
+              "$ref": "#/components/schemas/SupportPoolOut"
+            },
+            "type": "array",
+            "title": "Support"
+          },
+          "support_rule": {
+            "type": "string",
+            "title": "Support Rule"
+          },
+          "cross_division": {
+            "items": {
+              "$ref": "#/components/schemas/CrossDivisionOut"
+            },
+            "type": "array",
+            "title": "Cross Division"
+          },
+          "seats": {
+            "items": {
+              "$ref": "#/components/schemas/SeatOut"
+            },
+            "type": "array",
+            "title": "Seats"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "in_play",
+          "unlock_stage",
+          "max_divisions",
+          "divisions",
+          "support",
+          "support_rule",
+          "cross_division",
+          "seats",
+          "note"
+        ],
+        "title": "ScaleupOut"
+      },
       "ScenarioOut": {
         "properties": {
           "id": {
@@ -17464,6 +18597,18 @@
             ],
             "title": "Rival Id",
             "description": "The rival of a poach search (M5)"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level",
+            "description": "exec: an exec-level search (M8, stage 3)"
           }
         },
         "type": "object",
@@ -17556,6 +18701,18 @@
               }
             ],
             "title": "Rival Name"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level",
+            "description": "exec for an exec-level search (M8)"
           }
         },
         "type": "object",
@@ -17575,6 +18732,124 @@
           "rival_name"
         ],
         "title": "SearchOut"
+      },
+      "SeatCandidatesOut": {
+        "properties": {
+          "seat": {
+            "$ref": "#/components/schemas/SeatOut"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/AppointCandidateOut"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "energy_cost": {
+            "type": "integer",
+            "title": "Energy Cost"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seat",
+          "candidates",
+          "energy_cost",
+          "note"
+        ],
+        "title": "SeatCandidatesOut"
+      },
+      "SeatOut": {
+        "properties": {
+          "seat": {
+            "type": "string",
+            "title": "Seat",
+            "description": "coo | cfo | cto | cpo | cmo | cro"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "effect_label": {
+            "type": "string",
+            "title": "Effect Label",
+            "description": "What the seat changes, e.g. 'builder output'"
+          },
+          "holder_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holder Id"
+          },
+          "holder_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holder Name"
+          },
+          "fit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fit",
+            "description": "Fit as words from what you know: strong, fair, weak"
+          },
+          "estimated_effect_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Effect Pct",
+            "description": "Estimated change from displayed midpoints (est.); for COO, on the layer tax and support shortfall"
+          },
+          "vacancy_penalty_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vacancy Penalty Pct",
+            "description": "The penalty while vacant (stage 3+)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seat",
+          "label",
+          "effect_label",
+          "holder_id",
+          "holder_name",
+          "fit",
+          "estimated_effect_pct",
+          "vacancy_penalty_pct"
+        ],
+        "title": "SeatOut"
       },
       "SegmentIn": {
         "properties": {
@@ -17747,6 +19022,20 @@
           "policy"
         ],
         "title": "SetPolicyIn"
+      },
+      "SharedServicesIn": {
+        "properties": {
+          "services": {
+            "type": "string",
+            "title": "Services",
+            "description": "central | embedded"
+          }
+        },
+        "type": "object",
+        "required": [
+          "services"
+        ],
+        "title": "SharedServicesIn"
       },
       "SkillMetaOut": {
         "properties": {
@@ -18141,6 +19430,89 @@
           "started_label"
         ],
         "title": "StorylineOut"
+      },
+      "SupportPoolOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "central, or the embedded division's id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "headcount": {
+            "type": "integer",
+            "title": "Headcount"
+          },
+          "support_staff": {
+            "type": "integer",
+            "title": "Support Staff"
+          },
+          "needed": {
+            "type": "integer",
+            "title": "Needed",
+            "description": "Support staff for full coverage: one per 15 staff"
+          },
+          "covered": {
+            "type": "boolean",
+            "title": "Covered"
+          },
+          "output_effect_pct": {
+            "type": "number",
+            "title": "Output Effect Pct",
+            "description": "Change to output, capacity and marketing, %"
+          },
+          "morale_effect": {
+            "type": "number",
+            "title": "Morale Effect",
+            "description": "Morale points from 'Admin and support'"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "headcount",
+          "support_staff",
+          "needed",
+          "covered",
+          "output_effect_pct",
+          "morale_effect"
+        ],
+        "title": "SupportPoolOut"
+      },
+      "SupportTileOut": {
+        "properties": {
+          "support_staff": {
+            "type": "integer",
+            "title": "Support Staff"
+          },
+          "needed": {
+            "type": "integer",
+            "title": "Needed"
+          },
+          "pools_short": {
+            "type": "integer",
+            "title": "Pools Short",
+            "description": "Support pools below full coverage"
+          },
+          "output_effect_pct": {
+            "type": "number",
+            "title": "Output Effect Pct",
+            "description": "The largest shortfall's change to output, %"
+          }
+        },
+        "type": "object",
+        "required": [
+          "support_staff",
+          "needed",
+          "pools_short",
+          "output_effect_pct"
+        ],
+        "title": "SupportTileOut",
+        "description": "The Overview's support coverage tile, from stage 3 (M8, 18.4): counts, not c."
       },
       "TableView": {
         "properties": {

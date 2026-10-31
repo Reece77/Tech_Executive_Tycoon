@@ -10,7 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-type UnitKind = Literal["department", "team"]
+type UnitKind = Literal["division", "department", "team"]  # division: M8 (18.1)
+type SharedServices = Literal["central", "embedded"]  # a division's shared services (18.4)
 type UnitStatus = Literal["active", "dissolved"]
 type WorkPolicy = Literal["office", "remote"]
 type PlanChannel = Literal["network", "job_post", "recruiter", "any"]
@@ -18,7 +19,9 @@ type PlanFocus = Literal["current", "potential"]  # 13.10: best now, or spot pot
 # active: the delegate works it; paused: its owner left; filled: target reached; closed.
 type PlanStatus = Literal["active", "paused", "filled", "closed"]
 
-UNIT_KINDS: tuple[UnitKind, ...] = ("department", "team")
+UNIT_KINDS: tuple[UnitKind, ...] = ("division", "department", "team")
+SHARED_SERVICES: tuple[SharedServices, ...] = ("central", "embedded")
+SEATS: tuple[str, ...] = ("coo", "cfo", "cto", "cpo", "cmo", "cro")  # 18.3, display order
 WORK_POLICIES: tuple[WorkPolicy, ...] = ("office", "remote")
 PLAN_CHANNELS: tuple[PlanChannel, ...] = ("job_post", "recruiter", "network", "any")
 PLAN_FOCUSES: tuple[PlanFocus, ...] = ("current", "potential")
@@ -38,6 +41,21 @@ class OrgUnit:
     status: UnitStatus = "active"
     dissolved_turn: int | None = None
     product_id: int | None = None  # the product its members work on (formulas.md 11.3, M3)
+    services: SharedServices | None = None  # a division's shared services; None = central (18.4)
+
+    @property
+    def embedded(self) -> bool:
+        return self.kind == "division" and self.services == "embedded"
+
+
+@dataclass(frozen=True, slots=True)
+class ExecSeat:
+    """An executive seat that has been filled at least once (18.3). person_id None: vacant."""
+
+    company_id: int
+    seat: str  # one of SEATS
+    person_id: int | None
+    since_turn: int
 
 
 @dataclass(frozen=True, slots=True)

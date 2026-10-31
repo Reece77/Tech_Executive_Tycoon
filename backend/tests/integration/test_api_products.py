@@ -12,7 +12,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.helpers import make_person, move_save_directors, with_employee
+from tests.helpers import FIRST_PRODUCT, make_person, move_save_directors, with_employee
 from tests.integration.test_api_hiring import Client
 from tst.api.app import create_app
 from tst.config import Settings, get_settings
@@ -23,7 +23,7 @@ from tst.sim.state import with_person
 
 SAVE = "m3a"
 BASE = f"/api/saves/{SAVE}"
-PRODUCT = 13
+PRODUCT = FIRST_PRODUCT
 
 
 def staff(path: Path, loaded: LoadedData, roles: tuple[str, ...]) -> None:
@@ -69,7 +69,11 @@ def test_categories_and_markets(setup: tuple[Client, Path]) -> None:
         "dev_tools",
         "consumer_apps",
         "cybersecurity",
+        "fintech",  # M8
+        "ai_models",
     ]
+    assert categories[-1]["note"] == "Compute costs follow the market"
+    assert categories[-2]["launch_quality"] == 30
     smb = categories[0]["segments"][0]
     assert (smb["segment"], smb["addressable"], smb["reach"]) == ("smb", 400_000, "self_serve")
     market = api.get(f"{BASE}/markets/b2b_saas")
@@ -292,6 +296,7 @@ def test_products_meta(setup: tuple[Client, Path]) -> None:
         "sunset_product": 3,
         "cancel_product": 3,
         "scout_search": 20,
+        "set_product_division": 1,  # M8
     }
     assert (meta["start_quality"], meta["launch_min_quality"], meta["launch_min_feature"]) == (
         10,
