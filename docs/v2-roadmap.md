@@ -37,7 +37,7 @@ v2 runs in two lanes where the systems are separate (Reece, 2026-10-29). Each la
 - **Migrations.** Each lane writes its own. The lane that merges second re-parents its unmerged migrations onto `main`'s new head before merging. A migration that isn't on `main` hasn't been applied to any save, so this doesn't break the "never edit an applied migration" rule.
 - **Golden snapshots.** Only the lane that merges second regenerates them, with both lanes' reasons in CHANGELOG.
 - **Balance.** The lane that merges second re-runs `make balance` and the guards on the combined code. If a target moves, it reports rather than tunes the other lane's keys.
-- **Merge order** is fixed in each pair's briefs: the first-named milestone merges first.
+- **Merge order** is fixed in each pair's briefs; usually the smaller milestone merges first (M10 before M9).
 - **RNG streams.** New stream ids are reserved per lane in ADR-0013's table before work starts, so the two lanes can't collide.
 
 ## Decided for v2 (ADR-0019)

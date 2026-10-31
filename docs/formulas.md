@@ -1451,3 +1451,201 @@ Named rival startups founded in their real month. Each is a §15.4 startup with 
 **Support churn and delegates.** 120 staff with 5 support staff (`c = 0.625`): the pool's churn × (1 + 0.4 × 0.375) = × 1.15; with the COO at `e = 0.5`, × 1.1125. A delegate's 100 energy becomes 62.
 
 **Allocation.** Corporate 12 staff with $520,000 of operating costs this month; the Platform division (128, central) and the Fintech division (46, embedded). Platform's allocation = $520,000 × 128 / (12 + 128) = **$475,429**; Fintech's is $0; corporate keeps $44,571.
+
+## 19. Cities, offices and regions (M9, lane A)
+
+Reece's decisions (2026-10-31): about 15 named tech hubs; a product **launches per region**; v1's market is the home region, so other regions add demand on top and v1's early game is unchanged. Merge order: M10 merges first, then M9 (`docs/v2-roadmap.md` lane rules).
+
+### 19.1 Cities (data: `cities.yaml`)
+
+Each city has: key, name, region (`regions.yaml`), a salary multiplier (replacing the region's for people working there), a rent index (San Francisco = 1.0), and a talent bonus per skill group (added to the mean of generated candidates' role skills, in attribute points).
+
+| City | Region | Salary × | Rent index | Talent bonus |
+| --- | --- | --- | --- | --- |
+| San Francisco | North America | 1.00 | 1.00 | technical +1.0, business +0.5 |
+| Seattle | North America | 0.95 | 0.80 | technical +0.8 |
+| New York | North America | 1.00 | 0.95 | business +1.0 |
+| Austin | North America | 0.85 | 0.55 | — |
+| Toronto | North America | 0.75 | 0.55 | technical +0.3 |
+| London | Europe | 0.85 | 0.85 | business +0.8 |
+| Berlin | Europe | 0.65 | 0.45 | technical +0.3 |
+| Dublin | Europe | 0.75 | 0.55 | business +0.3 |
+| Tel Aviv | Europe | 0.75 | 0.55 | technical +0.8 (security +1.5) |
+| Bangalore | South and Southeast Asia | 0.30 | 0.15 | technical +0.3 |
+| Singapore | South and Southeast Asia | 0.75 | 0.75 | business +0.3 |
+| Shenzhen | East Asia | 0.40 | 0.30 | hardware design +1.5, manufacturing +1.5 |
+| Tokyo | East Asia | 0.75 | 0.70 | hardware design +0.8 |
+| São Paulo | Latin America | 0.40 | 0.30 | — |
+| Sydney | Oceania | 0.85 | 0.70 | — |
+
+- **HQ.** A new game picks an HQ city (default San Francisco). Existing saves get San Francisco by migration.
+- **Market rates.** Everyone's market rate (§2) uses the salary multiplier of the city they work in: their office's city, or their home city when remote. A person generated in v1 gets the first city of their region as their home city (migration).
+- **Talent bonus.** Groups are `skills.yaml` groups. The values above are starting points for tuning.
+
+### 19.2 Offices
+
+- **Flexible HQ** (every company, as now): an office-policy employee working in the HQ city costs `$600 × rent index` a month (§8). That is unchanged for a San Francisco HQ.
+- **Lease an office** (immediate action, energy 10): a city and a size of 25, 50, 100 or 250 seats.
+  - **Rent:** `seats × $600 × rent index × office.lease_discount` (0.75) a month, full or not, to `6100_rent`.
+  - **Fit-out:** 3 months' rent, once.
+  - **Closing** (energy 10): 3 months' rent as a penalty. Everyone in it moves to flexible space in that city, or becomes remote if the city isn't the HQ.
+- **Where people work.** An office-policy unit (§13.9) has a home office (`unit.office_id`; null means flexible space in the HQ city). Its members work there. If an office's members exceed its seats, everyone in it gets −4 morale ("Crowded office"), and new hires still join.
+- Remote-policy members work from their home city.
+
+### 19.3 Hiring by city
+
+- A search has a city (default: the hiring unit's office city). Its candidates live in that city (85%) or are willing relocators from other cities (15%, drawn by city talent weight). Their role skills get the city's talent bonus.
+- Searches for a remote unit may choose **anywhere**: every candidate's city is drawn by talent weight.
+- Relocating a candidate to the search's city adds `hiring.relocation_cents` ($15,000) to the hire's cost (`6200_recruiting`).
+- Randomness stays in `people_gen` (the city draw is part of generating the candidate).
+
+### 19.4 Working across regions
+
+A product whose builders work in more than one **region** loses output: × `max(0.85, 1 − 0.05 × (regions − 1))` (time zones). This multiplies with M8's coordination factors (§18.5).
+
+### 19.5 Regional markets
+
+- **Home region:** the HQ city's region. Its markets are exactly v1's (§11.1, §18.6), with the same `D₀`, prices and incumbents. Its RNG key stays `(category_index, segment_index)`, so v1 runs replay unchanged.
+- **Other regions** add markets with `D₀ = home D₀ × region size` and `p_ref × region price index`. Their RNG key is `(category_index, segment_index, region_index)`.
+
+| Region | Size (× North America's D₀) | Price index | Neighbour (for sales) |
+| --- | --- | --- | --- |
+| North America | 1.00 | 1.00 | Latin America |
+| Europe | 0.80 | 0.90 | Africa |
+| East Asia | 0.70 | 0.80 | South and Southeast Asia |
+| South and Southeast Asia | 0.40 | 0.35 | East Asia |
+| Latin America | 0.25 | 0.50 | North America |
+| Africa | 0.06 | 0.35 | Europe |
+| Oceania | 0.10 | 0.95 | South and Southeast Asia |
+
+  When the HQ isn't in North America, sizes are taken relative to the home region's row. A region's growth is the category's growth × its `growth_mult` in `cities.yaml`: 1.0 for North America and Europe, 1.3 for East Asia, 1.6 for South and Southeast Asia, 1.2 for Latin America, 1.8 for Africa, 1.0 for Oceania.
+- **Launching in a region** (immediate action, energy 4): the product must already be live at home. Localization costs `$40,000 × σ / 6` once (`6500_research_development`) and takes `markets.localize_months` (3). During those months the product's feature points grow 10% slower. It then sells there at the prices the player sets (default `p_ref × price index`).
+- **Reach in a region.**
+  - *Self-serve segments:* awareness × `markets.foreign_awareness` (0.6) until the company has an office or at least 5 people working in that region; then × 1.
+  - *Sales-led segments:* capacity comes only from sellers working in that region, plus 50% of those in its neighbour.
+- **Incumbents by region** (data: each incumbent product lists its regions and starting share per region; the M3a steady-state method again). v1 incumbents are present in North America and Europe unless their data says otherwise. New regional incumbents:
+
+| Company | Personality | Builder skill | Product (category: segments; region) |
+| --- | --- | --- | --- |
+| SAP | premium | 13 | SAP Business ByDesign (B2B SaaS: mid-market, enterprise; Europe) |
+| Kaspersky | cost_leader | 13 | Kaspersky (cybersecurity: SMB, mid-market; Europe) |
+| Tencent | aggressive | 13 | QQ (consumer apps: consumer; East Asia) |
+| Alibaba | aggressive | 12 | Alipay (fintech: consumer, SMB; East Asia) |
+| Baidu | fast_follower | 12 | Baidu Brain (AI: SMB, enterprise; East Asia) |
+| Infosys | cost_leader | 11 | Finacle (fintech: enterprise; South and Southeast Asia) |
+
+### 19.6 Rivals and regions
+
+- **Region entry.** Rival incumbents gain `enter_region`, with need `(unserved share − 0.4) / 0.4` in a region where the product's category has demand, and cash ≥ 12 months of costs; weights as `enter_segment` (§15.3).
+- **Startups.** A rival startup is founded in a region drawn by that category's regional demand (stream `rival_region`, id 22, key `(startup_id,)`) and sells there first.
+- **Entrants** (§18.7) start in North America.
+
+### 19.7 What the API may show
+
+Cities with their salary and rent indexes and talent bonuses. Offices with seats, members and cost per head. Each product's regions with status (localizing until a month, or live), prices, customers and revenue by region. The cross-region factor in the product's output breakdown. Regional market views (M3b's market view, with a region picker). Candidates' city and whether they'd relocate.
+
+### 19.8 Balance targets (M9 acceptance, printed)
+
+1. All v1 targets and the M8 targets still pass when the player never leaves the home region.
+2. **Expansion lifts the ceiling.** blitzscale that launches in Europe at Series A and in East Asia at stage 3 reaches a median turn-120 ARR of at least 1.4 times the home-only blitzscale.
+3. **Cheap talent has a cost.** A 30-builder team in Bangalore costs at least 50% less a month than the same team in San Francisco. A product split between them shows the cross-region factor.
+4. **Cities differ.** Over 200 seeded software-engineer searches, San Francisco candidates' mean role-skill score is 0.8–1.2 points above Austin's.
+5. **Rivals spread.** At turn 120 (do-nothing runs), every region with demand has at least one live rival product in each category.
+
+### 19.9 Worked examples
+
+**Lease.** 50 seats in Berlin: `50 × $600 × 0.45 × 0.75` = **$10,125** a month, plus a fit-out of $30,375.
+
+**Market rate.** A senior software engineer (band mid $115,000) working in Bangalore: `$115,000 × 0.30` = **$34,500** a year.
+
+**Regional market.** B2B SaaS SMB in Europe: `D₀ = 400,000 × 0.80` = 320,000, and `p_ref = $50 × 0.90` = $45.
+
+**Localization.** A cybersecurity product (σ = 7): `$40,000 × 7 / 6` = **$46,667**, live in the region three months later.
+
+## 20. Capital and macro (M10, lane B)
+
+Reece's decision (2026-10-31): the macro economy follows **history from 2010 through 2025, then seeded cycles from 2026**. Every run shares the same past and differs only in its future. M10 merges before M9.
+
+### 20.1 Macro indicators (data: `macro_history.yaml`; phase 1)
+
+Four indicators, set each month in phase 1:
+
+| Indicator | Unit | History (2010–2025) | After 2025 (stream `macro`, id 21, key `(indicator_index,)`) |
+| --- | --- | --- | --- |
+| Base rate `r` | % a year | the US federal funds rate, monthly | AR(1) toward 3.0, φ = 0.97, shock sd 0.15, clamped to [0, 8] |
+| Venture climate `v` | multiplier | `climate.yaml`'s value for that year, every month of it | AR(1) toward 1.1, φ = 0.95, shock sd 0.05, clamped to [0.6, 1.8] |
+| Consumer confidence `cc` | index, 100 = the 2010–2019 average | real monthly series, rescaled | AR(1) toward 100, φ = 0.95, shock sd 2.5, clamped to [60, 125] |
+| AI compute index `ai` | multiplier | `compute_index.yaml` (§18.6), by year | AR(1) of the yearly change toward −10%, φ = 0.8, shock sd 0.08 |
+
+- **Downturns after 2025.** Each month, with probability `macro.downturn_monthly` (0.012), a downturn starts if none has run in the last 36 months. For 12 months it pushes climate −0.04 a month, confidence −1.5 a month and the rate −0.25 a month, before the AR(1) step.
+- Phase 1's draws use one generator per indicator, plus one (key 99) for downturns.
+
+**Effects:**
+- **Climate.** `v` replaces `climate(year)` everywhere (§14.3, §14.5, §15.4). Through 2025 it equals the old table, so v1 rounds are unchanged.
+- **Consumer confidence** scales adoption in consumer and SMB segments: `adoption × (cc / 100)^{0.5}`. From 2010 to 2019 this averages about 1.0.
+- **Base rate.** Debt prices off it (§20.3). It feeds public markets in M13.
+- **AI compute index.** M8's AI hosting index uses `ai`, so it continues past 2025.
+
+### 20.2 Series C and D
+
+| Series | Allowed when | Typical raise |
+| --- | --- | --- |
+| Series C | after a Series B and ARR ≥ $25M | $30M–$80M |
+| Series D | after a Series C and ARR ≥ $60M | $60M–$200M |
+
+- §14.5's mechanics apply unchanged. Heat is `clamp(ARR / gate, 1, 3)`. The round's lead takes a board seat, but no more than 2 seats per round series after B, and the board has at most 7 seats (the founder's included).
+- **Growth investors** (appended to `investors.yaml`):
+
+| Firm | Series | Check size | Bias | Response | Patience | From |
+| --- | --- | --- | --- | --- | --- | --- |
+| Insight Partners | B, C, D | $20M–$100M | 1.00 | 0.40 | 0 | 2010 |
+| General Atlantic | C, D | $40M–$150M | 0.95 | 0.35 | −5 | 2010 |
+| Tiger Global | C, D | $30M–$200M | 1.20 | 0.30 | +5 | 2010 |
+| DST Global | C, D | $50M–$200M | 1.15 | 0.30 | +5 | 2010 |
+| SoftBank Vision Fund | C, D | $100M–$500M | 1.30 | 0.25 | −10 | 2017 |
+
+### 20.3 Debt (accounts `2500_debt`, `7000_interest`)
+
+| Instrument | Available | Size | Rate | Term |
+| --- | --- | --- | --- | --- |
+| Venture debt | within 12 months after a priced round | up to 30% of that round's amount | `r + 6%` | 36 months: 12 interest-only, then equal principal; warrants of 0.25% of FD to the lender at signing |
+| Bank loan | stage 3 and positive operating profit for the last 3 months | up to 1 × ARR | `r + 3%` | 48 months, equal principal |
+
+- **Taking a loan** is an immediate action (energy 10): choose the instrument and amount. A lender answers at once (no draw): it says yes if the gate holds, and the rate is fixed at signing.
+- **Each month in phase 7:**
+  - interest `round(balance × rate / 12)` to `7000_interest`;
+  - principal from `2500_debt`;
+  - both paid from `1000_cash`.
+- **Covenants,** checked in phase 7:
+  - venture debt: cash ≥ 3 months of burn;
+  - bank loan: operating profit over the last 3 months > 0, and cash ≥ 10% of the balance.
+- **A breach** queues a critical event from the `lender` template category (new; templates written in M10). The choices are:
+  - pay a waiver fee of 1% of the balance;
+  - accept a 2-point rate increase for the rest of the term;
+  - repay 25% of the balance at once.
+
+  The event system's validator caps apply (§16.3). Its follow-up: a second breach within 6 months makes the whole balance due. If cash can't cover it, the shortfall counts toward bankruptcy (§14.7).
+- **Repay early** (energy 5) at any time, with no fee.
+- **Statements.** Debt appears as a liability, interest below operating profit, and principal in financing cash flow.
+
+### 20.4 What the API may show
+
+- The macro indicators with their history and the last 24 months, and "downturn under way" when one is running. Never the AR(1) parameters' draws ahead, or a future value.
+- Loans with balance, rate, schedule and covenant headroom.
+- Series C and D with term sheets as in §14.9.
+
+### 20.5 Balance targets (M10 acceptance, printed)
+
+1. All v1 and M8 targets still pass. Through 2019, venture climate equals the old table (golden snapshots may still move from consumer confidence; record the reason).
+2. **Debt saves dilution.** steady at stage 3 that takes venture debt after its Series B instead of raising a Series C ends turn 120 with at least 5 points more founder ownership (median, 10 seeds) and no more than 10 points higher bankruptcy.
+3. **Covenants bite sometimes.** blitzscale that takes the maximum venture debt after each round breaches a covenant on 20–60% of seeds by turn 120.
+4. **The future varies.** Over 50 seeds of 2026–2039, at least 80% have a downturn, and the venture climate's 2030 values have a standard deviation of at least 0.15.
+5. **Later rounds happen.** blitzscale reaches a Series C on at least 4 of 10 seeds by turn 120.
+
+### 20.6 Worked examples
+
+**Venture debt.** $6M after a $20M Series A with `r = 0.25%`: rate 6.25%. Month-1 interest = `$6,000,000 × 0.0625 / 12` = **$31,250**. From month 13, principal is $250,000 a month.
+
+**AR(1) step.** Climate 1.30 in a month with shock +0.02: `1.1 + 0.95 × (1.30 − 1.1) + 0.02` = **1.31**.
+
+**Confidence on adoption.** `cc = 81` gives `(0.81)^{0.5}` = × 0.90 on consumer and SMB adoption.

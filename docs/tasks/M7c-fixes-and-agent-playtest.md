@@ -2,7 +2,7 @@
 
 **Goal:** fix the two link problems M7b found, then have the agent play a full 10-year game through the browser like a player would. It fixes the bugs it finds and writes up everything else for Reece, so his own playtest starts from a cleaner build and a checklist.
 
-**Spec sections:** §13 (UI), §17 (M7) · **ADRs:** 0007, 0009 · **Depends on:** M7b (`m7b-done`)
+**Spec sections:** §13 (UI), §17 (M7) · **ADRs:** 0007, 0009 · **Depends on:** M8 (`m8-done`); Reece started M8 first (2026-10-31)
 
 ## Context
 
@@ -42,7 +42,8 @@ Design or balance changes. If something looks like a design problem (too slow, t
    - stuck states.
 
    Golden snapshots change only if a bug fix requires it, with the reason in CHANGELOG.
-5. **Report:** `docs/playtests/agent-m7c.md`:
+5. **Quick-start saves** (a tool, not a game feature): `make quickstart-saves` plays the balance runner's steady strategy headless on seed 1 and saves two games for Reece's playtests: `quick-stage2` (turn 36) and `quick-stage3` (blitzscale with a second product, at the first month of stage 3, so M8's divisions and seats can be tried at once). Each appears in the Saves screen; the tool is in `tools/` and documented in the README.
+6. **Report:** `docs/playtests/agent-m7c.md`:
    - **The game in numbers,** per year: cash, ARR, staff, morale, rounds, products and events.
    - **Bugs fixed,** each with its commit.
    - **Bugs not fixed,** and why.
@@ -57,11 +58,12 @@ Design or balance changes. If something looks like a design problem (too slow, t
 - [ ] Every event link opens that event's message with its card.
 - [ ] The agent's 120-month game finishes through the browser with no 5xx, with screenshots saved.
 - [ ] Every bug fixed has a test; the report lists bugs fixed and not fixed, design notes and Reece's checklist.
+- [ ] `make quickstart-saves` writes both saves, and they open in the game.
 - [ ] `make check` green; `make e2e` passes; merged per CLAUDE.md §6 with the trailer `Milestone-Tag: m7c-done`.
 
 ## Manual check (Reece, after merge)
 
-Read `docs/playtests/agent-m7c.md`, then play your 10-year run with its checklist beside you.
+Read `docs/playtests/agent-m7c.md`, then play your 10-year run with its checklist beside you. To try M8's divisions and executives without playing to stage 3, open `quick-stage3`.
 
 ## Decisions made
 

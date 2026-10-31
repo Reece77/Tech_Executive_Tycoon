@@ -52,3 +52,14 @@ A second problem is order dependence: if one generator is shared by everyone in 
 
 - Keep one stream per subsystem and pass a single generator through each phase: works, but any added draw shifts all later draws, and call sites can still collide.
 - Store generator state: rejected in ADR-0002.
+
+## Reserved stream ids (v2 lanes)
+
+Ids reserved before parallel lanes start, so two lanes never pick the same one (ADR-0019, `docs/v2-roadmap.md`). The milestone that builds a stream moves its row into the table above.
+
+| Name | Id | Key | Use | Milestone |
+| --- | --- | --- | --- | --- |
+| `entrants` | 20 | `(entrant_index,)` | Generating a scheduled entrant's people (formulas.md §18.7) | M8 |
+| `macro` | 21 | `(indicator_index,)`; `(99,)` for downturns | Macro indicators after 2025 (formulas.md §20.1) | M10 (lane B) |
+| `rival_region` | 22 | `(startup_id,)` | A rival startup's founding region (formulas.md §19.6) | M9 (lane A) |
+| — | 23–29 | — | Reserved for M11 (lane A) and M12 (lane B): 23–25 lane A, 26–29 lane B | M11, M12 |

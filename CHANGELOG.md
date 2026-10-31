@@ -17,6 +17,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - **Golden snapshots regenerated:** the five new incumbents (and their key people and product ids), the new categories' rival startups, Square from March 2010, and the lower startup refinancing chance all change rivals' moves and the player's markets from turn 0.
   - Front-end mutations retry briefly on a busy save. Playwright `e2e/m8.spec.ts` covers (a) to (d).
 
+- Docs: M9 (cities, offices, regions; lane A) and M10 (capital and macro; lane B) briefs, formulas.md §19–§20, M9/M10 wireframes (Offices, ProductRegions, Debt), reserved RNG stream ids in ADR-0013. Reece, 2026-10-31: macro follows history to 2025 then seeded cycles; products launch per region; about 15 cities. M7c moves after M8 and gains quick-start saves.
 - CI: runs of `check` on main each get their own concurrency group, so a later push to main no longer cancels a milestone merge's check before `tag-milestone` can tag it (a docs push cancelled M7b's merge check once). Branch runs still cancel their older runs.
 - Docs: M8 brief (divisions, executives, support, Fintech and AI, scheduled entrants), formulas.md §18, M8 wireframes (OrgDivisions, DivisionPL). Reece, 2026-10-30: seats at stage 3; support staff needed from stage 3; Fintech and AI open from 2010; scheduled real entrants.
 - Docs: v2 roadmap draft (`docs/v2-roadmap.md`: M8–M15 in two lanes, lane rules) and ADR-0019 (Reece's v2 scope decisions).
