@@ -27,3 +27,13 @@ def test_burn_counts_an_event_paid_before_continue(tmp_path: Path, loaded: Loade
     fall = before - after["cash_cents"]
     assert sum(i["amount"] for i in out["burn"]["items"]) == fall
     assert after["monthly_burn_cents"] == fall
+
+
+def test_the_burn_notes_projection_is_net_of_revenue(tmp_path: Path) -> None:
+    """The burn tile's note showed this month's gross costs beside last month's net burn
+    (Dec 2013: "Dec projected $214,140" under $96,577); it now projects the net burn."""
+    with hiring_client(tmp_path) as api:
+        api.post(f"{BASE}/advance")
+        ov = api.get(f"{BASE}/overview")
+    net = ov["month_total_cents"] - ov["month_revenue_cents"]
+    assert ov["month_net_burn_cents"] == max(net, 0) > 0

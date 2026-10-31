@@ -85,7 +85,7 @@ export function OverviewScreen() {
           drivers={tip('burn', 'Burn by cost line')}
           label="Monthly burn"
           value={formatMoneyWhole(data.monthly_burn_cents)}
-          note={`${lastMonth ? `${lastMonth.split(' ')[0]}; ` : ''}${month} projected ${formatMoneyWhole(data.month_total_cents)}`}
+          note={`${lastMonth ? `${lastMonth.split(' ')[0]}; ` : ''}${month} projected ${formatMoneyWhole(data.month_net_burn_cents)}`}
           testId="kpi-burn"
         />
         <KpiTile

@@ -4761,6 +4761,11 @@ export interface components {
              */
             month_total_cents: number;
             /**
+             * Month Net Burn Cents
+             * @description This month's projected fall in cash: month_total less month_revenue, 0 when revenue covers it (the burn tile's note, M7c)
+             */
+            month_net_burn_cents: number;
+            /**
              * Option Pool Left Bp
              * @description Option pool left: staff equity plus pending offers counted
              * @default 0

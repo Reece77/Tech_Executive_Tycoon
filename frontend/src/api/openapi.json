@@ -15807,6 +15807,11 @@
             "title": "Month Total Cents",
             "description": "Projected plus already posted"
           },
+          "month_net_burn_cents": {
+            "type": "integer",
+            "title": "Month Net Burn Cents",
+            "description": "This month's projected fall in cash: month_total less month_revenue, 0 when revenue covers it (the burn tile's note, M7c)"
+          },
           "option_pool_left_bp": {
             "type": "integer",
             "title": "Option Pool Left Bp",
@@ -15932,6 +15937,7 @@
           "month_costs",
           "month_paid",
           "month_total_cents",
+          "month_net_burn_cents",
           "mrr_cents",
           "arr_cents",
           "month_revenue_cents",

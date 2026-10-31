@@ -181,6 +181,10 @@ class OverviewOut(BaseModel):
     )
     month_paid: list[CostLineOut] = Field(description="Expenses already posted this month")
     month_total_cents: int = Field(description="Projected plus already posted")
+    month_net_burn_cents: int = Field(
+        description="This month's projected fall in cash: month_total less month_revenue, "
+        "0 when revenue covers it (the burn tile's note, M7c)",
+    )
     option_pool_left_bp: int = Field(
         default=0, description="Option pool left: staff equity plus pending offers counted"
     )
