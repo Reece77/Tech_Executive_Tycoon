@@ -8,7 +8,7 @@ import os
 import re
 import threading
 from collections.abc import Iterable, Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -792,22 +792,52 @@ def run_turn(
     so no adapter is called."""
     decisions = decisions or Decisions()
     migrate.ensure_current(save_path)
+    # The turn and its event writing hold the save together (M8r, Codex review 1 finding 2):
+    # another write between them is refused, so `save_busy` only ever comes before the month
+    # commits. A Holiday already holds the save for all its months.
+    key = str(save_path.resolve())
+    with _LOCKS_GUARD:
+        held = _HOLDS.get(key) is not None and _HOLDS.get(key) is _HOLDER.get()
+    token = None if held else reserve(save_path)
     try:
-        result = _play_turn(save_path, data, decisions)
-    except _PendingEvents:  # an earlier write did not finish: write them, then play
-        write_pending(save_path, data, adapter=adapter, copy_from=events_from)
-        result = _play_turn(save_path, data, decisions)
+        with holding(token) if token is not None else nullcontext():
+            try:
+                result = _play_turn(save_path, data, decisions)
+            except _PendingEvents:  # an earlier write did not finish: write them, then play
+                write_pending(save_path, data, adapter=adapter, copy_from=events_from)
+                result = _play_turn(save_path, data, decisions)
+            _after_commit(save_path, data, result, adapter, events_from)
+    finally:
+        if token is not None:
+            release(save_path, token)
+    return result
 
-    if result.event_requests or result.text_requests:
-        write_pending(
-            save_path, data, adapter=adapter, copy_from=events_from, committed=result.new_state
-        )
+
+def _after_commit(
+    save_path: Path,
+    data: LoadedData,
+    result: TurnResult,
+    adapter: LLMAdapter | None,
+    events_from: Path | None,
+) -> None:
+    """Everything after the month's commit. The month is played whatever happens here, so a
+    failure is logged, not raised: an unwritten event stays pending and the next turn or
+    request writes it first (`_PendingEvents`)."""
+    try:
+        if result.event_requests or result.text_requests:
+            write_pending(
+                save_path, data, adapter=adapter, copy_from=events_from, committed=result.new_state
+            )
+    except Exception:
+        log.exception("Turn %d committed; its events stay pending", result.new_state.turn)
     committed = result.new_state.turn
     backup = data.balance.backup
-    if committed % backup.every_n_turns == 0:
-        periodic_backup(save_path, committed, backup.keep_periodic)
-    update_index(save_path, result.new_state)
-    return result
+    try:
+        if committed % backup.every_n_turns == 0:
+            periodic_backup(save_path, committed, backup.keep_periodic)
+        update_index(save_path, result.new_state)
+    except Exception:
+        log.exception("Turn %d committed; its backup or index update failed", committed)
 
 
 # --- Player actions (ADR-0014) --------------------------------------------------------------

@@ -11,6 +11,11 @@ class ErrorOut(BaseModel):
     code: str
     message: str
     event_id: int | None = None  # critical_event_open: the event blocking Continue (M6)
+    retryable: bool | None = Field(
+        default=None,
+        description="True: refused before anything was written, so the same request may be "
+        "sent again (save_busy; M8r). Absent: do not retry automatically.",
+    )
 
 
 class BreakdownItemOut(BaseModel):

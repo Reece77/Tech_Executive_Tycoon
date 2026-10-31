@@ -3157,6 +3157,11 @@ export interface components {
             message: string;
             /** Event Id */
             event_id?: number | null;
+            /**
+             * Retryable
+             * @description True: refused before anything was written, so the same request may be sent again (save_busy; M8r). Absent: do not retry automatically.
+             */
+            retryable?: boolean | null;
         };
         /** EventChoiceOut */
         EventChoiceOut: {

@@ -11777,6 +11777,18 @@
               }
             ],
             "title": "Event Id"
+          },
+          "retryable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retryable",
+            "description": "True: refused before anything was written, so the same request may be sent again (save_busy; M8r). Absent: do not retry automatically."
           }
         },
         "type": "object",
