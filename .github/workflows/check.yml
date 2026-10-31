@@ -9,7 +9,10 @@ on:
   pull_request:
 
 concurrency:
-  group: check-${{ github.ref }}
+  # Runs on main each get their own group, so a later push (a docs commit, say) never cancels a
+  # milestone merge's check: tag-milestone tags only after that check succeeds. Branch runs
+  # still cancel their older runs.
+  group: check-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
   cancel-in-progress: true
 
 permissions:
