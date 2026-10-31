@@ -112,12 +112,22 @@ def hire(run: Run, person_id: int, role: str, flat_skill: float | None = None) -
     run.state = replace(run.state, next_ids=replace(run.state.next_ids, person=person_id + 1))
 
 
+FINTECH_PRICES = {"smb": 4800, "mid_market": 105_000}  # M8: the same share of p_ref ($60, $1,200)
+
+
 def earn_and_burn(
-    loaded: LoadedData, seed: int, turns: int, marketing: bool = True, events: bool = False
+    loaded: LoadedData,
+    seed: int,
+    turns: int,
+    marketing: bool = True,
+    events: bool = False,
+    category: str = "b2b_saas",
+    prices: dict[str, int] | None = None,
 ) -> Run:
     """The M3a brief's script: the founder, 3 builders, 1 account executive and 1 marketer on
     one B2B SaaS product (SMB $40, mid-market $700), $10,000 a month of marketing, launched
-    as soon as it is allowed."""
+    as soon as it is allowed. M8 runs it in another category (18.9 target 4)."""
+    prices = EARN_AND_BURN_PRICES if prices is None else prices
     run = start(loaded, seed)
     run.events = events
     for pid in (2, 3, 4):
@@ -125,8 +135,8 @@ def earn_and_burn(
     hire(run, 5, "account_executive")
     hire(run, 6, "marketer")
     product = run.state.next_ids.product
-    run.act(CreateProduct(FOUNDER, "Pipeline", "b2b_saas", tuple(EARN_AND_BURN_PRICES)))
-    for segment, price in EARN_AND_BURN_PRICES.items():
+    run.act(CreateProduct(FOUNDER, "Pipeline", category, tuple(prices)))
+    for segment, price in prices.items():
         run.act(SetPrice(FOUNDER, product, segment, price))
     run.act(AssignUnit(FOUNDER, product, None))
     if marketing:

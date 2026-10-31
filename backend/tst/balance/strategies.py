@@ -66,13 +66,15 @@ def _products(game: Game) -> list[Product]:
     return [p for p in game.state.company_products(PLAYER) if p.status != "retired"]
 
 
-def ensure_product(game: Game, index: int) -> Product | None:
+def ensure_product(
+    game: Game, index: int, second: tuple[str, str, tuple[str, ...]] = SECOND_PRODUCT
+) -> Product | None:
     """Create product `index` (0 or 1) if missing: reference prices; the root builds the
-    first, a new team the second."""
+    first, a new team the second (`second`: M8 runs it in Fintech, 18.9 target 5)."""
     products = _products(game)
     if len(products) > index:
         return products[index]
-    name, category, segments = (FIRST_PRODUCT, SECOND_PRODUCT)[index]
+    name, category, segments = (FIRST_PRODUCT, second)[index]
     product_id = game.state.next_ids.product
     if not game.act(CreateProduct(game.founder_id, name, category, segments)):
         return None
@@ -287,14 +289,14 @@ BLITZ_MARKETING_MIN = 2_500_000  # at least $25,000 a month, else 40% of revenue
 BLITZ_MARKETING = 0.40
 
 
-def blitzscale(game: Game) -> None:
+def blitzscale(game: Game, second: tuple[str, str, tuple[str, ...]] = SECOND_PRODUCT) -> None:
     """15 staff by month 12, then hires while runway is above 12 months; every round as soon
     as allowed (seed, A, B), largest amount; a second product at Series A."""
     accept_bridges(game)
     fundraise(game, BLITZ_ROUNDS, pick="amount")
     ensure_product(game, 0)
     if "a" in closed_series(game):
-        ensure_product(game, 1)
+        ensure_product(game, 1, second)
     launch_ready(game)
     if game.state.turn < BLITZ_EARLY_TURNS:
         hire(game, BLITZ_EARLY, per_month=3)

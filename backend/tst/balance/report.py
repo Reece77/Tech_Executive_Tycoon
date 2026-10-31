@@ -19,6 +19,7 @@ from typing import Final
 from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.strategies import STRATEGIES
 from tst.loader import LoadedData, load_all
+from tst.sim.rivals.startups import is_entrant
 
 SEEDS: Final = tuple(range(1, 11))
 TURNS: Final = 120
@@ -141,7 +142,12 @@ def _result(
         ),
         incumbents=len(incumbents),
         incumbents_alive=sum(1 for c in incumbents if c.alive),
-        startups=tuple((c.founded_turn, c.failed_turn) for c in rivals if c.is_startup),
+        # T7 measures the 15.4 startups; scheduled entrants are real companies (M8, 18.7).
+        startups=tuple(
+            (c.founded_turn, c.failed_turn)
+            for c in rivals
+            if c.is_startup and not is_entrant(c, game.loaded.game_data)
+        ),
         events=tuple(
             (e.turn, e.template_id, e.trigger) for e in state.events if e.company_id == PLAYER
         ),
