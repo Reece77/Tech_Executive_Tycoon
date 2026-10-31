@@ -88,6 +88,8 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
     runway = ov.runway_months  # at this month's projected phase-6 costs (M1c decision)
     since = stage_since(player)
     runway_warn = data.balance.morale.runway_warn_months
+    month_total = sum(c.amount_cents for c in projected) + sum(c.amount_cents for c in month_paid)
+    month_revenue = projected_revenue(state, player.id)
     return OverviewOut(
         save_id=save_id,
         company_name=ov.company_name,
@@ -142,15 +144,15 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         ),
         month_costs=projected,
         month_paid=month_paid,
-        month_total_cents=sum(c.amount_cents for c in projected)
-        + sum(c.amount_cents for c in month_paid),
+        month_total_cents=month_total,
+        month_net_burn_cents=max(month_total - month_revenue, 0),
         option_pool_left_bp=pool_left_bp(state, player.id),
         network_bonus_candidates=network_bonus(state, player.id, data),
         org=org_views.org_tile(state, player.id, data),
         support=scaleup_views.support_tile(state, data),
         mrr_cents=latest.mrr_cents if latest else 0,
         arr_cents=latest.arr_cents if latest else 0,
-        month_revenue_cents=projected_revenue(state, player.id),
+        month_revenue_cents=month_revenue,
         game_state=state.save_meta.game_state,
         ended_turn=state.save_meta.ended_turn,
         stage_since_turn=since,

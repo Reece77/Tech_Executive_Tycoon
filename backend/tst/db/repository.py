@@ -80,7 +80,7 @@ from tst.sim.errors import (
     UpgradeNeededError,
 )
 from tst.sim.finance.statements import projected_runway
-from tst.sim.ledger import AccountCode, apply_entries
+from tst.sim.ledger import CASH, AccountCode, apply_entries
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
 from tst.sim.people.reveal import shown_rating
@@ -595,7 +595,7 @@ class Overview:
     turn: int  # next turn to play
     date_label: str
     cash_cents: Cents
-    monthly_burn_cents: Cents  # from the last month-end snapshot; 0 before the first turn
+    monthly_burn_cents: Cents  # the fall in cash over the last month played; 0 before it
     runway_months: int | None  # at this month's projected phase-6 costs (M1c decision)
     history: list[tuple[int, CompanySnapshot]]  # last N snapshots, oldest first
 
@@ -608,6 +608,20 @@ def player_overview(session: Session, history: int, data: LoadedData) -> Overvie
     cash = company_cash(ledger_balances(session), player.id)
     snaps = recent_snapshots(session, player.id, history)
     burn = snaps[-1][1].monthly_burn_cents if snaps else 0
+    if snaps and snaps[-1][0] > 0:
+        # The fall in cash over the whole month, as its breakdown and the P&L count it: the
+        # snapshot's burn starts after the month's actions, so it missed an event paid by
+        # answering it before Continue (M7c playtest). Turn 0 holds the starting capital.
+        change = session.execute(
+            select(func.coalesce(func.sum(LedgerLineRow.amount_cents), 0))
+            .join(LedgerLineRow.entry)
+            .where(
+                LedgerEntryRow.company_id == player.id,
+                LedgerEntryRow.turn == snaps[-1][0],
+                LedgerLineRow.account_code == CASH,
+            )
+        ).scalar_one()
+        burn = max(-int(change), 0)
     return Overview(
         slug=meta.name,
         company_name=player.name,

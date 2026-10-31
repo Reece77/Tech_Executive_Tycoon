@@ -5,8 +5,8 @@ import { join } from 'node:path';
 
 // The smoke test runs its own API (fresh save folder) and Vite server on spare ports, so it
 // never touches saves/ or a running `make dev`.
-const API_PORT = 8765;
-const WEB_PORT = 5175;
+const API_PORT = Number(process.env.TST_E2E_API_PORT ?? 8765); // overridable to run beside `make playtest`
+const WEB_PORT = Number(process.env.TST_E2E_WEB_PORT ?? 5175);
 // Kept in the environment so test workers (which load this file again) see the same folder;
 // the M4c flow edits a save there with tools/e2e_set_arr.py.
 process.env.TST_E2E_SAVE_DIR ??= mkdtempSync(join(tmpdir(), 'tst-e2e-'));
@@ -18,6 +18,7 @@ const channel = process.env.PLAYWRIGHT_CHANNEL;
 
 export default defineConfig({
   testDir: 'e2e',
+  testIgnore: ['playtest/**'], // the agent playtest runs on demand: make playtest (M7c)
   fullyParallel: false,
   workers: 1,
   reporter: 'list',

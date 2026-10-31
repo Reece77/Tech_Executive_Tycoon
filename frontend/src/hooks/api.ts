@@ -416,6 +416,22 @@ export function usePeople(saveId: string) {
   });
 }
 
+/** Someone who has left (M7c), as the player knew them; `enabled` once the staff route 404s. */
+export function useFormerPerson(saveId: string, personId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: [...keys.person(saveId, personId), 'former'] as const,
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/people/{person_id}/former', {
+          params: { path: { save_id: saveId, person_id: personId } },
+        }),
+      ),
+    enabled: enabled && Number.isSafeInteger(personId) && personId > 0,
+    retry: false,
+  });
+}
+export type FormerProfile = Schemas['FormerProfileOut'];
+
 export function usePerson(saveId: string, personId: number) {
   return useQuery({
     queryKey: keys.person(saveId, personId),
@@ -1490,5 +1506,35 @@ export function useDivisionStatements(saveId: string, period: StatementPeriodKin
         }),
       ),
     placeholderData: keepPreviousData,
+  });
+}
+
+// --- Deep links (M7c) ---------------------------------------------------------------------------
+
+/** One inbox message by id, wherever it falls in the pages (M7c). */
+export function useInboxItem(saveId: string, itemId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'inbox-item', itemId],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/inbox/{item_id}', {
+          params: { path: { save_id: saveId, item_id: itemId } },
+        }),
+      ),
+    enabled: enabled && Number.isSafeInteger(itemId) && itemId > 0,
+  });
+}
+
+/** The inbox message that carries an event's card (M7c). */
+export function useEventItem(saveId: string, eventId: number) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'event-item', eventId],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/events/{event_id}/item', {
+          params: { path: { save_id: saveId, event_id: eventId } },
+        }),
+      ),
+    enabled: Number.isSafeInteger(eventId) && eventId > 0,
   });
 }

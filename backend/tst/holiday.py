@@ -18,7 +18,7 @@ from typing import Literal
 from sqlalchemy import select
 
 from tst.db import repository
-from tst.db.models import InboxItemRow
+from tst.db.models import InboxEventLinkRow, InboxItemRow
 from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
@@ -35,6 +35,7 @@ type StopReason = Literal["game_over", "event", "runway", "offer", "months", "st
 
 STOP_LEVELS: tuple[StopLevel, ...] = ("minor", "major", "critical")  # rank: the index
 SUMMARY_TEMPLATE = "holiday_summary"
+LINK_LABEL_MAX = 200  # inbox_event_link.label column width
 # Runway always stops a holiday below this many months, whatever happened before (17.1;
 # a fixed rule of the spec, like the three severities, not a tunable).
 RUNWAY_FLOOR_MONTHS = 3
@@ -285,6 +286,15 @@ def write_summary(
         session.add(row)
         session.flush()
         item_id = int(row.id)
+        session.add_all(  # each decided event opens its card (M7c)
+            InboxEventLinkRow(
+                item_id=item_id,
+                position=i,
+                event_id=e.id,
+                label=(e.title or e.template_id)[:LINK_LABEL_MAX],
+            )
+            for i, e in enumerate(events)
+        )
     return item_id
 
 

@@ -3,7 +3,8 @@ the table; the M5 brief's Decisions made records it.
 
 1. Living market: with no player product, over 120 turns, no incumbent's share of a segment's
    served customers falls below half or rises above double its starting share, and on average
-   at least one rival startup per category launches a product.
+   at least one rival startup per category launches a product. Judged on the four v1
+   categories; new-market disruption in fintech and AI models is intended (M8, M7c).
 2. Rivals respond: in the M3a earn-and-burn script, an incumbent cuts a price or starts a push
    in a segment the player sells to within 24 turns of launch, on at least 7 of 10 seeds.
 3. Still winnable: the earn-and-burn ARR at turn 36 is $500,000 to $4M on at least 8 of 10.
@@ -34,17 +35,25 @@ POACH_YEARS = 3
 SPEED_TURNS = 120
 SPEED_STAFF = 25
 PUSHES = {"price_cut", "feature_push", "quality_push", "brand_push"}
+# Target 1 judges the four v1 markets. Fintech and AI models (M8) are disrupted on purpose by
+# their scheduled real entrants (Square, Stripe, Plaid, OpenAI, Anthropic): PayPal's consumer
+# share and Fiserv's enterprise share fall below half there on every seed (M7c, Reece).
+V1_CATEGORIES = frozenset({"b2b_saas", "dev_tools", "consumer_apps", "cybersecurity"})
 
 
 @pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_1_living_market(loaded: LoadedData) -> None:
     breaches, launches = 0, 0
     worst_low, worst_high = 1.0, 1.0
-    categories = len(loaded.game_data.categories)
+    categories = len(V1_CATEGORIES)
     for seed in SEEDS:
         run = start(loaded, seed)
         incumbents = {p.id for p in run.state.products}
-        first = {k: v for k, v in served_shares(run.state).items() if k[2] in incumbents}
+        first = {
+            k: v
+            for k, v in served_shares(run.state).items()
+            if k[2] in incumbents and k[0] in V1_CATEGORIES
+        }
         broke = False
         for _ in range(LIVING_TURNS):
             run.turn()
@@ -55,13 +64,17 @@ def test_1_living_market(loaded: LoadedData) -> None:
                 ratio = now.get(key, 0.0) / share
                 worst_low, worst_high = min(worst_low, ratio), max(worst_high, ratio)
                 broke = broke or not 0.5 <= ratio <= 2.0
-        launched = sum(1 for m in run.state.rival_moves if m.action == "launched")
+        v1 = {p.id for p in run.state.products if p.category in V1_CATEGORIES}
+        launched = sum(
+            1 for m in run.state.rival_moves if m.action == "launched" and m.product_id in v1
+        )
         launched += sum(
             1
             for c in run.state.companies
             if c.is_startup
             for p in run.state.company_products(c.id)
             if p.launched_turn is not None
+            and p.category in V1_CATEGORIES
             and not any(
                 m.action == "launched" and m.product_id == p.id for m in run.state.rival_moves
             )

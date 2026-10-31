@@ -110,15 +110,11 @@ function overviewColumns(saveId: string) {
       cell: ({ row }) => <MoraleBar morale={row.original.morale} width={64} />,
     }),
     helper.display({
-      id: 'form',
-      header: 'Form',
-      cell: () => <span className="tst-muted">From M3</span>,
-    }),
-    helper.display({
       id: 'top',
       header: 'Top skills',
       cell: ({ row }) => (
-        <span style={{ display: 'flex', gap: 10 }}>
+        // Wraps when space is short, so the whole table fits at 1440 wide (M7c).
+        <span style={{ display: 'flex', flexWrap: 'wrap', columnGap: 10, rowGap: 2 }}>
           {[...row.original.skills]
             .sort(byStrength)
             .slice(0, TOP_SKILLS)

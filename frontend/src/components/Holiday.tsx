@@ -166,10 +166,7 @@ export function HolidayStrip({ saveId }: { saveId: string }) {
         </span>
       )}
       {h.summary_item_id != null && (
-        <Link
-          to={`/game/${saveId}/inbox?item=${h.summary_item_id}`}
-          data-testid="holiday-summary-link"
-        >
+        <Link to={`/game/${saveId}/inbox/${h.summary_item_id}`} data-testid="holiday-summary-link">
           While you were away
         </Link>
       )}

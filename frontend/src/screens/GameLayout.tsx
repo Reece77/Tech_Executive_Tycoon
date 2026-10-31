@@ -93,7 +93,9 @@ export function GameLayout() {
               {advance.error.message}
             </Alert>
           )}
-          <ScreenErrorBoundary key={location.pathname}>
+          {/* A new screen resets the boundary; opening another message (/inbox/:id, M7c) does
+              not, so the inbox keeps its folder filter. */}
+          <ScreenErrorBoundary key={location.pathname.replace(/\/inbox\/\d+$/, '/inbox')}>
             <Outlet />
           </ScreenErrorBoundary>
         </main>

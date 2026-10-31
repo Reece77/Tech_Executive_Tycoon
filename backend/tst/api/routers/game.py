@@ -12,7 +12,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 from sqlalchemy import select
 
-from tst.api import views
+from tst.api import former_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.people import (
@@ -20,6 +20,7 @@ from tst.api.schemas.people import (
     CheckOut,
     EnergyOut,
     FireOut,
+    FormerProfileOut,
     InboxBulkOut,
     InboxItemOut,
     InboxOut,
@@ -109,6 +110,22 @@ def get_person(
     with repository.read_session(path) as session:
         state = repository.read_state(session)
         return views.person_profile(session, state, state.player.id, person_id, data)
+
+
+@router.get(
+    "/people/{person_id}/former",
+    response_model=FormerProfileOut,
+    responses=ERRORS,
+    operation_id="getFormerPerson",
+)
+def get_former_person(
+    save_id: str, person_id: int, settings: SettingsDep, data: DataDep
+) -> FormerProfileOut:
+    """Someone who has left (M7c): read-only, as the player knew them when they left."""
+    path = _path(settings, save_id)
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
+        return former_views.former_profile(session, state.player.id, person_id, data)
 
 
 @router.post(
@@ -386,6 +403,16 @@ def get_inbox(
                 for m in items
             ],
         )
+
+
+@router.get(
+    "/inbox/{item_id}", response_model=InboxItemOut, responses=ERRORS, operation_id="getInboxItem"
+)
+def get_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
+    """One message, archived or not, wherever it falls in the pages (M7c deep links)."""
+    with repository.read_session(_path(settings, save_id)) as session:
+        player = repository.read_state(session).player
+        return views.inbox_item(inbox.get_item(session, player.id, item_id))
 
 
 @router.post(

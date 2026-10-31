@@ -24,3 +24,8 @@ claude   # then: Read docs/tasks/M0-foundation.md and implement it. Follow CLAUD
 ```
 
 Prerequisites on your machine: Python 3.12, `uv`, Node 22 LTS, `pnpm`, `make`, git.
+
+## Playtest tools
+
+- `make quickstart-saves` (`tools/quickstart_saves.py`, M7c) plays the balance strategies headless on seed 1 and leaves two saves in the save folder, listed in the Saves screen: `quick-stage2` (steady at turn 36, January 2013) and `quick-stage3` (blitzscale with its second product at its first month of stage 3, so divisions and executive seats can be tried at once). Running it again replaces them. It takes about a minute and a half.
+- `make playtest` (`frontend/e2e/playtest/`, M7c) has the agent play a new game for 120 months through the browser, saving yearly screenshots in `docs/playtests/agent-m7c/` and a journal in `frontend/test-results/playtest/journal.json`. It is not part of `make e2e`.

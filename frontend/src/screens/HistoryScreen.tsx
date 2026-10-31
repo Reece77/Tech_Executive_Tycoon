@@ -138,6 +138,11 @@ function WhatHappened({ saveId, row }: { saveId: string; row: HistoryRow }) {
         {row.product_id != null && row.product_name && (
           <Link to={`/game/${saveId}/products/${row.product_id}`}>{row.product_name}</Link>
         )}
+        {row.event_id != null && (
+          <Link to={`/game/${saveId}/events/${row.event_id}`} data-testid="history-event-link">
+            Open the event
+          </Link>
+        )}
       </span>
     </div>
   );
@@ -494,7 +499,9 @@ function StorylinesTab({ saveId }: { saveId: string }) {
                 <span className="tst-num tst-muted" style={{ marginRight: 8 }}>
                   {step.date_label}
                 </span>
-                {step.title}
+                <Link to={`/game/${saveId}/events/${step.event_id}`} data-testid="story-step-link">
+                  {step.title}
+                </Link>
                 {step.choice && (
                   <span className="tst-muted">
                     {' '}

@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Path, Query
 from sqlalchemy import select
 
-from tst.api import event_views
+from tst.api import event_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _act, _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
@@ -22,9 +22,10 @@ from tst.api.schemas.events import (
     StorylineOut,
     TeamMoodOut,
 )
-from tst.db import repository
-from tst.db.mappers import storyline_from_row
-from tst.db.models import StorylineRow
+from tst.api.schemas.people import InboxItemOut
+from tst.db import inbox, repository
+from tst.db.mappers import event_from_row, storyline_from_row
+from tst.db.models import EventRow, StorylineRow
 from tst.db.state_io import has_table
 from tst.llm.settings import (
     LLMSettings,
@@ -93,11 +94,31 @@ def list_events(save_id: str, settings: SettingsDep, data: DataDep) -> EventsOut
     "/events/{event_id}", response_model=EventOut, responses=ERRORS, operation_id="getEvent"
 )
 def get_event(save_id: str, event_id: int, settings: SettingsDep, data: DataDep) -> EventOut:
-    state = _state(_path(settings, save_id))
-    event = state.event(event_id)
+    """Any written event, open or answered. The live state keeps only the last 24 months'
+    events, so an older one is read from its row (M7c: History links to old events)."""
+    path = _path(settings, save_id)
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
+        event = state.event(event_id)
+        if event is None:
+            row = session.get(EventRow, event_id)
+            event = event_from_row(row) if row is not None else None
     if event is None or event.company_id != state.player.id or event.status == "pending":
         raise UnknownEventError(f"no event {event_id}")
     return event_views.event_out(state, event, data)
+
+
+@router.get(
+    "/events/{event_id}/item",
+    response_model=InboxItemOut,
+    responses=ERRORS,
+    operation_id="getEventItem",
+)
+def get_event_item(save_id: str, event_id: int, settings: SettingsDep) -> InboxItemOut:
+    """The inbox message that carries an event's card (M7c deep links)."""
+    with repository.read_session(_path(settings, save_id)) as session:
+        player = repository.read_state(session).player
+        return views.inbox_item(inbox.event_item(session, player.id, event_id))
 
 
 @router.post(

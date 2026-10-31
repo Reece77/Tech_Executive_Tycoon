@@ -85,6 +85,8 @@ def _route_urls(api: Api) -> list[str]:
     products = api.get(f"{BASE}/products")
     rivals = api.get(f"{BASE}/rivals")
     events = api.get(f"{BASE}/events")
+    inbox = api.get(f"{BASE}/inbox")["items"]
+    left = api.get(f"{BASE}/history/hall-of-fame")["notable_departures"]
     ids = {
         "save_id": SAVE,
         "person_id": next((p["person_id"] for p in people if not p["is_founder"]), None),
@@ -95,17 +97,20 @@ def _route_urls(api: Api) -> list[str]:
         if events["open"] + events["recent"]
         else None,
         "sheet_id": None,  # previews need an open round; covered by the finance tests
+        "item_id": inbox[0]["item_id"] if inbox else None,
     }
+    former = left[0]["person_id"] if left else None  # /people/{id}/former is for leavers (M7c)
     urls = []
     for path, ops in spec["paths"].items():
         if "get" not in ops:
             continue
         names = re.findall(r"\{(\w+)\}", path)
-        if any(ids.get(n) is None for n in names):
+        values = {**ids, "person_id": former} if path.endswith("/former") else ids
+        if any(values.get(n) is None for n in names):
             continue
         url = path
         for n in names:
-            url = url.replace(f"{{{n}}}", str(ids[n]))
+            url = url.replace(f"{{{n}}}", str(values[n]))
         urls.append(url)
     for period in ("month", "quarter", "year"):
         urls.append(f"{BASE}/finance/statements?period={period}")

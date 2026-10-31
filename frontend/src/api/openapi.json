@@ -935,6 +935,88 @@
         }
       }
     },
+    "/api/saves/{save_id}/people/{person_id}/former": {
+      "get": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Get Former Person",
+        "description": "Someone who has left (M7c): read-only, as the player knew them when they left.",
+        "operationId": "getFormerPerson",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormerProfileOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/people/{person_id}/fire": {
       "post": {
         "tags": [
@@ -1851,6 +1933,88 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/{item_id}": {
+      "get": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Get Inbox Item",
+        "description": "One message, archived or not, wherever it falls in the pages (M7c deep links).",
+        "operationId": "getInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
                 }
               }
             }
@@ -6919,6 +7083,7 @@
           "events"
         ],
         "summary": "Get Event",
+        "description": "Any written event, open or answered. The live state keeps only the last 24 months'\nevents, so an older one is read from its row (M7c: History links to old events).",
         "operationId": "getEvent",
         "parameters": [
           {
@@ -6947,6 +7112,88 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EventOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/events/{event_id}/item": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Get Event Item",
+        "description": "The inbox message that carries an event's card (M7c deep links).",
+        "operationId": "getEventItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Event Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
                 }
               }
             }
@@ -11567,6 +11814,24 @@
         ],
         "title": "EventChoiceOut"
       },
+      "EventLinkOut": {
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "label"
+        ],
+        "title": "EventLinkOut"
+      },
       "EventOut": {
         "properties": {
           "event_id": {
@@ -11958,6 +12223,179 @@
           "detail"
         ],
         "title": "FirstOut"
+      },
+      "FormerProfileOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "unit_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Name",
+            "description": "The unit they were in; null for the company root"
+          },
+          "start_turn": {
+            "type": "integer",
+            "title": "Start Turn"
+          },
+          "start_date_label": {
+            "type": "string",
+            "title": "Start Date Label"
+          },
+          "end_turn": {
+            "type": "integer",
+            "title": "End Turn"
+          },
+          "end_date_label": {
+            "type": "string",
+            "title": "End Date Label"
+          },
+          "tenure_months": {
+            "type": "integer",
+            "title": "Tenure Months"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "description": "resigned | poached | fired | retired | company_failed | left"
+          },
+          "reason_label": {
+            "type": "string",
+            "title": "Reason Label",
+            "description": "e.g. 'Poached by Zoho'"
+          },
+          "rival_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rival Id"
+          },
+          "rival_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rival Name"
+          },
+          "potential_phrase": {
+            "type": "string",
+            "title": "Potential Phrase"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "personality": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Personality"
+          },
+          "noticed_tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagOut"
+            },
+            "type": "array",
+            "title": "Noticed Tags"
+          },
+          "interests": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interests"
+          },
+          "work_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Style"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryRowOut"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "Their History entries, newest first"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role",
+          "role_label",
+          "level",
+          "unit_name",
+          "start_turn",
+          "start_date_label",
+          "end_turn",
+          "end_date_label",
+          "tenure_months",
+          "reason",
+          "reason_label",
+          "rival_id",
+          "rival_name",
+          "potential_phrase",
+          "skills",
+          "personality",
+          "noticed_tags",
+          "interests",
+          "work_style",
+          "history"
+        ],
+        "title": "FormerProfileOut",
+        "description": "A person who has left the company (M7c): read-only, as the player knew them at\ndeparture. Displayed ranges and noticed tags only (ADR-0007)."
       },
       "FounderIn": {
         "properties": {
@@ -13502,6 +13940,14 @@
             ],
             "title": "Quote",
             "description": "An exit-interview line (M6, 16.8)"
+          },
+          "event_links": {
+            "items": {
+              "$ref": "#/components/schemas/EventLinkOut"
+            },
+            "type": "array",
+            "title": "Event Links",
+            "description": "Events this message links to (M7c)"
           }
         },
         "type": "object",
@@ -15361,6 +15807,11 @@
             "title": "Month Total Cents",
             "description": "Projected plus already posted"
           },
+          "month_net_burn_cents": {
+            "type": "integer",
+            "title": "Month Net Burn Cents",
+            "description": "This month's projected fall in cash: month_total less month_revenue, 0 when revenue covers it (the burn tile's note, M7c)"
+          },
           "option_pool_left_bp": {
             "type": "integer",
             "title": "Option Pool Left Bp",
@@ -15486,6 +15937,7 @@
           "month_costs",
           "month_paid",
           "month_total_cents",
+          "month_net_burn_cents",
           "mrr_cents",
           "arr_cents",
           "month_revenue_cents",

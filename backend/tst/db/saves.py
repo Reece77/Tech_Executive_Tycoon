@@ -6,6 +6,7 @@ restored (ADR-0004: Ironman has no reloads); they can be deleted.
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import sqlite3
@@ -75,13 +76,25 @@ def _files(path: Path) -> list[Path]:
     return [path, path.with_name(path.name + "-wal"), path.with_name(path.name + "-shm")]
 
 
+def _stats(path: Path) -> list[os.stat_result]:
+    """The save's files that exist now. SQLite removes `-wal` and `-shm` when another
+    process's turn closes its connection, so a file can vanish between listing and `stat`
+    (a 500 on GET /saves during the M7c playtest)."""
+    out = []
+    for p in _files(path):
+        try:
+            out.append(p.stat())
+        except FileNotFoundError:
+            continue
+    return out
+
+
 def file_size(path: Path) -> int:
-    return sum(p.stat().st_size for p in _files(path) if p.exists())
+    return sum(s.st_size for s in _stats(path))
 
 
 def last_played(path: Path) -> datetime:
-    stamp = max(p.stat().st_mtime for p in _files(path) if p.exists())
-    return datetime.fromtimestamp(stamp, tz=UTC)
+    return datetime.fromtimestamp(max(s.st_mtime for s in _stats(path)), tz=UTC)
 
 
 def is_busy(path: Path) -> bool:

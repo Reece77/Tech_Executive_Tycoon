@@ -9,8 +9,11 @@ import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../compone
 import { BreakdownTip } from '../components/Term';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { StatusChip } from '../components/StatusChip';
+import { FormerProfileView } from './FormerProfile';
 import {
+  ApiError,
   useFire,
+  useFormerPerson,
   useHiringMeta,
   useNewGameMeta,
   useOverview,
@@ -39,6 +42,11 @@ export function PersonScreen() {
   const hiring = useHiringMeta();
   const overview = useOverview(saveId);
 
+  // M7c: someone who has left opens a read-only "Former employee" profile instead.
+  const gone = person.error instanceof ApiError && person.error.code === 'unknown_person';
+  const former = useFormerPerson(saveId, Number(personId), gone);
+  if (gone && former.data) return <FormerProfileView saveId={saveId} p={former.data} />;
+  if (gone && !former.error) return <Loading />;
   const error = person.error ?? meta.error ?? hiring.error ?? overview.error;
   if (error) {
     return (

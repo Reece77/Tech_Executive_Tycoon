@@ -212,6 +212,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/people/{person_id}/former": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Former Person
+         * @description Someone who has left (M7c): read-only, as the player knew them when they left.
+         */
+        get: operations["getFormerPerson"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/people/{person_id}/fire": {
         parameters: {
             query?: never;
@@ -392,6 +412,26 @@ export interface paths {
          *     `archived=true` shows only them (M4c).
          */
         get: operations["getInbox"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/inbox/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Inbox Item
+         * @description One message, archived or not, wherever it falls in the pages (M7c deep links).
+         */
+        get: operations["getInboxItem"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1497,8 +1537,32 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Event */
+        /**
+         * Get Event
+         * @description Any written event, open or answered. The live state keeps only the last 24 months'
+         *     events, so an older one is read from its row (M7c: History links to old events).
+         */
         get: operations["getEvent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/events/{event_id}/item": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Event Item
+         * @description The inbox message that carries an event's card (M7c deep links).
+         */
+        get: operations["getEventItem"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3106,6 +3170,13 @@ export interface components {
              */
             effects: string[];
         };
+        /** EventLinkOut */
+        EventLinkOut: {
+            /** Event Id */
+            event_id: number;
+            /** Label */
+            label: string;
+        };
         /** EventOut */
         EventOut: {
             /** Event Id */
@@ -3254,6 +3325,69 @@ export interface components {
             date_label: string | null;
             /** Detail */
             detail: string | null;
+        };
+        /**
+         * FormerProfileOut
+         * @description A person who has left the company (M7c): read-only, as the player knew them at
+         *     departure. Displayed ranges and noticed tags only (ADR-0007).
+         */
+        FormerProfileOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /** Role Label */
+            role_label: string;
+            /** Level */
+            level: string;
+            /**
+             * Unit Name
+             * @description The unit they were in; null for the company root
+             */
+            unit_name: string | null;
+            /** Start Turn */
+            start_turn: number;
+            /** Start Date Label */
+            start_date_label: string;
+            /** End Turn */
+            end_turn: number;
+            /** End Date Label */
+            end_date_label: string;
+            /** Tenure Months */
+            tenure_months: number;
+            /**
+             * Reason
+             * @description resigned | poached | fired | retired | company_failed | left
+             */
+            reason: string;
+            /**
+             * Reason Label
+             * @description e.g. 'Poached by Zoho'
+             */
+            reason_label: string;
+            /** Rival Id */
+            rival_id: number | null;
+            /** Rival Name */
+            rival_name: string | null;
+            /** Potential Phrase */
+            potential_phrase: string;
+            /** Skills */
+            skills: components["schemas"]["AttributeOut"][];
+            /** Personality */
+            personality: components["schemas"]["AttributeOut"][];
+            /** Noticed Tags */
+            noticed_tags: components["schemas"]["TagOut"][];
+            /** Interests */
+            interests: string[] | null;
+            /** Work Style */
+            work_style: string | null;
+            /**
+             * History
+             * @description Their History entries, newest first
+             */
+            history: components["schemas"]["HistoryRowOut"][];
         };
         /**
          * FounderIn
@@ -3835,6 +3969,11 @@ export interface components {
              * @description An exit-interview line (M6, 16.8)
              */
             quote?: string | null;
+            /**
+             * Event Links
+             * @description Events this message links to (M7c)
+             */
+            event_links?: components["schemas"]["EventLinkOut"][];
         };
         /** InboxOut */
         InboxOut: {
@@ -4621,6 +4760,11 @@ export interface components {
              * @description Projected plus already posted
              */
             month_total_cents: number;
+            /**
+             * Month Net Burn Cents
+             * @description This month's projected fall in cash: month_total less month_revenue, 0 when revenue covers it (the burn tile's note, M7c)
+             */
+            month_net_burn_cents: number;
             /**
              * Option Pool Left Bp
              * @description Option pool left: staff equity plus pending offers counted
@@ -7301,6 +7445,65 @@ export interface operations {
             };
         };
     };
+    getFormerPerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormerProfileOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     firePerson: {
         parameters: {
             query?: never;
@@ -7924,6 +8127,65 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InboxOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getInboxItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemOut"];
                 };
             };
             /** @description Bad Request */
@@ -11655,6 +11917,65 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getEventItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                event_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemOut"];
                 };
             };
             /** @description Bad Request */
