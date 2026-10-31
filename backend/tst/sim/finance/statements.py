@@ -168,7 +168,11 @@ def cash_before_financing(lines: Lines, types: Mapping[AccountCode, AccountType]
     """Net cash from operating and investing over `lines` (any turns): what burn counts.
     Burn is its negative when below zero, never counting investor or loan money (14.1; M8r,
     Codex review 1 finding 7)."""
-    flow = cash_flow(lines, types, -(10**9), 10**9)
+    lines = list(lines)
+    if not lines:
+        return 0
+    turns = [turn for turn, _, _ in lines]
+    flow = cash_flow(lines, types, min(turns), max(turns))
     return flow.operating + flow.investing
 
 
