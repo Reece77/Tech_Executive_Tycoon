@@ -127,3 +127,19 @@ Also executed the remaining §18.10 worked examples: layer factors 0.97/0.9775; 
 `make check`, pytest, HTTP integration tests and Playwright were not run: this workspace lacks pytest, Hypothesis, SQLAlchemy and other project dependencies, and its network proxy prevented cloning/install setup. Direct Python checks used available Python 3.12, NumPy, Pydantic and YAML support. Isolated view/control-flow harnesses are identified above and are not represented as full integration tests.
 
 The brief explicitly records Reece's approval of the T2 balance-target miss and the 50% AI growth tuning for 2016–2019. Those are recorded exceptions, not new findings here. The old-save omission of the new incumbents/earlier scheduled entrants is also explicitly recorded in the brief. No balance re-run or full acceptance-criteria pass is claimed.
+
+## Resolution (M8r, 2026-10-31)
+
+Each finding was fixed on branch `m8r-review-fixes`. Its regression test was written first and seen failing on the unfixed code, then passing after the fix.
+
+| # | Finding | Fix commit | Regression test |
+| --- | --- | --- | --- |
+| 1 | P1 State cache published after the lock is released | bd60a32 | `backend/tests/integration/test_m8r_cache.py`: writer A commits and pauses before publishing, writer B moves an employee, writer C gives a raise; B's move survives (failed before: the stale employment row put the employee back in their old unit) |
+| 2 | P1 Continue can answer busy after committing | 751c4fd | `backend/tests/integration/test_m8r_continue.py`: fault after commit, one click with retries plays one month; events stay pending and are written next; a competing write is refused while the month's events are written; a Holiday counts a month whose events failed. `frontend/src/hooks/retry.test.ts`: only `retryable` busy answers are retried |
+| 3 | P2 A poached executive keeps their seat | 6dbdea2 | `backend/tests/unit/test_m8r_seats.py`: a score-14 CTO and team leader accepts Salesforce's approach, serves notice and joins; the seat is vacant with the vacancy effect, the notes arrive, the team loses its leader, and a replacement can be appointed |
+| 4 | P2 Support and layer-tax numbers disclose the COO's true effect | a557ab5 | `backend/tests/integration/test_api_scaleup.py::test_hidden_coo_skill_changes_no_response`: an occupied COO, a deep division and an under-covered pool; two COOs with identical displayed ranges but different true skills give byte-identical scale-up, Org, Overview, product, portfolio and profile responses |
+| 5 | P2 Price preview omits the CRO | 08c585e | `backend/tests/unit/test_m8r_price_preview.py`: an unchanged price previews the current price score, appeal and share exactly, with the CRO occupied and vacant |
+| 6 | P2 Event raises use floats | 22901c4 | `backend/tests/unit/test_m8r_event_money.py`: a 10% raise on 5,242,895 cents gives 5,767,184; Hypothesis property tests compare raises, cash shares, cash clamps and the cash base with exact rational arithmetic |
+| 7 | P3 Two definitions of burn | 24cc565 | `backend/tests/unit/test_m8r_burn.py`: $10,000 of operating outflow and a $100,000 SAFE store a burn of $10,000; money spent before Continue counts. Golden snapshots regenerated (only `monthly_burn_cents`) |
+
+Decisions and follow-ups are in `docs/tasks/M8r-review-fixes.md`.

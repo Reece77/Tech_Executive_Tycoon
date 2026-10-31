@@ -47,8 +47,15 @@ Balance tuning (the recorded T2 miss stays for M15), new features, refactors bey
 
 ## Decisions made
 
-_(Agent fills in.)_
+- **Finding 1, publish or forget.** `write_session` takes a state to remember (`repository.publish(session, state, balances)`) and stamps it after the commit, while it still holds the save's lock; a write that publishes nothing removes the remembered state. `remember` is no longer called anywhere else.
+- **Finding 2, one hold for the whole Continue.** `run_turn` reserves the save (the Holiday mechanism) for its turn and its event writing, unless the calling Holiday already holds it, so no other write can land between them. Everything after the commit (events, backup, index) is logged on failure, never raised: the month is played, unwritten events stay pending and the next turn writes them first (`_PendingEvents`). `ErrorOut.retryable` is true only for `save_busy` (always raised before anything commits); `retryBusy` needs it.
+- **Finding 3.** Cleanup compares (company, person) pairs; `effect_of` treats a holder whose employment is at another company as vacant, so a poached holder is vacant even before the cleanup phase runs.
+- **Finding 4, a flag, not a view state.** Seat effects take `estimate=True` in the API (`effect_of`, `k_coo`, `multiplier`, `side_factor`, `churn_factor`, `modifiers`, `product_team`, `team_of`, `pricing_power`); the engine's calls are unchanged. Replacing the holder's skills with displayed midpoints in a copy of the state was rejected: displayed ranges are computed from the true value, so the copy would show different ranges. With `estimate`, the product screen's appeal, churn and pace use the estimated seat effects too. "(est.)" labels the support output effect on Org and Overview and the layer-tax note.
+- **Finding 6.** `money.exact` reads a float as the decimal it was written as (0.1 is 1/10), so template shares and percents mean what the YAML says; caps and clamps of cash stay Fractions until one half-to-even rounding. `effect_cap` still returns a float, for prompts and display only.
+- **Finding 7, the whole month.** Actions before Continue post under the month being played (an event paid by answering it), so `advance_turn` takes `prior_flow`, the month's operating and investing cash already moved per company. The repository reads it from the ledger and the balance runner from its own actions. Both use `statements.cash_before_financing`, the cash-flow statement's own classification. The Overview tile reads the snapshot again (one number), which retires the M7c follow-up about History's burn chart.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Test helpers that call `advance_turn` directly** (unit tests, `tests/balance_scripts.py`) pass no `prior_flow`, so their stored burn leaves out actions before the turn. Saves and the balance runner include them.
+- **Product pace and builder output** still come from builders' true skills, as since M3 (a coarse word, outside this review). Only seat effects moved to estimates.
+- **Property tests for finding 6** pass against the old float code at realistic sizes; the half-cent regression is the one that fails on it. They guard the exact path from here on.
