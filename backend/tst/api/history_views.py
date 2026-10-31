@@ -82,6 +82,11 @@ INBOX_CATEGORY: dict[str, str] = {
     "rival_failed": "rivals",
     "rival_approach": "rivals",
     "poach_declined": "rivals",
+    # M8: divisions and the executive team (entrants arrive as market news)
+    "division_created": "people",
+    "exec_appointed": "people",
+    "exec_removed": "people",
+    "exec_left": "people",
 }
 PRODUCT_KINDS = frozenset(
     {

@@ -133,6 +133,7 @@ function DivisionTable({ columns: cols }: { columns: readonly DivisionColumn[] }
         helper.display({
           id: 'line',
           header: '$k',
+          meta: { term: 'division_line' },
           cell: ({ row }) => (
             <span
               style={{ fontWeight: row.original.strong ? 600 : 400 }}
@@ -146,6 +147,7 @@ function DivisionTable({ columns: cols }: { columns: readonly DivisionColumn[] }
           helper.display({
             id: `d${c.division_id ?? c.name}`,
             header: c.name,
+            meta: { term: 'division_column' },
             cell: ({ row }) => {
               const line = row.original;
               if (line.key === 'shared_services_cents' && c.embedded) return 'embedded';

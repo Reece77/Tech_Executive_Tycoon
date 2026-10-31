@@ -1,0 +1,175 @@
+"""M8 API and CLI: divisions, shared services, a product's division, the executive team,
+division statements, the support tile, exec-level searches, and the planted-value test for
+seat fit and estimates (formulas.md 18.8)."""
+
+from __future__ import annotations
+
+import json
+from collections.abc import Iterator
+from dataclasses import replace
+from pathlib import Path
+from typing import Any
+
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import update
+from typer.testing import CliRunner
+
+from tests.helpers import make_person, move_save_directors, play_turn, with_employee
+from tests.integration.test_api_hiring import Client
+from tst.api.app import create_app
+from tst.cli import app as cli_app
+from tst.config import Settings, get_settings
+from tst.db.models import PersonSkillRow
+from tst.db.repository import create_save, open_session
+from tst.db.state_io import load_state, sync_state
+from tst.loader import LoadedData
+from tst.sim.state import reach_stage, with_company
+
+SAVE = "scale"
+BASE = f"/api/saves/{SAVE}"
+STAFF = 20
+
+
+def _build(save_dir: Path, loaded: LoadedData, stage: int = 3) -> Path:
+    path = create_save(
+        SAVE, 5, "funded_spinout", company_name="Scale Co", data=loaded, save_dir=save_dir
+    )
+    move_save_directors(path)
+    with open_session(path) as session, session.begin():
+        before = load_state(session)
+        state = before
+        for pid in range(2, 2 + STAFF):
+            role = "finance_manager" if pid == 21 else "software_engineer"
+            state = with_employee(
+                loaded, state, make_person(loaded, pid, role, "senior"), 12_000_000
+            )
+        state = with_company(state, reach_stage(state.player, stage, 0))
+        state = replace(state, next_ids=replace(state.next_ids, person=2 + STAFF))
+        sync_state(session, before, state)
+    return path
+
+
+@pytest.fixture
+def api(tmp_path: Path, loaded: LoadedData) -> Iterator[tuple[Client, Path]]:
+    save_dir = tmp_path / "saves"
+    path = _build(save_dir, loaded)
+    app = create_app()
+    app.dependency_overrides[get_settings] = lambda: Settings(save_dir=save_dir)
+    with TestClient(app) as client:
+        yield Client(client), path
+
+
+def test_divisions_seats_and_statements(api: tuple[Client, Path], loaded: LoadedData) -> None:
+    client, path = api
+    out = client.get(f"{BASE}/scaleup")
+    assert out["in_play"] and out["divisions"] == []
+    assert [s["seat"] for s in out["seats"]] == ["coo", "cfo", "cto", "cpo", "cmo", "cro"]
+    assert all(s["vacancy_penalty_pct"] is not None for s in out["seats"])
+    cto = next(s for s in out["seats"] if s["seat"] == "cto")
+    assert cto["vacancy_penalty_pct"] == -5.0
+    [pool] = out["support"]
+    assert (pool["headcount"], pool["support_staff"], pool["needed"]) == (21, 1, 2)
+    org = client.post(f"{BASE}/org/units", {"kind": "division", "name": "Platform"}, 201)["org"]
+    assert org["divisions_unlocked"]
+    division = next(u for u in org["units"] if u["kind"] == "division")["unit_id"]
+    for pid in range(2, 8):
+        client.post(f"{BASE}/org/people/{pid}/move", {"unit_id": division})
+    client.post(f"{BASE}/org/units/{division}/leader", {"person_id": 2})
+    out = client.post(f"{BASE}/scaleup/divisions/{division}/services", {"services": "embedded"})
+    [card] = out["scaleup"]["divisions"]
+    assert (card["president_id"], card["services"], card["headcount"]) == (2, "embedded", 6)
+    assert len(out["scaleup"]["support"]) == 2
+    product = client.post(
+        f"{BASE}/products", {"name": "Ledger", "category": "fintech", "segments": ["smb"]}, 201
+    )["product"]
+    assert product["division_id"] is None
+    client.post(
+        f"{BASE}/scaleup/products/{product['product_id']}/division", {"division_id": division}
+    )
+    assert client.get(f"{BASE}/products/{product['product_id']}")["division_name"] == "Platform"
+    cands = client.get(f"{BASE}/scaleup/seats/cto/candidates")
+    president = next(c for c in cands["candidates"] if c["person_id"] == 2)
+    assert president["problem"] == "a division president cannot hold a seat"
+    assert "exec level" in cands["note"]
+    out = client.post(f"{BASE}/scaleup/seats/cto/appoint", {"person_id": 9})
+    cto = next(s for s in out["scaleup"]["seats"] if s["seat"] == "cto")
+    assert (
+        cto["holder_id"] == 9 and cto["fit"].endswith("fit") and cto["vacancy_penalty_pct"] is None
+    )
+    assert cto["estimated_effect_pct"] is not None
+    client.post(f"{BASE}/scaleup/seats/cto/remove")
+    client.post(f"{BASE}/scaleup/seats/cto/remove", status=400)
+    search = client.post(
+        f"{BASE}/recruitment/searches",
+        {"role": "software_engineer", "channel": "network", "level": "exec"},
+        201,
+    )
+    assert search["level"] == "exec"
+    overview = client.get(f"/api/saves/{SAVE}/overview")
+    assert overview["support"]["needed"] >= 1
+    play_turn(path, loaded)
+    statements = client.get(f"{BASE}/finance/divisions?period=month")
+    newest = statements["periods"][0]
+    names = [c["name"] for c in newest["columns"]]
+    assert names == ["Corporate", "Platform", "Company"]
+    corporate, platform, company = newest["columns"]
+    assert platform["shared_services_cents"] == 0  # embedded
+    assert platform["salaries_benefits_cents"] > 0
+    assert (
+        corporate["operating_profit_cents"] + platform["operating_profit_cents"]
+        == (company["operating_profit_cents"])
+    )
+    scale = client.get(f"{BASE}/scaleup")
+    assert scale["divisions"][0]["operating_profit_cents"] == platform["operating_profit_cents"]
+
+
+def test_before_stage_3(tmp_path: Path, loaded: LoadedData) -> None:
+    save_dir = tmp_path / "saves"
+    _build(save_dir, loaded, stage=2)
+    app = create_app()
+    app.dependency_overrides[get_settings] = lambda: Settings(save_dir=save_dir)
+    with TestClient(app) as raw:
+        client = Client(raw)
+        out = client.get(f"{BASE}/scaleup")
+        assert not out["in_play"] and out["support"] == []
+        assert all(s["vacancy_penalty_pct"] is None for s in out["seats"])
+        assert client.get(f"/api/saves/{SAVE}/overview")["support"] is None
+        client.post(f"{BASE}/scaleup/seats/cto/appoint", {"person_id": 3}, status=400)
+
+
+def test_no_scaleup_response_contains_a_true_seat_score(
+    api: tuple[Client, Path], loaded: LoadedData
+) -> None:
+    """Plant true skills that give s = 17.3456 and e = 0.918; the API shows only fit words and
+    estimates from the displayed ranges, never s or e."""
+    client, path = api
+    with open_session(path) as session, session.begin():
+        session.execute(update(PersonSkillRow).values(value=17.3456))
+    client.post(f"{BASE}/scaleup/seats/cfo/appoint", {"person_id": 5})
+    blobs = [
+        json.dumps(client.get(f"{BASE}/scaleup")),
+        json.dumps(client.get(f"{BASE}/scaleup/seats/cto/candidates")),
+        json.dumps(client.get(f"/api/saves/{SAVE}/overview")),
+    ]
+    blob = "\n".join(blobs)
+    for planted in ("17.3456", "17.35", "0.918", "0.9182", "9.18"):
+        assert planted not in blob, planted
+
+
+def test_cli_divisions_execs_and_appoint(
+    tmp_path: Path, loaded: LoadedData, monkeypatch: Any
+) -> None:
+    save_dir = tmp_path / "saves"
+    _build(save_dir, loaded)
+    monkeypatch.setenv("TST_SAVE_DIR", str(save_dir))
+    runner = CliRunner()
+    out = runner.invoke(cli_app, ["divisions", "--save", SAVE])
+    assert out.exit_code == 0, out.output
+    assert "No divisions yet" in out.output and "One support person per 15 staff" in out.output
+    out = runner.invoke(cli_app, ["appoint", "--save", SAVE, "--seat", "cto", "--person", "3"])
+    assert out.exit_code == 0, out.output
+    assert "is now CTO" in out.output
+    out = runner.invoke(cli_app, ["execs", "--save", SAVE])
+    assert out.exit_code == 0, out.output
+    assert "CTO" in out.output and "est." in out.output and "vacant" in out.output
