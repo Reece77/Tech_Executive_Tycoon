@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from tst.api.deps import DataDep
+from tst.api.schemas.common import GlossaryOut
 from tst.api.schemas.meta import (
     BackgroundOut,
     ChannelOut,
@@ -240,3 +241,9 @@ def products_meta(data: DataDep) -> ProductsMetaOut:
         launch_min_quality=pb.launch_min_quality,
         launch_min_feature=pb.launch_min_feature,
     )
+
+
+@router.get("/glossary", response_model=GlossaryOut, operation_id="getGlossary")
+def get_glossary(data: DataDep) -> GlossaryOut:
+    """Definitions of every KPI label and table column header (M7b tooltips)."""
+    return GlossaryOut(terms=data.glossary)

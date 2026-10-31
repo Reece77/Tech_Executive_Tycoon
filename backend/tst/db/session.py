@@ -72,3 +72,11 @@ def shared_engine(path: Path) -> Engine:
 
 def make_sessionmaker(engine: Engine) -> sessionmaker[Session]:
     return sessionmaker(engine, expire_on_commit=False)
+
+
+def forget_engine(path: Path) -> None:
+    """Drop a save's kept engine (its file is being deleted; M7b)."""
+    with _ENGINES_GUARD:
+        engine = _ENGINES.pop(str(path.resolve()), None)
+    if engine is not None:
+        engine.dispose()

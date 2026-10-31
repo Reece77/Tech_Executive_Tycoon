@@ -9,6 +9,7 @@ import {
   shareClassText,
 } from '../lib/finance';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
+import type { TableViewsApi } from '../hooks/useTableViews';
 import { DataTable } from './DataTable';
 
 /** A holder line, or the total row (`total`). */
@@ -52,7 +53,7 @@ export function ShareBar({
 }
 
 /** Holders by class with shares and their share of fully diluted shares, and a total. */
-export function CapTable({ cap }: { cap: CapTableData }) {
+export function CapTable({ cap, views }: { cap: CapTableData; views?: TableViewsApi }) {
   const rows = useMemo<Row[]>(
     () => [
       ...cap.holders,
@@ -139,6 +140,7 @@ export function CapTable({ cap }: { cap: CapTableData }) {
     columns,
     data: rows,
     getRowId: (r) => `${r.holder_kind}:${r.holder}:${r.share_class}`,
+    ...(views?.tableProps ?? {}),
   });
-  return <DataTable table={table} label="Holders" rowTestId="cap-row" />;
+  return <DataTable views={views} table={table} label="Holders" rowTestId="cap-row" />;
 }

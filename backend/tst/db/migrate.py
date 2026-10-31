@@ -64,6 +64,11 @@ def _forget(save_path: Path) -> None:
         _AT_HEAD.discard(key)
 
 
+def forget(save_path: Path) -> None:
+    """Forget a save seen at head (it is being deleted; M7b)."""
+    _forget(save_path)
+
+
 def current_revision(save_path: Path) -> str | None:
     engine = make_engine(save_path)
     try:

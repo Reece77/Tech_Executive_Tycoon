@@ -7,9 +7,22 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 
-from tst.api.routers import events, finance, game, meta, org, products, rivals, saves
+from tst.api.routers import (
+    coo,
+    events,
+    finance,
+    game,
+    history,
+    holiday,
+    meta,
+    org,
+    products,
+    rivals,
+    saves,
+)
 from tst.api.schemas.common import ErrorOut
 from tst.db.repository import BUSY_MESSAGE, is_locked_error
+from tst.db.saves import IronmanSaveError
 from tst.sim.errors import (
     CriticalEventOpenError,
     EventError,
@@ -33,6 +46,7 @@ ERROR_STATUS: dict[type[SimError], int] = {
     CriticalEventOpenError: status.HTTP_409_CONFLICT,  # M6: answer it first (ADR-0006)
     EventError: status.HTTP_409_CONFLICT,
     UpgradeNeededError: status.HTTP_409_CONFLICT,
+    IronmanSaveError: status.HTTP_409_CONFLICT,  # M7b: no duplicate or restore
 }
 
 
@@ -52,6 +66,9 @@ def create_app() -> FastAPI:
     app.include_router(finance.router)
     app.include_router(rivals.router)
     app.include_router(events.router)
+    app.include_router(holiday.router)
+    app.include_router(history.router)
+    app.include_router(coo.router)
     app.include_router(events.settings_router)
     app.include_router(meta.router)
 

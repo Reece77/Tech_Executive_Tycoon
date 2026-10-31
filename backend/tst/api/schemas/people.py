@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.common import BreakdownOut
+
 
 class RangeOut(BaseModel):
     min: int
@@ -63,6 +65,9 @@ class EmploymentOut(BaseModel):
     end_date_label: str | None
     tenure_months: int
     market_rate_cents: int | None = Field(description="Role and level band mid for the region")
+    salary_breakdown: BreakdownOut | None = Field(
+        default=None, description="Salary against the market rate (M7b tooltip)"
+    )
     monthly_cost_cents: int = Field(description="Salary, benefits and office per month")
     options: OptionsOut | None = Field(default=None, description="Null without a grant")
 

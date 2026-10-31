@@ -6,12 +6,13 @@ Callers load once at startup and pass `Balance` and `GameData` into the sim.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 
 from tst.sim.data_models import (
     MENTOR_TAG,
@@ -78,11 +79,33 @@ class DataLoadError(Exception):
     """Seed or balance data is missing or invalid. Raised at startup, never mid-game."""
 
 
+GLOSSARY_FILE = "glossary.yaml"  # UI definitions (M7b): not game data, so not hashed
+GLOSSARY_TEXT_MAX = 320  # characters: one or two sentences in plain words
+
+
+class GlossaryFile(BaseModel):
+    """Term id -> definition for every KPI label and table column header (M7b)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    terms: dict[str, str]
+
+    @model_validator(mode="after")
+    def _check(self) -> GlossaryFile:
+        for key, text in self.terms.items():
+            if not re.fullmatch(r"[a-z][a-z0-9_]*(\.[a-z0-9_]+)?", key):
+                raise ValueError(f"term {key!r}: lower-case words joined by _ (one optional .)")
+            if not text.strip() or len(text) > GLOSSARY_TEXT_MAX:
+                raise ValueError(f"term {key!r}: 1 to {GLOSSARY_TEXT_MAX} characters")
+        return self
+
+
 @dataclass(frozen=True, slots=True)
 class LoadedData:
     balance: Balance
     game_data: GameData
     hashes: dict[str, str]  # file name -> SHA-256 hex digest (line endings normalized)
+    glossary: dict[str, str] = field(default_factory=dict)  # M7b tooltips
 
 
 class _UniqueKeyLoader(yaml.SafeLoader):
@@ -292,4 +315,10 @@ def load_all(path: Path) -> LoadedData:
     if unknown_accounts:
         raise DataLoadError(f"{ACCOUNTS_FILE}: engine accounts missing: {unknown_accounts}")
 
-    return LoadedData(balance=balance, game_data=game_data, hashes=dict(sorted(hashes.items())))
+    glossary = _validate(GlossaryFile, _read(path / GLOSSARY_FILE)[0], GLOSSARY_FILE).terms
+    return LoadedData(
+        balance=balance,
+        game_data=game_data,
+        hashes=dict(sorted(hashes.items())),
+        glossary=dict(glossary),
+    )

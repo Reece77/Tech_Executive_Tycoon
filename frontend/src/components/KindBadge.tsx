@@ -12,6 +12,7 @@ const STYLES: Record<KindLabel, { color: string; background: string }> = {
   News: { color: 'var(--tst-warn)', background: 'var(--tst-warn-bg)' }, // M5 rivals
   Event: { color: 'var(--tst-tier-4)', background: 'var(--tst-gold-bg)' }, // M6, gold
   Critical: { color: 'var(--tst-bg)', background: 'var(--tst-warn)' }, // M6, orange filled
+  Holiday: { color: 'var(--tst-link)', background: 'var(--tst-accent-bg)' }, // M7b
 };
 
 /** Inbox message kind as a text badge (no icons). `kind` is the API's template key. */

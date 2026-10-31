@@ -170,6 +170,7 @@ function Directors({ saveId, board }: { saveId: string; board: Board }) {
         helper.display({
           id: 'trend',
           header: 'Recent months',
+          meta: { term: 'trend_board' },
           cell: ({ row }) =>
             row.original.confidence === null || row.original.confidence === undefined ? (
               <span className="tst-muted">—</span>
@@ -226,6 +227,7 @@ function Tiles({ board }: { board: Board }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
       <KpiTile
+        term="kpi.board_confidence"
         label="Board confidence"
         value={avg === null ? '—' : `${labelText(board.label)} ${formatWhole(avg)}`}
         note={`Average of the investor directors${trend ? ` · ${trend}` : ''}`}
@@ -233,6 +235,7 @@ function Tiles({ board }: { board: Board }) {
         testId="kpi-confidence"
       />
       <KpiTile
+        term="kpi.board_seats"
         label="Seats"
         value={seatsText(board.seats_by_kind)}
         note={
@@ -243,6 +246,7 @@ function Tiles({ board }: { board: Board }) {
         testId="kpi-seats"
       />
       <KpiTile
+        term="kpi.board_expects"
         label="They expect"
         value={
           board.expected_growth === null ? '—' : `${formatGrowth(board.expected_growth)} a year`
@@ -255,6 +259,7 @@ function Tiles({ board }: { board: Board }) {
         testId="kpi-expected"
       />
       <KpiTile
+        term="kpi.next_meeting"
         label="Next meeting"
         value={board.next_meeting_label ?? '—'}
         note="Quarterly"

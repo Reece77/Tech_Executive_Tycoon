@@ -26,6 +26,7 @@ import {
   REACH_TEXT,
 } from '../lib/products';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
+import { useTableViews } from '../hooks/useTableViews';
 
 const helper = createColumnHelper<GameTableFeatures, Product>();
 
@@ -87,6 +88,7 @@ function PortfolioTiles({ portfolio: p }: { portfolio: Portfolio }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
       <KpiTile
+        term="kpi.mrr"
         label="Monthly revenue (MRR)"
         value={formatMoneyWhole(p.mrr_cents)}
         note={
@@ -97,6 +99,7 @@ function PortfolioTiles({ portfolio: p }: { portfolio: Portfolio }) {
         testId="kpi-mrr"
       />
       <KpiTile
+        term="kpi.arr"
         label="Annual run rate (ARR)"
         value={formatMoneyShort(p.arr_cents)}
         note={p.stage_label}
@@ -104,6 +107,7 @@ function PortfolioTiles({ portfolio: p }: { portfolio: Portfolio }) {
         testId="kpi-arr"
       />
       <KpiTile
+        term="kpi.customers"
         label="Paying customers"
         value={formatCount(p.paying_customers)}
         note={
@@ -114,6 +118,7 @@ function PortfolioTiles({ portfolio: p }: { portfolio: Portfolio }) {
         testId="kpi-customers"
       />
       <KpiTile
+        term="kpi.product_costs"
         label="Hosting and marketing"
         value={formatMoneyWhole(p.product_costs_cents)}
         note={`this month: hosting ${formatMoneyWhole(p.hosting_cents)}, marketing ${formatMoneyWhole(p.marketing_cents)}`}
@@ -256,14 +261,17 @@ function PortfolioTable({ saveId, products }: { saveId: string; products: Produc
       ]),
     [saveId],
   );
+  const views = useTableViews('products');
   const table = useTable({
     features: gameTableFeatures,
     columns,
     data: products,
     getRowId: (p) => String(p.product_id),
+    ...views.tableProps,
   });
   return (
     <DataTable
+      views={views}
       table={table}
       label="Your products"
       rowTestId="product-row"

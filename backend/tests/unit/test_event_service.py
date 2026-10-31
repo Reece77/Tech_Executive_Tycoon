@@ -13,12 +13,14 @@ from hypothesis import strategies as st
 
 from tests.helpers import fresh_game, make_person, with_employee, with_product
 from tst.events.context import Kpis, build_prompt
+from tst.events.coo import KpiMonth, coo_prompt
 from tst.events.drafts import template_draft
 from tst.events.service import Writer, write_event
 from tst.events.validator import Rejection, ValidatedEvent, allowed_effects, validate_event
 from tst.llm.offline import MockLLMAdapter, TemplateAdapter
 from tst.llm.settings import LLMSettings, ModelPrice
 from tst.loader import LoadedData
+from tst.sim.coo import briefing
 from tst.sim.events.data import EFFECT_TYPES, VALUELESS
 from tst.sim.events.director import eligible_targets
 from tst.sim.events.formulas import effect_cap
@@ -327,6 +329,12 @@ def test_no_prompt_contains_a_hidden_value(loaded: LoadedData) -> None:
             loaded.balance,
             loaded.game_data,
         )
+        texts.append(system + user)
+    # Ask my COO (M7b, 17.3): the briefing, the allowlist and the KPIs, as Priya answers.
+    issues = briefing(state, 1_000_000, loaded.balance, loaded.game_data)
+    kpis = [KpiMonth("Jan 2010", 40_000_000, 1_000_000, 0, 2, 65.0, None)]
+    for who in (PRIYA, None):
+        system, user = coo_prompt(state, who, issues, kpis, "Who is best?", 200, loaded.game_data)
         texts.append(system + user)
     blob = "\n".join(texts)
     for planted in (

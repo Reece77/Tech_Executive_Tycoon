@@ -12,7 +12,8 @@ export type KindLabel =
   | 'Finance'
   | 'News'
   | 'Event'
-  | 'Critical';
+  | 'Critical'
+  | 'Holiday';
 export type InboxFilter =
   'all' | 'unread' | 'people' | 'hiring' | 'products' | 'finance' | 'archived';
 type Group = 'people' | 'hiring' | 'company' | 'products' | 'finance';
@@ -66,6 +67,8 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   // M6: events (the card opens in the message panel)
   event: { label: 'Event', group: 'company' },
   critical_event: { label: 'Critical', group: 'company' },
+  // M7b: "While you were away"
+  holiday_summary: { label: 'Holiday', group: 'company' },
 };
 
 /** The Finance tab a finance message opens (M4b). */

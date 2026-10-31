@@ -14,11 +14,32 @@ function isActivatingTarget(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && ACTIVATING_TAGS.has(target.tagName);
 }
 
-/** Space/Enter -> Continue; 1-9 -> jump to the Nth left-nav screen. */
-export function useGameHotkeys(onContinue: () => void, onJump: (index: number) => void) {
-  const handlers = useRef({ onContinue, onJump });
+export interface ExtraHotkeys {
+  onHoliday?: () => void; // H (M7b)
+  onHelp?: () => void; // ? shows every shortcut (M7b)
+}
+
+/** The search box of the table on screen (M7b: `/` focuses it). */
+export const TABLE_SEARCH_ATTR = 'data-table-search';
+
+/** Focus the first table search box on the page; false if there is none. */
+export function focusTableSearch(): boolean {
+  const box = document.querySelector<HTMLElement>(`[${TABLE_SEARCH_ATTR}]`);
+  if (!box) return false;
+  box.focus();
+  return true;
+}
+
+/** Space/Enter -> Continue; 1-9 and 0 -> jump to the Nth left-nav screen; H -> Holiday;
+ *  / -> the table search; ? -> the shortcut list. */
+export function useGameHotkeys(
+  onContinue: () => void,
+  onJump: (index: number) => void,
+  extra: ExtraHotkeys = {},
+) {
+  const handlers = useRef({ onContinue, onJump, extra });
   useEffect(() => {
-    handlers.current = { onContinue, onJump };
+    handlers.current = { onContinue, onJump, extra };
   });
 
   useEffect(() => {
@@ -29,8 +50,14 @@ export function useGameHotkeys(onContinue: () => void, onJump: (index: number) =
         if (isActivatingTarget(event.target)) return;
         event.preventDefault();
         handlers.current.onContinue();
-      } else if (/^[1-9]$/.test(event.key)) {
-        handlers.current.onJump(Number(event.key) - 1);
+      } else if (/^[0-9]$/.test(event.key)) {
+        handlers.current.onJump((Number(event.key) + 9) % 10); // 1-9, then 0 for the tenth
+      } else if (event.key === 'h' || event.key === 'H') {
+        handlers.current.extra.onHoliday?.();
+      } else if (event.key === '/') {
+        if (focusTableSearch()) event.preventDefault();
+      } else if (event.key === '?') {
+        handlers.current.extra.onHelp?.();
       }
     }
     window.addEventListener('keydown', onKeyDown);

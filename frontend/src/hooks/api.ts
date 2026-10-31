@@ -54,6 +54,22 @@ export type Board = Schemas['BoardOut'];
 export type Director = Schemas['DirectorOut'];
 export type FinanceSummary = Schemas['FinanceSummaryOut'];
 export type GameOver = Schemas['GameOverOut'];
+export type Holiday = Schemas['HolidayOut'];
+export type Backup = Schemas['BackupOut'];
+export type HistoryRow = Schemas['HistoryRowOut'];
+export type Breakdown = Schemas['BreakdownOut'];
+export type TableViews = Schemas['TableViews'];
+export type Coo = Schemas['CooOut'];
+export type CooAnswer = Schemas['CooAnswerOut'];
+export type TableView = Schemas['TableView'];
+export type UiSettings = Schemas['UISettings'];
+export type OverviewBreakdowns = Schemas['OverviewBreakdownsOut'];
+export type Timeline = Schemas['TimelineOut'];
+export type HistoryCharts = Schemas['ChartsOut'];
+export type KpiPoint = Schemas['KpiPointOut'];
+export type HallOfFame = Schemas['HallOfFameOut'];
+export type StorylineHistory = Schemas['StorylineHistoryOut'];
+export type HolidayIn = Schemas['HolidayIn'];
 export type StatementPeriodKind = 'month' | 'quarter' | 'year';
 
 /** One product action, as the product screens build it; maps to its route. */
@@ -190,6 +206,61 @@ export function useCreateSave() {
   return useMutation({
     mutationFn: async (body: CreateSave) => unwrap(await api.POST('/api/saves', { body })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.saves }),
+  });
+}
+
+// --- Saves manager (M7b) -------------------------------------------------------------------
+
+export function useRenameSave() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ saveId, name }: { saveId: string; name: string }) =>
+      unwrap(await api.POST('/api/saves/{save_id}/rename', { ...path(saveId), body: { name } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.saves }),
+  });
+}
+
+export function useDuplicateSave() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ saveId, name }: { saveId: string; name: string }) =>
+      unwrap(await api.POST('/api/saves/{save_id}/duplicate', { ...path(saveId), body: { name } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.saves, exact: true }),
+  });
+}
+
+export function useDeleteSave() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (saveId: string) => {
+      const res = await api.DELETE('/api/saves/{save_id}', path(saveId));
+      if (!res.response.ok) unwrap(res);
+    },
+    onSuccess: (_data, saveId) => {
+      client.removeQueries({ queryKey: keys.save(saveId) });
+      void client.invalidateQueries({ queryKey: keys.saves, exact: true });
+    },
+  });
+}
+
+export function useBackups(saveId: string | null) {
+  return useQuery({
+    queryKey: ['backups', saveId],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/backups', path(saveId ?? ''))),
+    enabled: saveId !== null,
+  });
+}
+
+export function useRestoreBackup() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ saveId, backupId }: { saveId: string; backupId: string }) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/backups/{backup_id}/restore', {
+          params: { path: { save_id: saveId, backup_id: backupId } },
+        }),
+      ),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.saves, exact: true }),
   });
 }
 
@@ -1142,5 +1213,174 @@ export function useUpdateLlmSettings() {
   return useMutation({
     mutationFn: async (body: LlmSettingsIn) => unwrap(await api.PUT('/api/settings/llm', { body })),
     onSuccess: (data) => client.setQueryData(['settings', 'llm'], data),
+  });
+}
+
+// --- Holiday (M7b, formulas.md 17.1) ------------------------------------------------------
+
+const HOLIDAY_POLL_MS = 400; // how often a running holiday is checked
+
+/** The save's holiday job; polled while it runs. When it ends, every screen refetches. */
+export function useHoliday(saveId: string) {
+  const client = useQueryClient();
+  const invalidate = useInvalidateSave(saveId);
+  return useQuery({
+    queryKey: ['holiday', saveId],
+    queryFn: async () => {
+      const before = client.getQueryData<Holiday>(['holiday', saveId]);
+      const next = unwrap(await api.GET('/api/saves/{save_id}/holiday', path(saveId)));
+      if (before?.status === 'running' && next.status !== 'running') {
+        void client.invalidateQueries({ queryKey: keys.saves, exact: true });
+        void invalidate();
+      } else if (next.status === 'running' && before?.months_done !== next.months_done) {
+        void invalidate(); // each finished month shows in the top bar
+      }
+      return next;
+    },
+    enabled: saveId !== '',
+    refetchInterval: (query) => (query.state.data?.status === 'running' ? HOLIDAY_POLL_MS : false),
+  });
+}
+
+export function useStartHoliday(saveId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: HolidayIn) =>
+      unwrap(await api.POST('/api/saves/{save_id}/holiday', { ...path(saveId), body })),
+    onSuccess: (data) => client.setQueryData(['holiday', saveId], data),
+  });
+}
+
+export function useStopHoliday(saveId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async () =>
+      unwrap(await api.POST('/api/saves/{save_id}/holiday/stop', path(saveId))),
+    onSuccess: (data) => client.setQueryData(['holiday', saveId], data),
+  });
+}
+
+// --- History (M7b, formulas.md 17.2) --------------------------------------------------------
+
+export interface TimelineQuery {
+  search?: string;
+  year?: number;
+  category?: 'people' | 'products' | 'finance' | 'rivals' | 'events';
+  source?: 'player' | 'delegate' | 'default';
+  person_id?: number;
+  product_id?: number;
+  offset?: number;
+  limit?: number;
+}
+
+export function useTimeline(saveId: string, query: TimelineQuery) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'history', 'timeline', query],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/history/timeline', {
+          params: { path: { save_id: saveId }, query },
+        }),
+      ),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useHistoryCharts(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'history', 'charts'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/history/charts', path(saveId))),
+  });
+}
+
+export function useHistoryStorylines(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'history', 'storylines'],
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/history/storylines', path(saveId))),
+  });
+}
+
+export function useHallOfFame(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'history', 'hall-of-fame'],
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/history/hall-of-fame', path(saveId))),
+  });
+}
+
+// --- Tooltips (M7b) -----------------------------------------------------------------------
+
+/** Definitions of every KPI and column header; loaded once. */
+export function useGlossary() {
+  return useQuery({
+    queryKey: ['meta', 'glossary'],
+    queryFn: async () => unwrap(await api.GET('/api/meta/glossary')).terms,
+    staleTime: Infinity,
+  });
+}
+
+/** The top bar's and Overview's driver breakdowns; fetched when a tooltip first opens. */
+export function useOverviewBreakdowns(saveId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'overview-breakdowns'],
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/overview/breakdowns', path(saveId))),
+    enabled: enabled && saveId !== '',
+  });
+}
+
+// --- Saved column views (M7b) -------------------------------------------------------------
+
+export function useUiSettings() {
+  return useQuery({
+    queryKey: ['settings', 'ui'],
+    queryFn: async () => unwrap(await api.GET('/api/settings/ui')),
+    staleTime: Infinity,
+  });
+}
+
+export function useSaveTableViews() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ tableId, views }: { tableId: string; views: TableViews }) =>
+      unwrap(
+        await api.PUT('/api/settings/ui/tables/{table_id}', {
+          params: { path: { table_id: tableId } },
+          body: views,
+        }),
+      ),
+    // Shown at once; the server's copy replaces it when it answers.
+    onMutate: ({ tableId, views }) => {
+      const before = client.getQueryData<UiSettings>(['settings', 'ui']);
+      client.setQueryData<UiSettings>(['settings', 'ui'], {
+        tables: { ...(before?.tables ?? {}), [tableId]: views },
+      });
+    },
+    onSuccess: (data) => client.setQueryData(['settings', 'ui'], data),
+  });
+}
+
+// --- Ask my COO (M7b, formulas.md 17.3) ---------------------------------------------------
+
+export function useCoo(saveId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'coo'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/coo', path(saveId))),
+    enabled: enabled && saveId !== '',
+  });
+}
+
+export function useAskCoo(saveId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (question: string) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/coo/ask', { ...path(saveId), body: { question } }),
+      ),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['saves', saveId, 'coo'] });
+      void client.invalidateQueries({ queryKey: ['settings', 'llm'] });
+    },
   });
 }

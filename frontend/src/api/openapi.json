@@ -11,6 +11,7 @@
           "saves"
         ],
         "summary": "List Saves",
+        "description": "Every save, most recently played first (M7b: the Saves screen).",
         "operationId": "listSaves",
         "responses": {
           "200": {
@@ -169,6 +170,395 @@
             "description": "Unprocessable Entity"
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Delete Save",
+        "description": "Delete the save and its backups. 409 while it is busy.",
+        "operationId": "deleteSave",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/rename": {
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Rename Save",
+        "description": "Change the save's display name; the company name and the save's id stay (M7b).",
+        "operationId": "renameSave",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveNameIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/duplicate": {
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Duplicate Save",
+        "description": "Save as: a copy under a new name and id. 409 for an Ironman or busy save.",
+        "operationId": "duplicateSave",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveNameIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/backups": {
+      "get": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "List Backups",
+        "description": "Periodic and pre-upgrade backups, newest first.",
+        "operationId": "listBackups",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BackupOut"
+                  },
+                  "title": "Response Listbackups"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/backups/{backup_id}/restore": {
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Restore Backup",
+        "description": "Restore a backup as a new save, \"Company (restored, Mar 2013)\"; the original is\nnever changed. 409 for an Ironman or busy save.",
+        "operationId": "restoreBackup",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "backup_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Backup Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
       }
     },
     "/api/saves/{save_id}/overview": {
@@ -268,6 +658,79 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OverviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/overview/breakdowns": {
+      "get": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Get Overview Breakdowns",
+        "description": "What drives the top bar's and Overview's numbers (M7b tooltips): fetched when a\ntooltip first opens, so Continue does not pay for them.",
+        "operationId": "getOverviewBreakdowns",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewBreakdownsOut"
                 }
               }
             }
@@ -6875,6 +7338,810 @@
         }
       }
     },
+    "/api/saves/{save_id}/holiday": {
+      "get": {
+        "tags": [
+          "holiday"
+        ],
+        "summary": "Get Holiday",
+        "description": "The save's holiday: running (months done, the date), or the last one this session.",
+        "operationId": "getHoliday",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "holiday"
+        ],
+        "summary": "Start Holiday",
+        "description": "Start a holiday: one Continue a month until a stop reason (17.1). 409 if the save is\nbusy, the game is over or a critical event is open.",
+        "operationId": "startHoliday",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HolidayIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/holiday/stop": {
+      "post": {
+        "tags": [
+          "holiday"
+        ],
+        "summary": "Stop Holiday",
+        "description": "Stop after the month in progress; nothing is rolled back.",
+        "operationId": "stopHoliday",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/history/timeline": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Get Timeline",
+        "description": "Everything that happened to your company, newest first, with a summary line per\nmonth. Search matches titles, bodies and names (case-insensitive).",
+        "operationId": "getTimeline",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Search"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "people",
+                    "products",
+                    "finance",
+                    "rivals",
+                    "events"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "player",
+                    "delegate",
+                    "default"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Person Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/history/charts": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Get Charts",
+        "description": "Every month-end KPI, and each product's MRR and customers, oldest first.",
+        "operationId": "getHistoryCharts",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChartsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/history/storylines": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Get Storylines",
+        "description": "Each storyline with its steps: month, title and the choice taken.",
+        "operationId": "getHistoryStorylines",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StorylineHistoryOut"
+                  },
+                  "title": "Response Gethistorystorylines"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/history/hall-of-fame": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Get Hall Of Fame",
+        "description": "Records computed from history when the screen opens; shown values only.",
+        "operationId": "getHallOfFame",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HallOfFameOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/coo": {
+      "get": {
+        "tags": [
+          "coo"
+        ],
+        "summary": "Get Coo",
+        "description": "Who answers, the engine's briefing (always available) and the last answers.",
+        "operationId": "getCoo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CooOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/coo/ask": {
+      "post": {
+        "tags": [
+          "coo"
+        ],
+        "summary": "Ask Coo",
+        "description": "Ask a question (at most coo.max_question_chars). Offline, over budget or after an\nerror the reply is \"I can't think that through right now\" with the briefing.",
+        "operationId": "askCoo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CooQuestionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CooAnswerOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -6920,6 +8187,82 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LLMSettingsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/ui": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get Ui Settings",
+        "description": "Saved column views per table (M7b), shared by every save.",
+        "operationId": "getUiSettings",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UISettings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/ui/tables/{table_id}": {
+      "put": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Update Table Views",
+        "description": "Replace one table's saved views and the view last used.",
+        "operationId": "updateTableViews",
+        "parameters": [
+          {
+            "name": "table_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+              "title": "Table Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TableViews"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UISettings"
                 }
               }
             }
@@ -7085,6 +8428,28 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductsMetaOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/meta/glossary": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Get Glossary",
+        "description": "Definitions of every KPI label and table column header (M7b tooltips).",
+        "operationId": "getGlossary",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlossaryOut"
                 }
               }
             }
@@ -7356,6 +8721,52 @@
         ],
         "title": "BackgroundOut"
       },
+      "BackupOut": {
+        "properties": {
+          "backup_id": {
+            "type": "string",
+            "title": "Backup Id",
+            "description": "The backup's file name"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "periodic",
+              "pre_upgrade"
+            ],
+            "title": "Kind"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn",
+            "description": "The game turn the backup was taken at"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created",
+            "description": "When the backup file was written (UTC)"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "backup_id",
+          "kind",
+          "turn",
+          "date_label",
+          "created",
+          "size_bytes"
+        ],
+        "title": "BackupOut"
+      },
       "BalanceSheetOut": {
         "properties": {
           "assets": {
@@ -7408,6 +8819,46 @@
           "total_liabilities_and_equity_cents"
         ],
         "title": "BalanceSheetOut"
+      },
+      "BiggestRoundOut": {
+        "properties": {
+          "series": {
+            "type": "string",
+            "title": "Series"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "series",
+          "amount_cents",
+          "lead",
+          "turn",
+          "date_label"
+        ],
+        "title": "BiggestRoundOut"
       },
       "BoardMeetingOut": {
         "properties": {
@@ -7657,6 +9108,65 @@
           "nominee_choices"
         ],
         "title": "BoardOut"
+      },
+      "BreakdownItemOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "cents",
+              "count",
+              "points",
+              "percent",
+              "months"
+            ],
+            "title": "Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "amount",
+          "unit"
+        ],
+        "title": "BreakdownItemOut",
+        "description": "One driver of a number (M7b tooltips)."
+      },
+      "BreakdownOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BreakdownItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "BreakdownOut",
+        "description": "Why a number is what it is: its drivers and an optional note, built by the backend;\nthe front end only displays them (M7b; spec 13)."
       },
       "CandidacyOut": {
         "properties": {
@@ -8054,6 +9564,31 @@
         ],
         "title": "ChannelOut"
       },
+      "ChartsOut": {
+        "properties": {
+          "kpis": {
+            "items": {
+              "$ref": "#/components/schemas/KpiPointOut"
+            },
+            "type": "array",
+            "title": "Kpis",
+            "description": "Every month-end snapshot, oldest first"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSeriesOut"
+            },
+            "type": "array",
+            "title": "Products"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kpis",
+          "products"
+        ],
+        "title": "ChartsOut"
+      },
       "CheckOut": {
         "properties": {
           "person_id": {
@@ -8305,6 +9840,184 @@
           "unread_inbox"
         ],
         "title": "ChooseEventOut"
+      },
+      "CooAnswerOut": {
+        "properties": {
+          "answer_id": {
+            "type": "integer",
+            "title": "Answer Id"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "speaker": {
+            "type": "string",
+            "title": "Speaker"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "claude | mock | offline"
+          },
+          "cost_cents": {
+            "type": "number",
+            "title": "Cost Cents",
+            "description": "Real money this answer cost, in cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer_id",
+          "turn",
+          "date_label",
+          "speaker",
+          "question",
+          "answer",
+          "source",
+          "cost_cents"
+        ],
+        "title": "CooAnswerOut"
+      },
+      "CooIssueOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "link_kind": {
+            "type": "string",
+            "title": "Link Kind",
+            "description": "finance | event | product | person | org | recruitment | board | rival"
+          },
+          "link_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "text",
+          "link_kind",
+          "link_id"
+        ],
+        "title": "CooIssueOut"
+      },
+      "CooOut": {
+        "properties": {
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id",
+            "description": "Null: the founder's notebook"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Label"
+          },
+          "briefing": {
+            "items": {
+              "$ref": "#/components/schemas/CooIssueOut"
+            },
+            "type": "array",
+            "title": "Briefing",
+            "description": "Up to five issues; empty: nothing urgent"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/CooAnswerOut"
+            },
+            "type": "array",
+            "title": "Answers",
+            "description": "The last answers, newest first"
+          },
+          "max_question_chars": {
+            "type": "integer",
+            "title": "Max Question Chars"
+          },
+          "spend_cents": {
+            "type": "number",
+            "title": "Spend Cents",
+            "description": "AI spend this calendar month"
+          },
+          "budget_cents": {
+            "type": "integer",
+            "title": "Budget Cents"
+          },
+          "offline": {
+            "type": "boolean",
+            "title": "Offline",
+            "description": "Answers come from the offline reply (no AI in use)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role_label",
+          "briefing",
+          "answers",
+          "max_question_chars",
+          "spend_cents",
+          "budget_cents",
+          "offline"
+        ],
+        "title": "CooOut"
+      },
+      "CooQuestionIn": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "CooQuestionIn"
       },
       "CostLineOut": {
         "properties": {
@@ -8750,6 +10463,17 @@
             ],
             "title": "Market Rate Cents",
             "description": "Role and level band mid for the region"
+          },
+          "salary_breakdown": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BreakdownOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Salary against the market rate (M7b tooltip)"
           },
           "monthly_cost_cents": {
             "type": "integer",
@@ -9204,6 +10928,56 @@
           "severance_cents"
         ],
         "title": "FireOut"
+      },
+      "FirstOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turn",
+            "description": "Null: not yet"
+          },
+          "date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Label"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "turn",
+          "date_label",
+          "detail"
+        ],
+        "title": "FirstOut"
       },
       "FounderIn": {
         "properties": {
@@ -9714,6 +11488,23 @@
         "title": "GameOverOut",
         "description": "How the game ended (ADR-0018), for the game over screen."
       },
+      "GlossaryOut": {
+        "properties": {
+          "terms": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Terms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "terms"
+        ],
+        "title": "GlossaryOut",
+        "description": "Definitions of every KPI and column (backend/data/glossary.yaml; M7b)."
+      },
       "GrantOut": {
         "properties": {
           "person_id": {
@@ -9819,6 +11610,110 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HallOfFameOut": {
+        "properties": {
+          "peak_arr": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PeakOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "peak_headcount": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PeakOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "biggest_round": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BiggestRoundOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "firsts": {
+            "items": {
+              "$ref": "#/components/schemas/FirstOut"
+            },
+            "type": "array",
+            "title": "Firsts"
+          },
+          "longest_serving": {
+            "items": {
+              "$ref": "#/components/schemas/PersonRecordOut"
+            },
+            "type": "array",
+            "title": "Longest Serving"
+          },
+          "best_hires": {
+            "items": {
+              "$ref": "#/components/schemas/PersonRecordOut"
+            },
+            "type": "array",
+            "title": "Best Hires"
+          },
+          "notable_departures": {
+            "items": {
+              "$ref": "#/components/schemas/PersonRecordOut"
+            },
+            "type": "array",
+            "title": "Notable Departures"
+          },
+          "best_product_mrr": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductRecordOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "best_product_quality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductRecordOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rivals_outlasted": {
+            "items": {
+              "$ref": "#/components/schemas/RivalOutlastedOut"
+            },
+            "type": "array",
+            "title": "Rivals Outlasted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "peak_arr",
+          "peak_headcount",
+          "biggest_round",
+          "firsts",
+          "longest_serving",
+          "best_hires",
+          "notable_departures",
+          "best_product_mrr",
+          "best_product_quality",
+          "rivals_outlasted"
+        ],
+        "title": "HallOfFameOut",
+        "description": "The records of 17.2. Ratings are shown ratings: the midpoint of the ranges you see."
       },
       "HiringMetaOut": {
         "properties": {
@@ -10171,6 +12066,148 @@
         "title": "HiringPlanPatchIn",
         "description": "Fields to change; omitted fields keep their value. `unit_id: null` means the root."
       },
+      "HistoryRowOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Unique per row: event-N, decision-N, inbox-N or month-N"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "entry",
+              "month"
+            ],
+            "title": "Kind",
+            "description": "month: a dimmed month summary line"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "people | products | finance | rivals | events"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "player | delegate | default"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor",
+            "description": "\"You\", the delegate's name, or \"Default (at Continue)\""
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "person_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Name"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "kind",
+          "turn",
+          "date_label",
+          "category",
+          "title"
+        ],
+        "title": "HistoryRowOut"
+      },
       "HolderOut": {
         "properties": {
           "holder": {
@@ -10233,6 +12270,169 @@
           "fraction"
         ],
         "title": "HolderOut"
+      },
+      "HolidayIn": {
+        "properties": {
+          "months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months",
+            "description": "1 to max_months; omit for the default"
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "minor",
+                  "major",
+                  "critical"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop",
+            "description": "Stop after an event at or above this severity"
+          }
+        },
+        "type": "object",
+        "title": "HolidayIn"
+      },
+      "HolidayOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "idle",
+              "running",
+              "finished",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months",
+            "description": "Months chosen (0 when idle)"
+          },
+          "months_done": {
+            "type": "integer",
+            "title": "Months Done"
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn",
+            "description": "The save's current turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "game_over | event | runway | offer | months | stopped, once finished"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Text"
+          },
+          "summary_item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary Item Id",
+            "description": "The 'While you were away' inbox item"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "stop_requested": {
+            "type": "boolean",
+            "title": "Stop Requested"
+          },
+          "max_months": {
+            "type": "integer",
+            "title": "Max Months"
+          },
+          "default_months": {
+            "type": "integer",
+            "title": "Default Months"
+          },
+          "default_stop": {
+            "type": "string",
+            "title": "Default Stop"
+          },
+          "stop_runway_months": {
+            "type": "integer",
+            "title": "Stop Runway Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "months",
+          "months_done",
+          "stop",
+          "turn",
+          "date_label",
+          "reason",
+          "reason_text",
+          "summary_item_id",
+          "error",
+          "stop_requested",
+          "max_months",
+          "default_months",
+          "default_stop",
+          "stop_runway_months"
+        ],
+        "title": "HolidayOut"
       },
       "InboxBulkOut": {
         "properties": {
@@ -10467,6 +12667,132 @@
         ],
         "title": "KnowledgeOut",
         "description": "How the viewing company has come to know someone (not what it knows)."
+      },
+      "KpiPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "cash_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cash Cents"
+          },
+          "monthly_burn_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Burn Cents"
+          },
+          "payroll_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payroll Cents"
+          },
+          "headcount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headcount"
+          },
+          "avg_morale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Morale"
+          },
+          "mrr_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mrr Cents"
+          },
+          "arr_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arr Cents"
+          },
+          "founder_bp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Founder Bp"
+          },
+          "board_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Board Confidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "cash_cents",
+          "monthly_burn_cents",
+          "payroll_cents",
+          "headcount",
+          "avg_morale",
+          "mrr_cents",
+          "arr_cents",
+          "founder_bp",
+          "board_confidence"
+        ],
+        "title": "KpiPointOut"
       },
       "LLMSettingsIn": {
         "properties": {
@@ -11161,24 +13487,6 @@
           "parent_id"
         ],
         "title": "MoveUnitIn"
-      },
-      "NamedOut": {
-        "properties": {
-          "person_id": {
-            "type": "integer",
-            "title": "Person Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          }
-        },
-        "type": "object",
-        "required": [
-          "person_id",
-          "name"
-        ],
-        "title": "NamedOut"
       },
       "NewGameMetaOut": {
         "properties": {
@@ -11889,6 +14197,50 @@
         "title": "OrgTileOut",
         "description": "The Overview's Org tile (M2b)."
       },
+      "OverviewBreakdownsOut": {
+        "properties": {
+          "cash": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Last month's change in cash by kind"
+          },
+          "runway": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Cash over this month's projected net burn"
+          },
+          "mrr": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Last month's revenue by product"
+          },
+          "arr": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "12 x MRR by product"
+          },
+          "burn": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Last month's fall in cash by cost line"
+          },
+          "headcount": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "Staff by org unit"
+          },
+          "avg_morale": {
+            "$ref": "#/components/schemas/BreakdownOut",
+            "description": "The company-wide average of the morale terms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cash",
+          "runway",
+          "mrr",
+          "arr",
+          "burn",
+          "headcount",
+          "avg_morale"
+        ],
+        "title": "OverviewBreakdownsOut",
+        "description": "The top bar's and Overview's driver tooltips, fetched when one first opens."
+      },
       "OverviewOut": {
         "properties": {
           "save_id": {
@@ -12302,6 +14654,29 @@
         "title": "PayPreviewOut",
         "description": "A raise or promotion before it happens, from known values only."
       },
+      "PeakOut": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "title": "Value"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "turn",
+          "date_label"
+        ],
+        "title": "PeakOut"
+      },
       "PendingOfferOut": {
         "properties": {
           "offer_id": {
@@ -12624,6 +14999,60 @@
           "morale_history"
         ],
         "title": "PersonProfileOut"
+      },
+      "PersonRecordOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current",
+            "description": "Still on the staff"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months",
+            "description": "Tenure in months"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "description": "Longest serving: months; best hires: the rise in shown rating; departures: the shown rating at departure"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail",
+            "description": "Best hires: from \u2192 to; departures: the reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role",
+          "current",
+          "months",
+          "value",
+          "detail"
+        ],
+        "title": "PersonRecordOut"
       },
       "PersonSummaryOut": {
         "properties": {
@@ -13308,21 +15737,21 @@
           },
           "builders": {
             "items": {
-              "$ref": "#/components/schemas/NamedOut"
+              "$ref": "#/components/schemas/tst__api__schemas__products__NamedOut"
             },
             "type": "array",
             "title": "Builders"
           },
           "sellers": {
             "items": {
-              "$ref": "#/components/schemas/NamedOut"
+              "$ref": "#/components/schemas/tst__api__schemas__products__NamedOut"
             },
             "type": "array",
             "title": "Sellers"
           },
           "marketers": {
             "items": {
-              "$ref": "#/components/schemas/NamedOut"
+              "$ref": "#/components/schemas/tst__api__schemas__products__NamedOut"
             },
             "type": "array",
             "title": "Marketers"
@@ -13336,6 +15765,17 @@
             "type": "boolean",
             "title": "Rotting",
             "description": "Nobody works on it, so quality is falling"
+          },
+          "quality_breakdown": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BreakdownOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quality now, last month's change and the pace (M7b)"
           },
           "launch": {
             "$ref": "#/components/schemas/LaunchReadinessOut"
@@ -13393,6 +15833,59 @@
           "monthly"
         ],
         "title": "ProductOut"
+      },
+      "ProductPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents",
+            "description": "Revenue that month, every segment"
+          },
+          "customers": {
+            "type": "integer",
+            "title": "Customers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "mrr_cents",
+          "customers"
+        ],
+        "title": "ProductPointOut"
+      },
+      "ProductRecordOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "description": "Peak MRR in cents, or the highest quality shown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "value"
+        ],
+        "title": "ProductRecordOut"
       },
       "ProductSegmentOut": {
         "properties": {
@@ -13492,6 +15985,17 @@
             ],
             "title": "Note",
             "description": "'Sales capacity limited new customers in <segment>' when it bound"
+          },
+          "share_breakdown": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BreakdownOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Share and the appeal inputs behind it (M7b tooltip)"
           }
         },
         "type": "object",
@@ -13512,6 +16016,32 @@
           "note"
         ],
         "title": "ProductSegmentOut"
+      },
+      "ProductSeriesOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPointOut"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "points"
+        ],
+        "title": "ProductSeriesOut"
       },
       "ProductTotalMonthOut": {
         "properties": {
@@ -13792,6 +16322,34 @@
           "approach"
         ],
         "title": "RivalMoveOut"
+      },
+      "RivalOutlastedOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "turn",
+          "date_label",
+          "market"
+        ],
+        "title": "RivalOutlastedOut"
       },
       "RivalProfileOut": {
         "properties": {
@@ -14722,11 +17280,33 @@
         ],
         "title": "SafesOut"
       },
+      "SaveNameIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "description": "The save's display name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "SaveNameIn"
+      },
       "SaveOut": {
         "properties": {
           "save_id": {
             "type": "string",
-            "title": "Save Id"
+            "title": "Save Id",
+            "description": "The file's slug: the save's id in every route"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name",
+            "description": "The save's name on the Saves screen (M7b)"
           },
           "company_name": {
             "type": "string",
@@ -14747,16 +17327,47 @@
           "date_label": {
             "type": "string",
             "title": "Date Label"
+          },
+          "game_state": {
+            "type": "string",
+            "title": "Game State",
+            "description": "active | bankrupt | founder_removed"
+          },
+          "last_played": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Played",
+            "description": "When the file last changed (UTC)"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "ironman": {
+            "type": "boolean",
+            "title": "Ironman",
+            "description": "No duplicate or restore (ADR-0004)"
+          },
+          "busy": {
+            "type": "boolean",
+            "title": "Busy",
+            "description": "A turn, action or holiday is writing to it now"
           }
         },
         "type": "object",
         "required": [
           "save_id",
+          "display_name",
           "company_name",
           "scenario_id",
           "difficulty",
           "turn",
-          "date_label"
+          "date_label",
+          "game_state",
+          "last_played",
+          "size_bytes",
+          "ironman",
+          "busy"
         ],
         "title": "SaveOut"
       },
@@ -15244,6 +17855,26 @@
         ],
         "title": "SnapshotPointOut"
       },
+      "SortKey": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Id"
+          },
+          "desc": {
+            "type": "boolean",
+            "title": "Desc",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "SortKey"
+      },
       "StageReachedOut": {
         "properties": {
           "stage": {
@@ -15361,6 +17992,117 @@
         ],
         "title": "StatementsOut"
       },
+      "StoryStepOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "choice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Choice"
+          },
+          "by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "By",
+            "description": "\"You\" or \"Default (at Continue)\"; null while open"
+          },
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "title",
+          "choice",
+          "by",
+          "event_id"
+        ],
+        "title": "StoryStepOut"
+      },
+      "StorylineHistoryOut": {
+        "properties": {
+          "storyline_id": {
+            "type": "integer",
+            "title": "Storyline Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "started_turn": {
+            "type": "integer",
+            "title": "Started Turn"
+          },
+          "started_label": {
+            "type": "string",
+            "title": "Started Label"
+          },
+          "ended_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Label"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StoryStepOut"
+            },
+            "type": "array",
+            "title": "Steps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "storyline_id",
+          "title",
+          "status",
+          "started_turn",
+          "started_label",
+          "ended_label",
+          "summary",
+          "steps"
+        ],
+        "title": "StorylineHistoryOut"
+      },
       "StorylineOut": {
         "properties": {
           "storyline_id": {
@@ -15399,6 +18141,64 @@
           "started_label"
         ],
         "title": "StorylineOut"
+      },
+      "TableView": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "visibility": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Visibility",
+            "description": "Column id -> shown; missing columns are shown"
+          },
+          "order": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Order",
+            "description": "Column ids, left to right"
+          },
+          "sort": {
+            "items": {
+              "$ref": "#/components/schemas/SortKey"
+            },
+            "type": "array",
+            "title": "Sort"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "TableView"
+      },
+      "TableViews": {
+        "properties": {
+          "views": {
+            "items": {
+              "$ref": "#/components/schemas/TableView"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Views"
+          },
+          "current": {
+            "type": "string",
+            "title": "Current",
+            "description": "The view last used",
+            "default": "Default"
+          }
+        },
+        "type": "object",
+        "title": "TableViews"
       },
       "TagOut": {
         "properties": {
@@ -15639,6 +18439,73 @@
         ],
         "title": "TimelineItemOut"
       },
+      "TimelineOut": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Rows matching the filters, before paging"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryRowOut"
+            },
+            "type": "array",
+            "title": "Rows",
+            "description": "Newest first"
+          },
+          "years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Years",
+            "description": "Years with history, for the year filter"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__history__NamedOut"
+            },
+            "type": "array",
+            "title": "People",
+            "description": "People named in the history, for the filter"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__history__NamedOut"
+            },
+            "type": "array",
+            "title": "Products"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "offset",
+          "rows",
+          "years",
+          "people",
+          "products"
+        ],
+        "title": "TimelineOut"
+      },
+      "UISettings": {
+        "properties": {
+          "tables": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TableViews"
+            },
+            "type": "object",
+            "title": "Tables"
+          }
+        },
+        "type": "object",
+        "title": "UISettings"
+      },
       "UnitOut": {
         "properties": {
           "unit_id": {
@@ -15808,6 +18675,42 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "tst__api__schemas__history__NamedOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "NamedOut"
+      },
+      "tst__api__schemas__products__NamedOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name"
+        ],
+        "title": "NamedOut"
       }
     }
   }

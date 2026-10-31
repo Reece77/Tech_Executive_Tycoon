@@ -32,6 +32,7 @@ import {
 import { formatBpPercent, formatMoneyWhole, formatRatio, humanize } from '../lib/format';
 import { formatFraction, formatShares } from '../lib/finance';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
+import { useTableViews } from '../hooks/useTableViews';
 
 type Channel = HiringMeta['channels'][number];
 const helper = createColumnHelper<GameTableFeatures, Person>();
@@ -189,6 +190,7 @@ function RecruitmentBody({
             {
               id: key,
               header: meta.skills.find((s) => s.key === key)?.label ?? key,
+              meta: { term: 'skill_range' },
               sortFn: 'basic',
               sortDescFirst: true,
               cell: ({ row }) => {
@@ -211,6 +213,7 @@ function RecruitmentBody({
                 {
                   id: `personality-${key}`,
                   header: humanize(key),
+                  meta: { term: 'personality_range' },
                   sortFn: 'basic',
                   sortDescFirst: true,
                   cell: ({ row }) => {
@@ -318,11 +321,13 @@ function RecruitmentBody({
       ]),
     [saveId, keySkills, meta.skills, hiring, check, withdraw, interestLabel],
   );
+  const views = useTableViews('recruitment.candidates');
   const table = useTable({
     features: gameTableFeatures,
     columns,
     data: rows,
     getRowId: (p) => String(p.person_id),
+    ...views.tableProps,
   });
 
   return (
@@ -385,6 +390,7 @@ function RecruitmentBody({
               </span>
             </div>
             <DataTable
+              views={views}
               table={table}
               label="Candidates"
               rowTestId="candidate-row"
