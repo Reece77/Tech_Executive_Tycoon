@@ -35,6 +35,7 @@ from tst.sim.ledger import (
 from tst.sim.log import LogItem
 from tst.sim.money import Cents
 from tst.sim.org.delegates import run_delegates
+from tst.sim.org.divisions import division_months
 from tst.sim.org.relationships import relationships_month
 from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.org.upkeep import detach_departed
@@ -44,9 +45,14 @@ from tst.sim.products.models import ProductMonth
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rivals.poaching import answer_approaches, join_rivals
-from tst.sim.rivals.startups import found_startups, launch_ready, record_failures
+from tst.sim.rivals.startups import (
+    found_entrants,
+    found_startups,
+    launch_ready,
+    record_failures,
+)
 from tst.sim.rng import RngFactory
-from tst.sim.snapshot import CompanySnapshot, TurnSnapshot
+from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
 from tst.sim.state import GameState, with_company, with_person_state
 
 
@@ -62,6 +68,7 @@ class TurnResult:
     product_months: tuple[ProductMonth, ...] = ()  # month-end history per product and segment
     rival_moves: tuple[RivalMove, ...] = ()  # phase 2 (and startup events, phase 9), M5
     text_requests: tuple[TextRequest, ...] = ()  # read-only LLM text, phase 12 (M6, 16.8)
+    division_months: tuple[DivisionMonth, ...] = ()  # headcount per division, phase 6 (M8)
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,6 +92,7 @@ class TurnContext:
     rival_moves: tuple[RivalMove, ...] = ()  # M5: phase 2 decisions and phase 9 startup events
     start: GameState | None = None  # the state the turn began from (M6 milestones)
     text_requests: tuple[TextRequest, ...] = ()
+    division_months: tuple[DivisionMonth, ...] = ()  # phase 6 (M8, 18.1)
 
     @property
     def turn(self) -> int:
@@ -167,7 +175,8 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
     """Salaries, benefits, office, base overhead, job-post fees, hosting and marketing
     (formulas.md sections 8 and 11.8)."""
     entries, payroll = phases.payroll(ctx.state, ctx.balance, ctx.data)
-    return replace(ctx, payroll=payroll).post(*entries)
+    months = division_months(ctx.state)  # headcounts for the division statements (M8)
+    return replace(ctx, payroll=payroll, division_months=months).post(*entries)
 
 
 def financing(ctx: TurnContext) -> TurnContext:
@@ -220,9 +229,10 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     macro layer joins later."""
     state = products.brand_and_demand(ctx.state, ctx.balance, ctx.data)
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
+    state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)
     state, founding, founded = found_startups(state, ctx.rng, ctx.balance, ctx.data)
-    ctx = replace(ctx, state=state, rival_moves=ctx.rival_moves + launched + founded)
-    return ctx.post(*founding)
+    moves = ctx.rival_moves + launched + arrived + founded
+    return replace(ctx, state=state, rival_moves=moves).post(*arriving, *founding)
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:
@@ -385,4 +395,5 @@ def advance_turn(
         product_months=ctx.product_months,
         rival_moves=ctx.rival_moves,
         text_requests=ctx.text_requests,
+        division_months=ctx.division_months,
     )

@@ -1540,3 +1540,88 @@ def storylines(save: SaveOpt) -> None:
         since = format_turn(story.started_turn)
         typer.echo(f"{story.title} ({story.status}, step {story.step}, from {since})")
         typer.echo(f"  {story.summary}")
+
+
+# --- Divisions and executives (M8, formulas.md 18) --------------------------------------------
+
+
+def _scaleup(path: Path, state: GameState, data: LoadedData) -> Any:
+    from tst.api import scaleup_views
+
+    with repository.open_session(path) as session:
+        lines = repository.division_lines(session, state.player.id)
+        months = repository.division_months(session, state.player.id)
+    profit = scaleup_views.last_month_profit(lines, months, state, data)
+    return scaleup_views.scaleup_out(state, data, profit)
+
+
+@app.command()
+def divisions(save: SaveOpt) -> None:
+    """Divisions with their president, shared services and last month's P&L; support
+    coverage by pool; products built across divisions (18.1-18.4)."""
+    path, data, state = _game(save)
+    out = _scaleup(path, state, data)
+    if not out.in_play:
+        typer.echo(f"Divisions, executives and support apply from stage {out.unlock_stage}.")
+        return
+    if not out.divisions:
+        typer.echo("No divisions yet. Create one with the Org screen or the API.")
+    for d in out.divisions:
+        pres = d.president_name or "no president"
+        profit = (
+            "n/a" if d.operating_profit_cents is None else format_money(d.operating_profit_cents)
+        )
+        products = ", ".join(d.product_names) or "no products"
+        typer.echo(
+            f"{d.unit_id:>3}  {d.name:<20} {d.headcount:>4} staff  {d.services:<8} {pres}; "
+            f"operating profit {profit}; {products}"
+        )
+        typer.echo(f"     {d.effect_note}")
+    typer.echo(out.support_rule)
+    for p in out.support:
+        typer.echo(
+            f"  {p.label}: {p.support_staff} support of {p.needed} needed for {p.headcount} "
+            f"staff; output {p.output_effect_pct:+.1f}%, morale {p.morale_effect:+.1f}"
+        )
+    for c in out.cross_division:
+        typer.echo(
+            f"  {c.product_name} is built in {', '.join(c.division_names)}: output "
+            f"{c.output_effect_pct:+.0f}%. {c.fix}."
+        )
+
+
+@app.command()
+def execs(save: SaveOpt) -> None:
+    """The executive team: holders, fit and estimated effects, and vacancy penalties (18.3)."""
+    path, data, state = _game(save)
+    out = _scaleup(path, state, data)
+    typer.echo("CEO      you (until the IPO)")
+    for s in out.seats:
+        if s.holder_name:
+            est = "" if s.estimated_effect_pct is None else f", {s.estimated_effect_pct:+.1f}%"
+            typer.echo(f"{s.label:<8} {s.holder_name} ({s.fit}{est} {s.effect_label}, est.)")
+        elif s.vacancy_penalty_pct is not None:
+            typer.echo(f"{s.label:<8} vacant: {s.vacancy_penalty_pct:+.1f}% {s.effect_label}")
+        else:
+            typer.echo(f"{s.label:<8} vacant (seats open at stage {out.unlock_stage})")
+    typer.echo(out.note)
+
+
+@app.command()
+def appoint(
+    save: SaveOpt,
+    seat: Annotated[str, typer.Option(help="coo|cfo|cto|cpo|cmo|cro")],
+    person: Annotated[int, typer.Option(help="Person id")],
+) -> None:
+    """Appoint an employee (senior or above) to an executive seat: they become exec level
+    and gain +5 morale; energy 5 (18.3)."""
+    from tst.sim.actions import AppointExecutive
+
+    path, data, state = _game(save)
+    founder = state.founder_of(state.player.id)
+    if founder is None:
+        raise _fail("the company has no founder")
+    result = _run(path, data, AppointExecutive(founder.id, seat.lower(), person))
+    who = result.new_state.person(person)
+    typer.echo(f"{who.first_name} {who.last_name} is now {seat.upper()} (exec level)")
+    typer.echo(f"  {_energy(result.new_state, data)}")

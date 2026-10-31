@@ -6,6 +6,7 @@ whatever the company cannot know (13.11), so the arithmetic lives in one place.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from tst.sim.data_models import Balance, GameData
@@ -14,6 +15,7 @@ from tst.sim.hiring.rules import matching_interests
 from tst.sim.money import Cents
 from tst.sim.org.relationships import unit_mate_values
 from tst.sim.org.rules import OrgView, manager_terms, remote_morale, teammate_terms
+from tst.sim.org.scaleup import support_morale_terms
 from tst.sim.people.models import Employment
 from tst.sim.people.relationships import relationship_morale
 from tst.sim.state import GameState
@@ -30,6 +32,7 @@ class MoraleTerms:
     team: tuple[tuple[str, int, float], ...]  # (tag, holders, term) per morale tag (13.6)
     remote: float
     relationships: float = 0.0  # W_rel (M6, 16.7)
+    support: float = 0.0  # W_support, "Admin and support" (M8, 18.4)
 
     @property
     def team_total(self) -> float:
@@ -49,6 +52,7 @@ class MoraleTerms:
             + self.team_total
             + self.remote
             + self.relationships
+            + self.support
         )
 
 
@@ -67,8 +71,10 @@ def morale_terms(
     data: GameData,
     opening_cash: Cents,
     current_cash: Cents,
+    support: Mapping[int, float] | None = None,
 ) -> MoraleTerms:
-    """True terms for an employee (not the founder), using `view` for reporting lines."""
+    """True terms for an employee (not the founder), using `view` for reporting lines.
+    `support` is W_support by person (18.4), computed here when not given."""
     cfg = balance.morale
     person = state.person(employment.person_id)
     company = state.company(employment.company_id)
@@ -89,4 +95,7 @@ def morale_terms(
         relationships=relationship_morale(
             unit_mate_values(state, view, person.id), balance.relationships
         ),
+        support=(
+            support if support is not None else support_morale_terms(state, view, balance, data)
+        ).get(person.id, 0.0),
     )

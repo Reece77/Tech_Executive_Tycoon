@@ -213,9 +213,17 @@ def entry_to_row(entry: LedgerEntry) -> LedgerEntryRow:
         turn=entry.turn,
         company_id=entry.company_id,
         memo=entry.memo,
-        lines=[
-            LedgerLineRow(account_code=ln.account, amount_cents=ln.amount) for ln in entry.lines
-        ],
+        lines=[_line_row(ln) for ln in entry.lines],
+    )
+
+
+def _line_row(line: LedgerLine) -> LedgerLineRow:
+    """A line's row; division_id is set only when there is one, so migration 0013 can still
+    post lines on a save without the column (M8)."""
+    if line.division_id is None:
+        return LedgerLineRow(account_code=line.account, amount_cents=line.amount)
+    return LedgerLineRow(
+        account_code=line.account, amount_cents=line.amount, division_id=line.division_id
     )
 
 

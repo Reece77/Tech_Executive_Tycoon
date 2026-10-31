@@ -20,7 +20,7 @@ from tst.sim.finance.models import (
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
-from tst.sim.org.models import HiringPlan, OrgUnit, WorkPolicy
+from tst.sim.org.models import ExecSeat, HiringPlan, OrgUnit, WorkPolicy
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
@@ -126,6 +126,7 @@ class GameState:
     events: tuple[GameEvent, ...] = ()  # the last 24 months' events and any open, by id (M6)
     storylines: tuple[Storyline, ...] = ()  # active storylines, by id (M6, 16.6)
     queued: tuple[QueuedEvent, ...] = ()  # follow-ups not yet shown, by id (M6, 16.3)
+    exec_seats: tuple[ExecSeat, ...] = ()  # seats ever filled, by (company_id, seat) (M8, 18.3)
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -332,6 +333,19 @@ class GameState:
     def relationships_of(self, person_id: int) -> tuple[Relationship, ...]:
         return tuple(r for r in self.relationships if person_id in r.key)
 
+    def seat_holder(self, company_id: int, seat: str) -> int | None:
+        for s in self.exec_seats:
+            if s.company_id == company_id and s.seat == seat:
+                return s.person_id
+        return None
+
+    def seat_of(self, person_id: int) -> str | None:
+        """The seat a person holds, if any (M8)."""
+        for s in self.exec_seats:
+            if s.person_id == person_id:
+                return s.seat
+        return None
+
     @property
     def player(self) -> CompanyState:
         for company in self.companies:
@@ -485,4 +499,10 @@ def with_seat(state: GameState, seat: BoardSeat) -> GameState:
 def with_person_state(state: GameState, person_state: PersonState) -> GameState:
     return replace(
         state, person_states=_upsert(state.person_states, person_state, lambda p: p.person_id)
+    )
+
+
+def with_exec_seat(state: GameState, seat: ExecSeat) -> GameState:
+    return replace(
+        state, exec_seats=_upsert(state.exec_seats, seat, lambda s: (s.company_id, s.seat))
     )

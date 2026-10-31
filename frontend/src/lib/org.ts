@@ -1,9 +1,10 @@
 // Org display helpers: labels and text for values the API sends. No game values computed here.
 
-export type UnitKind = 'company' | 'department' | 'team';
+export type UnitKind = 'company' | 'division' | 'department' | 'team';
 
 export const UNIT_KIND_LABELS: Record<UnitKind, string> = {
   company: 'Company',
+  division: 'Division',
   department: 'Department',
   team: 'Team',
 };
@@ -41,4 +42,10 @@ export function signed(value: number): string {
   if (rounded > 0) return `+${text}`;
   if (rounded < 0) return `−${text}`;
   return '0';
+}
+
+/** A signed percentage the API computed: +5%, −5% (true minus sign). Display only (M8). */
+export function pct(value: number): string {
+  const text = Math.abs(value).toFixed(1).replace(/\.0$/, '');
+  return `${value < 0 ? '−' : '+'}${text}%`;
 }

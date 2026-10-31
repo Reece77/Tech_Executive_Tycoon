@@ -8,6 +8,7 @@ import { MoraleBar } from '../components/MoraleBar';
 import { LeadsChip, OrgNode, UnitKindBadge } from '../components/OrgNode';
 import { WorksOn } from '../components/WorksOn';
 import { ChangeDialog, type Pending } from '../components/OrgChangeDialog';
+import { ScaleupPanels } from '../components/ScaleupPanels';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import {
   useOrg,
@@ -136,7 +137,7 @@ function OrgBody({
         product={u.product_name}
         selected={selected === k}
         dropActive={dropOn === k}
-        draggable={u.kind === 'team'}
+        draggable={u.kind === 'team' || u.kind === 'department'}
         onSelect={() => setSelected(k)}
         onDragStart={(event) => event.dataTransfer.setData(DRAG_UNIT, k)}
         {...dropHandlers(u)}
@@ -146,6 +147,13 @@ function OrgBody({
 
   const childrenOf = (u: OrgUnit) =>
     u.child_unit_ids.map((id) => units.get(String(id))).filter((c): c is OrgUnit => !!c);
+  // Divisions add a level (M8): division > department > team.
+  const subtree = (u: OrgUnit): React.ReactNode => (
+    <div key={keyOf(u.unit_id)} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {nodeFor(u)}
+      {u.child_unit_ids.length > 0 && <Branch>{childrenOf(u).map(subtree)}</Branch>}
+    </div>
+  );
   const direct = root.members.filter((m) => !m.is_founder);
   const founderFirst = root.leader_name?.split(' ')[0] ?? 'the founder';
   const unitCount = org.units.length - 1;
@@ -171,7 +179,10 @@ function OrgBody({
                       change: 'create_unit',
                       kind: 'team',
                       name: '',
-                      parent_id: unit.kind === 'department' ? unit.unit_id : null,
+                      parent_id:
+                        unit.kind === 'department' || unit.kind === 'division'
+                          ? unit.unit_id
+                          : null,
                     },
                     title: 'New team',
                     confirmLabel: 'Create team',
@@ -188,7 +199,12 @@ function OrgBody({
                   data-testid="new-department"
                   onClick={() =>
                     open({
-                      change: { change: 'create_unit', kind: 'department', name: '' },
+                      change: {
+                        change: 'create_unit',
+                        kind: 'department',
+                        name: '',
+                        parent_id: unit.kind === 'division' ? unit.unit_id : null,
+                      },
                       title: 'New department',
                       confirmLabel: 'Create department',
                       nameInput: true,
@@ -196,6 +212,25 @@ function OrgBody({
                   }
                 >
                   New department · {costs.create_unit}
+                </Button>
+              )}
+              {org.divisions_unlocked && (
+                <Button
+                  variant="default"
+                  h={36}
+                  data-testid="new-division"
+                  onClick={() =>
+                    open({
+                      change: { change: 'create_unit', kind: 'division', name: '' },
+                      title: 'New division',
+                      subtitle:
+                        'A division has a president and its own P&L. Move departments and teams into it.',
+                      confirmLabel: 'Create division',
+                      nameInput: true,
+                    })
+                  }
+                >
+                  New division · {costs.create_unit}
                 </Button>
               )}
             </span>
@@ -208,8 +243,9 @@ function OrgBody({
         {org.departments_unlocked
           ? `Departments unlocked at ${meta.department_unlock_headcount} staff. `
           : `Departments unlock at ${meta.department_unlock_headcount} staff (you have ${org.headcount}) or once the company is venture-backed. `}
-        Drag a person onto a unit to move them, or drag a team onto a department. Every change shows
-        its morale cost before you confirm. Numbers after an action are its energy cost.
+        Drag a person onto a unit to move them, or drag a team onto a department or division. Every
+        change shows its morale cost before you confirm. Numbers after an action are its energy
+        cost.
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         <section
@@ -224,17 +260,7 @@ function OrgBody({
         >
           {nodeFor(root)}
           <Branch>
-            {childrenOf(root).map((child) => (
-              <div
-                key={keyOf(child.unit_id)}
-                style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-              >
-                {nodeFor(child)}
-                {child.child_unit_ids.length > 0 && (
-                  <Branch>{childrenOf(child).map(nodeFor)}</Branch>
-                )}
-              </div>
-            ))}
+            {childrenOf(root).map(subtree)}
             {direct.length > 0 && (
               <div
                 data-testid="direct-reports"
@@ -292,6 +318,7 @@ function OrgBody({
           moveUnit={moveUnitChange}
         />
       </div>
+      <ScaleupPanels saveId={saveId} org={org} />
       {pending && (
         <ChangeDialog
           saveId={saveId}
@@ -356,8 +383,15 @@ function UnitPanel({
     morale: morale.get(m.person_id) ?? null,
   }));
   const destinations = org.units.filter((u) => u.unit_id !== unit.unit_id);
+  // Where a team or department may go: the company or a division, and teams also a
+  // department (M8 adds divisions). The API still refuses anything else.
   const departments = org.units.filter(
-    (u) => (u.kind === 'department' || u.unit_id === null) && u.unit_id !== unit.parent_id,
+    (u) =>
+      (u.unit_id === null ||
+        u.kind === 'division' ||
+        (unit.kind === 'team' && u.kind === 'department')) &&
+      u.unit_id !== unit.parent_id &&
+      u.unit_id !== unit.unit_id,
   );
   const inheritFrom = parent ?? root;
 
@@ -593,11 +627,11 @@ function UnitPanel({
             Rename
           </Button>
         )}
-        {unit.kind === 'team' && (
+        {(unit.kind === 'team' || unit.kind === 'department') && (
           <Menu>
             <Menu.Target>
               <Button variant="default" h={36} data-testid="move-team">
-                Move team · {costs.move_unit}
+                Move {unit.kind} · {costs.move_unit}
               </Button>
             </Menu.Target>
             <Menu.Dropdown>

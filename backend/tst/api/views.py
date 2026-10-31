@@ -416,6 +416,7 @@ def search_out(state: GameState, search: Search, data: LoadedData) -> SearchOut:
         ),
         rival_id=search.rival_id,
         rival_name=state.company(search.rival_id).name if search.rival_id is not None else None,
+        level=search.level,
     )
 
 

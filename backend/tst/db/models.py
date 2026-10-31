@@ -8,11 +8,22 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    text,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 19
+SCHEMA_VERSION = 20
 
 
 class Base(DeclarativeBase):
@@ -112,11 +123,18 @@ class LedgerEntryRow(Base):
 class LedgerLineRow(Base):
     __tablename__ = "ledger_line"
     __table_args__ = (Index("ix_ledger_line_entry", "entry_id"),)
+    __mapper_args__ = {"eager_defaults": False}  # noqa: RUF012 -- no RETURNING (M8)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("ledger_entry.id"), nullable=False)
     account_code: Mapped[str] = mapped_column(ForeignKey("account.code"), nullable=False)
     amount_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    # M8 (0020): the division a line reports to; null = corporate. Deferred: migration 0013
+    # posts ledger lines through these models on saves that do not have the column yet.
+    # The server default keeps the column out of an ORM INSERT that does not set it.
+    division_id: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, deferred=True, server_default=text("NULL")
+    )
 
     entry: Mapped[LedgerEntryRow] = relationship(back_populates="lines")
 
@@ -809,3 +827,62 @@ class CooAnswerRow(Base):
     source: Mapped[str] = mapped_column(String(16), nullable=False)  # claude|mock|offline
     cost_cents: Mapped[float] = mapped_column(Float, nullable=False)  # real cents, not game money
     created_at: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+# --- Divisions, executives and new markets (M8, migration 0020_divisions) -------------------
+# Side tables, not columns on org_unit, product or search: migration 0013 loads and syncs
+# those tables through the current models on older saves (see RoundNomineeRow).
+
+
+class UnitServicesRow(Base):
+    """A division's shared services, central or embedded (formulas.md 18.4)."""
+
+    __tablename__ = "unit_services"
+
+    unit_id: Mapped[int] = mapped_column(ForeignKey("org_unit.id"), primary_key=True)
+    services: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class ProductDivisionRow(Base):
+    """The division a product belongs to (18.1); no row or null = corporate."""
+
+    __tablename__ = "product_division"
+
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id"), primary_key=True)
+    division_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # org_unit (no FK)
+
+
+class SearchLevelRow(Base):
+    """An exec-level search (18.3): every candidate is generated at this level."""
+
+    __tablename__ = "search_level"
+
+    search_id: Mapped[int] = mapped_column(ForeignKey("search.id"), primary_key=True)
+    level: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class ExecSeatRow(Base):
+    """An executive seat filled at least once (18.3); person_id null = vacant."""
+
+    __tablename__ = "exec_seat"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    seat: Mapped[str] = mapped_column(String(8), primary_key=True)
+    person_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # person (no FK)
+    since_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class DivisionMonthRow(Base):
+    """Headcount per division (and corporate, division_id null) at each month's payroll, for
+    the shared-services allocation of the division statements (18.1)."""
+
+    __tablename__ = "division_month"
+    __table_args__ = (Index("ix_division_month_company_turn", "company_id", "turn"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    division_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    name: Mapped[str] = mapped_column(String(64), nullable=False)
+    headcount: Mapped[int] = mapped_column(Integer, nullable=False)
+    embedded: Mapped[bool] = mapped_column(Boolean, nullable=False)

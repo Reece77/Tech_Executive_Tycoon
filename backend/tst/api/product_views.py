@@ -121,6 +121,8 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
             key=cat.key,
             label=cat.label,
             annual_growth=cat.growth_in(turn_to_ym(state.turn)[0]),
+            note="Compute costs follow the market" if cat.compute_indexed else None,
+            launch_quality=max(data.balance.products.launch_min_quality, cat.launch_quality or 0),
             segments=[
                 CategorySegmentOut(
                     segment=m.segment,
@@ -279,9 +281,12 @@ def product_out(
     recent = sorted(history, key=lambda m: (m.turn, m.segment))
     pace = f.pace(team.base_output(data.balance), category.scope, data.balance.products)
     last_turns = sorted({m.turn for m in recent})[-12:]
+    division = state.unit(product.division_id) if product.division_id is not None else None
     return ProductOut(
         product_id=product.id,
         name=product.name,
+        division_id=division.id if division is not None else None,
+        division_name=division.name if division is not None else None,
         category=product.category,
         category_label=category.label,
         status=product.status,

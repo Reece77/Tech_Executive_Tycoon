@@ -33,8 +33,10 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
         state = load_state(session)
     names = [c.name for c in state.companies if not c.is_player]
     assert names == [c.name for c in loaded.game_data.incumbents]
-    assert [c.id for c in state.companies] == list(range(1, 14))
-    assert len(state.products) == 12 and all(p.status == "live" for p in state.products)
+    assert [c.id for c in state.companies] == list(range(1, INCUMBENTS + 2))
+    assert len(state.products) == FIRST_PRODUCT - 1 and all(
+        p.status == "live" for p in state.products
+    )
     assert len(state.markets) == sum(len(c.markets) for c in loaded.game_data.categories)
     smb = state.market("b2b_saas", "smb")
     assert smb is not None and smb.addressable == 400_000
@@ -80,7 +82,7 @@ def test_products_and_assignments_round_trip(tmp_path: Path, loaded: LoadedData)
     )
     assert loaded_state.units[0].product_id == FIRST_PRODUCT
     assert loaded_state.player.root_product_id == FIRST_PRODUCT
-    assert loaded_state.next_ids.product == 14
+    assert loaded_state.next_ids.product == FIRST_PRODUCT + 1
 
 
 def test_retired_products_leave_the_live_state(tmp_path: Path, loaded: LoadedData) -> None:

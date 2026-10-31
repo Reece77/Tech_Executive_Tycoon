@@ -33,8 +33,17 @@ from tst.sim.finance.options import settle_leavers
 from tst.sim.hiring.formulas import ROLL_RANGE, energy_cost, roll_succeeds, severance_cents
 from tst.sim.hiring.models import Candidate, Channel, Offer, Search
 from tst.sim.hiring.rules import offer_problems
-from tst.sim.ledger import CASH, SALARIES, LedgerBalances, LedgerEntry, account_balance
+from tst.sim.ledger import (
+    CASH,
+    SALARIES,
+    LedgerBalances,
+    LedgerEntry,
+    LedgerLine,
+    account_balance,
+)
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.org.divisions import division_of_unit
+from tst.sim.org.executives import seats_in_play
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.models import Person
 from tst.sim.people.reveal import apply_knowledge_action
@@ -50,6 +59,7 @@ from tst.sim.state import (
 )
 
 CULTURE_CARRIER = "culture_carrier"
+EXEC_SEARCH_LEVEL = "exec"  # tunable-exempt: the one level a search may target (18.3)
 CHANNEL_ENERGY: dict[str, str] = {
     "network": "network",
     "job_post": "job_post",
@@ -68,6 +78,7 @@ class OpenSearch:
     channel: Channel
     plan_id: int | None = None  # set by a delegate opening it for a hiring plan (13.10)
     rival_id: int | None = None  # the rival of a "Poach from a rival" search (M5, 15.6)
+    level: str | None = None  # "exec": an exec-level search, from stage 3 (M8, 18.3)
     kind: Literal["open_search"] = "open_search"
 
 
@@ -198,6 +209,11 @@ def open_search(
             raise InvalidActionError("a poach search needs a rival still in business")
     elif action.rival_id is not None:
         raise InvalidActionError("only a poach search names a rival")
+    if action.level is not None:  # M8 (18.3)
+        if action.level != EXEC_SEARCH_LEVEL or action.channel == "poach":
+            raise InvalidActionError("a search may target only exec level, and not a poach")
+        if not seats_in_play(state, company, balance):
+            raise InvalidActionError(f"exec searches open at stage {balance.exec_seats.stage}")
     state = spend_energy(state, action.actor_id, CHANNEL_ENERGY[action.channel], balance)
     search_id, ids = state.next_ids.take("search")
     search = Search(
@@ -209,6 +225,7 @@ def open_search(
         opened_turn=state.turn,
         plan_id=action.plan_id,
         rival_id=action.rival_id,
+        level=action.level,
     )
     return Outcome(replace(with_search(state, search), next_ids=ids))
 
@@ -366,14 +383,14 @@ def fire(state: GameState, action: Fire, balance: Balance, data: GameData) -> Ou
     severance = severance_cents(employment.salary_cents, balance.payroll)
     entries: tuple[LedgerEntry, ...] = ()
     if severance:
+        units = {u.id: u for u in state.active_units(company)}
+        d = division_of_unit(units, employment.unit_id)  # their division (M8, 18.1)
         entries = (
-            LedgerEntry.transfer(
+            LedgerEntry(
                 turn=state.turn,
                 company_id=company,
                 memo=f"Severance: {person.first_name} {person.last_name}",
-                debit=SALARIES,
-                credit=CASH,
-                amount=severance,
+                lines=(LedgerLine(SALARIES, severance, d), LedgerLine(CASH, -severance, d)),
             ),
         )
     penalty = (

@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select, text
 
+from tests.helpers import FIRST_PRODUCT
 from tst.db import migrate
 from tst.db.models import CandidateRow, OfferRow, SearchRow
 from tst.db.repository import create_save, open_session
@@ -71,18 +72,18 @@ def test_new_game_mission_invalid(
 def test_new_game_energy_and_counters(loaded: LoadedData) -> None:
     state = fresh(loaded)
     assert state.person_state(1) == PersonState(person_id=1, energy=60)
-    # The 12 incumbent products (M3, ADR-0017) take product ids 1..12; the founder, pool and
-    # former colleagues take cap-table entries 1..3 (M4, 14.2). The incumbents' 96 key people
+    # The 17 incumbent products (M3, ADR-0017; five in M8) take ids 1..17; the founder, pool and
+    # former colleagues take cap-table entries 1..3 (M4, 14.2). The incumbents' 136 key people
     # count from 1,000,001 (M5, 15.1).
     assert state.next_ids == NextIds(
         person=2,
         search=1,
         offer=1,
         employment=2,
-        product=13,
+        product=FIRST_PRODUCT,
         cap_entry=4,
-        rival_person=1_000_097,
-        rival_employment=1_000_097,
+        rival_person=1_000_137,
+        rival_employment=1_000_137,
     )
 
 
@@ -178,17 +179,17 @@ def test_upgrade_from_0002_sets_counters_mission_and_energy(
     with open_session(path) as session:
         state = load_state(session)
     assert state.player.mission == ()
-    # 0008_products adds the 12 incumbent products (ids 1..12) on upgrade; 0009_finance the
+    # 0008_products adds the current data's 17 incumbent products (ids 1..17); 0009_finance the
     # founder's and the pool's cap-table entries.
-    # 0013_rivals gives the incumbents their 96 key people from 1,000,001.
+    # 0013_rivals gives the incumbents their 136 key people from 1,000,001.
     assert state.next_ids == NextIds(
         person=2,
         search=1,
         offer=1,
         employment=2,
-        product=13,
+        product=FIRST_PRODUCT,
         cap_entry=3,
-        rival_person=1_000_097,
-        rival_employment=1_000_097,
+        rival_person=1_000_137,
+        rival_employment=1_000_137,
     )
     assert state.person_state(1).energy == 100  # 0003_hiring's M1b value; reset to 60 next turn

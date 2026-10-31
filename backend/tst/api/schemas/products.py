@@ -40,6 +40,8 @@ class CategoryOut(BaseModel):
     label: str
     annual_growth: float = Field(description="Addressable demand growth per year (fraction)")
     segments: list[CategorySegmentOut]
+    note: str | None = Field(default=None, description="e.g. compute costs follow the market (M8)")
+    launch_quality: float | None = Field(default=None, description="Quality a launch needs (M8)")
 
 
 class MarketProductOut(BaseModel):
@@ -145,6 +147,8 @@ class LaunchReadinessOut(BaseModel):
 class ProductOut(BaseModel):
     product_id: int
     name: str
+    division_id: int | None = Field(default=None, description="Owning division; null = corporate")
+    division_name: str | None = None
     category: str
     category_label: str
     status: str

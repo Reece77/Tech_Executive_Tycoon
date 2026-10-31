@@ -69,7 +69,11 @@ def test_categories_and_markets(setup: tuple[Client, Path]) -> None:
         "dev_tools",
         "consumer_apps",
         "cybersecurity",
+        "fintech",  # M8
+        "ai_models",
     ]
+    assert categories[-1]["note"] == "Compute costs follow the market"
+    assert categories[-2]["launch_quality"] == 30
     smb = categories[0]["segments"][0]
     assert (smb["segment"], smb["addressable"], smb["reach"]) == ("smb", 400_000, "self_serve")
     market = api.get(f"{BASE}/markets/b2b_saas")

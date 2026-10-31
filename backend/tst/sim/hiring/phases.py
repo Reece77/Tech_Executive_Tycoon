@@ -45,12 +45,14 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
+from tst.sim.org.divisions import division_of_unit
 from tst.sim.org.morale import morale_terms
 from tst.sim.org.rules import is_remote, org_view
+from tst.sim.org.scaleup import support_morale_terms
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
-from tst.sim.products.phases import product_costs
+from tst.sim.products.phases import product_costs_by_division
 from tst.sim.rivals.poaching import leave_rival, poach_batch
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -218,14 +220,14 @@ def resolve_offers(
         if candidate is not None and candidate.channel == "recruiter":
             fee = recruiter_fee_cents(offer.salary_cents, hiring)
             if fee:
+                units = {u.id: u for u in state.active_units(company.id)}
+                d = division_of_unit(units, hire.unit_id)  # the hire's division (M8, 18.1)
                 entries.append(
-                    LedgerEntry.transfer(
+                    LedgerEntry(
                         turn=state.turn,
                         company_id=company.id,
                         memo=f"Recruiter fee: {_name(person)}",
-                        debit=RECRUITING,
-                        credit=CASH,
-                        amount=fee,
+                        lines=(LedgerLine(RECRUITING, fee, d), LedgerLine(CASH, -fee, d)),
                     )
                 )
         logs.append(
@@ -248,46 +250,79 @@ def resolve_offers(
 # --- Phase 6: payroll and operating costs ---------------------------------------------------
 
 
-def monthly_costs(
+def monthly_cost_lines(
     state: GameState, company_id: int, balance: Balance, data: GameData
-) -> tuple[tuple[str, AccountCode, Cents], ...]:
-    """(memo label, account, amount) of one company's phase-6 costs for the current state.
+) -> tuple[tuple[str, AccountCode, Cents, int | None], ...]:
+    """(memo label, account, amount, division id) of one company's phase-6 costs.
 
     Phase 6 posts exactly these; the Overview shows them as this month's projection (hosting
     at the current customers). Remote staff cost no office fee (formulas.md 13.9); every
     employee but the founder, remote staff included, costs tools and travel (M4c, section 8).
+    An employee's salary, benefits, office and tools go to the division containing their
+    unit, a product's hosting and marketing to its division; the rest is corporate (None,
+    M8, 18.1). A company without divisions has one line per cost, as before M8.
     """
-    hosting, marketing = product_costs(state, company_id, data)
+    units = {u.id: u for u in state.active_units(company_id)}
+    divisions = [None, *sorted(u.id for u in units.values() if u.kind == "division")]
     staff = state.staff(company_id)
-    salaries = sum(monthly_salary_cents(e.salary_cents) for e in staff)
-    benefits = sum(
-        benefits_cents(monthly_salary_cents(e.salary_cents), balance.payroll) for e in staff
-    )
-    office = balance.payroll.office_cost_per_head_cents * sum(
-        1 for e in staff if not is_remote(state, e)
-    )
+
+    def division(e: Employment) -> int | None:
+        if state.person(e.person_id).is_founder:
+            return None
+        return division_of_unit(units, e.unit_id)
+
+    salaries: dict[int | None, float] = {d: 0 for d in divisions}
+    benefits: dict[int | None, float] = {d: 0 for d in divisions}
+    office: dict[int | None, float] = {d: 0 for d in divisions}
+    employees: dict[int | None, float] = {d: 0 for d in divisions}
+    for e in staff:
+        d = division(e)
+        salaries[d] += monthly_salary_cents(e.salary_cents)
+        benefits[d] += benefits_cents(monthly_salary_cents(e.salary_cents), balance.payroll)
+        if not is_remote(state, e):
+            office[d] += balance.payroll.office_cost_per_head_cents
+        if not state.person(e.person_id).is_founder:
+            employees[d] += 1
     job_posts = [s for s in state.open_searches(company_id) if s.channel == "job_post"]
-    employees: float = sum(1 for e in staff if not state.person(e.person_id).is_founder)
     # A rival's workforce pools cost the same per head at the mid-level rate (M5, 15.1).
     for pool in state.company_pools(company_id):
         role = data.role(balance.rivals.function_roles[pool.function])
         pay = monthly_salary_cents(
             market_mid_cents(role.salary_band_mid_cents["mid"], _mid_region(balance, data))
         )
-        salaries += round(pool.headcount * pay)
-        benefits += round(pool.headcount * benefits_cents(pay, balance.payroll))
-        office += round(pool.headcount * balance.payroll.office_cost_per_head_cents)
-        employees += pool.headcount
-    return (
+        salaries[None] += round(pool.headcount * pay)
+        benefits[None] += round(pool.headcount * benefits_cents(pay, balance.payroll))
+        office[None] += round(pool.headcount * balance.payroll.office_cost_per_head_cents)
+        employees[None] += pool.headcount
+    hosting, marketing = product_costs_by_division(state, company_id, data)
+    tools = balance.costs.tools_per_head_cents
+    lines: list[tuple[str, AccountCode, Cents, int | None]] = []
+    for memo, account, by_division in (
         ("Salaries", SALARIES, salaries),
         ("Benefits", BENEFITS, benefits),
         ("Office", RENT, office),
-        ("Tools and travel", GENERAL_ADMIN, round(balance.costs.tools_per_head_cents * employees)),
-        ("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents),
-        ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts)),
-        ("Hosting", COMPUTE, hosting),  # M3 (11.8)
-        ("Marketing", MARKETING, marketing),
+        ("Tools and travel", GENERAL_ADMIN, {d: round(tools * n) for d, n in employees.items()}),
+    ):
+        lines += [(memo, account, int(by_division[d]), d) for d in divisions]
+    lines.append(("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents, None))
+    lines.append(
+        ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts), None)
     )
+    lines += [("Hosting", COMPUTE, hosting.get(d, 0), d) for d in divisions]  # M3 (11.8)
+    lines += [("Marketing", MARKETING, marketing.get(d, 0), d) for d in divisions]
+    if len(divisions) > 1:
+        lines = [(m, a, x, d) for m, a, x, d in lines if x or d is None]
+    return tuple(lines)
+
+
+def monthly_costs(
+    state: GameState, company_id: int, balance: Balance, data: GameData
+) -> tuple[tuple[str, AccountCode, Cents], ...]:
+    """(memo label, account, amount) of one company's phase-6 costs, summed over divisions."""
+    totals: dict[tuple[str, AccountCode], Cents] = {}
+    for memo, account, amount, _ in monthly_cost_lines(state, company_id, balance, data):
+        totals[(memo, account)] = totals.get((memo, account), 0) + amount
+    return tuple((memo, account, amount) for (memo, account), amount in totals.items())
 
 
 def _mid_region(balance: Balance, data: GameData) -> int:
@@ -322,7 +357,11 @@ def payroll(
         payroll_by_company[company.id] = sum(
             amount for _, account, amount in costs if account in (SALARIES, BENEFITS)
         )
-        lines = [LedgerLine(account, amount) for _, account, amount in costs if amount]
+        lines = [
+            LedgerLine(account, amount, division)
+            for _, account, amount, division in monthly_cost_lines(state, company.id, balance, data)
+            if amount
+        ]
         total = sum(line.amount for line in lines)
         if total:
             entries.append(
@@ -356,6 +395,9 @@ def morale_and_departures(
     logs: list[LogItem] = []
     morale_cfg = balance.morale
     views = {c.id: org_view(state, c.id) for c in state.companies}
+    supports = {  # W_support by person (M8, 18.4), from the pools at the phase start
+        c.id: support_morale_terms(state, views[c.id], balance, data) for c in state.companies
+    }
     for employment, person in _employees(state):
         company = state.company(employment.company_id)
         target = morale_terms(
@@ -366,6 +408,7 @@ def morale_and_departures(
             data,
             account_balance(opening, company.id, CASH),
             account_balance(current, company.id, CASH),
+            supports[company.id],
         ).target
         ps = state.person_state(person.id)
         start = morale_cfg.new_hire if ps.morale is None else ps.morale
@@ -572,6 +615,8 @@ def candidate_batches(
             levels_keys[int(gen.choice(len(levels_keys), p=[w / total for w in weights]))]
             for _ in range(count)
         ]
+        if search.level is not None:  # an exec-level search (M8, 18.3); draws unchanged
+            levels = [search.level] * count
         first, ids = state.next_ids.take_many("person", count)
         state = replace(state, next_ids=ids)
         role = data.role(search.role)

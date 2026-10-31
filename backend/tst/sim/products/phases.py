@@ -17,7 +17,7 @@ from dataclasses import dataclass, replace
 
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
 from tst.sim.data_models import Balance, GameData
-from tst.sim.ledger import CASH, REVENUE_SUBSCRIPTIONS, LedgerEntry
+from tst.sim.ledger import CASH, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
 from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.money import Cents
 from tst.sim.org.rules import OrgView, org_view
@@ -127,7 +127,7 @@ def develop(
         updated = replace(
             product,
             quality=quality,
-            feature_points=product.feature_points + output,
+            feature_points=product.feature_points + output * team.feature_mult,  # CPO (18.3)
             rotting=rotting,
         )
         state = with_product(state, updated)
@@ -275,14 +275,16 @@ def _revenue(
                 key = (product.id, seg.segment)
                 flows[key] = replace(flows.get(key, Flow()), revenue_cents=amount)
             if booked:
+                d = product.division_id  # the product's division (M8, 18.1)
                 entries.append(
-                    LedgerEntry.transfer(
+                    LedgerEntry(
                         turn=turn,
                         company_id=product.company_id,
                         memo=f"Revenue: {product.name}",
-                        debit=CASH,
-                        credit=REVENUE_SUBSCRIPTIONS,
-                        amount=booked,
+                        lines=(
+                            LedgerLine(CASH, booked, d),
+                            LedgerLine(REVENUE_SUBSCRIPTIONS, -booked, d),
+                        ),
                     )
                 )
             revenue[product.company_id] += booked
@@ -341,23 +343,33 @@ def projected_revenue(state: GameState, company_id: int) -> Cents:
 # --- Phase 6: hosting and marketing ---------------------------------------------------------
 
 
-def product_costs(state: GameState, company_id: int, data: GameData) -> tuple[Cents, Cents]:
-    """(hosting, marketing) for one company this month: round(C x h) per segment of every
-    selling product, and the budget of every product that is not retired (11.8)."""
-    hosting = 0
-    marketing = 0
+def product_costs_by_division(
+    state: GameState, company_id: int, data: GameData
+) -> tuple[dict[int | None, Cents], dict[int | None, Cents]]:
+    """(hosting, marketing) per division (None = corporate) for one company this month:
+    round(C x h) per segment of every selling product, and the budget of every product that
+    is not retired (11.8, 18.1)."""
+    hosting: dict[int | None, Cents] = {}
+    marketing: dict[int | None, Cents] = {}
+    year = turn_to_ym(state.turn)[0]
     for product in state.company_products(company_id):
         if product.status == "retired":
             continue
-        marketing += product.marketing_budget_cents
+        d = product.division_id
+        marketing[d] = marketing.get(d, 0) + product.marketing_budget_cents
         if product.status not in SELLING:
             continue
         category = data.category(product.category)
-        year = turn_to_ym(state.turn)[0]
         for seg in state.segments_of(product.id):
             h = f.hosting_cents(category, seg.segment, data.compute_index, year)
-            hosting += round(seg.customers * h)
+            hosting[d] = hosting.get(d, 0) + round(seg.customers * h)
     return hosting, marketing
+
+
+def product_costs(state: GameState, company_id: int, data: GameData) -> tuple[Cents, Cents]:
+    """(hosting, marketing) for one company this month (11.8)."""
+    hosting, marketing = product_costs_by_division(state, company_id, data)
+    return sum(hosting.values()), sum(marketing.values())
 
 
 # --- Phase 9: brand and demand --------------------------------------------------------------
@@ -371,8 +383,9 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
         if product.status == "retired" or product.is_static:
             continue
         category = data.category(product.category)
-        mu = team_of(state, views[product.company_id], product, balance, data).mu
-        mk = f.marketing_points(product.marketing_budget_cents, mu, pb)
+        team = team_of(state, views[product.company_id], product, balance, data)
+        mk = f.marketing_points(product.marketing_budget_cents, team.mu, pb)
+        mk *= team.marketing_mult  # support and CMO (M8, 18.5)
         target = f.target_brand(mk, category.brand_constant)
         state = with_product(state, replace(product, brand=f.next_brand(product.brand, target, pb)))
     year = turn_to_ym(state.turn)[0]

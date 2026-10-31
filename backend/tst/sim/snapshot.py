@@ -35,6 +35,19 @@ class CompanySnapshot:
 
 
 @dataclass(frozen=True, slots=True)
+class DivisionMonth:
+    """Headcount of one division (or corporate, division_id None) at a month's payroll, for
+    the shared-services allocation (formulas.md 18.1, M8)."""
+
+    turn: int
+    company_id: int
+    division_id: int | None
+    name: str
+    headcount: int
+    embedded: bool
+
+
+@dataclass(frozen=True, slots=True)
 class TurnSnapshot:
     turn: int
     companies: tuple[CompanySnapshot, ...]  # sorted by company id

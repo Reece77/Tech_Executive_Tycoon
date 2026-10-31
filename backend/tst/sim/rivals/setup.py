@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+import numpy as np
+
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import FUNCTIONS, LEVELS, Balance, GameData
 from tst.sim.hiring.formulas import benefits_cents, market_mid_cents, monthly_salary_cents
@@ -119,9 +121,12 @@ def hire_key_people(
     stream_part: int,
     salary_mult: float = 1.0,
     levels: list[str] | None = None,
+    gen: np.random.Generator | None = None,
 ) -> GameState:
-    """Generated individuals employed by the rival, strangers to the player (15.1, 15.5)."""
-    gen = people_gen_stream(rng, state.turn, company.id, stream_part)
+    """Generated individuals employed by the rival, strangers to the player (15.1, 15.5).
+    `gen` replaces stream people_gen keyed (company_id, stream_part) (entrants, 18.7)."""
+    if gen is None:
+        gen = people_gen_stream(rng, state.turn, company.id, stream_part)
     for index, function in enumerate(functions):
         role = data.role(balance.rivals.function_roles[function])
         level = levels[index] if levels else _level_for(index, len(functions), balance)

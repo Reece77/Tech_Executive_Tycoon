@@ -29,6 +29,7 @@ class Search:
     closed_turn: int | None = None
     plan_id: int | None = None  # the hiring plan it serves (opened by its delegate, M2a)
     rival_id: int | None = None  # a "Poach from a rival" search: the rival (M5, 15.6)
+    level: str | None = None  # "exec": every candidate at exec level (M8, 18.3); None: the mix
 
 
 @dataclass(frozen=True, slots=True)

@@ -1368,6 +1368,11 @@ INBOX_TEMPLATE_KEYS = (
     "bridge_funded",
     "bankrupt",
     "stage_from_funding",
+    # M8 (formulas.md 18)
+    "division_created",
+    "exec_appointed",
+    "exec_removed",
+    "exec_left",
 )
 
 
@@ -1514,7 +1519,7 @@ class GameData(_Frozen):
         names = {c.name for c in self.incumbents}
         for entrant in self.entrants:  # M8 (18.7)
             where = f"entrants.yaml {entrant.name!r}"
-            if entrant.name in names:
+            if entrant.name in names or entrant.name in self.startup_names:
                 problems.append(f"{where}: name is taken")
             names.add(entrant.name)
             if entrant.personality not in PERSONALITIES:

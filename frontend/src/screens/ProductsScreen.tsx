@@ -343,6 +343,12 @@ function NewProductDialog({
             data-testid="product-category"
           />
         </div>
+        {category && (category.note || category.launch_quality) && (
+          <p className="tst-muted" style={{ margin: 0, fontSize: 13 }} data-testid="category-note">
+            {category.note ? `${category.note}. ` : ''}
+            {category.launch_quality ? `Launch needs quality ${category.launch_quality}.` : ''}
+          </p>
+        )}
         {category && (
           <fieldset
             style={{

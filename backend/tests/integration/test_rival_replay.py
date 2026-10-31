@@ -33,7 +33,7 @@ from tst.sim.state import GameState
 SEED = 7  # a seed whose 24 months bring a rival approach (rivals.need.poach_gain 0.007)
 PRICES = {"smb": 4000, "mid_market": 70_000}
 TURNS = 24  # the funded spinout's money lasts about 26 months at this burn
-STAFF = 6  # the founder and five: enough to sell, not enough to go bankrupt
+STAFF = 5  # the founder and four (M8: five ran out of money in month 21)
 
 
 def _state(path: Path) -> GameState:

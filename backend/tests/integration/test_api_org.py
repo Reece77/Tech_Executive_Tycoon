@@ -358,10 +358,8 @@ def test_move_unit_through_the_api(make_api: Any) -> None:
     assert web["parent_id"] == 1 and eng["child_unit_ids"] == [2] and root["child_unit_ids"] == [1]
     members = {m["person_id"]: m for u in out["org"]["units"] for m in u["members"]}
     assert members[3]["manager_id"] == 2
-    refused = api.post(
-        f"{BASE}/org/preview", {"change": "move_unit", "unit_id": 1, "parent_id": None}
-    )
-    assert not refused["allowed"] and "only teams move" in refused["problem"]
+    refused = api.post(f"{BASE}/org/preview", {"change": "move_unit", "unit_id": 1, "parent_id": 2})
+    assert not refused["allowed"] and "under the company or a division" in refused["problem"]
     assert api.post(f"{BASE}/org/units/1/move", {"parent_id": None}, 400)["code"] == "org_rule"
 
 

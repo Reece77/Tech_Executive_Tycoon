@@ -31,6 +31,7 @@ from tst.db.repository import create_save, open_session, run_action, run_turn
 from tst.db.state_io import load_state, sync_state
 from tst.loader import LoadedData
 from tst.sim.actions import (
+    AppointExecutive,
     CreatePlan,
     CreateProduct,
     CreateUnit,
@@ -40,11 +41,13 @@ from tst.sim.actions import (
     MakeOffer,
     MovePerson,
     OpenSearch,
+    RemoveExecutive,
     SetLeader,
 )
 from tst.sim.data_models import INBOX_TEMPLATE_KEYS
 from tst.sim.ledger import CASH
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.state import GameState, reach_stage, with_company
 
 # Market news (M5) and events (M6) arrive alongside; these tests are about other messages.
 NOT_PRODUCT_NOTES = ("market_news", "event", "critical_event")
@@ -255,8 +258,15 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     products.turn()
     # M4a: SAFEs that fill and do not, rounds that close, find no investor or lapse, the
     # board's meetings, warnings and removal vote, insolvency, bridges and bankruptcy.
+    # M8: a division, an executive appointed and removed, and one who leaves.
+    scale = Game(loaded, _stage_3(loaded))
+    scale.act(CreateUnit(1, "division", "Platform"))
+    scale.act(AppointExecutive(1, "cto", 50))
+    scale.act(RemoveExecutive(1, "cto"))
+    scale.act(AppointExecutive(1, "cfo", 51))
+    scale.act(Fire(1, 51))
     finance = finance_games(loaded)
-    games = (sad, hiring, broke, org, delegated, products, *finance.games)
+    games = (sad, hiring, broke, org, delegated, products, scale, *finance.games)
     items = [i for g in games for r in g.results for i in r.log_items]
     items += [i for g in games for i in g.action_logs] + finance.extra
     for item in items:
@@ -267,6 +277,13 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
         seen.add(item.template)
     print(f"templates exercised: {sorted(seen)}")
     assert seen == set(INBOX_TEMPLATE_KEYS)
+
+
+def _stage_3(loaded: LoadedData) -> GameState:
+    state = fresh_game(loaded)
+    for pid in (50, 51):
+        state = with_employee(loaded, state, make_person(loaded, pid, level="senior"), 12_000_000)
+    return with_company(state, reach_stage(state.player, 3, 0))
 
 
 def test_inbox_persists_from_turns_and_actions(tmp_path: Path, loaded: LoadedData) -> None:

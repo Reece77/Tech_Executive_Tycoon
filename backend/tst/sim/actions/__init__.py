@@ -93,6 +93,17 @@ from tst.sim.actions.products import (
     sunset_product,
     unassign_unit,
 )
+from tst.sim.actions.scaleup import (
+    AppointExecutive,
+    RemoveExecutive,
+    ScaleupAction,
+    SetProductDivision,
+    SetSharedServices,
+    appoint_executive,
+    remove_executive,
+    set_product_division,
+    set_shared_services,
+)
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import GameOverError, InvalidActionError
 from tst.sim.ledger import LedgerBalances, LedgerEntry
@@ -100,7 +111,7 @@ from tst.sim.log import LogItem
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
-type Action = HiringAction | OrgAction | ProductAction | FinanceAction | ChooseEvent
+type Action = HiringAction | OrgAction | ProductAction | FinanceAction | ChooseEvent | ScaleupAction
 
 ACTION_TYPES: dict[str, type[Any]] = {
     "open_search": OpenSearch,
@@ -139,6 +150,10 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "accept_bridge": AcceptBridge,
     "name_nominee": NameNominee,
     "choose_event": ChooseEvent,
+    "set_product_division": SetProductDivision,  # M8
+    "set_shared_services": SetSharedServices,
+    "appoint_executive": AppointExecutive,
+    "remove_executive": RemoveExecutive,
 }
 
 __all__ = [
@@ -148,6 +163,7 @@ __all__ = [
     "Action",
     "ActionResult",
     "AddSegment",
+    "AppointExecutive",
     "AssignUnit",
     "CancelProduct",
     "ChooseEvent",
@@ -170,6 +186,7 @@ __all__ = [
     "Promote",
     "RaiseSafe",
     "ReferenceCheck",
+    "RemoveExecutive",
     "RenameUnit",
     "Scout",
     "ScoutSearch",
@@ -177,6 +194,8 @@ __all__ = [
     "SetMarketing",
     "SetPolicy",
     "SetPrice",
+    "SetProductDivision",
+    "SetSharedServices",
     "StartRound",
     "SunsetProduct",
     "UnassignUnit",
@@ -294,6 +313,14 @@ def apply_action(
             out = apply_finance(state, action, balance, data, ledger_balances)
         case ChooseEvent():
             out = choose_event(state, action, balance, data)
+        case SetProductDivision():
+            out = set_product_division(state, action, balance)
+        case SetSharedServices():
+            out = set_shared_services(state, action, balance)
+        case AppointExecutive():
+            out = appoint_executive(state, action, balance)
+        case RemoveExecutive():
+            out = remove_executive(state, action, balance)
     return ActionResult(new_state=out.state, ledger_entries=out.entries, log_items=out.log)
 
 

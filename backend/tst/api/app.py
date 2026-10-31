@@ -19,6 +19,7 @@ from tst.api.routers import (
     products,
     rivals,
     saves,
+    scaleup,
 )
 from tst.api.schemas.common import ErrorOut
 from tst.db.repository import BUSY_MESSAGE, is_locked_error
@@ -69,6 +70,7 @@ def create_app() -> FastAPI:
     app.include_router(holiday.router)
     app.include_router(history.router)
     app.include_router(coo.router)
+    app.include_router(scaleup.router)
     app.include_router(events.settings_router)
     app.include_router(meta.router)
 

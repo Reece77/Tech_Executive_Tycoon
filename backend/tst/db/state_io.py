@@ -74,6 +74,7 @@ from tst.db.models import (
     EmploymentRow,
     EventQueueRow,
     EventRow,
+    ExecSeatRow,
     FreeAgentRow,
     FundingRoundRow,
     HiringPlanRow,
@@ -94,6 +95,7 @@ from tst.db.models import (
     PersonTagRevealRow,
     PersonTagRow,
     PoachApproachRow,
+    ProductDivisionRow,
     ProductRow,
     ProductSegmentRow,
     RelationshipRow,
@@ -102,10 +104,12 @@ from tst.db.models import (
     RoundNomineeRow,
     SafeRow,
     SaveMetaRow,
+    SearchLevelRow,
     SearchRow,
     SegmentShareRow,
     StorylineRow,
     TermSheetRow,
+    UnitServicesRow,
     WorkforcePoolRow,
 )
 from tst.sim.errors import SaveNotFoundError
@@ -119,6 +123,7 @@ from tst.sim.finance.models import (
 )
 from tst.sim.hiring.models import NextIds
 from tst.sim.ledger import LedgerEntry
+from tst.sim.org.models import ExecSeat
 from tst.sim.people.models import RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.rivals.models import (
@@ -266,11 +271,21 @@ def load_state(session: Session) -> GameState:
             select(ProductRow).where(ProductRow.status != "retired").order_by(ProductRow.id)
         )
     )
+    m8 = has_table(session, ExecSeatRow)  # M8 side tables (0020_divisions)
+    if m8:
+        divisions = {
+            r.product_id: r.division_id for r in session.scalars(select(ProductDivisionRow))
+        }
+        services = {r.unit_id: r.services for r in session.scalars(select(UnitServicesRow))}
+        levels = {r.search_id: r.level for r in session.scalars(select(SearchLevelRow))}
+        products = tuple(replace(p, division_id=divisions.get(p.id)) for p in products)
+    else:
+        services, levels = {}, {}
     product_ids = [p.id for p in products]
     return replace(
         state,
         searches=tuple(
-            search_from_row(r)
+            replace(search_from_row(r), level=levels.get(r.id))
             for r in session.scalars(
                 select(SearchRow).where(SearchRow.status == "open").order_by(SearchRow.id)
             )
@@ -278,7 +293,7 @@ def load_state(session: Session) -> GameState:
         candidates=tuple(candidates),
         offers=tuple(offers),
         units=tuple(
-            unit_from_row(r)
+            replace(unit_from_row(r), services=services.get(r.id))  # type: ignore[arg-type]
             for r in session.scalars(
                 select(OrgUnitRow).where(OrgUnitRow.status == "active").order_by(OrgUnitRow.id)
             )
@@ -370,6 +385,16 @@ def load_state(session: Session) -> GameState:
                 )
             )
             if has_table(session, RelationshipRow)
+            else ()
+        ),
+        exec_seats=(
+            tuple(
+                ExecSeat(r.company_id, r.seat, r.person_id, r.since_turn)
+                for r in session.scalars(
+                    select(ExecSeatRow).order_by(ExecSeatRow.company_id, ExecSeatRow.seat)
+                )
+            )
+            if m8
             else ()
         ),
         next_ids=_event_ids(session, next_ids_from_meta(meta)),
@@ -542,14 +567,16 @@ def insert_entries(session: Session, entries: Iterable[LedgerEntry]) -> None:
             for i, e in enumerate(entries)
         ],
     )
-    session.execute(
-        insert(cast(Table, LedgerLineRow.__table__)),
-        [
-            {"entry_id": first + i, "account_code": ln.account, "amount_cents": ln.amount}
-            for i, e in enumerate(entries)
-            for ln in e.lines
-        ],
-    )
+    lines = [
+        {"entry_id": first + i, "account_code": ln.account, "amount_cents": ln.amount}
+        for i, e in enumerate(entries)
+        for ln in e.lines
+    ]
+    divisions = [ln.division_id for e in entries for ln in e.lines]
+    if any(d is not None for d in divisions):  # M8 (18.1); absent keeps pre-0020 saves working
+        for line, division in zip(lines, divisions, strict=True):
+            line["division_id"] = division
+    session.execute(insert(cast(Table, LedgerLineRow.__table__)), lines)
 
 
 def _sync_relationships(session: Session, old: GameState, new: GameState) -> None:
@@ -722,6 +749,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
 
     if old.relationships != new.relationships and has_table(session, RelationshipRow):
         _sync_relationships(session, old, new)
+    _sync_m8(session, old, new)
 
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)
@@ -733,6 +761,39 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         meta.game_state = new.save_meta.game_state
         meta.ended_turn = new.save_meta.ended_turn
     session.flush()
+
+
+def _sync_m8(session: Session, old: GameState, new: GameState) -> None:
+    """Divisions' services, products' divisions, exec-level searches and seats (M8)."""
+    old_units = {u.id: u.services for u in old.units}
+    old_products = {p.id: p.division_id for p in old.products}
+    old_levels = {s.id: s.level for s in old.searches}
+    rows: list[Any] = [
+        UnitServicesRow(unit_id=u.id, services=u.services)
+        for u in new.units
+        if u.services is not None and old_units.get(u.id) != u.services
+    ]
+    rows += [
+        ProductDivisionRow(product_id=p.id, division_id=p.division_id)
+        for p in new.products
+        if old_products.get(p.id) != p.division_id
+    ]
+    rows += [
+        SearchLevelRow(search_id=s.id, level=s.level)
+        for s in new.searches
+        if s.level is not None and old_levels.get(s.id) != s.level
+    ]
+    rows += [
+        ExecSeatRow(
+            company_id=s.company_id, seat=s.seat, person_id=s.person_id, since_turn=s.since_turn
+        )
+        for s in _changed(old.exec_seats, new.exec_seats, lambda s: (s.company_id, s.seat))
+    ]
+    if not rows or not has_table(session, ExecSeatRow):
+        return
+    session.flush()
+    for row in rows:
+        session.merge(row)
 
 
 # --- The last state written, per save (M6 sub-task 0) -----------------------------------------

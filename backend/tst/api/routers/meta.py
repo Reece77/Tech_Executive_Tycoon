@@ -169,6 +169,9 @@ ORG_ACTION_ENERGY = (
     "give_raise",
     "promote",
     "hiring_plan",
+    "appoint_executive",  # M8
+    "remove_executive",
+    "set_shared_services",
 )
 
 
@@ -228,6 +231,7 @@ PRODUCT_ACTION_ENERGY = (
     "sunset_product",
     "cancel_product",
     "scout_search",
+    "set_product_division",  # M8
 )
 
 

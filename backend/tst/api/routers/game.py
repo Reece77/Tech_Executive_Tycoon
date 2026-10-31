@@ -163,6 +163,7 @@ def open_search(save_id: str, body: SearchIn, settings: SettingsDep, data: DataD
         body.role,
         body.channel,  # type: ignore[arg-type]
         rival_id=body.rival_id,
+        level=body.level,
     )
     result, _ = _act(path, data, action)
     search = max(result.new_state.searches, key=lambda s: s.id)
