@@ -1,0 +1,72 @@
+# M7c: Known fixes and an agent playtest
+
+**Goal:** fix the two link problems M7b found, then have the agent play a full 10-year game through the browser like a player would. It fixes the bugs it finds and writes up everything else for Reece, so his own playtest starts from a cleaner build and a checklist.
+
+**Spec sections:** §13 (UI), §17 (M7) · **ADRs:** 0007, 0009 · **Depends on:** M7b (`m7b-done`)
+
+## Context
+
+Reece is away for two days and can't play. M7b's follow-ups: links to people who have left open a "not found" profile; links to events open the inbox rather than the event. His own 10-year playtest (the v1 acceptance) comes after this. A later brief turns his findings and this report's design notes into fixes.
+
+## Out of scope
+
+Design or balance changes. If something looks like a design problem (too slow, too easy, confusing rules), write it in the report and leave it alone. v2 systems.
+
+## Sub-tasks (commit after each)
+
+1. **Former staff profiles.** A person who has left opens a read-only "Former employee" profile.
+   - **What it shows:** name, last role and unit, hire and leaving months, the reason they left (resigned, poached by a named rival, fired, retired), tenure, their last shown ranges and tags as the player knew them, and their History entries.
+   - **No actions.** The poach-back case is out of scope.
+   - **If departed people are no longer in the save,** keep what the player knew at departure (a migration and a data dictionary entry).
+   - **Tests:** the existing planted hidden-value test covers this route. Links from History, the hall of fame, the inbox and the org history all resolve.
+2. **Event links.** Every link to an event (History, hall of fame, "While you were away", the COO briefing) opens that event's own message in the inbox with its card showing, including answered events with the choice taken.
+   - **Add a deep link** such as `/game/:save/inbox/:item`.
+   - **Playwright:** follow a History event link and see the event card.
+3. **Agent playtest.** Play a new game on `ex_big_tech_founders`, standard difficulty, for 120 months through the browser with Playwright, as a reasonable player would:
+   - hire through job posts, interviews and offers, and set up a recruiter plan;
+   - build and launch a product, then a second one;
+   - raise a seed and a Series A when they're offered;
+   - answer events by reading them, not always taking the first choice;
+   - use Holiday in quiet stretches;
+   - open every screen at least once a year;
+   - ask the COO a question each year (mock adapter);
+   - try the saves manager once (duplicate, then restore a backup).
+
+   Save a screenshot of each main screen once a game-year in `docs/playtests/agent-m7c/`: at most 40 PNGs, compressed, under 15 MB in total. Keep the script in `frontend/e2e/playtest/` but out of `make e2e`; it can be run on demand with `make playtest`.
+4. **Fix what's broken.** Fix everything the playtest shows that is clearly a bug, each with a test:
+   - crashes or 5xx responses;
+   - wrong or inconsistent numbers, such as a tile that disagrees with its breakdown or a total that doesn't add up;
+   - broken links or buttons;
+   - layout that hides information at 1440×900;
+   - missing tooltips;
+   - stuck states.
+
+   Golden snapshots change only if a bug fix requires it, with the reason in CHANGELOG.
+5. **Report:** `docs/playtests/agent-m7c.md`:
+   - **The game in numbers,** per year: cash, ARR, staff, morale, rounds, products and events.
+   - **Bugs fixed,** each with its commit.
+   - **Bugs not fixed,** and why.
+   - **Design and balance notes,** ranked by how much they'd affect a player. Observations only, nothing built. Include whether time felt slow or fast, decisions that seemed meaningless, information that was hard to find, and anything that felt unfair.
+   - **A checklist for Reece's playtest:** the 10 things most worth his judgment.
+
+   Close out with CHANGELOG and durations.
+
+## Acceptance criteria
+
+- [ ] Former staff open a read-only profile from every link; no hidden value appears (planted-value test).
+- [ ] Every event link opens that event's message with its card.
+- [ ] The agent's 120-month game finishes through the browser with no 5xx, with screenshots saved.
+- [ ] Every bug fixed has a test; the report lists bugs fixed and not fixed, design notes and Reece's checklist.
+- [ ] `make check` green; `make e2e` passes; merged per CLAUDE.md §6 with the trailer `Milestone-Tag: m7c-done`.
+
+## Manual check (Reece, after merge)
+
+Read `docs/playtests/agent-m7c.md`, then play your 10-year run with its checklist beside you.
+
+## Decisions made
+
+_(Agent fills in.)_
+
+## Follow-ups
+
+_(Agent fills in.)_
