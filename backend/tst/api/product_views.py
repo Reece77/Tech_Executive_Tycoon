@@ -42,6 +42,7 @@ from tst.sim.products.phases import (
     current_feature,
     pricing_power,
     product_costs,
+    reference_price,
     segment_appeal,
     shown_turn,
     team_of,
@@ -106,11 +107,16 @@ def _weights(seg_def: SegmentDef) -> AppealWeightsOut:
     return AppealWeightsOut(quality=w.quality, price=w.price, brand=w.brand, features=w.features)
 
 
-def _price_score(product: Product, seg: ProductSegment, data: LoadedData) -> float | None:
+def _price_score(
+    state: GameState, product: Product, seg: ProductSegment, data: LoadedData
+) -> float | None:
+    """The price score as sales use it: the reference price x the CRO's estimated pricing
+    power in a sales-led segment (18.3, 18.8; M8r)."""
     if seg.price_cents is None:
         return None
-    market = data.game_data.category(product.category).market(seg.segment)
-    return f.price_score(market.reference_price_cents, seg.price_cents)
+    power = pricing_power(state, product, data.balance, estimate=True)
+    reference = reference_price(product, seg.segment, data.game_data, power)
+    return f.price_score(reference, seg.price_cents)
 
 
 def _addressable(state: GameState, category: str, segment: str) -> int:
@@ -170,7 +176,7 @@ def market_out(state: GameState, category: str, data: LoadedData) -> MarketOut:
                 feature_score=current_feature(r.product, data.game_data, turn),
                 brand=r.product.brand,
                 price_cents=r.seg.price_cents or 0,
-                price_score=_price_score(r.product, r.seg, data) or 0.0,
+                price_score=_price_score(state, r.product, r.seg, data) or 0.0,
                 appeal=r.appeal,
                 customers=r.seg.customers,
                 share_of_served=r.seg.customers / served if served else 0.0,
@@ -248,7 +254,7 @@ def product_out(
                 label=seg_def.label,
                 reach=seg_def.reach,
                 price_cents=seg.price_cents,
-                price_score=_price_score(product, seg, data),
+                price_score=_price_score(state, product, seg, data),
                 customers=seg.customers,
                 appeal=(
                     appeal := segment_appeal(
@@ -272,7 +278,7 @@ def product_out(
                 counts_users=seg.segment == CONSUMER_SEGMENT,
                 share_breakdown=breakdowns.market_share(
                     appeal,
-                    _price_score(product, seg, data),
+                    _price_score(state, product, seg, data),
                     product,
                     current_feature(product, game, shown_turn(state)),
                     {
@@ -479,7 +485,8 @@ def price_preview(
     if isinstance(price_cents, bool) or price_cents <= 0:
         raise ProductRuleError("a price must be a positive amount in cents")
     seg_def = game.segment(segment)
-    reference = game.category(product.category).market(segment).reference_price_cents
+    power = pricing_power(state, product, data.balance, estimate=True)
+    reference = reference_price(product, segment, game, power)  # as the current appeal (M8r)
     turn = shown_turn(state)
     others = [
         r.appeal
@@ -495,7 +502,6 @@ def price_preview(
         current_feature(product, game, turn),
     )
     shares, _ = f.choice_shares([appeal, *others], seg_def.outside_option, data.balance.market)
-    power = pricing_power(state, product, data.balance, estimate=True)
     current = segment_appeal(product, seg, game, turn, power)
     current_share = None
     if current is not None:
@@ -508,7 +514,7 @@ def price_preview(
         appeal=appeal,
         choice_share=shares[0],
         current_price_cents=seg.price_cents,
-        current_price_score=_price_score(product, seg, data),
+        current_price_score=_price_score(state, product, seg, data),
         current_appeal=current,
         current_choice_share=current_share,
         revenue_per_customer_change=(

@@ -78,6 +78,18 @@ def current_feature(product: Product, data: GameData, turn: int) -> float:
     return f.feature_score(product.feature_points, data.category(product.category), turn)
 
 
+def reference_price(
+    product: Product, segment: str, data: GameData, pricing_power: float = 1.0
+) -> int:
+    """The reference price a segment's price score uses: x the CRO's pricing power in a
+    sales-led segment (18.3). Sales, the current appeal and a price preview all use this one
+    (M8r, Codex review 1 finding 5)."""
+    reference = data.category(product.category).market(segment).reference_price_cents
+    if pricing_power != 1 and data.segment(segment).reach == "sales":
+        reference = round(reference * pricing_power)
+    return reference
+
+
 def segment_appeal(
     product: Product,
     seg: ProductSegment,
@@ -90,9 +102,7 @@ def segment_appeal(
     (18.3); 1 for v1 companies and rivals."""
     if seg.price_cents is None:
         return None
-    reference = data.category(product.category).market(seg.segment).reference_price_cents
-    if pricing_power != 1 and data.segment(seg.segment).reach == "sales":
-        reference = round(reference * pricing_power)
+    reference = reference_price(product, seg.segment, data, pricing_power)
     return f.appeal(
         data.segment(seg.segment).weights,
         product.quality,
