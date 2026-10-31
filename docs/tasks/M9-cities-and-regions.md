@@ -2,7 +2,7 @@
 
 **Goal:** geography matters. A company has an HQ city, can lease offices in about 15 real tech hubs, and hires there at local wages and talent levels. It can launch its products region by region into new markets with their own size, prices and local rivals. v1's market becomes the home region, so expanding adds demand rather than splitting it.
 
-**Spec sections:** §9 (regions), §5.4 (hiring) · **ADRs:** 0002, 0007, 0011 (named cities in v2), 0013 (stream `rival_region` id 22, reserved), 0017, 0019 · **Formulas:** `docs/formulas.md` §19 (all), with §2, §8, §11, §13.9 and §15 · **Wireframes:** `docs/wireframes.md` (M9 screens) and `docs/wireframes/source/Offices.dc.html`, `ProductRegions.dc.html` · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M8 (`m8-done`)
+**Spec sections:** §9 (regions), §5.4 (hiring) · **ADRs:** 0002, 0007, 0011 (named cities in v2), 0013 (stream `rival_region` id 22, reserved), 0017, 0019 · **Formulas:** `docs/formulas.md` §19 (all), with §2, §8, §11, §13.9 and §15 · **Wireframes:** `docs/wireframes.md` (M9 screens) and `docs/wireframes/source/Offices.dc.html`, `ProductRegions.dc.html` · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M8r (`m8r-done`)
 
 ## Lane
 

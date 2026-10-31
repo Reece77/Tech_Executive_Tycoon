@@ -2,7 +2,7 @@
 
 **Goal:** the economy has a history and a future, and money has more shapes. Interest rates, the venture climate, consumer confidence and AI compute prices follow the real path from 2010 to 2025, then move in seeded cycles with occasional downturns. Companies can raise Series C and D from growth investors, or borrow, through venture debt and bank loans with covenants that bite when they're broken.
 
-**Spec sections:** §9 (macro layer), §10 (instruments) · **ADRs:** 0002, 0003, 0005, 0013 (stream `macro` id 21, reserved), 0018, 0019 · **Formulas:** `docs/formulas.md` §20 (all), with §14 and §16 · **Wireframes:** `docs/wireframes.md` (M10 screens) and `docs/wireframes/source/Debt.dc.html` · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M8 (`m8-done`)
+**Spec sections:** §9 (macro layer), §10 (instruments) · **ADRs:** 0002, 0003, 0005, 0013 (stream `macro` id 21, reserved), 0018, 0019 · **Formulas:** `docs/formulas.md` §20 (all), with §14 and §16 · **Wireframes:** `docs/wireframes.md` (M10 screens) and `docs/wireframes/source/Debt.dc.html` · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M8r (`m8r-done`)
 
 ## Lane
 

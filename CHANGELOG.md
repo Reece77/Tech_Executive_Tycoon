@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs: Codex review 1 (at m8-done) saved in `docs/reviews/`; all seven findings confirmed and briefed as M8r (runs after M7c, before the M9/M10 lanes). Burn is redefined as net cash used before financing (finding 7).
 - M8 Divisions, executives and new markets (formulas.md §18; the first v2 milestone):
   - Division units from stage 3, with presidents, `product.division_id` and `set_product_division`. Each ledger line has a division (migration `0020_divisions`), and division statements derive from it with the shared-services allocation (Finance → Divisions tab, `GET /finance/divisions`).
   - Coordination cost: the layer tax and the cross-division factor.
