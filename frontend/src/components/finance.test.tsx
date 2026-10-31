@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { CapTable as CapTableData, RoundPreview, StatementPeriod } from '../hooks/api';
 import {
+  capRowId,
   confidenceColor,
   formatFraction,
   formatPointChange,
@@ -166,6 +167,14 @@ describe('CapTable', () => {
     expect(html).toContain('100.00%');
     expect(html).toContain('data-color="var(--tst-accent)"'); // the founder's bar
     expect(html).toContain('data-color="var(--tst-good)"'); // granted options
+  });
+
+  it('gives converted SAFEs from two rounds different row ids', () => {
+    // Playtest: SAFEs converted at the Series A and again at the B gave two equal React keys.
+    const safe = { holder: 'SAFE holders', holder_kind: 'group', share_class: 'safe_conversion' };
+    const rows = [...KESTREL_CAP.holders, safe, safe];
+    const ids = rows.map((r, i) => capRowId(r, i));
+    expect(new Set(ids).size).toBe(rows.length);
   });
 });
 

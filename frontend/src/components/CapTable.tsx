@@ -2,6 +2,7 @@ import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo } from 'react';
 import type { CapTable as CapTableData, Holder } from '../hooks/api';
 import {
+  capRowId,
   formatFraction,
   formatShares,
   holderColor,
@@ -139,7 +140,7 @@ export function CapTable({ cap, views }: { cap: CapTableData; views?: TableViews
     features: gameTableFeatures,
     columns,
     data: rows,
-    getRowId: (r) => `${r.holder_kind}:${r.holder}:${r.share_class}`,
+    getRowId: capRowId,
     ...(views?.tableProps ?? {}),
   });
   return <DataTable views={views} table={table} label="Holders" rowTestId="cap-row" />;

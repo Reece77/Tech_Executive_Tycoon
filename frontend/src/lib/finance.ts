@@ -216,3 +216,12 @@ export function pnlLines(periods: readonly StatementPeriod[]): StatementLine[] {
 export function holderName(h: { holder: string; is_founder?: boolean }): string {
   return h.is_founder ? `${h.holder} (you)` : h.holder;
 }
+
+/** A holder line's row id. The cap table keeps one line per round, so converted SAFEs from
+ * two rounds share holder and class; the position keeps the ids unique (M7c playtest). */
+export function capRowId(
+  r: { holder_kind: string; holder: string; share_class: string },
+  index: number,
+): string {
+  return `${r.holder_kind}:${r.holder}:${r.share_class}:${index}`;
+}
