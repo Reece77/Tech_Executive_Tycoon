@@ -248,8 +248,20 @@ def remember(path: Path, state: GameState, balances: Balances | None = None) -> 
     """Keep the state just written to a save (after its session closed), as `load_state`
     would read it back (M6 sub-task 0: a turn or action then skips a full load), and the
     ledger balances through its turn when the writer knows them (M7a: summing the whole
-    ledger cost about 10 ms a call by turn 120, and grows every month)."""
+    ledger cost about 10 ms a call by turn 120, and grows every month).
+
+    Only `write_session` calls this, while it still holds the save's write lock, so no other
+    write can land between the commit and the stamp (M8r, Codex review 1 finding 1)."""
     _LAST[str(path.resolve())] = (_stamp(path), live_view(state), balances)
+
+
+PUBLISH = "tst_publish"
+
+
+def publish(session: Session, state: GameState, balances: Balances | None = None) -> None:
+    """Ask `write_session` to remember `state` (and its balances) once this write commits,
+    before it releases the lock. A write that publishes nothing clears what was remembered."""
+    session.info[PUBLISH] = (state, balances)
 
 
 def _recall(path: Path) -> tuple[GameState, Balances | None] | None:
@@ -341,6 +353,12 @@ def write_session(path: Path) -> Iterator[Session]:
         with open_session(path) as session, session.begin():
             _cache(session, cached)
             yield session
+            published = session.info.pop(PUBLISH, None)
+        # Committed and closed, and the lock is still ours: publish now or forget (M8r).
+        if published is not None:
+            remember(path, *published)
+        else:
+            _LAST.pop(str(path.resolve()), None)
     except OperationalError as exc:
         if is_locked_error(exc):
             raise SaveBusyError(BUSY_MESSAGE) from exc
@@ -756,7 +774,7 @@ def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnR
             balances,
         )
         apply_turn_result(session, result, decisions, state, data)
-    remember(save_path, result.new_state, apply_entries(balances, result.ledger_entries))
+        publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
     return result
 
 
@@ -840,7 +858,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
                 actor_id=action.actor_id,
             )
         )
-    remember(save_path, result.new_state, apply_entries(balances, result.ledger_entries))
+        publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
     return result
 
 

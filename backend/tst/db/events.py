@@ -139,7 +139,7 @@ def write_pending(
         CACHED_BALANCES,
         CACHED_STATE,
         load_current,
-        remember,
+        publish,
         write_session,
     )
 
@@ -196,7 +196,7 @@ def write_pending(
         cached = session.info.get(CACHED_STATE)  # writing events posts no ledger lines
         same_turn = cached is not None and cached.turn == state.turn
         balances = session.info.get(CACHED_BALANCES) if same_turn else None
-    remember(path, state, balances)
+        publish(session, state, balances)
     if writer is not None and (writer.records or writer.spent_cents):
         add_spend(
             save_dir,
