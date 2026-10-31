@@ -82,7 +82,7 @@ function Body({ saveId, org, s }: { saveId: string; org: Org; s: Scaleup }) {
               <span style={{ color: p.covered ? 'var(--tst-good)' : 'var(--tst-warn)' }}>
                 {p.covered
                   ? 'Covered'
-                  : `Output ${pct(p.output_effect_pct)}, morale ${p.morale_effect.toFixed(1)}`}
+                  : `Output ${pct(p.output_effect_pct)} (est.), morale ${p.morale_effect.toFixed(1)}`}
               </span>
             </div>
           ))}

@@ -19926,7 +19926,7 @@
           "output_effect_pct": {
             "type": "number",
             "title": "Output Effect Pct",
-            "description": "Change to output, capacity and marketing, %"
+            "description": "Change to output, capacity and marketing, %; an estimate: the COO's effect from displayed ranges (18.8)"
           },
           "morale_effect": {
             "type": "number",
@@ -19965,7 +19965,7 @@
           "output_effect_pct": {
             "type": "number",
             "title": "Output Effect Pct",
-            "description": "The largest shortfall's change to output, %"
+            "description": "The largest shortfall's change to output, %; an estimate: the COO's effect from displayed ranges (18.8)"
           }
         },
         "type": "object",

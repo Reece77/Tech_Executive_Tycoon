@@ -65,18 +65,20 @@ class Modifiers:
 
 
 def modifiers(
-    state: GameState, view: OrgView, balance: Balance, data: GameData
+    state: GameState, view: OrgView, balance: Balance, data: GameData, *, estimate: bool = False
 ) -> Modifiers | None:
+    """Seat, support and structure factors (18.5). `estimate`: seat effects from displayed
+    ranges, for the API (M8r); the engine always uses true values."""
     company = state.company(view.company_id)
     seats = ex.seats_in_play(state, company.id, balance)
     if not seats and not company_divisions(state, company.id):
         return None
     org = balance.org
-    k = ex.k_coo(state, company.id, balance)
+    k = ex.k_coo(state, company.id, balance, estimate=estimate)
     pools = support_pools(state, view, balance, data) if is_scaleup(company, balance) else {}
     factors = {key: support_factor(p.coverage, k, org) for key, p in pools.items()}
-    cto = ex.multiplier(state, company.id, ex.CTO, balance)
-    cro = ex.multiplier(state, company.id, ex.CRO, balance)
+    cto = ex.multiplier(state, company.id, ex.CTO, balance, estimate=estimate)
+    cro = ex.multiplier(state, company.id, ex.CRO, balance, estimate=estimate)
     builder: dict[int, float] = {}
     seller: dict[int, float] = {}
     for person_id, unit_id in view.unit_of.items():
@@ -91,14 +93,16 @@ def modifiers(
         builder=builder,
         seller=seller,
         pool_support=factors,
-        cpo=ex.multiplier(state, company.id, ex.CPO, balance),
-        cmo=ex.multiplier(state, company.id, ex.CMO, balance),
+        cpo=ex.multiplier(state, company.id, ex.CPO, balance, estimate=estimate),
+        cmo=ex.multiplier(state, company.id, ex.CMO, balance, estimate=estimate),
         cross_division=org.cross_division_factor,
-        qcap=ex.side_factor(state, company.id, ex.CTO, "qcap", balance),
-        churn=ex.churn_factor(state, company.id, balance),
-        brand=ex.side_factor(state, company.id, ex.CMO, "brand", balance),
-        awareness=ex.side_factor(state, company.id, ex.CMO, "awareness", balance),
-        pricing=ex.side_factor(state, company.id, ex.CRO, "pricing", balance),
+        qcap=ex.side_factor(state, company.id, ex.CTO, "qcap", balance, estimate=estimate),
+        churn=ex.churn_factor(state, company.id, balance, estimate=estimate),
+        brand=ex.side_factor(state, company.id, ex.CMO, "brand", balance, estimate=estimate),
+        awareness=ex.side_factor(
+            state, company.id, ex.CMO, "awareness", balance, estimate=estimate
+        ),
+        pricing=ex.side_factor(state, company.id, ex.CRO, "pricing", balance, estimate=estimate),
         pool_churn={key: support_churn(p.coverage, k, org) for key, p in pools.items()},
     )
 

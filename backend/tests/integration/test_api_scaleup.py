@@ -173,3 +173,91 @@ def test_cli_divisions_execs_and_appoint(
     out = runner.invoke(cli_app, ["execs", "--save", SAVE])
     assert out.exit_code == 0, out.output
     assert "CTO" in out.output and "est." in out.output and "vacant" in out.output
+
+
+# --- M8r finding 4: seat-derived numbers come from displayed estimates (18.8) ---------------
+
+COO_ID = 5
+
+
+def _same_range_values(loaded: LoadedData, path: Path, skill: str) -> tuple[float, float]:
+    """Two true values of the COO's `skill`, as far apart as possible, that the company sees
+    as the same displayed range."""
+    from tst.sim.people.reveal import revealed_range
+
+    with open_session(path) as session:
+        state = load_state(session)
+    person, reveal = state.person(COO_ID), state.reveal(1, COO_ID)
+    assert reveal is not None
+
+    def shown(v: float) -> tuple[int, int]:
+        return revealed_range(
+            replace(person, skills=person.skills.updated({skill: v})), reveal, skill
+        )
+
+    start = person.skills[skill]
+    same = [v / 100 for v in range(round(start * 100) - 150, round(start * 100) + 151)]
+    same = [v for v in same if 1 <= v <= 20 and shown(v) == shown(start)]
+    return min(same), max(same)
+
+
+def _plant(path: Path, values: dict[str, float]) -> None:
+    with open_session(path) as session, session.begin():
+        for skill, value in values.items():
+            session.execute(
+                update(PersonSkillRow)
+                .where(PersonSkillRow.person_id == COO_ID, PersonSkillRow.skill == skill)
+                .values(value=value)
+            )
+
+
+def _screens(client: Client, product_id: int) -> str:
+    return json.dumps(
+        {
+            "scaleup": client.get(f"{BASE}/scaleup"),
+            "org": client.get(f"{BASE}/org"),
+            "overview": client.get(f"/api/saves/{SAVE}/overview"),
+            "product": client.get(f"{BASE}/products/{product_id}"),
+            "portfolio": client.get(f"{BASE}/portfolio"),
+            "person": client.get(f"{BASE}/people/{COO_ID}"),
+        },
+        sort_keys=True,
+    )
+
+
+def test_hidden_coo_skill_changes_no_response(api: tuple[Client, Path], loaded: LoadedData) -> None:
+    """An occupied COO, a deep division (depth-3 teams pay the layer tax) and an under-covered
+    pool (21 staff, 1 support): two COOs the player sees identically give identical screens."""
+    client, path = api
+    org = client.post(f"{BASE}/org/units", {"kind": "division", "name": "Platform"}, 201)["org"]
+    division = next(u for u in org["units"] if u["kind"] == "division")["unit_id"]
+    org = client.post(
+        f"{BASE}/org/units", {"kind": "department", "name": "Eng", "parent_id": division}, 201
+    )["org"]
+    dept = next(u for u in org["units"] if u["kind"] == "department")["unit_id"]
+    org = client.post(
+        f"{BASE}/org/units", {"kind": "team", "name": "Core", "parent_id": dept}, 201
+    )["org"]
+    team = next(u for u in org["units"] if u["kind"] == "team")["unit_id"]
+    for pid in range(10, 16):
+        client.post(f"{BASE}/org/people/{pid}/move", {"unit_id": team})
+    product = client.post(
+        f"{BASE}/products", {"name": "Ledger", "category": "b2b_saas", "segments": ["smb"]}, 201
+    )["product"]["product_id"]
+    client.post(f"{BASE}/products/{product}/assign", {"unit_id": team})
+    client.post(f"{BASE}/people/21/fire")  # the finance manager: 21 staff, the COO alone
+    client.post(f"{BASE}/scaleup/seats/coo/appoint", {"person_id": COO_ID})
+    weights = loaded.balance.exec_seats.seats["coo"].weights
+    lows, highs = {}, {}
+    for skill in weights:
+        lows[skill], highs[skill] = _same_range_values(loaded, path, skill)
+    assert sum(w * (highs[s] - lows[s]) for s, w in weights.items()) > 0.5  # true s differs
+
+    _plant(path, lows)
+    weak = _screens(client, product)
+    _plant(path, highs)
+    strong = _screens(client, product)
+    scale = json.loads(strong)["scaleup"]
+    assert any(p["output_effect_pct"] < 0 for p in scale["support"])  # an under-covered pool
+    assert any("layer tax" in d["effect_note"] for d in scale["divisions"])  # a deep division
+    assert weak == strong

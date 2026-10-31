@@ -73,7 +73,7 @@ def _rows(state: GameState, category: str, segment: str, data: LoadedData) -> li
             continue
         if product.status not in SELLING or seg.price_cents is None:
             continue
-        power = pricing_power(state, product, data.balance)  # CRO (M8, 18.3)
+        power = pricing_power(state, product, data.balance, estimate=True)  # CRO (18.3, 18.8)
         appeal = segment_appeal(product, seg, data.game_data, turn, power)
         assert appeal is not None
         rows.append(_Row(product, seg, appeal))
@@ -231,7 +231,8 @@ def product_out(
     """One of the player's products, with its team by name (11.13)."""
     game = data.game_data
     company = state.company(product.company_id)
-    team = team_of(state, org_view(state, company.id), product, data.balance, game)
+    # Seat effects shown as estimates from displayed ranges (18.8; M8r).
+    team = team_of(state, org_view(state, company.id), product, data.balance, game, estimate=True)
     category = game.category(product.category)
     months = _months(history)
     last = months[-1] if months else {}
@@ -255,7 +256,7 @@ def product_out(
                         seg,
                         game,
                         shown_turn(state),
-                        pricing_power(state, product, data.balance),
+                        pricing_power(state, product, data.balance, estimate=True),
                     )
                 ),
                 share_of_served=(share := seg.customers / served if served else 0.0),
@@ -494,7 +495,8 @@ def price_preview(
         current_feature(product, game, turn),
     )
     shares, _ = f.choice_shares([appeal, *others], seg_def.outside_option, data.balance.market)
-    current = segment_appeal(product, seg, game, turn, pricing_power(state, product, data.balance))
+    power = pricing_power(state, product, data.balance, estimate=True)
+    current = segment_appeal(product, seg, game, turn, power)
     current_share = None
     if current is not None:
         now, _ = f.choice_shares([current, *others], seg_def.outside_option, data.balance.market)

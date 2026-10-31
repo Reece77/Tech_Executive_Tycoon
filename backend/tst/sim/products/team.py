@@ -97,14 +97,17 @@ def product_team(
     category: CategoryDef,
     balance: Balance,
     data: GameData,
+    *,
+    estimate: bool = False,
 ) -> Team:
-    """Members of the assigned units by function; members of child units do not count."""
+    """Members of the assigned units by function; members of child units do not count.
+    `estimate`: seat effects from displayed ranges, for the API (M8r)."""
     pb = balance.products
     builders: list[Builder] = []
     sellers: list[Contributor] = []
     marketers: list[Contributor] = []
     units = assigned_units(state, product)
-    mods = modifiers(state, view, balance, data)  # M8 (18.5); None for v1 companies
+    mods = modifiers(state, view, balance, data, estimate=estimate)  # M8 (18.5); None for v1
     for unit_id in units:
         for person_id in view.members.get(unit_id, ()):
             person = state.person(person_id)

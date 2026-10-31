@@ -117,7 +117,7 @@ def scaleup_out(
     view = org_view(state, company.id)
     heads = division_headcounts(view)
     divisions = company_divisions(state, company.id)
-    k = ex.k_coo(state, company.id, b)
+    k = ex.k_coo(state, company.id, b, estimate=True)  # 18.8: estimates only (M8r)
     out_divisions = []
     for d in divisions:
         products = [p for p in state.company_products(company.id) if p.division_id == d.id]
@@ -132,7 +132,8 @@ def scaleup_out(
         if d.embedded:
             note = f"Embedded services: output and capacity x{b.org.embedded_bonus:.2f}"
         elif deep:
-            note = f"Teams at depth 3 pay the layer tax: output -{b.org.layer_tax * k * PCT:.1f}%"
+            tax = b.org.layer_tax * k * PCT
+            note = f"Teams at depth 3 pay the layer tax: output -{tax:.1f}% (est.)"
         else:
             note = "Central services: it takes a share of corporate costs by headcount"
         out_divisions.append(
@@ -327,7 +328,7 @@ def support_tile(state: GameState, data: LoadedData) -> SupportTileOut | None:
         return None
     view = org_view(state, state.player.id)
     pools = support_pools(state, view, b, data.game_data).values()
-    k = ex.k_coo(state, state.player.id, b)
+    k = ex.k_coo(state, state.player.id, b, estimate=True)  # 18.8 (M8r)
     worst = min(support_factor(p.coverage, k, b.org) for p in pools)
     return SupportTileOut(
         support_staff=sum(p.support for p in pools),

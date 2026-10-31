@@ -6448,7 +6448,7 @@ export interface components {
             covered: boolean;
             /**
              * Output Effect Pct
-             * @description Change to output, capacity and marketing, %
+             * @description Change to output, capacity and marketing, %; an estimate: the COO's effect from displayed ranges (18.8)
              */
             output_effect_pct: number;
             /**
@@ -6473,7 +6473,7 @@ export interface components {
             pools_short: number;
             /**
              * Output Effect Pct
-             * @description The largest shortfall's change to output, %
+             * @description The largest shortfall's change to output, %; an estimate: the COO's effect from displayed ranges (18.8)
              */
             output_effect_pct: number;
         };

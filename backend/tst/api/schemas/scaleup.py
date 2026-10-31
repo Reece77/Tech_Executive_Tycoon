@@ -31,7 +31,10 @@ class SupportPoolOut(BaseModel):
     support_staff: int
     needed: int = Field(description="Support staff for full coverage: one per 15 staff")
     covered: bool
-    output_effect_pct: float = Field(description="Change to output, capacity and marketing, %")
+    output_effect_pct: float = Field(
+        description="Change to output, capacity and marketing, %; an estimate: the COO's effect "
+        "from displayed ranges (18.8)"
+    )
     morale_effect: float = Field(description="Morale points from 'Admin and support'")
 
 

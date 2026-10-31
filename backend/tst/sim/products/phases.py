@@ -56,9 +56,17 @@ def _views(state: GameState) -> dict[int, OrgView]:
 
 
 def team_of(
-    state: GameState, view: OrgView, product: Product, balance: Balance, data: GameData
+    state: GameState,
+    view: OrgView,
+    product: Product,
+    balance: Balance,
+    data: GameData,
+    *,
+    estimate: bool = False,
 ) -> Team:
-    return product_team(state, view, product, data.category(product.category), balance, data)
+    return product_team(
+        state, view, product, data.category(product.category), balance, data, estimate=estimate
+    )
 
 
 def shown_turn(state: GameState) -> int:
@@ -94,9 +102,12 @@ def segment_appeal(
     )
 
 
-def pricing_power(state: GameState, product: Product, balance: Balance) -> float:
-    """The CRO's pricing power for the product's company (18.3); 1 before stage 3."""
-    return side_factor(state, product.company_id, CRO, "pricing", balance)
+def pricing_power(
+    state: GameState, product: Product, balance: Balance, *, estimate: bool = False
+) -> float:
+    """The CRO's pricing power for the product's company (18.3); 1 before stage 3.
+    `estimate`: from the displayed ranges, for the API (M8r)."""
+    return side_factor(state, product.company_id, CRO, "pricing", balance, estimate=estimate)
 
 
 # --- Phase 3: development -------------------------------------------------------------------

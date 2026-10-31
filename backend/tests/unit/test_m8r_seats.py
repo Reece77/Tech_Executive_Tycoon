@@ -30,7 +30,8 @@ def test_a_poached_cto_leaves_the_seat_vacant(loaded: LoadedData) -> None:
     rival = next(c for c in state.companies if c.name == "Salesforce")
     state = approach(state, rival, CTO, loaded.balance, loaded.game_data)
     person = state.person(CTO)  # an unhappy, disloyal person takes a huge offer
-    state = with_person(state, replace(person, personality=person.personality.updated({"loyalty": 1.0})))  # fmt: skip
+    disloyal = person.personality.updated({"loyalty": 1.0})
+    state = with_person(state, replace(person, personality=disloyal))
     state = with_approach(state, replace(state.approaches[0], offer_cents=40_000_000))
     g = Game(loaded, state, 400_000_000)
     notes: list[str] = []

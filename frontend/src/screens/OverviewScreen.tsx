@@ -165,7 +165,7 @@ export function OverviewScreen() {
             warn={data.support.pools_short > 0}
             note={
               data.support.pools_short > 0
-                ? `${data.support.pools_short} short · output ${pct(data.support.output_effect_pct)}`
+                ? `${data.support.pools_short} short · output ${pct(data.support.output_effect_pct)} (est.)`
                 : 'Covered'
             }
             hint="Finance, recruiting and operations staff and executives against one per 15 staff"
