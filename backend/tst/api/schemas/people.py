@@ -9,6 +9,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from tst.api.schemas.common import BreakdownOut
+from tst.api.schemas.history import HistoryRowOut
 
 
 class RangeOut(BaseModel):
@@ -272,3 +273,31 @@ class InboxOut(BaseModel):
     total: int = Field(description="Messages matching the query, before paging (M2b)")
     offset: int = 0
     items: list[InboxItemOut]
+
+
+class FormerProfileOut(BaseModel):
+    """A person who has left the company (M7c): read-only, as the player knew them at
+    departure. Displayed ranges and noticed tags only (ADR-0007)."""
+
+    person_id: int
+    name: str
+    role: str
+    role_label: str
+    level: str
+    unit_name: str | None = Field(description="The unit they were in; null for the company root")
+    start_turn: int
+    start_date_label: str
+    end_turn: int
+    end_date_label: str
+    tenure_months: int
+    reason: str = Field(description="resigned | poached | fired | retired | company_failed | left")
+    reason_label: str = Field(description="e.g. 'Poached by Zoho'")
+    rival_id: int | None
+    rival_name: str | None
+    potential_phrase: str
+    skills: list[AttributeOut]
+    personality: list[AttributeOut]
+    noticed_tags: list[TagOut]
+    interests: list[str] | None
+    work_style: str | None
+    history: list[HistoryRowOut] = Field(description="Their History entries, newest first")

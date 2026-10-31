@@ -416,6 +416,22 @@ export function usePeople(saveId: string) {
   });
 }
 
+/** Someone who has left (M7c), as the player knew them; `enabled` once the staff route 404s. */
+export function useFormerPerson(saveId: string, personId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: [...keys.person(saveId, personId), 'former'] as const,
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/people/{person_id}/former', {
+          params: { path: { save_id: saveId, person_id: personId } },
+        }),
+      ),
+    enabled: enabled && Number.isSafeInteger(personId) && personId > 0,
+    retry: false,
+  });
+}
+export type FormerProfile = Schemas['FormerProfileOut'];
+
 export function usePerson(saveId: string, personId: number) {
   return useQuery({
     queryKey: keys.person(saveId, personId),

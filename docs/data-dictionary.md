@@ -828,3 +828,23 @@ Headcount per division at each month's payroll (phase 6), for the shared-service
 | `embedded` | BOOLEAN | no | Embedded shared services that month (takes no allocation). |
 
 Index `ix_division_month_company_turn (company_id, turn)`. `save_meta.schema_version` is 20.
+
+## former_staff (migration `0021_former_staff`, M7c)
+
+What the player knew of an employee when they left, frozen at departure (the "Former employee" profile). Written by `sync_state` when one of the player's employments that was on staff ends (resigned, fired, retired, poached, company closed). Displayed ranges and noticed tags only, never a true value (ADR-0007). One row per person: a rehire who leaves again overwrites it. The migration backfills past departures from the stored data; for someone now at a rival, whose true skills may have moved since, those backfilled ranges are a best effort.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER PK FK → person.id | no | The person. |
+| `company_id` | INTEGER FK → company.id | no | The player's company. |
+| `employment_id` | INTEGER | no | The employment that ended. |
+| `role` | VARCHAR(64) | no | Last role (roles.yaml key). |
+| `level` | VARCHAR(16) | no | Last level. |
+| `unit_name` | VARCHAR(64) | yes | The unit they were in; null for the company root. |
+| `start_turn` | INTEGER | no | Hire month. |
+| `end_turn` | INTEGER | no | Leaving month. |
+| `reason` | VARCHAR(16) | no | `resigned`, `fired`, `retired`, `poached`, `company_failed` (or `left`). |
+| `rival_id` | INTEGER | yes | The rival they joined when poached. |
+| `knowledge` | JSON | no | `{"ranges": {attribute: [min, max]}, "tags": [[tag, noticed_turn]], "interests": [..] or null, "work_style": .. or null}`; potential is the `potential_ability` range, shown only as a phrase. |
+
+`save_meta.schema_version` is 21.

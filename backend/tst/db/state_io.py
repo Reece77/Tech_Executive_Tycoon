@@ -23,6 +23,7 @@ from typing import Any, cast
 from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, inspect, select
 from sqlalchemy.orm import Session
 
+from tst.db.former import former_rows
 from tst.db.mappers import (
     candidate_from_row,
     candidate_to_row,
@@ -75,6 +76,7 @@ from tst.db.models import (
     EventQueueRow,
     EventRow,
     ExecSeatRow,
+    FormerStaffRow,
     FreeAgentRow,
     FundingRoundRow,
     HiringPlanRow,
@@ -124,7 +126,7 @@ from tst.sim.finance.models import (
 from tst.sim.hiring.models import NextIds
 from tst.sim.ledger import LedgerEntry
 from tst.sim.org.models import ExecSeat
-from tst.sim.people.models import RevealState
+from tst.sim.people.models import Person, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.rivals.models import (
     FreeAgent,
@@ -154,6 +156,61 @@ def _by_person[R](rows: Iterable[R]) -> dict[int, list[R]]:
     for row in rows:
         grouped[row.person_id].append(row)  # type: ignore[attr-defined]
     return grouped
+
+
+def load_people(
+    session: Session, ids: Iterable[int]
+) -> tuple[tuple[Person, ...], tuple[RevealState, ...]]:
+    """People and every company's knowledge of them, for the given person ids (load_state's
+    live set; M7c's backfill of former staff)."""
+    live_ids = sorted(set(ids))
+
+    def in_live(column: Any) -> Any:
+        return column.in_(live_ids)
+
+    skills = _by_person(_rows(session, PersonSkillRow, in_live(PersonSkillRow.person_id)))
+    personality = _by_person(
+        _rows(session, PersonPersonalityRow, in_live(PersonPersonalityRow.person_id))
+    )
+    hidden = _by_person(_rows(session, PersonHiddenRow, in_live(PersonHiddenRow.person_id)))
+    interests = _by_person(_rows(session, PersonInterestRow, in_live(PersonInterestRow.person_id)))
+    tags = _by_person(_rows(session, PersonTagRow, in_live(PersonTagRow.person_id)))
+    people = tuple(
+        person_from_rows(
+            row,
+            skills[row.id],
+            personality[row.id],
+            hidden[row.id],
+            interests[row.id],
+            tags[row.id],
+        )
+        for row in session.scalars(
+            select(PersonRow).where(in_live(PersonRow.id)).order_by(PersonRow.id)
+        )
+    )
+
+    def key(row: Any) -> tuple[int, int]:
+        return (row.observer_company_id, row.person_id)
+
+    records: dict[tuple[int, int], list[PersonRevealRow]] = defaultdict(list)
+    for r in _rows(session, PersonRevealRow, in_live(PersonRevealRow.person_id)):
+        records[key(r)].append(r)
+    profiles = {
+        key(r): r
+        for r in session.scalars(
+            select(PersonProfileRevealRow).where(in_live(PersonProfileRevealRow.person_id))
+        )
+    }
+    tag_reveals: dict[tuple[int, int], list[PersonTagRevealRow]] = defaultdict(list)
+    for t in session.scalars(
+        select(PersonTagRevealRow).where(in_live(PersonTagRevealRow.person_id))
+    ):
+        tag_reveals[key(t)].append(t)
+    reveals = tuple(
+        reveal_from_rows(o, p, records[(o, p)], profiles.get((o, p)), tag_reveals[(o, p)])
+        for o, p in sorted(records)
+    )
+    return people, reveals
 
 
 def load_state(session: Session) -> GameState:
@@ -218,51 +275,10 @@ def load_state(session: Session) -> GameState:
         | {a.person_id for a in free_agents}
     )
 
+    people, reveals = load_people(session, live_ids)
+
     def in_live(column: Any) -> Any:
         return column.in_(live_ids)
-
-    skills = _by_person(_rows(session, PersonSkillRow, in_live(PersonSkillRow.person_id)))
-    personality = _by_person(
-        _rows(session, PersonPersonalityRow, in_live(PersonPersonalityRow.person_id))
-    )
-    hidden = _by_person(_rows(session, PersonHiddenRow, in_live(PersonHiddenRow.person_id)))
-    interests = _by_person(_rows(session, PersonInterestRow, in_live(PersonInterestRow.person_id)))
-    tags = _by_person(_rows(session, PersonTagRow, in_live(PersonTagRow.person_id)))
-    people = tuple(
-        person_from_rows(
-            row,
-            skills[row.id],
-            personality[row.id],
-            hidden[row.id],
-            interests[row.id],
-            tags[row.id],
-        )
-        for row in session.scalars(
-            select(PersonRow).where(in_live(PersonRow.id)).order_by(PersonRow.id)
-        )
-    )
-
-    def key(row: Any) -> tuple[int, int]:
-        return (row.observer_company_id, row.person_id)
-
-    records: dict[tuple[int, int], list[PersonRevealRow]] = defaultdict(list)
-    for r in _rows(session, PersonRevealRow, in_live(PersonRevealRow.person_id)):
-        records[key(r)].append(r)
-    profiles = {
-        key(r): r
-        for r in session.scalars(
-            select(PersonProfileRevealRow).where(in_live(PersonProfileRevealRow.person_id))
-        )
-    }
-    tag_reveals: dict[tuple[int, int], list[PersonTagRevealRow]] = defaultdict(list)
-    for t in session.scalars(
-        select(PersonTagRevealRow).where(in_live(PersonTagRevealRow.person_id))
-    ):
-        tag_reveals[key(t)].append(t)
-    reveals = tuple(
-        reveal_from_rows(o, p, records[(o, p)], profiles.get((o, p)), tag_reveals[(o, p)])
-        for o, p in sorted(records)
-    )
 
     state = game_state_from_rows(meta, companies, people, tuple(employments), reveals)
     products = tuple(
@@ -750,6 +766,10 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     if old.relationships != new.relationships and has_table(session, RelationshipRow):
         _sync_relationships(session, old, new)
     _sync_m8(session, old, new)
+    if old.employments != new.employments and has_table(session, FormerStaffRow):
+        session.flush()
+        for row in former_rows(old, new):  # M7c: what the player knew when they left
+            session.merge(row)
 
     if old.next_ids != new.next_ids:
         next_ids_to_meta(read_meta(session), new.next_ids)

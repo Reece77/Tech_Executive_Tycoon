@@ -212,6 +212,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/people/{person_id}/former": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Former Person
+         * @description Someone who has left (M7c): read-only, as the player knew them when they left.
+         */
+        get: operations["getFormerPerson"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/people/{person_id}/fire": {
         parameters: {
             query?: never;
@@ -3254,6 +3274,69 @@ export interface components {
             date_label: string | null;
             /** Detail */
             detail: string | null;
+        };
+        /**
+         * FormerProfileOut
+         * @description A person who has left the company (M7c): read-only, as the player knew them at
+         *     departure. Displayed ranges and noticed tags only (ADR-0007).
+         */
+        FormerProfileOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /** Role Label */
+            role_label: string;
+            /** Level */
+            level: string;
+            /**
+             * Unit Name
+             * @description The unit they were in; null for the company root
+             */
+            unit_name: string | null;
+            /** Start Turn */
+            start_turn: number;
+            /** Start Date Label */
+            start_date_label: string;
+            /** End Turn */
+            end_turn: number;
+            /** End Date Label */
+            end_date_label: string;
+            /** Tenure Months */
+            tenure_months: number;
+            /**
+             * Reason
+             * @description resigned | poached | fired | retired | company_failed | left
+             */
+            reason: string;
+            /**
+             * Reason Label
+             * @description e.g. 'Poached by Zoho'
+             */
+            reason_label: string;
+            /** Rival Id */
+            rival_id: number | null;
+            /** Rival Name */
+            rival_name: string | null;
+            /** Potential Phrase */
+            potential_phrase: string;
+            /** Skills */
+            skills: components["schemas"]["AttributeOut"][];
+            /** Personality */
+            personality: components["schemas"]["AttributeOut"][];
+            /** Noticed Tags */
+            noticed_tags: components["schemas"]["TagOut"][];
+            /** Interests */
+            interests: string[] | null;
+            /** Work Style */
+            work_style: string | null;
+            /**
+             * History
+             * @description Their History entries, newest first
+             */
+            history: components["schemas"]["HistoryRowOut"][];
         };
         /**
          * FounderIn
@@ -7261,6 +7344,65 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PersonProfileOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getFormerPerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormerProfileOut"];
                 };
             };
             /** @description Bad Request */

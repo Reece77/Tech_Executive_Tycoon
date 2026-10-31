@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 20
+SCHEMA_VERSION = 21
 
 
 class Base(DeclarativeBase):
@@ -886,3 +886,28 @@ class DivisionMonthRow(Base):
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     headcount: Mapped[int] = mapped_column(Integer, nullable=False)
     embedded: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+
+# --- Former staff (M7c, migration 0021_former_staff) ---------------------------------------
+
+
+class FormerStaffRow(Base):
+    """What the player knew of an employee when they left (M7c): displayed ranges and noticed
+    tags frozen at departure, so a later change at a rival never moves them. Never a true
+    value (ADR-0007)."""
+
+    __tablename__ = "former_staff"
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    employment_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    role: Mapped[str] = mapped_column(String(64), nullable=False)
+    level: Mapped[str] = mapped_column(String(16), nullable=False)
+    unit_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    start_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    reason: Mapped[str] = mapped_column(String(16), nullable=False)
+    rival_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # poached by
+    # {"ranges": {attr: [lo, hi]}, "tags": [[tag, turn]], "interests": [...] | null,
+    #  "work_style": str | null}; potential is a range under "potential_ability"
+    knowledge: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
