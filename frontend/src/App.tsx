@@ -30,8 +30,8 @@ export default function App() {
         <Route path="/game/:saveId/over" element={<GameOverScreen />} />
         <Route path="/game/:saveId" element={<GameLayout />}>
           <Route index element={<Navigate to="inbox" replace />} />
-          <Route path="inbox" element={<InboxScreen />} />
-          <Route path="inbox/:itemId" element={<InboxScreen />} />
+          {/* One route, so opening a message (M7c deep link) keeps the folder filter. */}
+          <Route path="inbox/:itemId?" element={<InboxScreen />} />
           <Route path="events/:eventId" element={<EventRedirect />} />
           <Route path="overview" element={<OverviewScreen />} />
           <Route path="people" element={<PeopleScreen />} />

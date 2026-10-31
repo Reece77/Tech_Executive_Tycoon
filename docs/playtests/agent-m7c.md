@@ -47,6 +47,7 @@ Each has a regression test that fails on the old code.
 | The Overview's Monthly burn left out an event paid by answering it before Continue, so the tile disagreed with its own breakdown and the P&L (Nov 2011: $86,530 shown, cash fell $87,710). | The tile reads the month's whole fall in cash from the ledger. `tests/integration/test_m7c_burn.py` | bc9c31a |
 | At 1440×900 the P&L cut off the latest month, the one the player most needs. | Long line labels wrap. Playwright `e2e/m7c.spec.ts` (e) | 2b61495 |
 | The burn tile's note "Dec projected $214,140" showed gross costs under a net burn of $96,577 (Dec 2013). | New `month_net_burn_cents` (projected costs less this month's revenue). `tests/integration/test_m7c_burn.py` | 22613cf |
+| (Found by `make e2e`, from this milestone's deep links) Opening a message remounted the inbox and lost its Archived filter. | The screen's error boundary ignores the `/inbox/:id` suffix; one inbox route. `e2e/m4c.spec.ts` (c) | see below |
 | A cap table with SAFEs converted in two rounds (A and B) gave two rows the same React key (console error from 2017 on). | Row ids include the line's position. `src/components/finance.test.tsx` | a914e89 |
 
 The brief's own features also closed two M7b follow-ups: former staff now open a read-only profile (583f0f7), and event links open the event's message with its card (414104f).
