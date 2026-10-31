@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Debt</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+.tab{font-size:14px;padding:8px 14px;border-bottom:2px solid transparent;color:#9BA7B6;text-decoration:none}
+.tab.on{color:#E8ECF1;border-color:#5AA2FF}
+.chip{font-size:12px;color:#C9D1DB;border:1px solid #2A3442;border-radius:12px;padding:3px 10px;background:#11161D}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1B232E;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.btnp{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;color:#9BA7B6;font-size:12px;padding:6px 8px;border-bottom:1px solid #2A3442}
+.tbl td{padding:7px 8px;border-bottom:1px solid #1F2732;vertical-align:top}
+.tip{position:absolute;background:#1F2834;border:1px solid #3A4656;border-radius:8px;padding:12px 14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+.dim{color:#9BA7B6}.pos{color:#5FD08B}.neg{color:#F07C7C}.warn{color:#E8B85A}
+.sev{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 3 · Scale-up</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Jun 2018</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">$14,200,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">not burning</span></div>
+      <a href="Coo.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Ask COO</a>
+      <a href="Settings.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <a href="Holiday.dc.html" style="font-size: 14px; color: #E8ECF1; text-decoration: none; border: 1px solid #3A4656; border-radius: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px">Holiday <span class="key">H</span></a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html" aria-current="page" style="background:#1B232E;color:#E8ECF1"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="History.dc.html"><span class="key">9</span>History</a>
+      <a class="navlink" href="Saves.dc.html"><span class="key">0</span>Saves</a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; position: relative">
+<!--H:900-->
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Finance</h1>
+      <nav aria-label="Finance tabs" style="display: flex; gap: 4px; border-bottom: 1px solid #2A3442">
+        <a class="tab" href="Finance.dc.html">Statements</a><a class="tab" href="DivisionPL.dc.html">Divisions</a><a class="tab on" href="#">Debt</a><a class="tab" href="CapTable.dc.html">Cap table</a><a class="tab" href="Fundraising.dc.html">Fundraising</a><a class="tab" href="Board.dc.html">Board</a>
+      </nav>
+      <section class="panel" aria-label="Economy" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px">
+        <div><div class="meta" style="font-size: 11px; text-transform: uppercase; letter-spacing: .06em">Base rate</div><div class="num" style="font-size: 20px">1.82%</div><div class="dim" style="font-size: 12px">up from 0.38% in 2016</div></div>
+        <div><div class="meta" style="font-size: 11px; text-transform: uppercase; letter-spacing: .06em">Venture climate</div><div class="num" style="font-size: 20px">1.20×</div><div class="dim" style="font-size: 12px">investors are generous</div></div>
+        <div><div class="meta" style="font-size: 11px; text-transform: uppercase; letter-spacing: .06em">Consumer confidence</div><div class="num" style="font-size: 20px">104</div><div class="dim" style="font-size: 12px">consumer and SMB adoption × 1.02</div></div>
+        <div><div class="meta" style="font-size: 11px; text-transform: uppercase; letter-spacing: .06em">AI compute cost</div><div class="num" style="font-size: 20px">0.46×</div><div class="dim" style="font-size: 12px">of 2010 · rising 10% this year</div></div>
+      </section>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start">
+        <section class="panel" aria-label="Loans">
+          <h2 class="ptitle">Loans</h2>
+          <table class="tbl">
+            <thead><tr><th>Loan</th><th style="text-align: right">Balance</th><th style="text-align: right">Rate</th><th style="text-align: right">This month</th><th>Covenant</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>Venture debt · Hercules<div class="dim" style="font-size: 12px">$6,000,000 signed Apr 2017 · warrants 0.25%</div></td><td class="num" style="text-align: right">$5,500,000</td><td class="num" style="text-align: right">7.00%</td><td class="num" style="text-align: right">$282,083<div class="dim" style="font-size: 11px">$32,083 interest + $250,000 principal</div></td><td>Cash ≥ 3 months of burn<div class="pos" style="font-size: 12px">not burning cash · met</div></td><td><button class="btn" type="button">Repay</button></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top: 14px">
+            <div class="meta" style="font-size: 12px; margin-bottom: 6px">Balance over the term</div>
+            <svg viewBox="0 0 600 90" width="100%" height="90" role="img" aria-label="Loan balance falling from $6M to zero between 2018 and 2020"><polyline fill="none" stroke="#5AA2FF" stroke-width="2" points="0,10 200,10 600,85"/><line x1="200" y1="0" x2="200" y2="90" stroke="#2A3442"/><text x="210" y="80" fill="#9BA7B6" font-size="11">repayments start Apr 2018</text></svg>
+          </div>
+        </section>
+        <aside class="panel" aria-label="Take a loan" style="border-color: #3A4656; display: flex; flex-direction: column; gap: 8px">
+          <h2 class="ptitle" style="margin: 0">Take a loan</h2>
+          <label class="opt" style="border-color: #5AA2FF; background: #172638"><input type="radio" name="loan" checked style="accent-color: #5AA2FF"><span><b>Bank loan</b><br><span class="dim" style="font-size: 12px">You're profitable 3 months running · up to $44.6M (1× ARR) · 4.82% · 48 months</span></span></label>
+          <label class="opt"><input type="radio" name="loan" style="accent-color: #5AA2FF" disabled><span class="dim"><b>Venture debt</b><br><span style="font-size: 12px">Only within 12 months of a priced round</span></span></label>
+          <label class="field">Amount<input class="input" type="text" value="$10,000,000"></label>
+          <div class="row"><span>Monthly payment, first month</span><span class="num">$248,500</span></div>
+          <div class="row" style="border-bottom: 0"><span>Covenants</span><span style="font-size: 12px; text-align: right">profit over 3 months &gt; 0<br>cash ≥ 10% of balance</span></div>
+          <p class="meta" style="font-size: 12px; margin: 0">A breach brings a lender's demand: a fee, a higher rate or a partial repayment. Energy 10.</p>
+          <button class="btnp" type="button">Sign</button>
+        </aside>
+      </div>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

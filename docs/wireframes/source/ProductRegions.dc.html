@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ProductRegions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+.tab{font-size:14px;padding:8px 14px;border-bottom:2px solid transparent;color:#9BA7B6;text-decoration:none}
+.tab.on{color:#E8ECF1;border-color:#5AA2FF}
+.chip{font-size:12px;color:#C9D1DB;border:1px solid #2A3442;border-radius:12px;padding:3px 10px;background:#11161D}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1B232E;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.btnp{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;color:#9BA7B6;font-size:12px;padding:6px 8px;border-bottom:1px solid #2A3442}
+.tbl td{padding:7px 8px;border-bottom:1px solid #1F2732;vertical-align:top}
+.tip{position:absolute;background:#1F2834;border:1px solid #3A4656;border-radius:8px;padding:12px 14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+.dim{color:#9BA7B6}.pos{color:#5FD08B}.neg{color:#F07C7C}.warn{color:#E8B85A}
+.sev{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 3 · Scale-up</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Jun 2018</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">$14,200,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">not burning</span></div>
+      <a href="Coo.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Ask COO</a>
+      <a href="Settings.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <a href="Holiday.dc.html" style="font-size: 14px; color: #E8ECF1; text-decoration: none; border: 1px solid #3A4656; border-radius: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px">Holiday <span class="key">H</span></a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html" aria-current="page" style="background:#1B232E;color:#E8ECF1"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="History.dc.html"><span class="key">9</span>History</a>
+      <a class="navlink" href="Saves.dc.html"><span class="key">0</span>Saves</a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; position: relative">
+<!--H:880-->
+      <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">Kestrel Ledger</h1>
+        <span class="meta">B2B SaaS · Platform Division · live since Nov 2010</span>
+      </div>
+      <nav aria-label="Product tabs" style="display: flex; gap: 4px; border-bottom: 1px solid #2A3442">
+        <a class="tab" href="Product.dc.html">Overview</a><a class="tab on" href="#">Regions</a><a class="tab" href="#">Team</a><a class="tab" href="Market.dc.html">Market</a>
+      </nav>
+      <section class="panel" aria-label="Regions">
+        <h2 class="ptitle">Where it sells</h2>
+        <table class="tbl">
+          <thead><tr><th>Region</th><th>Status</th><th style="text-align: right">SMB price</th><th style="text-align: right">Mid-market</th><th style="text-align: right">Enterprise</th><th style="text-align: right">Customers</th><th style="text-align: right">MRR</th><th>Reach</th></tr></thead>
+          <tbody>
+            <tr><td>North America <span class="chip">home</span></td><td class="pos">Live</td><td class="num" style="text-align: right">$55</td><td class="num" style="text-align: right">$850</td><td class="num" style="text-align: right">$8,500</td><td class="num" style="text-align: right">31,400</td><td class="num" style="text-align: right">$2,480,000</td><td class="dim">full</td></tr>
+            <tr><td>Europe</td><td class="pos">Live since Mar 2018</td><td class="num" style="text-align: right">$45</td><td class="num" style="text-align: right">$720</td><td class="num" style="text-align: right">$7,200</td><td class="num" style="text-align: right">2,950</td><td class="num" style="text-align: right">$310,000</td><td>London office · 6 sellers in region</td></tr>
+            <tr><td>East Asia</td><td class="warn">Localizing until Sep 2018</td><td class="num" style="text-align: right">$40</td><td class="num" style="text-align: right">$640</td><td class="num" style="text-align: right">$6,400</td><td class="num" style="text-align: right">—</td><td class="num" style="text-align: right">—</td><td class="warn">no presence: awareness × 0.6, no sellers</td></tr>
+            <tr><td>Latin America</td><td class="dim">Not launched</td><td colspan="5" class="dim">111,000 addressable customers across segments · 2 rivals</td><td><button class="btn" type="button">Launch</button></td></tr>
+          </tbody>
+        </table>
+        <p class="meta" style="font-size: 12px; margin: 10px 0 0">Feature work is 10% slower while a region is localizing. Sales-led segments need sellers working in the region (or 50% of those in its neighbour).</p>
+      </section>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start">
+        <section class="panel" aria-label="Launch in a region" style="border-color: #3A4656">
+          <h2 class="ptitle">Launch in South and Southeast Asia</h2>
+          <div class="row"><span>Localization (once)</span><span class="num">$40,000</span></div>
+          <div class="row"><span>Live from</span><span class="num">Sep 2018 (3 months)</span></div>
+          <div class="row"><span>Addressable SMB customers</span><span class="num">160,000 at $17.50</span></div>
+          <div class="row" style="border-bottom: 0"><span>Local rivals</span><span>Finacle (Infosys) in fintech only</span></div>
+          <p class="meta" style="font-size: 12px; margin: 8px 0">Energy 4. Prices default to the region's level; change them any time.</p>
+          <button class="btnp" type="button">Start localizing</button>
+        </section>
+        <section class="panel" aria-label="Output">
+          <h2 class="ptitle">Team spread</h2>
+          <div class="row"><span>Builders in North America</span><span class="num">18</span></div>
+          <div class="row"><span>Builders in South and Southeast Asia</span><span class="num">44</span></div>
+          <div class="row" style="border-bottom: 0"><span>Time-zone factor (2 regions)</span><span class="num warn">× 0.95</span></div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":880}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

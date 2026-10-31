@@ -184,6 +184,33 @@ Two artboards in the canvas's ninth row. Kestrel in June 2017 at stage 3, with 1
 - *Recruitment:* "Exec" in the level filter from stage 3.
 - *Competitors:* entrants appear like any rival, with a "Founded Sep 2011" line.
 
+## M9 and M10 screens (v2, parallel lanes)
+
+Three artboards in the canvas's tenth row. Kestrel in June 2018: stage 3, 252 staff in four cities, profitable.
+
+**M9 · Offices** (a new screen, reached from Org).
+- *Your offices:* the flexible HQ and each leased office, with seats, people, monthly rent, cost per person and the units based there. Crowding is flagged with its morale cost.
+- *Cities:* each city's region, salary and rent indexes, talent shown as + marks by skill group, and your people there.
+- *Lease dialog:* city and seats, then rent, fit-out, an example market rate (a senior engineer there) and energy 10.
+
+**M9 · Product regions** (a Regions tab on the product profile).
+- *Where it sells:* one row per region, showing:
+  - status (home, live since a month, localizing until a month, not launched);
+  - prices by segment, customers and MRR;
+  - reach (local office and sellers in the region, or the foreign-awareness and no-sellers warning).
+- *Not launched:* the region's addressable customers and rival count, with a Launch button.
+- *Launch dialog:* localization cost, the live date, addressable customers at the regional price, and local rivals.
+- *Team spread:* builders by region and the time-zone factor.
+
+**M10 · Finance: Debt tab and the macro strip.**
+- *Macro strip:* base rate, venture climate, consumer confidence (with its adoption factor) and AI compute cost (against 2010), each with one line of context. The Market screen shows the same strip.
+- *Loans table:* lender, original amount, signing date, warrants, balance, rate, this month's payment split into interest and principal, the covenant with its headroom, and Repay. A balance-over-term chart sits below it.
+- *Take a loan:* bank loan or venture debt, with eligibility in words, size, rate and term. Then the amount, the first month's payment, the covenants, a line on what a breach brings, and energy 10.
+
+**Not drawn (text only):**
+- *M9:* Recruitment's city filter and "anywhere"; candidates' city and "would relocate"; a City column on People; Market's region picker.
+- *M10:* Series C and D in Fundraising, with growth investors; the lender event as a critical event card (choices: waiver fee, higher rate, partial repayment); "Downturn under way" on the macro strip.
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).
