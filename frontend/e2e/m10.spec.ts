@@ -38,7 +38,7 @@ test('(a) take venture debt after a round and see the schedule', async ({ page }
   await page.getByTestId('take-loan').click();
   const dialog = page.getByTestId('loan-dialog');
   await expect(dialog.getByTestId('loan-eligibility')).toContainText('Silicon Valley Bank');
-  await dialog.getByTestId('loan-amount').locator('input').fill('400000');
+  await dialog.getByTestId('loan-amount').fill('400000');
   await expect(dialog.getByTestId('loan-first-payment')).toContainText('interest');
   await dialog.getByTestId('sign-loan').click();
   await expect(page.getByTestId('loan-row')).toHaveCount(1);
