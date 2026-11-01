@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs: v2 roadmap re-paired (M11 with M12a cloud, M12b hardware and chips with M13 IPO, M14 M&A alone) and ADR-0019 gains Reece's 2026-10-31 decisions: R&D era milestones, factories allowed from the start with spare capacity sold to others, supply shocks history-then-seeded.
 - M8r fixes from Codex review 1 (each with a regression test written first and seen failing):
   - 1 (P1) The state cache is published inside `write_session`, after the commit and before the save's lock is released (`repository.publish`); a write that publishes nothing clears it. Two-writer interleaving test (`test_m8r_cache.py`).
   - 2 (P1) Continue reserves the save across its turn and its event writing, so `save_busy` only comes before anything commits; a failure after the commit is logged and the month counts (events stay pending for the next request). Busy errors carry `retryable: true`; the front end retries only those. Holiday counts every committed month (`test_m8r_continue.py`, `retry.test.ts`).

@@ -16,7 +16,10 @@ The spec leaves v2's milestones "defined at v1 retrospective" (§17) and leaves 
 4. **CEO and Chair.** Appointing a CEO and stepping up to Chair (spec §3) is built with the IPO milestone.
 5. **Personal stock trading** is v3 or later.
 6. **Sandbox and the company score** are v2. They are planned for M15 unless the v1 retrospective moves them.
-7. **Parallel lanes.** v2 pairs milestones whose systems are separate and builds each pair in two Claude Code sessions, under the lane rules in `docs/v2-roadmap.md`.
+7. **R&D has era milestones** (2026-10-31): domain levels and projects underneath, plus named market-changing technologies that arrive on their historical date unless a company researches them first, accelerating that market and giving the first mover a head start.
+8. **Factories are allowed from the start** (2026-10-31), alongside contract manufacturing. An early factory is likely unprofitable; spare capacity can be sold to other companies as contract manufacturing.
+9. **Supply shocks follow history, then are seeded** (2026-10-31), like the macro layer (M10): component and GPU prices and allocation follow 2010–2025, then seeded shocks.
+10. **Parallel lanes.** v2 pairs milestones whose systems are separate and builds each pair in two Claude Code sessions, under the lane rules in `docs/v2-roadmap.md`.
 
 ## Consequences
 
