@@ -6597,6 +6597,408 @@
         }
       }
     },
+    "/api/saves/{save_id}/finance/macro": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Get Macro",
+        "description": "The four macro indicators for the month the player is in and the 24 months before,\nand whether a downturn is under way (20.4). Never a month ahead.",
+        "operationId": "getMacro",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/loans": {
+      "get": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "List Loans",
+        "description": "Every loan with its schedule and covenant headroom, and what each lender offers now.",
+        "operationId": "listLoans",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoansOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Take Loan",
+        "description": "Sign venture debt or a bank loan at once (energy 10); the money is in the bank now.",
+        "operationId": "takeLoan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoanIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/loans/preview": {
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Preview Loan",
+        "description": "The first month's payment and the warrants for this amount. Nothing is saved.",
+        "operationId": "previewLoan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoanIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoanPreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finance/loans/{loan_id}/repay": {
+      "post": {
+        "tags": [
+          "finance"
+        ],
+        "summary": "Repay Loan",
+        "description": "Repay early, in part or in full, with no fee (energy 5).",
+        "operationId": "repayLoan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "loan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Loan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepayIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/rivals": {
       "get": {
         "tags": [
@@ -11030,6 +11432,39 @@
         ],
         "title": "CounterPreviewOut"
       },
+      "CovenantOut": {
+        "properties": {
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "measure_cents": {
+            "type": "integer",
+            "title": "Measure Cents"
+          },
+          "required_cents": {
+            "type": "integer",
+            "title": "Required Cents"
+          },
+          "headroom_cents": {
+            "type": "integer",
+            "title": "Headroom Cents"
+          },
+          "holds": {
+            "type": "boolean",
+            "title": "Holds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description",
+          "measure_cents",
+          "required_cents",
+          "headroom_cents",
+          "holds"
+        ],
+        "title": "CovenantOut"
+      },
       "CreateProductIn": {
         "properties": {
           "name": {
@@ -14507,6 +14942,473 @@
         "title": "LearnedOut",
         "description": "What one interview, reference check or scout taught about a person (M4c). Built from\ndisplayed ranges before and after the action, never from true values (ADR-0007)."
       },
+      "LoanIn": {
+        "properties": {
+          "instrument": {
+            "type": "string",
+            "title": "Instrument"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instrument",
+          "amount_cents"
+        ],
+        "title": "LoanIn"
+      },
+      "LoanOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "instrument": {
+            "type": "string",
+            "title": "Instrument",
+            "description": "venture_debt or bank_loan"
+          },
+          "instrument_label": {
+            "type": "string",
+            "title": "Instrument Label"
+          },
+          "lender": {
+            "type": "string",
+            "title": "Lender"
+          },
+          "principal_cents": {
+            "type": "integer",
+            "title": "Principal Cents"
+          },
+          "signed_turn": {
+            "type": "integer",
+            "title": "Signed Turn"
+          },
+          "signed_label": {
+            "type": "string",
+            "title": "Signed Label"
+          },
+          "warrant_shares": {
+            "type": "integer",
+            "title": "Warrant Shares"
+          },
+          "balance_cents": {
+            "type": "integer",
+            "title": "Balance Cents"
+          },
+          "rate_bp": {
+            "type": "integer",
+            "title": "Rate Bp",
+            "description": "Basis points a year"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "active, repaid or called"
+          },
+          "status_label": {
+            "type": "string",
+            "title": "Status Label"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months"
+          },
+          "interest_only_months": {
+            "type": "integer",
+            "title": "Interest Only Months"
+          },
+          "ends_label": {
+            "type": "string",
+            "title": "Ends Label"
+          },
+          "interest_paid_cents": {
+            "type": "integer",
+            "title": "Interest Paid Cents"
+          },
+          "principal_paid_cents": {
+            "type": "integer",
+            "title": "Principal Paid Cents"
+          },
+          "next_payment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "This month's payment at Continue"
+          },
+          "covenants": {
+            "items": {
+              "$ref": "#/components/schemas/CovenantOut"
+            },
+            "type": "array",
+            "title": "Covenants",
+            "description": "Tested at today's cash and history"
+          },
+          "covenants_resting_until_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Covenants Resting Until Label",
+            "description": "After a breach covenants are not tested until this month"
+          },
+          "breaches": {
+            "type": "integer",
+            "title": "Breaches"
+          },
+          "schedule": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentOut"
+            },
+            "type": "array",
+            "title": "Schedule",
+            "description": "From this month to the end of the term"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "instrument",
+          "instrument_label",
+          "lender",
+          "principal_cents",
+          "signed_turn",
+          "signed_label",
+          "warrant_shares",
+          "balance_cents",
+          "rate_bp",
+          "status",
+          "status_label",
+          "term_months",
+          "interest_only_months",
+          "ends_label",
+          "interest_paid_cents",
+          "principal_paid_cents",
+          "next_payment",
+          "covenants",
+          "covenants_resting_until_label",
+          "breaches",
+          "schedule"
+        ],
+        "title": "LoanOut"
+      },
+      "LoanPreviewOut": {
+        "properties": {
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem"
+          },
+          "first_payment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rate_bp": {
+            "type": "integer",
+            "title": "Rate Bp"
+          },
+          "warrant_shares": {
+            "type": "integer",
+            "title": "Warrant Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "problem",
+          "first_payment",
+          "rate_bp",
+          "warrant_shares"
+        ],
+        "title": "LoanPreviewOut"
+      },
+      "LoanTermsOut": {
+        "properties": {
+          "instrument": {
+            "type": "string",
+            "title": "Instrument"
+          },
+          "instrument_label": {
+            "type": "string",
+            "title": "Instrument Label"
+          },
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem",
+            "description": "Why it is not offered now, in words"
+          },
+          "lender": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lender"
+          },
+          "rate_bp": {
+            "type": "integer",
+            "title": "Rate Bp"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months"
+          },
+          "interest_only_months": {
+            "type": "integer",
+            "title": "Interest Only Months"
+          },
+          "max_cents": {
+            "type": "integer",
+            "title": "Max Cents"
+          },
+          "min_cents": {
+            "type": "integer",
+            "title": "Min Cents"
+          },
+          "warrant_bp": {
+            "type": "integer",
+            "title": "Warrant Bp",
+            "description": "Of fully diluted shares, after they are issued"
+          },
+          "covenant": {
+            "type": "string",
+            "title": "Covenant",
+            "description": "The covenant in words"
+          },
+          "breach": {
+            "type": "string",
+            "title": "Breach",
+            "description": "What a breach brings, in words"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instrument",
+          "instrument_label",
+          "eligible",
+          "problem",
+          "lender",
+          "rate_bp",
+          "term_months",
+          "interest_only_months",
+          "max_cents",
+          "min_cents",
+          "warrant_bp",
+          "covenant",
+          "breach",
+          "energy"
+        ],
+        "title": "LoanTermsOut"
+      },
+      "LoansOut": {
+        "properties": {
+          "loans": {
+            "items": {
+              "$ref": "#/components/schemas/LoanOut"
+            },
+            "type": "array",
+            "title": "Loans"
+          },
+          "offers": {
+            "items": {
+              "$ref": "#/components/schemas/LoanTermsOut"
+            },
+            "type": "array",
+            "title": "Offers"
+          },
+          "debt_cents": {
+            "type": "integer",
+            "title": "Debt Cents",
+            "description": "Principal owed on every active loan"
+          },
+          "repay_energy": {
+            "type": "integer",
+            "title": "Repay Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loans",
+          "offers",
+          "debt_cents",
+          "repay_energy"
+        ],
+        "title": "LoansOut"
+      },
+      "MacroIndicatorOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "base_rate, climate, confidence or ai_index"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "display": {
+            "type": "string",
+            "title": "Display",
+            "description": "The value as shown, e.g. '4.33%' or 'x 0.90'"
+          },
+          "context": {
+            "type": "string",
+            "title": "Context",
+            "description": "One line of context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "value",
+          "display",
+          "context"
+        ],
+        "title": "MacroIndicatorOut"
+      },
+      "MacroMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "e.g. 'Jun 2022'"
+          },
+          "base_rate": {
+            "type": "number",
+            "title": "Base Rate",
+            "description": "% a year"
+          },
+          "climate": {
+            "type": "number",
+            "title": "Climate",
+            "description": "Venture climate multiplier"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "description": "Consumer confidence, 100 = the 2010-2019 average"
+          },
+          "ai_index": {
+            "type": "number",
+            "title": "Ai Index",
+            "description": "AI compute cost against 2010 (1.0)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "base_rate",
+          "climate",
+          "confidence",
+          "ai_index"
+        ],
+        "title": "MacroMonthOut"
+      },
+      "MacroOut": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/MacroMonthOut",
+            "description": "The month the player is in"
+          },
+          "indicators": {
+            "items": {
+              "$ref": "#/components/schemas/MacroIndicatorOut"
+            },
+            "type": "array",
+            "title": "Indicators"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/MacroMonthOut"
+            },
+            "type": "array",
+            "title": "Months",
+            "description": "The last 24 months and this one, oldest first"
+          },
+          "adoption_factor": {
+            "type": "number",
+            "title": "Adoption Factor",
+            "description": "Consumer and SMB adoption x this (20.1)"
+          },
+          "downturn": {
+            "type": "boolean",
+            "title": "Downturn",
+            "description": "A downturn is under way"
+          },
+          "history_ends_label": {
+            "type": "string",
+            "title": "History Ends Label",
+            "description": "The last month of real history"
+          },
+          "after_history": {
+            "type": "boolean",
+            "title": "After History",
+            "description": "The calendar has passed the real history"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current",
+          "indicators",
+          "months",
+          "adoption_factor",
+          "downturn",
+          "history_ends_label",
+          "after_history"
+        ],
+        "title": "MacroOut"
+      },
       "ManagerOut": {
         "properties": {
           "person_id": {
@@ -16138,6 +17040,39 @@
         ],
         "title": "PayPreviewOut",
         "description": "A raise or promotion before it happens, from known values only."
+      },
+      "PaymentOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "interest_cents": {
+            "type": "integer",
+            "title": "Interest Cents"
+          },
+          "principal_cents": {
+            "type": "integer",
+            "title": "Principal Cents"
+          },
+          "balance_after_cents": {
+            "type": "integer",
+            "title": "Balance After Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "interest_cents",
+          "principal_cents",
+          "balance_after_cents"
+        ],
+        "title": "PaymentOut"
       },
       "PeakOut": {
         "properties": {
@@ -17816,6 +18751,24 @@
           "name"
         ],
         "title": "RenameUnitIn"
+      },
+      "RepayIn": {
+        "properties": {
+          "amount_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Cents",
+            "description": "Null repays the whole balance"
+          }
+        },
+        "type": "object",
+        "title": "RepayIn"
       },
       "RivalMoveOut": {
         "properties": {

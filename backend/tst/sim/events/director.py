@@ -17,7 +17,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.events.data import NO_STAFF_CATEGORIES, TRIGGERS, EventTemplate, Severity
 from tst.sim.events.formulas import candidate_weight, cash_base_cents, severity_for
 from tst.sim.events.models import EventRequest, GameEvent, QueuedEvent, Storyline, Tone
-from tst.sim.events.render import placeholder_names, render
+from tst.sim.events.render import loan_names, placeholder_names, render
 from tst.sim.events.triggers import TriggerHit, triggers
 from tst.sim.money import Cents
 from tst.sim.org.rules import org_view
@@ -38,6 +38,7 @@ class Targets:
     segment: str | None = None
     rival_id: int | None = None
     months: int | None = None
+    loan_id: int | None = None  # M10: a lender event's loan
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +128,8 @@ def eligible_targets(state: GameState, event: GameEvent) -> tuple[str, ...]:
         out.append(f"product:{event.product_id}")
     if has_board(state, cid):
         out.append("board")
+    if event.loan_id is not None:
+        out.append(f"loan:{event.loan_id}")
     return tuple(out)
 
 
@@ -312,7 +315,14 @@ def direct(
             queue.append(
                 (
                     template,
-                    Targets(q.person_ids, q.unit_id, q.product_id, q.segment, q.rival_id),
+                    Targets(
+                        q.person_ids,
+                        q.unit_id,
+                        q.product_id,
+                        q.segment,
+                        q.rival_id,
+                        loan_id=q.loan_id,
+                    ),
                     _forced_severity(template),
                     1.0,
                     "follow_up",
@@ -372,7 +382,7 @@ def direct(
             segment=targets.segment,
             rival_id=targets.rival_id,
             months=targets.months,
-        )
+        ) | loan_names(state, data, targets.loan_id)
         storyline_id = None
         spec = template.storyline
         if spec is not None and thread is None:  # step 1 opens a storyline
@@ -425,6 +435,7 @@ def direct(
             cash_base_cents=base,
             tone=tone,
             storyline_id=storyline_id,
+            loan_id=targets.loan_id,
         )
         state = with_event(state, event)
         requests.append(

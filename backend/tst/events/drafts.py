@@ -11,7 +11,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.events.data import EventTemplate
 from tst.sim.events.formulas import share_value
 from tst.sim.events.models import GameEvent
-from tst.sim.events.render import placeholder_names, render
+from tst.sim.events.render import loan_names, placeholder_names, render
 from tst.sim.state import GameState
 
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
@@ -45,6 +45,8 @@ def target_string(state: GameState, event: GameEvent, word: str) -> str | None:
         return f"founder:{founder.id}" if founder is not None else None
     if word == "board":
         return "board"
+    if word == "loan":  # M10
+        return f"loan:{event.loan_id}" if event.loan_id is not None else None
     return ""  # follow_up
 
 
@@ -59,7 +61,7 @@ def event_names(state: GameState, event: GameEvent, data: GameData) -> dict[str,
         segment=event.segment,
         rival_id=event.rival_id,
         months=event.months,
-    )
+    ) | loan_names(state, data, event.loan_id)
 
 
 def template_draft(

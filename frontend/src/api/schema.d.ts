@@ -1412,6 +1412,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/finance/macro": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Macro
+         * @description The four macro indicators for the month the player is in and the 24 months before,
+         *     and whether a downturn is under way (20.4). Never a month ahead.
+         */
+        get: operations["getMacro"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/loans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Loans
+         * @description Every loan with its schedule and covenant headroom, and what each lender offers now.
+         */
+        get: operations["listLoans"];
+        put?: never;
+        /**
+         * Take Loan
+         * @description Sign venture debt or a bank loan at once (energy 10); the money is in the bank now.
+         */
+        post: operations["takeLoan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/loans/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Loan
+         * @description The first month's payment and the warrants for this amount. Nothing is saved.
+         */
+        post: operations["previewLoan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finance/loans/{loan_id}/repay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Repay Loan
+         * @description Repay early, in part or in full, with no fee (energy 5).
+         */
+        post: operations["repayLoan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/rivals": {
         parameters: {
             query?: never;
@@ -2860,6 +2945,19 @@ export interface components {
             /** Band After */
             band_after: string;
         };
+        /** CovenantOut */
+        CovenantOut: {
+            /** Description */
+            description: string;
+            /** Measure Cents */
+            measure_cents: number;
+            /** Required Cents */
+            required_cents: number;
+            /** Headroom Cents */
+            headroom_cents: number;
+            /** Holds */
+            holds: boolean;
+        };
         /** CreateProductIn */
         CreateProductIn: {
             /** Name */
@@ -4187,6 +4285,229 @@ export interface components {
              */
             tags: components["schemas"]["TagOut"][];
         };
+        /** LoanIn */
+        LoanIn: {
+            /** Instrument */
+            instrument: string;
+            /** Amount Cents */
+            amount_cents: number;
+        };
+        /** LoanOut */
+        LoanOut: {
+            /** Id */
+            id: number;
+            /**
+             * Instrument
+             * @description venture_debt or bank_loan
+             */
+            instrument: string;
+            /** Instrument Label */
+            instrument_label: string;
+            /** Lender */
+            lender: string;
+            /** Principal Cents */
+            principal_cents: number;
+            /** Signed Turn */
+            signed_turn: number;
+            /** Signed Label */
+            signed_label: string;
+            /** Warrant Shares */
+            warrant_shares: number;
+            /** Balance Cents */
+            balance_cents: number;
+            /**
+             * Rate Bp
+             * @description Basis points a year
+             */
+            rate_bp: number;
+            /**
+             * Status
+             * @description active, repaid or called
+             */
+            status: string;
+            /** Status Label */
+            status_label: string;
+            /** Term Months */
+            term_months: number;
+            /** Interest Only Months */
+            interest_only_months: number;
+            /** Ends Label */
+            ends_label: string;
+            /** Interest Paid Cents */
+            interest_paid_cents: number;
+            /** Principal Paid Cents */
+            principal_paid_cents: number;
+            /** @description This month's payment at Continue */
+            next_payment: components["schemas"]["PaymentOut"] | null;
+            /**
+             * Covenants
+             * @description Tested at today's cash and history
+             */
+            covenants: components["schemas"]["CovenantOut"][];
+            /**
+             * Covenants Resting Until Label
+             * @description After a breach covenants are not tested until this month
+             */
+            covenants_resting_until_label: string | null;
+            /** Breaches */
+            breaches: number;
+            /**
+             * Schedule
+             * @description From this month to the end of the term
+             */
+            schedule: components["schemas"]["PaymentOut"][];
+        };
+        /** LoanPreviewOut */
+        LoanPreviewOut: {
+            /** Problem */
+            problem: string | null;
+            first_payment: components["schemas"]["PaymentOut"] | null;
+            /** Rate Bp */
+            rate_bp: number;
+            /** Warrant Shares */
+            warrant_shares: number;
+        };
+        /** LoanTermsOut */
+        LoanTermsOut: {
+            /** Instrument */
+            instrument: string;
+            /** Instrument Label */
+            instrument_label: string;
+            /** Eligible */
+            eligible: boolean;
+            /**
+             * Problem
+             * @description Why it is not offered now, in words
+             */
+            problem: string | null;
+            /** Lender */
+            lender: string | null;
+            /** Rate Bp */
+            rate_bp: number;
+            /** Term Months */
+            term_months: number;
+            /** Interest Only Months */
+            interest_only_months: number;
+            /** Max Cents */
+            max_cents: number;
+            /** Min Cents */
+            min_cents: number;
+            /**
+             * Warrant Bp
+             * @description Of fully diluted shares, after they are issued
+             */
+            warrant_bp: number;
+            /**
+             * Covenant
+             * @description The covenant in words
+             */
+            covenant: string;
+            /**
+             * Breach
+             * @description What a breach brings, in words
+             */
+            breach: string;
+            /** Energy */
+            energy: number;
+        };
+        /** LoansOut */
+        LoansOut: {
+            /** Loans */
+            loans: components["schemas"]["LoanOut"][];
+            /** Offers */
+            offers: components["schemas"]["LoanTermsOut"][];
+            /**
+             * Debt Cents
+             * @description Principal owed on every active loan
+             */
+            debt_cents: number;
+            /** Repay Energy */
+            repay_energy: number;
+        };
+        /** MacroIndicatorOut */
+        MacroIndicatorOut: {
+            /**
+             * Key
+             * @description base_rate, climate, confidence or ai_index
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /** Value */
+            value: number;
+            /**
+             * Display
+             * @description The value as shown, e.g. '4.33%' or 'x 0.90'
+             */
+            display: string;
+            /**
+             * Context
+             * @description One line of context
+             */
+            context: string;
+        };
+        /** MacroMonthOut */
+        MacroMonthOut: {
+            /** Turn */
+            turn: number;
+            /**
+             * Label
+             * @description e.g. 'Jun 2022'
+             */
+            label: string;
+            /**
+             * Base Rate
+             * @description % a year
+             */
+            base_rate: number;
+            /**
+             * Climate
+             * @description Venture climate multiplier
+             */
+            climate: number;
+            /**
+             * Confidence
+             * @description Consumer confidence, 100 = the 2010-2019 average
+             */
+            confidence: number;
+            /**
+             * Ai Index
+             * @description AI compute cost against 2010 (1.0)
+             */
+            ai_index: number;
+        };
+        /** MacroOut */
+        MacroOut: {
+            /** @description The month the player is in */
+            current: components["schemas"]["MacroMonthOut"];
+            /** Indicators */
+            indicators: components["schemas"]["MacroIndicatorOut"][];
+            /**
+             * Months
+             * @description The last 24 months and this one, oldest first
+             */
+            months: components["schemas"]["MacroMonthOut"][];
+            /**
+             * Adoption Factor
+             * @description Consumer and SMB adoption x this (20.1)
+             */
+            adoption_factor: number;
+            /**
+             * Downturn
+             * @description A downturn is under way
+             */
+            downturn: boolean;
+            /**
+             * History Ends Label
+             * @description The last month of real history
+             */
+            history_ends_label: string;
+            /**
+             * After History
+             * @description The calendar has passed the real history
+             */
+            after_history: boolean;
+        };
         /** ManagerOut */
         ManagerOut: {
             /** Person Id */
@@ -4937,6 +5258,19 @@ export interface components {
              */
             morale_change: number;
         };
+        /** PaymentOut */
+        PaymentOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /** Interest Cents */
+            interest_cents: number;
+            /** Principal Cents */
+            principal_cents: number;
+            /** Balance After Cents */
+            balance_after_cents: number;
+        };
         /** PeakOut */
         PeakOut: {
             /** Value */
@@ -5599,6 +5933,14 @@ export interface components {
         RenameUnitIn: {
             /** Name */
             name: string;
+        };
+        /** RepayIn */
+        RepayIn: {
+            /**
+             * Amount Cents
+             * @description Null repays the whole balance
+             */
+            amount_cents?: number | null;
         };
         /** RivalMoveOut */
         RivalMoveOut: {
@@ -11512,6 +11854,309 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["NomineeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMacro: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listLoans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoansOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    takeLoan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoanIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewLoan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoanIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanPreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    repayLoan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                loan_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RepayIn"];
             };
         };
         responses: {

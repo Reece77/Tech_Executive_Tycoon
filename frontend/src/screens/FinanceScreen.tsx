@@ -2,6 +2,7 @@ import { Link, Navigate, useParams } from 'react-router';
 import { ScreenTitle } from '../components/ScreenState';
 import { BoardTab } from './finance/BoardTab';
 import { CapTableTab } from './finance/CapTableTab';
+import { DebtTab } from './finance/DebtTab';
 import { DivisionsTab } from './finance/DivisionsTab';
 import { FundraisingTab } from './finance/FundraisingTab';
 import { StatementsTab } from './finance/StatementsTab';
@@ -11,12 +12,13 @@ const FINANCE_TABS = [
   { key: 'divisions', label: 'Divisions' },
   { key: 'captable', label: 'Cap table' },
   { key: 'fundraising', label: 'Fundraising' },
+  { key: 'debt', label: 'Debt' }, // M10
   { key: 'board', label: 'Board' },
 ] as const;
 type TabKey = (typeof FINANCE_TABS)[number]['key'];
 
-/** Finance (nav key 7, M4b): statements, divisions (M8), the cap table, fundraising and the
- * board. */
+/** Finance (nav key 7, M4b): statements, divisions (M8), the cap table, fundraising, debt
+ * (M10) and the board. */
 export function FinanceScreen() {
   const { saveId = '', tab = 'statements' } = useParams();
   const current = FINANCE_TABS.find((t) => t.key === tab);
@@ -53,6 +55,8 @@ function TabBody({ tab, saveId }: { tab: TabKey; saveId: string }) {
       return <CapTableTab saveId={saveId} />;
     case 'fundraising':
       return <FundraisingTab saveId={saveId} />;
+    case 'debt':
+      return <DebtTab saveId={saveId} />;
     case 'board':
       return <BoardTab saveId={saveId} />;
   }

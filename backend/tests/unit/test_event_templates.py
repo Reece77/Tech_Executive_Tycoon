@@ -29,6 +29,7 @@ def test_the_library(loaded: LoadedData) -> None:
         "board": 6,
         "rivals": 4,
         "founder": 14,  # M7a: early days (trigger early_days)
+        "lender": 2,  # M10: queued by the debt phase (20.3)
     }
     for trigger in TRIGGERS:
         assert any(t.trigger == trigger and "minor" in t.severities for t in templates), trigger

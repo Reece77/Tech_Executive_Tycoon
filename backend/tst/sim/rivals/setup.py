@@ -221,11 +221,9 @@ def setup_incumbents(
         hosting = 0.0
         for product in state.company_products(company.id):
             category = data.category(product.category)
-            year = turn_to_ym(state.turn)[0]
+            ai = data.compute_index.of(turn_to_ym(state.turn)[0])  # game start: history
             for seg in state.segments_of(product.id):
-                hosting += seg.customers * hosting_cents(
-                    category, seg.segment, data.compute_index, year
-                )
+                hosting += seg.customers * hosting_cents(category, seg.segment, ai)
         marketing = sum(p.marketing_budget_cents for p in state.company_products(company.id))
         mix = function_mix(state, company.id, balance)
         functions = key_people_split(rv.key_people, mix)

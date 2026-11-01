@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Iterable
-from dataclasses import replace
+from dataclasses import asdict, replace
 from functools import cache
 from typing import Any, cast
 
@@ -76,12 +76,15 @@ from tst.db.models import (
     EventQueueRow,
     EventRow,
     ExecSeatRow,
+    FinanceHistoryRow,
     FormerStaffRow,
     FreeAgentRow,
     FundingRoundRow,
     HiringPlanRow,
     LedgerEntryRow,
     LedgerLineRow,
+    LoanRow,
+    MacroMonthRow,
     MarketSegmentRow,
     OfferRow,
     OptionGrantRow,
@@ -115,10 +118,12 @@ from tst.db.models import (
     WorkforcePoolRow,
 )
 from tst.sim.errors import SaveNotFoundError
+from tst.sim.finance.macro import MacroMonth
 from tst.sim.finance.models import (
     BoardSeat,
     CapEntry,
     FundingRound,
+    Loan,
     OptionGrant,
     Safe,
     TermSheet,
@@ -298,7 +303,7 @@ def load_state(session: Session) -> GameState:
     else:
         services, levels = {}, {}
     product_ids = [p.id for p in products]
-    return replace(
+    state = replace(
         state,
         searches=tuple(
             replace(search_from_row(r), level=levels.get(r.id))
@@ -415,6 +420,71 @@ def load_state(session: Session) -> GameState:
         ),
         next_ids=_event_ids(session, next_ids_from_meta(meta)),
     )
+    return _load_m10(session, state)
+
+
+def _load_m10(session: Session, state: GameState) -> GameState:
+    """The latest macro month, every loan, and the player's covenant history (M10, 0022)."""
+    if not has_table(session, LoanRow):
+        return state
+    latest = session.scalars(select(MacroMonthRow).order_by(MacroMonthRow.turn.desc())).first()
+    histories = {r.company_id: r for r in session.scalars(select(FinanceHistoryRow))}
+    companies = tuple(
+        replace(
+            c,
+            op_history=tuple(int(v) for v in histories[c.id].op_history),
+            burn_history=tuple(int(v) for v in histories[c.id].burn_history),
+        )
+        if c.id in histories
+        else c
+        for c in state.companies
+    )
+    return replace(
+        state,
+        companies=companies,
+        macro=macro_from_row(latest) if latest is not None else None,
+        loans=_all(session, Loan, LoanRow),
+        next_ids=replace(
+            state.next_ids,
+            loan=int(session.scalar(select(func.max(LoanRow.id))) or 0) + 1,
+        ),
+    )
+
+
+def macro_from_row(row: MacroMonthRow) -> MacroMonth:
+    return MacroMonth(
+        turn=row.turn,
+        base_rate=row.base_rate,
+        climate=row.climate,
+        confidence=row.confidence,
+        ai_index=row.ai_index,
+        ai_change=row.ai_change,
+        downturn_turn=row.downturn_turn,
+    )
+
+
+def _sync_m10(session: Session, old: GameState, new: GameState) -> None:
+    """The month's macro indicators, loans and the covenant history (M10)."""
+    if not has_table(session, LoanRow):
+        return
+    session.flush()
+    if new.macro is not None and new.macro != old.macro:
+        session.merge(MacroMonthRow(**asdict(new.macro)))
+    for loan in _changed(old.loans, new.loans, lambda x: x.id):
+        session.merge(finance_to_row(loan))
+    before = {c.id: (c.op_history, c.burn_history) for c in old.companies}
+    for c in new.companies:
+        if (c.op_history or c.burn_history) and before.get(c.id) != (
+            c.op_history,
+            c.burn_history,
+        ):
+            session.merge(
+                FinanceHistoryRow(
+                    company_id=c.id,
+                    op_history=list(c.op_history),
+                    burn_history=list(c.burn_history),
+                )
+            )
 
 
 def _event_state(session: Session, turn: int) -> dict[str, Any]:
@@ -766,6 +836,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     if old.relationships != new.relationships and has_table(session, RelationshipRow):
         _sync_relationships(session, old, new)
     _sync_m8(session, old, new)
+    _sync_m10(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()
         for row in former_rows(old, new):  # M7c: what the player knew when they left

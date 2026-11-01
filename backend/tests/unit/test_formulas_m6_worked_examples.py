@@ -133,7 +133,9 @@ def test_trigger_table_and_caps_are_data(loaded: LoadedData) -> None:
         "salary_change": [5, 10, 15],
     }
     assert events.caps == caps
-    assert set(caps) | {"reveal_tag", "resign", "follow_up"} == set(EFFECT_TYPES)
+    # M10: loan effects are shares of debt.breach's sizes, not capped in events.caps (20.3).
+    loan = {"loan_fee", "loan_rate", "loan_repay"}
+    assert set(caps) | {"reveal_tag", "resign", "follow_up"} | loan == set(EFFECT_TYPES)
     assert SEVERITIES == ("minor", "major", "critical")
     assert events.count_weights == [0.08, 0.40, 0.38, 0.14]  # tuned from [0.15, 0.50, 0.28, 0.07]
     assert sum(n * w for n, w in enumerate(events.count_weights)) == pytest.approx(1.58)

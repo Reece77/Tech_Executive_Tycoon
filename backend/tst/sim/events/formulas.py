@@ -5,8 +5,10 @@ from __future__ import annotations
 from fractions import Fraction
 
 from tst.sim.data_models import EventsBalance, TriggerBalance
-from tst.sim.events.data import NON_NEGATIVE, VALUELESS, Severity
+from tst.sim.events.data import LOAN_EFFECTS, NON_NEGATIVE, VALUELESS, Severity
 from tst.sim.money import BP_DENOMINATOR, Cents, exact
+
+LOAN_SHARE_CAP = 1.0  # tunable-exempt: loan effects are shares of debt.breach's sizes (20.3)
 
 
 def clamp01(x: float) -> float:
@@ -77,6 +79,8 @@ def effect_cap(
         return 0.0
     if effect == "cash_delta":
         return float(cash_cap(severity, events, cash_base, gain=gain))
+    if effect in LOAN_EFFECTS:  # M10: a share of the 20.3 size in debt.breach
+        return LOAN_SHARE_CAP
     return events.cap(effect, severity)
 
 
@@ -122,7 +126,7 @@ def share_value(
 def size_word(effect: str, value: float, severity: Severity, events: EventsBalance) -> str:
     """The size word ("small", none, or "large") of an effect against its cap, for the words the
     API shows instead of numbers (16.9). Cash is described by its amount instead."""
-    if effect in VALUELESS or effect in ("resign", "cash_delta"):
+    if effect in VALUELESS or effect in ("resign", "cash_delta", *LOAN_EFFECTS):
         return ""
     share = abs(value) / events.cap(effect, severity)
     if share <= events.effect_size_bounds.lo:

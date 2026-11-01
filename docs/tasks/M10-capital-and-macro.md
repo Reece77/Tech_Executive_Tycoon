@@ -72,8 +72,24 @@ On a stage-3 save, take venture debt after a round and watch the Debt tab for a 
 
 ## Decisions made
 
-_(Agent fills in.)_
+Engineering details are in `docs/formulas.md` §20.7. The ones that touch design or the lane rules:
+
+1. **Series C and D keys sit in v1's maps** (`finance.round.gate_arr_cents`, `typical_cents`, `board.expected_growth`, `board.seats`, plus `board.max_seats`), not in `macro.*`/`debt.*`: the code reads every series from those maps, and the keys are new (no v1 value changed); M9 does not touch these sections. Expected growth after a C is 0.8 a year, after a D 0.6 (not in the spec; a growth-stage board expects less than a Series B board).
+2. **The adoption hook takes `balance`:** `macro.adoption_factor(state, segment_key, balance)`, because the segments and exponent are balance data. M9's regional code calls it with the same three arguments.
+3. **Which month is current:** history while the calendar is inside it (public), else the last month phase 1 set; so v1's climate is exactly unchanged through 2025 and nothing after 2025 is ever shown or used ahead of time.
+4. **Downturn spacing:** 36 months from the end of the previous downturn.
+5. **Lender events** are queued by the engine (trigger `covenant_breach`, never drawn by the director) and always written from their template, since their choices are the §20.3 terms. Their effects are new effect types (`loan_fee`, `loan_rate`, `loan_repay`) whose size is a share of `debt.breach`; the waiver fee is also held to the critical cash cap (§16.3). The waiver fee posts to `7000_interest`.
+6. **Cure period:** after a breach, covenants rest for 3 months (`debt.breach.cure_months`) so the player's answer can work; a breach found after that and within 6 months of the first calls the loan. Without it a breach that persisted into next month would call the loan before the answer could matter.
+7. **Covenants read completed months** (last month's burn; the last 3 months' operating result, kept in `finance_history`) and this month's cash after the loan payments. The bank loan's gate wants an operating profit in each of the last 3 months; its covenant wants their sum above zero.
+8. **Principal after a partial repayment** is re-spread over the months left (the term never extends); without one it is exactly equal principal.
+9. **Warrants** make the lender hold exactly 0.25% of FD after issue. Lenders: Silicon Valley Bank (venture debt to 2022), Hercules Capital (from 2023), JPMorgan Chase (bank loans), in `investors.yaml`.
+10. **Golden snapshots** were regenerated here, as the brief allows when consumer confidence moves them (reason in CHANGELOG).
+
+**Results** (docs/balance-targets.md, M10): every v1 target as before (T2 the recorded M7c miss; blitzscale T3 now 4/10), S2 12.4 worker-minutes run alone (22.6 under the parallel suite). §20.5: target 2 +5.2 founder points and +0 bankruptcy (pass); target 4 41/50 and sd 0.171 (pass); target 5 8/10 (pass). Recorded misses, `xfail(strict=False)` for M15 (Reece, 2026-11-01): §20.5 target 3 at 90% (blitzscale with debt is below zero cash before its next round on 8/10 seeds, so no `debt.*` value brings it to 20-60%), and M8 target 3 at 1.069 (1.088 before; confidence lifts SMB adoption in both arms).
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- M15: §20.5 target 3 needs a different measure or script (for example breaches while cash is still positive, or debt only after Series A and B).
+- M15: M8 target 3 (support) at 1.069.
+- Rivals do not borrow (out of scope); M13 can price public markets off the base rate.
+- The macro strip shows two years; a longer History chart of the indicators would be cheap (`macro_month` holds every month).

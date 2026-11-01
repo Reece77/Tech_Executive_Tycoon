@@ -23,6 +23,7 @@ CATEGORIES: Final = (
     "board",
     "rivals",
     "founder",  # M7a: the founder's own early days (16.1 "founder templates")
+    "lender",  # M10: covenant breaches (20.3), queued by the engine, never drawn
 )
 # Templates a company with no employees may draw (16.1: founder, market and finance).
 NO_STAFF_CATEGORIES: Final = ("market", "finance", "founder")
@@ -51,8 +52,10 @@ TRIGGERS: Final = (
     "early_days",  # M7a: no live product yet
     "quiet_month",
 )
-SCHEDULED: Final = ("storyline", "follow_up")
-CRITICAL_TRIGGERS: Final = ("runway_short",)  # 16.2: critical allowed below 3 months
+# M10 (20.3): the debt phase queues these itself (a covenant breach, a called loan).
+ENGINE_QUEUED: Final = ("covenant_breach",)
+SCHEDULED: Final = ("storyline", "follow_up", *ENGINE_QUEUED)
+CRITICAL_TRIGGERS: Final = ("runway_short", "covenant_breach")  # 16.2; 20.3
 
 EFFECT_TYPES: Final = (
     "morale_delta",
@@ -68,9 +71,15 @@ EFFECT_TYPES: Final = (
     "salary_change",
     "resign",
     "follow_up",
+    # M10 (20.3): a share (0 to 1) of the debt.breach size: the waiver fee, the rate rise,
+    # the partial repayment. The waiver fee is also held to the cash cap.
+    "loan_fee",
+    "loan_rate",
+    "loan_repay",
 )
+LOAN_EFFECTS: Final = ("loan_fee", "loan_rate", "loan_repay")
 VALUELESS: Final = ("reveal_tag", "resign", "follow_up")  # no size: they happen or not
-NON_NEGATIVE: Final = ("growth_boost", "salary_change")  # 16.3: never a cut
+NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
 
 # Template target words and the effects that may use each (16.3 "Target" column).
 EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
@@ -87,6 +96,9 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "salary_change": ("person", "other"),
     "resign": ("person", "other"),
     "follow_up": ("",),
+    "loan_fee": ("loan",),
+    "loan_rate": ("loan",),
+    "loan_repay": ("loan",),
 }
 
 # What each trigger can name. Company, founder, product and board can always be asked for;
@@ -114,6 +126,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "board_unhappy": frozenset(),
     "early_days": frozenset(),  # names the product in development, if any
     "quiet_month": frozenset(),
+    "covenant_breach": frozenset({"loan", "lender"}),  # M10
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
 PLACEHOLDERS: Final = (
@@ -127,6 +140,7 @@ PLACEHOLDERS: Final = (
     "months",
     "founder",
     "company",
+    "lender",  # M10
 )
 
 
@@ -273,7 +287,15 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
                 origin.setdefault(current, t.trigger)
                 step = by_id.get(current)
                 current = step.storyline.next_template if step and step.storyline else None
+    for trigger in ENGINE_QUEUED:
+        if not any(t.trigger == trigger and t.is_critical for t in templates):
+            problems.append(f"engine trigger {trigger!r} has no critical template")
     for t in templates:
+        if t.trigger in ENGINE_QUEUED:
+            missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
+            if missing:
+                problems.append(f"{t.id}: trigger {t.trigger!r} cannot supply {missing}")
+            continue
         trigger = origin.get(t.id, t.trigger) if t.trigger in SCHEDULED else t.trigger
         if t.trigger in SCHEDULED and t.id not in origin:
             problems.append(f"{t.id}: scheduled template that nothing schedules")

@@ -30,7 +30,9 @@ from tst.sim.actions import (
 from tst.sim.actions.products import launch_problems
 from tst.sim.state import GameState
 
-SEED = 7  # a seed whose 24 months bring a rival approach (rivals.need.poach_gain 0.007)
+# A seed whose 24 months bring a rival approach (rivals.need.poach_gain 0.007): 7 until
+# M10, whose consumer confidence moved adoption.
+SEED = 6
 PRICES = {"smb": 4000, "mid_market": 70_000}
 TURNS = 24  # the funded spinout's money lasts about 26 months at this burn
 STAFF = 5  # the founder and four (M8: five ran out of money in month 21)

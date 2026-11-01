@@ -847,7 +847,7 @@ What the player knew of an employee when they left, frozen at departure (the "Fo
 | `rival_id` | INTEGER | yes | The rival they joined when poached. |
 | `knowledge` | JSON | no | `{"ranges": {attribute: [min, max]}, "tags": [[tag, noticed_turn]], "interests": [..] or null, "work_style": .. or null}`; potential is the `potential_ability` range, shown only as a phrase. |
 
-`save_meta.schema_version` is 21.
+`save_meta.schema_version` is 21 (22 from M10).
 
 ## inbox_event_link (migration `0021_former_staff`, M7c)
 
@@ -859,3 +859,62 @@ The events an inbox message links to: the "While you were away" summary lists th
 | `position` | INTEGER PK | no | Order in the message. |
 | `event_id` | INTEGER | no | The event (no FK). |
 | `label` | VARCHAR(200) | no | Its title as listed. |
+
+## Capital and macro (migration `0022_capital_macro`, M10)
+
+`save_meta.schema_version` is 22. Loans and the macro month are written by `sync_state`; a save from before M10 has no rows (the API fills months up to 2025 from history, and the covenant history fills as months are played).
+
+### macro_month
+
+One month's macro indicators (formulas.md 20.1), written when phase 1 sets them. Rows exist only for months already played: never a month ahead (20.4).
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `turn` | INTEGER PK | no | The month (0 = January 2010). |
+| `base_rate` | FLOAT | no | Base rate, % a year (the US federal funds rate to 2025). |
+| `climate` | FLOAT | no | Venture climate multiplier (M4's climate table to 2025). |
+| `confidence` | FLOAT | no | Consumer confidence, 100 = the 2010-2019 average. |
+| `ai_index` | FLOAT | no | AI compute price against 2010 (compute_index.yaml to 2025). |
+| `ai_change` | FLOAT | no | The AI index's change over the year before (steps each January). |
+| `downturn_turn` | INTEGER | yes | Start of the latest downturn after 2025, carried forward; null if none. |
+
+### loan
+
+Venture debt and bank loans (formulas.md 20.3).
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Loan id (ids continue from the largest stored). |
+| `company_id` | INTEGER FK → company.id | no | The borrower (the player). |
+| `instrument` | VARCHAR(16) | no | `venture_debt` or `bank_loan`. |
+| `lender` | VARCHAR(32) | no | investors.yaml `lenders` key. |
+| `principal_cents` | BIGINT | no | Amount borrowed. |
+| `balance_cents` | BIGINT | no | Principal still owed. |
+| `rate_bp` | INTEGER | no | Rate a year in basis points: base rate at signing + spread (+ 200 after a breach's higher-rate choice). |
+| `signed_turn` | INTEGER | no | Month signed; its interest is charged in that month's phase 7. |
+| `term_months` | INTEGER | no | 36 (venture) or 48 (bank). |
+| `interest_only_months` | INTEGER | no | 12 (venture) or 0. |
+| `round_id` | INTEGER | yes | Venture debt: the priced round it follows (no FK). |
+| `warrant_shares` | BIGINT | no | Warrants issued at signing (a `warrant` cap-table entry); 0 for a bank loan. |
+| `status` | VARCHAR(16) | no | `active`, `repaid` or `called`. |
+| `closed_turn` | INTEGER | yes | Month repaid or called. |
+| `interest_paid_cents` | BIGINT | no | Interest paid so far. |
+| `principal_paid_cents` | BIGINT | no | Principal paid so far; never above `principal_cents`. |
+| `breach_turn` | INTEGER | yes | The latest covenant breach. |
+| `breaches` | INTEGER | no | Breaches so far (the one that called the loan included). |
+
+### finance_history
+
+The player's operating result and burn at the last month ends (oldest first), which covenants and the bank loan's gate read (20.3).
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER PK FK → company.id | no | The player's company. |
+| `op_history` | JSON | no | Operating result (revenue − cost of revenue − operating expenses, before interest) per month, cents, last 6. |
+| `burn_history` | JSON | no | Net cash used before financing per month (14.1), cents, last 6. |
+
+### Columns added to existing tables
+
+- `event.loan_id` INTEGER null: a lender event's loan (target `loan:<id>`).
+- `event_queue.loan_id` INTEGER null: a lender event the debt phase queued; `event_queue.source_event_id` is now nullable (null for an event the engine queued, not an answer).
+- `cap_table_entry.share_class` gains `preferred_c`, `preferred_d` and `warrant`; `funding_round.series` gains `c` and `d`.

@@ -105,7 +105,9 @@ def write_event(
     source = "template"
     story = event.storyline_id is not None and template.trigger == "storyline"
     purpose = "story" if story else "event"
-    if writer.live and writer.can_spend():
+    # M10: a lender event's choices are the 20.3 terms, so its words come from the template.
+    engine_terms = template.category == "lender"
+    if writer.live and writer.can_spend() and not engine_terms:
         system, user = build_prompt(state, event, template, targets, kpis, balance, data)
         prompt = EventPrompt(event.id, "story" if story else "events", system, user, fallback)
         for attempt in range(2):  # tunable-exempt: one retry (ADR-0005 section 3)
@@ -130,7 +132,7 @@ def write_event(
             prompt = replace(prompt, retry_note=RETRY.format(reason=result.reason))
         else:
             writer.rejected += 1
-    elif writer.live:
+    elif writer.live and not engine_terms:
         log.info("LLM budget reached: event %s from its template", event.id)
         writer.records.append(CallRecord(purpose, "template", "", outcome="budget"))
     if not isinstance(result, ValidatedEvent):

@@ -195,6 +195,40 @@ def finance_games(loaded: LoadedData) -> FinanceGames:
     )
 
 
+def _loan_items(loaded: LoadedData) -> list[LogItem]:
+    """M10 (20.3): signing, a breach, a called loan, and a loan repaid."""
+    from tst.balance.game import start_game
+    from tst.sim.actions import RepayLoan, TakeLoan, apply_action
+    from tst.sim.finance.debt import debt_month
+    from tst.sim.ledger import apply_entries
+    from tst.sim.rng import RngFactory
+
+    b, data = loaded.balance, loaded.game_data
+    game = start_game(loaded, 4, scenario="funded_spinout")
+    rng = RngFactory(4)
+    out = apply_action(
+        game.state, TakeLoan(game.founder_id, "venture_debt", 20_000_000), rng, b, data,
+        game.balances, seq=1,
+    )  # fmt: skip
+    items = list(out.log_items)
+    state, balances = out.new_state, apply_entries(game.balances, out.ledger_entries)
+    loan = state.company_loans(1)[0]
+    repaid = apply_action(state, RepayLoan(game.founder_id, loan.id), rng, b, data, balances, seq=2)
+    items += repaid.log_items
+    for turn in (state.turn, state.turn + b.debt.breach.cure_months + 1):
+        state = replace(state, turn=turn)
+        state = replace(
+            state,
+            companies=tuple(
+                replace(c, burn_history=(10**12,)) if c.is_player else c for c in state.companies
+            ),
+        )
+        state, entries, logs = debt_month(state, balances, b, data)
+        balances = apply_entries(balances, entries)
+        items += logs
+    return items
+
+
 def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     """Run seeded games that hit hiring, departures, reveals and debt; render every item."""
     templates = loaded.game_data.inbox_templates
@@ -269,6 +303,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     games = (sad, hiring, broke, org, delegated, products, scale, *finance.games)
     items = [i for g in games for r in g.results for i in r.log_items]
     items += [i for g in games for i in g.action_logs] + finance.extra
+    items += _loan_items(loaded)  # M10
     for item in items:
         if item.template is None:
             continue

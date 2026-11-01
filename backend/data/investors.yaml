@@ -1,11 +1,12 @@
 # Investor firms (docs/formulas.md 14.5; real names, personal use, CLAUDE.md section 7).
 # Order matters: a firm's index here is its key in the finance RNG stream (ADR-0018 §5),
 # so append new firms at the end and never reorder.
-# - series: which priced rounds the firm invests in (seed, a, b).
+# - series: which priced rounds the firm invests in (seed, a, b; c and d from M10, 20.2).
 # - check_min_cents / check_max_cents: the firm's check size, in cents.
 # - bias: multiplier on the shared base value V_base when the firm quotes a pre-money (14.5).
 # - response: chance the firm answers a round, before the funding climate (14.5).
 # - patience: points added to the board-confidence target of the firm's seat (14.6).
+# - from_year: the first calendar year the firm answers rounds (M10, 20.2; default 2010).
 firms:
   - { key: sv_angel, name: SV Angel, series: [seed], check_min_cents: 25000000, check_max_cents: 100000000, bias: 1.05, response: 0.6, patience: 5 }
   - { key: first_round, name: First Round Capital, series: [seed], check_min_cents: 50000000, check_max_cents: 200000000, bias: 1.00, response: 0.5, patience: 5 }
@@ -17,3 +18,18 @@ firms:
   - { key: a16z, name: Andreessen Horowitz, series: [a, b], check_min_cents: 500000000, check_max_cents: 3000000000, bias: 1.15, response: 0.35, patience: 0 }
   - { key: kleiner, name: Kleiner Perkins, series: [b], check_min_cents: 1000000000, check_max_cents: 3000000000, bias: 0.90, response: 0.4, patience: -5 }
   - { key: greylock, name: Greylock Partners, series: [a, b], check_min_cents: 500000000, check_max_cents: 2500000000, bias: 1.00, response: 0.35, patience: 0 }
+  # Growth investors (M10, docs/formulas.md 20.2), appended so earlier firms' keys stay put.
+  - { key: insight, name: Insight Partners, series: [b, c, d], check_min_cents: 2000000000, check_max_cents: 10000000000, bias: 1.00, response: 0.40, patience: 0 }
+  - { key: general_atlantic, name: General Atlantic, series: [c, d], check_min_cents: 4000000000, check_max_cents: 15000000000, bias: 0.95, response: 0.35, patience: -5 }
+  - { key: tiger_global, name: Tiger Global, series: [c, d], check_min_cents: 3000000000, check_max_cents: 20000000000, bias: 1.20, response: 0.30, patience: 5 }
+  - { key: dst_global, name: DST Global, series: [c, d], check_min_cents: 5000000000, check_max_cents: 20000000000, bias: 1.15, response: 0.30, patience: 5 }
+  - { key: softbank_vision, name: SoftBank Vision Fund, series: [c, d], check_min_cents: 10000000000, check_max_cents: 50000000000, bias: 1.30, response: 0.25, patience: -10, from_year: 2017 }
+
+# Lenders (M10, docs/formulas.md 20.3). A lender answers at once, with no draw: the first
+# lender in this list that offers the instrument in the current calendar year signs.
+# - instrument: venture_debt or bank_loan.
+# - from_year / until_year: calendar years the lender offers it (inclusive; none = open).
+lenders:
+  - { key: svb, name: Silicon Valley Bank, instrument: venture_debt, until_year: 2022 }
+  - { key: hercules, name: Hercules Capital, instrument: venture_debt, from_year: 2023 }
+  - { key: jpmorgan, name: JPMorgan Chase, instrument: bank_loan }

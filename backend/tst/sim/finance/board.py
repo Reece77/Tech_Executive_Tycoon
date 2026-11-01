@@ -57,6 +57,8 @@ def _add_seat(
     firm: str | None = None,
     person_id: int | None = None,
 ) -> GameState:
+    if len(state.board(company_id)) >= balance.board.max_seats:
+        return state  # M10 (20.2): a full board takes no more seats
     seat_id, ids = state.next_ids.take("seat")
     state = replace(state, next_ids=ids)
     if person_id is None and kind != "common":  # a common seat may stay empty (M4c)
