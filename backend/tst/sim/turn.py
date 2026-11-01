@@ -98,6 +98,9 @@ class TurnContext:
     # Cash from operating and investing the month already moved before Continue (actions such
     # as a paid event), per company: burn covers the whole month (14.1; M8r).
     prior_flow: Mapping[int, Cents] = field(default_factory=dict)
+    # The operating result (P&L by account class) of those same entries: a lender's fee is
+    # interest, below operating profit, though it is cash out (14.1, 20.3; M10r finding 1).
+    prior_operating: Mapping[int, Cents] = field(default_factory=dict)
 
     @property
     def turn(self) -> int:
@@ -322,7 +325,9 @@ def _debt_history(
     state: GameState, ctx: TurnContext, types: Mapping[str, AccountType]
 ) -> GameState:
     """The player's operating result and burn for the month just ended (M10, 20.3): the
-    turn's entries plus what actions moved before Continue (all operating in practice)."""
+    turn's entries plus what actions posted before Continue. The operating result classifies
+    the whole month's ledger by account (14.1: interest sits below it; M10r finding 1); burn
+    is cash before financing (M8r finding 7)."""
     company = state.player
     lines = [
         (e.turn, line.account, line.amount)
@@ -330,9 +335,9 @@ def _debt_history(
         if e.company_id == company.id
         for line in e.lines
     ]
-    prior = ctx.prior_flow.get(company.id, 0)
+    prior = ctx.prior_operating.get(company.id, 0)
     result = profit_and_loss(lines, types, ctx.turn, ctx.turn).operating_result + prior
-    burn = max(-(prior + cash_before_financing(lines, types)), 0)
+    burn = max(-(ctx.prior_flow.get(company.id, 0) + cash_before_financing(lines, types)), 0)
     keep = ctx.balance.debt.bank.profit_months + ctx.balance.debt.bank.covenant_profit_months
     company = replace(
         company,
@@ -403,10 +408,13 @@ def advance_turn(
     ledger_balances: LedgerBalances,
     *,
     prior_flow: Mapping[int, Cents] | None = None,
+    prior_operating: Mapping[int, Cents] | None = None,
 ) -> TurnResult:
     """Resolve turn `state.turn` and return the next state plus everything to persist.
     `prior_flow`: cash from operating and investing that this month's actions already moved,
-    per company (from the ledger), so the stored burn covers the whole month (14.1; M8r)."""
+    per company (from the ledger), so the stored burn covers the whole month (14.1; M8r).
+    `prior_operating`: the operating result of those entries, classified by account, for the
+    debt history (M10r finding 1)."""
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
     for event in state.open_events(state.player.id):
@@ -424,6 +432,7 @@ def advance_turn(
         balances=dict(ledger_balances),
         start=state,
         prior_flow=prior_flow or {},
+        prior_operating=prior_operating or {},
     )
     for _name, phase in PHASES:
         ctx = phase(ctx)

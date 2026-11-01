@@ -19,7 +19,7 @@ from tst.sim.errors import SimError
 from tst.sim.finance import formulas as ff
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.fundraising import arr_cents, base_value, climate, company_growth
-from tst.sim.finance.statements import cash_before_financing
+from tst.sim.finance.statements import cash_before_financing, profit_and_loss
 from tst.sim.ledger import CASH, apply_entries
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
@@ -98,6 +98,7 @@ class Game:
             if event.severity == "critical" and event.status == "open":
                 self.act(ChooseEvent(self.founder_id, event.id, event.choices[0].key))
         types = {a.code: a.type for a in self.loaded.game_data.accounts}
+        turn = self.state.turn
         result = advance_turn(
             self.state,
             Decisions(),
@@ -106,6 +107,9 @@ class Game:
             self.loaded.game_data,
             self.balances,
             prior_flow={PLAYER: cash_before_financing(self.month_lines, types)},  # as a save
+            prior_operating={
+                PLAYER: profit_and_loss(self.month_lines, types, turn, turn).operating_result
+            },
         )
         self.month_lines = []
         self.state = result.new_state
