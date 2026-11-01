@@ -4,6 +4,15 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M10r fixes from Codex review 2 (each with a regression test written first and seen failing; resolution table in `docs/reviews/codex-review-2.md`):
+  - 1 (P2) The debt history's monthly operating result (bank-loan gate, profit covenant) classifies the whole month's ledger by account: `advance_turn` takes `prior_operating` beside `prior_flow`, from `repository.month_so_far` and the balance runner. A waiver fee paid before Continue is interest, below operating profit; burn is unchanged (`test_m10r_lender_fee.py`, `test_m10r_month_operating.py`).
+  - 2 (P2) Division statements leave interest and tax out of every column and of the shared-services allocation, so the company column equals the P&L's operating result (`test_m10r_division_interest.py`; the division property test now draws interest, rent and R&D).
+  - 3 (P2) Closing an office finds its effective occupants first: child units inheriting a non-HQ office go remote in its city; a child with its own office keeps it (`test_m10r_close_office.py`).
+  - 4 (P2) Product MRR, customers and hosting, and the portfolio's customer counts, include sales in other regions. `ProductOut` gains `sells_abroad`, `series_scope` and `series_label`: the home-only series (trends, new/lost, history) read "home region" in the UI once a product sells abroad (`test_m10r_overseas_totals.py`).
+  - 5 (P2) Regional prices divide the decimal price indexes exactly (`geo.formulas.price_ratio`) and take rivals' personality factor inside one half-to-even rounding (`test_m10r_regional_prices.py`, `tests/property/test_regional_prices.py`).
+  - 6 (P3) The 36-month repayment test runs on a ledger-backed reserve and can no longer skip.
+  - formulas.md §18.1, §19.6 and §20.3 say so. Golden snapshots unchanged.
+
 - Docs: Codex review 2 (at m9-done) saved in `docs/reviews/`; all six findings confirmed (five P2, one P3) and briefed as M10r, to run before the balance checkpoint.
 - M9 Cities, offices and regions (lane A; formulas.md §19; merged after M10):
   - 15 cities (`cities.yaml`: salary and rent indexes, talent bonuses, talent weights, regional growth); an HQ city chosen at new game (default San Francisco; API `hq_city`, `tst new-game --hq`, New Game step 5). Everyone's market rate follows the city they work in.

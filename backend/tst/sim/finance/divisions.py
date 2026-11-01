@@ -6,6 +6,10 @@ revenue minus its direct costs, then a shared-services allocation: each month, c
 operating costs x h_div / (h_corporate + sum h_central) for every central division, from
 that month's headcounts. Corporate shows the allocations as a positive line, so divisions
 and corporate always add up to the company's statement.
+
+Interest and tax sit below operating profit (14.1, 20.3): the statements leave them out of
+every column and of the allocation, so the company column equals the P&L's operating result
+(M10r finding 2).
 """
 
 from __future__ import annotations
@@ -14,6 +18,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
 from tst.sim.data_models import AccountType
+from tst.sim.finance.statements import INTEREST_PREFIX, TAX_PREFIX
 from tst.sim.ledger import BENEFITS, COMPUTE, MARKETING, RENT, SALARIES, AccountCode
 from tst.sim.money import Cents
 from tst.sim.org.formulas import allocate_shared
@@ -59,15 +64,25 @@ class DivisionReport:
     company: DivisionStatement = field(default_factory=lambda: DivisionStatement(None, "Company"))
 
 
+def is_below_operating(account: AccountCode) -> bool:
+    """Interest (lenders' fees included) and tax: below operating profit (14.1, 20.3)."""
+    return account.startswith((INTEREST_PREFIX, TAX_PREFIX))
+
+
 def is_operating_cost(account: AccountCode) -> bool:
-    """Operating costs: every expense but hosting and cost of goods (14.1 classification)."""
-    return account != COMPUTE and not account.startswith(COST_OF_REVENUE_PREFIX)
+    """Operating costs: every expense but hosting, cost of goods and the below-operating
+    accounts (14.1 classification)."""
+    return (
+        account != COMPUTE
+        and not account.startswith(COST_OF_REVENUE_PREFIX)
+        and not is_below_operating(account)
+    )
 
 
 def _add(st: DivisionStatement, account: AccountCode, kind: AccountType, amount: Cents) -> None:
     if kind == "revenue":
         st.revenue -= amount
-    elif kind != "expense":
+    elif kind != "expense" or is_below_operating(account):
         return
     elif account in (SALARIES, BENEFITS):
         st.salaries_benefits += amount

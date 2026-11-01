@@ -12,7 +12,7 @@ from tst.loader import LoadedData
 from tst.sim.actions import ChooseEvent, RepayLoan, TakeLoan
 from tst.sim.finance import debt
 from tst.sim.finance.captable import fd_shares
-from tst.sim.ledger import CASH, DEBT, INTEREST
+from tst.sim.ledger import CASH, COMMON_EQUITY, DEBT, INTEREST, LedgerEntry, apply_entries
 from tst.sim.state import with_company
 
 
@@ -43,8 +43,28 @@ def test_venture_debt_after_the_seed_signs_with_warrants(loaded: LoadedData) -> 
     _ledger_ok(game)
 
 
-def test_schedule_interest_then_equal_principal_to_zero(loaded: LoadedData) -> None:
+RESERVE = 100_000_000_00  # $100M of owner's money: no covenant or insolvency can intervene
+
+
+def _solvent(loaded: LoadedData) -> Game:
+    """The fixture for the full schedule (M10r finding 6): ledger-backed cash far above any
+    burn the company can run, so the covenants hold and the game cannot end. A breach,
+    called loan or bankruptcy has its own tests; here any of them is a failure."""
     game = _game(loaded)
+    entry = LedgerEntry.transfer(
+        turn=game.state.turn,
+        company_id=PLAYER,
+        memo="Test reserve",
+        debit=CASH,
+        credit=COMMON_EQUITY,
+        amount=RESERVE,
+    )
+    game.balances = apply_entries(game.balances, (entry,))
+    return game
+
+
+def test_schedule_interest_then_equal_principal_to_zero(loaded: LoadedData) -> None:
+    game = _solvent(loaded)
     amount = 45_000_000
     assert game.act(TakeLoan(game.founder_id, "venture_debt", amount))
     loan = game.state.company_loans(PLAYER)[0]
@@ -54,13 +74,15 @@ def test_schedule_interest_then_equal_principal_to_zero(loaded: LoadedData) -> N
     assert sum(p.principal_cents for p in plan) == amount
     assert plan[-1].balance_after_cents == 0
     interest = 0
-    for _ in range(36):
+    for month in range(36):
         before = game.balances.get((PLAYER, INTEREST), 0)
         game.turn()
         interest += game.balances.get((PLAYER, INTEREST), 0) - before
         _ledger_ok(game)
-        if game.state.ended:
-            pytest.skip("this seed went bankrupt first")
+        assert not game.state.ended, f"the game ended in month {month + 1}"
+        now = game.state.loan(loan.id)
+        assert now is not None and now.breaches == 0, f"a covenant broke in month {month + 1}"
+        assert now.status in ("active", "repaid"), now.status
     loan = game.state.loan(loan.id)
     assert loan is not None and loan.status == "repaid"
     assert loan.principal_paid_cents == amount

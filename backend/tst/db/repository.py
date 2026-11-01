@@ -79,7 +79,7 @@ from tst.sim.errors import (
     UnknownScenarioError,
     UpgradeNeededError,
 )
-from tst.sim.finance.statements import cash_before_financing, projected_runway
+from tst.sim.finance.statements import cash_before_financing, profit_and_loss, projected_runway
 from tst.sim.ledger import AccountCode, apply_entries
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
@@ -747,10 +747,8 @@ def rating_rows(state: GameState, turn: int, data: LoadedData) -> list[PersonRat
     return rows
 
 
-def month_flow_so_far(session: Session, turn: int, data: LoadedData) -> dict[int, Cents]:
-    """Cash from operating and investing that `turn`'s entries moved before the turn runs
-    (actions such as a paid event), per company: burn covers the whole month (14.1; M8r)."""
-    types = {a.code: a.type for a in data.game_data.accounts}
+def _month_lines(session: Session, turn: int) -> dict[int, list[tuple[int, str, Cents]]]:
+    """`turn`'s ledger lines posted before the turn runs (actions such as a paid event)."""
     rows = session.execute(
         select(LedgerEntryRow.company_id, LedgerLineRow.account_code, LedgerLineRow.amount_cents)
         .join(LedgerLineRow.entry)
@@ -759,7 +757,34 @@ def month_flow_so_far(session: Session, turn: int, data: LoadedData) -> dict[int
     lines: dict[int, list[tuple[int, str, Cents]]] = {}
     for company, account, amount in rows:
         lines.setdefault(int(company), []).append((turn, str(account), int(amount)))
-    return {c: cash_before_financing(ls, types) for c, ls in lines.items()}
+    return lines
+
+
+def month_so_far(
+    session: Session, turn: int, data: LoadedData
+) -> tuple[dict[int, Cents], dict[int, Cents]]:
+    """(cash flow before financing, operating result) of `turn`'s entries before the turn
+    runs, per company, from one ledger read: burn (14.1; M8r) and the debt history's
+    operating month (20.3; M10r: a lender's fee is interest, below operating profit)."""
+    types = {a.code: a.type for a in data.game_data.accounts}
+    lines = _month_lines(session, turn)
+    flow = {c: cash_before_financing(ls, types) for c, ls in lines.items()}
+    operating = {
+        c: profit_and_loss(ls, types, turn, turn).operating_result for c, ls in lines.items()
+    }
+    return flow, operating
+
+
+def month_flow_so_far(session: Session, turn: int, data: LoadedData) -> dict[int, Cents]:
+    """Cash from operating and investing that `turn`'s entries moved before the turn runs
+    (actions such as a paid event), per company: burn covers the whole month (14.1; M8r)."""
+    return month_so_far(session, turn, data)[0]
+
+
+def month_operating_so_far(session: Session, turn: int, data: LoadedData) -> dict[int, Cents]:
+    """The operating result (P&L by account) of `turn`'s entries before the turn runs, per
+    company: a lender's fee is interest, below operating profit (14.1, 20.3; M10r)."""
+    return month_so_far(session, turn, data)[1]
 
 
 class _PendingEvents(Exception):
@@ -775,6 +800,7 @@ def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnR
             log.warning("Data files changed since %s was created: %s", meta.name, data.hashes)
         state = load_current(session)
         balances = current_balances(session, state.turn)
+        prior_flow, prior_operating = month_so_far(session, state.turn, data)
         result = advance_turn(
             state,
             decisions,
@@ -782,7 +808,8 @@ def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnR
             data.balance,
             data.game_data,
             balances,
-            prior_flow=month_flow_so_far(session, state.turn, data),
+            prior_flow=prior_flow,
+            prior_operating=prior_operating,
         )
         apply_turn_result(session, result, decisions, state, data)
         publish(session, result.new_state, apply_entries(balances, result.ledger_entries))

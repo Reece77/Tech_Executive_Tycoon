@@ -12,7 +12,7 @@ from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import GeoRuleError, InsufficientCashError, UnknownCityError
 from tst.sim.geo import formulas as gf
-from tst.sim.geo.cities import home_region, hq_city, settle_home_cities
+from tst.sim.geo.cities import home_region, hq_city, settle_home_cities, unit_office_id
 from tst.sim.geo.models import Office, ProductRegion, RegionalSegment
 from tst.sim.ledger import (
     CASH,
@@ -118,7 +118,9 @@ def close_office(
     state: GameState, action: CloseOffice, balance: Balance, data: GameData
 ) -> Outcome:
     """Immediate, energy 10: 3 months' rent as a penalty. Its units move to flexible space
-    in the HQ city, or work remotely from that city when it is not the HQ city (19.2)."""
+    in the HQ city, or work remotely from that city when it is not the HQ city (19.2). Its
+    occupants are found before the lease is detached: units assigned to it and the child
+    units that inherit it (M10r finding 3). A child unit with its own office keeps it."""
     company = acting_company(state, action.actor_id)
     office = open_office(state, company, action.office_id)
     state = spend_energy(
@@ -126,11 +128,13 @@ def close_office(
     )
     state = settle_home_cities(state, company, balance, data)  # they live where they worked
     at_hq = office.city == hq_city(state.company(company), balance)
-    for unit in state.active_units(company):
+    occupants = [u for u in state.active_units(company) if unit_office_id(state, u.id) == office.id]
+    for unit in occupants:
         if unit.office_id == office.id:
-            state = with_unit(
-                state, replace(unit, office_id=None, policy=unit.policy if at_hq else "remote")
-            )
+            policy = unit.policy if at_hq else "remote"
+            state = with_unit(state, replace(unit, office_id=None, policy=policy))
+        elif not at_hq and unit.policy is not None:  # inherits the office, its own policy
+            state = with_unit(state, replace(unit, policy="remote"))
     state = with_office(state, replace(office, status="closed", closed_turn=state.turn))
     penalty = gf.close_penalty_cents(office_rent_cents(office, balance, data), balance)
     city = data.city(office.city)

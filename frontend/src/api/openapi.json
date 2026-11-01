@@ -18994,12 +18994,12 @@
           "paying_customers": {
             "type": "number",
             "title": "Paying Customers",
-            "description": "Business customers across products now"
+            "description": "Business customers across products now, in every region"
           },
           "consumer_users": {
             "type": "number",
             "title": "Consumer Users",
-            "description": "Consumer users across products now"
+            "description": "Consumer users across products now, every region"
           },
           "hosting_cents": {
             "type": "integer",
@@ -19386,7 +19386,8 @@
           },
           "mrr_cents": {
             "type": "integer",
-            "title": "Mrr Cents"
+            "title": "Mrr Cents",
+            "description": "MRR now, in every region"
           },
           "mrr_change": {
             "anyOf": [
@@ -19398,12 +19399,12 @@
               }
             ],
             "title": "Mrr Change",
-            "description": "Revenue in the last closed month against the month before, as a fraction"
+            "description": "Home-region revenue in the last closed month against the month before, as a fraction (series_scope)"
           },
           "customers": {
             "type": "number",
             "title": "Customers",
-            "description": "Customers (or users) across its segments now"
+            "description": "Customers (or users) across its segments now, in every region"
           },
           "customer_trend": {
             "anyOf": [
@@ -19415,20 +19416,37 @@
               }
             ],
             "title": "Customer Trend",
-            "description": "Month-on-month change in customers at the last month end, as a fraction"
+            "description": "Month-on-month change in home-region customers at the last month end, as a fraction (series_scope)"
           },
           "new_last_month": {
             "type": "number",
-            "title": "New Last Month"
+            "title": "New Last Month",
+            "description": "Home region (series_scope)"
           },
           "churned_last_month": {
             "type": "number",
-            "title": "Churned Last Month"
+            "title": "Churned Last Month",
+            "description": "Home region (series_scope)"
           },
           "hosting_cents": {
             "type": "integer",
             "title": "Hosting Cents",
-            "description": "Hosting this month at the current customers"
+            "description": "Hosting this month at the current customers, in every region"
+          },
+          "sells_abroad": {
+            "type": "boolean",
+            "title": "Sells Abroad",
+            "description": "It has customers in a region other than the home region"
+          },
+          "series_scope": {
+            "type": "string",
+            "title": "Series Scope",
+            "description": "What mrr_change, customer_trend, new/churned last month, history and monthly cover: product history stays home-only (M9; M10r)"
+          },
+          "series_label": {
+            "type": "string",
+            "title": "Series Label",
+            "description": "series_scope, for display"
           },
           "brand_trend": {
             "type": "string",
@@ -19505,7 +19523,7 @@
             },
             "type": "array",
             "title": "History",
-            "description": "Last 12 months, oldest first"
+            "description": "Last 12 months, oldest first, home region (series_scope)"
           },
           "monthly": {
             "items": {
@@ -19513,7 +19531,7 @@
             },
             "type": "array",
             "title": "Monthly",
-            "description": "Last 12 months summed over segments, oldest first"
+            "description": "Last 12 months summed over segments, oldest first, home region"
           }
         },
         "type": "object",
@@ -19538,6 +19556,9 @@
           "new_last_month",
           "churned_last_month",
           "hosting_cents",
+          "sells_abroad",
+          "series_scope",
+          "series_label",
           "brand_trend",
           "counts_users",
           "segments",

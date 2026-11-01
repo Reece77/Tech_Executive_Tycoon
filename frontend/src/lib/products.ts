@@ -130,3 +130,9 @@ export function segmentSummary(s: {
   if (!s.player_sells) parts.push('you do not sell here');
   return parts.join(' · ');
 }
+
+/** Product history stays home-only (M9): once a product sells abroad, its trend series say
+ * so, e.g. " (home region)". Empty while it sells only at home (M10r). */
+export function seriesScope(p: { sells_abroad: boolean; series_label: string }): string {
+  return p.sells_abroad ? ` (${p.series_label.toLowerCase()})` : '';
+}

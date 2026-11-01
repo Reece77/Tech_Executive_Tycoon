@@ -5856,12 +5856,12 @@ export interface components {
             stage_label: string;
             /**
              * Paying Customers
-             * @description Business customers across products now
+             * @description Business customers across products now, in every region
              */
             paying_customers: number;
             /**
              * Consumer Users
-             * @description Consumer users across products now
+             * @description Consumer users across products now, every region
              */
             consumer_users: number;
             /**
@@ -6013,32 +6013,56 @@ export interface components {
              * @description Launch month, e.g. 'Sep 2010'
              */
             launched_label: string | null;
-            /** Mrr Cents */
+            /**
+             * Mrr Cents
+             * @description MRR now, in every region
+             */
             mrr_cents: number;
             /**
              * Mrr Change
-             * @description Revenue in the last closed month against the month before, as a fraction
+             * @description Home-region revenue in the last closed month against the month before, as a fraction (series_scope)
              */
             mrr_change: number | null;
             /**
              * Customers
-             * @description Customers (or users) across its segments now
+             * @description Customers (or users) across its segments now, in every region
              */
             customers: number;
             /**
              * Customer Trend
-             * @description Month-on-month change in customers at the last month end, as a fraction
+             * @description Month-on-month change in home-region customers at the last month end, as a fraction (series_scope)
              */
             customer_trend: number | null;
-            /** New Last Month */
+            /**
+             * New Last Month
+             * @description Home region (series_scope)
+             */
             new_last_month: number;
-            /** Churned Last Month */
+            /**
+             * Churned Last Month
+             * @description Home region (series_scope)
+             */
             churned_last_month: number;
             /**
              * Hosting Cents
-             * @description Hosting this month at the current customers
+             * @description Hosting this month at the current customers, in every region
              */
             hosting_cents: number;
+            /**
+             * Sells Abroad
+             * @description It has customers in a region other than the home region
+             */
+            sells_abroad: boolean;
+            /**
+             * Series Scope
+             * @description What mrr_change, customer_trend, new/churned last month, history and monthly cover: product history stays home-only (M9; M10r)
+             */
+            series_scope: string;
+            /**
+             * Series Label
+             * @description series_scope, for display
+             */
+            series_label: string;
             /**
              * Brand Trend
              * @description rising | falling | steady, from the last two months
@@ -6074,12 +6098,12 @@ export interface components {
             launch: components["schemas"]["LaunchReadinessOut"];
             /**
              * History
-             * @description Last 12 months, oldest first
+             * @description Last 12 months, oldest first, home region (series_scope)
              */
             history: components["schemas"]["ProductMonthOut"][];
             /**
              * Monthly
-             * @description Last 12 months summed over segments, oldest first
+             * @description Last 12 months summed over segments, oldest first, home region
              */
             monthly: components["schemas"]["ProductTotalMonthOut"][];
         };

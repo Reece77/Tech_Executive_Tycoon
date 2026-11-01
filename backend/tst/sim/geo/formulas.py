@@ -64,10 +64,19 @@ def cross_region_factor(regions: int, balance: Balance) -> float:
     return max(mb.cross_region_floor, 1 - mb.cross_region_step * (regions - 1))
 
 
-def relative_row(region: str, home: str, data: GameData) -> tuple[float, float]:
-    """(size, price index) of `region` relative to the home region's row (19.5)."""
+def price_ratio(region: str, home: str, data: GameData) -> Fraction:
+    """`index_region / index_home`, exactly as the data's decimals were written (19.5): money
+    is priced from it, so never from a float quotient (ADR-0003; M10r finding 5)."""
     row, base = data.region_market(region), data.region_market(home)
-    return row.size / base.size, row.price_index / base.price_index
+    return exact(row.price_index) / exact(base.price_index)
+
+
+def relative_row(region: str, home: str, data: GameData) -> tuple[float, float]:
+    """(size, price index) of `region` relative to the home region's row (19.5). The size is
+    not money and may stay a float; the price index is the exact ratio's nearest float, for
+    appeal (money uses `price_ratio`)."""
+    row, base = data.region_market(region), data.region_market(home)
+    return row.size / base.size, float(price_ratio(region, home, data))
 
 
 def regional_d0(home_d0: float, region: str, home: str, data: GameData) -> float:
@@ -75,9 +84,13 @@ def regional_d0(home_d0: float, region: str, home: str, data: GameData) -> float
     return home_d0 * relative_row(region, home, data)[0]
 
 
-def regional_price_cents(reference_cents: Cents, region: str, home: str, data: GameData) -> Cents:
-    """`p_ref x price index` (19.5)."""
-    return max(1, round_cents(exact(reference_cents) * exact(relative_row(region, home, data)[1])))
+def regional_price_cents(
+    reference_cents: Cents, region: str, home: str, data: GameData, factor: float = 1.0
+) -> Cents:
+    """`p_ref x price index` (19.5), times a rival's personality price factor when given
+    (19.6): exact decimals throughout, rounded half-to-even once (M10r finding 5)."""
+    value = exact(reference_cents) * price_ratio(region, home, data) * exact(factor)
+    return max(1, round_cents(value))
 
 
 def talent_bonus(city: CityDef, skill: str, data: GameData) -> float:

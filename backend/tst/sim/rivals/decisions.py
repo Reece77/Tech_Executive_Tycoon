@@ -506,7 +506,7 @@ def enter_region(
                     state, ProductSegment(product.id, seg, price, added_turn=state.turn)
                 )
             continue
-        price = max(1, round(gf.regional_price_cents(reference, region, home, data) * factor))
+        price = gf.regional_price_cents(reference, region, home, data, factor)  # M10r
         state = with_regional_segment(
             state, RegionalSegment(product.id, region, seg, price, added_turn=state.turn)
         )

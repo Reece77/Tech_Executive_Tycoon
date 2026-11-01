@@ -169,17 +169,31 @@ class ProductOut(BaseModel):
     created_turn: int
     launched_turn: int | None
     launched_label: str | None = Field(description="Launch month, e.g. 'Sep 2010'")
-    mrr_cents: int
+    mrr_cents: int = Field(description="MRR now, in every region")
     mrr_change: float | None = Field(
-        description="Revenue in the last closed month against the month before, as a fraction"
+        description="Home-region revenue in the last closed month against the month before, "
+        "as a fraction (series_scope)"
     )
-    customers: float = Field(description="Customers (or users) across its segments now")
+    customers: float = Field(
+        description="Customers (or users) across its segments now, in every region"
+    )
     customer_trend: float | None = Field(
-        description="Month-on-month change in customers at the last month end, as a fraction"
+        description="Month-on-month change in home-region customers at the last month end, "
+        "as a fraction (series_scope)"
     )
-    new_last_month: float
-    churned_last_month: float
-    hosting_cents: int = Field(description="Hosting this month at the current customers")
+    new_last_month: float = Field(description="Home region (series_scope)")
+    churned_last_month: float = Field(description="Home region (series_scope)")
+    hosting_cents: int = Field(
+        description="Hosting this month at the current customers, in every region"
+    )
+    sells_abroad: bool = Field(
+        description="It has customers in a region other than the home region"
+    )
+    series_scope: str = Field(
+        description="What mrr_change, customer_trend, new/churned last month, history and "
+        "monthly cover: product history stays home-only (M9; M10r)",
+    )
+    series_label: str = Field(description="series_scope, for display")
     brand_trend: str = Field(description="rising | falling | steady, from the last two months")
     counts_users: bool = Field(description="Every segment counts consumer users")
     segments: list[ProductSegmentOut]
@@ -193,9 +207,11 @@ class ProductOut(BaseModel):
         default=None, description="Quality now, last month's change and the pace (M7b)"
     )
     launch: LaunchReadinessOut
-    history: list[ProductMonthOut] = Field(description="Last 12 months, oldest first")
+    history: list[ProductMonthOut] = Field(
+        description="Last 12 months, oldest first, home region (series_scope)"
+    )
     monthly: list[ProductTotalMonthOut] = Field(
-        description="Last 12 months summed over segments, oldest first"
+        description="Last 12 months summed over segments, oldest first, home region"
     )
 
 
@@ -254,8 +270,10 @@ class PortfolioOut(BaseModel):
     arr_cents: int
     stage: int
     stage_label: str
-    paying_customers: float = Field(description="Business customers across products now")
-    consumer_users: float = Field(description="Consumer users across products now")
+    paying_customers: float = Field(
+        description="Business customers across products now, in every region"
+    )
+    consumer_users: float = Field(description="Consumer users across products now, every region")
     hosting_cents: int = Field(description="Hosting this month at the current customers")
     marketing_cents: int = Field(description="Marketing budgets this month")
     product_costs_cents: int = Field(description="Hosting plus marketing this month")
