@@ -71,7 +71,7 @@ def test_offices_lease_move_and_close(api: tuple[Client, Path]) -> None:
     assert [o["office_id"] for o in geo["offices"]] == [None]
     berlin = next(c for c in geo["cities"] if c["key"] == "berlin")
     assert (berlin["salary_index"], berlin["rent_index"]) == (0.65, 0.45)
-    assert berlin["example_rate_cents"] == 7_475_000  # $115,000 x 0.65
+    assert berlin["example_rate_cents"] == 6_548_100  # $115,000 x 0.65 x 0.876
     preview = client.get(f"{BASE}/geo/lease-preview?city=berlin&seats=50")
     assert (preview["monthly_rent_cents"], preview["fit_out_cents"]) == (1_012_500, 3_037_500)
     out = client.post(f"{BASE}/geo/offices", {"city": "berlin", "seats": 25})

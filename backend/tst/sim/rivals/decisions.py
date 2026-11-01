@@ -259,6 +259,8 @@ def candidates(
             continue
         category = data.category(product.category)
         own = {s.segment: s for s in state.segments_of(product.id)}
+        if not own and state.regions_of(product.id):
+            continue  # sells only abroad: it comes home through enter_region (M9, 19.6)
         for seg_key in category.segment_keys:
             seg = own.get(seg_key)
             if seg is None or seg.price_cents is None:

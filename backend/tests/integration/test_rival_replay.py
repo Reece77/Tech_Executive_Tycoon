@@ -30,10 +30,9 @@ from tst.sim.actions import (
 from tst.sim.actions.products import launch_problems
 from tst.sim.state import GameState
 
-# A seed whose 24 months bring a rival approach (rivals.need.poach_gain 0.007): 7 until
-# M10, whose consumer confidence moved adoption; 15 once M9's rivals also spent months
-# entering regions (no seed of 1-14 brought one on the combined code).
-SEED = 15
+# A seed whose 24 months bring a rival approach (rivals.need.poach_gain 0.007): 7, then 6
+# after M10's consumer confidence moved adoption, and 7 again on the combined M9 and M10 code.
+SEED = 7
 PRICES = {"smb": 4000, "mid_market": 70_000}
 TURNS = 24  # the funded spinout's money lasts about 26 months at this burn
 STAFF = 5  # the founder and four (M8: five ran out of money in month 21)

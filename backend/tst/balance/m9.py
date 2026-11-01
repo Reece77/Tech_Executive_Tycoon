@@ -130,7 +130,7 @@ def _team_in(game: Game, city: str, first_id: int) -> GameState:
     game.act(SetUnitOffice(game.founder_id, unit.id, office.id))
     state = game.state
     band = data.role(TEAM_ROLE).salary_band_mid_cents[TEAM_LEVEL]
-    pay = city_market_mid_cents(band, data.city(city))
+    pay = city_market_mid_cents(band, data.city(city), balance)
     for offset in range(TEAM):
         pid = first_id + offset
         gen = RngFactory(pid).stream(0, "misc", pid)

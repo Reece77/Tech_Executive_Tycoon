@@ -78,9 +78,12 @@ def _exec_rate(loaded: LoadedData, state: GameState, person_id: int) -> int:
 
     employment = state.employment_of(person_id)
     assert employment is not None
-    region = loaded.game_data.region(state.person(person_id).region)
+    from tst.sim.geo.cities import work_multiplier_bp  # M9: the work city's pay (19.1)
+
     band = loaded.game_data.role(employment.role).salary_band_mid_cents["exec"]
-    return market_mid_cents(band, region.salary_multiplier_bp)
+    return market_mid_cents(
+        band, work_multiplier_bp(state, employment, loaded.balance, loaded.game_data)
+    )
 
 
 def test_an_appointment_pays_the_exec_market_rate(loaded: LoadedData) -> None:

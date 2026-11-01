@@ -37,10 +37,13 @@ def test_flexible_space(loaded: LoadedData) -> None:
 
 
 def test_market_rate(loaded: LoadedData) -> None:
-    """A senior software engineer (band mid $115,000) in Bangalore: $34,500 a year."""
+    """A senior software engineer (band mid $115,000) in Bangalore:
+    `$115,000 x 0.30 x 0.876` (geo.pay_level) = $30,222 a year."""
     band = loaded.game_data.role("software_engineer").salary_band_mid_cents["senior"]
     assert band == 11_500_000
-    assert city_market_mid_cents(band, loaded.game_data.city("bangalore")) == 3_450_000
+    assert loaded.balance.geo.pay_level == 0.876
+    bangalore = loaded.game_data.city("bangalore")
+    assert city_market_mid_cents(band, bangalore, loaded.balance) == 3_022_200
 
 
 def test_regional_market(loaded: LoadedData) -> None:

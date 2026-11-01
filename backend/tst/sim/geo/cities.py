@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from tst.sim.data_models import Balance, GameData
+from tst.sim.geo.formulas import pay_multiplier_bp
 from tst.sim.org.rules import is_remote
 from tst.sim.people.models import Employment, Person
 from tst.sim.state import CompanyState, GameState, with_person
@@ -82,7 +83,8 @@ def work_multiplier_bp(
     (test data), their region's, as in v1."""
     if not data.cities:
         return data.region(state.person(employment.person_id).region).salary_multiplier_bp
-    return data.city(work_city(state, employment, balance, data)).salary_multiplier_bp
+    city = data.city(work_city(state, employment, balance, data))
+    return pay_multiplier_bp(city, balance)
 
 
 def settle_home_cities(

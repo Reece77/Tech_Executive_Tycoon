@@ -26,13 +26,13 @@ test('(a) lease a Berlin office, move a team there, see costs and rates change',
   page,
 }) => {
   fixture(GEO);
-  // An engineer's market rate in the HQ's flexible space: a senior engineer's $115,000.
+  // An engineer's market rate in the HQ's flexible space: a senior engineer's $115,000 x 0.876 (geo.pay_level).
   await page.goto(`/game/${GEO}/people`);
   const engineer = page.getByRole('row').filter({ hasText: 'Software engineer' }).first();
   await expect(engineer.getByTestId('person-city')).toHaveText('San Francisco');
   await engineer.getByRole('link').first().click();
   await expect(page.getByText('Market rate', { exact: true })).toBeVisible();
-  await expect(page.locator('body')).toContainText('$115,000');
+  await expect(page.locator('body')).toContainText('$100,740');
   const profile = page.url();
   await page.goto(`/game/${GEO}/org`);
   await page.getByTestId('offices-link').click();
@@ -58,9 +58,9 @@ test('(a) lease a Berlin office, move a team there, see costs and rates change',
   await expect(berlin).toContainText('Platform');
   await page.goto(`/game/${GEO}/people`);
   await expect(page.getByTestId('person-city').filter({ hasText: 'Berlin' })).toHaveCount(4);
-  // The same engineer now works in Berlin: $115,000 x 0.65.
+  // The same engineer now works in Berlin: $115,000 x 0.65 x 0.876.
   await page.goto(profile);
-  await expect(page.locator('body')).toContainText('$74,750');
+  await expect(page.locator('body')).toContainText('$65,481');
 });
 
 test('(b) launch a product in Europe and see it go live after 3 months', async ({ page }) => {

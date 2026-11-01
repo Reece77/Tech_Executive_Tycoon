@@ -687,9 +687,10 @@ markets:
 # --- Cities and geography (formulas.md 19.1, 19.3, 19.6, M9) -----------------------------
 geo:
   default_hq_city: san_francisco # cities.yaml key; a new game's HQ unless one is chosen (19.1)
+  pay_level: 0.876 # multiplier on every city's salary multiplier, for asks and market rates: a San Francisco company's average pay equals v1's regional candidate mix (19.1; Reece, 2026-11-01)
   local_candidates: 0.85 # fraction of a search's candidates who live in its city; the rest relocate (19.3)
   region_entry: # a rival's enter_region need (19.6): (unserved share - unserved) / span, with cash for cash_months
-    unserved: 0.4 # unserved share of the region's demand needed to consider entering
-    span: 0.4 # unserved share above `unserved` for need 1
+    unserved: 0.8 # unserved share of the region's demand needed to consider entering (tuned in M9 from 19.6's 0.4: rivals entered the served home market and squeezed v1's incumbents)
+    span: 0.2 # unserved share above `unserved` for need 1 (tuned in M9 from 0.4, so an empty region still has need 1)
     cash_months: 12 # months of costs in cash needed to enter a region
     cooldown_turns: 12 # turns; a rival enters at most one region in this many (M9 pacing, so entries do not crowd out 15.3's other actions)

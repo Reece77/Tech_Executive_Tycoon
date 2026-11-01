@@ -38,9 +38,16 @@ def close_penalty_cents(rent_cents: Cents, balance: Balance) -> Cents:
     return rent_cents * balance.office.close_penalty_months
 
 
-def city_market_mid_cents(band_mid_cents: Cents, city: CityDef) -> Cents:
-    """A market rate in a city: band mid x the city's salary multiplier (19.1, 2)."""
-    return pct_of(band_mid_cents, city.salary_multiplier_bp)
+def pay_multiplier_bp(city: CityDef, balance: Balance) -> int:
+    """The multiplier people working in a city are paid at: its salary multiplier x
+    geo.pay_level, the calibration that makes a San Francisco company's average pay equal
+    v1's regional mix (19.1). Asks and market rates both use it."""
+    return round(exact(city.salary_multiplier_bp) * exact(balance.geo.pay_level))
+
+
+def city_market_mid_cents(band_mid_cents: Cents, city: CityDef, balance: Balance) -> Cents:
+    """A market rate in a city: band mid x the city's pay multiplier (19.1, 2)."""
+    return pct_of(band_mid_cents, pay_multiplier_bp(city, balance))
 
 
 def localization_cents(scope: float, balance: Balance) -> Cents:

@@ -38,7 +38,7 @@ HALF_POINT = 0.5  # one + mark per half attribute point of talent bonus (display
 
 def _example_rate(city_key: str, data: LoadedData) -> int:
     band = data.game_data.role(EXAMPLE_ROLE).salary_band_mid_cents[EXAMPLE_LEVEL]
-    return gf.city_market_mid_cents(band, data.game_data.city(city_key))
+    return gf.city_market_mid_cents(band, data.game_data.city(city_key), data.balance)
 
 
 def _talent(city_key: str, data: LoadedData) -> list[TalentOut]:

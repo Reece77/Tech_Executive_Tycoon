@@ -200,7 +200,7 @@ def test_rivals_enter_empty_regions(loaded: LoadedData) -> None:
     found = region_candidates(state, salesforce, 100.0, b, data)
     regions = [c.segment for c in found]
     assert "europe" not in regions and "north_america" not in regions
-    assert {c.segment: c.need for c in found}["east_asia"] == 1.0
+    assert {c.segment: c.need for c in found}["east_asia"] == pytest.approx(1.0)
     poor = region_candidates(state, salesforce, 6.0, b, data)
     assert all(c.need == 0 for c in poor)
     chosen = None

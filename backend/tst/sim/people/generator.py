@@ -28,7 +28,7 @@ import numpy as np
 
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData, Role, Tag
-from tst.sim.geo.formulas import talent_bonus
+from tst.sim.geo.formulas import pay_multiplier_bp, talent_bonus
 from tst.sim.geo.models import ANYWHERE
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.people.formulas import current_ability, pa_gap_mean, salary_expectation_cents
@@ -218,7 +218,7 @@ def generate_person(
         ca=ca,
         level_mean=level_ca.mean,
         region_multiplier_bp=(
-            data.city(talent_city or city).salary_multiplier_bp
+            pay_multiplier_bp(data.city(talent_city or city), balance)
             if city is not None
             else data.region(region).salary_multiplier_bp
         ),

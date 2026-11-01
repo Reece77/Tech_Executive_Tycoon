@@ -1480,6 +1480,7 @@ Each city has: key, name, region (`regions.yaml`), a salary multiplier (replacin
 
 - **HQ.** A new game picks an HQ city (default San Francisco). Existing saves get San Francisco by migration.
 - **Market rates.** Everyone's market rate (§2) uses the salary multiplier of the city they work in: their office's city, or their home city when remote. A person generated in v1 gets the first city of their region as their home city (migration).
+- **Pay level** `geo.pay_level` (0.876; Reece, 2026-11-01): every city's salary multiplier is x this for asks and for every company's market rates, so city ratios are unchanged. It is the calibration that makes a San Francisco-HQ company's average pay equal v1's regional mix (`people.region_weights` x the regions' multipliers = 0.876), where 45% of candidates came from cheaper regions.
 - **Talent bonus.** Groups are `skills.yaml` groups. The values above are starting points for tuning.
 
 ### 19.2 Offices
@@ -1556,7 +1557,7 @@ Cities with their salary and rent indexes and talent bonuses. Offices with seats
 
 **Lease.** 50 seats in Berlin: `50 × $600 × 0.45 × 0.75` = **$10,125** a month, plus a fit-out of $30,375.
 
-**Market rate.** A senior software engineer (band mid $115,000) working in Bangalore: `$115,000 × 0.30` = **$34,500** a year.
+**Market rate.** A senior software engineer (band mid $115,000) working in Bangalore: `$115,000 × 0.30 × 0.876` (pay level) = **$30,222** a year.
 
 **Regional market.** B2B SaaS SMB in Europe: `D₀ = 400,000 × 0.80` = 320,000, and `p_ref = $50 × 0.90` = $45.
 
@@ -1568,7 +1569,7 @@ Decisions the table above did not settle, recorded in the M9 brief's "Decisions 
 
 - **Cities.** `cities.yaml` adds a `talent_weight` per city (roughly the hub's tech workforce) for relocators' and "anywhere" candidates' cities. Africa has no hub: its people's home city is London (its sales neighbour's first city), `home_city_region`.
 - **Where people work and live.** An office-policy unit's office is its own `office_id`, else its parent's, up to flexible space in the HQ city; the company root always works in flexible HQ space. Everyone working at an office lives in its city (moving a unit moves its people); remote staff work from their home city. Rivals have no offices: their people work from home.
-- **Pay.** Market rates (morale, the underpaid trigger, exec pay on appointment, rivals' poaching offers) use the work city's multiplier. A candidate's ask uses the city they would work in: the search's city, or their own for "anywhere". With cities, v1's ~12% discount from candidates in cheaper regions working in San Francisco is gone (golden and balance moves, CHANGELOG).
+- **Pay.** Market rates (morale, the underpaid trigger, exec pay on appointment, rivals' poaching offers) use the work city's multiplier x `geo.pay_level`. A candidate's ask uses the city they would work in: the search's city, or their own for "anywhere". Without the pay level, v1's ~12% discount from candidates in cheaper regions would be gone and hiring would cost 12-20% more (the first M9 guard run: the ten-year acceptance run went bankrupt at month 27).
 - **Talent bonus.** Added to each role skill (primary and secondary) after the CA target is set, by skill, else by skill group; it raises CA and so the ask. The "role-skill score" of 19.8 target 4 is CA / 10 (primaries weigh 3, secondaries 1). All of a search's candidates get the search city's bonus (an "anywhere" candidate gets their own city's).
 - **City draw.** One uniform u from the person's `people_gen` generator replaces v1's region draw: the search city below `geo.local_candidates`, else a relocator's city by talent weight among the other cities.
 - **Relocation.** A player's hire into an office whose city is not their home city moves there for `hiring.relocation_cents` (6200_recruiting); remote hires stay put. Candidates who would move carry `relocate_to`.

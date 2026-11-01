@@ -1018,6 +1018,7 @@ class GeoBalance(_Frozen):
     """Cities and geography (formulas.md 19.1, 19.3, 19.6, M9)."""
 
     default_hq_city: str
+    pay_level: float = Field(gt=0)
     local_candidates: float = Field(ge=0, le=1)
     region_entry: RegionEntryBalance
 

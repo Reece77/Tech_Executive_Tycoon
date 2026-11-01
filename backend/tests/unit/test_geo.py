@@ -41,6 +41,12 @@ from tst.sim.setup import new_game
 from tst.sim.state import GameState, with_company, with_employment, with_person
 
 BAND_MID = 9_000_000  # software engineer, mid level
+# geo.pay_level 0.876 x each city's multiplier, in bp (19.1)
+SF_BP, LONDON_BP, BERLIN_BP = 8_760, 7_446, 5_694
+
+
+def rate(bp: int) -> int:
+    return BAND_MID * bp // 10_000
 
 
 def _with_engineer(loaded: LoadedData, region: str = "north_america") -> GameState:
@@ -105,21 +111,25 @@ def test_market_rate_follows_the_work_city(loaded: LoadedData) -> None:
     employment = state.employment_of(2)
     assert employment is not None
     assert work_city(state, employment, b, data) == "san_francisco"
-    assert market_mid_for(state, employment, b, data) == BAND_MID
+    assert market_mid_for(state, employment, b, data) == rate(SF_BP)
     remote = with_company(state, replace(state.player, work_policy="remote"))
     assert work_city(remote, employment, b, data) == "london"
-    assert market_mid_for(remote, employment, b, data) == BAND_MID * 85 // 100
+    assert market_mid_for(remote, employment, b, data) == rate(LONDON_BP)
 
 
-def test_san_francisco_hq_keeps_v1_rates_for_north_americans(loaded: LoadedData) -> None:
-    """A San Francisco HQ with no offices: North American staff keep v1's market rate and
-    office cost (19.1-19.2)."""
+def test_san_francisco_pay_matches_v1s_regional_mix(loaded: LoadedData) -> None:
+    """geo.pay_level: a San Francisco company's market rate is v1's average over its
+    regional candidate mix (people.region_weights x regions' multipliers), within a point."""
     b, data = loaded.balance, loaded.game_data
+    weights = b.people.region_weights
+    v1_mix = sum(weights[r] * data.region(r).salary_multiplier_bp for r in weights) / sum(
+        weights.values()
+    )
+    assert b.geo.pay_level == pytest.approx(v1_mix / 10_000, abs=0.01)
     state = _with_engineer(loaded)
     employment = state.employment_of(2)
     assert employment is not None
-    v1 = BAND_MID * data.region("north_america").salary_multiplier_bp // 10_000
-    assert market_mid_for(state, employment, b, data) == v1
+    assert market_mid_for(state, employment, b, data) == rate(SF_BP)
     assert hq_city(state.player, b) == "san_francisco"
 
 
@@ -200,12 +210,12 @@ def test_moving_a_team_to_berlin_changes_rates_costs_and_cities(loaded: LoadedDa
     unit = state.active_units(1)[0]
     employment = state.employment_of(2)
     assert employment is not None
-    assert market_mid_for(state, employment, b, data) == BAND_MID
+    assert market_mid_for(state, employment, b, data) == rate(SF_BP)
     assert employee_office_cents(state, employment, b, data) == 60_000
     state = _run(loaded, state, SetUnitOffice(FOUNDER, unit.id, office.id))
     employment = state.employment_of(2)
     assert employment is not None
-    assert market_mid_for(state, employment, b, data) == BAND_MID * 65 // 100
+    assert market_mid_for(state, employment, b, data) == rate(BERLIN_BP)
     assert employee_office_cents(state, employment, b, data) == 0  # the lease covers seats
     assert state.person(2).city == "berlin"
     costs = dict((memo, amount) for memo, _, amount in monthly_costs(state, 1, b, data))
