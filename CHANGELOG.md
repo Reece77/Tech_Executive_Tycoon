@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs: Codex review 2 (at m9-done) saved in `docs/reviews/`; all six findings confirmed (five P2, one P3) and briefed as M10r, to run before the balance checkpoint.
 - M9 Cities, offices and regions (lane A; formulas.md §19; merged after M10):
   - 15 cities (`cities.yaml`: salary and rent indexes, talent bonuses, talent weights, regional growth); an HQ city chosen at new game (default San Francisco; API `hq_city`, `tst new-game --hq`, New Game step 5). Everyone's market rate follows the city they work in.
   - Offices: lease (25–250 seats, rent each month, 3 months' fit-out), close (3 months' penalty; teams outside the HQ go remote), a unit's office (inherited down the org), flexible HQ space at the HQ's rent index, "Crowded office" morale. Offices screen (`/org/offices`), `GET /geo`, `tst cities|offices|lease|close-office|unit-office`.
