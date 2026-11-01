@@ -512,7 +512,11 @@ def portfolio_out(
     for product in state.company_products(company.id):
         if product.status not in SELLING:
             continue
-        for seg in [*state.segments_of(product.id), *state.regional_segments_of(product.id)]:
+        rows: list[ProductSegment | RegionalSegment] = [
+            *state.segments_of(product.id),
+            *state.regional_segments_of(product.id),
+        ]
+        for seg in rows:
             if seg.segment == CONSUMER_SEGMENT:
                 users += seg.customers
             else:
