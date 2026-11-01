@@ -211,6 +211,26 @@ Three artboards in the canvas's tenth row. Kestrel in June 2018: stage 3, 252 st
 - *M9:* Recruitment's city filter and "anywhere"; candidates' city and "would relocate"; a City column on People; Market's region picker.
 - *M10:* Series C and D in Fundraising, with growth investors; the lender event as a critical event card (choices: waiver fee, higher rate, partial repayment); "Downturn under way" on the macro strip.
 
+## M11 and M12a screens (v2, parallel lanes)
+
+Two artboards in the canvas's eleventh row.
+
+**M11 · Research** (a new screen, reached from Products). Kestrel in June 2016 with an AI lab in Berlin.
+- *Your levels:* each domain's baseline, your lead and your level, with a bar of level against baseline and the next era's threshold as a gold tick. It also shows which categories each domain feeds, and a line on decay and the current quality-cap lift.
+- *Projects:* team and city, output, budget, lead gained per month and the next era within reach ("Transformers in ~3 months, about 9 months before history"), plus the last breakthrough or dead end.
+- *Side panel:* rivals' levels in the domain as ranges (startups marked with their founding month), licences in and out with royalties, and why licensing in isn't possible yet.
+- *Eras timeline:* arrived eras (on schedule or early, and who caused them), then the next era highlighted with its threshold against your level and the first-mover reward, then later eras with thresholds and no dates.
+
+**M12a · Infrastructure** (a new screen, reached from Products). Kestrel in June 2022 during the chip shortage.
+- *Component strip:* server and GPU indexes with this year's change and allocation, and spot compute per CU (general and GPU).
+- *Data centres table:* site, kind, region and age; capacity; a use bar split into your products, sold and free; reliability; staff coverage (amber when short); cost per used CU against spot; book value. A building site shows a progress bar and its ready month.
+- *Cloud hosting panel:* customers by segment, revenue, your price per CU against AWS, outages in 12 months.
+- *Build dialog:* kind and region, capacity, capex paid over the build, staff needed, shortage delay, the contract hint, energy 12.
+
+**Not drawn (text only):**
+- *M11:* the tech factor in the product quality breakdown; the era timeline also on Market; Start a project and License dialogs; the era-arrival news card.
+- *M12a:* the Contract dialog (index, months, volume, take-or-pay note); depreciation and capex lines in Finance; the outage critical event card; the Cloud hosting market view with a hyperscalers segment.
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).

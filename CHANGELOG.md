@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs: M11 (R&D tree and era milestones; lane A) and M12a (cloud, data centres and supply shocks; lane B) briefs, formulas.md §21–§22, wireframes (Research, DataCentres), RNG streams 23, 24, 26 and 27 reserved in ADR-0013.
 - Docs: v2 roadmap re-paired (M11 with M12a cloud, M12b hardware and chips with M13 IPO, M14 M&A alone) and ADR-0019 gains Reece's 2026-10-31 decisions: R&D era milestones, factories allowed from the start with spare capacity sold to others, supply shocks history-then-seeded.
 - M8r fixes from Codex review 1 (each with a regression test written first and seen failing):
   - 1 (P1) The state cache is published inside `write_session`, after the commit and before the save's lock is released (`repository.publish`); a write that publishes nothing clears it. Two-writer interleaving test (`test_m8r_cache.py`).

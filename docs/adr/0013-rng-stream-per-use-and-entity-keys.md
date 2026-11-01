@@ -62,4 +62,9 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | `entrants` | 20 | `(entrant_index,)` | Generating a scheduled entrant's people (formulas.md §18.7) | M8 |
 | `macro` | 21 | `(indicator_index,)`; `(99,)` for downturns | Macro indicators after 2025 (formulas.md §20.1) | M10 (lane B) |
 | `rival_region` | 22 | `(startup_id,)` | A rival startup's founding region (formulas.md §19.6) | M9 (lane A) |
-| — | 23–29 | — | Reserved for M11 (lane A) and M12 (lane B): 23–25 lane A, 26–29 lane B | M11, M12 |
+| `research` | 23 | `(project_id,)` | Breakthroughs and dead ends (formulas.md §21.3) | M11 (lane A) |
+| `rival_research` | 24 | `(company_id,)` | Rivals' research breakthroughs (formulas.md §21.6) | M11 (lane A) |
+| — | 25 | — | Reserved for lane A | M11 |
+| `supply` | 26 | `(index,)` | Component indexes and supply shocks after 2025 (formulas.md §22.4) | M12a (lane B) |
+| `facility` | 27 | `(facility_id,)` | Data-centre outages (formulas.md §22.5) | M12a (lane B) |
+| — | 28–29 | — | Reserved for lane B | M12a |
