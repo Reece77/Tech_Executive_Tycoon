@@ -33,6 +33,7 @@ class MoraleTerms:
     remote: float
     relationships: float = 0.0  # W_rel (M6, 16.7)
     support: float = 0.0  # W_support, "Admin and support" (M8, 18.4)
+    crowded: float = 0.0  # "Crowded office" (M9, 19.2)
 
     @property
     def team_total(self) -> float:
@@ -53,13 +54,20 @@ class MoraleTerms:
             + self.remote
             + self.relationships
             + self.support
+            + self.crowded
         )
 
 
-def market_mid_for(employment: Employment, region: str, data: GameData) -> Cents:
+def market_mid_for(
+    state: GameState, employment: Employment, balance: Balance, data: GameData
+) -> Cents:
+    """The role and level's band mid x the multiplier of the city they work in (2, 19.1)."""
+    from tst.sim.geo.cities import work_multiplier_bp
+
     role = data.role(employment.role)
     return market_mid_cents(
-        role.salary_band_mid_cents[employment.level], data.region(region).salary_multiplier_bp
+        role.salary_band_mid_cents[employment.level],
+        work_multiplier_bp(state, employment, balance, data),
     )
 
 
@@ -72,16 +80,24 @@ def morale_terms(
     opening_cash: Cents,
     current_cash: Cents,
     support: Mapping[int, float] | None = None,
+    crowded: set[int] | None = None,
 ) -> MoraleTerms:
     """True terms for an employee (not the founder), using `view` for reporting lines.
-    `support` is W_support by person (18.4), computed here when not given."""
+    `support` is W_support by person (18.4), and `crowded` the people in an overfull
+    office (19.2), computed here when not given."""
+    from tst.sim.geo.offices import crowded_people
+
+    if crowded is None:
+        crowded = crowded_people(state, employment.company_id)
     cfg = balance.morale
     person = state.person(employment.person_id)
     company = state.company(employment.company_id)
     role = data.role(employment.role)
     return MoraleTerms(
         base=cfg.target_base,
-        pay=pay_term(employment.salary_cents, market_mid_for(employment, person.region, data), cfg),
+        pay=pay_term(
+            employment.salary_cents, market_mid_for(state, employment, balance, data), cfg
+        ),
         fit=fit_term(
             matching_interests(person, company.mission),
             style_mismatch=person.work_style != role.work_style,
@@ -98,4 +114,5 @@ def morale_terms(
         support=(
             support if support is not None else support_morale_terms(state, view, balance, data)
         ).get(person.id, 0.0),
+        crowded=balance.office.crowded_morale if person.id in crowded else 0.0,
     )

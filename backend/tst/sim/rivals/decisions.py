@@ -9,11 +9,15 @@ with source "rival" and replay recomputes it (ADR-0015 section 5).
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, replace
 
 import numpy as np
 
 from tst.sim.data_models import RIVAL_ACTIONS, SCORE_MAX, Balance, GameData
+from tst.sim.geo import formulas as gf
+from tst.sim.geo.cities import home_region
+from tst.sim.geo.models import ProductRegion, RegionalSegment
 from tst.sim.ledger import CASH, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.people.models import current_ability
@@ -29,7 +33,9 @@ from tst.sim.state import (
     with_approach,
     with_pool,
     with_product,
+    with_product_region,
     with_product_segment,
+    with_regional_segment,
     with_rival_effect,
     with_rival_move,
     with_segment_share,
@@ -44,7 +50,76 @@ class Candidate:
     action: str
     need: float
     product_id: int | None = None
-    segment: str | None = None
+    segment: str | None = None  # for enter_region (M9): the region's key
+
+
+ENTER_REGION = "enter_region"  # M9 (19.6): weighted as enter_segment
+
+
+def selling_regions(state: GameState, product: Product, home: str) -> set[str]:
+    """Regions a product sells or is launching in: home if it has home segments."""
+    regions = {r.region for r in state.regions_of(product.id)}
+    if state.segments_of(product.id):
+        regions.add(home)
+    return regions
+
+
+def region_unserved(
+    state: GameState, category: str, segments: Iterable[str], region: str, home: str
+) -> float:
+    """Unserved share of a region's demand in the given segments of a category (19.6)."""
+    demand = served = 0.0
+    for seg in segments:
+        if region == home:
+            market = state.market(category, seg)
+            demand += market.addressable if market is not None else 0.0
+            served += sum(s.customers for _, s in _rivals_in(state, category, seg))
+        else:
+            rmarket = state.regional_market(category, seg, region)
+            demand += rmarket.addressable if rmarket is not None else 0.0
+            served += sum(
+                r.customers
+                for r in state.regional_segments
+                if r.region == region
+                and r.segment == seg
+                and (p := state.product(r.product_id)) is not None
+                and p.category == category
+                and p.status == "live"
+            )
+    return max(0.0, demand - served) / demand if demand > 0 else 0.0
+
+
+def region_candidates(
+    state: GameState, company: CompanyState, months: float, balance: Balance, data: GameData
+) -> list[Candidate]:
+    """enter_region for each live product and region it does not sell in yet, in regions.yaml
+    order: need (unserved share - 0.4) / 0.4 with 12 months of costs in cash (19.6)."""
+    if not data.region_markets or not data.cities:
+        return []
+    entry = balance.geo.region_entry
+    home = home_region(state, balance, data)
+    out: list[Candidate] = []
+    for product in sorted(state.company_products(company.id), key=lambda p: p.id):
+        if product.status != "live":
+            continue
+        selling = selling_regions(state, product, home)
+        segments = product_segment_keys(state, product, data)
+        for region in data.region_keys:
+            if region in selling:
+                continue
+            need = 0.0
+            if months >= entry.cash_months:
+                unserved = region_unserved(state, product.category, segments, region, home)
+                need = max(0.0, min(1.0, (unserved - entry.unserved) / entry.span))
+            out.append(Candidate(ENTER_REGION, need, product.id, region))
+    return out
+
+
+def product_segment_keys(state: GameState, product: Product, data: GameData) -> list[str]:
+    """Segments the product sells anywhere, in categories.yaml order."""
+    keys = {s.segment for s in state.segments_of(product.id)}
+    keys |= {r.segment for r in state.regional_segments_of(product.id)}
+    return [k for k in data.category(product.category).segment_keys if k in keys]
 
 
 # --- Memory: shares of served customers (phase 11) -------------------------------------------
@@ -184,6 +259,8 @@ def candidates(
             continue
         category = data.category(product.category)
         own = {s.segment: s for s in state.segments_of(product.id)}
+        if not own and state.regions_of(product.id):
+            continue  # sells only abroad: it comes home through enter_region (M9, 19.6)
         for seg_key in category.segment_keys:
             seg = own.get(seg_key)
             if seg is None or seg.price_cents is None:
@@ -251,12 +328,20 @@ def candidates(
             )
     out.append(Candidate("cut_costs", f.need_cut_costs(months, need)))
     order = {a: i for i, a in enumerate(RIVAL_ACTIONS)}
-    return sorted(out, key=lambda c: (c.product_id or 0, c.segment or "", order[c.action]))
+    ranked = sorted(out, key=lambda c: (c.product_id or 0, c.segment or "", order[c.action]))
+    # Region entry (M9, 19.6) comes after v1's candidates, so their draws are unchanged.
+    return ranked + region_candidates(state, company, months, balance, data)
 
 
 def _cooling(state: GameState, company_id: int, c: Candidate, balance: Balance) -> bool:
     rv = balance.rivals
     since = state.turn - rv.cooldown_turns
+    if c.action == ENTER_REGION:  # M9: one region entry per rival per its cooldown (19.6)
+        after = state.turn - balance.geo.region_entry.cooldown_turns
+        return any(
+            m.company_id == company_id and m.action == ENTER_REGION and m.turn > after
+            for m in state.rival_moves
+        )
     for m in state.rival_moves:
         if (
             m.company_id == company_id
@@ -296,7 +381,7 @@ def choose(
         noise = float(gen.normal(0.0, rv.noise_sd))
         if c.need <= 0 or _cooling(state, company.id, c, balance):
             continue
-        u = f.utility(c.need, weights[c.action], noise)
+        u = f.utility(c.need, weights.get(c.action, weights["enter_segment"]), noise)
         if best is None or u > best[1]:
             best = (c, u)
     if best is None or best[1] < rv.act_threshold:
@@ -343,7 +428,7 @@ def act(
     """Apply the chosen action; returns the news words."""
     rv = balance.rivals
     product = state.product(c.product_id) if c.product_id is not None else None
-    seg_label = segment_label(data, c.segment)
+    seg_label = segment_label(data, c.segment) if c.action != ENTER_REGION else ""
     if c.action in ("price_cut", "price_rise") and product is not None:
         seg = next(s for s in state.segments_of(product.id) if s.segment == c.segment)
         factor = rv.price_cut if c.action == "price_cut" else rv.price_rise
@@ -375,6 +460,8 @@ def act(
             ),
         )
         return state, f"entered {seg_label} with {product.name}"
+    if c.action == ENTER_REGION and product is not None and c.segment is not None:
+        return enter_region(state, company, product, c.segment, balance, data)
     if c.action == "cut_costs":
         for pool in state.company_pools(company.id):
             state = with_pool(
@@ -394,6 +481,42 @@ def act(
     return state, ""
 
 
+def enter_region(
+    state: GameState,
+    company: CompanyState,
+    product: Product,
+    region: str,
+    balance: Balance,
+    data: GameData,
+    *,
+    news: bool = True,
+) -> tuple[GameState, str]:
+    """A rival starts selling a product in a region at once, in every segment it sells
+    anywhere, at p_ref x price index x its personality's price factor (19.6). Rivals have
+    no offices and do not localize (M9 brief)."""
+    home = home_region(state, balance, data)
+    factor = balance.rivals.price_factor[company.personality or "fast_follower"]
+    category = data.category(product.category)
+    for seg in product_segment_keys(state, product, data):
+        reference = category.market(seg).reference_price_cents
+        if region == home:
+            price = max(1, round(reference * factor))
+            if state.product_segment(product.id, seg) is None:
+                state = with_product_segment(
+                    state, ProductSegment(product.id, seg, price, added_turn=state.turn)
+                )
+            continue
+        price = max(1, round(gf.regional_price_cents(reference, region, home, data) * factor))
+        state = with_regional_segment(
+            state, RegionalSegment(product.id, region, seg, price, added_turn=state.turn)
+        )
+    if region != home:
+        state = with_product_region(
+            state, ProductRegion(product.id, region, state.turn, state.turn)
+        )
+    return state, f"entered {data.region(region).label} with {product.name}" if news else ""
+
+
 def approach(
     state: GameState, company: CompanyState, person_id: int, balance: Balance, data: GameData
 ) -> GameState:
@@ -402,10 +525,11 @@ def approach(
 
     employment = state.employment_of(person_id)
     assert employment is not None
-    person = state.person(person_id)
+    from tst.sim.geo.cities import work_multiplier_bp
+
     market = market_mid_cents(
         data.role(employment.role).salary_band_mid_cents[employment.level],
-        data.region(person.region).salary_multiplier_bp,
+        work_multiplier_bp(state, employment, balance, data),
     )
     offer = round(market * balance.rivals.poach.offer_mult)
     approach_id, ids = state.next_ids.take("approach")

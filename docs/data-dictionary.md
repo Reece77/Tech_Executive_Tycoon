@@ -918,3 +918,86 @@ The player's operating result and burn at the last month ends (oldest first), wh
 - `event.loan_id` INTEGER null: a lender event's loan (target `loan:<id>`).
 - `event_queue.loan_id` INTEGER null: a lender event the debt phase queued; `event_queue.source_event_id` is now nullable (null for an event the engine queued, not an answer).
 - `cap_table_entry.share_class` gains `preferred_c`, `preferred_d` and `warrant`; `funding_round.series` gains `c` and `d`.
+
+## Cities, offices and regions (migration `0023_geo`, M9)
+
+Side tables, as M8's: migration 0013 loads `company`, `person`, `org_unit` and `search` through the current models on older saves, so M9's values for them live in tables of their own. An existing save gets San Francisco as its HQ, each person's home city (the first city of their region; Africa's people take London), every other region's market grown to its turn, and its v1 incumbents' Europe presence at their starting shares. The six regional incumbents (SAP, Kaspersky, Tencent, Alibaba, Baidu, Infosys) come only with new games.
+
+### company_hq
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER PK FK → company.id | no | The player's company. |
+| `city` | VARCHAR(32) | no | `cities.yaml` key of the HQ (19.1). No row: `geo.default_hq_city`. |
+
+### person_city
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER PK FK → person.id | no | The person. |
+| `city` | VARCHAR(32) | no | Their home city (19.1): where a candidate lives, where a remote employee works, and where an office worker last moved to. No row: the first city of their region. |
+
+### office
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Counted as max(id) + 1 on load (like M6's counters). |
+| `company_id` | INTEGER FK → company.id | no | The leasing company (the player's; rivals have no offices). |
+| `city` | VARCHAR(32) | no | `cities.yaml` key. |
+| `seats` | INTEGER | no | 25, 50, 100 or 250 (`office.seat_sizes`). |
+| `opened_turn` | INTEGER | no | The month the lease started (its fit-out was paid then). |
+| `status` | VARCHAR(16) | no | `open` or `closed`. Only open offices are loaded. |
+| `closed_turn` | INTEGER | yes | The month the lease was ended early. |
+
+### unit_office
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `unit_id` | INTEGER PK FK → org_unit.id | no | The unit. |
+| `office_id` | INTEGER | yes | Its home office; null (or no row) = its parent's office, up to flexible space in the HQ city (19.2). |
+
+### search_city
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `search_id` | INTEGER PK FK → search.id | no | The search. |
+| `city` | VARCHAR(32) | no | Where its candidates live (85% local, the rest relocators), or `anywhere` for a remote unit's search (19.3). No row: a search opened before M9, generated as in v1. |
+
+### candidate_relocation
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER PK FK → person.id | no | A candidate who lives outside their search's city. |
+| `city` | VARCHAR(32) | no | The search's city they would move to; hiring them into an office there costs `hiring.relocation_cents`. |
+
+### regional_market
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `category` | VARCHAR(32) PK | no | `categories.yaml` key. |
+| `segment` | VARCHAR(32) PK | no | Segment key. |
+| `region` | VARCHAR(32) PK | no | A region other than the home region (the home region stays in `market_segment`). |
+| `addressable` | FLOAT | no | Addressable customers D: the home D0 x the region's size, grown monthly at the category's growth x the region's `region_growth` (19.5). |
+
+### product_region
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `product_id` | INTEGER PK FK → product.id | no | The product. |
+| `region` | VARCHAR(32) PK | no | A region other than the home region. |
+| `launched_turn` | INTEGER | no | When it launched there (localization paid). |
+| `live_turn` | INTEGER | no | From this month it sells there (`markets.localize_months` later for the player; at once for rivals). |
+
+### regional_segment
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `product_id` | INTEGER PK FK → product.id | no | The product. |
+| `region` | VARCHAR(32) PK | no | The region. |
+| `segment` | VARCHAR(32) PK | no | The segment. |
+| `price_cents` | BIGINT | yes | Monthly price there; defaults to p_ref x the region's price index (19.5). |
+| `customers` | FLOAT | no | Customers there. |
+| `capacity_limited` | BOOLEAN | no | Last phase 5's sales capacity there bound new customers. |
+| `added_turn` | INTEGER | no | When the row was added. |
+
+`save_meta.schema_version` is 23.

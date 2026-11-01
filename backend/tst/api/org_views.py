@@ -248,10 +248,9 @@ def _pay_out(
     else:
         salary, level = new.salary_cents, new.level
     founder = person.is_founder
-    market = 0 if founder else market_mid_for(old, person.region, data.game_data)
-    new_market = (
-        0 if founder else market_mid_for(replace(old, level=level), person.region, data.game_data)
-    )
+    gd, bal = data.game_data, data.balance
+    market = 0 if founder else market_mid_for(before, old, bal, gd)
+    new_market = 0 if founder else market_mid_for(before, replace(old, level=level), bal, gd)
     morale_before = before.person_state(action.person_id).morale
     morale_after = after.person_state(action.person_id).morale
     old_salary = old.salary_cents
@@ -384,6 +383,8 @@ def morale_breakdown(
     ]
     if terms.support:  # W_support from stage 3 (M8, 18.4): coverage is shown as counts
         shown.append(MoraleTermOut(key="support", label="Admin and support", value=terms.support))
+    if terms.crowded:  # M9 (19.2): more people than seats in their office
+        shown.append(MoraleTermOut(key="crowded", label="Crowded office", value=terms.crowded))
     holders = teammate_tag_holders(state, view, person_id)
     labels = {t.key: t.label for t in data.game_data.tags}
     for tag in ORG_TAGS:

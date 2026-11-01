@@ -7,9 +7,12 @@ names and the pace label; per-person numbers never leave the sim (11.13).
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from tst.sim.data_models import Balance, CategoryDef, GameData
+from tst.sim.geo.cities import work_region
+from tst.sim.geo.formulas import cross_region_factor
 from tst.sim.org.rules import OrgView
 from tst.sim.org.scaleup import modifiers
 from tst.sim.products import formulas as f
@@ -53,6 +56,8 @@ class Team:
     brand_mult: float = 1.0  # CMO on B* (18.3)
     awareness_mult: float = 1.0  # CMO (18.3)
     pricing_power: float = 1.0  # CRO on p_ref in sales segments (18.3)
+    region_factor: float = 1.0  # builders in several regions (M9, 19.4)
+    builder_regions: int = 1  # how many regions the builders work in (M9, shown)
 
     @property
     def mavericks(self) -> int:
@@ -62,7 +67,7 @@ class Team:
         """coord(n) x sum o_i: the team's output before monthly noise."""
         n = len(self.builders)
         total = sum(b.output for b in self.builders)
-        return f.coord_factor(n, balance.products) * total * self.output_mult
+        return f.coord_factor(n, balance.products) * total * self.output_mult * self.region_factor
 
     def qcap(self, balance: Balance) -> float | None:
         """Q_cap (11.4) x the CTO's factor (18.3)."""
@@ -80,6 +85,24 @@ class Team:
         """New customers a month the sellers can close in a sales segment (11.3)."""
         rate = balance.products.seller_rate.get(segment, 0.0)
         return f.seller_capacity(rate, (s.contribution for s in self.sellers))
+
+    def capacity_weighted(
+        self, segment: str, balance: Balance, weights: Mapping[int, float]
+    ) -> float:
+        """Capacity from the sellers in `weights`, each x its weight (19.5)."""
+        rate = balance.products.seller_rate.get(segment, 0.0)
+        return f.seller_capacity(
+            rate, (s.contribution * weights.get(s.person_id, 0.0) for s in self.sellers)
+        )
+
+
+def builder_regions(
+    state: GameState, product: Product, builders: list[Builder], balance: Balance, data: GameData
+) -> int:
+    """How many regions the player's builders on a product work in (19.4); 1 for rivals."""
+    if not data.cities or not builders or not state.company(product.company_id).is_player:
+        return 1
+    return len({work_region(state, state.person(b.person_id), balance, data) for b in builders})
 
 
 def assigned_units(state: GameState, product: Product) -> tuple[int | None, ...]:
@@ -142,7 +165,10 @@ def product_team(
                     skills["marketing"], skills["communication"], skills["design"]
                 )
                 marketers.append(Contributor(person_id, f.contribution(mkt, m)))
+    regions = builder_regions(state, product, builders, balance, data)
     return Team(
+        region_factor=cross_region_factor(regions, balance),
+        builder_regions=regions,
         unit_ids=units,
         builders=tuple(builders),
         sellers=tuple(sellers),

@@ -29,6 +29,7 @@ SAFES: Final = "2600_safes"  # SAFEs until they convert (M4)
 OTHER_INCOME: Final = "4900_other_income"  # event cash gains (M6, 16.3)
 DEBT: Final = "2500_debt"  # loans' principal owed (M10, 20.3)
 INTEREST: Final = "7000_interest"  # interest and lenders' fees (M10, 20.3)
+RESEARCH: Final = "6500_research_development"  # localization (M9, 19.5)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -45,6 +46,7 @@ ENGINE_ACCOUNTS: Final = (
     COMPUTE,
     MARKETING,
     SAFES,
+    RESEARCH,
 )
 
 

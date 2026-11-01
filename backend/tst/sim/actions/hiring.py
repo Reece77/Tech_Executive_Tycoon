@@ -79,6 +79,11 @@ class OpenSearch:
     plan_id: int | None = None  # set by a delegate opening it for a hiring plan (13.10)
     rival_id: int | None = None  # the rival of a "Poach from a rival" search (M5, 15.6)
     level: str | None = None  # "exec": an exec-level search, from stage 3 (M8, 18.3)
+    # M9 (19.3): the city candidates live in, or "anywhere" for a remote unit; None: the
+    # hiring unit's office city. `unit_id` names the hiring unit (None: the plan's unit, or
+    # the company root).
+    city: str | None = None
+    unit_id: int | None = None
     kind: Literal["open_search"] = "open_search"
 
 
@@ -214,6 +219,7 @@ def open_search(
             raise InvalidActionError("a search may target only exec level, and not a poach")
         if not seats_in_play(state, company, balance):
             raise InvalidActionError(f"exec searches open at stage {balance.exec_seats.stage}")
+    city = search_city(state, company, action, balance, data)
     state = spend_energy(state, action.actor_id, CHANNEL_ENERGY[action.channel], balance)
     search_id, ids = state.next_ids.take("search")
     search = Search(
@@ -226,8 +232,41 @@ def open_search(
         plan_id=action.plan_id,
         rival_id=action.rival_id,
         level=action.level,
+        city=city,
     )
     return Outcome(replace(with_search(state, search), next_ids=ids))
+
+
+def search_city(
+    state: GameState, company: int, action: OpenSearch, balance: Balance, data: GameData
+) -> str | None:
+    """The search's city (19.3): the one asked for, else the hiring unit's office city.
+    "Anywhere" only for a remote unit. None for a poach search or without cities.yaml."""
+    from tst.sim.geo.cities import office_city
+    from tst.sim.geo.models import ANYWHERE
+    from tst.sim.org.rules import effective_policy
+
+    if action.channel == "poach" or not data.cities:
+        if action.city is not None and action.channel == "poach":
+            raise InvalidActionError("a poach search has no city")
+        return None
+    unit_id = action.unit_id
+    if unit_id is None and action.plan_id is not None:
+        plan = state.plan(action.plan_id)
+        unit_id = plan.unit_id if plan is not None else None
+    if unit_id is not None:
+        unit = state.unit(unit_id)
+        if unit is None or unit.company_id != company or unit.status != "active":
+            raise InvalidActionError(f"no unit {unit_id}")
+    if action.city == ANYWHERE:
+        if effective_policy(state, company, unit_id) != "remote":
+            raise InvalidActionError("only a search for a remote unit can look anywhere")
+        return ANYWHERE
+    if action.city is not None:
+        if not data.has_city(action.city):
+            raise InvalidActionError(f"unknown city {action.city!r}")
+        return action.city
+    return office_city(state, company, unit_id, balance)
 
 
 def close_search(state: GameState, action: CloseSearch) -> Outcome:

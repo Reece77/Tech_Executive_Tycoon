@@ -218,3 +218,13 @@ class GameOverError(SimError):
     """The game has ended (bankruptcy or the founder's removal); ADR-0018 section 4."""
 
     code = "game_over"
+
+
+class UnknownCityError(SimError):  # M9 (19.1)
+    code = "unknown_city"
+
+
+class GeoRuleError(SimError):
+    """An office or regional launch that the rules do not allow (M9, 19.2, 19.5)."""
+
+    code = "geo_rule"

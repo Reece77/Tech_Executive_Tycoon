@@ -146,3 +146,47 @@ Consumer confidence now scales consumer and SMB adoption (formulas.md 20.1); the
 | 20.5 target 3 (covenants bite sometimes) | 90% of seeds breach (80% with a 2- or 1-month covenant): blitzscale with venture debt goes below zero cash before its next round on 8/10 seeds | **fail**, xfail for M15 (Reece, 2026-11-01) |
 | 20.5 target 4 (the future varies) | 41/50 seeds with a downturn in 2026-2039; 2030 climate sd 0.171 | pass |
 | 20.5 target 5 (later rounds happen) | blitzscale reaches a Series C on 8/10 seeds | pass |
+
+### M9 (2026-11-01, on the combined M9 and M10 code)
+
+| Guard | Before M9 (main, M10 merged) | After M9 (combined) | Result |
+| --- | --- | --- | --- |
+| T1 do-nothing fails | 10/10 | 10/10 | pass |
+| T2 wins per strategy | steady 10 | steady 8, bootstrap-frugal 2 | recorded xfail (stays) |
+| T3 succeeds: bootstrap-frugal / steady / blitzscale | 7 / 10 / 4 of 10 | 8 / 10 / 5 of 10 | pass (blitzscale's xfail passes) |
+| T4a-c seed, Series A, Series B | 4 and 1; 29 and 19; 37 on 8/10 | 4 and 1; 28.5 and 18; 36 on 9/10 | pass |
+| T5 bankruptcy: steady easy/std/hard; blitzscale; bootstrap-frugal | 0/0/0%; 20%; 30% | 0/0/0%; 10%; 20% | pass |
+| T6 tenure; leaving a year; first-year leavers | 21 months; 12%; 11% | 23 months; 11%; 10% | pass |
+| T7 incumbents in business | 17/17 | 23/23 | pass |
+| **T7 rival startups alive 5 years on (20-60%)** | 58% of 91 | **62% of 94** | **fail** |
+| S2 worker-minutes, run alone | 12.4 | 18.8 | pass |
+| M8 target 2 (seats) | 1.097 | 1.005 | recorded xfail (stays) |
+| M8 target 3 (support) | 1.069 | 1.113 | recorded xfail, now passes |
+| M8 target 5 (blitz Fintech) | pass | 1.317 | pass |
+| **§20.5 target 2 (debt saves dilution, needs +5)** | +5.2 points | **+4.8 points** (bankruptcy +0) | **fail** |
+| §20.5 target 3 | 90% | 90% | recorded xfail (stays) |
+| §20.5 target 4; target 5 | 41/50, sd 0.171; 8/10 | 41/50, sd 0.171; 9/10 | pass |
+| Ten-year run through the API (v1 acceptance) | pass | pass | pass |
+| Funding diagnostics (a), (b), (c) | pass | pass | pass |
+| M5 poaching felt, not crushing | pass | pass | pass |
+| **M5 living market: share ratios; launches per category (needs 1.0)** | 0.56-1.65; 1.0 | 0.57-1.65; **0.925** | **fail** (ratios pass) |
+| **Potential spotting gap (needs 3.0 PA points)** | 3.04 | **2.83** | **fail** |
+| Executive at the default salary stays | xfail | xfail | recorded xfail (stays) |
+| §19.8 target 2 (expansion, needs 1.4) | - | 7.014 (last-month ARR 3.44x) | pass |
+| §19.8 target 3 | - | $119,331 against $304,020, 60.7% less; split x0.95 | pass |
+| §19.8 target 4 (0.8-1.2) | - | 0.850 | pass |
+| §19.8 target 5 | - | 10/10 seeds | pass |
+
+
+M9 keys tuned to get here: `geo.pay_level` 0.876 (Reece); `geo.region_entry.unserved` 0.4 → 0.8 and `.span` 0.4 → 0.2 (rivals entered the served home market and squeezed v1 incumbents: Salesforce's SMB share fell to 0.47 of its start); `geo.region_entry.cooldown_turns` 12; and a product that sells only abroad comes home through `enter_region` only, not v1's per-segment `enter_segment`. Four guards that passed on main still miss after tuning M9 keys (bold above); Reece recorded them for M15 and approved the merge.
+
+**Recorded misses for M15** (`xfail(strict=False)`, Reece 2026-11-01; main's value before M9, after M9, cause):
+
+| Guard | Test | Before M9 | After M9 | Cause |
+| --- | --- | --- | --- | --- |
+| T7 rival startups alive 5 years on (20-60%) | `test_balance_t7_startups` | 58% of 91 | 62% of 94 | most startups are founded abroad, where they face less competition |
+| §20.5 target 2, debt saves dilution (+5 points) | `test_2_debt_saves_dilution` (its bankruptcy half, `test_2_debt_bankruptcy_risk`, stays a hard check) | +5.2 | +4.8 | incumbents' sales abroad fund bigger rival teams |
+| M5 living market, startup launches per v1 category (1.0) | `test_1_living_market_launches` (share ratios, `test_1_living_market`, stay a hard check) | 1.0 | 0.925 | most startups are founded abroad, so fewer launch into the v1 home markets |
+| Potential spotting gap (3.0 PA points) | `test_judgment_spots_potential` | 3.04 | 2.83 | the city talent bonus raises candidates' CA and so their PA (hires' mean 141 against 133) |
+
+**Top priority for the next balance pass:** expansion is too strong (7.0x vs 1.4x target; home-only blitzscale fails every seed).

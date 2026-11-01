@@ -226,7 +226,7 @@ def seat_candidates_out(state: GameState, seat: str, data: LoadedData) -> SeatCa
                 estimated_effect_pct=effect_pct(seat, seat_effect(score, b.exec_seats), b),
                 problem=appoint_problem(state, company, seat, person.id, b),
                 salary_cents=e.salary_cents,
-                exec_salary_cents=exec_salary_cents(state, person.id, data.game_data),
+                exec_salary_cents=exec_salary_cents(state, person.id, data.balance, data.game_data),
             )
         )
     out.sort(key=lambda c: (c.problem is not None, -c.estimated_effect_pct, c.person_id))

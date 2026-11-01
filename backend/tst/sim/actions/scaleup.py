@@ -125,14 +125,17 @@ def appoint_problem(
     return None
 
 
-def exec_salary_cents(state: GameState, person_id: int, data: GameData) -> int:
+def exec_salary_cents(state: GameState, person_id: int, balance: Balance, data: GameData) -> int:
     """The default salary on appointment: the exec market rate for the person's role and
-    region, never below what they are paid now (18.3; product manager, 2026-10-31)."""
+    work city (M9, 19.1), never below what they are paid now (18.3; product manager,
+    2026-10-31)."""
+    from tst.sim.geo.cities import work_multiplier_bp
+
     employment = state.employment_of(person_id)
     assert employment is not None
     band = data.role(employment.role).salary_band_mid_cents[EXEC_LEVEL]
-    region = data.region(state.person(person_id).region)
-    return max(employment.salary_cents, market_mid_cents(band, region.salary_multiplier_bp))
+    multiplier = work_multiplier_bp(state, employment, balance, data)
+    return max(employment.salary_cents, market_mid_cents(band, multiplier))
 
 
 def appoint_executive(
@@ -151,7 +154,7 @@ def appoint_executive(
     assert employment is not None
     salary = action.salary_cents
     if salary is None:
-        salary = exec_salary_cents(state, action.person_id, data)
+        salary = exec_salary_cents(state, action.person_id, balance, data)
     if isinstance(salary, bool) or not isinstance(salary, int) or salary <= 0:
         raise InvalidActionError("a salary must be a positive amount in cents")
     if salary < employment.salary_cents:

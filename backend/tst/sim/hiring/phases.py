@@ -13,6 +13,9 @@ from dataclasses import replace
 
 from tst.sim.data_models import LEVELS, Balance, GameData
 from tst.sim.finance.options import grant_on_hire, retention
+from tst.sim.geo.cities import home_city, office_city
+from tst.sim.geo.models import ANYWHERE
+from tst.sim.geo.offices import crowded_people, employee_office_cents, rent_lines
 from tst.sim.hiring.formulas import (
     ROLL_RANGE,
     acceptance_probability,
@@ -231,6 +234,8 @@ def resolve_offers(
                         lines=(LedgerLine(RECRUITING, fee, d), LedgerLine(CASH, -fee, d)),
                     )
                 )
+        state, moved = _relocate(state, hire, balance, data)
+        entries += moved
         logs.append(
             inbox_item(
                 state.turn,
@@ -249,6 +254,33 @@ def resolve_offers(
 
 
 # --- Phase 6: payroll and operating costs ---------------------------------------------------
+
+
+def _relocate(
+    state: GameState, hire: Employment, balance: Balance, data: GameData
+) -> tuple[GameState, list[LedgerEntry]]:
+    """A player's hire who lives elsewhere moves to the city they will work in, for
+    `hiring.relocation_cents` (6200_recruiting; M9, 19.3). Remote hires stay put."""
+    company = state.company(hire.company_id)
+    fee = balance.hiring.relocation_cents
+    if not company.is_player or not data.cities or is_remote(state, hire):
+        return state, []
+    person = state.person(hire.person_id)
+    city = office_city(state, company.id, hire.unit_id, balance)
+    if home_city(person, data) == city:
+        return state, []
+    state = with_person(state, replace(person, city=city))
+    if not fee:
+        return state, []
+    units = {u.id: u for u in state.active_units(company.id)}
+    d = division_of_unit(units, hire.unit_id)
+    entry = LedgerEntry(
+        turn=state.turn,
+        company_id=company.id,
+        memo=f"Relocation: {_name(person)} to {data.city(city).label}",
+        lines=(LedgerLine(RECRUITING, fee, d), LedgerLine(CASH, -fee, d)),
+    )
+    return state, [entry]
 
 
 def monthly_cost_lines(
@@ -280,8 +312,7 @@ def monthly_cost_lines(
         d = division(e)
         salaries[d] += monthly_salary_cents(e.salary_cents)
         benefits[d] += benefits_cents(monthly_salary_cents(e.salary_cents), balance.payroll)
-        if not is_remote(state, e):
-            office[d] += balance.payroll.office_cost_per_head_cents
+        office[d] += employee_office_cents(state, e, balance, data)  # 8, 19.2 (M9)
         if not state.person(e.person_id).is_founder:
             employees[d] += 1
     job_posts = [s for s in state.open_searches(company_id) if s.channel == "job_post"]
@@ -305,6 +336,7 @@ def monthly_cost_lines(
         ("Tools and travel", GENERAL_ADMIN, {d: round(tools * n) for d, n in employees.items()}),
     ):
         lines += [(memo, account, int(by_division[d]), d) for d in divisions]
+    lines += rent_lines(state, company_id, balance, data)  # leased offices (M9, 19.2)
     lines.append(("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents, None))
     lines.append(
         ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts), None)
@@ -332,14 +364,21 @@ def _mid_region(balance: Balance, data: GameData) -> int:
 
 
 def employment_monthly_cost_cents(
-    employment: Employment, balance: Balance, *, remote: bool = False
+    employment: Employment,
+    balance: Balance,
+    *,
+    remote: bool = False,
+    office_cents: Cents | None = None,
 ) -> Cents:
     """Salary, benefits and office for one employment per month (formulas.md section 8).
 
-    Remote staff cost no office fee (13.9).
+    Remote staff cost no office fee (13.9). `office_cents`: the seat's cost where they work
+    (M9, 19.2: flexible space at the HQ's rent index, none in a leased office).
     """
     salary = monthly_salary_cents(employment.salary_cents)
-    office = 0 if remote else balance.payroll.office_cost_per_head_cents
+    if office_cents is None:
+        office_cents = balance.payroll.office_cost_per_head_cents
+    office = 0 if remote else office_cents
     return salary + benefits_cents(salary, balance.payroll) + office
 
 
@@ -399,6 +438,7 @@ def morale_and_departures(
     supports = {  # W_support by person (M8, 18.4), from the pools at the phase start
         c.id: support_morale_terms(state, views[c.id], balance, data) for c in state.companies
     }
+    crowds = {c.id: crowded_people(state, c.id) for c in state.companies}  # M9 (19.2)
     for employment, person in _employees(state):
         company = state.company(employment.company_id)
         target = morale_terms(
@@ -410,6 +450,7 @@ def morale_and_departures(
             account_balance(opening, company.id, CASH),
             account_balance(current, company.id, CASH),
             supports[company.id],
+            crowds[company.id],
         ).target
         ps = state.person_state(person.id)
         start = morale_cfg.new_hire if ps.morale is None else ps.morale
@@ -621,10 +662,13 @@ def candidate_batches(
         first, ids = state.next_ids.take_many("person", count)
         state = replace(state, next_ids=ids)
         role = data.role(search.role)
-        people = generate_pool(gen, data, balance, state.turn, role, levels, first_person_id=first)
+        people = generate_pool(
+            gen, data, balance, state.turn, role, levels, first_person_id=first, city=search.city
+        )
         scout = actor.skills["judgment_of_talent"] if actor is not None else 0.0
         for person in people:
             state = with_person(state, person)
+            moves = search.city not in (None, ANYWHERE) and person.city != search.city
             state = with_candidate(
                 state,
                 Candidate(
@@ -634,6 +678,7 @@ def candidate_batches(
                     channel=search.channel,
                     created_turn=state.turn,
                     expires_turn=state.turn + balance.hiring.candidate_shelf_turns,
+                    relocate_to=search.city if moves else None,
                 ),
             )
             reveal = new_reveal_state(

@@ -97,6 +97,11 @@ def new_game_meta(data: DataDep) -> NewGameMetaOut:
             default_region=founder.default_region,
             mission_size=MISSION_SIZE,
         ),
+        cities=[
+            LabelOut(key=c.key, label=f"{c.label} ({game.region(c.region).label})")
+            for c in game.cities
+        ],
+        default_hq_city=data.balance.geo.default_hq_city,
     )
 
 

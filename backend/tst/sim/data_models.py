@@ -343,6 +343,7 @@ class HiringBalance(_Frozen):
     candidate_shelf_turns: int = Field(gt=0)
     lowball_ratio: float = Field(ge=0)
     max_offer_equity_bp: int = Field(ge=0)
+    relocation_cents: int = Field(default=0, ge=0)  # M9 (19.3): a relocating hire's fee
     pitch_per_recruiting: float
     pitch_neutral: float
     offer: OfferBalance
@@ -978,6 +979,50 @@ class DebtBalance(_Frozen):
     breach: BreachBalance
 
 
+class OfficeBalance(_Frozen):
+    """Offices (formulas.md 19.2, M9)."""
+
+    seat_sizes: tuple[int, ...] = Field(min_length=1)
+    lease_discount: float = Field(gt=0)
+    fit_out_months: int = Field(ge=0)
+    close_penalty_months: int = Field(ge=0)
+    crowded_morale: float
+    lease_energy: int = Field(ge=0)
+    close_energy: int = Field(ge=0)
+    assign_energy: int = Field(ge=0)
+
+
+class RegionalMarketsBalance(_Frozen):
+    """Regional markets (formulas.md 19.4-19.5, M9)."""
+
+    localize_cents: int = Field(ge=0)
+    localize_scope: float = Field(gt=0)
+    localize_months: int = Field(ge=0)
+    localize_slowdown: float = Field(ge=0, le=1)
+    launch_energy: int = Field(ge=0)
+    foreign_awareness: float = Field(ge=0, le=1)
+    presence_people: int = Field(ge=0)
+    neighbour_sellers: float = Field(ge=0, le=1)
+    cross_region_step: float = Field(ge=0)
+    cross_region_floor: float = Field(ge=0, le=1)
+
+
+class RegionEntryBalance(_Frozen):
+    unserved: float = Field(ge=0, le=1)
+    span: float = Field(gt=0)
+    cash_months: float = Field(ge=0)
+    cooldown_turns: int = Field(ge=0)
+
+
+class GeoBalance(_Frozen):
+    """Cities and geography (formulas.md 19.1, 19.3, 19.6, M9)."""
+
+    default_hq_city: str
+    pay_level: float = Field(gt=0)
+    local_candidates: float = Field(ge=0, le=1)
+    region_entry: RegionEntryBalance
+
+
 class Balance(_Frozen):
     company: CompanyBalance
     costs: CostsBalance  # M4c (formulas.md 8)
@@ -1009,6 +1054,9 @@ class Balance(_Frozen):
     exec_seats: ExecSeatsBalance  # M8 (formulas.md 18.3)
     macro: MacroBalance  # M10 (formulas.md 20.1)
     debt: DebtBalance  # M10 (formulas.md 20.3)
+    office: OfficeBalance  # M9 (formulas.md 19.2)
+    markets: RegionalMarketsBalance  # M9 (formulas.md 19.4-19.5)
+    geo: GeoBalance  # M9 (formulas.md 19.1, 19.3, 19.6)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1116,6 +1164,24 @@ class Region(_Frozen):
 
 class RegionsFile(_Frozen):
     regions: tuple[Region, ...] = Field(min_length=1)
+
+
+class CityDef(_Frozen):
+    """A named tech hub (formulas.md 19.1, M9)."""
+
+    key: str = Field(pattern=_KEY)
+    label: str = Field(min_length=1)
+    region: str
+    salary_multiplier_bp: int = Field(gt=0)
+    rent_index: float = Field(gt=0)
+    talent_weight: float = Field(ge=0)
+    talent: dict[str, float] = Field(default_factory=dict)  # skill group or skill -> points
+
+
+class CitiesFile(_Frozen):
+    cities: tuple[CityDef, ...] = Field(min_length=1)
+    region_growth: dict[str, float]
+    home_city_region: dict[str, str] = Field(default_factory=dict)
 
 
 type ProductFunction = Literal["builder", "seller", "marketer", "none"]  # formulas.md 11.3
@@ -1306,9 +1372,19 @@ class CategoryDef(_Frozen):
         raise KeyError(segment)
 
 
+class RegionMarketDef(_Frozen):
+    """A region as a market (formulas.md 19.5, M9)."""
+
+    region: str
+    size: float = Field(gt=0)  # x the home region's D0
+    price_index: float = Field(gt=0)  # x p_ref
+    neighbour: str  # sellers working there count neighbour_sellers in sales-led segments
+
+
 class CategoriesFile(_Frozen):
     segments: tuple[SegmentDef, ...] = Field(min_length=1)
     categories: tuple[CategoryDef, ...] = Field(min_length=1)
+    regions: tuple[RegionMarketDef, ...] = ()  # M9 (19.5)
 
 
 class IncumbentSegment(_Frozen):
@@ -1323,6 +1399,7 @@ class IncumbentProduct(_Frozen):
     features: float = Field(ge=0, le=SCORE_MAX)
     brand: float = Field(ge=0, le=SCORE_MAX)
     segments: dict[str, IncumbentSegment] = Field(min_length=1)
+    regions: tuple[str, ...] | None = None  # M9 (19.5): None = north_america and europe
 
 
 class IncumbentCompany(_Frozen):
@@ -1334,6 +1411,14 @@ class IncumbentCompany(_Frozen):
     target_margin_bp: int = Field(ge=0, lt=BP_DENOMINATOR)  # margin its pools are sized for
     cash_months: float = Field(ge=0)  # starting cash in months of revenue (15.1)
     products: tuple[IncumbentProduct, ...] = Field(min_length=1)
+
+
+DEFAULT_INCUMBENT_REGIONS = ("north_america", "europe")  # 19.5: v1 incumbents' regions
+
+
+def incumbent_regions(product: IncumbentProduct) -> tuple[str, ...]:
+    """The regions an incumbent product starts in (19.5)."""
+    return product.regions if product.regions is not None else DEFAULT_INCUMBENT_REGIONS
 
 
 class IncumbentsFile(_Frozen):
@@ -1543,6 +1628,10 @@ INBOX_TEMPLATE_KEYS = (
     "loan_repaid",
     "covenant_breached",
     "loan_called",
+    "office_leased",  # M9
+    "office_closed",
+    "region_launched",
+    "region_live",
 )
 
 
@@ -1580,6 +1669,10 @@ class GameData(_Frozen):
         changes={},
     )  # M8 (18.6)
     entrants: tuple[EntrantDef, ...] = ()  # M8 (18.7)
+    cities: tuple[CityDef, ...] = ()  # M9 (19.1)
+    region_growth: dict[str, float] = Field(default_factory=dict)  # M9 (19.5)
+    home_city_region: dict[str, str] = Field(default_factory=dict)  # M9: regions without a city
+    region_markets: tuple[RegionMarketDef, ...] = ()  # M9 (19.5), categories.yaml regions
 
     def event_template(self, template_id: str) -> EventTemplate:
         for template in self.event_templates:
@@ -1671,7 +1764,7 @@ class GameData(_Frozen):
             where = f"categories.yaml {cat.key!r}"
             unknown(where, cat.dev_weights, skills, "skills")
             unknown(where, cat.segment_keys, segment_keys, "segments")
-        shares: dict[tuple[str, str], int] = {}
+        shares: dict[tuple[str, str, str], int] = {}
         for company in self.incumbents:
             for product in company.products:
                 where = f"incumbents.yaml {company.name!r} {product.name!r}"
@@ -1680,12 +1773,18 @@ class GameData(_Frozen):
                     problems.append(f"{where}: unknown category {product.category!r}")
                     continue
                 unknown(where, product.segments, set(found.segment_keys), "segments")
-                for seg, value in product.segments.items():
-                    key = (product.category, seg)
-                    shares[key] = shares.get(key, 0) + value.share_bp
-        for (cat_key, seg), total in sorted(shares.items()):
+                regions = incumbent_regions(product)
+                unknown(where, regions, set(self.region_keys), "regions")
+                for region in regions:
+                    for seg, value in product.segments.items():
+                        key = (product.category, seg, region)
+                        shares[key] = shares.get(key, 0) + value.share_bp
+        for (cat_key, seg, region), total in sorted(shares.items()):
             if total > BP_DENOMINATOR:
-                problems.append(f"incumbents.yaml: starting shares in {cat_key}/{seg} exceed 100%")
+                problems.append(
+                    f"incumbents.yaml: starting shares in {cat_key}/{seg} ({region}) exceed 100%"
+                )
+        problems += self._geo_problems(skills)
 
         names = {c.name for c in self.incumbents}
         for entrant in self.entrants:  # M8 (18.7)
@@ -1721,7 +1820,66 @@ class GameData(_Frozen):
             raise ValueError("; ".join(problems))
         return self
 
+    def _geo_problems(self, skills: set[str]) -> list[str]:
+        """M9: cities, regional growth and regional markets (formulas.md 19.1, 19.5)."""
+        problems: list[str] = []
+        if not self.cities:
+            return problems
+        regions = set(self.region_keys)
+        groups = {s.group for s in self.skills}
+        if dupes := _dupes([c.key for c in self.cities]):
+            problems.append(f"duplicate cities.yaml keys: {dupes}")
+        for city in self.cities:
+            where = f"cities.yaml {city.key!r}"
+            if city.region not in regions:
+                problems.append(f"{where}: unknown region {city.region!r}")
+            bad = sorted(set(city.talent) - groups - skills)
+            if bad:
+                problems.append(f"{where}: unknown talent keys {bad}")
+        if set(self.region_growth) != regions:
+            problems.append(f"cities.yaml: region_growth must cover exactly {sorted(regions)}")
+        with_city = {c.region for c in self.cities}
+        for region in sorted(regions - with_city):
+            if self.home_city_region.get(region) not in with_city:
+                problems.append(
+                    f"cities.yaml: region {region!r} has no city and no home_city_region"
+                )
+        if [m.region for m in self.region_markets] != self.region_keys:
+            problems.append("categories.yaml: regions must list every region in regions.yaml order")
+        for m in self.region_markets:
+            if m.neighbour not in regions or m.neighbour == m.region:
+                problems.append(f"categories.yaml region {m.region!r}: bad neighbour")
+        return problems
+
     # --- Lookups -------------------------------------------------------------------------
+
+    def city(self, key: str) -> CityDef:
+        for city in self.cities:
+            if city.key == key:
+                return city
+        raise KeyError(key)
+
+    def has_city(self, key: str) -> bool:
+        return any(c.key == key for c in self.cities)
+
+    def region_city(self, region: str) -> str:
+        """The first city of a region (19.1): v1 people's home city; a region without a
+        city uses its home_city_region's first city."""
+        region = self.home_city_region.get(region, region)
+        for city in self.cities:
+            if city.region == region:
+                return city.key
+        raise KeyError(region)
+
+    def region_index(self, key: str) -> int:
+        """Position in regions.yaml: the third part of a regional `market` key (19.5)."""
+        return self.region_keys.index(key)
+
+    def region_market(self, region: str) -> RegionMarketDef:
+        for m in self.region_markets:
+            if m.region == region:
+                return m
+        raise KeyError(region)
 
     @property
     def skill_keys(self) -> list[str]:

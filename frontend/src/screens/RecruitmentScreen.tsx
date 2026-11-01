@@ -16,6 +16,7 @@ import {
   useMakeOffer,
   useNewGameMeta,
   useOfferPreview,
+  useGeo,
   useOpenSearch,
   useOverview,
   useProductsMeta,
@@ -174,6 +175,18 @@ function RecruitmentBody({
           header: 'Age',
           sortFn: 'basic',
           cell: ({ getValue }) => <span className="tst-num">{getValue()}</span>,
+        }),
+        helper.accessor((p) => p.city_label ?? '', {
+          id: 'city',
+          header: 'City',
+          meta: { term: 'geo.candidate_city' },
+          sortFn: 'alphanumeric',
+          cell: ({ row }) => (
+            <span style={{ color: 'var(--tst-text-2)' }} data-testid="candidate-city">
+              {row.original.city_label}
+              {row.original.would_relocate ? ' (would relocate)' : ''}
+            </span>
+          ),
         }),
         helper.accessor((p) => p.candidacy?.salary_expectation_cents ?? 0, {
           id: 'asks',
@@ -450,6 +463,8 @@ function OpenSearchPanel({
   const [channel, setChannel] = useState('job_post');
   const [rivalId, setRivalId] = useState<string | null>(null);
   const [level, setLevel] = useState<string>('mix');
+  const [city, setCity] = useState<string>('default'); // M9: default = the unit's office city
+  const geo = useGeo(saveId);
   const execOpen = (overview.data?.stage ?? 0) >= 3 && channel !== 'poach'; // M8: from stage 3
   const rivals = useRivals(saveId, 'all');
   const rivalChoices = (rivals.data?.rivals ?? []).filter((r) => !r.failed);
@@ -515,6 +530,20 @@ function OpenSearchPanel({
           data-testid="poach-rival-select"
         />
       )}
+      {channel !== 'poach' && geo.data && (
+        <Select
+          label="City"
+          value={city}
+          onChange={(v) => setCity(v ?? 'default')}
+          allowDeselect={false}
+          data={[
+            { value: 'default', label: `Office city (${geo.data.hq_label} for the HQ)` },
+            ...geo.data.cities.map((c) => ({ value: c.key, label: c.label })),
+            { value: 'anywhere', label: 'Anywhere (remote units only)' },
+          ]}
+          data-testid="search-city"
+        />
+      )}
       {execOpen && (
         <Select
           label="Level"
@@ -546,6 +575,7 @@ function OpenSearchPanel({
                 channel,
                 rival_id: channel === 'poach' ? Number(rivalId) : null,
                 level: execOpen && level === 'exec' ? 'exec' : null,
+                city: channel === 'poach' || city === 'default' ? null : city,
               },
               { onSuccess: (search) => onOpened(search.search_id) },
             );
@@ -625,8 +655,8 @@ function SearchRow({
         }}
       >
         <span style={{ fontWeight: 600 }}>
-          {search.rival_name ? `Poach from ${search.rival_name}` : humanize(search.channel)} ·{' '}
-          {search.role_label}
+          {search.rival_name ? `Poach from ${search.rival_name}` : humanize(search.channel)}
+          {search.city_label ? ` in ${search.city_label}` : ''} · {search.role_label}
         </span>
         <span className="tst-muted" style={{ fontSize: 12 }}>
           {detail}

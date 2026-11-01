@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ScenarioOut(BaseModel):
@@ -64,6 +64,8 @@ class NewGameMetaOut(BaseModel):
     regions: list[LabelOut]
     roles: list[LabelOut]
     founder_rules: FounderRulesOut
+    cities: list[LabelOut] = Field(default_factory=list, description="HQ choices (M9)")
+    default_hq_city: str | None = None
 
 
 class FounderSkillOut(BaseModel):

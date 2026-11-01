@@ -69,8 +69,10 @@ from tst.db.mappers import (
 from tst.db.models import (
     BoardSeatHistoryRow,
     BoardSeatRow,
+    CandidateRelocationRow,
     CandidateRow,
     CapTableEntryRow,
+    CompanyHqRow,
     CompanyRow,
     EmploymentRow,
     EventQueueRow,
@@ -87,8 +89,10 @@ from tst.db.models import (
     MacroMonthRow,
     MarketSegmentRow,
     OfferRow,
+    OfficeRow,
     OptionGrantRow,
     OrgUnitRow,
+    PersonCityRow,
     PersonHiddenRow,
     PersonInterestRow,
     PersonPersonalityRow,
@@ -101,19 +105,24 @@ from tst.db.models import (
     PersonTagRow,
     PoachApproachRow,
     ProductDivisionRow,
+    ProductRegionRow,
     ProductRow,
     ProductSegmentRow,
+    RegionalMarketRow,
+    RegionalSegmentRow,
     RelationshipRow,
     RivalEffectRow,
     RivalMoveRow,
     RoundNomineeRow,
     SafeRow,
     SaveMetaRow,
+    SearchCityRow,
     SearchLevelRow,
     SearchRow,
     SegmentShareRow,
     StorylineRow,
     TermSheetRow,
+    UnitOfficeRow,
     UnitServicesRow,
     WorkforcePoolRow,
 )
@@ -128,6 +137,7 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
+from tst.sim.geo.models import Office, ProductRegion, RegionalMarket, RegionalSegment
 from tst.sim.hiring.models import NextIds
 from tst.sim.ledger import LedgerEntry
 from tst.sim.org.models import ExecSeat
@@ -193,6 +203,12 @@ def load_people(
             select(PersonRow).where(in_live(PersonRow.id)).order_by(PersonRow.id)
         )
     )
+    if has_table(session, PersonCityRow):  # M9 (19.1)
+        cities = {
+            r.person_id: r.city
+            for r in _rows(session, PersonCityRow, in_live(PersonCityRow.person_id))
+        }
+        people = tuple(replace(p, city=cities.get(p.id)) for p in people)
 
     def key(row: Any) -> tuple[int, int]:
         return (row.observer_company_id, row.person_id)
@@ -420,7 +436,78 @@ def load_state(session: Session) -> GameState:
         ),
         next_ids=_event_ids(session, next_ids_from_meta(meta)),
     )
-    return _load_m10(session, state)
+    state = _load_m10(session, state)
+    return _load_geo(session, state, product_ids)
+
+
+def _load_geo(session: Session, state: GameState, product_ids: list[int]) -> GameState:
+    """M9 (19): HQ, offices, units' offices, searches' cities and regional markets."""
+    if not has_table(session, RegionalSegmentRow):
+        return state
+    hq = {r.company_id: r.city for r in session.scalars(select(CompanyHqRow))}
+    offices = tuple(
+        Office(r.id, r.company_id, r.city, r.seats, r.opened_turn, r.status, r.closed_turn)  # type: ignore[arg-type]
+        for r in session.scalars(
+            select(OfficeRow).where(OfficeRow.status == "open").order_by(OfficeRow.id)
+        )
+    )
+    unit_offices = {r.unit_id: r.office_id for r in session.scalars(select(UnitOfficeRow))}
+    search_cities = {r.search_id: r.city for r in session.scalars(select(SearchCityRow))}
+    open_ids = [c.person_id for c in state.candidates]
+    relocations = {
+        r.person_id: r.city
+        for r in session.scalars(
+            select(CandidateRelocationRow).where(CandidateRelocationRow.person_id.in_(open_ids))
+        )
+    }
+    last_office = session.scalar(select(func.max(OfficeRow.id))) or 0
+    return replace(
+        state,
+        companies=tuple(replace(c, hq_city=hq.get(c.id)) for c in state.companies),
+        units=tuple(replace(u, office_id=unit_offices.get(u.id)) for u in state.units),
+        searches=tuple(replace(s, city=search_cities.get(s.id)) for s in state.searches),
+        candidates=tuple(
+            replace(c, relocate_to=relocations.get(c.person_id)) for c in state.candidates
+        ),
+        offices=offices,
+        regional_markets=tuple(
+            RegionalMarket(r.category, r.segment, r.region, r.addressable)
+            for r in session.scalars(
+                select(RegionalMarketRow).order_by(
+                    RegionalMarketRow.category, RegionalMarketRow.segment, RegionalMarketRow.region
+                )
+            )
+        ),
+        product_regions=tuple(
+            ProductRegion(r.product_id, r.region, r.launched_turn, r.live_turn)
+            for r in session.scalars(
+                select(ProductRegionRow)
+                .where(ProductRegionRow.product_id.in_(product_ids))
+                .order_by(ProductRegionRow.product_id, ProductRegionRow.region)
+            )
+        ),
+        regional_segments=tuple(
+            RegionalSegment(
+                r.product_id,
+                r.region,
+                r.segment,
+                r.price_cents,
+                r.customers,
+                r.capacity_limited,
+                r.added_turn,
+            )
+            for r in session.execute(
+                select(RegionalSegmentRow.__table__)
+                .where(RegionalSegmentRow.product_id.in_(product_ids))
+                .order_by(
+                    RegionalSegmentRow.product_id,
+                    RegionalSegmentRow.region,
+                    RegionalSegmentRow.segment,
+                )
+            ).all()
+        ),
+        next_ids=replace(state.next_ids, office=last_office + 1),
+    )
 
 
 def _load_m10(session: Session, state: GameState) -> GameState:
@@ -837,6 +924,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         _sync_relationships(session, old, new)
     _sync_m8(session, old, new)
     _sync_m10(session, old, new)
+    _sync_geo(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()
         for row in former_rows(old, new):  # M7c: what the player knew when they left
@@ -887,6 +975,110 @@ def _sync_m8(session: Session, old: GameState, new: GameState) -> None:
         session.merge(row)
 
 
+def _sync_geo(session: Session, old: GameState, new: GameState) -> None:
+    """HQ, people's cities, offices, units' offices, searches' cities and regions (M9)."""
+    old_people = {p.id: p.city for p in old.people}
+    old_hq = {c.id: c.hq_city for c in old.companies}
+    old_units = {u.id: u.office_id for u in old.units}
+    old_cities = {s.id: s.city for s in old.searches}
+    rows: list[Any] = [
+        CompanyHqRow(company_id=c.id, city=c.hq_city)
+        for c in new.companies
+        if c.hq_city is not None and old_hq.get(c.id) != c.hq_city
+    ]
+    rows += [
+        PersonCityRow(person_id=p.id, city=p.city)
+        for p in new.people
+        if p.city is not None and old_people.get(p.id) != p.city
+    ]
+    rows += [
+        OfficeRow(
+            id=o.id,
+            company_id=o.company_id,
+            city=o.city,
+            seats=o.seats,
+            opened_turn=o.opened_turn,
+            status=o.status,
+            closed_turn=o.closed_turn,
+        )
+        for o in _changed(old.offices, new.offices, lambda o: o.id)
+    ]
+    rows += [
+        UnitOfficeRow(unit_id=u.id, office_id=u.office_id)
+        for u in new.units
+        if old_units.get(u.id) != u.office_id and (u.office_id is not None or u.id in old_units)
+    ]
+    old_moves = {c.person_id: c.relocate_to for c in old.candidates}
+    rows += [
+        CandidateRelocationRow(person_id=c.person_id, city=c.relocate_to)
+        for c in new.candidates
+        if c.relocate_to is not None and old_moves.get(c.person_id) != c.relocate_to
+    ]
+    rows += [
+        SearchCityRow(search_id=s.id, city=s.city)
+        for s in new.searches
+        if s.city is not None and old_cities.get(s.id) != s.city
+    ]
+    rows += [
+        RegionalMarketRow(
+            category=m.category, segment=m.segment, region=m.region, addressable=m.addressable
+        )
+        for m in _changed(
+            old.regional_markets, new.regional_markets, lambda m: (m.category, m.segment, m.region)
+        )
+    ]
+    rows += [
+        ProductRegionRow(
+            product_id=r.product_id,
+            region=r.region,
+            launched_turn=r.launched_turn,
+            live_turn=r.live_turn,
+        )
+        for r in _changed(
+            old.product_regions, new.product_regions, lambda r: (r.product_id, r.region)
+        )
+    ]
+    segs = _changed(
+        old.regional_segments, new.regional_segments, lambda s: (s.product_id, s.region, s.segment)
+    )
+    if not (rows or segs) or not has_table(session, RegionalSegmentRow):
+        return
+    session.flush()
+    for row in rows:
+        session.merge(row)
+    known = {(s.product_id, s.region, s.segment) for s in old.regional_segments}
+    fresh = [s for s in segs if (s.product_id, s.region, s.segment) not in known]
+    updates = [s for s in segs if (s.product_id, s.region, s.segment) in known]
+    _insert(session, (_regional_segment_row(s) for s in fresh))
+    _update_rows(
+        session,
+        RegionalSegmentRow,
+        [
+            {
+                "product_id": s.product_id,
+                "region": s.region,
+                "segment": s.segment,
+                "price_cents": s.price_cents,
+                "customers": s.customers,
+                "capacity_limited": s.capacity_limited,
+            }
+            for s in updates
+        ],
+    )
+
+
+def _regional_segment_row(s: RegionalSegment) -> RegionalSegmentRow:
+    return RegionalSegmentRow(
+        product_id=s.product_id,
+        region=s.region,
+        segment=s.segment,
+        price_cents=s.price_cents,
+        customers=s.customers,
+        capacity_limited=s.capacity_limited,
+        added_turn=s.added_turn,
+    )
+
+
 # --- The last state written, per save (M6 sub-task 0) -----------------------------------------
 
 
@@ -926,6 +1118,9 @@ def live_view(state: GameState) -> GameState:
         rival_moves=tuple(m for m in state.rival_moves if m.turn >= turn - RIVAL_MOVE_MEMORY),
         approaches=tuple(a for a in state.approaches if a.status in ("pending", "accepted")),
         segment_shares=tuple(s for s in state.segment_shares if s.product_id in product_ids),
+        offices=tuple(o for o in state.offices if o.status == "open"),
+        product_regions=tuple(r for r in state.product_regions if r.product_id in product_ids),
+        regional_segments=tuple(s for s in state.regional_segments if s.product_id in product_ids),
         free_agents=free_agents,
         events=tuple(
             e

@@ -88,8 +88,7 @@ def triggers(
             hits.append(TriggerHit("unhappy_unit", s, (), unit_id))
 
     for e in staff:  # underpaid
-        person = state.person(e.person_id)
-        mid = market_mid_for(e, person.region, data)
+        mid = market_mid_for(state, e, balance, data)
         s = below_strength(e.salary_cents / mid, t["underpaid"]) if mid else None
         if s is not None:
             hits.append(TriggerHit("underpaid", s, (e.person_id,), view.unit_of[e.person_id]))

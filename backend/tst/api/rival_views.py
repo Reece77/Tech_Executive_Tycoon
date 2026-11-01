@@ -56,6 +56,7 @@ MOVE_TAGS = {
     "quality_push": "Push",
     "brand_push": "Push",
     "enter_segment": "Enter",
+    "enter_region": "Enter",  # M9 (19.6)
     "cut_costs": "Cut",
     "poach": "Approach",
     "launched": "Launch",

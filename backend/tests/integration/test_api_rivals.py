@@ -16,7 +16,7 @@ from tst.sim.rivals.decisions import approach
 def test_rivals_profile_news_and_poach(tmp_path: Path, loaded: LoadedData) -> None:
     with hiring_client(tmp_path) as api:
         rivals = api.get(f"{BASE}/rivals")
-        assert rivals["established"] == 17 and rivals["startups_alive"] == 0
+        assert rivals["established"] == 23 and rivals["startups_alive"] == 0
         names = {r["name"]: r for r in rivals["rivals"]}
         salesforce = names["Salesforce"]
         assert salesforce["personality_label"] == "Premium"

@@ -25,6 +25,7 @@ from tst.db import inbox, repository
 from tst.db import saves as saves_db
 from tst.sim.calendar import format_turn
 from tst.sim.finance.options import pool_left_bp
+from tst.sim.geo.offices import employee_office_cents
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
 from tst.sim.org.rules import is_remote
@@ -132,7 +133,12 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
             headcount=len(staff),
             on_notice=sum(1 for e in staff if e.status == "notice"),
             people_cost_cents=sum(
-                employment_monthly_cost_cents(e, data.balance, remote=is_remote(state, e))
+                employment_monthly_cost_cents(
+                    e,
+                    data.balance,
+                    remote=is_remote(state, e),
+                    office_cents=employee_office_cents(state, e, data.balance, data.game_data),
+                )
                 for e in staff
             ),
             payroll_cents=sum(
@@ -204,6 +210,7 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         difficulty=body.difficulty,
         founder=body.founder.to_spec() if body.founder else DEFAULT_FOUNDER,
         mission=None if body.mission is None else tuple(body.mission),
+        hq_city=body.hq_city,
         data=data,
         save_dir=settings.resolved_save_dir(),
     )

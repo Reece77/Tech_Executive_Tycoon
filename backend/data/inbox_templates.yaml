@@ -155,3 +155,16 @@ templates:
   loan_called:
     title: "{lender} called the loan"
     body: "A second covenant breach within six months: {lender} took the remaining {amount_cents} from the bank account."
+  # M9 (formulas.md 19): offices and regions
+  office_leased:
+    title: "New office in {city}"
+    body: "You leased {seats} seats in {city} at {rent_cents} a month. The fit-out cost {fit_out_cents}. Move a unit there from Org to fill it."
+  office_closed:
+    title: "{city} office closed"
+    body: "You ended the {city} lease early and paid {penalty_cents} to the landlord. Its teams moved to flexible space, or work remotely if {city} is not your HQ."
+  region_launched:
+    title: "{product} is localizing for {region}"
+    body: "Localizing {product} for {region} cost {cost_cents}. It goes live there in {live}."
+  region_live:
+    title: "{product} is live in {region}"
+    body: "{product} now sells in {region}. Check its prices and reach on the product's Regions tab."

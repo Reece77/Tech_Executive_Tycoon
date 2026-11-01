@@ -48,6 +48,8 @@ def monthly_revenue_cents(state: GameState, company_id: int) -> float:
             continue
         for seg in state.segments_of(product.id):
             total += seg.customers * (seg.price_cents or 0)
+        for rseg in state.regional_segments_of(product.id):  # other regions (M9, 19.5)
+            total += rseg.customers * (rseg.price_cents or 0)
     return total
 
 
@@ -56,6 +58,9 @@ def main_category(state: GameState, company_id: int) -> str | None:
     best: tuple[float, str] | None = None
     for product in state.company_products(company_id):
         revenue = sum(s.customers * (s.price_cents or 0) for s in state.segments_of(product.id))
+        revenue += sum(
+            r.customers * (r.price_cents or 0) for r in state.regional_segments_of(product.id)
+        )
         if best is None or revenue > best[0]:
             best = (revenue, product.category)
     return None if best is None else best[1]

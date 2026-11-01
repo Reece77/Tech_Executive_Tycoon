@@ -4209,7 +4209,7 @@
           "products"
         ],
         "summary": "Get Market",
-        "description": "Every product selling in the category: owner, public scores, appeal, customers and\nshare of served customers, per segment.",
+        "description": "Every product selling in the category: owner, public scores, appeal, customers and\nshare of served customers, per segment; in the home region, or another (19.7).",
         "operationId": "getMarket",
         "parameters": [
           {
@@ -4229,6 +4229,24 @@
               "type": "string",
               "title": "Category"
             }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A region other than home (M9)",
+              "title": "Region"
+            },
+            "description": "A region other than home (M9)"
           }
         ],
         "responses": {
@@ -9388,6 +9406,713 @@
         }
       }
     },
+    "/api/saves/{save_id}/geo": {
+      "get": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Get Geo",
+        "description": "The Offices screen: flexible HQ space and leases, and every city's indexes.",
+        "operationId": "getGeo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/geo/lease-preview": {
+      "get": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Preview Lease",
+        "description": "Rent, fit-out and an example market rate for a lease (the Lease dialog).",
+        "operationId": "previewLease",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the HQ city",
+              "title": "City"
+            },
+            "description": "Default: the HQ city"
+          },
+          {
+            "name": "seats",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the smallest lease",
+              "title": "Seats"
+            },
+            "description": "Default: the smallest lease"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeasePreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/geo/offices": {
+      "post": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Lease Office",
+        "operationId": "leaseOffice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeaseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/geo/offices/{office_id}/close": {
+      "post": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Close Office",
+        "operationId": "closeOffice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Office Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/geo/units/{unit_id}/office": {
+      "post": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Set Unit Office",
+        "operationId": "setUnitOffice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "unit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Unit Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnitOfficeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/regions": {
+      "get": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Get Product Regions",
+        "description": "Where a product sells: status, prices, customers and revenue by region, reach, and\nthe builders' spread (19.7).",
+        "operationId": "getProductRegions",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRegionsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Launch In Region",
+        "operationId": "launchInRegion",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaunchRegionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRegionsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/regions/{region}/price": {
+      "post": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Set Regional Price",
+        "operationId": "setRegionalPrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "region",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Region"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionalPriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRegionsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -10965,6 +11690,41 @@
             "type": "string",
             "title": "Region"
           },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City",
+            "description": "Staff: the city they work in; candidates: where they live (M9)"
+          },
+          "city_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City Label"
+          },
+          "would_relocate": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Would Relocate",
+            "description": "A candidate who lives elsewhere and would move to the search's city"
+          },
           "role": {
             "anyOf": [
               {
@@ -11198,6 +11958,77 @@
           "unread_inbox"
         ],
         "title": "ChooseEventOut"
+      },
+      "CityOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "salary_index": {
+            "type": "number",
+            "title": "Salary Index",
+            "description": "Salary multiplier (San Francisco = 1.0)"
+          },
+          "rent_index": {
+            "type": "number",
+            "title": "Rent Index",
+            "description": "Rent index (San Francisco = 1.0)"
+          },
+          "talent": {
+            "items": {
+              "$ref": "#/components/schemas/TalentOut"
+            },
+            "type": "array",
+            "title": "Talent"
+          },
+          "people": {
+            "type": "integer",
+            "title": "People",
+            "description": "Your staff working in the city"
+          },
+          "is_hq": {
+            "type": "boolean",
+            "title": "Is Hq"
+          },
+          "seat_rent_cents": {
+            "type": "integer",
+            "title": "Seat Rent Cents",
+            "description": "A leased seat's monthly rent there"
+          },
+          "example_rate_cents": {
+            "type": "integer",
+            "title": "Example Rate Cents",
+            "description": "A senior software engineer's market rate there"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "region",
+          "region_label",
+          "salary_index",
+          "rent_index",
+          "talent",
+          "people",
+          "is_hq",
+          "seat_rent_cents",
+          "example_rate_cents"
+        ],
+        "title": "CityOut"
       },
       "CooAnswerOut": {
         "properties": {
@@ -11556,6 +12387,18 @@
             ],
             "title": "Mission",
             "description": "Two interests; omit for the founder's first two"
+          },
+          "hq_city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hq City",
+            "description": "The HQ city (M9); omit for San Francisco"
           }
         },
         "type": "object",
@@ -13377,6 +14220,106 @@
         "title": "GameOverOut",
         "description": "How the game ended (ADR-0018), for the game over screen."
       },
+      "GeoActionOut": {
+        "properties": {
+          "geo": {
+            "$ref": "#/components/schemas/GeoOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "geo",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "GeoActionOut"
+      },
+      "GeoOut": {
+        "properties": {
+          "hq_city": {
+            "type": "string",
+            "title": "Hq City"
+          },
+          "hq_label": {
+            "type": "string",
+            "title": "Hq Label"
+          },
+          "home_region": {
+            "type": "string",
+            "title": "Home Region"
+          },
+          "home_region_label": {
+            "type": "string",
+            "title": "Home Region Label"
+          },
+          "offices": {
+            "items": {
+              "$ref": "#/components/schemas/OfficeOut"
+            },
+            "type": "array",
+            "title": "Offices",
+            "description": "Flexible HQ space first, then leases by id"
+          },
+          "cities": {
+            "items": {
+              "$ref": "#/components/schemas/CityOut"
+            },
+            "type": "array",
+            "title": "Cities"
+          },
+          "seat_sizes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Seat Sizes"
+          },
+          "lease_energy": {
+            "type": "integer",
+            "title": "Lease Energy"
+          },
+          "close_energy": {
+            "type": "integer",
+            "title": "Close Energy"
+          },
+          "assign_energy": {
+            "type": "integer",
+            "title": "Assign Energy"
+          },
+          "close_penalty_months": {
+            "type": "integer",
+            "title": "Close Penalty Months"
+          },
+          "relocation_cents": {
+            "type": "integer",
+            "title": "Relocation Cents",
+            "description": "Added to a hire who moves to the search's city"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hq_city",
+          "hq_label",
+          "home_region",
+          "home_region_label",
+          "offices",
+          "cities",
+          "seat_sizes",
+          "lease_energy",
+          "close_energy",
+          "assign_energy",
+          "close_penalty_months",
+          "relocation_cents"
+        ],
+        "title": "GeoOut"
+      },
       "GlossaryOut": {
         "properties": {
           "terms": {
@@ -14860,6 +15803,19 @@
         ],
         "title": "LaunchReadinessOut"
       },
+      "LaunchRegionIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region"
+        ],
+        "title": "LaunchRegionIn"
+      },
       "LearnedOut": {
         "properties": {
           "person_id": {
@@ -14941,6 +15897,68 @@
         ],
         "title": "LearnedOut",
         "description": "What one interview, reference check or scout taught about a person (M4c). Built from\ndisplayed ranges before and after the action, never from true values (ADR-0007)."
+      },
+      "LeaseIn": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "seats": {
+            "type": "integer",
+            "title": "Seats"
+          }
+        },
+        "type": "object",
+        "required": [
+          "city",
+          "seats"
+        ],
+        "title": "LeaseIn"
+      },
+      "LeasePreviewOut": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "city_label": {
+            "type": "string",
+            "title": "City Label"
+          },
+          "seats": {
+            "type": "integer",
+            "title": "Seats"
+          },
+          "monthly_rent_cents": {
+            "type": "integer",
+            "title": "Monthly Rent Cents"
+          },
+          "fit_out_cents": {
+            "type": "integer",
+            "title": "Fit Out Cents"
+          },
+          "example_rate_cents": {
+            "type": "integer",
+            "title": "Example Rate Cents",
+            "description": "A senior software engineer's market rate there"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "city",
+          "city_label",
+          "seats",
+          "monthly_rent_cents",
+          "fit_out_cents",
+          "example_rate_cents",
+          "energy"
+        ],
+        "title": "LeasePreviewOut"
       },
       "LoanIn": {
         "properties": {
@@ -15493,6 +16511,37 @@
             },
             "type": "array",
             "title": "Segments"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region",
+            "description": "The region shown (M9)"
+          },
+          "region_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Label"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionOptionOut"
+            },
+            "type": "array",
+            "title": "Regions",
+            "description": "Region picker"
           }
         },
         "type": "object",
@@ -15919,6 +16968,25 @@
           },
           "founder_rules": {
             "$ref": "#/components/schemas/FounderRulesOut"
+          },
+          "cities": {
+            "items": {
+              "$ref": "#/components/schemas/LabelOut"
+            },
+            "type": "array",
+            "title": "Cities",
+            "description": "HQ choices (M9)"
+          },
+          "default_hq_city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Hq City"
           }
         },
         "type": "object",
@@ -16164,6 +17232,123 @@
           "reasons"
         ],
         "title": "OfferPreviewOut"
+      },
+      "OfficeOut": {
+        "properties": {
+          "office_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Office Id",
+            "description": "Null for flexible space in the HQ city"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "city_label": {
+            "type": "string",
+            "title": "City Label"
+          },
+          "seats": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seats",
+            "description": "Null for flexible space (no limit)"
+          },
+          "people": {
+            "type": "integer",
+            "title": "People"
+          },
+          "monthly_rent_cents": {
+            "type": "integer",
+            "title": "Monthly Rent Cents",
+            "description": "Rent, or flexible space's cost, a month"
+          },
+          "cost_per_head_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Head Cents",
+            "description": "Null while nobody works there"
+          },
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/UnitRefOut"
+            },
+            "type": "array",
+            "title": "Units"
+          },
+          "crowded": {
+            "type": "boolean",
+            "title": "Crowded"
+          },
+          "crowded_morale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crowded Morale",
+            "description": "Morale points when crowded"
+          },
+          "opened": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened"
+          },
+          "close_penalty_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close Penalty Cents",
+            "description": "What closing the lease now costs; null for flexible space"
+          }
+        },
+        "type": "object",
+        "required": [
+          "office_id",
+          "city",
+          "city_label",
+          "seats",
+          "people",
+          "monthly_rent_cents",
+          "cost_per_head_cents",
+          "units",
+          "crowded",
+          "crowded_morale"
+        ],
+        "title": "OfficeOut"
       },
       "OptionsOut": {
         "properties": {
@@ -17227,6 +18412,41 @@
             "type": "string",
             "title": "Region"
           },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City",
+            "description": "Staff: the city they work in; candidates: where they live (M9)"
+          },
+          "city_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City Label"
+          },
+          "would_relocate": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Would Relocate",
+            "description": "A candidate who lives elsewhere and would move to the search's city"
+          },
           "role": {
             "anyOf": [
               {
@@ -17491,6 +18711,41 @@
           "region": {
             "type": "string",
             "title": "Region"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City",
+            "description": "Staff: the city they work in; candidates: where they live (M9)"
+          },
+          "city_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City Label"
+          },
+          "would_relocate": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Would Relocate",
+            "description": "A candidate who lives elsewhere and would move to the search's city"
           },
           "role": {
             "anyOf": [
@@ -18351,6 +19606,207 @@
         ],
         "title": "ProductRecordOut"
       },
+      "ProductRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "home, live, localizing or not_launched"
+          },
+          "status_label": {
+            "type": "string",
+            "title": "Status Label",
+            "description": "Home, live since a month, localizing until a month"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/RegionSegmentOut"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents"
+          },
+          "local_presence": {
+            "type": "boolean",
+            "title": "Local Presence",
+            "description": "An office or enough people working there"
+          },
+          "sellers_here": {
+            "type": "integer",
+            "title": "Sellers Here",
+            "description": "Your sellers on the product working in the region"
+          },
+          "sellers_neighbour": {
+            "type": "integer",
+            "title": "Sellers Neighbour",
+            "description": "Those in its sales neighbour (count half)"
+          },
+          "neighbour_label": {
+            "type": "string",
+            "title": "Neighbour Label"
+          },
+          "reach_note": {
+            "type": "string",
+            "title": "Reach Note",
+            "description": "Reach in words, with any warning"
+          },
+          "addressable": {
+            "type": "integer",
+            "title": "Addressable",
+            "description": "Addressable customers in the product's segments"
+          },
+          "rivals": {
+            "type": "integer",
+            "title": "Rivals",
+            "description": "Rival products selling there in the category"
+          },
+          "launch_cost_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Launch Cost Cents",
+            "description": "Localization cost, if not launched"
+          },
+          "live_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Label",
+            "description": "When a launch now would go live"
+          },
+          "launch_problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Launch Problem",
+            "description": "Why it cannot launch there now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "status",
+          "status_label",
+          "segments",
+          "customers",
+          "mrr_cents",
+          "local_presence",
+          "sellers_here",
+          "sellers_neighbour",
+          "neighbour_label",
+          "reach_note",
+          "addressable",
+          "rivals",
+          "launch_cost_cents",
+          "live_label",
+          "launch_problem"
+        ],
+        "title": "ProductRegionOut"
+      },
+      "ProductRegionsActionOut": {
+        "properties": {
+          "regions": {
+            "$ref": "#/components/schemas/ProductRegionsOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regions",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "ProductRegionsActionOut"
+      },
+      "ProductRegionsOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/ProductRegionOut"
+            },
+            "type": "array",
+            "title": "Regions",
+            "description": "Home first, then regions.yaml order"
+          },
+          "team": {
+            "items": {
+              "$ref": "#/components/schemas/TeamRegionOut"
+            },
+            "type": "array",
+            "title": "Team",
+            "description": "Builders by the region they work in"
+          },
+          "time_zone_factor": {
+            "type": "number",
+            "title": "Time Zone Factor",
+            "description": "Cross-region factor on output (19.4)"
+          },
+          "launch_energy": {
+            "type": "integer",
+            "title": "Launch Energy"
+          },
+          "localize_months": {
+            "type": "integer",
+            "title": "Localize Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "regions",
+          "team",
+          "time_zone_factor",
+          "launch_energy",
+          "localize_months"
+        ],
+        "title": "ProductRegionsOut"
+      },
       "ProductSegmentOut": {
         "properties": {
           "segment": {
@@ -18706,6 +20162,94 @@
           "max"
         ],
         "title": "RangeOut"
+      },
+      "RegionOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "home": {
+            "type": "boolean",
+            "title": "Home",
+            "description": "The HQ's region, whose markets are v1's (19.5)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "home"
+        ],
+        "title": "RegionOptionOut"
+      },
+      "RegionSegmentOut": {
+        "properties": {
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "default_price_cents": {
+            "type": "integer",
+            "title": "Default Price Cents",
+            "description": "p_ref x the region's price index"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment",
+          "label",
+          "price_cents",
+          "default_price_cents",
+          "customers",
+          "mrr_cents"
+        ],
+        "title": "RegionSegmentOut"
+      },
+      "RegionalPriceIn": {
+        "properties": {
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment",
+          "price_cents"
+        ],
+        "title": "RegionalPriceIn"
       },
       "RelationshipOut": {
         "properties": {
@@ -20050,6 +21594,30 @@
             ],
             "title": "Level",
             "description": "exec: an exec-level search (M8, stage 3)"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City",
+            "description": "Where candidates live (M9): a city key, or anywhere for a remote unit; null: the hiring unit's office city"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id",
+            "description": "The hiring unit, for the default city"
           }
         },
         "type": "object",
@@ -20154,6 +21722,29 @@
             ],
             "title": "Level",
             "description": "exec for an exec-level search (M8)"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City",
+            "description": "The search's city, or anywhere (M9)"
+          },
+          "city_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City Label"
           }
         },
         "type": "object",
@@ -21046,6 +22637,32 @@
         ],
         "title": "TagOut"
       },
+      "TalentOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "A skill group or a skill"
+          },
+          "points": {
+            "type": "number",
+            "title": "Points",
+            "description": "Attribute points added to candidates' role skills"
+          },
+          "marks": {
+            "type": "string",
+            "title": "Marks",
+            "description": "The bonus as + marks, one per half point"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "points",
+          "marks"
+        ],
+        "title": "TalentOut"
+      },
       "TeamMoodOut": {
         "properties": {
           "unit_id": {
@@ -21146,6 +22763,29 @@
         ],
         "title": "TeamOut",
         "description": "The team as it stands now (not at the last month end)."
+      },
+      "TeamRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "builders": {
+            "type": "integer",
+            "title": "Builders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "builders"
+        ],
+        "title": "TeamRegionOut"
       },
       "TermSheetOut": {
         "properties": {
@@ -21319,6 +22959,27 @@
         "type": "object",
         "title": "UISettings"
       },
+      "UnitOfficeIn": {
+        "properties": {
+          "office_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Office Id",
+            "description": "Null: the parent unit's office, up to the HQ"
+          }
+        },
+        "type": "object",
+        "required": [
+          "office_id"
+        ],
+        "title": "UnitOfficeIn"
+      },
       "UnitOut": {
         "properties": {
           "unit_id": {
@@ -21448,6 +23109,24 @@
           "headcount"
         ],
         "title": "UnitOut"
+      },
+      "UnitRefOut": {
+        "properties": {
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "name"
+        ],
+        "title": "UnitRefOut"
       },
       "ValidationError": {
         "properties": {

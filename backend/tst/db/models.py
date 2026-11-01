@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 22
+SCHEMA_VERSION = 23
 
 
 class Base(DeclarativeBase):
@@ -978,3 +978,103 @@ class FinanceHistoryRow(Base):
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
     op_history: Mapped[list[int]] = mapped_column(JSON, nullable=False)
     burn_history: Mapped[list[int]] = mapped_column(JSON, nullable=False)
+
+
+# --- Cities, offices and regions (M9, formulas.md 19) --------------------------------------
+# Side tables, like M8's: migration 0013 loads company, person, org_unit and search through
+# the current models on older saves, so their new values live in tables of their own.
+
+
+class CompanyHqRow(Base):
+    """A company's HQ city (19.1); the player's only. No row: geo.default_hq_city."""
+
+    __tablename__ = "company_hq"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    city: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+class PersonCityRow(Base):
+    """A person's home city (19.1). No row: the first city of their region."""
+
+    __tablename__ = "person_city"
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    city: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+class OfficeRow(Base):
+    """A leased office (19.2); closed offices keep their row."""
+
+    __tablename__ = "office"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    city: Mapped[str] = mapped_column(String(32), nullable=False)
+    seats: Mapped[int] = mapped_column(Integer, nullable=False)
+    opened_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class UnitOfficeRow(Base):
+    """A unit's home office (19.2); office_id null = its parent's, up to flexible HQ space."""
+
+    __tablename__ = "unit_office"
+
+    unit_id: Mapped[int] = mapped_column(ForeignKey("org_unit.id"), primary_key=True)
+    office_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class CandidateRelocationRow(Base):
+    """A candidate who lives outside their search's city and would move there (19.3)."""
+
+    __tablename__ = "candidate_relocation"
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    city: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+class SearchCityRow(Base):
+    """The city a search's candidates live in, or "anywhere" (19.3)."""
+
+    __tablename__ = "search_city"
+
+    search_id: Mapped[int] = mapped_column(ForeignKey("search.id"), primary_key=True)
+    city: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+class RegionalMarketRow(Base):
+    """Addressable customers in a region other than the home region (19.5)."""
+
+    __tablename__ = "regional_market"
+
+    category: Mapped[str] = mapped_column(String(32), primary_key=True)
+    segment: Mapped[str] = mapped_column(String(32), primary_key=True)
+    region: Mapped[str] = mapped_column(String(32), primary_key=True)
+    addressable: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class ProductRegionRow(Base):
+    """A product launched in a region other than the home region (19.5)."""
+
+    __tablename__ = "product_region"
+
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id"), primary_key=True)
+    region: Mapped[str] = mapped_column(String(32), primary_key=True)
+    launched_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    live_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class RegionalSegmentRow(Base):
+    """A product's price and customers in one segment of another region (19.5)."""
+
+    __tablename__ = "regional_segment"
+
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id"), primary_key=True)
+    region: Mapped[str] = mapped_column(String(32), primary_key=True)
+    segment: Mapped[str] = mapped_column(String(32), primary_key=True)
+    price_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    customers: Mapped[float] = mapped_column(Float, nullable=False)
+    capacity_limited: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+    added_turn: Mapped[int] = mapped_column(Integer, nullable=False)

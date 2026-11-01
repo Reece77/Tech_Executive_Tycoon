@@ -1480,6 +1480,7 @@ Each city has: key, name, region (`regions.yaml`), a salary multiplier (replacin
 
 - **HQ.** A new game picks an HQ city (default San Francisco). Existing saves get San Francisco by migration.
 - **Market rates.** Everyone's market rate (§2) uses the salary multiplier of the city they work in: their office's city, or their home city when remote. A person generated in v1 gets the first city of their region as their home city (migration).
+- **Pay level** `geo.pay_level` (0.876; Reece, 2026-11-01): every city's salary multiplier is x this for asks and for every company's market rates, so city ratios are unchanged. It is the calibration that makes a San Francisco-HQ company's average pay equal v1's regional mix (`people.region_weights` x the regions' multipliers = 0.876), where 45% of candidates came from cheaper regions.
 - **Talent bonus.** Groups are `skills.yaml` groups. The values above are starting points for tuning.
 
 ### 19.2 Offices
@@ -1556,11 +1557,29 @@ Cities with their salary and rent indexes and talent bonuses. Offices with seats
 
 **Lease.** 50 seats in Berlin: `50 × $600 × 0.45 × 0.75` = **$10,125** a month, plus a fit-out of $30,375.
 
-**Market rate.** A senior software engineer (band mid $115,000) working in Bangalore: `$115,000 × 0.30` = **$34,500** a year.
+**Market rate.** A senior software engineer (band mid $115,000) working in Bangalore: `$115,000 × 0.30 × 0.876` (pay level) = **$30,222** a year.
 
 **Regional market.** B2B SaaS SMB in Europe: `D₀ = 400,000 × 0.80` = 320,000, and `p_ref = $50 × 0.90` = $45.
 
 **Localization.** A cybersecurity product (σ = 7): `$40,000 × 7 / 6` = **$46,667**, live in the region three months later.
+
+### 19.10 Notes from the build (M9)
+
+Decisions the table above did not settle, recorded in the M9 brief's "Decisions made":
+
+- **Cities.** `cities.yaml` adds a `talent_weight` per city (roughly the hub's tech workforce) for relocators' and "anywhere" candidates' cities. Africa has no hub: its people's home city is London (its sales neighbour's first city), `home_city_region`.
+- **Where people work and live.** An office-policy unit's office is its own `office_id`, else its parent's, up to flexible space in the HQ city; the company root always works in flexible HQ space. Everyone working at an office lives in its city (moving a unit moves its people); remote staff work from their home city. Rivals have no offices: their people work from home.
+- **Pay.** Market rates (morale, the underpaid trigger, exec pay on appointment, rivals' poaching offers) use the work city's multiplier x `geo.pay_level`. A candidate's ask uses the city they would work in: the search's city, or their own for "anywhere". Without the pay level, v1's ~12% discount from candidates in cheaper regions would be gone and hiring would cost 12-20% more (the first M9 guard run: the ten-year acceptance run went bankrupt at month 27).
+- **Talent bonus.** Added to each role skill (primary and secondary) after the CA target is set, by skill, else by skill group; it raises CA and so the ask. The "role-skill score" of 19.8 target 4 is CA / 10 (primaries weigh 3, secondaries 1). All of a search's candidates get the search city's bonus (an "anywhere" candidate gets their own city's).
+- **City draw.** One uniform u from the person's `people_gen` generator replaces v1's region draw: the search city below `geo.local_candidates`, else a relocator's city by talent weight among the other cities.
+- **Relocation.** A player's hire into an office whose city is not their home city moves there for `hiring.relocation_cents` (6200_recruiting); remote hires stay put. Candidates who would move carry `relocate_to`.
+- **Costs.** A seat in flexible space costs `$600 x the HQ's rent index`; a seat in a leased office costs nothing per head (the rent covers it). Rent, fit-out and the closing penalty go to 6100_rent, corporate.
+- **Sellers by region apply at home too.** Sales-led capacity everywhere counts the player's sellers working in the region plus 50% of the neighbour's; for a company whose sellers all work in North America this is v1's capacity. Rivals' sellers sell everywhere.
+- **Regional rows.** Other regions' markets, launches and segments are their own tables; the home region keeps v1's rows and keys. Regional revenue books with the product's revenue; hosting is charged on regional customers. Product history (`product_month`) stays home-only; the Regions panel shows current customers and MRR.
+- **Prices abroad.** The reference price is `p_ref x price index` (relative to the home row), then x the CRO's pricing power in sales-led segments. Sizes and price indexes are relative to the home row when the HQ is not in North America; a non-home region grows at the category's growth x its `region_growth` (the home region at v1's growth).
+- **Localizing.** Launching creates every home segment in the region at the default price; feature points grow `markets.localize_slowdown` slower while any region localizes. Segments added at home later are not added abroad automatically.
+- **Rivals.** `enter_region` candidates come after v1's candidates in the `rivals` draw order (so v1's draws are unchanged), one per live product and region it does not sell in, weighted as `enter_segment`; a rival enters at most one region per `geo.region_entry.cooldown_turns` (12; without it, entries crowded out every other action). Rivals enter at once, without localization, at `p_ref x index x` their personality's price factor. Startups may also enter regions, including the home region when founded abroad. A startup's region is drawn by its category's total addressable demand by region.
+- **Regional incumbents' shares** (M3a steady-state method, 24 months of the market with fixed scores, drift of served share under ~1.4 points): SAP mid-market 1,400 bp, enterprise 2,100; Kaspersky SMB 1,900, mid-market 2,200. Tencent, Alibaba, Baidu and Infosys have no rival in their region at the start and keep the table's shares.
 
 ## 20. Capital and macro (M10, lane B)
 

@@ -26,6 +26,19 @@ from tst.sim.actions.finance import (
     TakeLoan,
     apply_finance,
 )
+from tst.sim.actions.geo import (
+    CloseOffice,
+    GeoAction,
+    LaunchInRegion,
+    LeaseOffice,
+    SetRegionalPrice,
+    SetUnitOffice,
+    close_office,
+    launch_in_region,
+    lease_office,
+    set_regional_price,
+    set_unit_office,
+)
 from tst.sim.actions.hiring import (
     CloseSearch,
     Draws,
@@ -108,12 +121,21 @@ from tst.sim.actions.scaleup import (
 )
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import GameOverError, InvalidActionError
+from tst.sim.geo.cities import settle_home_cities
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
-type Action = HiringAction | OrgAction | ProductAction | FinanceAction | ChooseEvent | ScaleupAction
+type Action = (
+    HiringAction
+    | OrgAction
+    | ProductAction
+    | FinanceAction
+    | ChooseEvent
+    | ScaleupAction
+    | GeoAction
+)
 
 ACTION_TYPES: dict[str, type[Any]] = {
     "open_search": OpenSearch,
@@ -158,6 +180,11 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "set_shared_services": SetSharedServices,
     "appoint_executive": AppointExecutive,
     "remove_executive": RemoveExecutive,
+    "lease_office": LeaseOffice,  # M9
+    "close_office": CloseOffice,
+    "set_unit_office": SetUnitOffice,
+    "launch_in_region": LaunchInRegion,
+    "set_regional_price": SetRegionalPrice,
 }
 
 __all__ = [
@@ -171,6 +198,7 @@ __all__ = [
     "AssignUnit",
     "CancelProduct",
     "ChooseEvent",
+    "CloseOffice",
     "ClosePlan",
     "CloseSearch",
     "CreatePlan",
@@ -181,7 +209,9 @@ __all__ = [
     "Fire",
     "GiveRaise",
     "Interview",
+    "LaunchInRegion",
     "LaunchProduct",
+    "LeaseOffice",
     "MakeOffer",
     "MovePerson",
     "MoveUnit",
@@ -200,7 +230,9 @@ __all__ = [
     "SetPolicy",
     "SetPrice",
     "SetProductDivision",
+    "SetRegionalPrice",
     "SetSharedServices",
+    "SetUnitOffice",
     "StartRound",
     "SunsetProduct",
     "TakeLoan",
@@ -335,7 +367,21 @@ def apply_action(
             out = appoint_executive(state, action, balance, data)
         case RemoveExecutive():
             out = remove_executive(state, action, balance)
-    return ActionResult(new_state=out.state, ledger_entries=out.entries, log_items=out.log)
+        case LeaseOffice():
+            out = lease_office(state, action, balance, data, ledger_balances)
+        case CloseOffice():
+            out = close_office(state, action, balance, data)
+        case SetUnitOffice():
+            out = set_unit_office(state, action, balance, data)
+        case LaunchInRegion():
+            out = launch_in_region(state, action, balance, data, ledger_balances)
+        case SetRegionalPrice():
+            out = set_regional_price(state, action, balance, data)
+    new_state = out.state
+    actor = new_state.employment_of(action.actor_id) or state.employment_of(action.actor_id)
+    if actor is not None:  # people live where they work (M9, 19.2)
+        new_state = settle_home_cities(new_state, actor.company_id, balance, data)
+    return ActionResult(new_state=new_state, ledger_entries=out.entries, log_items=out.log)
 
 
 def action_payload(action: Action) -> dict[str, Any]:

@@ -78,8 +78,65 @@ On a stage-3 save, open an engineering office in Bangalore or Berlin and a sales
 
 ## Decisions made
 
-_(Agent fills in.)_
+Engineering and design gaps the spec left open (also in `docs/formulas.md` §19.10):
+
+- **Storage.** Other regions' markets, launches and segments are new tables (`regional_market`, `product_region`, `regional_segment`); the home region keeps v1's rows and `market` keys, so its code path is v1's. M9's other values live in side tables (`company_hq`, `person_city`, `unit_office`, `search_city`, `candidate_relocation`, `office`), as M8's did, because migration 0013 loads the older tables through the current models.
+- **Existing saves** (migration `0023_geo`): HQ San Francisco, home cities from regions, every other region's market grown to the save's turn, and v1 incumbents' Europe presence. The six regional incumbents come with new games only (M8's precedent for its incumbents).
+- **Africa has no hub** in 19.1's table: its people's home city is London (`cities.yaml` `home_city_region`). Africa is still a market (reached from Europe's sellers at 50%, foreign awareness without presence).
+- **`talent_weight`** per city (not in the spec) drives relocators' and "anywhere" candidates' cities; values roughly follow each hub's tech workforce.
+- **Pay where you work, at v1's level.** A candidate's ask uses the multiplier of the city they would work in (the search's; their own for "anywhere"), so hires are not underpaid against their market rate on day one. Every city's multiplier is x `geo.pay_level` 0.876 for asks and all market rates (Reece, 2026-11-01): v1 drew 45% of candidates from cheaper regions, and without the calibration a San Francisco company's hiring cost 12-20% more, which broke v1 guards (the ten-year run bankrupt at month 27, funding diagnostic (c) 3/10). The 19.9 market-rate example becomes $30,222. Sub-task 2's "golden seeds unchanged" still could not hold: the regional incumbents shift product and company ids, and candidates are drawn by city.
+- **The talent bonus** goes on every role skill after the CA target is drawn; target 4's "role-skill score" is CA / 10. All of a search's candidates get the search city's bonus.
+- **People live where they work**: after every player action and phase 1's hires, office workers' home city becomes their office's city (a relocating hire pays `hiring.relocation_cents`; moving a unit to another office is free). Closing an office outside the HQ city makes its units remote, working from that city.
+- **Office inheritance**: a unit's office is its own, else its parent's, up to flexible HQ space; the company root works in flexible space. Setting a unit's office sets its policy to office. Unit office changes cost `office.assign_energy` (2), as assigning a unit to a product.
+- **Sellers by region at home too**: sales capacity in every region (home included) counts the player's sellers working there plus half its neighbour's. A company whose sellers all work in North America has v1's capacity. Rivals sell everywhere with full awareness (they have no offices).
+- **Rivals' `enter_region`**: candidates come after v1's in the `rivals` draw order (v1's draws unchanged); weighted as `enter_segment`; rivals enter at once, without localization, at `p_ref x index x` their price factor. **A rival enters at most one region a year** (`geo.region_entry.cooldown_turns`, an M9 key): without it, region entries were a third of all rival actions and crowded out price cuts, pushes and poaching. Startups may enter regions too (including home, when founded abroad).
+- **Regional incumbents' shares** (M3a steady-state method, served-share drift under 1.4 points over 24 months): SAP mid-market 1,400 bp, enterprise 2,100; Kaspersky SMB 1,900, mid-market 2,200; Tencent, Alibaba, Baidu and Infosys keep the table's shares (no rival in their region at the start).
+- **Regional history**: `product_month` stays home-only; the Regions panel shows current customers and MRR by region, and the inbox notes launches and go-lives (`region_launched`, `region_live`), which History lists.
+- **Offices screen** is `/game/:save/org/offices`, linked from Org; moving a unit is a control on that screen ("Move a unit … To … Move").
+- **19.8 target 2's measure** follows balance-targets.md's rule that a removed founder or a bankrupt company scores 0; the last-month ARR ratio is printed beside it.
+- **`rival_replay` test**: seed 7 no longer brings a rival approach in 24 months (rivals spend some months entering regions); seed 8 does, with a startup and the player's own poach.
+
+## Guards before and after M9 (2026-11-01)
+
+| Guard | Before M9 (main, M10 merged) | After M9 (combined) | Result |
+| --- | --- | --- | --- |
+| T1 do-nothing fails | 10/10 | 10/10 | pass |
+| T2 wins per strategy | steady 10 | steady 8, bootstrap-frugal 2 | recorded xfail (stays) |
+| T3 succeeds: bootstrap-frugal / steady / blitzscale | 7 / 10 / 4 of 10 | 8 / 10 / 5 of 10 | pass (blitzscale's xfail passes) |
+| T4a-c seed, Series A, Series B | 4 and 1; 29 and 19; 37 on 8/10 | 4 and 1; 28.5 and 18; 36 on 9/10 | pass |
+| T5 bankruptcy: steady easy/std/hard; blitzscale; bootstrap-frugal | 0/0/0%; 20%; 30% | 0/0/0%; 10%; 20% | pass |
+| T6 tenure; leaving a year; first-year leavers | 21 months; 12%; 11% | 23 months; 11%; 10% | pass |
+| T7 incumbents in business | 17/17 | 23/23 | pass |
+| **T7 rival startups alive 5 years on (20-60%)** | 58% of 91 | **62% of 94** | **fail** |
+| S2 worker-minutes, run alone | 12.4 | 18.8 | pass |
+| M8 target 2 (seats) | 1.097 | 1.005 | recorded xfail (stays) |
+| M8 target 3 (support) | 1.069 | 1.113 | recorded xfail, now passes |
+| M8 target 5 (blitz Fintech) | pass | 1.317 | pass |
+| **§20.5 target 2 (debt saves dilution, needs +5)** | +5.2 points | **+4.8 points** (bankruptcy +0) | **fail** |
+| §20.5 target 3 | 90% | 90% | recorded xfail (stays) |
+| §20.5 target 4; target 5 | 41/50, sd 0.171; 8/10 | 41/50, sd 0.171; 9/10 | pass |
+| Ten-year run through the API (v1 acceptance) | pass | pass | pass |
+| Funding diagnostics (a), (b), (c) | pass | pass | pass |
+| M5 poaching felt, not crushing | pass | pass | pass |
+| **M5 living market: share ratios; launches per category (needs 1.0)** | 0.56-1.65; 1.0 | 0.57-1.65; **0.925** | **fail** (ratios pass) |
+| **Potential spotting gap (needs 3.0 PA points)** | 3.04 | **2.83** | **fail** |
+| Executive at the default salary stays | xfail | xfail | recorded xfail (stays) |
+| §19.8 target 2 (expansion, needs 1.4) | - | 7.014 (last-month ARR 3.44x) | pass |
+| §19.8 target 3 | - | $119,331 against $304,020, 60.7% less; split x0.95 | pass |
+| §19.8 target 4 (0.8-1.2) | - | 0.850 | pass |
+| §19.8 target 5 | - | 10/10 seeds | pass |
+
+
+M9 keys tuned to get here: `geo.pay_level` 0.876 (Reece); `geo.region_entry.unserved` 0.4 → 0.8 and `.span` 0.4 → 0.2 (rivals entered the served home market and squeezed v1 incumbents: Salesforce's SMB share fell to 0.47 of its start); `geo.region_entry.cooldown_turns` 12; and a product that sells only abroad comes home through `enter_region` only, not v1's per-segment `enter_segment`. Four guards that passed on main still miss after tuning M9 keys (bold above). Reece recorded them for M15 as `xfail(strict=False)` with their values and causes (balance-targets.md, M9) and approved the merge.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **TOP PRIORITY for the next balance pass:** expansion is too strong (7.0x vs 1.4x target; home-only blitzscale fails every seed).
+- **M15:** the four recorded misses: T7 startups alive (62%), §20.5 target 2 (+4.8), M5 launches per category (0.925), potential spotting gap (2.83).
+- Levers for expansion (M15): `markets.foreign_awareness`, regional sizes, localization cost, `markets.presence_people`.
+- `geo.pay_level` keeps v1's average pay; a later pass may prefer candidates from abroad who ask less than the search city's rate (and then feel underpaid), as v1 had.
+- Rival offices and regional pools; rivals' localization time.
+- A segment added at home after a regional launch is not added abroad automatically.
+- Per-region product history (`product_month` by region) for charts.
+- Hiring plans could carry a city (they use the plan unit's office city today).
+

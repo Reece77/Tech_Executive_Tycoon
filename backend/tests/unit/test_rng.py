@@ -74,6 +74,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "poach": 19,
         "entrants": 20,
         "macro": 21,  # M10
+        "rival_region": 22,
         "misc": 99,
     }
 

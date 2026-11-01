@@ -31,7 +31,7 @@ def run(*args: str, code: int = 0) -> str:
 
 def test_rivals_rival_news_and_poach(save_dir: Path) -> None:
     out = run("rivals", "--save", SAVE)
-    assert "17 established, 0 startups alive" in out and "Salesforce" in out and "Premium" in out
+    assert "23 established, 0 startups alive" in out and "Salesforce" in out and "Premium" in out
     run("advance", "--save", SAVE, "--turns", "2")
     profile = run("rival", "--save", SAVE, "--id", "2")
     assert profile.startswith("Salesforce (Premium)") and "Key people:" in profile

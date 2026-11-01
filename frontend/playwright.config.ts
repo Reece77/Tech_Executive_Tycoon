@@ -15,6 +15,9 @@ const saveDir = process.env.TST_E2E_SAVE_DIR;
 // PLAYWRIGHT_CHANNEL=msedge (or chrome) uses an installed browser instead of downloading
 // Playwright's Chromium with `pnpm exec playwright install chromium`.
 const channel = process.env.PLAYWRIGHT_CHANNEL;
+// PLAYWRIGHT_CHROMIUM_PATH points at an installed Chromium whose version differs from the
+// pinned Playwright's (cloud sessions).
+const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
 
 export default defineConfig({
   testDir: 'e2e',
@@ -26,7 +29,16 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${WEB_PORT}`,
     trace: 'retain-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], channel } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        channel,
+        ...(executablePath ? { launchOptions: { executablePath } } : {}),
+      },
+    },
+  ],
   webServer: [
     {
       command: `uv run uvicorn tst.api.app:app --port ${API_PORT}`,

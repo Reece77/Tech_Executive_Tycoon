@@ -42,6 +42,7 @@ class OrgUnit:
     dissolved_turn: int | None = None
     product_id: int | None = None  # the product its members work on (formulas.md 11.3, M3)
     services: SharedServices | None = None  # a division's shared services; None = central (18.4)
+    office_id: int | None = None  # its home office; None = the parent's, up to the HQ (M9, 19.2)
 
     @property
     def embedded(self) -> bool:

@@ -72,9 +72,9 @@ def test_new_game_mission_invalid(
 def test_new_game_energy_and_counters(loaded: LoadedData) -> None:
     state = fresh(loaded)
     assert state.person_state(1) == PersonState(person_id=1, energy=60)
-    # The 17 incumbent products (M3, ADR-0017; five in M8) take ids 1..17; the founder, pool and
-    # former colleagues take cap-table entries 1..3 (M4, 14.2). The incumbents' 136 key people
-    # count from 1,000,001 (M5, 15.1).
+    # The 23 incumbent products (M3, ADR-0017; five in M8, six regional in M9) take ids 1..23;
+    # the founder, pool and former colleagues take cap-table entries 1..3 (M4, 14.2). The
+    # incumbents' 184 key people count from 1,000,001 (M5, 15.1).
     assert state.next_ids == NextIds(
         person=2,
         search=1,
@@ -82,8 +82,8 @@ def test_new_game_energy_and_counters(loaded: LoadedData) -> None:
         employment=2,
         product=FIRST_PRODUCT,
         cap_entry=4,
-        rival_person=1_000_137,
-        rival_employment=1_000_137,
+        rival_person=1_000_185,
+        rival_employment=1_000_185,
     )
 
 
@@ -187,7 +187,7 @@ def test_upgrade_from_0002_sets_counters_mission_and_energy(
         search=1,
         offer=1,
         employment=2,
-        product=FIRST_PRODUCT,
+        product=FIRST_PRODUCT - 6,  # M9's regional incumbents come with new games only
         cap_entry=3,
         rival_person=1_000_137,
         rival_employment=1_000_137,

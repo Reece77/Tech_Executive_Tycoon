@@ -30,6 +30,9 @@ class Search:
     plan_id: int | None = None  # the hiring plan it serves (opened by its delegate, M2a)
     rival_id: int | None = None  # a "Poach from a rival" search: the rival (M5, 15.6)
     level: str | None = None  # "exec": every candidate at exec level (M8, 18.3); None: the mix
+    # M9 (19.3): the city candidates live in (relocators move there), ANYWHERE for a remote
+    # unit's search, None for searches opened before M9 (generated as v1 did).
+    city: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,6 +48,7 @@ class Candidate:
     status: CandidateStatus = "open"
     resolved_turn: int | None = None
     interviewed_turn: int | None = None  # first interview by this company (ADR-0016)
+    relocate_to: str | None = None  # M9 (19.3): the search's city, for one who lives elsewhere
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,6 +109,7 @@ class NextIds:
     storyline: int = 1
     queued: int = 1
     loan: int = 1  # M10: loaded as max(id) + 1 of the loan table, like the M6 counters
+    office: int = 1  # M9: loaded as max(id) + 1 of the office table, like M6's counters
 
     def take(
         self,
@@ -131,6 +136,7 @@ class NextIds:
             "storyline",
             "queued",
             "loan",
+            "office",
         ],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)

@@ -137,7 +137,7 @@ def test_entrants(loaded: LoadedData) -> None:
 
 def test_new_incumbents(loaded: LoadedData) -> None:
     names = [c.name for c in loaded.game_data.incumbents]
-    assert names[-5:] == ["PayPal", "Intuit", "Fiserv", "IBM", "Nuance"]
+    assert names[12:17] == ["PayPal", "Intuit", "Fiserv", "IBM", "Nuance"]  # M9 appended six
     mix = loaded.balance.rivals.function_mix
     assert mix["fintech"] == {"builder": 0.50, "seller": 0.30, "marketer": 0.20}
     assert mix["ai_models"] == {"builder": 0.75, "seller": 0.10, "marketer": 0.15}

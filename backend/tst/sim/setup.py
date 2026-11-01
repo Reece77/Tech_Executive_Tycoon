@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData, Scenario
@@ -9,6 +10,7 @@ from tst.sim.errors import (
     InvalidCompanyNameError,
     InvalidMissionError,
     ScenarioUnavailableError,
+    UnknownCityError,
     UnknownDifficultyError,
     UnknownScenarioError,
 )
@@ -76,6 +78,7 @@ def new_game(
     balance: Balance,
     data: GameData,
     mission: tuple[str, ...] | None = None,
+    hq_city: str | None = None,
 ) -> tuple[GameState, tuple[LedgerEntry, ...]]:
     """Return the turn-0 state and the opening ledger entries. The caller persists both.
 
@@ -92,8 +95,12 @@ def new_game(
         raise InvalidCompanyNameError(f"company name must be 1..{MAX_COMPANY_NAME} characters")
 
     cash = starting_cash_cents(balance, scenario.id, difficulty)
+    hq = hq_city or balance.geo.default_hq_city  # M9 (19.1)
+    if not data.has_city(hq):
+        raise UnknownCityError(f"unknown city {hq!r}")
     rng = RngFactory(master_seed)
     person = build_founder(founder, rng, data, balance, START_TURN, person_id=FOUNDER_PERSON_ID)
+    person = replace(person, city=hq)  # the founder lives in the HQ city (M9)
     employment = Employment(
         id=FOUNDER_EMPLOYMENT_ID,
         person_id=person.id,
@@ -120,6 +127,7 @@ def new_game(
         turn=START_TURN,
         first_company_id=PLAYER_COMPANY_ID + 1,
         first_product_id=FIRST_PRODUCT_ID,
+        home=data.city(hq).region,
     )
     state = GameState(
         save_meta=SaveMeta(
@@ -138,6 +146,7 @@ def new_game(
                 founded_turn=START_TURN,
                 stage_history=((START_STAGE, START_TURN),),
                 mission=company_mission(mission, person, data),
+                hq_city=hq,
             ),
             *market.companies,
         ),
@@ -148,6 +157,9 @@ def new_game(
         products=market.products,
         product_segments=market.product_segments,
         markets=market.markets,
+        regional_markets=market.regional_markets,
+        product_regions=market.product_regions,
+        regional_segments=market.regional_segments,
         next_ids=NextIds(
             person=FOUNDER_PERSON_ID + 1,
             search=1,

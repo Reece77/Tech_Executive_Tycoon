@@ -24,6 +24,7 @@ from tst.sim.finance.board import average_confidence, board_month, vacate_depart
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
+from tst.sim.geo.cities import settle_home_cities
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -140,6 +141,7 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     state, vacated = vacate_departed(state)  # a departed nominee's seat empties (14.6, M4c)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
     state, closing, closed = fundraising.close_rounds(state, ctx.rng, ctx.balance, ctx.data)
+    state = settle_home_cities(state, state.player.id, ctx.balance, ctx.data)  # M9 (19.2)
     ctx = replace(ctx, state=state).post(*entries, *closing)
     return ctx.log(*ended, *answered, *detached, *vacated, *resolved, *closed)
 
@@ -237,11 +239,13 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     """Brand toward its marketing target and addressable demand growth (11.1, 11.5); the
     macro layer joins later."""
     state = products.brand_and_demand(ctx.state, ctx.balance, ctx.data)
+    going_live = products.regions_going_live(state, ctx.data)  # M9 (19.5)
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
     state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)
     state, founding, founded = found_startups(state, ctx.rng, ctx.balance, ctx.data)
     moves = ctx.rival_moves + launched + arrived + founded
-    return replace(ctx, state=state, rival_moves=moves).post(*arriving, *founding)
+    ctx = replace(ctx, state=state, rival_moves=moves).post(*arriving, *founding)
+    return ctx.log(*going_live)
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:

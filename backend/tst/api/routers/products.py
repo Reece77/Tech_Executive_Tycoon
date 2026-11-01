@@ -9,8 +9,9 @@ sales capacity or per-person contributions.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from tst.api import product_views, views
 from tst.api.deps import DataDep, SettingsDep
@@ -94,10 +95,16 @@ def list_categories(save_id: str, settings: SettingsDep, data: DataDep) -> list[
 @router.get(
     "/markets/{category}", response_model=MarketOut, responses=ERRORS, operation_id="getMarket"
 )
-def get_market(save_id: str, category: str, settings: SettingsDep, data: DataDep) -> MarketOut:
+def get_market(
+    save_id: str,
+    category: str,
+    settings: SettingsDep,
+    data: DataDep,
+    region: Annotated[str | None, Query(description="A region other than home (M9)")] = None,
+) -> MarketOut:
     """Every product selling in the category: owner, public scores, appeal, customers and
-    share of served customers, per segment."""
-    return product_views.market_out(_state(_path(settings, save_id)), category, data)
+    share of served customers, per segment; in the home region, or another (19.7)."""
+    return product_views.market_out(_state(_path(settings, save_id)), category, data, region)
 
 
 # --- The player's products ------------------------------------------------------------------

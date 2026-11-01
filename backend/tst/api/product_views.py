@@ -27,6 +27,7 @@ from tst.api.schemas.products import (
     ProductOut,
     ProductSegmentOut,
     ProductTotalMonthOut,
+    RegionOptionOut,
 )
 from tst.api.views import person_name
 from tst.loader import LoadedData
@@ -35,6 +36,9 @@ from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import SegmentDef
 from tst.sim.errors import ProductRuleError
 from tst.sim.finance.macro import ai_index
+from tst.sim.geo.cities import home_region
+from tst.sim.geo.formulas import regional_growth, relative_row
+from tst.sim.geo.models import RegionalSegment
 from tst.sim.org.rules import org_view
 from tst.sim.products import formulas as f
 from tst.sim.products.formulas import hosting_cents
@@ -60,26 +64,49 @@ BRAND_STEADY = 0.05  # brand points a month below which the brand trend reads "s
 @dataclass(frozen=True, slots=True)
 class _Row:
     product: Product
-    seg: ProductSegment
+    seg: ProductSegment | RegionalSegment
     appeal: float
 
 
-def _rows(state: GameState, category: str, segment: str, data: LoadedData) -> list[_Row]:
-    """Products selling in one segment (live or sunset, priced), with their appeal now."""
+def _rows(
+    state: GameState, category: str, segment: str, data: LoadedData, region: str | None = None
+) -> list[_Row]:
+    """Products selling in one segment (live or sunset, priced), with their appeal now.
+    `region`: another region's market (M9, 19.5); None for the home region."""
     turn = shown_turn(state)
     products = {p.id: p for p in state.products}
+    index = regional_index(state, region, data)
     rows = []
-    for seg in state.product_segments:
+    segs: list[ProductSegment | RegionalSegment] = (
+        list(state.product_segments)
+        if region is None
+        else [
+            r
+            for r in state.regional_segments
+            if r.region == region
+            and (launch := state.product_region(r.product_id, r.region)) is not None
+            and launch.live(state.turn)
+        ]
+    )
+    for seg in segs:
         product = products.get(seg.product_id)
         if product is None or product.category != category or seg.segment != segment:
             continue
         if product.status not in SELLING or seg.price_cents is None:
             continue
         power = pricing_power(state, product, data.balance, estimate=True)  # CRO (18.3, 18.8)
-        appeal = segment_appeal(product, seg, data.game_data, turn, power)
+        appeal = segment_appeal(product, seg, data.game_data, turn, power, index)
         assert appeal is not None
         rows.append(_Row(product, seg, appeal))
     return rows
+
+
+def regional_index(state: GameState, region: str | None, data: LoadedData) -> float:
+    """A region's price index relative to the home region; 1 at home (19.5)."""
+    if region is None:
+        return 1.0
+    home = home_region(state, data.balance, data.game_data)
+    return relative_row(region, home, data.game_data)[1]
 
 
 def _best(rows: Sequence[_Row]) -> float:
@@ -99,7 +126,7 @@ def _churn(row: _Row, rows: Sequence[_Row], data: LoadedData, mult: float = 1.0)
     )
 
 
-def _mrr(seg: ProductSegment) -> int:
+def _mrr(seg: ProductSegment | RegionalSegment) -> int:
     return round(seg.customers * (seg.price_cents or 0))
 
 
@@ -109,18 +136,25 @@ def _weights(seg_def: SegmentDef) -> AppealWeightsOut:
 
 
 def _price_score(
-    state: GameState, product: Product, seg: ProductSegment, data: LoadedData
+    state: GameState,
+    product: Product,
+    seg: ProductSegment | RegionalSegment,
+    data: LoadedData,
+    index: float = 1.0,
 ) -> float | None:
-    """The price score as sales use it: the reference price x the CRO's estimated pricing
-    power in a sales-led segment (18.3, 18.8; M8r)."""
+    """The price score as sales use it: the reference price (x a region's price index) x the
+    CRO's estimated pricing power in a sales-led segment (18.3, 18.8; M8r; 19.5)."""
     if seg.price_cents is None:
         return None
     power = pricing_power(state, product, data.balance, estimate=True)
-    reference = reference_price(product, seg.segment, data.game_data, power)
+    reference = reference_price(product, seg.segment, data.game_data, power, index)
     return f.price_score(reference, seg.price_cents)
 
 
-def _addressable(state: GameState, category: str, segment: str) -> int:
+def _addressable(state: GameState, category: str, segment: str, region: str | None = None) -> int:
+    if region is not None:
+        rmarket = state.regional_market(category, segment, region)
+        return round(rmarket.addressable) if rmarket else 0
     market = state.market(category, segment)
     return round(market.addressable) if market else 0
 
@@ -153,15 +187,24 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
     ]
 
 
-def market_out(state: GameState, category: str, data: LoadedData) -> MarketOut:
+def market_out(
+    state: GameState, category: str, data: LoadedData, region: str | None = None
+) -> MarketOut:
+    """`region`: a region other than the home region (M9's region picker, 19.7)."""
     if category not in {c.key for c in data.game_data.categories}:
         raise ProductRuleError(f"unknown category {category!r}")
+    home = home_region(state, data.balance, data.game_data) if data.game_data.cities else None
+    if region == home:
+        region = None
+    if region is not None and region not in data.game_data.region_keys:
+        raise ProductRuleError(f"unknown region {region!r}")
     cat = data.game_data.category(category)
     turn = shown_turn(state)
+    index = regional_index(state, region, data)
     segments = []
     for m in cat.markets:
         seg_def = data.game_data.segment(m.segment)
-        rows = _rows(state, category, m.segment, data)
+        rows = _rows(state, category, m.segment, data, region)
         served = sum(r.seg.customers for r in rows)
         products = [
             MarketProductOut(
@@ -175,7 +218,7 @@ def market_out(state: GameState, category: str, data: LoadedData) -> MarketOut:
                 feature_score=current_feature(r.product, data.game_data, turn),
                 brand=r.product.brand,
                 price_cents=r.seg.price_cents or 0,
-                price_score=_price_score(state, r.product, r.seg, data) or 0.0,
+                price_score=_price_score(state, r.product, r.seg, data, index) or 0.0,
                 appeal=r.appeal,
                 customers=r.seg.customers,
                 share_of_served=r.seg.customers / served if served else 0.0,
@@ -184,7 +227,7 @@ def market_out(state: GameState, category: str, data: LoadedData) -> MarketOut:
             )
             for r in sorted(rows, key=lambda r: (-r.seg.customers, r.product.id))
         ]
-        addressable = _addressable(state, category, m.segment)
+        addressable = _addressable(state, category, m.segment, region)
         segments.append(
             MarketSegmentOut(
                 segment=m.segment,
@@ -193,18 +236,35 @@ def market_out(state: GameState, category: str, data: LoadedData) -> MarketOut:
                 addressable=addressable,
                 served=served,
                 unserved=max(0.0, addressable - served),
-                reference_price_cents=m.reference_price_cents,
+                reference_price_cents=(
+                    m.reference_price_cents
+                    if region is None
+                    else max(1, round(m.reference_price_cents * index))
+                ),
                 weights=_weights(seg_def),
                 counts_users=m.segment == CONSUMER_SEGMENT,
                 player_sells=any(state.company(r.product.company_id).is_player for r in rows),
                 products=products,
             )
         )
+    year = turn_to_ym(state.turn)[0]
+    growth = cat.growth_in(year)
+    if region is not None:
+        growth = regional_growth(growth, region, data.game_data)
+    shown = region or home
     return MarketOut(
         category=cat.key,
         label=cat.label,
-        annual_growth=cat.growth_in(turn_to_ym(state.turn)[0]),
+        annual_growth=growth,
         segments=segments,
+        region=shown,
+        region_label=data.game_data.region(shown).label if shown else None,
+        regions=[
+            RegionOptionOut(key=r.key, label=r.label, home=r.key == home)
+            for r in data.game_data.regions
+        ]
+        if home
+        else [],
     )
 
 

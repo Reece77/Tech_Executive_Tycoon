@@ -1,4 +1,12 @@
-import { Alert, Button, Collapse, NumberInput, TextInput, UnstyledButton } from '@mantine/core';
+import {
+  Alert,
+  Button,
+  Collapse,
+  NumberInput,
+  Select,
+  TextInput,
+  UnstyledButton,
+} from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
@@ -148,6 +156,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
   );
   const [preset, setPreset] = useState(meta.personality_presets[0]?.key ?? SURPRISE);
   const [mission, setMission] = useState<string[]>([]);
+  const [hq, setHq] = useState<string | null>(meta.default_hq_city ?? null); // M9
   const [seed, setSeed] = useState('');
   const [showSeed, setShowSeed] = useState(false);
 
@@ -214,6 +223,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
         seed: seed === '' ? null : Number(seed),
         founder,
         mission: mission.length ? mission : null,
+        hq_city: hq,
       },
       { onSuccess: (save) => void navigate(`/game/${save.save_id}`) },
     );
@@ -587,6 +597,20 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
               : 'Click a chosen interest to swap it.'}
         </p>
       </Step>
+
+      {(meta.cities ?? []).length > 0 && (
+        <Step n={5} title="Headquarters" aside="your home market is the HQ city's region">
+          <Select
+            label="HQ city"
+            data-testid="hq-city"
+            data={(meta.cities ?? []).map((c) => ({ value: c.key, label: c.label }))}
+            value={hq}
+            onChange={setHq}
+            allowDeselect={false}
+            style={{ maxWidth: 360 }}
+          />
+        </Step>
+      )}
 
       {create.error && (
         <Alert color="red" title="Could not create the game" role="alert">

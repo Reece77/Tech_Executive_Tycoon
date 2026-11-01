@@ -212,6 +212,7 @@ hiring:
   candidate_shelf_turns: 3 # turns a candidate stays available after their batch arrives
   lowball_ratio: 0.85 # ratio; offers below this share of the expectation are always declined
   max_offer_equity_bp: 200 # bp; most equity one offer may carry
+  relocation_cents: 1500000 # cents; added to a hire's cost when the candidate relocates to the search's city (M9, 19.3)
   pitch_per_recruiting: 0.3 # score per 10 points of the offer maker's recruiting above neutral (M2, 7)
   pitch_neutral: 10 # attribute points; recruiting at which the pitch term is 0 (M2, 7)
   offer: # acceptance score and probability (7)
@@ -658,3 +659,38 @@ debt:
     repay_bp: 2500 # bp of the balance repaid at once; the partial-repayment choice (20.3)
     cure_months: 3 # months after a breach before covenants are tested again (M10 decision)
     call_window_months: 6 # a second breach within this many months of the first makes the balance due (20.3)
+
+# --- Offices (formulas.md 19.2, M9) ------------------------------------------------------
+office:
+  seat_sizes: [25, 50, 100, 250] # seats a lease may have (19.2)
+  lease_discount: 0.75 # fraction; a leased seat costs this x payroll.office_cost_per_head_cents x rent index a month (19.2)
+  fit_out_months: 3 # months of rent paid once when a lease starts (19.2)
+  close_penalty_months: 3 # months of rent paid once when a lease is closed (19.2)
+  crowded_morale: -4 # morale points for everyone in an office whose members exceed its seats (19.2)
+  lease_energy: 10 # energy to lease an office (19.2)
+  close_energy: 10 # energy to close an office (19.2)
+  assign_energy: 2 # energy to set the office a unit works from (M9 decision; as assign_unit)
+
+# --- Regional markets (formulas.md 19.4-19.5, M9) ----------------------------------------
+markets:
+  localize_cents: 4000000 # cents x scope / localize_scope: one-off localization cost per region (19.5)
+  localize_scope: 6 # scope sigma at which localization costs exactly localize_cents (19.5)
+  localize_months: 3 # months from launch in a region until it sells there (19.5)
+  localize_slowdown: 0.10 # fraction; feature points grow this much slower while any region localizes (19.5)
+  launch_energy: 4 # energy to launch a product in a region (19.5)
+  foreign_awareness: 0.6 # multiplier on self-serve awareness in a region without local presence (19.5)
+  presence_people: 5 # people working in a region that count as local presence without an office (19.5)
+  neighbour_sellers: 0.5 # fraction of sellers in the neighbour region that count in a sales-led segment (19.5)
+  cross_region_step: 0.05 # output lost per extra region the builders work in (19.4)
+  cross_region_floor: 0.85 # lowest cross-region output factor (19.4)
+
+# --- Cities and geography (formulas.md 19.1, 19.3, 19.6, M9) -----------------------------
+geo:
+  default_hq_city: san_francisco # cities.yaml key; a new game's HQ unless one is chosen (19.1)
+  pay_level: 0.876 # multiplier on every city's salary multiplier, for asks and market rates: a San Francisco company's average pay equals v1's regional candidate mix (19.1; Reece, 2026-11-01)
+  local_candidates: 0.85 # fraction of a search's candidates who live in its city; the rest relocate (19.3)
+  region_entry: # a rival's enter_region need (19.6): (unserved share - unserved) / span, with cash for cash_months
+    unserved: 0.8 # unserved share of the region's demand needed to consider entering (tuned in M9 from 19.6's 0.4: rivals entered the served home market and squeezed v1's incumbents)
+    span: 0.2 # unserved share above `unserved` for need 1 (tuned in M9 from 0.4, so an empty region still has need 1)
+    cash_months: 12 # months of costs in cash needed to enter a region
+    cooldown_turns: 12 # turns; a rival enters at most one region in this many (M9 pacing, so entries do not crowd out 15.3's other actions)

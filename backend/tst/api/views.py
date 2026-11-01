@@ -38,9 +38,13 @@ from tst.sim.calendar import format_turn
 from tst.sim.errors import UnknownPersonError
 from tst.sim.finance.captable import fd_shares
 from tst.sim.finance.options import at_cliff, next_vesting
-from tst.sim.hiring.formulas import market_mid_cents, severance_cents
+from tst.sim.geo.cities import home_city, person_work_city
+from tst.sim.geo.models import ANYWHERE
+from tst.sim.geo.offices import employee_office_cents
+from tst.sim.hiring.formulas import severance_cents
 from tst.sim.hiring.models import Search
 from tst.sim.hiring.phases import employment_monthly_cost_cents
+from tst.sim.org.morale import market_mid_for
 from tst.sim.org.rules import is_remote, org_view
 from tst.sim.people.formulas import potential_phrase
 from tst.sim.people.models import PA_KEY, Person, RevealState
@@ -243,15 +247,23 @@ def person_summary(
     role = employment.role if employment else person.role
     market_rate = None
     if employment is not None and not person.is_founder:
-        market_rate = market_mid_cents(
-            data.game_data.role(employment.role).salary_band_mid_cents[employment.level],
-            data.game_data.region(person.region).salary_multiplier_bp,
-        )
+        market_rate = market_mid_for(state, employment, data.balance, data.game_data)
+    city: str | None = None
+    relocate: bool | None = None
+    if data.game_data.cities:
+        if employment is not None:
+            city = person_work_city(state, person, data.balance, data.game_data)
+        else:
+            city = home_city(person, data.game_data)
+            relocate = candidate is not None and candidate.relocate_to is not None
     return PersonSummaryOut(
         person_id=person.id,
         name=f"{person.first_name} {person.last_name}",
         age=person.age(state.turn),
         region=person.region,
+        city=city,
+        city_label=_city_label(city, data),
+        would_relocate=relocate,
         role=role,
         role_label=role_label(role, data),
         level=employment.level if employment else person.level,
@@ -283,7 +295,10 @@ def person_summary(
             market_rate_cents=market_rate,
             salary_breakdown=breakdowns.salary(employment.salary_cents, market_rate),
             monthly_cost_cents=employment_monthly_cost_cents(
-                employment, data.balance, remote=is_remote(state, employment)
+                employment,
+                data.balance,
+                remote=is_remote(state, employment),
+                office_cents=employee_office_cents(state, employment, data.balance, data.game_data),
             ),
             options=options_out(state, employment.id, data),
         ),
@@ -419,7 +434,17 @@ def search_out(state: GameState, search: Search, data: LoadedData) -> SearchOut:
         rival_id=search.rival_id,
         rival_name=state.company(search.rival_id).name if search.rival_id is not None else None,
         level=search.level,
+        city=search.city,
+        city_label=_city_label(search.city, data),
     )
+
+
+def _city_label(city: str | None, data: LoadedData) -> str | None:
+    if city is None:
+        return None
+    if city == ANYWHERE:
+        return "Anywhere"
+    return data.game_data.city(city).label if data.game_data.has_city(city) else city
 
 
 def _range_text(lo: int, hi: int) -> str:

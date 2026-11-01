@@ -28,6 +28,8 @@ import numpy as np
 
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData, Role, Tag
+from tst.sim.geo.formulas import pay_multiplier_bp, talent_bonus
+from tst.sim.geo.models import ANYWHERE
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.people.formulas import current_ability, pa_gap_mean, salary_expectation_cents
 from tst.sim.people.models import HiddenTraits, Person, Personality, Skills
@@ -161,8 +163,15 @@ def generate_person(
     region: str,
     *,
     person_id: int,
+    city: str | None = None,
+    talent_city: str | None = None,
 ) -> Person:
+    """One generated person. `city` (M9, 19.3): their home city, which also sets their region;
+    `talent_city`: the city they would work in (default `city`), whose talent bonus their role
+    skills get and whose multiplier their salary expectation uses. Without a city, as v1."""
     people = balance.people
+    if city is not None:
+        region = data.city(city).region
     level_ca = people.level_ca[level]
 
     target = float(gen.normal(level_ca.mean, level_ca.sd))
@@ -182,6 +191,10 @@ def generate_person(
             raw[key] = clamp_attr(float(gen.uniform(lo, hi)))
     if abs(current_ability(raw, role.primary, role.secondary) - target) > people.ca_tolerance:
         raw = _rescale_primaries(raw, role, target)
+    if city is not None:  # the city's talent bonus on role skills (M9, 19.1, 19.3)
+        hub = data.city(talent_city or city)
+        for key in (*role.primary, *role.secondary):
+            raw[key] = clamp_attr(raw[key] + talent_bonus(hub, key, data))
     skills = Skills.build(data.skill_keys, raw)
     ca = current_ability(skills.as_dict(), role.primary, role.secondary)
 
@@ -204,7 +217,11 @@ def generate_person(
         band_mid_cents=role.salary_band_mid_cents[level],
         ca=ca,
         level_mean=level_ca.mean,
-        region_multiplier_bp=data.region(region).salary_multiplier_bp,
+        region_multiplier_bp=(
+            pay_multiplier_bp(data.city(talent_city or city), balance)
+            if city is not None
+            else data.region(region).salary_multiplier_bp
+        ),
         round_to_cents=balance.payroll.salary_round_to_cents,
     )
     return Person(
@@ -223,6 +240,7 @@ def generate_person(
         work_style=work_style,
         tags=tags,
         salary_expectation_cents=salary,
+        city=city,
     )
 
 
@@ -235,18 +253,64 @@ def generate_pool(
     levels: Sequence[str],
     *,
     first_person_id: int,
+    city: str | None = None,
 ) -> tuple[Person, ...]:
     """One person per entry in `levels`, ids counting up from `first_person_id`.
 
     Each person's region is drawn just before that person, weighted by
-    people.region_weights in regions.yaml order.
+    people.region_weights in regions.yaml order. With a search `city` (M9, 19.3) that draw
+    is the person's city instead: one uniform u, the search's city below
+    geo.local_candidates, else a relocator's city by talent weight among the others; for
+    ANYWHERE, every city by talent weight.
     """
     pool = []
     for offset, level in enumerate(levels):
-        region = _weighted_pick(gen, balance.people.region_weights, data.region_keys)
+        if city is None:
+            region = _weighted_pick(gen, balance.people.region_weights, data.region_keys)
+            pool.append(
+                generate_person(
+                    gen,
+                    data,
+                    balance,
+                    turn,
+                    role,
+                    level,
+                    region,
+                    person_id=first_person_id + offset,
+                )
+            )
+            continue
+        home = draw_city(float(gen.random()), city, balance, data)
+        talent = home if city == ANYWHERE else city
         pool.append(
             generate_person(
-                gen, data, balance, turn, role, level, region, person_id=first_person_id + offset
+                gen,
+                data,
+                balance,
+                turn,
+                role,
+                level,
+                data.city(home).region,
+                person_id=first_person_id + offset,
+                city=home,
+                talent_city=talent,
             )
         )
     return tuple(pool)
+
+
+def draw_city(u: float, search_city: str, balance: Balance, data: GameData) -> str:
+    """A candidate's home city from one uniform u in [0, 1) (19.3)."""
+    local = balance.geo.local_candidates
+    if search_city != ANYWHERE:
+        if u < local:
+            return search_city
+        u = (u - local) / (1 - local) if local < 1 else 0.0
+    others = [c for c in data.cities if c.key != search_city]
+    total = sum(c.talent_weight for c in others)
+    acc = 0.0
+    for c in others:
+        acc += c.talent_weight / total
+        if u < acc:
+            return c.key
+    return others[-1].key

@@ -62,6 +62,17 @@ function overviewColumns(saveId: string) {
         </span>
       ),
     }),
+    helper.accessor((p) => p.city_label ?? '', {
+      id: 'city',
+      header: 'City',
+      meta: { term: 'geo.work_city' },
+      sortFn: 'alphanumeric',
+      cell: ({ getValue }) => (
+        <span style={{ color: 'var(--tst-text-2)' }} data-testid="person-city">
+          {getValue()}
+        </span>
+      ),
+    }),
     helper.accessor((p) => p.org?.manager_name ?? '', {
       id: 'manager',
       header: 'Manager',

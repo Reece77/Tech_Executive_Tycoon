@@ -92,6 +92,11 @@ INBOX_CATEGORY: dict[str, str] = {
     "loan_repaid": "finance",
     "covenant_breached": "finance",
     "loan_called": "finance",
+    # M9: offices and regional launches
+    "office_leased": "people",
+    "office_closed": "people",
+    "region_launched": "products",
+    "region_live": "products",
 }
 PRODUCT_KINDS = frozenset(
     {
@@ -104,6 +109,8 @@ PRODUCT_KINDS = frozenset(
         "launch_product",
         "sunset_product",
         "cancel_product",
+        "launch_in_region",  # M9
+        "set_regional_price",
     }
 )
 FINANCE_KINDS = frozenset(

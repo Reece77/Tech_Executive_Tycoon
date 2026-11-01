@@ -44,6 +44,7 @@ from tst.sim.actions import (
     RemoveExecutive,
     SetLeader,
 )
+from tst.sim.actions.geo import CloseOffice, LaunchInRegion, LeaseOffice
 from tst.sim.data_models import INBOX_TEMPLATE_KEYS
 from tst.sim.ledger import CASH
 from tst.sim.log import LogItem, inbox_item
@@ -299,8 +300,15 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     scale.act(RemoveExecutive(1, "cto"))
     scale.act(AppointExecutive(1, "cfo", 51))
     scale.act(Fire(1, 51))
+    # M9: an office leased and closed; a product launched in a region that goes live.
+    geo = Game(loaded, with_product(fresh_game(loaded, 8), quality=60, feature_points=200))
+    geo.act(LeaseOffice(1, "berlin", 25))
+    geo.act(CloseOffice(1, geo.state.company_offices(1)[0].id))
+    geo.act(LaunchInRegion(1, FIRST_PRODUCT, "europe"))
+    for _ in range(3):
+        geo.turn()
     finance = finance_games(loaded)
-    games = (sad, hiring, broke, org, delegated, products, scale, *finance.games)
+    games = (sad, hiring, broke, org, delegated, products, scale, geo, *finance.games)
     items = [i for g in games for r in g.results for i in r.log_items]
     items += [i for g in games for i in g.action_logs] + finance.extra
     items += _loan_items(loaded)  # M10
