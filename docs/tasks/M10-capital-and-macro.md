@@ -85,6 +85,11 @@ Engineering details are in `docs/formulas.md` §20.7. The ones that touch design
 9. **Warrants** make the lender hold exactly 0.25% of FD after issue. Lenders: Silicon Valley Bank (venture debt to 2022), Hercules Capital (from 2023), JPMorgan Chase (bank loans), in `investors.yaml`.
 10. **Golden snapshots** were regenerated here, as the brief allows when consumer confidence moves them (reason in CHANGELOG).
 
+**Results** (docs/balance-targets.md, M10): every v1 target as before (T2 the recorded M7c miss; blitzscale T3 now 4/10), S2 12.4 worker-minutes run alone (22.6 under the parallel suite). §20.5: target 2 +5.2 founder points and +0 bankruptcy (pass); target 4 41/50 and sd 0.171 (pass); target 5 8/10 (pass). Recorded misses, `xfail(strict=False)` for M15 (Reece, 2026-11-01): §20.5 target 3 at 90% (blitzscale with debt is below zero cash before its next round on 8/10 seeds, so no `debt.*` value brings it to 20-60%), and M8 target 3 at 1.069 (1.088 before; confidence lifts SMB adoption in both arms).
+
 ## Follow-ups
 
-_(Agent fills in.)_
+- M15: §20.5 target 3 needs a different measure or script (for example breaches while cash is still positive, or debt only after Series A and B).
+- M15: M8 target 3 (support) at 1.069.
+- Rivals do not borrow (out of scope); M13 can price public markets off the base rate.
+- The macro strip shows two years; a longer History chart of the indicators would be cheap (`macro_month` holds every month).
