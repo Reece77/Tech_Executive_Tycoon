@@ -1463,6 +1463,10 @@ INBOX_TEMPLATE_KEYS = (
     "exec_appointed",
     "exec_removed",
     "exec_left",
+    "office_leased",  # M9
+    "office_closed",
+    "region_launched",
+    "region_live",
 )
 
 

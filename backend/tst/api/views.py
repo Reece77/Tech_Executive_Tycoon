@@ -38,6 +38,7 @@ from tst.sim.calendar import format_turn
 from tst.sim.errors import UnknownPersonError
 from tst.sim.finance.captable import fd_shares
 from tst.sim.finance.options import at_cliff, next_vesting
+from tst.sim.geo.offices import employee_office_cents
 from tst.sim.hiring.formulas import severance_cents
 from tst.sim.hiring.models import Search
 from tst.sim.hiring.phases import employment_monthly_cost_cents
@@ -281,7 +282,10 @@ def person_summary(
             market_rate_cents=market_rate,
             salary_breakdown=breakdowns.salary(employment.salary_cents, market_rate),
             monthly_cost_cents=employment_monthly_cost_cents(
-                employment, data.balance, remote=is_remote(state, employment)
+                employment,
+                data.balance,
+                remote=is_remote(state, employment),
+                office_cents=employee_office_cents(state, employment, data.balance, data.game_data),
             ),
             options=options_out(state, employment.id, data),
         ),

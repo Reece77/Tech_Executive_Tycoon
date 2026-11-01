@@ -24,6 +24,7 @@ from tst.sim.finance.board import average_confidence, board_month, vacate_depart
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.finance.statements import cash_before_financing
+from tst.sim.geo.cities import settle_home_cities
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -138,6 +139,7 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     state, vacated = vacate_departed(state)  # a departed nominee's seat empties (14.6, M4c)
     state, entries, resolved = phases.resolve_offers(state, ctx.rng, ctx.balance, ctx.data)
     state, closing, closed = fundraising.close_rounds(state, ctx.rng, ctx.balance, ctx.data)
+    state = settle_home_cities(state, state.player.id, ctx.balance, ctx.data)  # M9 (19.2)
     ctx = replace(ctx, state=state).post(*entries, *closing)
     return ctx.log(*ended, *answered, *detached, *vacated, *resolved, *closed)
 

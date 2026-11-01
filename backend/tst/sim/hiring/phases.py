@@ -13,6 +13,7 @@ from dataclasses import replace
 
 from tst.sim.data_models import LEVELS, Balance, GameData
 from tst.sim.finance.options import grant_on_hire, retention
+from tst.sim.geo.offices import crowded_people, employee_office_cents, rent_lines
 from tst.sim.hiring.formulas import (
     ROLL_RANGE,
     acceptance_probability,
@@ -48,7 +49,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
 from tst.sim.org.divisions import division_of_unit, is_scaleup
 from tst.sim.org.morale import morale_terms
-from tst.sim.org.rules import is_remote, org_view
+from tst.sim.org.rules import org_view
 from tst.sim.org.scaleup import delegate_energy_factor, support_morale_terms
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment, Person
@@ -280,8 +281,7 @@ def monthly_cost_lines(
         d = division(e)
         salaries[d] += monthly_salary_cents(e.salary_cents)
         benefits[d] += benefits_cents(monthly_salary_cents(e.salary_cents), balance.payroll)
-        if not is_remote(state, e):
-            office[d] += balance.payroll.office_cost_per_head_cents
+        office[d] += employee_office_cents(state, e, balance, data)  # 8, 19.2 (M9)
         if not state.person(e.person_id).is_founder:
             employees[d] += 1
     job_posts = [s for s in state.open_searches(company_id) if s.channel == "job_post"]
@@ -305,6 +305,7 @@ def monthly_cost_lines(
         ("Tools and travel", GENERAL_ADMIN, {d: round(tools * n) for d, n in employees.items()}),
     ):
         lines += [(memo, account, int(by_division[d]), d) for d in divisions]
+    lines += rent_lines(state, company_id, balance, data)  # leased offices (M9, 19.2)
     lines.append(("Base overhead", GENERAL_ADMIN, balance.company.base_monthly_cost_cents, None))
     lines.append(
         ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts), None)
@@ -332,14 +333,21 @@ def _mid_region(balance: Balance, data: GameData) -> int:
 
 
 def employment_monthly_cost_cents(
-    employment: Employment, balance: Balance, *, remote: bool = False
+    employment: Employment,
+    balance: Balance,
+    *,
+    remote: bool = False,
+    office_cents: Cents | None = None,
 ) -> Cents:
     """Salary, benefits and office for one employment per month (formulas.md section 8).
 
-    Remote staff cost no office fee (13.9).
+    Remote staff cost no office fee (13.9). `office_cents`: the seat's cost where they work
+    (M9, 19.2: flexible space at the HQ's rent index, none in a leased office).
     """
     salary = monthly_salary_cents(employment.salary_cents)
-    office = 0 if remote else balance.payroll.office_cost_per_head_cents
+    if office_cents is None:
+        office_cents = balance.payroll.office_cost_per_head_cents
+    office = 0 if remote else office_cents
     return salary + benefits_cents(salary, balance.payroll) + office
 
 
@@ -399,6 +407,7 @@ def morale_and_departures(
     supports = {  # W_support by person (M8, 18.4), from the pools at the phase start
         c.id: support_morale_terms(state, views[c.id], balance, data) for c in state.companies
     }
+    crowds = {c.id: crowded_people(state, c.id) for c in state.companies}  # M9 (19.2)
     for employment, person in _employees(state):
         company = state.company(employment.company_id)
         target = morale_terms(
@@ -410,6 +419,7 @@ def morale_and_departures(
             account_balance(opening, company.id, CASH),
             account_balance(current, company.id, CASH),
             supports[company.id],
+            crowds[company.id],
         ).target
         ps = state.person_state(person.id)
         start = morale_cfg.new_hire if ps.morale is None else ps.morale

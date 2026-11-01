@@ -27,6 +27,7 @@ COMPUTE: Final = "6300_compute"  # hosting (M3)
 MARKETING: Final = "6400_marketing"  # M3
 SAFES: Final = "2600_safes"  # SAFEs until they convert (M4)
 OTHER_INCOME: Final = "4900_other_income"  # event cash gains (M6, 16.3)
+RESEARCH: Final = "6500_research_development"  # localization (M9, 19.5)
 ENGINE_ACCOUNTS: Final = (
     OTHER_INCOME,
     CASH,
@@ -41,6 +42,7 @@ ENGINE_ACCOUNTS: Final = (
     COMPUTE,
     MARKETING,
     SAFES,
+    RESEARCH,
 )
 
 

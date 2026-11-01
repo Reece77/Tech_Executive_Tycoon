@@ -7,9 +7,12 @@ flexible space in the HQ city) under an office policy, or from their home city w
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from tst.sim.data_models import Balance, GameData
+from tst.sim.org.rules import is_remote
 from tst.sim.people.models import Employment, Person
-from tst.sim.state import CompanyState, GameState
+from tst.sim.state import CompanyState, GameState, with_person
 
 
 def home_city(person: Person, data: GameData) -> str:
@@ -51,8 +54,6 @@ def office_city(state: GameState, company_id: int, unit_id: int | None, balance:
 def work_city(state: GameState, employment: Employment, balance: Balance, data: GameData) -> str:
     """Where someone works (19.1): the office city, or their home city when remote. Rivals
     have no offices: their people work from home (M9 brief, out of scope)."""
-    from tst.sim.org.rules import is_remote
-
     person = state.person(employment.person_id)
     company = state.company(employment.company_id)
     if not company.is_player or is_remote(state, employment):
@@ -82,3 +83,26 @@ def work_multiplier_bp(
     if not data.cities:
         return data.region(state.person(employment.person_id).region).salary_multiplier_bp
     return data.city(work_city(state, employment, balance, data)).salary_multiplier_bp
+
+
+def settle_home_cities(
+    state: GameState, company_id: int, balance: Balance, data: GameData
+) -> GameState:
+    """Everyone working at an office lives in its city: a hire who relocated, or a unit moved
+    to another office (19.2-19.3). Runs after player actions and phase 1's hires, so going
+    remote or closing an office leaves people where they last worked. Not for rivals."""
+    company = state.company(company_id)
+    if not company.is_player or not data.cities:
+        return state
+    for employment in state.staff(company_id):
+        if is_remote(state, employment):
+            continue
+        person = state.person(employment.person_id)
+        city = (
+            hq_city(company, balance)
+            if person.is_founder
+            else office_city(state, company_id, employment.unit_id, balance)
+        )
+        if person.city != city:
+            state = with_person(state, replace(person, city=city))
+    return state
