@@ -337,8 +337,8 @@ companies:
         features: 75
         brand: 75
         segments:
-          mid_market: { price_cents: 85000, share_bp: 1200 }
-          enterprise: { price_cents: 850000, share_bp: 1800 }
+          mid_market: { price_cents: 85000, share_bp: 1400 }
+          enterprise: { price_cents: 850000, share_bp: 2100 }
 
   - name: Kaspersky
     stage: 3
@@ -355,8 +355,8 @@ companies:
         features: 75
         brand: 70
         segments:
-          smb: { price_cents: 2500, share_bp: 1400 }
-          mid_market: { price_cents: 60000, share_bp: 1000 }
+          smb: { price_cents: 2500, share_bp: 1900 }
+          mid_market: { price_cents: 60000, share_bp: 2200 }
 
   - name: Tencent
     stage: 4

@@ -12,18 +12,21 @@ ordinary products, except that they use awareness 1 and no sales-capacity limit 
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
 from tst.sim.data_models import SCORE_MAX, Balance, GameData
+from tst.sim.geo.markets import ReachContext, reach_context
+from tst.sim.geo.models import RegionalSegment
 from tst.sim.ledger import CASH, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
 from tst.sim.log import LinkKind, LogItem, inbox_item
-from tst.sim.money import Cents
+from tst.sim.money import Cents, exact
 from tst.sim.org.executives import CRO, side_factor
 from tst.sim.org.rules import OrgView, org_view
 from tst.sim.products import formulas as f
 from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegment
+from tst.sim.products.setup import regional_monthly_growth
 from tst.sim.products.team import Team, product_team
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -33,6 +36,8 @@ from tst.sim.state import (
     with_market,
     with_product,
     with_product_segment,
+    with_regional_market,
+    with_regional_segment,
     with_unit,
 )
 
@@ -79,12 +84,19 @@ def current_feature(product: Product, data: GameData, turn: int) -> float:
 
 
 def reference_price(
-    product: Product, segment: str, data: GameData, pricing_power: float = 1.0
+    product: Product,
+    segment: str,
+    data: GameData,
+    pricing_power: float = 1.0,
+    price_index: float = 1.0,
 ) -> int:
-    """The reference price a segment's price score uses: x the CRO's pricing power in a
-    sales-led segment (18.3). Sales, the current appeal and a price preview all use this one
-    (M8r, Codex review 1 finding 5)."""
+    """The reference price a segment's price score uses: x the region's price index outside
+    the home region (M9, 19.5), then x the CRO's pricing power in a sales-led segment (18.3).
+    Sales, the current appeal and a price preview all use this one (M8r, Codex review 1
+    finding 5)."""
     reference = data.category(product.category).market(segment).reference_price_cents
+    if price_index != 1:
+        reference = max(1, round(exact(reference) * exact(price_index)))
     if pricing_power != 1 and data.segment(segment).reach == "sales":
         reference = round(reference * pricing_power)
     return reference
@@ -92,21 +104,37 @@ def reference_price(
 
 def segment_appeal(
     product: Product,
-    seg: ProductSegment,
+    seg: ProductSegment | RegionalSegment,
     data: GameData,
     turn: int,
     pricing_power: float = 1.0,
+    price_index: float = 1.0,
 ) -> float | None:
     """Appeal in one segment from the product's current scores; None without a price. In a
     sales-led segment the reference price is x `pricing_power`, the CRO's pricing power
-    (18.3); 1 for v1 companies and rivals."""
-    if seg.price_cents is None:
+    (18.3); 1 for v1 companies and rivals. `price_index`: a region's (19.5)."""
+    return price_appeal(
+        product, seg.segment, seg.price_cents, data, turn, pricing_power, price_index
+    )
+
+
+def price_appeal(
+    product: Product,
+    segment: str,
+    price_cents: int | None,
+    data: GameData,
+    turn: int,
+    pricing_power: float = 1.0,
+    price_index: float = 1.0,
+) -> float | None:
+    """Appeal at a price in a segment (11.6); None without a price."""
+    if price_cents is None:
         return None
-    reference = reference_price(product, seg.segment, data, pricing_power)
+    reference = reference_price(product, segment, data, pricing_power, price_index)
     return f.appeal(
-        data.segment(seg.segment).weights,
+        data.segment(segment).weights,
         product.quality,
-        f.price_score(reference, seg.price_cents),
+        f.price_score(reference, price_cents),
         product.brand,
         current_feature(product, data, turn),
     )
@@ -159,14 +187,22 @@ def develop(
                     product=product.name,
                 )
             )
+        gained = output * team.feature_mult  # CPO (18.3)
+        if localizing(state, product.id):  # 10% slower while localizing (M9, 19.5)
+            gained *= 1 - balance.markets.localize_slowdown
         updated = replace(
             product,
             quality=quality,
-            feature_points=product.feature_points + output * team.feature_mult,  # CPO (18.3)
+            feature_points=product.feature_points + gained,
             rotting=rotting,
         )
         state = with_product(state, updated)
     return state, tuple(logs)
+
+
+def localizing(state: GameState, product_id: int) -> bool:
+    """A region launch of the product is still localizing this month (19.5)."""
+    return any(r.launched_turn <= state.turn < r.live_turn for r in state.regions_of(product_id))
 
 
 # --- Phase 5: customers and revenue ---------------------------------------------------------
@@ -184,25 +220,14 @@ class MarketOutcome:
 def run_markets(
     state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> MarketOutcome:
-    """Every category and segment in categories.yaml order (11.7), then revenue (11.8)."""
-    mb = balance.market
+    """Every category and segment in categories.yaml order (11.7), then every other region's
+    markets in regions.yaml order (M9, 19.5), then revenue (11.8)."""
     turn = state.turn
     views = _views(state)
     teams: dict[int, Team] = {}
     flows: dict[FlowKey, Flow] = {}
     logs: list[LogItem] = []
     products = {p.id: p for p in state.products}
-    by_market: dict[tuple[str, str], list[ProductSegment]] = {}
-    for seg in state.product_segments:
-        product = products.get(seg.product_id)
-        if product is not None and product.status in SELLING and seg.price_cents is not None:
-            by_market.setdefault((product.category, seg.segment), []).append(seg)
-
-    def power(product: Product) -> float:
-        return 1.0 if product.is_static else team(product).pricing_power
-
-    def churn_mult(product: Product) -> float:
-        return 1.0 if product.is_static else team(product).churn_mult
 
     def team(product: Product) -> Team:
         if product.id not in teams:
@@ -210,95 +235,203 @@ def run_markets(
             teams[product.id] = team_of(state, view, product, balance, data)
         return teams[product.id]
 
+    by_market: dict[tuple[str, str], list[ProductSegment]] = {}
+    for seg in state.product_segments:
+        product = products.get(seg.product_id)
+        if product is not None and product.status in SELLING and seg.price_cents is not None:
+            by_market.setdefault((product.category, seg.segment), []).append(seg)
+    geo = reach_context(state, balance, data)
+    home = geo.home if geo is not None else None
     for cat in data.categories:
         for market_def in cat.markets:
             entries = by_market.get((cat.key, market_def.segment), [])
             market = state.market(cat.key, market_def.segment)
             if not entries or market is None:
                 continue
-            seg_def = data.segment(market_def.segment)
-            appeals = {
-                s.product_id: segment_appeal(
-                    products[s.product_id],
-                    s,
-                    data,
-                    turn,
-                    power(products[s.product_id]),
-                )
-                for s in entries
-            }
-            live = [s for s in entries if products[s.product_id].status == "live"]
-            best = max((appeals[s.product_id] or 0.0 for s in live), default=0.0)
-            total = sum(s.customers for s in entries)
-            unserved = max(0.0, market.addressable - total)
-            churned = {
-                s.product_id: s.customers
-                * f.churn_rate(
-                    seg_def.base_churn * churn_mult(products[s.product_id]),  # 18.3, 18.4
-                    best,
-                    appeals[s.product_id] or 0.0,
-                    products[s.product_id].quality,
-                    products[s.product_id].status == "sunset",
-                    mb,
-                )
-                for s in entries
-            }
-            gen = rng.stream(
-                turn, "market", data.category_index(cat.key), data.segment_index(seg_def.key)
+            key: tuple[int, ...] = (
+                data.category_index(cat.key),
+                data.segment_index(market_def.segment),
             )
-            noise = max(0.0, 1 + float(gen.normal(0, mb.demand_noise_sd)))
-            pool = sum(churned.values()) + seg_def.adoption * unserved
-            # In-play customers come from those who churned and the unserved, never more.
-            in_play = min(pool * noise, sum(churned.values()) + unserved)
-            shares, _ = f.choice_shares(
-                [appeals[s.product_id] or 0.0 for s in live], seg_def.outside_option, mb
+            state, done, more = _run_segment(
+                state,
+                rng,
+                balance,
+                data,
+                products,
+                team,
+                geo,
+                home,
+                entries,
+                market.addressable,
+                key,
             )
-            won = {s.product_id: 0.0 for s in entries}
-            limited: set[int] = set()
-            for s, share in zip(live, shares, strict=True):
-                product = products[s.product_id]
-                wanted = in_play * share
-                if product.is_static:
-                    won[s.product_id] = wanted
-                elif seg_def.reach == "self_serve":
-                    aware = min(1.0, f.awareness(product.brand, mb) * team(product).awareness_mult)
-                    won[s.product_id] = wanted * aware  # CMO (18.3)
-                else:
-                    cap = team(product).capacity(seg_def.key, balance)
-                    won[s.product_id] = min(wanted, cap)
-                    if wanted > cap:
-                        limited.add(s.product_id)
-            for s in entries:
-                product = products[s.product_id]
-                customers = max(0.0, s.customers - churned[s.product_id] + won[s.product_id])
-                capacity_limited = s.product_id in limited
-                if capacity_limited and not s.capacity_limited:
-                    logs.append(
-                        inbox_item(
-                            turn,
-                            product.company_id,
-                            "sales_capacity_limited",
-                            link_kind=PRODUCT_LINK,
-                            link_id=product.id,
-                            product=product.name,
-                            segment=seg_def.label,
-                        )
-                    )
-                state = with_product_segment(
-                    state, replace(s, customers=customers, capacity_limited=capacity_limited)
-                )
-                flows[(s.product_id, s.segment)] = Flow(
-                    new=won[s.product_id], churned=churned[s.product_id]
-                )
+            for s in done:
+                flows[(s.product_id, s.segment)] = done[s]
+            logs += more
 
-    state, entries_out, revenue, flows, more = _revenue(state, flows, data)
+    # Other regions (M9, 19.5): the same steps with the region's own key and reach rules.
+    if geo is not None and state.regional_segments:
+        regional: dict[tuple[str, str, str], list[RegionalSegment]] = {}
+        for rseg in state.regional_segments:
+            product = products.get(rseg.product_id)
+            launch = state.product_region(rseg.product_id, rseg.region)
+            if (
+                product is not None
+                and product.status in SELLING
+                and rseg.price_cents is not None
+                and launch is not None
+                and launch.live(turn)
+            ):
+                regional.setdefault((product.category, rseg.segment, rseg.region), []).append(rseg)
+        for region in data.region_keys:
+            for cat in data.categories:
+                for market_def in cat.markets:
+                    rentries = regional.get((cat.key, market_def.segment, region), [])
+                    rmarket = state.regional_market(cat.key, market_def.segment, region)
+                    if not rentries or rmarket is None:
+                        continue
+                    key = (
+                        data.category_index(cat.key),
+                        data.segment_index(market_def.segment),
+                        data.region_index(region),
+                    )
+                    state, _, more = _run_segment(
+                        state,
+                        rng,
+                        balance,
+                        data,
+                        products,
+                        team,
+                        geo,
+                        region,
+                        rentries,
+                        rmarket.addressable,
+                        key,
+                    )
+                    logs += more
+
+    state, entries_out, revenue, flows, more_logs = _revenue(state, flows, data)
     return MarketOutcome(
         state=state,
         entries=entries_out,
-        logs=tuple(logs + more),
+        logs=tuple(logs + more_logs),
         revenue=revenue,
         flows=flows,
     )
+
+
+def _run_segment[S: (ProductSegment, RegionalSegment)](
+    state: GameState,
+    rng: RngFactory,
+    balance: Balance,
+    data: GameData,
+    products: Mapping[int, Product],
+    team: Callable[[Product], Team],
+    geo: ReachContext | None,
+    region: str | None,
+    entries: list[S],
+    addressable: float,
+    key: tuple[int, ...],
+) -> tuple[GameState, dict[S, Flow], list[LogItem]]:
+    """One market segment's month (11.6-11.7): churn, in play, choice and new customers.
+    `region` None or the home region: v1's market; another region: its prices, awareness
+    and sellers (19.5). `key` is the `market` stream key."""
+    mb = balance.market
+    turn = state.turn
+    logs: list[LogItem] = []
+    seg_key = entries[0].segment
+    seg_def = data.segment(seg_key)
+    index = geo.price_index(region) if geo is not None and region is not None else 1.0
+
+    def power(product: Product) -> float:
+        return 1.0 if product.is_static else team(product).pricing_power
+
+    def churn_mult(product: Product) -> float:
+        return 1.0 if product.is_static else team(product).churn_mult
+
+    appeals = {
+        s.product_id: price_appeal(
+            products[s.product_id],
+            seg_key,
+            s.price_cents,
+            data,
+            turn,
+            power(products[s.product_id]),
+            index,
+        )
+        for s in entries
+    }
+    live = [s for s in entries if products[s.product_id].status == "live"]
+    best = max((appeals[s.product_id] or 0.0 for s in live), default=0.0)
+    total = sum(s.customers for s in entries)
+    unserved = max(0.0, addressable - total)
+    churned = {
+        s.product_id: s.customers
+        * f.churn_rate(
+            seg_def.base_churn * churn_mult(products[s.product_id]),  # 18.3, 18.4
+            best,
+            appeals[s.product_id] or 0.0,
+            products[s.product_id].quality,
+            products[s.product_id].status == "sunset",
+            mb,
+        )
+        for s in entries
+    }
+    gen = rng.stream(turn, "market", *key)
+    noise = max(0.0, 1 + float(gen.normal(0, mb.demand_noise_sd)))
+    pool = sum(churned.values()) + seg_def.adoption * unserved
+    # In-play customers come from those who churned and the unserved, never more.
+    in_play = min(pool * noise, sum(churned.values()) + unserved)
+    shares, _ = f.choice_shares(
+        [appeals[s.product_id] or 0.0 for s in live], seg_def.outside_option, mb
+    )
+    won = {s.product_id: 0.0 for s in entries}
+    limited: set[int] = set()
+    for s, share in zip(live, shares, strict=True):
+        product = products[s.product_id]
+        wanted = in_play * share
+        if product.is_static:
+            won[s.product_id] = wanted
+        elif seg_def.reach == "self_serve":
+            aware = f.awareness(product.brand, mb) * team(product).awareness_mult  # CMO (18.3)
+            if geo is not None and region is not None:
+                aware *= geo.awareness_factor(product.company_id, region)  # 19.5
+            won[s.product_id] = wanted * min(1.0, aware)
+        else:
+            t = team(product)
+            if geo is not None and region is not None and geo.splits(product.company_id):
+                cap = t.capacity_weighted(
+                    seg_key, balance, geo.seller_weights((x.person_id for x in t.sellers), region)
+                )
+            else:
+                cap = t.capacity(seg_key, balance)
+            won[s.product_id] = min(wanted, cap)
+            if wanted > cap:
+                limited.add(s.product_id)
+    done: dict[S, Flow] = {}
+    for s in entries:
+        product = products[s.product_id]
+        customers = max(0.0, s.customers - churned[s.product_id] + won[s.product_id])
+        capacity_limited = s.product_id in limited
+        if capacity_limited and not s.capacity_limited:
+            logs.append(
+                inbox_item(
+                    turn,
+                    product.company_id,
+                    "sales_capacity_limited",
+                    link_kind=PRODUCT_LINK,
+                    link_id=product.id,
+                    product=product.name,
+                    segment=seg_def.label,
+                )
+            )
+        updated = replace(s, customers=customers, capacity_limited=capacity_limited)
+        if isinstance(updated, ProductSegment):
+            state = with_product_segment(state, updated)
+        else:
+            state = with_regional_segment(state, updated)
+        done[s] = Flow(new=won[s.product_id], churned=churned[s.product_id])
+    return state, done, logs
 
 
 def _revenue(
@@ -316,6 +449,7 @@ def _revenue(
         if product.status not in SELLING:
             continue
         segments = state.segments_of(product.id)
+        abroad = state.regional_segments_of(product.id)
         booked = 0
         if product.company_id in revenue:
             for seg in segments:
@@ -323,6 +457,8 @@ def _revenue(
                 booked += amount
                 key = (product.id, seg.segment)
                 flows[key] = replace(flows.get(key, Flow()), revenue_cents=amount)
+            for rseg in abroad:  # other regions (M9, 19.5)
+                booked += round(rseg.customers * (rseg.price_cents or 0))
             if booked:
                 d = product.division_id  # the product's division (M8, 18.1)
                 entries.append(
@@ -358,9 +494,12 @@ def _revenue(
                     revenue_cents=booked,
                 )
             )
-        if product.status == "sunset" and all(s.customers < CUSTOMER_ROUNDING for s in segments):
+        everyone = [s.customers for s in segments] + [r.customers for r in abroad]
+        if product.status == "sunset" and all(c < CUSTOMER_ROUNDING for c in everyone):
             for seg in segments:
                 state = with_product_segment(state, replace(seg, customers=0.0))
+            for rseg in abroad:
+                state = with_regional_segment(state, replace(rseg, customers=0.0))
             state = with_product(state, replace(product, status="retired", retired_turn=turn))
             state = release_assignments(state, product.id)
     return state, tuple(entries), revenue, flows, logs
@@ -380,13 +519,16 @@ def release_assignments(state: GameState, product_id: int) -> GameState:
 def projected_revenue(state: GameState, company_id: int) -> Cents:
     """This month's revenue at the current customers and prices: round(C x price) per
     segment of every selling product, as phase 5 would book it before this month's flows."""
-    return sum(
-        round(seg.customers * seg.price_cents)
-        for product in state.company_products(company_id)
-        if product.status in SELLING
-        for seg in state.segments_of(product.id)
-        if seg.price_cents is not None
-    )
+    total = 0
+    for product in state.company_products(company_id):
+        if product.status not in SELLING:
+            continue
+        rows: list[ProductSegment | RegionalSegment] = [
+            *state.segments_of(product.id),
+            *state.regional_segments_of(product.id),
+        ]
+        total += sum(round(s.customers * s.price_cents) for s in rows if s.price_cents is not None)
+    return total
 
 
 # --- Phase 6: hosting and marketing ---------------------------------------------------------
@@ -412,6 +554,9 @@ def product_costs_by_division(
         for seg in state.segments_of(product.id):
             h = f.hosting_cents(category, seg.segment, data.compute_index, year)
             hosting[d] = hosting.get(d, 0) + round(seg.customers * h)
+        for rseg in state.regional_segments_of(product.id):  # other regions (M9)
+            h = f.hosting_cents(category, rseg.segment, data.compute_index, year)
+            hosting[d] = hosting.get(d, 0) + round(rseg.customers * h)
     return hosting, marketing
 
 
@@ -443,7 +588,37 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
     for market in state.markets:
         growth = f.monthly_growth(data.category(market.category), year)
         state = with_market(state, replace(market, addressable=market.addressable * growth))
+    for rmarket in state.regional_markets:  # the category's growth x the region's (M9, 19.5)
+        growth = regional_monthly_growth(data, rmarket.category, rmarket.region, year)
+        state = with_regional_market(
+            state, replace(rmarket, addressable=rmarket.addressable * growth)
+        )
     return state
+
+
+def regions_going_live(state: GameState, data: GameData) -> tuple[LogItem, ...]:
+    """Phase 9: an inbox note for each of the player's products that goes live in a region
+    next month (its localization ends; 19.5)."""
+    player = state.player.id
+    out: list[LogItem] = []
+    for launch in state.product_regions:
+        product = state.product(launch.product_id)
+        if product is None or product.company_id != player or launch.live_turn != state.turn + 1:
+            continue
+        if launch.launched_turn == launch.live_turn:
+            continue
+        out.append(
+            inbox_item(
+                state.turn,
+                player,
+                "region_live",
+                link_kind=PRODUCT_LINK,
+                link_id=product.id,
+                product=product.name,
+                region=data.region(launch.region).label,
+            )
+        )
+    return tuple(out)
 
 
 # --- Phase 10: stages from revenue ----------------------------------------------------------

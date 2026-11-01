@@ -18,6 +18,9 @@ import numpy as np
 from tst.sim.calendar import turn_to_ym, ym_to_turn
 from tst.sim.data_models import FUNCTIONS, Balance, CategoryDef, GameData
 from tst.sim.finance.fundraising import climate
+from tst.sim.geo import formulas as gf
+from tst.sim.geo.cities import home_region
+from tst.sim.geo.models import ProductRegion, RegionalSegment
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.products.models import Product, ProductSegment
@@ -29,7 +32,9 @@ from tst.sim.state import (
     GameState,
     with_company,
     with_product,
+    with_product_region,
     with_product_segment,
+    with_regional_segment,
     with_rival_move,
 )
 
@@ -38,6 +43,7 @@ TEAM_STREAM_PART = 1  # tunable-exempt: second key part of a startup team's peop
 FOUNDER_LEVEL = "exec"  # tunable-exempt: the startup's founder is its top person
 TEAM_LEVEL = "mid"  # tunable-exempt: a startup's first employees (15.4 does not say)
 ENTRANT_LEVEL = "senior"  # tunable-exempt: every entrant's people (18.7)
+ENTRANT_REGION = "north_america"  # tunable-exempt: entrants start in North America (19.6)
 
 
 def alive_startups(state: GameState, data: GameData | None = None) -> list[CompanyState]:
@@ -107,11 +113,81 @@ def found_startups(
         )
         product_id = state.company_products(company.id)[0].id
         entries.append(entry)
+        region = founding_region(state, rng, company.id, category, balance, data)
+        state = sell_first_in(state, company, product_id, region, balance, data)
+        where = f" in {data.region(region).label}" if region != _home(state, balance, data) else ""
         state, move = _record(
-            state, company, "founded", f"was founded in {category.label}", product_id
+            state, company, "founded", f"was founded in {category.label}{where}", product_id
         )
         moves.append(move)
     return state, tuple(entries), tuple(moves)
+
+
+def _home(state: GameState, balance: Balance, data: GameData) -> str | None:
+    return home_region(state, balance, data) if data.cities and data.region_markets else None
+
+
+def founding_region(
+    state: GameState,
+    rng: RngFactory,
+    company_id: int,
+    category: CategoryDef,
+    balance: Balance,
+    data: GameData,
+) -> str:
+    """A startup's region, drawn by its category's addressable demand in each region (19.6):
+    one uniform from stream `rival_region`, key (startup_id,), in regions.yaml order."""
+    home = _home(state, balance, data)
+    if home is None:
+        return ""
+    weights: list[float] = []
+    for region in data.region_keys:
+        total = 0.0
+        for seg in category.segment_keys:
+            if region == home:
+                market = state.market(category.key, seg)
+                total += market.addressable if market is not None else 0.0
+            else:
+                rmarket = state.regional_market(category.key, seg, region)
+                total += rmarket.addressable if rmarket is not None else 0.0
+        weights.append(total)
+    u = float(rng.stream(state.turn, "rival_region", company_id).random()) * sum(weights)
+    acc = 0.0
+    for region, w in zip(data.region_keys, weights, strict=True):
+        acc += w
+        if u < acc:
+            return region
+    return data.region_keys[-1]
+
+
+def sell_first_in(
+    state: GameState,
+    company: CompanyState,
+    product_id: int,
+    region: str,
+    balance: Balance,
+    data: GameData,
+) -> GameState:
+    """A new rival's product sells first in `region` (19.6): its home segments move there,
+    at that region's prices."""
+    home = _home(state, balance, data)
+    if home is None or region in ("", home):
+        return state
+    product = state.product(product_id)
+    assert product is not None
+    factor = balance.rivals.price_factor[company.personality or "fast_follower"]
+    category = data.category(product.category)
+    for seg in state.segments_of(product_id):
+        reference = category.market(seg.segment).reference_price_cents
+        price = max(1, round(gf.regional_price_cents(reference, region, home, data) * factor))
+        state = with_regional_segment(
+            state, RegionalSegment(product_id, region, seg.segment, price, added_turn=state.turn)
+        )
+    state = replace(
+        state,
+        product_segments=tuple(s for s in state.product_segments if s.product_id != product_id),
+    )
+    return with_product_region(state, ProductRegion(product_id, region, state.turn, state.turn))
 
 
 def launch_ready(
@@ -308,6 +384,7 @@ def found_entrants(
         )
         entries.append(entry)
         product_id = state.company_products(company.id)[0].id
+        state = sell_first_in(state, company, product_id, ENTRANT_REGION, balance, data)  # 19.6
         state, move = _record(
             state, company, "founded", f"was founded in {category.label}", product_id
         )
