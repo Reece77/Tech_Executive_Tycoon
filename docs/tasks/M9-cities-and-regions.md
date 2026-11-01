@@ -127,12 +127,14 @@ Engineering and design gaps the spec left open (also in `docs/formulas.md` §19.
 | §19.8 target 5 | - | 10/10 seeds | pass |
 
 
-M9 keys tuned to get here: `geo.pay_level` 0.876 (Reece); `geo.region_entry.unserved` 0.4 → 0.8 and `.span` 0.4 → 0.2 (rivals entered the served home market and squeezed v1 incumbents: Salesforce's SMB share fell to 0.47 of its start); `geo.region_entry.cooldown_turns` 12; and a product that sells only abroad comes home through `enter_region` only, not v1's per-segment `enter_segment`. **Not merged:** four guards that passed on main still fail after tuning M9 keys (bold above), so per Reece's instruction they are reported, not xfailed. All four are close to their thresholds; plausible M9 causes: startups founded abroad face less competition (T7, launches), regional revenue funds incumbents' pools (§20.5 target 2 via rivals), and the talent bonus raises candidates' CA and so PA (potential gap; mean hire PA 141 against 133).
+M9 keys tuned to get here: `geo.pay_level` 0.876 (Reece); `geo.region_entry.unserved` 0.4 → 0.8 and `.span` 0.4 → 0.2 (rivals entered the served home market and squeezed v1 incumbents: Salesforce's SMB share fell to 0.47 of its start); `geo.region_entry.cooldown_turns` 12; and a product that sells only abroad comes home through `enter_region` only, not v1's per-segment `enter_segment`. Four guards that passed on main still miss after tuning M9 keys (bold above). Reece recorded them for M15 as `xfail(strict=False)` with their values and causes (balance-targets.md, M9) and approved the merge.
 
 ## Follow-ups
 
-- **M15 (v2 balance):** expansion is very strong. Blitzscale that launches in Europe and East Asia ends turn 120 at a median ~$220M ARR and keeps its founder on 8/10 seeds, against home-only blitzscale whose founder is removed or bankrupt on 10/10 (last-month ARR ratio 4.3). T3 blitzscale (home only) fell from 2/10 to 0/10 (still its recorded xfail). Levers: `markets.foreign_awareness`, regional sizes, localization cost, `markets.presence_people`.
-- The "pay where you work" rule raises v1 hiring costs ~20%; Reece may want candidates from abroad who ask less than the search city's rate (and then feel underpaid), as v1 had.
+- **TOP PRIORITY for the next balance pass:** expansion is too strong (7.0x vs 1.4x target; home-only blitzscale fails every seed).
+- **M15:** the four recorded misses: T7 startups alive (62%), §20.5 target 2 (+4.8), M5 launches per category (0.925), potential spotting gap (2.83).
+- Levers for expansion (M15): `markets.foreign_awareness`, regional sizes, localization cost, `markets.presence_people`.
+- `geo.pay_level` keeps v1's average pay; a later pass may prefer candidates from abroad who ask less than the search city's rate (and then feel underpaid), as v1 had.
 - Rival offices and regional pools; rivals' localization time.
 - A segment added at home after a regional launch is not added abroad automatically.
 - Per-region product history (`product_month` by region) for charts.

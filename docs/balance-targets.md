@@ -178,4 +178,15 @@ Consumer confidence now scales consumer and SMB adoption (formulas.md 20.1); the
 | §19.8 target 5 | - | 10/10 seeds | pass |
 
 
-M9 keys tuned to get here: `geo.pay_level` 0.876 (Reece); `geo.region_entry.unserved` 0.4 → 0.8 and `.span` 0.4 → 0.2 (rivals entered the served home market and squeezed v1 incumbents: Salesforce's SMB share fell to 0.47 of its start); `geo.region_entry.cooldown_turns` 12; and a product that sells only abroad comes home through `enter_region` only, not v1's per-segment `enter_segment`. **Not merged:** four guards that passed on main still fail after tuning M9 keys (bold above), so per Reece's instruction they are reported, not xfailed. All four are close to their thresholds; plausible M9 causes: startups founded abroad face less competition (T7, launches), regional revenue funds incumbents' pools (§20.5 target 2 via rivals), and the talent bonus raises candidates' CA and so PA (potential gap; mean hire PA 141 against 133).
+M9 keys tuned to get here: `geo.pay_level` 0.876 (Reece); `geo.region_entry.unserved` 0.4 → 0.8 and `.span` 0.4 → 0.2 (rivals entered the served home market and squeezed v1 incumbents: Salesforce's SMB share fell to 0.47 of its start); `geo.region_entry.cooldown_turns` 12; and a product that sells only abroad comes home through `enter_region` only, not v1's per-segment `enter_segment`. Four guards that passed on main still miss after tuning M9 keys (bold above); Reece recorded them for M15 and approved the merge.
+
+**Recorded misses for M15** (`xfail(strict=False)`, Reece 2026-11-01; main's value before M9, after M9, cause):
+
+| Guard | Test | Before M9 | After M9 | Cause |
+| --- | --- | --- | --- | --- |
+| T7 rival startups alive 5 years on (20-60%) | `test_balance_t7_startups` | 58% of 91 | 62% of 94 | most startups are founded abroad, where they face less competition |
+| §20.5 target 2, debt saves dilution (+5 points) | `test_2_debt_saves_dilution` (its bankruptcy half, `test_2_debt_bankruptcy_risk`, stays a hard check) | +5.2 | +4.8 | incumbents' sales abroad fund bigger rival teams |
+| M5 living market, startup launches per v1 category (1.0) | `test_1_living_market_launches` (share ratios, `test_1_living_market`, stay a hard check) | 1.0 | 0.925 | most startups are founded abroad, so fewer launch into the v1 home markets |
+| Potential spotting gap (3.0 PA points) | `test_judgment_spots_potential` | 3.04 | 2.83 | the city talent bonus raises candidates' CA and so their PA (hires' mean 141 against 133) |
+
+**Top priority for the next balance pass:** expansion is too strong (7.0x vs 1.4x target; home-only blitzscale fails every seed).

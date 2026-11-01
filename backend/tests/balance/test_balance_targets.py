@@ -6,7 +6,8 @@ T2 is its own test, marked as an expected failure (M7c sub-task 0, Reece 2026-10
 M8's script changes steady wins 10/10 seeds; the miss is recorded for M15. T3 for
 blitzscale is the same (M8r, Reece 2026-10-31): once a poached executive left their seat
 (Codex review 1 finding 3), blitzscale succeeded 1/10, and 2/10 with the exec salary on
-appointment. Every other target stays a hard check.
+appointment. T7's startup survival is the same (M9, Reece 2026-11-01). Every other target
+stays a hard check.
 """
 
 from __future__ import annotations
@@ -26,6 +27,18 @@ T3_REASON = (
 )
 
 
+T7_STARTUPS = ("T7", "rival startups alive 5 years after founding")
+T7_STARTUPS_REASON = (
+    "recorded miss: rival startups alive 5 years on 62% of 94 (band 20-60%; 58% of 91 on main "
+    "before M9): most startups are founded abroad, where they face less competition "
+    "(M9, Reece 2026-11-01); rebalance in M15"
+)
+
+
+def _t7_startups(row: object) -> bool:
+    return (getattr(row, "target", None), getattr(row, "measure", None)) == T7_STARTUPS
+
+
 def _t3_blitz(row: object) -> bool:
     return (getattr(row, "target", None), getattr(row, "measure", None)) == T3_BLITZ
 
@@ -43,7 +56,7 @@ def test_balance_targets(results: list[RunResult]) -> None:
     failed = [
         f"{r.target} {r.measure}: {r.value} ({r.band})"
         for r in rows
-        if r.ok is False and r.target != T2 and not _t3_blitz(r)
+        if r.ok is False and r.target != T2 and not _t3_blitz(r) and not _t7_startups(r)
     ]
     assert not failed, "\n".join(failed)
 
@@ -61,5 +74,13 @@ def test_balance_t2_wins(results: list[RunResult]) -> None:
 @pytest.mark.xfail(strict=False, reason=T3_REASON)
 def test_balance_t3_blitzscale(results: list[RunResult]) -> None:
     rows = [r for r in evaluate(results) if _t3_blitz(r)]
+    assert rows
+    assert all(r.ok is not False for r in rows), [f"{r.value} ({r.band})" for r in rows]
+
+
+@pytest.mark.nightly
+@pytest.mark.xfail(strict=False, reason=T7_STARTUPS_REASON)
+def test_balance_t7_startups(results: list[RunResult]) -> None:
+    rows = [r for r in evaluate(results) if _t7_startups(r)]
     assert rows
     assert all(r.ok is not False for r in rows), [f"{r.value} ({r.band})" for r in rows]
