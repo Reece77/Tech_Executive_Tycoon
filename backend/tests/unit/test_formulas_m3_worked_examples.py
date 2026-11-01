@@ -76,6 +76,8 @@ def test_incumbents_match_formulas_table(loaded: LoadedData) -> None:
     totals: dict[tuple[str, str], int] = {}
     for company in companies:
         for product in company.products:
+            if product.regions is not None:  # M9's regional incumbents sell abroad only
+                continue
             for seg, value in product.segments.items():
                 key = (product.category, seg)
                 totals[key] = totals.get(key, 0) + value.share_bp

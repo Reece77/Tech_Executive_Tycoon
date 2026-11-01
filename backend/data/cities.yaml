@@ -1,0 +1,49 @@
+# Cities (docs/formulas.md 19.1, M9). About 15 real tech hubs; real names, personal use.
+# Order is significant: the first city of each region is the home city of people generated
+# before M9 (migration 0022), so append new cities and never reorder.
+#
+# - region: a regions.yaml key.
+# - salary_multiplier_bp: replaces the region's multiplier for people working in the city
+#   (10000 = 1.0x, San Francisco).
+# - rent_index: office rent relative to San Francisco (1.0); flexible space costs
+#   payroll.office_cost_per_head_cents x rent_index per head, a lease office.lease_discount
+#   times that per seat (19.2).
+# - talent: bonus in attribute points added to generated candidates' role skills, by
+#   skills.yaml group (technical, business, leadership) or by skill key; a skill key
+#   overrides its group (19.1, 19.3). Starting points for tuning.
+# - talent_weight: relative weight of the city when a relocator's or an "anywhere"
+#   candidate's city is drawn (19.3). Roughly the size of each hub's tech workforce
+#   (M9 decision; the spec names the weight but gives no values).
+cities:
+  - { key: san_francisco, label: San Francisco, region: north_america, salary_multiplier_bp: 10000, rent_index: 1.00, talent_weight: 10, talent: { technical: 1.0, business: 0.5 } }
+  - { key: seattle, label: Seattle, region: north_america, salary_multiplier_bp: 9500, rent_index: 0.80, talent_weight: 6, talent: { technical: 0.8 } }
+  - { key: new_york, label: New York, region: north_america, salary_multiplier_bp: 10000, rent_index: 0.95, talent_weight: 8, talent: { business: 1.0 } }
+  - { key: austin, label: Austin, region: north_america, salary_multiplier_bp: 8500, rent_index: 0.55, talent_weight: 4, talent: {} }
+  - { key: toronto, label: Toronto, region: north_america, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 4, talent: { technical: 0.3 } }
+  - { key: london, label: London, region: europe, salary_multiplier_bp: 8500, rent_index: 0.85, talent_weight: 7, talent: { business: 0.8 } }
+  - { key: berlin, label: Berlin, region: europe, salary_multiplier_bp: 6500, rent_index: 0.45, talent_weight: 4, talent: { technical: 0.3 } }
+  - { key: dublin, label: Dublin, region: europe, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 2, talent: { business: 0.3 } }
+  - { key: tel_aviv, label: Tel Aviv, region: europe, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 3, talent: { technical: 0.8, security: 1.5 } }
+  - { key: bangalore, label: Bangalore, region: south_southeast_asia, salary_multiplier_bp: 3000, rent_index: 0.15, talent_weight: 9, talent: { technical: 0.3 } }
+  - { key: singapore, label: Singapore, region: south_southeast_asia, salary_multiplier_bp: 7500, rent_index: 0.75, talent_weight: 3, talent: { business: 0.3 } }
+  - { key: shenzhen, label: Shenzhen, region: east_asia, salary_multiplier_bp: 4000, rent_index: 0.30, talent_weight: 5, talent: { hardware_design: 1.5, manufacturing: 1.5 } }
+  - { key: tokyo, label: Tokyo, region: east_asia, salary_multiplier_bp: 7500, rent_index: 0.70, talent_weight: 5, talent: { hardware_design: 0.8 } }
+  - { key: sao_paulo, label: São Paulo, region: latin_america, salary_multiplier_bp: 4000, rent_index: 0.30, talent_weight: 3, talent: {} }
+  - { key: sydney, label: Sydney, region: oceania, salary_multiplier_bp: 8500, rent_index: 0.70, talent_weight: 2, talent: {} }
+
+# A region's demand growth is the category's growth x this multiplier (19.5). Every
+# regions.yaml key is listed.
+region_growth:
+  north_america: 1.0
+  europe: 1.0
+  east_asia: 1.3
+  south_southeast_asia: 1.6
+  latin_america: 1.2
+  africa: 1.8
+  oceania: 1.0
+
+# Regions without a city of their own: people generated there before M9 get this region's
+# first city as their home city (M9 decision: Africa has no hub in 19.1's table, so its
+# people take Europe's, its sales neighbour).
+home_city_region:
+  africa: europe

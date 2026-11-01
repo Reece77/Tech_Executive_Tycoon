@@ -17,6 +17,7 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
+from tst.sim.geo.models import Office, ProductRegion, RegionalMarket, RegionalSegment
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
@@ -68,6 +69,7 @@ class CompanyState:
     is_startup: bool = False
     failed_turn: int | None = None  # a rival that went bankrupt (15.1, 14.7)
     last_raise_turn: int | None = None  # a startup's last funding attempt (15.4)
+    hq_city: str | None = None  # cities.yaml key; None = geo.default_hq_city (M9, 19.1)
 
     @property
     def is_rival(self) -> bool:
@@ -127,6 +129,13 @@ class GameState:
     storylines: tuple[Storyline, ...] = ()  # active storylines, by id (M6, 16.6)
     queued: tuple[QueuedEvent, ...] = ()  # follow-ups not yet shown, by id (M6, 16.3)
     exec_seats: tuple[ExecSeat, ...] = ()  # seats ever filled, by (company_id, seat) (M8, 18.3)
+    # M9 (19.2, 19.5): open offices by id; other regions' markets by (category, segment,
+    # region); products' launches there by (product_id, region); their segments there by
+    # (product_id, region, segment). The home region stays in markets and product_segments.
+    offices: tuple[Office, ...] = ()
+    regional_markets: tuple[RegionalMarket, ...] = ()
+    product_regions: tuple[ProductRegion, ...] = ()
+    regional_segments: tuple[RegionalSegment, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -346,6 +355,38 @@ class GameState:
                 return s.seat
         return None
 
+    # --- Geography (M9) -------------------------------------------------------------------
+
+    def office(self, office_id: int) -> Office | None:
+        return next((o for o in self.offices if o.id == office_id), None)
+
+    def company_offices(self, company_id: int) -> tuple[Office, ...]:
+        return tuple(o for o in self.offices if o.company_id == company_id and o.status == "open")
+
+    def regional_market(self, category: str, segment: str, region: str) -> RegionalMarket | None:
+        for m in self.regional_markets:
+            if (m.category, m.segment, m.region) == (category, segment, region):
+                return m
+        return None
+
+    def regions_of(self, product_id: int) -> tuple[ProductRegion, ...]:
+        return tuple(r for r in self.product_regions if r.product_id == product_id)
+
+    def product_region(self, product_id: int, region: str) -> ProductRegion | None:
+        for r in self.product_regions:
+            if r.product_id == product_id and r.region == region:
+                return r
+        return None
+
+    def regional_segments_of(
+        self, product_id: int, region: str | None = None
+    ) -> tuple[RegionalSegment, ...]:
+        return tuple(
+            s
+            for s in self.regional_segments
+            if s.product_id == product_id and (region is None or s.region == region)
+        )
+
     @property
     def player(self) -> CompanyState:
         for company in self.companies:
@@ -505,4 +546,33 @@ def with_person_state(state: GameState, person_state: PersonState) -> GameState:
 def with_exec_seat(state: GameState, seat: ExecSeat) -> GameState:
     return replace(
         state, exec_seats=_upsert(state.exec_seats, seat, lambda s: (s.company_id, s.seat))
+    )
+
+
+def with_office(state: GameState, office: Office) -> GameState:
+    return replace(state, offices=_upsert(state.offices, office, lambda o: o.id))
+
+
+def with_regional_market(state: GameState, market: RegionalMarket) -> GameState:
+    return replace(
+        state,
+        regional_markets=_upsert(
+            state.regional_markets, market, lambda m: (m.category, m.segment, m.region)
+        ),
+    )
+
+
+def with_product_region(state: GameState, region: ProductRegion) -> GameState:
+    return replace(
+        state,
+        product_regions=_upsert(state.product_regions, region, lambda r: (r.product_id, r.region)),
+    )
+
+
+def with_regional_segment(state: GameState, seg: RegionalSegment) -> GameState:
+    return replace(
+        state,
+        regional_segments=_upsert(
+            state.regional_segments, seg, lambda s: (s.product_id, s.region, s.segment)
+        ),
     )

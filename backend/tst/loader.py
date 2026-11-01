@@ -21,6 +21,7 @@ from tst.sim.data_models import (
     BackgroundsFile,
     Balance,
     CategoriesFile,
+    CitiesFile,
     ClimateFile,
     ComputeIndexFile,
     EntrantsFile,
@@ -58,12 +59,14 @@ INVESTORS_FILE = "investors.yaml"
 CLIMATE_FILE = "climate.yaml"
 COMPUTE_INDEX_FILE = "compute_index.yaml"  # M8 (formulas.md 18.6)
 ENTRANTS_FILE = "entrants.yaml"  # M8 (formulas.md 18.7)
+CITIES_FILE = "cities.yaml"  # M9 (formulas.md 19.1)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
     BACKGROUNDS_FILE,
     BALANCE_FILE,
     CATEGORIES_FILE,
+    CITIES_FILE,
     CLIMATE_FILE,
     COMPUTE_INDEX_FILE,
     ENTRANTS_FILE,
@@ -180,6 +183,11 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
             f"{BALANCE_FILE}: founder.default_region {balance.founder.default_region!r} "
             "is not in regions.yaml"
         )
+    if data.cities and not data.has_city(balance.geo.default_hq_city):
+        raise DataLoadError(
+            f"{BALANCE_FILE}: geo.default_hq_city {balance.geo.default_hq_city!r} "
+            "is not in cities.yaml"
+        )
     tag_keys = {t.key for t in data.tags}
     missing_tags = sorted({*ORG_TAGS, MENTOR_TAG, *balance.relationships.tag_push} - tag_keys)
     if missing_tags:
@@ -290,6 +298,7 @@ def load_all(path: Path) -> LoadedData:
     climate = _validate(ClimateFile, parsed[CLIMATE_FILE], CLIMATE_FILE)
     compute_index = _validate(ComputeIndexFile, parsed[COMPUTE_INDEX_FILE], COMPUTE_INDEX_FILE)
     entrants = _validate(EntrantsFile, parsed[ENTRANTS_FILE], ENTRANTS_FILE)
+    cities = _validate(CitiesFile, parsed[CITIES_FILE], CITIES_FILE)
     game_data = _validate(
         GameData,
         {
@@ -315,6 +324,10 @@ def load_all(path: Path) -> LoadedData:
             "climate": climate,
             "compute_index": compute_index,
             "entrants": entrants.entrants,
+            "cities": cities.cities,
+            "region_growth": cities.region_growth,
+            "home_city_region": cities.home_city_region,
+            "region_markets": categories.regions,
             "event_templates": tuple(event_templates),
         },
         "seed data cross-check",

@@ -18,6 +18,13 @@
 # the formulas.md 11.9 table, split in proportion to share* / churn, the steady state of
 # the fixed scores, so no incumbent's share of served customers drifts by more than about
 # a point over the first 24 turns.
+# - regions (M9, formulas.md 19.5, optional): the regions the product sells in, by default
+#   north_america and europe. In each listed region it starts with the same share_bp of that
+#   region's D0, at price_cents x the region's price index (relative to the home region);
+#   the home region's rows are exactly v1's. The six regional incumbents appended for M9 list
+#   only their own region; their price_cents are already that region's prices, and their
+#   share_bp come from the M3a steady-state method run on the regional market (M9 brief,
+#   "Decisions made").
 companies:
   - name: Salesforce
     stage: 4
@@ -312,3 +319,111 @@ companies:
         segments:
           consumer: { price_cents: 50, share_bp: 2000 }
           smb: { price_cents: 10000, share_bp: 2000 }
+
+  # --- Regional incumbents (M9, formulas.md 19.5); new games only -------------------------
+
+  - name: SAP
+    stage: 4
+    founded_year: 1972
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 2500
+    cash_months: 48
+    products:
+      - name: SAP Business ByDesign
+        category: b2b_saas
+        regions: [europe]
+        quality: 62
+        features: 75
+        brand: 75
+        segments:
+          mid_market: { price_cents: 85000, share_bp: 1200 }
+          enterprise: { price_cents: 850000, share_bp: 1800 }
+
+  - name: Kaspersky
+    stage: 3
+    founded_year: 1997
+    personality: cost_leader
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 24
+    products:
+      - name: Kaspersky
+        category: cybersecurity
+        regions: [europe]
+        quality: 62
+        features: 75
+        brand: 70
+        segments:
+          smb: { price_cents: 2500, share_bp: 1400 }
+          mid_market: { price_cents: 60000, share_bp: 1000 }
+
+  - name: Tencent
+    stage: 4
+    founded_year: 1998
+    personality: aggressive
+    builder_skill: 13
+    target_margin_bp: 2500
+    cash_months: 36
+    products:
+      - name: QQ
+        category: consumer_apps
+        regions: [east_asia]
+        quality: 62
+        features: 75
+        brand: 90
+        segments:
+          consumer: { price_cents: 25, share_bp: 3000 }
+
+  - name: Alibaba
+    stage: 4
+    founded_year: 1999
+    personality: aggressive
+    builder_skill: 12
+    target_margin_bp: 2000
+    cash_months: 36
+    products:
+      - name: Alipay
+        category: fintech
+        regions: [east_asia]
+        quality: 60
+        features: 70
+        brand: 80
+        segments:
+          consumer: { price_cents: 40, share_bp: 4000 }
+          smb: { price_cents: 4500, share_bp: 3000 }
+
+  - name: Baidu
+    stage: 4
+    founded_year: 2000
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 2000
+    cash_months: 36
+    products:
+      - name: Baidu Brain
+        category: ai_models
+        regions: [east_asia]
+        quality: 45
+        features: 42
+        brand: 65
+        segments:
+          smb: { price_cents: 7000, share_bp: 2000 }
+          enterprise: { price_cents: 2200000, share_bp: 2500 }
+
+  - name: Infosys
+    stage: 4
+    founded_year: 1981
+    personality: cost_leader
+    builder_skill: 11
+    target_margin_bp: 2500
+    cash_months: 36
+    products:
+      - name: Finacle
+        category: fintech
+        regions: [south_southeast_asia]
+        quality: 58
+        features: 70
+        brand: 60
+        segments:
+          enterprise: { price_cents: 450000, share_bp: 4500 }

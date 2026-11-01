@@ -30,6 +30,9 @@ class Search:
     plan_id: int | None = None  # the hiring plan it serves (opened by its delegate, M2a)
     rival_id: int | None = None  # a "Poach from a rival" search: the rival (M5, 15.6)
     level: str | None = None  # "exec": every candidate at exec level (M8, 18.3); None: the mix
+    # M9 (19.3): the city candidates live in (relocators move there), ANYWHERE for a remote
+    # unit's search, None for searches opened before M9 (generated as v1 did).
+    city: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,6 +107,7 @@ class NextIds:
     event: int = 1
     storyline: int = 1
     queued: int = 1
+    office: int = 1  # M9: loaded as max(id) + 1 of the office table, like M6's counters
 
     def take(
         self,
@@ -129,6 +133,7 @@ class NextIds:
             "event",
             "storyline",
             "queued",
+            "office",
         ],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)

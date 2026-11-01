@@ -92,6 +92,7 @@ class Person:
     tags: tuple[str, ...]  # true behavior tags (hidden until revealed per observer)
     salary_expectation_cents: int | None
     is_founder: bool = False
+    city: str | None = None  # home city (cities.yaml); None = the region's first city (M9, 19.1)
 
     def age(self, turn: int) -> int:
         return age_at(turn, self.birth_turn)
