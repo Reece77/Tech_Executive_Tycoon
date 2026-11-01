@@ -13,17 +13,17 @@ from typing import Final
 
 from tst.sim.actions import Action
 from tst.sim.calendar import format_turn
-from tst.sim.data_models import Balance, GameData
+from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.errors import CriticalEventOpenError, GameOverError
 from tst.sim.events.director import direct
 from tst.sim.events.effects import auto_resolve, energy_next_month
 from tst.sim.events.models import EventRequest, TextRequest
-from tst.sim.finance import fundraising, insolvency
+from tst.sim.finance import debt, fundraising, insolvency, macro
 from tst.sim.finance.board import average_confidence, board_month, vacate_departed
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
-from tst.sim.finance.statements import cash_before_financing
+from tst.sim.finance.statements import cash_before_financing, profit_and_loss
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
@@ -128,7 +128,9 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
 
     Player actions themselves were applied at once between turns; Decisions stays empty in M1.
     The month's unanswered minor and major events resolve to their first choice first (M6).
+    The macro indicators for the month come first of all (M10, 20.1).
     """
+    ctx = replace(ctx, state=macro.macro_phase(ctx.state, ctx.rng, ctx.balance, ctx.data))
     state, event_entries, event_logs = auto_resolve(ctx.state, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*event_entries).log(*event_logs)
     state, ended = phases.end_notices(ctx.state)
@@ -195,6 +197,9 @@ def financing(ctx: TurnContext) -> TurnContext:
     state, bridging, bridges = insolvency.post_bridges(state, ctx.balance)
     state = vest(state, ctx.balance)
     ctx = replace(ctx, state=state).post(*entries, *bridging)
+    # M10 (20.3): loans' interest and principal, then covenants, before insolvency.
+    state, debt_entries, debt_logs = debt.debt_month(ctx.state, ctx.balances, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*debt_entries).log(*debt_logs)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
     state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
     ctx = replace(ctx, rival_moves=ctx.rival_moves + failed)
@@ -303,6 +308,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     for company in state.ledger_companies():
         history = (*company.mrr_history, ctx.revenue.get(company.id, 0))[-keep:]
         state = with_company(state, replace(company, mrr_history=history))
+    state = _debt_history(state, ctx, types)  # M10 (20.3): covenants read completed months
     ctx = replace(
         ctx,
         state=state,
@@ -310,6 +316,30 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
         product_months=products.month_history(ctx.state, ctx.flows, ctx.data, ctx.balance),
     )
     return ctx.log(*items, *market_news(state, ctx.rival_moves))  # M5 (15.5)
+
+
+def _debt_history(
+    state: GameState, ctx: TurnContext, types: Mapping[str, AccountType]
+) -> GameState:
+    """The player's operating result and burn for the month just ended (M10, 20.3): the
+    turn's entries plus what actions moved before Continue (all operating in practice)."""
+    company = state.player
+    lines = [
+        (e.turn, line.account, line.amount)
+        for e in ctx.entries
+        if e.company_id == company.id
+        for line in e.lines
+    ]
+    prior = ctx.prior_flow.get(company.id, 0)
+    result = profit_and_loss(lines, types, ctx.turn, ctx.turn).operating_result + prior
+    burn = max(-(prior + cash_before_financing(lines, types)), 0)
+    keep = ctx.balance.debt.bank.profit_months + ctx.balance.debt.bank.covenant_profit_months
+    company = replace(
+        company,
+        op_history=(*company.op_history, result)[-keep:],
+        burn_history=(*company.burn_history, burn)[-keep:],
+    )
+    return with_company(state, company)
 
 
 def event_director_requests(ctx: TurnContext) -> TurnContext:

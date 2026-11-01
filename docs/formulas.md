@@ -1667,3 +1667,223 @@ Four indicators, set each month in phase 1:
 **AR(1) step.** Climate 1.30 in a month with shock +0.02: `1.1 + 0.95 × (1.30 − 1.1) + 0.02` = **1.31**.
 
 **Confidence on adoption.** `cc = 81` gives `(0.81)^{0.5}` = × 0.90 on consumer and SMB adoption.
+
+### 20.7 Implementation notes (M10)
+
+- **History data.** `macro_history.yaml` holds the base rate and consumer sentiment by month (approximate monthly figures) and the venture climate by year (M4's `climate.yaml`, folded in unchanged and deleted). The AI index's history stays in `compute_index.yaml`. Confidence is rescaled so 2010–2019 averages exactly 100; the adoption factor then averages about 1.0 over those years (0.89–0.92 in 2010–2011, 1.04–1.07 in 2015–2019).
+- **Which month is current.** Phase 1 of turn `t` sets month `t`. Between turns the API, actions and V_base read month `t` from history while the calendar is in it (it is public), and after 2025 the last month phase 1 set (`t − 1`), so nothing is ever drawn ahead. Through 2025 every reader therefore gets exactly the old `climate(year)`.
+- **Draw order.** Each month after 2025: keys 0–3 (rate, climate, confidence, AI), one standard normal each, then key 99, one uniform, whether used or not. The AI index's yearly change steps each January, clamped to [−50%, +50%].
+- **Downturn spacing.** "None in the last 36 months" counts from a downturn's last month: a new one may start when at least 36 months have passed since the previous one ended (48 from start to start).
+- **The adoption hook** is `macro.adoption_factor(state, segment_key, balance)`: the segments and the exponent are balance data (`macro.confidence_segments`, `macro.confidence_exponent`), so it takes `balance` as a third argument. It reads the month phase 1 set (1 before any).
+- **Series C and D.** The keys extend v1's maps (`finance.round.gate_arr_cents`, `typical_cents`, `board.expected_growth` 0.8 and 0.6, `board.seats`) plus `board.max_seats` 7. After Series B the board has 6 seats; the Series C lead takes the seventh; the Series D lead takes none.
+- **Venture debt.** Offered while `turn < closed_turn + 12` of the latest priced round; the limit is 30% of that round's amount less what was already borrowed against it. Warrants are sized so the lender holds 0.25% of FD after they are issued: `round(FD × 25 / 9,975)`, a `warrant` cap-table entry in the lender's name.
+- **Bank loan gate.** Stage 3 and an operating result above zero in each of the last 3 completed months; the limit is 1 × ARR less bank debt owed.
+- **Schedule.** Interest `round(balance × rate_bp / 120,000)`, exact. From the first principal month, principal is the balance spread over the months left (`balance / months_left`), so it is equal principal ($250,000 a month in 20.6) until a partial repayment, which lowers each later payment and never extends the term; the last month pays what is left.
+- **Covenants** read completed months: burn is last month's net cash used before financing (14.1), operating profit the sum of the last 3 months' operating results; cash is this month's after the loan payments. "Above zero" means at least one cent.
+- **Breach and follow-up.** A breach queues the critical `lender_covenant_breach` event for next month (engine-queued, trigger `covenant_breach`; never drawn, always written from its template because its choices are the §20.3 terms). Its effects are shares of `debt.breach`: `loan_fee` (1% of the balance to `7000_interest`, held to the critical cash cap of §16.3), `loan_rate` (+200 bp), `loan_repay` (25% at once). After a breach covenants rest for `debt.breach.cure_months` (3) months, so the answer can take effect; a breach found after that and within 6 months of the first calls the loan: the whole balance leaves cash at once (a shortfall is insolvency, §14.7) and the major `lender_loan_called` event follows.
+- **Statements.** Debt is `2500_debt` (a liability), interest and waiver fees `7000_interest` (below operating profit; operating cash flow), principal is financing cash flow and never burn.
+## 21. R&D tree and era milestones (M11, lane A)
+
+Reece's decisions (2026-10-31): domain levels and research projects underneath, plus named, **market-changing era milestones** that arrive on their historical date unless a company researches them first (ADR-0019 §7). Principle: **a company that never researches plays as before M11.** Its tech factor is exactly 1, and the eras arriving on their historical dates reproduce the demand curves M8–M10 were tuned on, within the tolerance in §21.8. M11 merges before M12a.
+
+### 21.1 Domains and levels
+
+- **Domains:** software platform, AI, infrastructure, chip design and devices. Chip design and devices have levels and research now; their products come in M12b.
+- **A company's level in a domain** is `D_d(t) + R_c,d`:
+  - **Baseline `D_d(t)`:** the world's diffused know-how, free to everyone. From `tech_frontier.yaml`, by year: software platform 20 in 2010, +2 a year; infrastructure 20, +2 a year; AI 10, +1.5 a year through 2015, then +3 a year; chip design 30, +1.5 a year; devices 25, +1.5 a year. Each era adds +5 to its domain's baseline when it arrives.
+  - **Lead `R_c,d` ≥ 0:** what the company knows beyond the baseline. It is 0 at game start for everyone.
+- **Lead decays** each month by `R ← R × (1 − rnd.decay)` (0.015), as knowledge diffuses through papers, open source and job moves. A lead halves in about 46 months without research (spec §7.3: leadership decays without continued spend).
+- **Which domains count for a category** (`tech_weights` in `tech_frontier.yaml`):
+
+| Category | Domain weights |
+| --- | --- |
+| B2B SaaS | software platform 0.7, infrastructure 0.3 |
+| Developer tools | software platform 0.5, infrastructure 0.5 |
+| Consumer apps | software platform 0.8, AI 0.2 |
+| Cybersecurity | software platform 0.5, infrastructure 0.5 |
+| Fintech | software platform 0.7, infrastructure 0.3 |
+| AI models | AI 0.8, infrastructure 0.2 |
+
+  A company's lead for a category is `R_cat = Σ w_d × R_d`.
+
+### 21.2 What a lead does
+
+- **Quality cap:** `Q_cap × (1 + rnd.cap_per_point × min(R_cat, rnd.cap_points))`, with 0.004 per point and a maximum of 50 points, so at most × 1.20. It applies after the CTO factor (§18.3).
+- **Features:** feature points gained × `(1 + 0.002 × min(R_cat, 50))`.
+- **Rivals:** a rival's quality target `5 d` (§15.2) uses the same factor with the rival's own lead.
+- All of this sits behind one function, `research.tech_factor(state, company_id, category)`. The product code calls it in one place.
+
+### 21.3 Research projects
+
+- **Start a project** (immediate action, energy 6): choose a domain and assign an org unit to it. A unit works on one product or one project, never both (§11.3). Stop a project with energy 2.
+- **Researcher output** per month uses the domain's research skill:
+
+| Domain | Research skill |
+| --- | --- |
+| Software platform | software engineering 0.5, data 0.3, product 0.2 |
+| AI | ML research 0.6, data 0.25, software engineering 0.15 |
+| Infrastructure | infrastructure 0.6, software engineering 0.25, security 0.15 |
+| Chip design | chip design 0.7, hardware design 0.3 |
+| Devices | hardware design 0.6, manufacturing 0.2, design 0.2 |
+
+  Output is `o = coord(n) × Σ (r_i / 10) × m_i × λ_i` (§11.3 and §18.2 factors; the CTO multiplier applies).
+- **Budget.** A project needs `rnd.budget_per_researcher` a month per researcher: software platform $2,000, infrastructure $3,000, AI $6,000 × the AI compute index (§20.1), chip design $12,000, devices $8,000. It posts to `6500_research_development`. Funding below that scales output by the funded share. The project's budget is set like a product's marketing budget.
+- **Progress:**
+
+```latex
+\Delta R_d = \frac{rnd.rate \cdot o}{1 + R_d / rnd.half}
+```
+
+  with `rnd.rate` 0.25 and `rnd.half` 30. Returns diminish: the first 15 points come about twice as fast as the next 15. Decay (§21.1) applies after progress.
+- **Breakthroughs and dead ends** (phase 3, stream `research`, id 23, key `(project_id,)`): each active project each month draws:
+  - **breakthrough** with probability `0.02 × q`, where `q = clamp(mean research skill / 12, 0.5, 1.5)`: +5 lead at once;
+  - **dead end** with probability `0.015 / q`: −50% of the last 3 months' progress.
+
+  Both go to the event director as triggers `research_breakthrough` and `research_dead_end` (minor templates written in M11), so they appear as events.
+
+### 21.4 Era milestones (data: `eras.yaml`)
+
+| Era | Domain | Historical arrival | What it accelerates |
+| --- | --- | --- | --- |
+| Mobile-first | software platform | Jan 2011 | consumer apps: growth +15 points for 36 months; consumer adoption × 1.2 for 24 months |
+| Deep learning | AI | Oct 2012 | AI models: growth boost (fitted, §21.8) |
+| Cloud-native | infrastructure | Jun 2014 | developer tools: growth +10 points for 36 months |
+| Transformers | AI | Jun 2017 | AI models: growth boost (fitted) |
+| Open banking | software platform | Jan 2018 | fintech: growth +10 points for 36 months |
+| Zero trust | infrastructure | Jan 2020 | cybersecurity: growth +10 points for 36 months |
+| Large language models | AI | Nov 2022 | AI models: growth boost (fitted); consumer adoption × 1.5 for 24 months |
+| AI agents | AI | Mar 2025 | AI models: enterprise growth +40 points for 36 months; B2B SaaS mid-market and enterprise growth +5 points for 24 months |
+
+- **Arrival.** An era arrives at its historical month, or earlier on the first month any company's level in its domain reaches the era's **threshold**: `D_d(historical month) + rnd.era_lead` (15). Researching an era early takes a real lead; 15 points is about two years of a strong lab.
+- **On arrival,** the domain's baseline rises 5, and the era's boosts start from that month, so an early arrival pulls the whole acceleration forward.
+- **First-mover window,** when a company caused the arrival: for `rnd.first_mover_months` (12) its products in the affected categories get +5 on the quality cap (points, after §21.2) and +10 on the brand target (§11.5), and its lead in that domain doesn't decay.
+- **Already in the curves:** the M8 AI `growth_by_year` table is replaced by a base growth plus the three AI era boosts. Fit them so that historical arrival reproduces M8's demand (§21.8 target 1).
+- **History** records each era's arrival, who caused it and how many months early. The Market screen shows eras to come as a timeline with their domain and threshold, and no historical dates past the present.
+
+### 21.5 Licensing
+
+- **License in** (immediate action, energy 8): from a rival (or the player, for rivals) whose lead in a domain exceeds yours by more than 10.
+  - **Gain:** up to their lead − 10.
+  - **Price:** `rnd.license_price_per_point` ($150,000 in 2010 dollars) × points × `(1 + ARR / $20M)`, once.
+  - **Answer:** the licensor says yes unless they're a direct competitor in a category the domain feeds (a rival you share a segment with). Rivals answer by a rule, not a draw.
+- **License out** (energy 8): grant a rival up to your lead − 10. It pays 2% of its revenue in the categories that domain feeds, monthly for 24 months (`4100_revenue_licenses`).
+- **Leaks:** when a researcher on a project leaves for a rival, that rival gains `min(10, 0.1 × your lead)` in the project's domain.
+
+### 21.6 Rivals research
+
+Incumbents gain a `research` action. Its need is `(best lead in their categories' domains − own) / 15`, plus 0.3 if an era in their domain is within 24 months of its historical date. Weights by personality: premium 1.2, fast_follower 0.9, aggressive 1.0, cost_leader 0.6. While it runs (6 months), the rival's lead grows `rnd.rival_rate × builder_skill / 10` a month (0.8), and it pays builder-pool cost +10%. Startups don't research. Randomness: the existing `rivals` stream (utility noise) and stream `rival_research` (id 24, key `(company_id,)`) for breakthroughs, with the player's probabilities.
+
+### 21.7 What the API may show
+
+- Levels as `D + R`, with the baseline and lead split.
+- Projects with researchers, output, budget, monthly progress and estimated months to the next era threshold.
+- Breakthroughs, dead ends and licences.
+- Rivals' levels as ranges: a rival's lead shows ±5 around the true value, narrowed to ±2 if you have a licence with them.
+- The era timeline with thresholds.
+- Researcher skill uses displayed ranges, as everywhere else.
+
+### 21.8 Balance targets (M11 acceptance, printed)
+
+1. **Without research, nothing moves.**
+   - All v1, M8, M9 and M10 targets pass as before (the recorded misses stay recorded).
+   - With eras at their historical dates, AI addressable demand in Jan 2024 is within ±10% of M8's value (359×), and every other category's Jan 2020 demand is within ±10% of before M11.
+2. **Research pays.** steady with a 6-person research unit in its main category's top domain from stage 2 reaches a median turn-120 ARR at least 1.10 times steady without it, net of the research cost, with median quality at least 5 points higher.
+3. **Eras can be pulled forward, but rarely by accident.**
+   - A 10-person AI lab from Jan 2014 (ML research ≥ 14, fully funded) causes Transformers before Jan 2017 on at least 5 of 10 seeds.
+   - In do-nothing runs, rivals pull an era more than 6 months early on at most 15% of seeds.
+4. **Decay.** A lead of 30 with no research is 14–16 after 46 months.
+5. **Licensing is a shortcut.** Licensing in half of a 30-point gap costs at most 0.7 times the median cost of researching it with a 6-person unit.
+
+### 21.9 Worked examples
+
+**Progress.** A 6-person AI unit with research skill 12 each, morale 50, no tax: `o = 0.98 × 6 × 1.2 = 7.06`. At `R = 0`: `ΔR = 0.25 × 7.06` = **1.76** a month. At `R = 30`: 0.88.
+
+**Quality cap.** A B2B SaaS product with `Q_cap = 60`, software platform lead 20 and infrastructure lead 10: `R_cat = 0.7 × 20 + 0.3 × 10 = 17`, so `Q_cap = 60 × 1.068` = **64.1**.
+
+**Era threshold.** Transformers (AI, Jun 2017): `D_AI(2017.5) = 10 + 1.5 × 6 + 3 × 1.5 = 23.5` (before the Deep learning +5, which makes it 28.5), so the threshold is 28.5 + 15 = **43.5**. In Jan 2016 the AI baseline is 10 + 9 + 5 = 24, so a company needs a lead of 19.5 to cause it then.
+
+**Licence price.** 12 points with ARR $10M: `$150,000 × 12 × 1.5` = **$2.7M**.
+
+## 22. Cloud, data centres and supply shocks (M12a, lane B)
+
+Reece's decisions (2026-10-31): simplified facilities (ADR-0019 §2); own capacity can be unprofitable when under-used, and **spare capacity can be sold to others** (ADR-0019 §8); component prices and supply **follow history to 2025, then seeded shocks** (§9). Principle: **a company that never builds plays as before.** Products buy compute at the spot price (v1's `h`, with AI on its index), and nothing changes. M12a merges after M11.
+
+### 22.1 Compute units and the spot price
+
+- **One compute unit (CU)** is the compute a product buys for $1,000 a month at index 1.0. A product's compute need is its hosting cost (§11.8, §18.6) ÷ $1,000 × the relevant index:
+  - **General CU** for every category except AI. Its index stays 1.0 (v1's `h` is unchanged).
+  - **GPU CU** for AI. Its index is M10's AI compute index (§20.1).
+- **Spot hosting** (no own capacity) posts to `6300_compute` exactly as now.
+
+### 22.2 Data centres (facility)
+
+- **Build** (immediate action, energy 12): choose a region (§19.5), a kind (general or GPU) and a capacity in CU (100, 500, 2,000 or 10,000).
+
+| | General | GPU |
+| --- | --- | --- |
+| Capex per CU (2010 $) | $24,000 × the server component index (§22.4) | $40,000 × the GPU component index (§22.4) |
+| Build time | 12 months | 9 months, plus allocation delay (§22.4) |
+| Operating cost per CU per month | $250 | $500 (power) |
+| Life | 60 months | 48 months |
+
+- **Capex** is paid as built: equal monthly payments during the build, to `1500_ppe`. Depreciation runs straight-line over the life from completion: `6700_depreciation` (new account) and `1510_accumulated_depreciation` (new). Debt from M10 can fund it.
+- **Staff.** A data centre needs one infrastructure-role person (DevOps or security engineer) per 200 CU, from a unit assigned to it. Coverage `c_f = min(1, staff / need)`.
+- **Reliability** `rel = 100 × c_f × (0.7 + 0.3 × mean infrastructure skill / 20)`. It feeds outages (§22.5) and the quality of capacity sold (§22.3).
+- **Your own products use your capacity first:** cheapest first, in the product's region or its neighbour (§19.5). Their spot cost falls by the CU they use.
+- **Economics at full use** (server index 1.0): a general CU costs `$24,000 / 60 + $250` = **$650** a month against $1,000 spot, so it breaks even at 65% utilization. Building early and small usually loses money, which is the design intent.
+- **Close or sell** (energy 12): sell for 50% of book value; staff stay in their unit.
+
+### 22.3 Selling spare capacity: Cloud and GPU hosting (new category `cloud_hosting`)
+
+- **Segments:** SMB, mid-market, enterprise and hyperscalers. Hyperscalers are a new sales-led segment with appeal weights quality 0.40, price 0.40, brand 0.05, features 0.15, base churn 0.5% and adoption 0.3%.
+- **Customers buy CU.** `D₀` and `p_ref` per CU are in `categories.yaml` (appended): `p_ref` is $1,000 for general and $1,000 × the GPU index for GPU.
+- **A company sells only when it owns spare capacity.** Its product's "quality" is mean reliability, and its features come from its infrastructure lead (§21.1; 50 + 2 × lead, capped at 100). Customers are capped so that CU sold ≤ spare CU in the region and its neighbour.
+- **Revenue** posts to `4000_revenue_subscriptions`. The CU sold count as used for utilization.
+- **Incumbents and entrants** (data):
+  - Amazon Web Services (aggressive, from 2010);
+  - Microsoft Azure (fast_follower, from Feb 2010);
+  - Rackspace (cost_leader, 2010);
+  - IBM SoftLayer (premium, 2010);
+  - Google Cloud (scheduled entrant, Apr 2012);
+  - CoreWeave (scheduled entrant, GPU only, Jan 2019).
+
+  Rivals' capacity is abstract: they always have enough, and their prices follow §15.3.
+
+### 22.4 Components, allocation and supply shocks (data: `components_history.yaml`)
+
+- **Two component indexes:** server (general) and GPU, at 1.0 in 2010.
+  - **History to 2025:**
+    - server: −8% a year to 2020; +30% from Q2 2021 to Q2 2022 (the chip shortage); back down by 2023;
+    - GPU: −10% a year to 2016; +20% in 2017–2018 (crypto); +60% from Q1 2023 to Q2 2024 (the AI crunch);
+    - allocation: 70% in 2021–2022 for servers, 40% in 2023–2024 for GPUs, otherwise 100%.
+  - **After 2025** (stream `supply`, id 26, key `(index,)`): each index takes an AR(1) step on its yearly change toward −8%, with shock sd 0.06. With probability `supply.shock_monthly` (0.01) a shock starts if none has run in 30 months: the index rises 25–60%, and allocation falls to 40–80% for 6–18 months. Draws are in a fixed order.
+- **Allocation.** While allocation is below 100%, a data centre under construction completes only that share of its capacity on time; the rest arrives 1 month later for each 10 points of shortfall.
+- **Contracts** (immediate action, energy 6): lock a component price for 12–36 months on a stated volume of CU builds (take-or-pay: an unused volume is charged 30% of its value at the end). Contracted builds get 100% allocation.
+
+### 22.5 Outages (phase 6, stream `facility`, id 27, key `(facility_id,)`)
+
+- **Each month, each data centre** has an outage with probability `0.002 × (100 − rel) / 10`. At reliability 50 that's 1% a month; at reliability 95, 0.1%.
+- **An outage is a critical event** (new `outage` templates):
+  - every product it hosts loses `customers_pct` within critical caps, and cloud customers churn × 3 that month;
+  - the choices trade cash (overtime and credits) against brand.
+
+### 22.6 What the API may show
+
+Data centres with capacity, utilization (own and sold), reliability, staff coverage, monthly cost per CU against spot, book value and build progress. The component indexes and allocation, with history, never the future. Contracts. The Cloud hosting market like any market. Outage history.
+
+### 22.7 Balance targets (M12a acceptance, printed)
+
+1. **Without building, nothing moves.** All earlier targets pass as before.
+2. **Ownership needs utilization.** A general data centre costs at most 0.70 times spot per used CU at ≥ 80% utilization, and at least 1.2 times spot at 40%.
+3. **Spare capacity sells.** A company with a 2,000-CU general data centre at 50% own use, selling its spare, reaches at least 85% utilization within 24 months on at least 6 of 10 seeds.
+4. **History bites.** The 2021 server shortage raises the server index 20–40%, and the 2023 crunch raises the GPU index 40–80%. An AI company with its own GPU capacity built before 2022 keeps a gross margin at least 15 points higher in 2023 than the same company on spot.
+5. **The future varies.** After 2025, at least 70% of seeds see a supply shock by 2035.
+6. **Staffing matters.** A data centre at staff coverage 0.5 averages at least 1 outage a year; at full coverage with skill 14, at most 0.2.
+
+### 22.8 Worked examples
+
+**Unit cost.** 500 general CU, full: depreciation `500 × $24,000 / 60` = $200,000, plus operating `500 × $250` = $125,000, for $325,000 a month, or **$650** per CU against $1,000 spot. At 40% use, $325,000 / 200 = **$1,625** per used CU.
+
+**Reliability.** 2,000 CU needs 10 staff; with 8 at mean infrastructure skill 15, `c_f = 0.8` and `rel = 100 × 0.8 × (0.7 + 0.225)` = **74**, giving an outage chance of `0.002 × 2.6` = **0.52%** a month.
+
+**GPU build in the crunch.** 500 GPU CU in Jul 2023 (GPU index 1.60, allocation 40%): capex `500 × $64,000` = $32M. 200 CU complete on time and 300 arrive 6 months late.

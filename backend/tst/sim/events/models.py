@@ -56,6 +56,7 @@ class GameEvent:
     cash_base_cents: int = 0  # max(cash, 3 x monthly revenue) when queued (16.3)
     tone: Tone = "grounded"
     storyline_id: int | None = None
+    loan_id: int | None = None  # M10: a lender event's loan (20.3)
     status: EventStatus = "pending"
     title: str = ""
     body: str = ""
@@ -102,13 +103,14 @@ class QueuedEvent:
     company_id: int
     template_id: str
     due_turn: int  # the month it is shown in
-    source_event_id: int
+    source_event_id: int | None  # None: queued by the engine (a lender event, M10)
     person_ids: tuple[int, ...] = ()
     product_id: int | None = None
     unit_id: int | None = None
     rival_id: int | None = None
     segment: str | None = None
     done: bool = False
+    loan_id: int | None = None  # M10: a lender event queued by the engine (20.3)
 
 
 @dataclass(frozen=True, slots=True)

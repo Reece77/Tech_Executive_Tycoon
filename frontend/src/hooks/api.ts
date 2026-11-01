@@ -53,6 +53,11 @@ export type DilutionLine = Schemas['DilutionLineOut'];
 export type Board = Schemas['BoardOut'];
 export type Director = Schemas['DirectorOut'];
 export type FinanceSummary = Schemas['FinanceSummaryOut'];
+export type Macro = Schemas['MacroOut']; // M10
+export type Loans = Schemas['LoansOut'];
+export type Loan = Schemas['LoanOut'];
+export type LoanTerms = Schemas['LoanTermsOut'];
+export type Payment = Schemas['PaymentOut'];
 export type GameOver = Schemas['GameOverOut'];
 export type Holiday = Schemas['HolidayOut'];
 export type Backup = Schemas['BackupOut'];
@@ -196,6 +201,10 @@ export const keys = {
   safeHint: (saveId: string, amount: number, cap: number) =>
     ['saves', saveId, 'safe-hint', amount, cap] as const,
   rounds: (saveId: string) => ['saves', saveId, 'rounds'] as const,
+  loans: (saveId: string) => ['saves', saveId, 'loans'] as const, // M10
+  loanPreview: (saveId: string, instrument: string, amount: number) =>
+    ['saves', saveId, 'loan-preview', instrument, amount] as const,
+  macro: (saveId: string) => ['saves', saveId, 'macro'] as const,
   sheetPreview: (saveId: string, sheetId: number) =>
     ['saves', saveId, 'sheet-preview', sheetId] as const,
   gameOver: (saveId: string) => ['saves', saveId, 'game-over'] as const,
@@ -1553,6 +1562,61 @@ export function useEventItem(saveId: string, eventId: number) {
         }),
       ),
     enabled: Number.isSafeInteger(eventId) && eventId > 0,
+  });
+}
+
+// --- Debt and macro (M10, formulas.md 20) ---------------------------------------------------
+
+export function useMacro(saveId: string) {
+  return useQuery({
+    queryKey: keys.macro(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/finance/macro', path(saveId))),
+  });
+}
+
+export function useLoans(saveId: string) {
+  return useQuery({
+    queryKey: keys.loans(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/finance/loans', path(saveId))),
+  });
+}
+
+/** The first month's payment and warrants for an amount; pass debounced values. */
+export function useLoanPreview(saveId: string, instrument: string, amountCents: number) {
+  return useQuery({
+    queryKey: keys.loanPreview(saveId, instrument, amountCents),
+    queryFn: async () =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/finance/loans/preview', {
+          ...path(saveId),
+          body: { instrument, amount_cents: amountCents },
+        }),
+      ),
+    enabled: amountCents > 0,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useTakeLoan(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (body: Schemas['LoanIn']) =>
+      unwrap(await api.POST('/api/saves/{save_id}/finance/loans', { ...path(saveId), body })),
+    onSuccess: invalidate,
+  });
+}
+
+export function useRepayLoan(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async ({ loanId, amountCents }: { loanId: number; amountCents: number | null }) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/finance/loans/{loan_id}/repay', {
+          params: { path: { save_id: saveId, loan_id: loanId } },
+          body: { amount_cents: amountCents },
+        }),
+      ),
+    onSuccess: invalidate,
   });
 }
 

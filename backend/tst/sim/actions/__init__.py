@@ -21,7 +21,9 @@ from tst.sim.actions.finance import (
     FinanceAction,
     NameNominee,
     RaiseSafe,
+    RepayLoan,
     StartRound,
+    TakeLoan,
     apply_finance,
 )
 from tst.sim.actions.geo import (
@@ -171,6 +173,8 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "accept_term_sheet": AcceptTermSheet,
     "accept_bridge": AcceptBridge,
     "name_nominee": NameNominee,
+    "take_loan": TakeLoan,  # M10
+    "repay_loan": RepayLoan,
     "choose_event": ChooseEvent,
     "set_product_division": SetProductDivision,  # M8
     "set_shared_services": SetSharedServices,
@@ -218,6 +222,7 @@ __all__ = [
     "ReferenceCheck",
     "RemoveExecutive",
     "RenameUnit",
+    "RepayLoan",
     "Scout",
     "ScoutSearch",
     "SetLeader",
@@ -230,6 +235,7 @@ __all__ = [
     "SetUnitOffice",
     "StartRound",
     "SunsetProduct",
+    "TakeLoan",
     "UnassignUnit",
     "UpdatePlan",
     "WithdrawOffer",
@@ -341,7 +347,15 @@ def apply_action(
             out = cancel_product(state, action, balance)
         case ScoutSearch():
             out = scout_search(state, action, balance, data)
-        case RaiseSafe() | StartRound() | AcceptTermSheet() | AcceptBridge() | NameNominee():
+        case (
+            RaiseSafe()
+            | StartRound()
+            | AcceptTermSheet()
+            | AcceptBridge()
+            | NameNominee()
+            | TakeLoan()
+            | RepayLoan()
+        ):
             out = apply_finance(state, action, balance, data, ledger_balances)
         case ChooseEvent():
             out = choose_event(state, action, balance, data)

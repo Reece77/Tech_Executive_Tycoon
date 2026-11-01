@@ -104,7 +104,27 @@ def effect_words(state: GameState, event: GameEvent, effect: Effect, data: Loade
             return f"{who} leaves"
         case "follow_up":
             return "a follow-up decision comes next month"
+        case "loan_fee" | "loan_rate" | "loan_repay":
+            return _loan_words(state, effect, data)
     return effect.type.replace("_", " ")
+
+
+def _loan_words(state: GameState, effect: Effect, data: LoadedData) -> str:
+    """A lender event's choice in words with its amount (M10, 20.3)."""
+    _, ids = parse_target(effect.target)
+    loan = state.loan(ids[0]) if ids else None
+    br = data.balance.debt.breach
+    if loan is None:
+        return "the loan has closed"
+    if effect.type == "loan_rate":
+        points = effect.value * br.rate_up_bp / 100  # tunable-exempt: bp to points
+        now = loan.rate_bp / 100  # tunable-exempt: bp to %
+        return f"the rate rises {points:g} points, to {now + points:.2f}%"
+    share = br.repay_bp if effect.type == "loan_repay" else br.waiver_fee_bp
+    cents = effect.value * loan.balance_cents * share / 10_000  # tunable-exempt: bp
+    if effect.type == "loan_repay":
+        return f"repays about {about_dollars(cents)} of the balance from cash now"
+    return f"a waiver fee of about {about_dollars(cents)}"
 
 
 def event_out(state: GameState, event: GameEvent, data: LoadedData) -> EventOut:

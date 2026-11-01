@@ -12,8 +12,8 @@ An existing save gets:
 - its v1 incumbents' presence in Europe at their starting shares of that demand, as at a new
   game (19.5). The six regional incumbents come only with new games, as M8's did.
 
-Revision ID: 0022_geo
-Revises: 0021_former_staff
+Revision ID: 0023_geo
+Revises: 0022_capital_macro
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0022_geo"
-down_revision: str | None = "0021_former_staff"
+revision: str = "0023_geo"
+down_revision: str | None = "0022_capital_macro"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -93,7 +93,7 @@ def upgrade() -> None:
         sa.Column("added_turn", sa.Integer(), nullable=False),
     )
     _seed_geo()
-    op.execute("UPDATE save_meta SET schema_version = 22")
+    op.execute("UPDATE save_meta SET schema_version = 23")
 
 
 def _seed_geo() -> None:
@@ -194,4 +194,4 @@ def downgrade() -> None:
         "company_hq",
     ):
         op.drop_table(table)
-    op.execute("UPDATE save_meta SET schema_version = 21")
+    op.execute("UPDATE save_meta SET schema_version = 22")

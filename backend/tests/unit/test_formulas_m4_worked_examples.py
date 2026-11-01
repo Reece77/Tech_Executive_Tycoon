@@ -25,6 +25,12 @@ def test_investors_and_climate_match_formulas_tables(loaded: LoadedData) -> None
         "Andreessen Horowitz",
         "Kleiner Perkins",
         "Greylock Partners",
+        # M10 (20.2): growth investors, appended
+        "Insight Partners",
+        "General Atlantic",
+        "Tiger Global",
+        "DST Global",
+        "SoftBank Vision Fund",
     ]
     a16z = loaded.game_data.firm("a16z")
     assert (a16z.series, a16z.check_min_cents, a16z.check_max_cents) == (
@@ -34,15 +40,10 @@ def test_investors_and_climate_match_formulas_tables(loaded: LoadedData) -> None
     )
     assert (a16z.bias, a16z.response, a16z.patience) == (1.15, 0.35, 0)
     assert loaded.game_data.firm("kleiner").patience == -5
-    climate = loaded.game_data.climate
-    assert [climate.of(y) for y in (2010, 2015, 2021, 2023, 2026, 2040)] == [
-        0.90,
-        1.25,
-        1.60,
-        0.75,
-        1.0,
-        1.0,
-    ]
+    # M10: the climate table moved into macro_history.yaml unchanged (20.1); after 2025 the
+    # macro layer sets it (tests/unit/test_formulas_m10_worked_examples.py).
+    climate = loaded.game_data.macro_history.climate  # type: ignore[union-attr]
+    assert [climate[y] for y in (2010, 2015, 2021, 2023, 2025)] == [0.90, 1.25, 1.60, 0.75, 1.0]
 
 
 def test_scenario_cap_tables(loaded: LoadedData) -> None:

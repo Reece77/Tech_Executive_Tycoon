@@ -75,10 +75,12 @@ def test_turn_increments_and_inputs_not_mutated() -> None:
     assert result.new_state.turn == 1
     assert state.turn == 0
     assert balances == {(1, CASH): 5_000_000}
-    # The only company change: this month's MRR joins its history (M4, formulas.md 14.3).
+    # The only company changes: this month's MRR joins its history (M4, formulas.md 14.3),
+    # and the player's operating result and burn join theirs (M10, 20.3).
     assert state.companies[0].mrr_history == ()  # the input is not mutated
     assert result.new_state.companies == tuple(
-        replace(c, mrr_history=(0,)) for c in state.companies
+        replace(c, mrr_history=(0,), op_history=(-OVERHEAD,), burn_history=(OVERHEAD,))
+        for c in state.companies
     )
     # From M6 the director may queue next month's events; each is a pending event in state.
     pending = {e.id for e in result.new_state.events if e.status == "pending"}

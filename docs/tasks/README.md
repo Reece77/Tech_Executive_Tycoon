@@ -30,6 +30,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M7a-speed-and-balance.md](M7a-speed-and-balance.md) | Turn speed, balance targets, strategy runner (nightly), 20 templates, balance pass | M6 |
 | [M7b-history-saves-holiday.md](M7b-history-saves-holiday.md) | Holiday, saves manager, History, tooltips, saved column views, Ask my COO, the 10-year run (finishes v1) | M7a |
 | [M8-divisions-and-new-markets.md](M8-divisions-and-new-markets.md) | Divisions and division P&L, executive seats, support and shared services, Fintech and AI markets, scheduled entrants (first v2 milestone) | M7b |
+| [M10-capital-and-macro.md](M10-capital-and-macro.md) | Macro layer (history to 2025, then seeded cycles and downturns), Series C and D with growth investors, venture debt and bank loans with covenants and the lender event (lane B) | M8r |
 | [M9-cities-and-regions.md](M9-cities-and-regions.md) | Cities and HQ, offices, hiring by city, regional markets and launches, regional incumbents and rivals' region entry (lane A, merges after M10) | M8r |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.

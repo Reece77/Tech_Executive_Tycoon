@@ -15,6 +15,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 
 from tst.sim.data_models import (
+    INSTRUMENTS,
     MENTOR_TAG,
     ORG_TAGS,
     Account,
@@ -22,7 +23,6 @@ from tst.sim.data_models import (
     Balance,
     CategoriesFile,
     CitiesFile,
-    ClimateFile,
     ComputeIndexFile,
     EntrantsFile,
     GameData,
@@ -30,6 +30,7 @@ from tst.sim.data_models import (
     IncumbentsFile,
     InterestsFile,
     InvestorsFile,
+    MacroHistory,
     NamesFile,
     PersonalityFile,
     RegionsFile,
@@ -56,7 +57,7 @@ INBOX_FILE = "inbox_templates.yaml"
 CATEGORIES_FILE = "categories.yaml"
 INCUMBENTS_FILE = "incumbents.yaml"
 INVESTORS_FILE = "investors.yaml"
-CLIMATE_FILE = "climate.yaml"
+MACRO_HISTORY_FILE = "macro_history.yaml"  # M10 (formulas.md 20.1); folds in climate.yaml
 COMPUTE_INDEX_FILE = "compute_index.yaml"  # M8 (formulas.md 18.6)
 ENTRANTS_FILE = "entrants.yaml"  # M8 (formulas.md 18.7)
 CITIES_FILE = "cities.yaml"  # M9 (formulas.md 19.1)
@@ -67,13 +68,13 @@ DATA_FILES = (
     BALANCE_FILE,
     CATEGORIES_FILE,
     CITIES_FILE,
-    CLIMATE_FILE,
     COMPUTE_INDEX_FILE,
     ENTRANTS_FILE,
     INBOX_FILE,
     INCUMBENTS_FILE,
     INVESTORS_FILE,
     INTERESTS_FILE,
+    MACRO_HISTORY_FILE,
     NAMES_FILE,
     PERSONALITY_FILE,
     REGIONS_FILE,
@@ -200,6 +201,15 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
     missing_product_tags = sorted(set(balance.products.tag) - tag_keys)
     if missing_product_tags:
         raise DataLoadError(f"{TAGS_FILE}: product rules need tags {missing_product_tags} (11.10)")
+    segment_keys = {s.key for s in data.segments}
+    unknown_segments = sorted(set(balance.macro.confidence_segments) - segment_keys)
+    if unknown_segments:  # M10 (20.1)
+        raise DataLoadError(
+            f"{BALANCE_FILE}: macro.confidence_segments {unknown_segments} are not segments"
+        )
+    for instrument in INSTRUMENTS:  # M10 (20.3): someone must lend each instrument
+        if not any(lender.instrument == instrument for lender in data.lenders):
+            raise DataLoadError(f"{INVESTORS_FILE}: no lender offers {instrument}")
     for scenario in data.scenarios:
         total = scenario.cap_table.total
         if total != balance.finance.initial_fd_shares:
@@ -295,7 +305,7 @@ def load_all(path: Path) -> LoadedData:
     categories = _validate(CategoriesFile, parsed[CATEGORIES_FILE], CATEGORIES_FILE)
     incumbents = _validate(IncumbentsFile, parsed[INCUMBENTS_FILE], INCUMBENTS_FILE)
     investors = _validate(InvestorsFile, parsed[INVESTORS_FILE], INVESTORS_FILE)
-    climate = _validate(ClimateFile, parsed[CLIMATE_FILE], CLIMATE_FILE)
+    macro_history = _validate(MacroHistory, parsed[MACRO_HISTORY_FILE], MACRO_HISTORY_FILE)
     compute_index = _validate(ComputeIndexFile, parsed[COMPUTE_INDEX_FILE], COMPUTE_INDEX_FILE)
     entrants = _validate(EntrantsFile, parsed[ENTRANTS_FILE], ENTRANTS_FILE)
     cities = _validate(CitiesFile, parsed[CITIES_FILE], CITIES_FILE)
@@ -321,7 +331,8 @@ def load_all(path: Path) -> LoadedData:
             "categories": categories.categories,
             "incumbents": incumbents.companies,
             "investors": investors.firms,
-            "climate": climate,
+            "lenders": investors.lenders,
+            "macro_history": macro_history,
             "compute_index": compute_index,
             "entrants": entrants.entrants,
             "cities": cities.cities,

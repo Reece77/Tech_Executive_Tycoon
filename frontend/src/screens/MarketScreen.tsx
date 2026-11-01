@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import { MacroStrip } from '../components/MacroStrip';
 import { MarketTable } from '../components/MarketTable';
 import { LoadError, Loading } from '../components/ScreenState';
 import { useCategories, useMarket } from '../hooks/api';
@@ -74,6 +75,7 @@ export function MarketScreen() {
           </span>
         )}
       </div>
+      <MacroStrip saveId={saveId} />
       {market.error && <LoadError title="Could not load the market" error={market.error} />}
       {market.isPending && <Loading />}
       {market.data?.segments.map((s) => (

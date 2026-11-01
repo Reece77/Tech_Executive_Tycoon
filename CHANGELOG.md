@@ -4,6 +4,18 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs: ADR-0019 gains Reece's M12b and M13 design decisions (IPO event chain, earnings-driven public life, Chair and CEO roles, fabless chips sold to a market and used in-house).
+- Docs: M11 (R&D tree and era milestones; lane A) and M12a (cloud, data centres and supply shocks; lane B) briefs, formulas.md §21–§22, wireframes (Research, DataCentres), RNG streams 23, 24, 26 and 27 reserved in ADR-0013.
+- Docs: v2 roadmap re-paired (M11 with M12a cloud, M12b hardware and chips with M13 IPO, M14 M&A alone) and ADR-0019 gains Reece's 2026-10-31 decisions: R&D era milestones, factories allowed from the start with spare capacity sold to others, supply shocks history-then-seeded.
+- M10 Capital and macro (lane B; formulas.md §20):
+  - The macro layer: base rate, venture climate, consumer confidence and the AI compute index set in phase 1. History through 2025 (`macro_history.yaml`, which folds in M4's `climate.yaml` unchanged; the AI index from `compute_index.yaml`), then seeded AR(1) cycles with downturns on stream `macro` (id 21). `macro.adoption_factor` scales consumer and SMB adoption by (cc / 100)^0.5; AI hosting follows the continued index. `macro_month` (migration `0022_capital_macro`).
+  - Series C ($25M ARR) and D ($60M) with growth investors (Insight, General Atlantic, Tiger Global, DST Global, SoftBank Vision Fund from 2017); the board stops at 7 seats.
+  - Venture debt and bank loans: gates, warrants, monthly interest and principal, early repayment, covenants, the critical `lender` event (waiver fee, higher rate, or repay 25%) and a called loan on a second breach within six months. `loan` and `finance_history` tables; `event.loan_id`, `event_queue.loan_id`.
+  - Finance → Debt tab (loans, schedule, covenant headroom, Take a loan and Repay dialogs), the macro strip on the Debt tab and the Market screen; `GET /finance/macro`, `GET /finance/loans`, `POST /finance/loans[/preview]`, `POST /finance/loans/{id}/repay`; CLI `tst macro`, `tst loan`, `tst repay`; glossary and History entries.
+  - Tests: every §20.6 worked example, history on every seed, seeded cycles and downturn spacing, Series C/D gates and seats, debt unit and Hypothesis property tests (ledger balances; principal paid never above borrowed), the API never shows a future macro month. `test_rival_replay` moved to seed 6 (seed 7 no longer brings an approach once confidence moves adoption).
+  - Balance: §20.5 targets 2, 4 and 5 pass; target 3 (90% breach, needs 20-60%) and M8 target 3 (support 1.069, needs 1.08) are recorded `xfail(strict=False)` for M15 (Reece, 2026-11-01). S2 12.4 worker-minutes run alone.
+  - **Golden snapshots regenerated:** consumer confidence now scales consumer and SMB adoption (0.89–1.07 a year over 2010–2019), which moves every market's customers and so revenue, rivals' moves and snapshots from turn 0. The venture climate itself is unchanged through 2025.
+
 - M8r fixes from Codex review 1 (each with a regression test written first and seen failing):
   - 1 (P1) The state cache is published inside `write_session`, after the commit and before the save's lock is released (`repository.publish`); a write that publishes nothing clears it. Two-writer interleaving test (`test_m8r_cache.py`).
   - 2 (P1) Continue reserves the save across its turn and its event writing, so `save_busy` only comes before anything commits; a failure after the commit is logged and the month counts (events stay pending for the next request). Busy errors carry `retryable: true`; the front end retries only those. Holiday counts every committed month (`test_m8r_continue.py`, `retry.test.ts`).

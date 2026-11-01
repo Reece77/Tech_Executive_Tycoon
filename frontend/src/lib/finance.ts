@@ -46,6 +46,8 @@ export const SERIES_TEXT: Record<string, string> = {
   seed: 'Seed',
   a: 'Series A',
   b: 'Series B',
+  c: 'Series C', // M10
+  d: 'Series D',
 };
 
 const CLASS_TEXT: Record<string, string> = {
@@ -53,6 +55,9 @@ const CLASS_TEXT: Record<string, string> = {
   preferred_seed: 'Seed preferred',
   preferred_a: 'Series A preferred',
   preferred_b: 'Series B preferred',
+  preferred_c: 'Series C preferred', // M10
+  preferred_d: 'Series D preferred',
+  warrant: 'Warrants (lender)',
   safe_conversion: 'Preferred (converted SAFE)',
   option_pool: 'Options',
 };
@@ -224,4 +229,23 @@ export function capRowId(
   index: number,
 ): string {
   return `${r.holder_kind}:${r.holder}:${r.share_class}:${index}`;
+}
+
+/** Sparkline points for any series, drawn between its own lowest and highest value (the
+ * macro strip, M10). Only drawing: no game value is computed. */
+export function rangeSparkPoints(values: readonly number[], width = 100, height = 24): string {
+  if (values.length === 0) return '';
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const span = hi - lo || 1;
+  return sparkPoints(
+    values.map((v) => ((v - lo) / span) * 100),
+    width,
+    height,
+  );
+}
+
+/** Basis points a year as a rate: 625 -> "6.25%". */
+export function formatRateBp(bp: number): string {
+  return `${(bp / 100).toFixed(2)}%`;
 }

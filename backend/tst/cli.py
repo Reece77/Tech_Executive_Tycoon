@@ -15,7 +15,7 @@ from typing import Annotated, Any
 import typer
 
 from tst import holiday as hol
-from tst.api import finance_views, org_views, product_views, views
+from tst.api import capital_views, finance_views, org_views, product_views, views
 from tst.config import Settings
 from tst.db import inbox as inbox_db
 from tst.db import repository
@@ -48,6 +48,7 @@ from tst.sim.actions import (
     RaiseSafe,
     ReferenceCheck,
     RenameUnit,
+    RepayLoan,
     ScoutSearch,
     SetLeader,
     SetMarketing,
@@ -55,6 +56,7 @@ from tst.sim.actions import (
     SetPrice,
     StartRound,
     SunsetProduct,
+    TakeLoan,
     UnassignUnit,
     UpdatePlan,
 )
@@ -1639,6 +1641,97 @@ def appoint(
         f"{who.first_name} {who.last_name} is now {seat.upper()} (exec level, {paid} a year)"
     )
     typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+# --- Debt and macro (M10, formulas.md 20) ------------------------------------------------------
+
+
+def _macro_rows(path: Path, turn: int) -> dict[int, Any]:
+    from sqlalchemy import select
+
+    from tst.db.models import MacroMonthRow
+    from tst.db.state_io import macro_from_row
+
+    with repository.open_session(path) as session:
+        return {
+            r.turn: macro_from_row(r)
+            for r in session.scalars(select(MacroMonthRow).where(MacroMonthRow.turn <= turn))
+        }
+
+
+@app.command("macro")
+def macro_command(save: SaveOpt) -> None:
+    """The base rate, venture climate, consumer confidence and AI compute cost (20.1)."""
+    path, data, state = _game(save)
+    out = capital_views.macro_out(state, _macro_rows(path, state.turn), data)
+    typer.echo(f"Macro, {out.current.label}{' (downturn under way)' if out.downturn else ''}")
+    for i in out.indicators:
+        typer.echo(f"  {i.label:<20} {i.display:<16} {i.context}")
+    if out.after_history:
+        typer.echo(f"  History ended {out.history_ends_label}; the economy now moves in cycles.")
+
+
+@app.command()
+def loan(
+    save: SaveOpt,
+    type: Annotated[str, typer.Option("--type", help="venture_debt|bank_loan")] = "venture_debt",
+    amount: Annotated[str | None, typer.Option(help="Dollars; omit to see the terms")] = None,
+) -> None:
+    """Show loans and what lenders offer, or sign one: `--type venture_debt --amount 2000000`
+    (20.3; energy 10)."""
+    path, data, state = _game(save)
+    if amount is not None:
+        result = _run(path, data, TakeLoan(_actor(state), type, _dollars(amount)))
+        typer.echo(
+            f"Signed for {format_money(_dollars(amount))}; {_energy(result.new_state, data)}"
+        )
+        with repository.open_session(path) as session:
+            state = repository.load_state(session)
+    with repository.open_session(path) as session:
+        cash = company_cash(repository.ledger_balances(session), state.player.id)
+    out = capital_views.loans_out(state, cash, data)
+    for x in out.loans:
+        typer.echo(
+            f"  loan {x.id}: {x.instrument_label} from {x.lender}, "
+            f"{format_money(x.principal_cents)}"
+            f" signed {x.signed_label} at {x.rate_bp / 100:.2f}%: {x.status_label}, balance "
+            f"{format_money(x.balance_cents)}"
+        )
+        if x.next_payment is not None:
+            p = x.next_payment
+            typer.echo(
+                f"    this month: interest {format_money(p.interest_cents)}, principal "
+                f"{format_money(p.principal_cents)}"
+            )
+        for c in x.covenants:
+            state_word = "holds" if c.holds else "BROKEN"
+            typer.echo(
+                f"    covenant: {c.description}: {state_word}, headroom "
+                f"{format_money(c.headroom_cents)}"
+            )
+    for o in out.offers:
+        if o.eligible:
+            typer.echo(
+                f"  {o.instrument_label}: {o.lender} up to {format_money(o.max_cents)} at "
+                f"{o.rate_bp / 100:.2f}% over {o.term_months} months"
+            )
+        else:
+            typer.echo(f"  {o.instrument_label}: not offered ({o.problem})")
+
+
+@app.command()
+def repay(
+    save: SaveOpt,
+    loan_id: Annotated[int, typer.Option("--loan", help="Loan id")],
+    amount: Annotated[str | None, typer.Option(help="Dollars; omit to repay it all")] = None,
+) -> None:
+    """Repay a loan early, in part or in full, with no fee (20.3; energy 5)."""
+    path, data, state = _game(save)
+    cents = _dollars(amount) if amount is not None else None
+    result = _run(path, data, RepayLoan(_actor(state), loan_id, cents))
+    after = result.new_state.loan(loan_id)
+    left = format_money(after.balance_cents) if after is not None else "?"
+    typer.echo(f"Repaid; balance {left}; {_energy(result.new_state, data)}")
 
 
 # --- Cities, offices and regions (M9, formulas.md 19) ----------------------------------------

@@ -117,9 +117,9 @@ def test_compute_index(loaded: LoadedData) -> None:
     assert index.of(2024) == pytest.approx(index.of(2022) * 1.6 * 1.3)
     assert index.of(2025) == pytest.approx(index.of(2024) * 0.85)
     ai = loaded.game_data.category("ai_models")
-    assert hosting_cents(ai, "smb", index, 2016) == pytest.approx(4000 * 0.85**6)
+    assert hosting_cents(ai, "smb", index.of(2016)) == pytest.approx(4000 * 0.85**6)
     fintech = loaded.game_data.category("fintech")
-    assert hosting_cents(fintech, "smb", index, 2016) == 500  # only AI is indexed
+    assert hosting_cents(fintech, "smb", index.of(2016)) == 500  # only AI is indexed
 
 
 def test_entrants(loaded: LoadedData) -> None:

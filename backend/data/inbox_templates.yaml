@@ -142,6 +142,19 @@ templates:
   exec_left:
     title: "The {seat} seat is vacant"
     body: "{name} has left, so the {seat} seat is empty. A vacant seat costs the company until you fill it."
+  # M10 (formulas.md 20.3)
+  loan_signed:
+    title: "{instrument} signed: {amount_cents}"
+    body: "{lender} lent {amount_cents} at {rate} a year over {term} months. The money is in the bank."
+  loan_repaid:
+    title: "Loan repaid: {lender}"
+    body: "The {amount_cents} borrowed from {lender} is paid off."
+  covenant_breached:
+    title: "Covenant broken: {lender}"
+    body: "{covenant}: the test failed this month. {lender} will want an answer before next month closes."
+  loan_called:
+    title: "{lender} called the loan"
+    body: "A second covenant breach within six months: {lender} took the remaining {amount_cents} from the bank account."
   # M9 (formulas.md 19): offices and regions
   office_leased:
     title: "New office in {city}"

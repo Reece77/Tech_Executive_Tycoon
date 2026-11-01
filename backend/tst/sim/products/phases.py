@@ -17,6 +17,7 @@ from dataclasses import dataclass, replace
 
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
 from tst.sim.data_models import SCORE_MAX, Balance, GameData
+from tst.sim.finance import macro
 from tst.sim.geo.markets import ReachContext, reach_context
 from tst.sim.geo.models import RegionalSegment
 from tst.sim.ledger import CASH, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
@@ -379,7 +380,8 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     }
     gen = rng.stream(turn, "market", *key)
     noise = max(0.0, 1 + float(gen.normal(0, mb.demand_noise_sd)))
-    pool = sum(churned.values()) + seg_def.adoption * unserved
+    adoption = seg_def.adoption * macro.adoption_factor(state, seg_def.key, balance)  # 20.1
+    pool = sum(churned.values()) + adoption * unserved
     # In-play customers come from those who churned and the unserved, never more.
     in_play = min(pool * noise, sum(churned.values()) + unserved)
     shares, _ = f.choice_shares(
@@ -542,7 +544,7 @@ def product_costs_by_division(
     is not retired (11.8, 18.1)."""
     hosting: dict[int | None, Cents] = {}
     marketing: dict[int | None, Cents] = {}
-    year = turn_to_ym(state.turn)[0]
+    ai = macro.ai_index(state, data)  # M10 (20.1)
     for product in state.company_products(company_id):
         if product.status == "retired":
             continue
@@ -552,10 +554,10 @@ def product_costs_by_division(
             continue
         category = data.category(product.category)
         for seg in state.segments_of(product.id):
-            h = f.hosting_cents(category, seg.segment, data.compute_index, year)
+            h = f.hosting_cents(category, seg.segment, ai)
             hosting[d] = hosting.get(d, 0) + round(seg.customers * h)
         for rseg in state.regional_segments_of(product.id):  # other regions (M9)
-            h = f.hosting_cents(category, rseg.segment, data.compute_index, year)
+            h = f.hosting_cents(category, rseg.segment, ai)
             hosting[d] = hosting.get(d, 0) + round(rseg.customers * h)
     return hosting, marketing
 

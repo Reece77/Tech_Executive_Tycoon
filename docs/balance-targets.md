@@ -125,3 +125,24 @@ Codex review 1 finding 3: a poached executive now leaves their seat (before, the
 | An executive at the default salary stays 6 months (10 real stage-3 games) | — | — | 4/10 seeds | **fail**, xfail for M15: at ordinary morale (about 50), any employee reads "might go" against a market-rate offer |
 
 Every other target is unchanged: T1, T3 for bootstrap-frugal (7/10) and steady (10/10), T4 to T8, E3, and S2 (12.0 worker-minutes run alone). T2 stays the recorded M7c miss.
+
+### M10 (2026-11-01)
+
+Consumer confidence now scales consumer and SMB adoption (formulas.md 20.1); the venture climate is unchanged through 2025.
+
+| Target | Measured | Result |
+| --- | --- | --- |
+| T1 | 10/10 | pass |
+| T2 wins | do-nothing 0, bootstrap-frugal 0, steady 10, blitzscale 0 | **fail**, the recorded M7c miss |
+| T3 succeed | bootstrap-frugal 7/10, steady 10/10, blitzscale 4/10 | pass (blitzscale's recorded xfail now passes) |
+| T4 | seed 4 and 1; Series A 29 and 19; Series B 37 on 8/10 | pass |
+| T5 bankrupt | steady 0/0/0%; blitzscale 20%; bootstrap-frugal 30% | pass |
+| T6 | leavers' median 21 months; 12% a year; 11% in the first year | pass |
+| T7 | incumbents 17/17; startups alive after 5 years 58% of 91 | pass |
+| T8 median ARR | bootstrap-frugal $13.6M, steady $68.6M, blitzscale $74.8M | printed |
+| S2 | 12.4 worker-minutes run alone; 22.6 under the parallel suite (not a valid measurement) | pass |
+| M8 target 3 (support, needs 1.08) | 1.069 (1.088 before M10): confidence lifts SMB adoption in both arms over 2016-2020 | **fail**, xfail for M15 (Reece, 2026-11-01) |
+| 20.5 target 2 (debt saves dilution) | +5.2 founder points (median), bankruptcy +0 points | pass |
+| 20.5 target 3 (covenants bite sometimes) | 90% of seeds breach (80% with a 2- or 1-month covenant): blitzscale with venture debt goes below zero cash before its next round on 8/10 seeds | **fail**, xfail for M15 (Reece, 2026-11-01) |
+| 20.5 target 4 (the future varies) | 41/50 seeds with a downturn in 2026-2039; 2030 climate sd 0.171 | pass |
+| 20.5 target 5 (later rounds happen) | blitzscale reaches a Series C on 8/10 seeds | pass |

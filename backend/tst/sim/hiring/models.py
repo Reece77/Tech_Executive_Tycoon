@@ -108,6 +108,7 @@ class NextIds:
     event: int = 1
     storyline: int = 1
     queued: int = 1
+    loan: int = 1  # M10: loaded as max(id) + 1 of the loan table, like the M6 counters
     office: int = 1  # M9: loaded as max(id) + 1 of the office table, like M6's counters
 
     def take(
@@ -134,6 +135,7 @@ class NextIds:
             "event",
             "storyline",
             "queued",
+            "loan",
             "office",
         ],
     ) -> tuple[int, NextIds]:

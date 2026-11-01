@@ -12,7 +12,14 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from tst.sim.calendar import MONTHS_PER_YEAR
-from tst.sim.events.data import EFFECT_TYPES, SEVERITIES, TRIGGERS, VALUELESS, EventTemplate
+from tst.sim.events.data import (
+    EFFECT_TYPES,
+    LOAN_EFFECTS,
+    SEVERITIES,
+    TRIGGERS,
+    VALUELESS,
+    EventTemplate,
+)
 from tst.sim.money import BP_DENOMINATOR
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
@@ -564,8 +571,8 @@ class MarketBalance(_Frozen):
     sunset_churn_mult: float = Field(ge=0)
 
 
-SERIES = ("seed", "a", "b")  # priced rounds in v1, in order (formulas.md 14.5)
-type Series = Literal["seed", "a", "b"]
+SERIES = ("seed", "a", "b", "c", "d")  # priced rounds, in order (14.5; c and d M10, 20.2)
+type Series = Literal["seed", "a", "b", "c", "d"]
 
 
 class StagesBalance(_Frozen):
@@ -670,6 +677,7 @@ class BoardBalance(_Frozen):
     history_months: int = Field(gt=0)
     trend_points: float = Field(ge=0)
     seats: dict[Series, SeatCounts]
+    max_seats: int = Field(ge=1)  # M10 (20.2): the most seats a board has, the founder's included
     director_role: str
     director_level: str
 
@@ -684,6 +692,8 @@ class BoardBalance(_Frozen):
             raise ValueError(f"expected_growth and seats must cover {list(SERIES)}")
         if self.director_level not in LEVELS:
             raise ValueError(f"director_level must be one of {list(LEVELS)}")
+        if any(c.common + c.investor + c.independent > self.max_seats for c in self.seats.values()):
+            raise ValueError(f"no series may seat more than max_seats ({self.max_seats})")
         return self
 
 
@@ -853,7 +863,8 @@ class EventsBalance(_Frozen):
             raise ValueError("events.count_weights: four probabilities (0-3 events) summing to 1")
         if sorted(self.trigger) != sorted(TRIGGERS):
             raise ValueError(f"events.trigger must cover exactly {list(TRIGGERS)}")
-        sized = sorted(set(EFFECT_TYPES) - set(VALUELESS) - {"resign"})
+        # M10: loan effects are shares of debt.breach's sizes, not capped here (20.3).
+        sized = sorted(set(EFFECT_TYPES) - set(VALUELESS) - {"resign"} - set(LOAN_EFFECTS))
         if sorted(self.caps) != sized:
             raise ValueError(f"events.caps must cover exactly {sized}")
         for effect, caps in self.caps.items():
@@ -885,6 +896,87 @@ class RelationshipsBalance(_Frozen):
         if len(self.label_bounds) != labels - 1 or self.label_bounds != sorted(self.label_bounds):
             raise ValueError("relationships.label_bounds: four rising bounds")
         return self
+
+
+# --- Capital and macro (formulas.md section 20, M10) -----------------------------------------
+
+
+class Ar1Balance(_Frozen):
+    """x' = mean + phi (x - mean) + N(0, shock_sd), clamped to bounds (20.1)."""
+
+    mean: float
+    phi: float = Field(ge=0, le=1)
+    shock_sd: float = Field(ge=0)
+    bounds: Span
+
+    @model_validator(mode="after")
+    def _check(self) -> Ar1Balance:
+        if not self.bounds.lo <= self.mean <= self.bounds.hi:
+            raise ValueError("an AR(1) mean must lie inside its bounds")
+        return self
+
+
+class DownturnBalance(_Frozen):
+    monthly: float = Field(ge=0, le=1)
+    gap_months: int = Field(ge=0)
+    months: int = Field(gt=0)
+    rate: float
+    climate: float
+    confidence: float
+
+
+class MacroBalance(_Frozen):
+    history_months: int = Field(gt=0)
+    rate: Ar1Balance
+    climate: Ar1Balance
+    confidence: Ar1Balance
+    ai_change: Ar1Balance
+    confidence_exponent: float = Field(ge=0)
+    confidence_segments: tuple[str, ...]
+    downturn: DownturnBalance
+
+
+class VentureDebtBalance(_Frozen):
+    window_turns: int = Field(gt=0)
+    max_of_round_bp: int = Field(gt=0, le=BP_DENOMINATOR)
+    spread_bp: int = Field(ge=0)
+    term_months: int = Field(gt=0)
+    interest_only_months: int = Field(ge=0)
+    warrant_bp: int = Field(ge=0, lt=BP_DENOMINATOR)
+    covenant_burn_months: float = Field(ge=0)
+
+    @model_validator(mode="after")
+    def _check(self) -> VentureDebtBalance:
+        if self.interest_only_months >= self.term_months:
+            raise ValueError("interest_only_months must be shorter than term_months")
+        return self
+
+
+class BankLoanBalance(_Frozen):
+    stage: int = Field(ge=0)
+    profit_months: int = Field(gt=0)
+    max_of_arr_bp: int = Field(gt=0)
+    spread_bp: int = Field(ge=0)
+    term_months: int = Field(gt=0)
+    covenant_profit_months: int = Field(gt=0)
+    covenant_cash_bp: int = Field(ge=0)
+
+
+class BreachBalance(_Frozen):
+    waiver_fee_bp: int = Field(ge=0, le=BP_DENOMINATOR)
+    rate_up_bp: int = Field(ge=0)
+    repay_bp: int = Field(ge=0, le=BP_DENOMINATOR)
+    cure_months: int = Field(ge=0)
+    call_window_months: int = Field(ge=0)
+
+
+class DebtBalance(_Frozen):
+    take_energy: int = Field(ge=0)
+    repay_energy: int = Field(ge=0)
+    venture: VentureDebtBalance
+    bank: BankLoanBalance
+    min_cents: int = Field(gt=0)
+    breach: BreachBalance
 
 
 class OfficeBalance(_Frozen):
@@ -959,6 +1051,8 @@ class Balance(_Frozen):
     events: EventsBalance  # M6 (formulas.md 16)
     relationships: RelationshipsBalance  # M6 (formulas.md 16.7)
     exec_seats: ExecSeatsBalance  # M8 (formulas.md 18.3)
+    macro: MacroBalance  # M10 (formulas.md 20.1)
+    debt: DebtBalance  # M10 (formulas.md 20.3)
     office: OfficeBalance  # M9 (formulas.md 19.2)
     markets: RegionalMarketsBalance  # M9 (formulas.md 19.4-19.5)
     geo: GeoBalance  # M9 (formulas.md 19.1, 19.3, 19.6)
@@ -1341,6 +1435,7 @@ class InvestorFirm(_Frozen):
     bias: float = Field(gt=0)
     response: float = Field(ge=0, le=1)
     patience: float
+    from_year: int | None = None  # M10 (20.2): the first year it answers; None = always
 
     @model_validator(mode="after")
     def _check(self) -> InvestorFirm:
@@ -1349,18 +1444,81 @@ class InvestorFirm(_Frozen):
         return self
 
 
+type Instrument = Literal["venture_debt", "bank_loan"]
+INSTRUMENTS: tuple[Instrument, ...] = ("venture_debt", "bank_loan")
+
+
+class Lender(_Frozen):
+    """A lender in investors.yaml (M10, formulas.md 20.3). The first lender offering the
+    instrument in the year signs; nothing is drawn."""
+
+    key: str = Field(pattern=_KEY)
+    name: str = Field(min_length=1, max_length=80)  # tunable-exempt: name column width
+    instrument: Instrument
+    from_year: int | None = None
+    until_year: int | None = None
+
+    def offers(self, instrument: str, year: int) -> bool:
+        return (
+            self.instrument == instrument
+            and (self.from_year is None or year >= self.from_year)
+            and (self.until_year is None or year <= self.until_year)
+        )
+
+
 class InvestorsFile(_Frozen):
     firms: tuple[InvestorFirm, ...] = Field(min_length=1)
+    lenders: tuple[Lender, ...] = ()  # M10
 
 
-class ClimateFile(_Frozen):
-    """Funding climate by calendar year (formulas.md 14.3)."""
+MONTHLY = 12  # tunable-exempt: months in a year, for the monthly history lists
 
-    default: float = Field(gt=0)
-    years: dict[int, float]
 
-    def of(self, year: int) -> float:
-        return self.years.get(year, self.default)
+class MacroHistory(_Frozen):
+    """macro_history.yaml (M10, formulas.md 20.1): the base rate and consumer confidence by
+    month and the venture climate by year, from `first_year` through the last year listed.
+    The AI compute index's history is compute_index.yaml (18.6)."""
+
+    first_year: int
+    confidence_base_years: tuple[int, int]
+    climate: dict[int, float]
+    base_rate: dict[int, tuple[float, ...]]
+    confidence: dict[int, tuple[float, ...]]
+
+    @model_validator(mode="after")
+    def _check(self) -> MacroHistory:
+        years = list(range(self.first_year, self.last_year + 1))
+        for name, table in (
+            ("climate", self.climate),
+            ("base_rate", self.base_rate),
+            ("confidence", self.confidence),
+        ):
+            if sorted(table) != years:
+                raise ValueError(f"{name} must list every year {years[0]}-{years[-1]}")
+        for name, monthly in (("base_rate", self.base_rate), ("confidence", self.confidence)):
+            if any(len(v) != MONTHLY for v in monthly.values()):
+                raise ValueError(f"{name} needs 12 monthly values a year")
+        if any(v <= 0 for v in self.climate.values()) or any(
+            x <= 0 for v in self.confidence.values() for x in v
+        ):
+            raise ValueError("climate and confidence must be positive")
+        if any(x < 0 for v in self.base_rate.values() for x in v):
+            raise ValueError("base_rate must not be negative")
+        lo, hi = self.confidence_base_years
+        if not self.first_year <= lo <= hi <= self.last_year:
+            raise ValueError("confidence_base_years must lie inside the history")
+        return self
+
+    @property
+    def last_year(self) -> int:
+        return max(self.climate)
+
+    @property
+    def confidence_base(self) -> float:
+        """The raw confidence average over the base years (rescaled to 100)."""
+        lo, hi = self.confidence_base_years
+        values = [x for y in range(lo, hi + 1) for x in self.confidence[y]]
+        return sum(values) / len(values)
 
 
 class ComputeIndexFile(_Frozen):
@@ -1464,6 +1622,11 @@ INBOX_TEMPLATE_KEYS = (
     "exec_appointed",
     "exec_removed",
     "exec_left",
+    # M10 (formulas.md 20.3)
+    "loan_signed",
+    "loan_repaid",
+    "covenant_breached",
+    "loan_called",
     "office_leased",  # M9
     "office_closed",
     "region_launched",
@@ -1494,7 +1657,8 @@ class GameData(_Frozen):
     categories: tuple[CategoryDef, ...]
     incumbents: tuple[IncumbentCompany, ...]
     investors: tuple[InvestorFirm, ...] = ()  # M4
-    climate: ClimateFile = ClimateFile(default=1.0, years={})  # M4
+    lenders: tuple[Lender, ...] = ()  # M10 (20.3)
+    macro_history: MacroHistory | None = None  # M10 (20.1); replaces M4's climate.yaml
     startup_names: tuple[str, ...] = ()  # M5: rival startup names (names.yaml companies)
     event_templates: tuple[EventTemplate, ...] = ()  # M6: events/*.yaml (formulas.md 16.4)
     compute_index: ComputeIndexFile = ComputeIndexFile(

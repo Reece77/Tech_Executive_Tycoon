@@ -8,11 +8,13 @@ from dataclasses import dataclass, field, replace
 from typing import Any
 
 from tst.sim.events.models import GameEvent, QueuedEvent, Storyline
+from tst.sim.finance.macro import MacroMonth
 from tst.sim.finance.models import (
     BoardSeat,
     CapEntry,
     FundingRound,
     GameOutcome,
+    Loan,
     OptionGrant,
     Safe,
     TermSheet,
@@ -69,6 +71,10 @@ class CompanyState:
     is_startup: bool = False
     failed_turn: int | None = None  # a rival that went bankrupt (15.1, 14.7)
     last_raise_turn: int | None = None  # a startup's last funding attempt (15.4)
+    # M10 (20.3): the player's operating result and burn at the last month ends, oldest
+    # first, for covenants and the bank loan's gate.
+    op_history: tuple[int, ...] = ()
+    burn_history: tuple[int, ...] = ()
     hq_city: str | None = None  # cities.yaml key; None = geo.default_hq_city (M9, 19.1)
 
     @property
@@ -129,6 +135,8 @@ class GameState:
     storylines: tuple[Storyline, ...] = ()  # active storylines, by id (M6, 16.6)
     queued: tuple[QueuedEvent, ...] = ()  # follow-ups not yet shown, by id (M6, 16.3)
     exec_seats: tuple[ExecSeat, ...] = ()  # seats ever filled, by (company_id, seat) (M8, 18.3)
+    macro: MacroMonth | None = None  # the indicators phase 1 last set (M10, 20.1)
+    loans: tuple[Loan, ...] = ()  # every loan, sorted by id (M10, 20.3)
     # M9 (19.2, 19.5): open offices by id; other regions' markets by (category, segment,
     # region); products' launches there by (product_id, region); their segments there by
     # (product_id, region, segment). The home region stays in markets and product_segments.
@@ -307,6 +315,12 @@ class GameState:
             if t.id == sheet_id:
                 return t
         return None
+
+    def company_loans(self, company_id: int) -> tuple[Loan, ...]:
+        return tuple(x for x in self.loans if x.company_id == company_id)
+
+    def loan(self, loan_id: int) -> Loan | None:
+        return next((x for x in self.loans if x.id == loan_id), None)
 
     def board(self, company_id: int) -> tuple[BoardSeat, ...]:
         return tuple(s for s in self.seats if s.company_id == company_id)
@@ -531,6 +545,10 @@ def with_segment_share(state: GameState, share: SegmentShare) -> GameState:
         state,
         segment_shares=_upsert(state.segment_shares, share, lambda s: (s.product_id, s.segment)),
     )
+
+
+def with_loan(state: GameState, loan: Loan) -> GameState:
+    return replace(state, loans=_upsert(state.loans, loan, lambda x: x.id))
 
 
 def with_seat(state: GameState, seat: BoardSeat) -> GameState:

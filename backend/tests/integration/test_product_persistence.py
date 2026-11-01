@@ -114,7 +114,7 @@ def test_upgrade_from_0007_adds_the_market_at_the_saves_turn(
     with open_session(path) as session:
         state = load_state(session)
         players = session.scalars(select(CompanyRow).where(CompanyRow.is_player)).all()
-    # M9's six regional incumbents come with new games only (migration 0022_geo)
+    # M9's six regional incumbents come with new games only (migration 0023_geo)
     assert len(players) == 1 and len(state.companies) == INCUMBENTS - 6 + 1
     assert state.turn == 3
     smb = state.market("b2b_saas", "smb")
