@@ -25,8 +25,8 @@ from tst.sim.rng import RngFactory
 if TYPE_CHECKING:  # state.py imports MacroMonth from here
     from tst.sim.state import GameState
 
-RATE, CLIMATE, CONFIDENCE, AI = 0, 1, 2, 3  # stream keys (indicator_index,)
-DOWNTURN_KEY: Final = 99
+RATE, CLIMATE, CONFIDENCE, AI = 0, 1, 2, 3  # tunable-exempt: stream keys (indicator_index,)
+DOWNTURN_KEY: Final = 99  # tunable-exempt: stream key for downturns (ADR-0013)
 CONFIDENCE_SCALE: Final = 100.0  # tunable-exempt: the index's definition (100 = base years)
 FIRST_MONTH = 1  # tunable-exempt: January, when the AI index's yearly change steps
 
@@ -140,13 +140,13 @@ def draws(rng: RngFactory, turn: int) -> tuple[tuple[float, float, float, float]
     """This month's draws on stream `macro`: one standard normal per indicator, then the
     downturn uniform."""
 
-    def normal(key: int) -> float:
-        gen: np.random.Generator = rng.stream(turn, "macro", key)
-        return float(gen.standard_normal())
+    def gen(key: int) -> np.random.Generator:
+        return rng.stream(turn, "macro", key)
 
-    z = (normal(RATE), normal(CLIMATE), normal(CONFIDENCE), normal(AI))
-    u = float(rng.stream(turn, "macro", DOWNTURN_KEY).random())
-    return z, u
+    rate, climate, confidence, ai = (
+        float(gen(k).standard_normal()) for k in (RATE, CLIMATE, CONFIDENCE, AI)
+    )
+    return (rate, climate, confidence, ai), float(gen(DOWNTURN_KEY).random())
 
 
 def month_for(

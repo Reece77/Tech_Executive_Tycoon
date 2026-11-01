@@ -87,6 +87,11 @@ INBOX_CATEGORY: dict[str, str] = {
     "exec_appointed": "people",
     "exec_removed": "people",
     "exec_left": "people",
+    # M10: loans, breaches and a called loan (rounds C and D are round_closed)
+    "loan_signed": "finance",
+    "loan_repaid": "finance",
+    "covenant_breached": "finance",
+    "loan_called": "finance",
 }
 PRODUCT_KINDS = frozenset(
     {
@@ -102,7 +107,15 @@ PRODUCT_KINDS = frozenset(
     }
 )
 FINANCE_KINDS = frozenset(
-    {"raise_safe", "start_round", "accept_term_sheet", "accept_bridge", "name_nominee"}
+    {
+        "raise_safe",
+        "start_round",
+        "accept_term_sheet",
+        "accept_bridge",
+        "name_nominee",
+        "take_loan",  # M10
+        "repay_loan",
+    }
 )
 END_REASONS = {
     "resigned": "resigned",
@@ -224,6 +237,9 @@ def _describe(
         "accept_term_sheet": "Accepted a term sheet",
         "accept_bridge": "Accepted a bridge from your investors",
         "name_nominee": f"Named {who} to the board",
+        "take_loan": f"Signed {str(p.get('instrument', 'a loan')).replace('_', ' ')} for "
+        f"{format_money(int(p.get('amount_cents', 0)))}",
+        "repay_loan": "Repaid a loan early",
     }
     text = texts.get(kind, kind.replace("_", " ").capitalize())
     category = (
