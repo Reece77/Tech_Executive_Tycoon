@@ -96,9 +96,41 @@ Engineering and design gaps the spec left open (also in `docs/formulas.md` §19.
 - **19.8 target 2's measure** follows balance-targets.md's rule that a removed founder or a bankrupt company scores 0; the last-month ARR ratio is printed beside it.
 - **`rival_replay` test**: seed 7 no longer brings a rival approach in 24 months (rivals spend some months entering regions); seed 8 does, with a startup and the player's own poach.
 
+## Guards before and after M9 (2026-11-01)
+
+| Guard | Before M9 (main, M10 merged) | After M9 (combined) | Result |
+| --- | --- | --- | --- |
+| T1 do-nothing fails | 10/10 | 10/10 | pass |
+| T2 wins per strategy | steady 10 | steady 8, bootstrap-frugal 2 | recorded xfail (stays) |
+| T3 succeeds: bootstrap-frugal / steady / blitzscale | 7 / 10 / 4 of 10 | 8 / 10 / 5 of 10 | pass (blitzscale's xfail passes) |
+| T4a-c seed, Series A, Series B | 4 and 1; 29 and 19; 37 on 8/10 | 4 and 1; 28.5 and 18; 36 on 9/10 | pass |
+| T5 bankruptcy: steady easy/std/hard; blitzscale; bootstrap-frugal | 0/0/0%; 20%; 30% | 0/0/0%; 10%; 20% | pass |
+| T6 tenure; leaving a year; first-year leavers | 21 months; 12%; 11% | 23 months; 11%; 10% | pass |
+| T7 incumbents in business | 17/17 | 23/23 | pass |
+| **T7 rival startups alive 5 years on (20-60%)** | 58% of 91 | **62% of 94** | **fail** |
+| S2 worker-minutes, run alone | 12.4 | 18.8 | pass |
+| M8 target 2 (seats) | 1.097 | 1.005 | recorded xfail (stays) |
+| M8 target 3 (support) | 1.069 | 1.113 | recorded xfail, now passes |
+| M8 target 5 (blitz Fintech) | pass | 1.317 | pass |
+| **§20.5 target 2 (debt saves dilution, needs +5)** | +5.2 points | **+4.8 points** (bankruptcy +0) | **fail** |
+| §20.5 target 3 | 90% | 90% | recorded xfail (stays) |
+| §20.5 target 4; target 5 | 41/50, sd 0.171; 8/10 | 41/50, sd 0.171; 9/10 | pass |
+| Ten-year run through the API (v1 acceptance) | pass | pass | pass |
+| Funding diagnostics (a), (b), (c) | pass | pass | pass |
+| M5 poaching felt, not crushing | pass | pass | pass |
+| **M5 living market: share ratios; launches per category (needs 1.0)** | 0.56-1.65; 1.0 | 0.57-1.65; **0.925** | **fail** (ratios pass) |
+| **Potential spotting gap (needs 3.0 PA points)** | 3.04 | **2.83** | **fail** |
+| Executive at the default salary stays | xfail | xfail | recorded xfail (stays) |
+| §19.8 target 2 (expansion, needs 1.4) | - | 7.014 (last-month ARR 3.44x) | pass |
+| §19.8 target 3 | - | $119,331 against $304,020, 60.7% less; split x0.95 | pass |
+| §19.8 target 4 (0.8-1.2) | - | 0.850 | pass |
+| §19.8 target 5 | - | 10/10 seeds | pass |
+
+
+M9 keys tuned to get here: `geo.pay_level` 0.876 (Reece); `geo.region_entry.unserved` 0.4 → 0.8 and `.span` 0.4 → 0.2 (rivals entered the served home market and squeezed v1 incumbents: Salesforce's SMB share fell to 0.47 of its start); `geo.region_entry.cooldown_turns` 12; and a product that sells only abroad comes home through `enter_region` only, not v1's per-segment `enter_segment`. **Not merged:** four guards that passed on main still fail after tuning M9 keys (bold above), so per Reece's instruction they are reported, not xfailed. All four are close to their thresholds; plausible M9 causes: startups founded abroad face less competition (T7, launches), regional revenue funds incumbents' pools (§20.5 target 2 via rivals), and the talent bonus raises candidates' CA and so PA (potential gap; mean hire PA 141 against 133).
+
 ## Follow-ups
 
-- **Guards that moved on the combined code (reported, not tuned; values in balance-targets.md, M9):** T5 bootstrap-frugal bankruptcy 60% (band 20-50%; 30% on M10 alone, 50% on M9 alone); M8 target 5 has no comparable seed (standard blitzscale ends on 10/10); §20.5 target 2 +4.9 founder points (needs +5; +5.2 on M10 alone). M8 target 3 (support) now passes at 1.102 and M8 target 2 (seats) at 1.192. The main driver is hiring cost: candidates ask their work city's pay, so v1's ~12% discount from cheaper regions is gone. A decision for Reece: record these for M15, or have candidates from abroad ask less (and feel underpaid), as v1 had.
 - **M15 (v2 balance):** expansion is very strong. Blitzscale that launches in Europe and East Asia ends turn 120 at a median ~$220M ARR and keeps its founder on 8/10 seeds, against home-only blitzscale whose founder is removed or bankrupt on 10/10 (last-month ARR ratio 4.3). T3 blitzscale (home only) fell from 2/10 to 0/10 (still its recorded xfail). Levers: `markets.foreign_awareness`, regional sizes, localization cost, `markets.presence_people`.
 - The "pay where you work" rule raises v1 hiring costs ~20%; Reece may want candidates from abroad who ask less than the search city's rate (and then feel underpaid), as v1 had.
 - Rival offices and regional pools; rivals' localization time.

@@ -149,24 +149,33 @@ Consumer confidence now scales consumer and SMB adoption (formulas.md 20.1); the
 
 ### M9 (2026-11-01, on the combined M9 and M10 code)
 
-| Target | Value | Result |
-| --- | --- | --- |
-| T1 do-nothing fails | 10/10 | pass |
-| T2 wins per strategy | steady 9, bootstrap-frugal 1 | **fail**, the recorded M7c xfail |
-| T3 succeeds (bootstrap-frugal; steady; blitzscale) | 4/10; 10/10; 0/10 (4/10 on M10 alone, 2/10 on M9 alone) | blitzscale **fail**, its recorded xfail |
-| T4a–c | steady seed 4, A 31; blitzscale seed 1, A 19.5, B 38.5 on 8/10 | pass |
-| T5 bankruptcy | steady 0/0/0%; blitzscale 20%; bootstrap-frugal 60% (50% on M9 alone) | bootstrap-frugal **fail** (band 20-50%), reported, not tuned |
-| T6, T7 | tenure 20 months, 12% a year, 10% in the first year; 23/23 incumbents, 54% of startups | pass |
-| S2 | 14.7 worker-minutes run alone | pass |
-| M8 target 2 (seats) | 1.192 | pass |
-| M8 target 3 (support) | 1.102 | pass |
-| M8 target 5 (blitz Fintech) | no seed where both arms reach turn 120: the standard blitzscale's founder is removed or bankrupt on 10/10 | **fail**, reported, not tuned |
-| 20.5 target 2 (debt saves dilution) | +4.9 founder points (+5.2 on M10 alone), bankruptcy +0 | **fail** by 0.1 point, reported (brief: an M10 target that moves is reported, not tuned) |
-| 20.5 target 3 | 100% | **fail**, its recorded xfail |
-| 20.5 targets 4, 5 | 41/50, sd 0.171; Series C on 8/10 | pass |
-| 19.8 target 2 (expansion) | inf: home-only blitzscale ends on 10/10 seeds (scored 0, as the outcome rule); median last-month ARR abroad / home 4.16 | pass |
-| 19.8 target 3 (Bangalore team) | $129,375 against $337,500 a month, 61.7% less; split team x0.95 | pass |
-| 19.8 target 4 (cities differ) | San Francisco - Austin role-skill score 0.850 | pass |
-| 19.8 target 5 (rivals spread) | 10/10 seeds with all 42 region-category pairs covered | pass |
+| Guard | Before M9 (main, M10 merged) | After M9 (combined) | Result |
+| --- | --- | --- | --- |
+| T1 do-nothing fails | 10/10 | 10/10 | pass |
+| T2 wins per strategy | steady 10 | steady 8, bootstrap-frugal 2 | recorded xfail (stays) |
+| T3 succeeds: bootstrap-frugal / steady / blitzscale | 7 / 10 / 4 of 10 | 8 / 10 / 5 of 10 | pass (blitzscale's xfail passes) |
+| T4a-c seed, Series A, Series B | 4 and 1; 29 and 19; 37 on 8/10 | 4 and 1; 28.5 and 18; 36 on 9/10 | pass |
+| T5 bankruptcy: steady easy/std/hard; blitzscale; bootstrap-frugal | 0/0/0%; 20%; 30% | 0/0/0%; 10%; 20% | pass |
+| T6 tenure; leaving a year; first-year leavers | 21 months; 12%; 11% | 23 months; 11%; 10% | pass |
+| T7 incumbents in business | 17/17 | 23/23 | pass |
+| **T7 rival startups alive 5 years on (20-60%)** | 58% of 91 | **62% of 94** | **fail** |
+| S2 worker-minutes, run alone | 12.4 | 18.8 | pass |
+| M8 target 2 (seats) | 1.097 | 1.005 | recorded xfail (stays) |
+| M8 target 3 (support) | 1.069 | 1.113 | recorded xfail, now passes |
+| M8 target 5 (blitz Fintech) | pass | 1.317 | pass |
+| **§20.5 target 2 (debt saves dilution, needs +5)** | +5.2 points | **+4.8 points** (bankruptcy +0) | **fail** |
+| §20.5 target 3 | 90% | 90% | recorded xfail (stays) |
+| §20.5 target 4; target 5 | 41/50, sd 0.171; 8/10 | 41/50, sd 0.171; 9/10 | pass |
+| Ten-year run through the API (v1 acceptance) | pass | pass | pass |
+| Funding diagnostics (a), (b), (c) | pass | pass | pass |
+| M5 poaching felt, not crushing | pass | pass | pass |
+| **M5 living market: share ratios; launches per category (needs 1.0)** | 0.56-1.65; 1.0 | 0.57-1.65; **0.925** | **fail** (ratios pass) |
+| **Potential spotting gap (needs 3.0 PA points)** | 3.04 | **2.83** | **fail** |
+| Executive at the default salary stays | xfail | xfail | recorded xfail (stays) |
+| §19.8 target 2 (expansion, needs 1.4) | - | 7.014 (last-month ARR 3.44x) | pass |
+| §19.8 target 3 | - | $119,331 against $304,020, 60.7% less; split x0.95 | pass |
+| §19.8 target 4 (0.8-1.2) | - | 0.850 | pass |
+| §19.8 target 5 | - | 10/10 seeds | pass |
 
-What moved the v1 and M8 numbers: hires ask and are rated at their work city's rate (v1 hired 45% of candidates from cheaper regions at their region's pay into San Francisco, about 12% cheaper), San Francisco's talent bonus raises CA and asks, most rival startups are founded abroad, and rivals spend some months entering regions. Experiments on blitzscale seeds 1, 4 and 7 with no relocation fee, no talent bonus, no rival region entry, or v1's pay discount restored each still lost the founder on 2 or 3 of 3 seeds: blitzscale's outcome swings with any change to the draws, as M8 recorded.
+
+M9 keys tuned to get here: `geo.pay_level` 0.876 (Reece); `geo.region_entry.unserved` 0.4 → 0.8 and `.span` 0.4 → 0.2 (rivals entered the served home market and squeezed v1 incumbents: Salesforce's SMB share fell to 0.47 of its start); `geo.region_entry.cooldown_turns` 12; and a product that sells only abroad comes home through `enter_region` only, not v1's per-segment `enter_segment`. **Not merged:** four guards that passed on main still fail after tuning M9 keys (bold above), so per Reece's instruction they are reported, not xfailed. All four are close to their thresholds; plausible M9 causes: startups founded abroad face less competition (T7, launches), regional revenue funds incumbents' pools (§20.5 target 2 via rivals), and the talent bonus raises candidates' CA and so PA (potential gap; mean hire PA 141 against 133).
