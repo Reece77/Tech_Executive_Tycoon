@@ -22,7 +22,7 @@ from statistics import median
 from typing import Final
 
 from tst.balance.game import PLAYER, Game, start_game
-from tst.balance.m8 import ArmResult, ratio
+from tst.balance.m8 import ArmResult
 from tst.balance.report import SCENARIO, _loaded
 from tst.balance.strategies import blitzscale, closed_series, do_nothing
 from tst.sim.actions import AssignUnit, CreateProduct, CreateUnit
@@ -82,14 +82,28 @@ def expansion_arm(seed: int) -> ArmResult:
                 expand(game)
             game.turn()
     arr = [g.snapshots[-1].arr_cents if not g.state.ended else 0 for g in (abroad, home)]
+    LAST_ARR[seed] = (abroad.snapshots[-1].arr_cents, home.snapshots[-1].arr_cents)
     return ArmResult(seed, None, arr[0], arr[1])
 
 
-def run_expansion(seeds: tuple[int, ...] = SEEDS, jobs: int = 1) -> list[ArmResult]:
+# Each arm's ARR in its last month, ended or not (printed beside the target: blitzscale's
+# founder is often removed or bankrupt before turn 120).
+LAST_ARR: dict[int, tuple[int, int]] = {}
+
+
+def expansion_arm_last(seed: int) -> tuple[ArmResult, tuple[int, int]]:
+    result = expansion_arm(seed)
+    return result, LAST_ARR[seed]
+
+
+def run_expansion(
+    seeds: tuple[int, ...] = SEEDS, jobs: int = 1
+) -> list[tuple[ArmResult, tuple[int, int]]]:
+    """Each seed's arms and their last-month ARR (abroad, home)."""
     if jobs <= 1:
-        return [expansion_arm(s) for s in seeds]
+        return [expansion_arm_last(s) for s in seeds]
     with ProcessPoolExecutor(jobs) as pool:
-        return list(pool.map(expansion_arm, seeds))
+        return list(pool.map(expansion_arm_last, seeds))
 
 
 # --- Target 3 ---------------------------------------------------------------------------------
@@ -122,7 +136,13 @@ def _team_in(game: Game, city: str, first_id: int) -> GameState:
         gen = RngFactory(pid).stream(0, "misc", pid)
         person = replace(
             generate_person(
-                gen, data, balance, 0, data.role(TEAM_ROLE), TEAM_LEVEL, "north_america",
+                gen,
+                data,
+                balance,
+                0,
+                data.role(TEAM_ROLE),
+                TEAM_LEVEL,
+                "north_america",
                 person_id=pid,
             ),
             city=city,
@@ -217,7 +237,9 @@ def coverage(state: GameState, game: Game) -> Spread:
                 have.add((launch.region, product.category))
     wanted = [(r, c.key) for r in data.region_keys for c in data.categories]
     missing = tuple(w for w in wanted if w not in have)
-    return Spread(game.state.save_meta.master_seed, len(wanted) - len(missing), len(wanted), missing)
+    return Spread(
+        game.state.save_meta.master_seed, len(wanted) - len(missing), len(wanted), missing
+    )
 
 
 def spread_arm(seed: int) -> Spread:
@@ -238,7 +260,13 @@ def run_spread(seeds: tuple[int, ...] = SEEDS, jobs: int = 1) -> list[Spread]:
 
 
 def expansion_ratio(results: list[ArmResult]) -> float:
-    return ratio(results)
+    """Median turn-120 ARR abroad over median at home, a bankrupt company or a removed
+    founder counting 0 (docs/balance-targets.md's outcome rule); inf when only home is 0."""
+    a = median(r.arr_a for r in results)
+    b = median(r.arr_b for r in results)
+    if b == 0:
+        return float("inf") if a > 0 else 0.0
+    return a / b
 
 
 def median_arr(results: list[ArmResult]) -> tuple[float, float]:

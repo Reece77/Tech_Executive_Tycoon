@@ -78,8 +78,30 @@ On a stage-3 save, open an engineering office in Bangalore or Berlin and a sales
 
 ## Decisions made
 
-_(Agent fills in.)_
+Engineering and design gaps the spec left open (also in `docs/formulas.md` §19.10):
+
+- **Storage.** Other regions' markets, launches and segments are new tables (`regional_market`, `product_region`, `regional_segment`); the home region keeps v1's rows and `market` keys, so its code path is v1's. M9's other values live in side tables (`company_hq`, `person_city`, `unit_office`, `search_city`, `candidate_relocation`, `office`), as M8's did, because migration 0013 loads the older tables through the current models.
+- **Existing saves** (migration `0022_geo`): HQ San Francisco, home cities from regions, every other region's market grown to the save's turn, and v1 incumbents' Europe presence. The six regional incumbents come with new games only (M8's precedent for its incumbents).
+- **Africa has no hub** in 19.1's table: its people's home city is London (`cities.yaml` `home_city_region`). Africa is still a market (reached from Europe's sellers at 50%, foreign awareness without presence).
+- **`talent_weight`** per city (not in the spec) drives relocators' and "anywhere" candidates' cities; values roughly follow each hub's tech workforce.
+- **Pay where you work.** A candidate's ask uses the multiplier of the city they would work in (the search's; their own for "anywhere"), so hires are not underpaid against their market rate on day one. With 45% of v1's candidates coming from cheaper regions, this removes v1's hidden ~12% hiring discount for a San Francisco company; with the talent bonus raising CA (and asks), hires cost ~20% more. **So sub-task 2's "golden seeds unchanged" could not hold**: the regional incumbents shift product and company ids, and pay moves with the work city. Both are recorded with the golden regeneration.
+- **The talent bonus** goes on every role skill after the CA target is drawn; target 4's "role-skill score" is CA / 10. All of a search's candidates get the search city's bonus.
+- **People live where they work**: after every player action and phase 1's hires, office workers' home city becomes their office's city (a relocating hire pays `hiring.relocation_cents`; moving a unit to another office is free). Closing an office outside the HQ city makes its units remote, working from that city.
+- **Office inheritance**: a unit's office is its own, else its parent's, up to flexible HQ space; the company root works in flexible space. Setting a unit's office sets its policy to office. Unit office changes cost `office.assign_energy` (2), as assigning a unit to a product.
+- **Sellers by region at home too**: sales capacity in every region (home included) counts the player's sellers working there plus half its neighbour's. A company whose sellers all work in North America has v1's capacity. Rivals sell everywhere with full awareness (they have no offices).
+- **Rivals' `enter_region`**: candidates come after v1's in the `rivals` draw order (v1's draws unchanged); weighted as `enter_segment`; rivals enter at once, without localization, at `p_ref x index x` their price factor. **A rival enters at most one region a year** (`geo.region_entry.cooldown_turns`, an M9 key): without it, region entries were a third of all rival actions and crowded out price cuts, pushes and poaching. Startups may enter regions too (including home, when founded abroad).
+- **Regional incumbents' shares** (M3a steady-state method, served-share drift under 1.4 points over 24 months): SAP mid-market 1,400 bp, enterprise 2,100; Kaspersky SMB 1,900, mid-market 2,200; Tencent, Alibaba, Baidu and Infosys keep the table's shares (no rival in their region at the start).
+- **Regional history**: `product_month` stays home-only; the Regions panel shows current customers and MRR by region, and the inbox notes launches and go-lives (`region_launched`, `region_live`), which History lists.
+- **Offices screen** is `/game/:save/org/offices`, linked from Org; moving a unit is a control on that screen ("Move a unit … To … Move").
+- **19.8 target 2's measure** follows balance-targets.md's rule that a removed founder or a bankrupt company scores 0; the last-month ARR ratio is printed beside it.
+- **`rival_replay` test**: seed 7 no longer brings a rival approach in 24 months (rivals spend some months entering regions); seed 8 does, with a startup and the player's own poach.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **M15 (v2 balance):** expansion is very strong. Blitzscale that launches in Europe and East Asia ends turn 120 at a median ~$220M ARR and keeps its founder on 8/10 seeds, against home-only blitzscale whose founder is removed or bankrupt on 10/10 (last-month ARR ratio 4.3). T3 blitzscale (home only) fell from 2/10 to 0/10 (still its recorded xfail). Levers: `markets.foreign_awareness`, regional sizes, localization cost, `markets.presence_people`.
+- The "pay where you work" rule raises v1 hiring costs ~20%; Reece may want candidates from abroad who ask less than the search city's rate (and then feel underpaid), as v1 had.
+- Rival offices and regional pools; rivals' localization time.
+- A segment added at home after a regional launch is not added abroad automatically.
+- Per-region product history (`product_month` by region) for charts.
+- Hiring plans could carry a city (they use the plan unit's office city today).
+

@@ -31,9 +31,19 @@ def main() -> int:
     failed = False
     seeds = tuple(args.seeds)
     if "expansion" in args.arms:
-        results = m9.run_expansion(seeds, args.jobs)
-        for r in results:
-            print(f"  expansion seed {r.seed}: abroad {format_money(r.arr_a)}, home {format_money(r.arr_b)}")
+        runs = m9.run_expansion(seeds, args.jobs)
+        results = [r for r, _ in runs]
+        for r, (last_a, last_b) in runs:
+            print(
+                f"  expansion seed {r.seed}: turn 120 abroad {format_money(r.arr_a)}, home "
+                f"{format_money(r.arr_b)}; last month abroad {format_money(last_a)}, home "
+                f"{format_money(last_b)}"
+            )
+        lasts = [x for _, x in runs]
+        from statistics import median
+
+        last_ratio = median(a for a, _ in lasts) / max(1, median(b for _, b in lasts))
+        print(f"  last-month ARR, median abroad / median home: {last_ratio:.3f}")
         value = m9.expansion_ratio(results)
         ok = value >= EXPANSION_NEEDED
         failed |= not ok

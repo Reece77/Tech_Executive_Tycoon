@@ -19,8 +19,14 @@ from tst.db.mappers import entry_to_row
 from tst.db.repository import create_save, load_state, open_session, run_action
 from tst.db.state_io import sync_state
 from tst.loader import LoadedData, load_all
-from tst.sim.actions import AssignUnit, CreateProduct, CreateUnit, LaunchProduct, MovePerson
-from tst.sim.actions import SetPrice
+from tst.sim.actions import (
+    AssignUnit,
+    CreateProduct,
+    CreateUnit,
+    LaunchProduct,
+    MovePerson,
+    SetPrice,
+)
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.state import with_person_state, with_product
 
