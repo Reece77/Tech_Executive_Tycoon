@@ -2,26 +2,43 @@
 
 from __future__ import annotations
 
+import statistics
 from dataclasses import replace
 
 import pytest
 
 from tests.helpers import fresh_game, make_person, with_employee
 from tst.loader import LoadedData
-from tst.sim.actions import Action, ActionResult, CreateUnit, MovePerson, apply_action
+from tst.sim.actions import (
+    Action,
+    ActionResult,
+    CreateUnit,
+    MovePerson,
+    OpenSearch,
+    apply_action,
+)
 from tst.sim.actions.geo import CloseOffice, LeaseOffice, SetUnitOffice
 from tst.sim.data_models import DEFAULT_DIFFICULTY
-from tst.sim.errors import GeoRuleError, InsufficientCashError, UnknownCityError
+from tst.sim.errors import (
+    GeoRuleError,
+    InsufficientCashError,
+    InvalidActionError,
+    UnknownCityError,
+)
 from tst.sim.geo.cities import home_city, home_region, hq_city, work_city
+from tst.sim.geo.models import ANYWHERE
 from tst.sim.geo.offices import crowded_people, employee_office_cents
-from tst.sim.hiring.phases import monthly_costs
-from tst.sim.ledger import CASH, RENT
+from tst.sim.hiring.phases import _relocate, monthly_costs
+from tst.sim.ledger import CASH, RECRUITING, RENT
 from tst.sim.org.morale import market_mid_for, morale_terms
 from tst.sim.org.rules import org_view
 from tst.sim.people.founder import FounderSpec
+from tst.sim.people.generator import draw_city, generate_pool
+from tst.sim.people.models import Employment, Person, current_ability
 from tst.sim.rng import RngFactory
+from tst.sim.scale import ABILITY_PER_ATTR
 from tst.sim.setup import new_game
-from tst.sim.state import GameState, with_company
+from tst.sim.state import GameState, with_company, with_employment, with_person
 
 BAND_MID = 9_000_000  # software engineer, mid level
 
@@ -241,3 +258,91 @@ def test_a_crowded_office_costs_four_morale(loaded: LoadedData) -> None:
     assert crowded_people(crowded, 1) == {2, 3, 4}
     terms = morale_terms(crowded, view, employment, b, data, 0, 0)
     assert terms.crowded == b.office.crowded_morale == -4
+
+
+# --- Hiring by city (19.3) --------------------------------------------------------------------
+
+
+def _batch(loaded: LoadedData, city: str, seed: int, count: int = 8) -> tuple[Person, ...]:
+    gen = RngFactory(seed).stream(0, "misc", seed)
+    levels = ["mid"] * count
+    role = loaded.game_data.role("software_engineer")
+    return generate_pool(
+        gen, loaded.game_data, loaded.balance, 0, role, levels, first_person_id=10, city=city
+    )
+
+
+def role_score(person: Person, loaded: LoadedData) -> float:
+    """The CA-weighted mean of the role's skills, in attribute points (19.8 target 4)."""
+    return current_ability(person, loaded.game_data) / ABILITY_PER_ATTR
+
+
+def test_draw_city(loaded: LoadedData) -> None:
+    b, data = loaded.balance, loaded.game_data
+    assert draw_city(0.0, "bangalore", b, data) == "bangalore"
+    assert draw_city(0.849, "bangalore", b, data) == "bangalore"
+    assert draw_city(0.85, "bangalore", b, data) == "san_francisco"  # relocators by weight
+    assert draw_city(0.9999, "bangalore", b, data) == "sydney"
+    assert draw_city(0.0, ANYWHERE, b, data) == "san_francisco"
+
+
+def test_bangalore_search_draws_local_candidates_at_local_pay(loaded: LoadedData) -> None:
+    """Playwright (c) in the sim: about 85% live in Bangalore; everyone asks Bangalore pay."""
+    people = [p for seed in range(1, 41) for p in _batch(loaded, "bangalore", seed)]
+    local = sum(1 for p in people if p.city == "bangalore") / len(people)
+    assert 0.78 < local < 0.92
+    sf = [p for seed in range(1, 41) for p in _batch(loaded, "san_francisco", seed)]
+    mean = statistics.fmean
+    asks_blr = mean(p.salary_expectation_cents or 0 for p in people)
+    asks_sf = mean(p.salary_expectation_cents or 0 for p in sf)
+    assert asks_blr < 0.4 * asks_sf  # x 0.30 against x 1.00, with Bangalore's lower talent
+    assert all(p.region == loaded.game_data.city(p.city or "").region for p in people)
+
+
+def test_cities_differ_target_4(loaded: LoadedData) -> None:
+    """19.8 target 4: over 200 seeded software-engineer searches, San Francisco candidates'
+    mean role-skill score is 0.8-1.2 points above Austin's."""
+    sf = [
+        role_score(p, loaded)
+        for seed in range(200)
+        for p in _batch(loaded, "san_francisco", seed, 4)
+    ]
+    austin = [
+        role_score(p, loaded) for seed in range(200) for p in _batch(loaded, "austin", seed, 4)
+    ]
+    gap = statistics.fmean(sf) - statistics.fmean(austin)
+    print(f"19.8 target 4: San Francisco - Austin role-skill score = {gap:.3f}")
+    assert 0.8 <= gap <= 1.2
+
+
+def test_search_city_defaults_to_the_units_office(loaded: LoadedData) -> None:
+    state = _team_game(loaded)
+    state = _run(loaded, state, LeaseOffice(FOUNDER, "berlin", 25))
+    office = state.company_offices(1)[0]
+    unit = state.active_units(1)[0]
+    state = _run(loaded, state, SetUnitOffice(FOUNDER, unit.id, office.id))
+    state = _run(
+        loaded, state, OpenSearch(FOUNDER, "software_engineer", "job_post", unit_id=unit.id)
+    )
+    state = _run(loaded, state, OpenSearch(FOUNDER, "software_engineer", "network"))
+    first, second = state.searches
+    assert (first.city, second.city) == ("berlin", "san_francisco")
+    with pytest.raises(InvalidActionError):
+        _act(loaded, state, OpenSearch(FOUNDER, "designer", "network", city=ANYWHERE))
+    remote = with_company(state, replace(state.player, work_policy="remote"))
+    out = _act(loaded, remote, OpenSearch(FOUNDER, "designer", "network", city=ANYWHERE))
+    assert out.new_state.searches[-1].city == ANYWHERE
+
+
+def test_a_relocating_hire_pays_the_fee_and_moves(loaded: LoadedData) -> None:
+    b, data = loaded.balance, loaded.game_data
+    state = fresh_game(loaded)
+    person = replace(make_person(loaded, 2), city="toronto")
+    hire = Employment(2, 2, 1, "software_engineer", "mid", 9_000_000, 0, 0, None, "active")
+    state = with_employment(with_person(state, person), hire)
+    state, entries = _relocate(state, hire, b, data)
+    assert state.person(2).city == "san_francisco"
+    (entry,) = entries
+    assert {line.account: line.amount for line in entry.lines}[RECRUITING] == 1_500_000
+    again, none = _relocate(state, hire, b, data)
+    assert none == [] and again == state

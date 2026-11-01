@@ -13,6 +13,7 @@ from dataclasses import replace
 
 from tst.sim.data_models import LEVELS, Balance, GameData
 from tst.sim.finance.options import grant_on_hire, retention
+from tst.sim.geo.cities import home_city, office_city
 from tst.sim.geo.offices import crowded_people, employee_office_cents, rent_lines
 from tst.sim.hiring.formulas import (
     ROLL_RANGE,
@@ -49,7 +50,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
 from tst.sim.org.divisions import division_of_unit, is_scaleup
 from tst.sim.org.morale import morale_terms
-from tst.sim.org.rules import org_view
+from tst.sim.org.rules import is_remote, org_view
 from tst.sim.org.scaleup import delegate_energy_factor, support_morale_terms
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment, Person
@@ -232,6 +233,8 @@ def resolve_offers(
                         lines=(LedgerLine(RECRUITING, fee, d), LedgerLine(CASH, -fee, d)),
                     )
                 )
+        state, moved = _relocate(state, hire, balance, data)
+        entries += moved
         logs.append(
             inbox_item(
                 state.turn,
@@ -250,6 +253,33 @@ def resolve_offers(
 
 
 # --- Phase 6: payroll and operating costs ---------------------------------------------------
+
+
+def _relocate(
+    state: GameState, hire: Employment, balance: Balance, data: GameData
+) -> tuple[GameState, list[LedgerEntry]]:
+    """A player's hire who lives elsewhere moves to the city they will work in, for
+    `hiring.relocation_cents` (6200_recruiting; M9, 19.3). Remote hires stay put."""
+    company = state.company(hire.company_id)
+    fee = balance.hiring.relocation_cents
+    if not company.is_player or not data.cities or is_remote(state, hire):
+        return state, []
+    person = state.person(hire.person_id)
+    city = office_city(state, company.id, hire.unit_id, balance)
+    if home_city(person, data) == city:
+        return state, []
+    state = with_person(state, replace(person, city=city))
+    if not fee:
+        return state, []
+    units = {u.id: u for u in state.active_units(company.id)}
+    d = division_of_unit(units, hire.unit_id)
+    entry = LedgerEntry(
+        turn=state.turn,
+        company_id=company.id,
+        memo=f"Relocation: {_name(person)} to {data.city(city).label}",
+        lines=(LedgerLine(RECRUITING, fee, d), LedgerLine(CASH, -fee, d)),
+    )
+    return state, [entry]
 
 
 def monthly_cost_lines(
@@ -631,7 +661,9 @@ def candidate_batches(
         first, ids = state.next_ids.take_many("person", count)
         state = replace(state, next_ids=ids)
         role = data.role(search.role)
-        people = generate_pool(gen, data, balance, state.turn, role, levels, first_person_id=first)
+        people = generate_pool(
+            gen, data, balance, state.turn, role, levels, first_person_id=first, city=search.city
+        )
         scout = actor.skills["judgment_of_talent"] if actor is not None else 0.0
         for person in people:
             state = with_person(state, person)
