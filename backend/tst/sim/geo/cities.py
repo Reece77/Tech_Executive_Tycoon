@@ -72,3 +72,13 @@ def person_work_city(state: GameState, person: Person, balance: Balance, data: G
 
 def work_region(state: GameState, person: Person, balance: Balance, data: GameData) -> str:
     return data.city(person_work_city(state, person, balance, data)).region
+
+
+def work_multiplier_bp(
+    state: GameState, employment: Employment, balance: Balance, data: GameData
+) -> int:
+    """The salary multiplier of the city someone works in (19.1). Without cities.yaml
+    (test data), their region's, as in v1."""
+    if not data.cities:
+        return data.region(state.person(employment.person_id).region).salary_multiplier_bp
+    return data.city(work_city(state, employment, balance, data)).salary_multiplier_bp

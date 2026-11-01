@@ -248,10 +248,9 @@ def _pay_out(
     else:
         salary, level = new.salary_cents, new.level
     founder = person.is_founder
-    market = 0 if founder else market_mid_for(old, person.region, data.game_data)
-    new_market = (
-        0 if founder else market_mid_for(replace(old, level=level), person.region, data.game_data)
-    )
+    gd, bal = data.game_data, data.balance
+    market = 0 if founder else market_mid_for(before, old, bal, gd)
+    new_market = 0 if founder else market_mid_for(before, replace(old, level=level), bal, gd)
     morale_before = before.person_state(action.person_id).morale
     morale_after = after.person_state(action.person_id).morale
     old_salary = old.salary_cents

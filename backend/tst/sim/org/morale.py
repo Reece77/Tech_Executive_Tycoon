@@ -56,10 +56,16 @@ class MoraleTerms:
         )
 
 
-def market_mid_for(employment: Employment, region: str, data: GameData) -> Cents:
+def market_mid_for(
+    state: GameState, employment: Employment, balance: Balance, data: GameData
+) -> Cents:
+    """The role and level's band mid x the multiplier of the city they work in (2, 19.1)."""
+    from tst.sim.geo.cities import work_multiplier_bp
+
     role = data.role(employment.role)
     return market_mid_cents(
-        role.salary_band_mid_cents[employment.level], data.region(region).salary_multiplier_bp
+        role.salary_band_mid_cents[employment.level],
+        work_multiplier_bp(state, employment, balance, data),
     )
 
 
@@ -81,7 +87,9 @@ def morale_terms(
     role = data.role(employment.role)
     return MoraleTerms(
         base=cfg.target_base,
-        pay=pay_term(employment.salary_cents, market_mid_for(employment, person.region, data), cfg),
+        pay=pay_term(
+            employment.salary_cents, market_mid_for(state, employment, balance, data), cfg
+        ),
         fit=fit_term(
             matching_interests(person, company.mission),
             style_mismatch=person.work_style != role.work_style,

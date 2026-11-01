@@ -402,10 +402,11 @@ def approach(
 
     employment = state.employment_of(person_id)
     assert employment is not None
-    person = state.person(person_id)
+    from tst.sim.geo.cities import work_multiplier_bp
+
     market = market_mid_cents(
         data.role(employment.role).salary_band_mid_cents[employment.level],
-        data.region(person.region).salary_multiplier_bp,
+        work_multiplier_bp(state, employment, balance, data),
     )
     offer = round(market * balance.rivals.poach.offer_mult)
     approach_id, ids = state.next_ids.take("approach")

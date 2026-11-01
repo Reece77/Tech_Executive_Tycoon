@@ -60,7 +60,7 @@ def regional_addressable_at(
 def regional_monthly_growth(data: GameData, category: str, region: str, year: int) -> float:
     """(1 + g x region multiplier)^(1/12) (19.5)."""
     cat = data.category(category)
-    return (1 + regional_growth(cat.growth_in(year), region, data)) ** (1 / 12)
+    return float((1 + regional_growth(cat.growth_in(year), region, data)) ** (1 / 12))
 
 
 def initial_market(

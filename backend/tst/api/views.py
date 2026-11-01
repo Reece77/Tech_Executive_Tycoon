@@ -38,9 +38,10 @@ from tst.sim.calendar import format_turn
 from tst.sim.errors import UnknownPersonError
 from tst.sim.finance.captable import fd_shares
 from tst.sim.finance.options import at_cliff, next_vesting
-from tst.sim.hiring.formulas import market_mid_cents, severance_cents
+from tst.sim.hiring.formulas import severance_cents
 from tst.sim.hiring.models import Search
 from tst.sim.hiring.phases import employment_monthly_cost_cents
+from tst.sim.org.morale import market_mid_for
 from tst.sim.org.rules import is_remote, org_view
 from tst.sim.people.formulas import potential_phrase
 from tst.sim.people.models import PA_KEY, Person, RevealState
@@ -243,10 +244,7 @@ def person_summary(
     role = employment.role if employment else person.role
     market_rate = None
     if employment is not None and not person.is_founder:
-        market_rate = market_mid_cents(
-            data.game_data.role(employment.role).salary_band_mid_cents[employment.level],
-            data.game_data.region(person.region).salary_multiplier_bp,
-        )
+        market_rate = market_mid_for(state, employment, data.balance, data.game_data)
     return PersonSummaryOut(
         person_id=person.id,
         name=f"{person.first_name} {person.last_name}",
