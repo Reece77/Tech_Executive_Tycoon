@@ -98,6 +98,7 @@ Engineering and design gaps the spec left open (also in `docs/formulas.md` §19.
 
 ## Follow-ups
 
+- **Guards that moved on the combined code (reported, not tuned; values in balance-targets.md, M9):** T5 bootstrap-frugal bankruptcy 60% (band 20-50%; 30% on M10 alone, 50% on M9 alone); M8 target 5 has no comparable seed (standard blitzscale ends on 10/10); §20.5 target 2 +4.9 founder points (needs +5; +5.2 on M10 alone). M8 target 3 (support) now passes at 1.102 and M8 target 2 (seats) at 1.192. The main driver is hiring cost: candidates ask their work city's pay, so v1's ~12% discount from cheaper regions is gone. A decision for Reece: record these for M15, or have candidates from abroad ask less (and feel underpaid), as v1 had.
 - **M15 (v2 balance):** expansion is very strong. Blitzscale that launches in Europe and East Asia ends turn 120 at a median ~$220M ARR and keeps its founder on 8/10 seeds, against home-only blitzscale whose founder is removed or bankrupt on 10/10 (last-month ARR ratio 4.3). T3 blitzscale (home only) fell from 2/10 to 0/10 (still its recorded xfail). Levers: `markets.foreign_awareness`, regional sizes, localization cost, `markets.presence_people`.
 - The "pay where you work" rule raises v1 hiring costs ~20%; Reece may want candidates from abroad who ask less than the search city's rate (and then feel underpaid), as v1 had.
 - Rival offices and regional pools; rivals' localization time.

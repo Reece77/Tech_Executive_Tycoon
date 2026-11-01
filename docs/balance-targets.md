@@ -146,3 +146,27 @@ Consumer confidence now scales consumer and SMB adoption (formulas.md 20.1); the
 | 20.5 target 3 (covenants bite sometimes) | 90% of seeds breach (80% with a 2- or 1-month covenant): blitzscale with venture debt goes below zero cash before its next round on 8/10 seeds | **fail**, xfail for M15 (Reece, 2026-11-01) |
 | 20.5 target 4 (the future varies) | 41/50 seeds with a downturn in 2026-2039; 2030 climate sd 0.171 | pass |
 | 20.5 target 5 (later rounds happen) | blitzscale reaches a Series C on 8/10 seeds | pass |
+
+### M9 (2026-11-01, on the combined M9 and M10 code)
+
+| Target | Value | Result |
+| --- | --- | --- |
+| T1 do-nothing fails | 10/10 | pass |
+| T2 wins per strategy | steady 9, bootstrap-frugal 1 | **fail**, the recorded M7c xfail |
+| T3 succeeds (bootstrap-frugal; steady; blitzscale) | 4/10; 10/10; 0/10 (4/10 on M10 alone, 2/10 on M9 alone) | blitzscale **fail**, its recorded xfail |
+| T4a–c | steady seed 4, A 31; blitzscale seed 1, A 19.5, B 38.5 on 8/10 | pass |
+| T5 bankruptcy | steady 0/0/0%; blitzscale 20%; bootstrap-frugal 60% (50% on M9 alone) | bootstrap-frugal **fail** (band 20-50%), reported, not tuned |
+| T6, T7 | tenure 20 months, 12% a year, 10% in the first year; 23/23 incumbents, 54% of startups | pass |
+| S2 | 14.7 worker-minutes run alone | pass |
+| M8 target 2 (seats) | 1.192 | pass |
+| M8 target 3 (support) | 1.102 | pass |
+| M8 target 5 (blitz Fintech) | no seed where both arms reach turn 120: the standard blitzscale's founder is removed or bankrupt on 10/10 | **fail**, reported, not tuned |
+| 20.5 target 2 (debt saves dilution) | +4.9 founder points (+5.2 on M10 alone), bankruptcy +0 | **fail** by 0.1 point, reported (brief: an M10 target that moves is reported, not tuned) |
+| 20.5 target 3 | 100% | **fail**, its recorded xfail |
+| 20.5 targets 4, 5 | 41/50, sd 0.171; Series C on 8/10 | pass |
+| 19.8 target 2 (expansion) | inf: home-only blitzscale ends on 10/10 seeds (scored 0, as the outcome rule); median last-month ARR abroad / home 4.16 | pass |
+| 19.8 target 3 (Bangalore team) | $129,375 against $337,500 a month, 61.7% less; split team x0.95 | pass |
+| 19.8 target 4 (cities differ) | San Francisco - Austin role-skill score 0.850 | pass |
+| 19.8 target 5 (rivals spread) | 10/10 seeds with all 42 region-category pairs covered | pass |
+
+What moved the v1 and M8 numbers: hires ask and are rated at their work city's rate (v1 hired 45% of candidates from cheaper regions at their region's pay into San Francisco, about 12% cheaper), San Francisco's talent bonus raises CA and asks, most rival startups are founded abroad, and rivals spend some months entering regions. Experiments on blitzscale seeds 1, 4 and 7 with no relocation fee, no talent bonus, no rival region entry, or v1's pay discount restored each still lost the founder on 2 or 3 of 3 seeds: blitzscale's outcome swings with any change to the draws, as M8 recorded.

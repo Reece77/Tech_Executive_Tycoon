@@ -34,6 +34,7 @@ from tst.sim.actions.geo import (
     SetRegionalPrice,
     SetUnitOffice,
 )
+from tst.sim.geo.cities import hq_city
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["geo"])
 
@@ -79,12 +80,13 @@ def preview_lease(
     save_id: str,
     settings: SettingsDep,
     data: DataDep,
-    city: Annotated[str, Query()],
-    seats: Annotated[int, Query()],
+    city: Annotated[str | None, Query(description="Default: the HQ city")] = None,
+    seats: Annotated[int | None, Query(description="Default: the smallest lease")] = None,
 ) -> LeasePreviewOut:
     """Rent, fit-out and an example market rate for a lease (the Lease dialog)."""
-    _path(settings, save_id)
-    return geo_views.lease_preview(city, seats, data)
+    state = _state(_path(settings, save_id))
+    chosen = city or hq_city(state.player, data.balance)
+    return geo_views.lease_preview(chosen, seats or data.balance.office.seat_sizes[0], data)
 
 
 @router.post(

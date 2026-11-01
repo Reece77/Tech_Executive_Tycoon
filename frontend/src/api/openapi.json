@@ -9500,20 +9500,38 @@
           {
             "name": "city",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the HQ city",
               "title": "City"
-            }
+            },
+            "description": "Default: the HQ city"
           },
           {
             "name": "seats",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "integer",
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the smallest lease",
               "title": "Seats"
-            }
+            },
+            "description": "Default: the smallest lease"
           }
         ],
         "responses": {

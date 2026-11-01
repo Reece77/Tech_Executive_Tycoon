@@ -14494,9 +14494,11 @@ export interface operations {
     };
     previewLease: {
         parameters: {
-            query: {
-                city: string;
-                seats: number;
+            query?: {
+                /** @description Default: the HQ city */
+                city?: string | null;
+                /** @description Default: the smallest lease */
+                seats?: number | null;
             };
             header?: never;
             path: {

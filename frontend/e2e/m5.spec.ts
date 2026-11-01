@@ -28,9 +28,9 @@ test('(a) open Competitors and a rival profile', async ({ page, request }) => {
   await page.goto(`/game/${COMPS}/overview`);
   await page.keyboard.press('8');
   await expect(page).toHaveURL(/\/competitors$/);
-  await expect(page.getByTestId('rival-counts')).toContainText('17 established');
+  await expect(page.getByTestId('rival-counts')).toContainText('23 established'); // 17 + M9's six regional incumbents
   const rows = page.getByTestId('rival-row');
-  await expect(rows).toHaveCount(17);
+  await expect(rows).toHaveCount(23);
   await expect(page.getByTestId('news-line').first()).toBeVisible();
   await page.getByRole('link', { name: 'Salesforce' }).click();
   await expect(page).toHaveURL(/\/competitors\/\d+$/);
