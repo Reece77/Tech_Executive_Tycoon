@@ -1,6 +1,8 @@
 """Division statements (formulas.md 18.1, M8): divisions plus corporate always sum to the
 company's statement, and the shared-services allocation sums to the corporate operating
-costs it spreads. Allocations move no cash."""
+costs it spreads. Allocations move no cash. M10r finding 2: the lines include loan interest
+(below operating profit, 20.3), office rent and division-tagged payroll and product costs, and
+the division report's company operating profit equals the real company P&L's."""
 
 from __future__ import annotations
 
@@ -14,10 +16,12 @@ from tst.sim.ledger import (
     CASH,
     COMPUTE,
     GENERAL_ADMIN,
+    INTEREST,
     MARKETING,
     OTHER_INCOME,
     RECRUITING,
     RENT,
+    RESEARCH,
     REVENUE_SUBSCRIPTIONS,
     SALARIES,
 )
@@ -35,6 +39,8 @@ TYPES = {
     RECRUITING: "expense",
     COMPUTE: "expense",
     MARKETING: "expense",
+    RESEARCH: "expense",
+    INTEREST: "expense",  # below operating profit (20.3)
 }
 EXPENSES = [a for a, t in TYPES.items() if t == "expense"]
 DIVISIONS = [None, 11, 12, 13]
@@ -77,6 +83,8 @@ def test_divisions_and_corporate_sum_to_the_company(lines, rows, month) -> None:
     pnl = profit_and_loss(((t, a, x) for t, a, x, _ in lines), TYPES, month, month)  # type: ignore[arg-type]
     cols = report.columns
     assert sum(c.revenue for c in cols) == pnl.total_revenue == report.company.revenue
+    assert report.company.operating_profit == pnl.operating_result  # the real P&L (M10r)
+    assert report.company.direct_profit == pnl.operating_result
     assert sum(c.direct_profit for c in cols) == pnl.operating_result
     assert sum(c.operating_profit for c in cols) == pnl.operating_result
     assert sum(c.shared_services for c in cols) == 0  # no cash moves between divisions
