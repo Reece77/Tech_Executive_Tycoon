@@ -50,6 +50,10 @@ v2 runs in two lanes where the systems are separate (Reece, 2026-10-29). Each la
 - **Sandbox mode and the company score** are in v2 (Reece, 2026-10-30), in M15 unless the retrospective moves them.
 - **v2 starts with divisions and new markets** (Reece, 2026-10-30).
 
+## Design settled ahead of the briefs
+
+M12b and M13 have their design decisions recorded (ADR-0019 §8, §10–§13). Their full briefs and formulas are written when M11 and M12a (for M12b) and M10 (for M13) are built, as every brief has been, so they match the code as it stands. M14 and M15 wait for M12b and M13.
+
 ## Open until the v1 retrospective
 
 - What Reece's 10-year playtest and the M7c agent report change, especially the speed of the early game and staff attrition.
