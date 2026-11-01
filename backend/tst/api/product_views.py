@@ -58,6 +58,8 @@ from tst.sim.state import GameState
 STATUS_LABELS = {"in_development": "In development", "sunset": "Sunset", "retired": "Retired"}
 LIVE_LABEL, GROWTH_LABEL, MATURE_LABEL = "Live", "Growth", "Mature"
 CONSUMER_SEGMENT = "consumer"  # customers there are users, shown apart from businesses
+# Product history (product_month) stays home-only by decision (M9 brief): its series say so.
+HOME_SCOPE, HOME_SCOPE_LABEL = "home_region", "Home region"
 BRAND_STEADY = 0.05  # brand points a month below which the brand trend reads "steady"
 
 
@@ -355,6 +357,7 @@ def product_out(
         return [NamedOut(person_id=p, name=person_name(state.person(p))) for p in ids]
 
     missing = launch_problems(state, product, data.balance, game)
+    abroad = state.regional_segments_of(product.id) if product.status in SELLING else ()
     recent = sorted(history, key=lambda m: (m.turn, m.segment))
     pace = f.pace(team.base_output(data.balance), category.scope, data.balance.products)
     last_turns = sorted({m.turn for m in recent})[-12:]
@@ -377,14 +380,18 @@ def product_out(
         launched_label=None
         if product.launched_turn is None
         else format_turn(product.launched_turn),
-        mrr_cents=sum(s.mrr_cents for s in segments),
+        # Now: home and other regions, as phase 5 books them (M10r finding 4).
+        mrr_cents=sum(s.mrr_cents for s in segments) + sum(_mrr(r) for r in abroad),
         mrr_change=_change(months, lambda m: sum(r.revenue_cents for r in m.values())),
-        customers=sum(s.customers for s in segments),
+        customers=sum(s.customers for s in segments) + sum(r.customers for r in abroad),
         customer_trend=_change(months, lambda m: sum(r.customers for r in m.values())),
         new_last_month=sum(s.new_last_month for s in segments),
         churned_last_month=sum(s.churned_last_month for s in segments),
         hosting_cents=_hosting(state, product, data),
         brand_trend=_brand_trend(months),
+        sells_abroad=any(r.customers > 0 for r in abroad),
+        series_scope=HOME_SCOPE,
+        series_label=HOME_SCOPE_LABEL,
         counts_users=bool(segments) and all(s.counts_users for s in segments),
         segments=segments,
         assigned_units=[
@@ -472,14 +479,17 @@ def _brand_trend(months: Sequence[dict[str, ProductMonth]]) -> str:
 
 
 def _hosting(state: GameState, product: Product, data: LoadedData) -> int:
-    """round(C x h) per segment this month, as phase 6 will post it (11.8)."""
+    """round(C x h) per segment this month, home and other regions, as phase 6 will post it
+    (11.8, 19.5; M10r finding 4)."""
     if product.status not in SELLING:
         return 0
     category = data.game_data.category(product.category)
-    return sum(
-        round(seg.customers * hosting_cents(category, seg.segment, ai_index(state, data.game_data)))
-        for seg in state.segments_of(product.id)
-    )
+    ai = ai_index(state, data.game_data)
+    rows: list[ProductSegment | RegionalSegment] = [
+        *state.segments_of(product.id),
+        *state.regional_segments_of(product.id),
+    ]
+    return sum(round(seg.customers * hosting_cents(category, seg.segment, ai)) for seg in rows)
 
 
 def portfolio_out(
@@ -502,7 +512,7 @@ def portfolio_out(
     for product in state.company_products(company.id):
         if product.status not in SELLING:
             continue
-        for seg in state.segments_of(product.id):
+        for seg in [*state.segments_of(product.id), *state.regional_segments_of(product.id)]:
             if seg.segment == CONSUMER_SEGMENT:
                 users += seg.customers
             else:

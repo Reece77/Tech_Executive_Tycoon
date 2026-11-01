@@ -46,6 +46,7 @@ import {
   formatSignedPercent,
   paceText,
   weightsText,
+  seriesScope,
 } from '../lib/products';
 
 /** Cents as the price box shows them: 4000 -> "40", 35 -> "0.35". */
@@ -205,7 +206,7 @@ function Tiles({ p }: { p: Product }) {
         note={
           p.mrr_change === null
             ? 'At the current customers'
-            : `${formatSignedPercent(p.mrr_change)} on last month`
+            : `${formatSignedPercent(p.mrr_change)} on last month${seriesScope(p)}`
         }
         testId="product-mrr"
       />
@@ -213,7 +214,7 @@ function Tiles({ p }: { p: Product }) {
         term="kpi.customers"
         label={noun}
         value={formatCount(p.customers)}
-        note={`${formatFlow(p.new_last_month, '+')} new, ${formatFlow(p.churned_last_month, '-')} lost`}
+        note={`${formatFlow(p.new_last_month, '+')} new, ${formatFlow(p.churned_last_month, '-')} lost${seriesScope(p)}`}
         testId="product-customers-total"
       />
       <KpiTile
@@ -843,7 +844,7 @@ function LastYear({
   const months = p.monthly;
   return (
     <Panel
-      title="Last 12 months"
+      title={p.sells_abroad ? `Last 12 months · ${p.series_label}` : 'Last 12 months'}
       style={{ flex: '1 1 380px', display: 'flex', flexDirection: 'column', gap: 8 }}
     >
       {months.length === 0 ? (

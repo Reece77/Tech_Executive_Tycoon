@@ -24,6 +24,7 @@ import {
   formatSignedPercent,
   paceText,
   REACH_TEXT,
+  seriesScope,
 } from '../lib/products';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 import { useTableViews } from '../hooks/useTableViews';
@@ -153,6 +154,7 @@ function trend(p: Product) {
   return (
     <span className="tst-num" style={{ color }}>
       {formatSignedPercent(p.customer_trend)} a month
+      {p.sells_abroad && <span className="tst-muted">{seriesScope(p)}</span>}
     </span>
   );
 }

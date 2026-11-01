@@ -16,6 +16,7 @@ import {
   paceText,
   barColors,
   segmentSummary,
+  seriesScope,
   weightsText,
 } from '../lib/products';
 import { MarketTable } from './MarketTable';
@@ -126,6 +127,11 @@ describe('product display helpers', () => {
     expect(formatFlow(2.54, '+')).toBe('+2.5');
     expect(formatFlow(0.7, '-')).toBe('−0.7');
     expect(formatFlow(0, '+')).toBe('0');
+  });
+
+  it('labels home-only series once a product sells abroad (M10r)', () => {
+    expect(seriesScope({ sells_abroad: false, series_label: 'Home region' })).toBe('');
+    expect(seriesScope({ sells_abroad: true, series_label: 'Home region' })).toBe(' (home region)');
   });
 
   it('labels lifecycle and pace', () => {
