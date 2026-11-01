@@ -179,7 +179,7 @@ def sell_first_in(
     category = data.category(product.category)
     for seg in state.segments_of(product_id):
         reference = category.market(seg.segment).reference_price_cents
-        price = max(1, round(gf.regional_price_cents(reference, region, home, data) * factor))
+        price = gf.regional_price_cents(reference, region, home, data, factor)  # M10r
         state = with_regional_segment(
             state, RegionalSegment(product_id, region, seg.segment, price, added_turn=state.turn)
         )
