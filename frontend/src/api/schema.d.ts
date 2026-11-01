@@ -903,7 +903,7 @@ export interface paths {
         /**
          * Get Market
          * @description Every product selling in the category: owner, public scores, appeal, customers and
-         *     share of served customers, per segment.
+         *     share of served customers, per segment; in the home region, or another (19.7).
          */
         get: operations["getMarket"];
         put?: never;
@@ -1946,6 +1946,136 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/geo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Geo
+         * @description The Offices screen: flexible HQ space and leases, and every city's indexes.
+         */
+        get: operations["getGeo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/geo/lease-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Lease
+         * @description Rent, fit-out and an example market rate for a lease (the Lease dialog).
+         */
+        get: operations["previewLease"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/geo/offices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Lease Office */
+        post: operations["leaseOffice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/geo/offices/{office_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close Office */
+        post: operations["closeOffice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/geo/units/{unit_id}/office": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Unit Office */
+        post: operations["setUnitOffice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/regions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Product Regions
+         * @description Where a product sells: status, prices, customers and revenue by region, reach, and
+         *     the builders' spread (19.7).
+         */
+        get: operations["getProductRegions"];
+        put?: never;
+        /** Launch In Region */
+        post: operations["launchInRegion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/regions/{region}/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Regional Price */
+        post: operations["setRegionalPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -2693,6 +2823,18 @@ export interface components {
             age: number;
             /** Region */
             region: string;
+            /**
+             * City
+             * @description Staff: the city they work in; candidates: where they live (M9)
+             */
+            city?: string | null;
+            /** City Label */
+            city_label?: string | null;
+            /**
+             * Would Relocate
+             * @description A candidate who lives elsewhere and would move to the search's city
+             */
+            would_relocate?: boolean | null;
             /** Role */
             role: string | null;
             /** Role Label */
@@ -2758,6 +2900,46 @@ export interface components {
             energy: number;
             /** Unread Inbox */
             unread_inbox: number;
+        };
+        /** CityOut */
+        CityOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /**
+             * Salary Index
+             * @description Salary multiplier (San Francisco = 1.0)
+             */
+            salary_index: number;
+            /**
+             * Rent Index
+             * @description Rent index (San Francisco = 1.0)
+             */
+            rent_index: number;
+            /** Talent */
+            talent: components["schemas"]["TalentOut"][];
+            /**
+             * People
+             * @description Your staff working in the city
+             */
+            people: number;
+            /** Is Hq */
+            is_hq: boolean;
+            /**
+             * Seat Rent Cents
+             * @description A leased seat's monthly rent there
+             */
+            seat_rent_cents: number;
+            /**
+             * Example Rate Cents
+             * @description A senior software engineer's market rate there
+             */
+            example_rate_cents: number;
         };
         /** CooAnswerOut */
         CooAnswerOut: {
@@ -2896,6 +3078,11 @@ export interface components {
              * @description Two interests; omit for the founder's first two
              */
             mission?: string[] | null;
+            /**
+             * Hq City
+             * @description The HQ city (M9); omit for San Francisco
+             */
+            hq_city?: string | null;
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -3600,6 +3787,46 @@ export interface components {
              */
             directors: components["schemas"]["GameOverDirectorOut"][];
         };
+        /** GeoActionOut */
+        GeoActionOut: {
+            geo: components["schemas"]["GeoOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** GeoOut */
+        GeoOut: {
+            /** Hq City */
+            hq_city: string;
+            /** Hq Label */
+            hq_label: string;
+            /** Home Region */
+            home_region: string;
+            /** Home Region Label */
+            home_region_label: string;
+            /**
+             * Offices
+             * @description Flexible HQ space first, then leases by id
+             */
+            offices: components["schemas"]["OfficeOut"][];
+            /** Cities */
+            cities: components["schemas"]["CityOut"][];
+            /** Seat Sizes */
+            seat_sizes: number[];
+            /** Lease Energy */
+            lease_energy: number;
+            /** Close Energy */
+            close_energy: number;
+            /** Assign Energy */
+            assign_energy: number;
+            /** Close Penalty Months */
+            close_penalty_months: number;
+            /**
+             * Relocation Cents
+             * @description Added to a hire who moves to the search's city
+             */
+            relocation_cents: number;
+        };
         /**
          * GlossaryOut
          * @description Definitions of every KPI and column (backend/data/glossary.yaml; M7b).
@@ -4147,6 +4374,11 @@ export interface components {
              */
             missing: string[];
         };
+        /** LaunchRegionIn */
+        LaunchRegionIn: {
+            /** Region */
+            region: string;
+        };
         /**
          * LearnedOut
          * @description What one interview, reference check or scout taught about a person (M4c). Built from
@@ -4186,6 +4418,33 @@ export interface components {
              * @description Behavior tags this action noticed
              */
             tags: components["schemas"]["TagOut"][];
+        };
+        /** LeaseIn */
+        LeaseIn: {
+            /** City */
+            city: string;
+            /** Seats */
+            seats: number;
+        };
+        /** LeasePreviewOut */
+        LeasePreviewOut: {
+            /** City */
+            city: string;
+            /** City Label */
+            city_label: string;
+            /** Seats */
+            seats: number;
+            /** Monthly Rent Cents */
+            monthly_rent_cents: number;
+            /** Fit Out Cents */
+            fit_out_cents: number;
+            /**
+             * Example Rate Cents
+             * @description A senior software engineer's market rate there
+             */
+            example_rate_cents: number;
+            /** Energy */
+            energy: number;
         };
         /** ManagerOut */
         ManagerOut: {
@@ -4234,6 +4493,18 @@ export interface components {
             annual_growth: number;
             /** Segments */
             segments: components["schemas"]["MarketSegmentOut"][];
+            /**
+             * Region
+             * @description The region shown (M9)
+             */
+            region?: string | null;
+            /** Region Label */
+            region_label?: string | null;
+            /**
+             * Regions
+             * @description Region picker
+             */
+            regions?: components["schemas"]["RegionOptionOut"][];
         };
         /** MarketProductOut */
         MarketProductOut: {
@@ -4416,6 +4687,13 @@ export interface components {
             /** Roles */
             roles: components["schemas"]["LabelOut"][];
             founder_rules: components["schemas"]["FounderRulesOut"];
+            /**
+             * Cities
+             * @description HQ choices (M9)
+             */
+            cities?: components["schemas"]["LabelOut"][];
+            /** Default Hq City */
+            default_hq_city?: string | null;
         };
         /** NewsMonthOut */
         NewsMonthOut: {
@@ -4521,6 +4799,51 @@ export interface components {
              * @description Why the hint reads as it does, from known values only
              */
             reasons: string[];
+        };
+        /** OfficeOut */
+        OfficeOut: {
+            /**
+             * Office Id
+             * @description Null for flexible space in the HQ city
+             */
+            office_id: number | null;
+            /** City */
+            city: string;
+            /** City Label */
+            city_label: string;
+            /**
+             * Seats
+             * @description Null for flexible space (no limit)
+             */
+            seats: number | null;
+            /** People */
+            people: number;
+            /**
+             * Monthly Rent Cents
+             * @description Rent, or flexible space's cost, a month
+             */
+            monthly_rent_cents: number;
+            /**
+             * Cost Per Head Cents
+             * @description Null while nobody works there
+             */
+            cost_per_head_cents: number | null;
+            /** Units */
+            units: components["schemas"]["UnitRefOut"][];
+            /** Crowded */
+            crowded: boolean;
+            /**
+             * Crowded Morale
+             * @description Morale points when crowded
+             */
+            crowded_morale: number | null;
+            /** Opened */
+            opened?: string | null;
+            /**
+             * Close Penalty Cents
+             * @description What closing the lease now costs; null for flexible space
+             */
+            close_penalty_cents?: number | null;
         };
         /**
          * OptionsOut
@@ -5002,6 +5325,18 @@ export interface components {
             age: number;
             /** Region */
             region: string;
+            /**
+             * City
+             * @description Staff: the city they work in; candidates: where they live (M9)
+             */
+            city?: string | null;
+            /** City Label */
+            city_label?: string | null;
+            /**
+             * Would Relocate
+             * @description A candidate who lives elsewhere and would move to the search's city
+             */
+            would_relocate?: boolean | null;
             /** Role */
             role: string | null;
             /** Role Label */
@@ -5093,6 +5428,18 @@ export interface components {
             age: number;
             /** Region */
             region: string;
+            /**
+             * City
+             * @description Staff: the city they work in; candidates: where they live (M9)
+             */
+            city?: string | null;
+            /** City Label */
+            city_label?: string | null;
+            /**
+             * Would Relocate
+             * @description A candidate who lives elsewhere and would move to the search's city
+             */
+            would_relocate?: boolean | null;
             /** Role */
             role: string | null;
             /** Role Label */
@@ -5428,6 +5775,109 @@ export interface components {
              */
             value: number;
         };
+        /** ProductRegionOut */
+        ProductRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Status
+             * @description home, live, localizing or not_launched
+             */
+            status: string;
+            /**
+             * Status Label
+             * @description Home, live since a month, localizing until a month
+             */
+            status_label: string;
+            /** Segments */
+            segments: components["schemas"]["RegionSegmentOut"][];
+            /** Customers */
+            customers: number;
+            /** Mrr Cents */
+            mrr_cents: number;
+            /**
+             * Local Presence
+             * @description An office or enough people working there
+             */
+            local_presence: boolean;
+            /**
+             * Sellers Here
+             * @description Your sellers on the product working in the region
+             */
+            sellers_here: number;
+            /**
+             * Sellers Neighbour
+             * @description Those in its sales neighbour (count half)
+             */
+            sellers_neighbour: number;
+            /** Neighbour Label */
+            neighbour_label: string;
+            /**
+             * Reach Note
+             * @description Reach in words, with any warning
+             */
+            reach_note: string;
+            /**
+             * Addressable
+             * @description Addressable customers in the product's segments
+             */
+            addressable: number;
+            /**
+             * Rivals
+             * @description Rival products selling there in the category
+             */
+            rivals: number;
+            /**
+             * Launch Cost Cents
+             * @description Localization cost, if not launched
+             */
+            launch_cost_cents: number | null;
+            /**
+             * Live Label
+             * @description When a launch now would go live
+             */
+            live_label: string | null;
+            /**
+             * Launch Problem
+             * @description Why it cannot launch there now
+             */
+            launch_problem: string | null;
+        };
+        /** ProductRegionsActionOut */
+        ProductRegionsActionOut: {
+            regions: components["schemas"]["ProductRegionsOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** ProductRegionsOut */
+        ProductRegionsOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Regions
+             * @description Home first, then regions.yaml order
+             */
+            regions: components["schemas"]["ProductRegionOut"][];
+            /**
+             * Team
+             * @description Builders by the region they work in
+             */
+            team: components["schemas"]["TeamRegionOut"][];
+            /**
+             * Time Zone Factor
+             * @description Cross-region factor on output (19.4)
+             */
+            time_zone_factor: number;
+            /** Launch Energy */
+            launch_energy: number;
+            /** Localize Months */
+            localize_months: number;
+        };
         /** ProductSegmentOut */
         ProductSegmentOut: {
             /** Segment */
@@ -5577,6 +6027,43 @@ export interface components {
             min: number;
             /** Max */
             max: number;
+        };
+        /** RegionOptionOut */
+        RegionOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Home
+             * @description The HQ's region, whose markets are v1's (19.5)
+             */
+            home: boolean;
+        };
+        /** RegionSegmentOut */
+        RegionSegmentOut: {
+            /** Segment */
+            segment: string;
+            /** Label */
+            label: string;
+            /** Price Cents */
+            price_cents: number | null;
+            /**
+             * Default Price Cents
+             * @description p_ref x the region's price index
+             */
+            default_price_cents: number;
+            /** Customers */
+            customers: number;
+            /** Mrr Cents */
+            mrr_cents: number;
+        };
+        /** RegionalPriceIn */
+        RegionalPriceIn: {
+            /** Segment */
+            segment: string;
+            /** Price Cents */
+            price_cents: number;
         };
         /** RelationshipOut */
         RelationshipOut: {
@@ -6126,6 +6613,16 @@ export interface components {
              * @description exec: an exec-level search (M8, stage 3)
              */
             level?: string | null;
+            /**
+             * City
+             * @description Where candidates live (M9): a city key, or anywhere for a remote unit; null: the hiring unit's office city
+             */
+            city?: string | null;
+            /**
+             * Unit Id
+             * @description The hiring unit, for the default city
+             */
+            unit_id?: number | null;
         };
         /** SearchOut */
         SearchOut: {
@@ -6166,6 +6663,13 @@ export interface components {
              * @description exec for an exec-level search (M8)
              */
             level?: string | null;
+            /**
+             * City
+             * @description The search's city, or anywhere (M9)
+             */
+            city?: string | null;
+            /** City Label */
+            city_label?: string | null;
         };
         /** SeatCandidatesOut */
         SeatCandidatesOut: {
@@ -6535,6 +7039,24 @@ export interface components {
             /** Noticed Date Label */
             noticed_date_label: string;
         };
+        /** TalentOut */
+        TalentOut: {
+            /**
+             * Label
+             * @description A skill group or a skill
+             */
+            label: string;
+            /**
+             * Points
+             * @description Attribute points added to candidates' role skills
+             */
+            points: number;
+            /**
+             * Marks
+             * @description The bonus as + marks, one per half point
+             */
+            marks: string;
+        };
         /** TeamMoodOut */
         TeamMoodOut: {
             /** Unit Id */
@@ -6580,6 +7102,15 @@ export interface components {
              * @description Employees, not the founder; null if none
              */
             avg_morale: number | null;
+        };
+        /** TeamRegionOut */
+        TeamRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Builders */
+            builders: number;
         };
         /** TermSheetOut */
         TermSheetOut: {
@@ -6662,6 +7193,14 @@ export interface components {
                 [key: string]: components["schemas"]["TableViews"];
             };
         };
+        /** UnitOfficeIn */
+        UnitOfficeIn: {
+            /**
+             * Office Id
+             * @description Null: the parent unit's office, up to the HQ
+             */
+            office_id: number | null;
+        };
         /** UnitOut */
         UnitOut: {
             /**
@@ -6702,6 +7241,13 @@ export interface components {
             product_id?: number | null;
             /** Product Name */
             product_name?: string | null;
+        };
+        /** UnitRefOut */
+        UnitRefOut: {
+            /** Unit Id */
+            unit_id: number;
+            /** Name */
+            name: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -9816,7 +10362,10 @@ export interface operations {
     };
     getMarket: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A region other than home (M9) */
+                region?: string | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -13200,6 +13749,495 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DivisionStatementsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getGeo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeoOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewLease: {
+        parameters: {
+            query: {
+                city: string;
+                seats: number;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeasePreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    leaseOffice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeaseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeoActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    closeOffice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                office_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeoActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setUnitOffice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                unit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnitOfficeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeoActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getProductRegions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductRegionsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    launchInRegion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LaunchRegionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductRegionsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setRegionalPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+                region: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionalPriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductRegionsActionOut"];
                 };
             };
             /** @description Bad Request */

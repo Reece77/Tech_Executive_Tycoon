@@ -69,6 +69,7 @@ from tst.db.mappers import (
 from tst.db.models import (
     BoardSeatHistoryRow,
     BoardSeatRow,
+    CandidateRelocationRow,
     CandidateRow,
     CapTableEntryRow,
     CompanyHqRow,
@@ -446,12 +447,22 @@ def _load_geo(session: Session, state: GameState, product_ids: list[int]) -> Gam
     )
     unit_offices = {r.unit_id: r.office_id for r in session.scalars(select(UnitOfficeRow))}
     search_cities = {r.search_id: r.city for r in session.scalars(select(SearchCityRow))}
+    open_ids = [c.person_id for c in state.candidates]
+    relocations = {
+        r.person_id: r.city
+        for r in session.scalars(
+            select(CandidateRelocationRow).where(CandidateRelocationRow.person_id.in_(open_ids))
+        )
+    }
     last_office = session.scalar(select(func.max(OfficeRow.id))) or 0
     return replace(
         state,
         companies=tuple(replace(c, hq_city=hq.get(c.id)) for c in state.companies),
         units=tuple(replace(u, office_id=unit_offices.get(u.id)) for u in state.units),
         searches=tuple(replace(s, city=search_cities.get(s.id)) for s in state.searches),
+        candidates=tuple(
+            replace(c, relocate_to=relocations.get(c.person_id)) for c in state.candidates
+        ),
         offices=offices,
         regional_markets=tuple(
             RegionalMarket(r.category, r.segment, r.region, r.addressable)
@@ -925,6 +936,12 @@ def _sync_geo(session: Session, old: GameState, new: GameState) -> None:
         UnitOfficeRow(unit_id=u.id, office_id=u.office_id)
         for u in new.units
         if old_units.get(u.id) != u.office_id and (u.office_id is not None or u.id in old_units)
+    ]
+    old_moves = {c.person_id: c.relocate_to for c in old.candidates}
+    rows += [
+        CandidateRelocationRow(person_id=c.person_id, city=c.relocate_to)
+        for c in new.candidates
+        if c.relocate_to is not None and old_moves.get(c.person_id) != c.relocate_to
     ]
     rows += [
         SearchCityRow(search_id=s.id, city=s.city)

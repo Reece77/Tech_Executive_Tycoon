@@ -77,11 +77,20 @@ class MarketSegmentOut(BaseModel):
     products: list[MarketProductOut] = Field(description="Most customers first")
 
 
+class RegionOptionOut(BaseModel):
+    key: str
+    label: str
+    home: bool = Field(description="The HQ's region, whose markets are v1's (19.5)")
+
+
 class MarketOut(BaseModel):
     category: str
     label: str
     annual_growth: float = Field(description="Addressable demand growth per year (fraction)")
     segments: list[MarketSegmentOut]
+    region: str | None = Field(default=None, description="The region shown (M9)")
+    region_label: str | None = None
+    regions: list[RegionOptionOut] = Field(default_factory=list, description="Region picker")
 
 
 class NamedOut(BaseModel):

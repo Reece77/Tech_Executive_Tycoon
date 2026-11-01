@@ -48,6 +48,7 @@ class Candidate:
     status: CandidateStatus = "open"
     resolved_turn: int | None = None
     interviewed_turn: int | None = None  # first interview by this company (ADR-0016)
+    relocate_to: str | None = None  # M9 (19.3): the search's city, for one who lives elsewhere
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,7 +1,7 @@
 """M9 cities, offices and regions (docs/formulas.md 19).
 
 Side tables (migration 0013 loads company, person, org_unit and search through the current
-models on older saves): `company_hq`, `person_city`, `office`, `unit_office`, `search_city`,
+models on older saves): `company_hq`, `person_city`, `office`, `unit_office`, `search_city`, `candidate_relocation`,
 `regional_market`, `product_region` and `regional_segment`.
 
 An existing save gets:
@@ -61,6 +61,11 @@ def upgrade() -> None:
     op.create_table(
         "search_city",
         sa.Column("search_id", sa.Integer(), sa.ForeignKey("search.id"), primary_key=True),
+        sa.Column("city", sa.String(32), nullable=False),
+    )
+    op.create_table(
+        "candidate_relocation",
+        sa.Column("person_id", sa.Integer(), sa.ForeignKey("person.id"), primary_key=True),
         sa.Column("city", sa.String(32), nullable=False),
     )
     op.create_table(
@@ -182,6 +187,7 @@ def downgrade() -> None:
         "product_region",
         "regional_market",
         "search_city",
+        "candidate_relocation",
         "unit_office",
         "office",
         "person_city",

@@ -971,6 +971,15 @@ class UnitOfficeRow(Base):
     office_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
+class CandidateRelocationRow(Base):
+    """A candidate who lives outside their search's city and would move there (19.3)."""
+
+    __tablename__ = "candidate_relocation"
+
+    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
+    city: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
 class SearchCityRow(Base):
     """The city a search's candidates live in, or "anywhere" (19.3)."""
 

@@ -210,6 +210,7 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         difficulty=body.difficulty,
         founder=body.founder.to_spec() if body.founder else DEFAULT_FOUNDER,
         mission=None if body.mission is None else tuple(body.mission),
+        hq_city=body.hq_city,
         data=data,
         save_dir=settings.resolved_save_dir(),
     )

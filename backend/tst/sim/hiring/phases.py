@@ -14,6 +14,7 @@ from dataclasses import replace
 from tst.sim.data_models import LEVELS, Balance, GameData
 from tst.sim.finance.options import grant_on_hire, retention
 from tst.sim.geo.cities import home_city, office_city
+from tst.sim.geo.models import ANYWHERE
 from tst.sim.geo.offices import crowded_people, employee_office_cents, rent_lines
 from tst.sim.hiring.formulas import (
     ROLL_RANGE,
@@ -667,6 +668,7 @@ def candidate_batches(
         scout = actor.skills["judgment_of_talent"] if actor is not None else 0.0
         for person in people:
             state = with_person(state, person)
+            moves = search.city not in (None, ANYWHERE) and person.city != search.city
             state = with_candidate(
                 state,
                 Candidate(
@@ -676,6 +678,7 @@ def candidate_batches(
                     channel=search.channel,
                     created_turn=state.turn,
                     expires_turn=state.turn + balance.hiring.candidate_shelf_turns,
+                    relocate_to=search.city if moves else None,
                 ),
             )
             reveal = new_reveal_state(

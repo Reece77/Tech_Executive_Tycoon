@@ -8,6 +8,7 @@ import { EventRedirect, InboxScreen } from './screens/InboxScreen';
 import { MainMenu } from './screens/MainMenu';
 import { MarketScreen } from './screens/MarketScreen';
 import { NewGameScreen } from './screens/NewGameScreen';
+import { OfficesScreen } from './screens/OfficesScreen';
 import { OrgScreen } from './screens/OrgScreen';
 import { OverviewScreen } from './screens/OverviewScreen';
 import { PeopleScreen } from './screens/PeopleScreen';
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="people/:personId" element={<PersonScreen />} />
           <Route path="recruitment" element={<RecruitmentScreen />} />
           <Route path="org" element={<OrgScreen />} />
+          <Route path="org/offices" element={<OfficesScreen />} />
           <Route path="products" element={<ProductsScreen />} />
           <Route path="products/markets" element={<MarketScreen />} />
           <Route path="products/markets/:category" element={<MarketScreen />} />

@@ -78,6 +78,12 @@ export type SupportPool = Schemas['SupportPoolOut'];
 export type SeatCandidates = Schemas['SeatCandidatesOut'];
 export type DivisionStatements = Schemas['DivisionStatementsOut'];
 export type DivisionColumn = Schemas['DivisionColumnOut'];
+export type Geo = Schemas['GeoOut'];
+export type Office = Schemas['OfficeOut'];
+export type City = Schemas['CityOut'];
+export type LeasePreview = Schemas['LeasePreviewOut'];
+export type ProductRegions = Schemas['ProductRegionsOut'];
+export type ProductRegion = Schemas['ProductRegionOut'];
 
 /** One scale-up action (M8): shared services, a product's division, a seat. */
 export type ScaleupAction =
@@ -169,7 +175,13 @@ export const keys = {
   founderPreview: (body: FounderIn) => ['meta', 'founder-preview', body] as const,
   productsMeta: ['meta', 'products'] as const,
   categories: (saveId: string) => ['saves', saveId, 'categories'] as const,
-  market: (saveId: string, category: string) => ['saves', saveId, 'market', category] as const,
+  market: (saveId: string, category: string, region: string | null = null) =>
+    ['saves', saveId, 'market', category, region] as const,
+  geo: (saveId: string) => ['saves', saveId, 'geo'] as const,
+  leasePreview: (saveId: string, city: string, seats: number) =>
+    ['saves', saveId, 'lease-preview', city, seats] as const,
+  productRegions: (saveId: string, productId: number) =>
+    ['saves', saveId, 'product-regions', productId] as const,
   products: (saveId: string) => ['saves', saveId, 'products'] as const,
   product: (saveId: string, productId: number) => ['saves', saveId, 'product', productId] as const,
   portfolio: (saveId: string) => ['saves', saveId, 'portfolio'] as const,
@@ -822,13 +834,13 @@ export function useCategories(saveId: string) {
   });
 }
 
-export function useMarket(saveId: string, category: string) {
+export function useMarket(saveId: string, category: string, region: string | null = null) {
   return useQuery({
-    queryKey: keys.market(saveId, category),
+    queryKey: keys.market(saveId, category, region),
     queryFn: async () =>
       unwrap(
         await api.GET('/api/saves/{save_id}/markets/{category}', {
-          params: { path: { save_id: saveId, category } },
+          params: { path: { save_id: saveId, category }, query: region ? { region } : {} },
         }),
       ),
     enabled: category !== '',
@@ -1541,5 +1553,106 @@ export function useEventItem(saveId: string, eventId: number) {
         }),
       ),
     enabled: Number.isSafeInteger(eventId) && eventId > 0,
+  });
+}
+
+// --- Cities, offices and regions (M9) -------------------------------------------------------
+
+export function useGeo(saveId: string) {
+  return useQuery({
+    queryKey: keys.geo(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/geo', path(saveId))),
+  });
+}
+
+export function useLeasePreview(saveId: string, city: string, seats: number, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.leasePreview(saveId, city, seats),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/geo/lease-preview', {
+          params: { path: { save_id: saveId }, query: { city, seats } },
+        }),
+      ),
+    enabled: enabled && city !== '',
+  });
+}
+
+export type GeoAction =
+  | { kind: 'lease'; city: string; seats: number }
+  | { kind: 'close'; officeId: number }
+  | { kind: 'unitOffice'; unitId: number; officeId: number | null };
+
+async function applyGeo(saveId: string, a: GeoAction) {
+  switch (a.kind) {
+    case 'lease':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/geo/offices', {
+          ...path(saveId),
+          body: { city: a.city, seats: a.seats },
+        }),
+      );
+    case 'close':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/geo/offices/{office_id}/close', {
+          params: { path: { save_id: saveId, office_id: a.officeId } },
+        }),
+      );
+    case 'unitOffice':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/geo/units/{unit_id}/office', {
+          params: { path: { save_id: saveId, unit_id: a.unitId } },
+          body: { office_id: a.officeId },
+        }),
+      );
+  }
+}
+
+export function useGeoAction(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: (a: GeoAction) => applyGeo(saveId, a),
+    onSuccess: invalidate,
+  });
+}
+
+export function useProductRegions(saveId: string, productId: number) {
+  return useQuery({
+    queryKey: keys.productRegions(saveId, productId),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/products/{product_id}/regions', {
+          params: { path: { save_id: saveId, product_id: productId } },
+        }),
+      ),
+  });
+}
+
+export type RegionAction =
+  | { kind: 'launch'; region: string }
+  | { kind: 'price'; region: string; segment: string; priceCents: number };
+
+async function applyRegion(saveId: string, productId: number, a: RegionAction) {
+  if (a.kind === 'launch') {
+    return unwrap(
+      await api.POST('/api/saves/{save_id}/products/{product_id}/regions', {
+        params: { path: { save_id: saveId, product_id: productId } },
+        body: { region: a.region },
+      }),
+    );
+  }
+  return unwrap(
+    await api.POST('/api/saves/{save_id}/products/{product_id}/regions/{region}/price', {
+      params: { path: { save_id: saveId, product_id: productId, region: a.region } },
+      body: { segment: a.segment, price_cents: a.priceCents },
+    }),
+  );
+}
+
+export function useRegionAction(saveId: string, productId: number) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: (a: RegionAction) => applyRegion(saveId, productId, a),
+    onSuccess: invalidate,
   });
 }

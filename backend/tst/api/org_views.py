@@ -383,6 +383,8 @@ def morale_breakdown(
     ]
     if terms.support:  # W_support from stage 3 (M8, 18.4): coverage is shown as counts
         shown.append(MoraleTermOut(key="support", label="Admin and support", value=terms.support))
+    if terms.crowded:  # M9 (19.2): more people than seats in their office
+        shown.append(MoraleTermOut(key="crowded", label="Crowded office", value=terms.crowded))
     holders = teammate_tag_holders(state, view, person_id)
     labels = {t.key: t.label for t in data.game_data.tags}
     for tag in ORG_TAGS:

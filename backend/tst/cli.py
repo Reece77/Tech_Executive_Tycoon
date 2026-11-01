@@ -110,6 +110,9 @@ def new_game(
             "founder's first two"
         ),
     ] = None,
+    hq: Annotated[
+        str | None, typer.Option(help="HQ city key (tst cities); default: San Francisco")
+    ] = None,
 ) -> None:
     """Create a new save file at schema head, with a founder built from a background."""
     settings, data = _context()
@@ -124,6 +127,7 @@ def new_game(
             difficulty=difficulty,
             founder=founder,
             mission=chosen,
+            hq_city=hq,
             data=data,
             save_dir=settings.resolved_save_dir(),
         )
@@ -1635,3 +1639,141 @@ def appoint(
         f"{who.first_name} {who.last_name} is now {seat.upper()} (exec level, {paid} a year)"
     )
     typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+# --- Cities, offices and regions (M9, formulas.md 19) ----------------------------------------
+
+
+def _founder(state: GameState) -> int:
+    founder = state.founder_of(state.player.id)
+    if founder is None:
+        raise _fail("the company has no founder")
+    return founder.id
+
+
+@app.command()
+def cities(save: SaveOpt) -> None:
+    """Every city: region, salary and rent indexes, talent bonuses, your people there."""
+    from tst.api.geo_views import geo_out
+
+    _, data, state = _game(save)
+    out = geo_out(state, data)
+    for c in out.cities:
+        talent = ", ".join(f"{t.label} {t.marks}" for t in c.talent) or "-"
+        hq = " (HQ)" if c.is_hq else ""
+        typer.echo(
+            f"{c.key:<14} {c.label + hq:<20} {c.region_label:<26} salary x{c.salary_index:.2f} "
+            f"rent x{c.rent_index:.2f}  {c.people:>3} people  talent: {talent}"
+        )
+
+
+@app.command()
+def offices(save: SaveOpt) -> None:
+    """Your flexible HQ space and leased offices: seats, people, rent, cost per head, units."""
+    from tst.api.geo_views import geo_out
+
+    _, data, state = _game(save)
+    out = geo_out(state, data)
+    for o in out.offices:
+        ident = "flex" if o.office_id is None else f"{o.office_id:>4}"
+        seats = "-" if o.seats is None else str(o.seats)
+        per = "n/a" if o.cost_per_head_cents is None else format_money(o.cost_per_head_cents)
+        units = ", ".join(u.name for u in o.units) or "no units"
+        crowded = f"  CROWDED ({o.crowded_morale:+.0f} morale)" if o.crowded else ""
+        typer.echo(
+            f"{ident} {o.city_label:<28} {o.people:>4}/{seats:<4} people  rent "
+            f"{format_money(o.monthly_rent_cents)} a month, {per} a head; {units}{crowded}"
+        )
+
+
+@app.command()
+def lease(
+    save: SaveOpt,
+    city: Annotated[str, typer.Option(help="City key (tst cities)")],
+    seats: Annotated[int, typer.Option(help="25, 50, 100 or 250")],
+) -> None:
+    """Lease an office: rent every month, the fit-out now; energy 10 (19.2)."""
+    from tst.sim.actions.geo import LeaseOffice
+
+    path, data, state = _game(save)
+    result = _run(path, data, LeaseOffice(_founder(state), city, seats))
+    office = max(result.new_state.company_offices(state.player.id), key=lambda o: o.id)
+    rent = office_rent(office, data)
+    typer.echo(
+        f"Leased office {office.id}: {seats} seats in {data.game_data.city(city).label}, "
+        f"{format_money(rent)} a month"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+def office_rent(office: object, data: LoadedData) -> int:
+    from tst.sim.actions.geo import office_rent_cents
+    from tst.sim.geo.models import Office
+
+    assert isinstance(office, Office)
+    return office_rent_cents(office, data.balance, data.game_data)
+
+
+@app.command("close-office")
+def close_office(
+    save: SaveOpt, office: Annotated[int, typer.Option(help="Office id (tst offices)")]
+) -> None:
+    """Close a lease early: 3 months' rent as a penalty; energy 10 (19.2)."""
+    from tst.sim.actions.geo import CloseOffice
+
+    path, data, state = _game(save)
+    result = _run(path, data, CloseOffice(_founder(state), office))
+    typer.echo(f"Closed office {office}")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("unit-office")
+def unit_office(
+    save: SaveOpt,
+    unit: Annotated[int, typer.Option(help="Unit id")],
+    office: Annotated[int | None, typer.Option(help="Office id; omit for the parent's")] = None,
+) -> None:
+    """Move a unit (and its people) to an office; energy 2 (19.2)."""
+    from tst.sim.actions.geo import SetUnitOffice
+
+    path, data, state = _game(save)
+    result = _run(path, data, SetUnitOffice(_founder(state), unit, office))
+    typer.echo(f"Unit {unit} now works {'in office ' + str(office) if office else 'at the HQ'}")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("launch-region")
+def launch_region(
+    save: SaveOpt,
+    product: Annotated[int, typer.Option(help="Product id")],
+    region: Annotated[str, typer.Option(help="Region key, e.g. europe")],
+) -> None:
+    """Launch a live product in another region: localization cost now, live in 3 months
+    (19.5); energy 4."""
+    from tst.sim.actions.geo import LaunchInRegion
+
+    path, data, state = _game(save)
+    result = _run(path, data, LaunchInRegion(_founder(state), product, region))
+    launch = result.new_state.product_region(product, region)
+    assert launch is not None
+    typer.echo(
+        f"Localizing for {data.game_data.region(region).label}; live in "
+        f"{format_turn(launch.live_turn)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command()
+def regions(save: SaveOpt, product: Annotated[int, typer.Option(help="Product id")]) -> None:
+    """Where a product sells: status, customers and MRR by region, and reach."""
+    from tst.api.geo_views import product_regions_out
+
+    _, data, state = _game(save)
+    out = product_regions_out(state, product, data)
+    for r in out.regions:
+        typer.echo(
+            f"{r.label:<26} {r.status_label:<28} {r.customers:>10,.0f} customers  "
+            f"{format_money(r.mrr_cents)} MRR  {r.rivals} rivals; {r.reach_note}"
+        )
+    spread = ", ".join(f"{t.label} {t.builders}" for t in out.team) or "no builders"
+    typer.echo(f"Builders: {spread}; time-zone factor x{out.time_zone_factor:.2f}")

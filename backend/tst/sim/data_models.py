@@ -919,6 +919,7 @@ class RegionEntryBalance(_Frozen):
     unserved: float = Field(ge=0, le=1)
     span: float = Field(gt=0)
     cash_months: float = Field(ge=0)
+    cooldown_turns: int = Field(ge=0)
 
 
 class GeoBalance(_Frozen):

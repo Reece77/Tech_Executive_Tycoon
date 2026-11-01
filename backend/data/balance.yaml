@@ -639,3 +639,4 @@ geo:
     unserved: 0.4 # unserved share of the region's demand needed to consider entering
     span: 0.4 # unserved share above `unserved` for need 1
     cash_months: 12 # months of costs in cash needed to enter a region
+    cooldown_turns: 12 # turns; a rival enters at most one region in this many (M9 pacing, so entries do not crowd out 15.3's other actions)

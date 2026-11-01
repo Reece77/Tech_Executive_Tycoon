@@ -119,6 +119,14 @@ class PersonSummaryOut(BaseModel):
     name: str
     age: int
     region: str
+    city: str | None = Field(
+        default=None, description="Staff: the city they work in; candidates: where they live (M9)"
+    )
+    city_label: str | None = None
+    would_relocate: bool | None = Field(
+        default=None,
+        description="A candidate who lives elsewhere and would move to the search's city",
+    )
     role: str | None
     role_label: str | None
     level: str | None
@@ -182,6 +190,12 @@ class SearchIn(BaseModel):
     channel: str  # network | job_post | recruiter | poach (M5)
     rival_id: int | None = Field(default=None, description="The rival of a poach search (M5)")
     level: str | None = Field(default=None, description="exec: an exec-level search (M8, stage 3)")
+    city: str | None = Field(
+        default=None,
+        description="Where candidates live (M9): a city key, or anywhere for a remote unit; "
+        "null: the hiring unit's office city",
+    )
+    unit_id: int | None = Field(default=None, description="The hiring unit, for the default city")
 
 
 class SearchOut(BaseModel):
@@ -199,6 +213,8 @@ class SearchOut(BaseModel):
     rival_id: int | None = Field(description="A poach search's rival (M5)")
     rival_name: str | None
     level: str | None = Field(default=None, description="exec for an exec-level search (M8)")
+    city: str | None = Field(default=None, description="The search's city, or anywhere (M9)")
+    city_label: str | None = None
 
 
 class OfferIn(BaseModel):

@@ -381,8 +381,10 @@ def create_save(
     difficulty: str = DEFAULT_DIFFICULTY,
     founder: FounderSpec = DEFAULT_FOUNDER,
     mission: tuple[str, ...] | None = None,
+    hq_city: str | None = None,
 ) -> Path:
-    """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state."""
+    """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state.
+    `hq_city` (M9, 19.1): None for geo.default_hq_city."""
     path = save_path(save_dir, name)
     if path.exists():
         raise SaveExistsError(f"a save named {name!r} already exists")
@@ -401,6 +403,7 @@ def create_save(
         balance=data.balance,
         data=data.game_data,
         mission=mission,
+        hq_city=hq_city,
     )
 
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -439,7 +442,12 @@ def create_save(
                     company_id=state.player.id,
                     kind=NEW_GAME_KIND,
                     payload=new_game_payload(
-                        company_name, scenario_def.id, difficulty, founder, state.player.mission
+                        company_name,
+                        scenario_def.id,
+                        difficulty,
+                        founder,
+                        state.player.mission,
+                        state.player.hq_city,
                     ),
                     seq=0,
                 )
@@ -901,6 +909,7 @@ def new_game_payload(
     difficulty: str,
     founder: FounderSpec,
     mission: tuple[str, ...],
+    hq_city: str | None = None,
 ) -> dict[str, Any]:
     spec = asdict(founder)
     spec["allocation"] = None if founder.allocation is None else dict(founder.allocation)
@@ -911,6 +920,7 @@ def new_game_payload(
         "difficulty": difficulty,
         "founder": spec,
         "mission": list(mission),
+        "hq_city": hq_city,  # M9; older saves' payloads lack it (San Francisco)
     }
 
 
@@ -961,6 +971,7 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         difficulty=setup["difficulty"],
         founder=FounderSpec(**founder),
         mission=tuple(setup["mission"]),
+        hq_city=setup.get("hq_city"),
     )
     for turn in range(target_turn + 1):
         for _, action in (a for a in actions if a[0] == turn):

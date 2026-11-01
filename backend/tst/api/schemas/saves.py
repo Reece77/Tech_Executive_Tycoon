@@ -55,6 +55,9 @@ class CreateSaveIn(BaseModel):
     mission: list[str] | None = Field(
         default=None, description="Two interests; omit for the founder's first two"
     )
+    hq_city: str | None = Field(
+        default=None, description="The HQ city (M9); omit for San Francisco"
+    )
 
 
 class SaveOut(BaseModel):

@@ -12,6 +12,7 @@ from tst.api.routers import (
     events,
     finance,
     game,
+    geo,
     history,
     holiday,
     meta,
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     app.include_router(history.router)
     app.include_router(coo.router)
     app.include_router(scaleup.router)
+    app.include_router(geo.router)  # M9
     app.include_router(events.settings_router)
     app.include_router(meta.router)
 

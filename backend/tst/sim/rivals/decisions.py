@@ -334,6 +334,12 @@ def candidates(
 def _cooling(state: GameState, company_id: int, c: Candidate, balance: Balance) -> bool:
     rv = balance.rivals
     since = state.turn - rv.cooldown_turns
+    if c.action == ENTER_REGION:  # M9: one region entry per rival per its cooldown (19.6)
+        after = state.turn - balance.geo.region_entry.cooldown_turns
+        return any(
+            m.company_id == company_id and m.action == ENTER_REGION and m.turn > after
+            for m in state.rival_moves
+        )
     for m in state.rival_moves:
         if (
             m.company_id == company_id

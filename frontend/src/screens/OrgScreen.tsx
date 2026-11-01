@@ -245,7 +245,10 @@ function OrgBody({
           : `Departments unlock at ${meta.department_unlock_headcount} staff (you have ${org.headcount}) or once the company is venture-backed. `}
         Drag a person onto a unit to move them, or drag a team onto a department or division. Every
         change shows its morale cost before you confirm. Numbers after an action are its energy
-        cost.
+        cost.{' '}
+        <Link to={`/game/${saveId}/org/offices`} data-testid="offices-link">
+          Offices and cities
+        </Link>
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         <section

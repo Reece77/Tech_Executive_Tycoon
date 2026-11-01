@@ -13,6 +13,7 @@ import {
   YAxis,
 } from 'recharts';
 import { KpiTile } from '../components/KpiTile';
+import { RegionsPanel } from '../components/RegionsPanel';
 import { BreakdownTip } from '../components/Term';
 import { LifecycleChip } from '../components/LifecycleChip';
 import { ScoreBar, ScoreLegend, type ScoreBarItem } from '../components/ScoreBar';
@@ -169,6 +170,7 @@ function ProductBody({
       {developing && (
         <AddSegments saveId={saveId} p={p} meta={meta} run={run} busy={act.isPending} />
       )}
+      <RegionsPanel saveId={saveId} productId={p.product_id} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         {editing && (
           <PricePreview
