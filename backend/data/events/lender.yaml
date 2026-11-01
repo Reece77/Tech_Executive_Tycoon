@@ -1,0 +1,54 @@
+# Lender event templates (M10, docs/formulas.md 20.3). The debt phase queues these itself
+# when a covenant breaks (trigger covenant_breach); the director never draws them. Their
+# choices are the 20.3 terms, so they are always written from the template, never the LLM.
+# Loan effects take a share of debt.breach's sizes in balance.yaml: loan_fee (a waiver fee
+# of 1% of the balance, held to the critical cash cap), loan_rate (+2 points for the rest of
+# the term), loan_repay (25% of the balance at once). {lender} is the lender's name and
+# {amount} the balance owed.
+templates:
+  - id: lender_covenant_breach
+    category: lender
+    trigger: covenant_breach
+    severities: [critical]
+    weight: 1.0
+    title: "{lender} says a covenant is broken"
+    body: >-
+      {lender}'s relationship manager calls before the monthly numbers are even out: {company}
+      has broken a covenant on the {amount} it owes. The loan agreement gives the lender
+      choices you won't like, so they are offering you one. Break the covenants again within
+      six months and the whole balance is due at once.
+    choices:
+      - key: A
+        label: "Pay a waiver fee of 1% of the balance"
+        effects:
+          - { type: loan_fee, target: loan, share: 1.0 }
+      - key: B
+        label: "Accept a rate two points higher for the rest of the term"
+        effects:
+          - { type: loan_rate, target: loan, share: 1.0 }
+      - key: C
+        label: "Repay a quarter of the balance now"
+        effects:
+          - { type: loan_repay, target: loan, share: 1.0 }
+
+  - id: lender_loan_called
+    category: lender
+    trigger: covenant_breach
+    severities: [major]
+    weight: 1.0
+    title: "{lender} called the loan"
+    body: >-
+      A second covenant breach inside six months was one too many. {lender} has taken the
+      whole balance back out of {company}'s account. The board heard about it from the
+      lender's letter before they heard it from you.
+    choices:
+      - key: A
+        label: "Walk the board through the numbers"
+        effects:
+          - { type: board_confidence, target: board, share: -0.3 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Tell the team the company is fine"
+        effects:
+          - { type: board_confidence, target: board, share: -0.6 }
+          - { type: morale_delta, target: company, share: -0.2 }

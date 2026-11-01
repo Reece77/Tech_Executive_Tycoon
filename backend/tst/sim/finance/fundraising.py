@@ -22,6 +22,7 @@ from tst.sim.finance.captable import (
     pool_entry,
     unallocated,
 )
+from tst.sim.finance.macro import venture_climate
 from tst.sim.finance.models import (
     PREFERRED_CLASS,
     SAFE_HOLDERS,
@@ -67,8 +68,8 @@ def arr_cents(state: GameState, company_id: int, balance: Balance) -> Cents:
 
 
 def climate(state: GameState, data: GameData) -> float:
-    year, _ = turn_to_ym(state.turn)
-    return data.climate.of(year)
+    """The venture climate `v` (20.1): M4's yearly table through 2025, then the macro layer."""
+    return venture_climate(state, data)
 
 
 def base_value(state: GameState, company_id: int, balance: Balance, data: GameData) -> Cents:
@@ -176,18 +177,19 @@ def answer_safes(
 
 
 def next_series(state: GameState, company_id: int) -> Series | None:
-    """The series that follows the last priced round: seed, a, b; None after Series B."""
+    """The series that follows the last priced round: seed, a, b, c, d (M10); None after
+    Series D (Series E onward and the IPO are M13)."""
     latest = last_round(state, company_id)
     if latest is None:
         return "seed"
-    return {"seed": "a", "a": "b"}.get(latest.series)  # type: ignore[return-value]
+    return {"seed": "a", "a": "b", "b": "c", "c": "d"}.get(latest.series)  # type: ignore[return-value]
 
 
 def series_problem(state: GameState, company_id: int, series: str, balance: Balance) -> str | None:
     """Why a series cannot be raised now (14.5 gates), or None."""
     expected = next_series(state, company_id)
     if expected is None:
-        return "there is no round after Series B until v2"
+        return "there is no round after Series D until the IPO milestone"
     if series != expected:
         return f"the next round is the {SERIES_LABELS[expected]}"
     gate = balance.finance.round.gate_arr_cents.get(expected)
@@ -223,10 +225,13 @@ def deliver_term_sheets(
         base = base_value(state, rnd.company_id, balance, data)
         mood = climate(state, data)
         heat = round_heat(state, rnd.company_id, rnd.series, balance)
+        year = turn_to_ym(state.turn)[0]
         count = 0
         for index, firm in enumerate(data.investors):
             if rnd.series not in firm.series:
                 continue
+            if firm.from_year is not None and year < firm.from_year:
+                continue  # M10: SoftBank's Vision Fund answers from 2017 (20.2)
             gen = finance_stream(rng, state.turn, rnd.id, index)
             chance = f.response_chance(firm.response, mood, rb.max_response, heat)
             answers = float(gen.random()) < chance

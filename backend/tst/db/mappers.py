@@ -21,6 +21,7 @@ from tst.db.models import (
     HiringPlanRow,
     LedgerEntryRow,
     LedgerLineRow,
+    LoanRow,
     MarketSegmentRow,
     OfferRow,
     OptionGrantRow,
@@ -59,6 +60,7 @@ from tst.sim.finance.models import (
     CapEntry,
     FundingRound,
     GameOutcome,
+    Loan,
     OptionGrant,
     Safe,
     TermSheet,
@@ -759,6 +761,7 @@ FINANCE_ROWS: dict[type[Any], type[Any]] = {
     FundingRound: FundingRoundRow,
     TermSheet: TermSheetRow,
     BoardSeat: BoardSeatRow,
+    Loan: LoanRow,  # M10
 }
 
 

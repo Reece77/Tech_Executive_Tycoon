@@ -395,15 +395,19 @@ finance:
     valuation_noise_sd: 0.15 # sd of the log noise on each firm's quoted pre-money (14.5)
     max_amount_of_pre: 0.5 # fraction; a firm invests at most this share of its quoted pre-money (14.5)
     max_response: 0.95 # probability; cap on a firm's response x climate (14.5)
-    gate_arr_cents: # cents of ARR a series needs, besides the previous round (14.5)
+    gate_arr_cents: # cents of ARR a series needs, besides the previous round (14.5; c and d from M10, 20.2)
       a: 100000000 # $1M
       b: 500000000 # $5M
+      c: 2500000000 # $25M (M10, 20.2)
+      d: 6000000000 # $60M (M10, 20.2)
     fee_min_cents: 1500000 # cents; smallest legal fee on a priced round, $15,000 (14.5)
     fee_bp: 50 # bp of the amount raised; legal fee on a priced round (14.5)
     typical_cents: # cents [min, max]; the typical raise per series, shown as guidance only (14.5)
       seed: [100000000, 300000000]
       a: [300000000, 1000000000]
       b: [1000000000, 3000000000]
+      c: [3000000000, 8000000000] # $30M-$80M (M10, 20.2)
+      d: [6000000000, 20000000000] # $60M-$200M (M10, 20.2)
     heat_max: 3 # multiplier; a Series A or B's response x climate is also x clamp(ARR / gate, 1, this) (14.5, M4c)
     heat_seed_live: 1.5 # multiplier; a seed's heat with a live product, else 1 (14.5, M4c)
 
@@ -412,10 +416,12 @@ board:
   rate: 0.2 # fraction of the gap to the target closed each month (14.6)
   target_base: 50 # confidence target before the growth, runway and patience terms (14.6)
   growth_weight: 20 # points for growth from half to double the expectation (14.6)
-  expected_growth: # annual MRR growth expected after the last priced round (14.6)
+  expected_growth: # annual MRR growth expected after the last priced round (14.6; c and d from M10)
     seed: 2.0
     a: 1.5
     b: 1.0
+    c: 0.8 # M10: growth investors expect less than a Series B board, still more than the market
+    d: 0.6
   runway_terms: # months of runway from the top: points added to the target (14.6)
     - { min_months: 12, points: 10 }
     - { min_months: 6, points: 0 }
@@ -434,6 +440,9 @@ board:
     seed: { common: 1, investor: 1, independent: 0 }
     a: { common: 2, investor: 2, independent: 0 }
     b: { common: 2, investor: 3, independent: 1 }
+    c: { common: 2, investor: 4, independent: 1 } # M10 (20.2): the lead's seat; 7 seats, the most a board has
+    d: { common: 2, investor: 4, independent: 1 } # M10 (20.2): a full board; the Series D lead takes no seat
+  max_seats: 7 # seats; the most a board has, the founder's included (M10, 20.2)
   director_role: operations_manager # roles.yaml key used only to generate directors' skills (not employees)
   director_level: exec # level used to generate directors
 
@@ -605,3 +614,47 @@ exec_seats:
     cpo: { label: CPO, effect: 0.15, churn: 0.15, weights: { product: 0.45, design: 0.15, strategy: 0.20, leadership: 0.20 } } # feature points gained x (1 + 0.15 e); base churn x (1 - 0.15 e)
     cmo: { label: CMO, effect: 0.20, brand: 0.10, awareness: 0.20, weights: { marketing: 0.45, communication: 0.20, strategy: 0.20, leadership: 0.15 } } # marketing points x (1 + 0.20 e); B* x (1 + 0.10 e); awareness x (1 + 0.20 e)
     cro: { label: CRO, effect: 0.20, pricing: 0.10, weights: { sales: 0.40, negotiation: 0.25, leadership: 0.20, communication: 0.15 } } # seller capacity x (1 + 0.20 e); p_ref x (1 + 0.10 e) in sales segments
+
+# --- Capital and macro (formulas.md section 20, M10 lane B) -------------------------------
+macro:
+  history_months: 24 # months of indicators the API shows behind the current one (20.4)
+  rate: { mean: 3.0, phi: 0.97, shock_sd: 0.15, bounds: [0.0, 8.0] } # % a year; base rate AR(1) after 2025 (20.1)
+  climate: { mean: 1.1, phi: 0.95, shock_sd: 0.05, bounds: [0.6, 1.8] } # multiplier; venture climate AR(1) after 2025 (20.1)
+  confidence: { mean: 100.0, phi: 0.95, shock_sd: 2.5, bounds: [60.0, 125.0] } # index (100 = 2010-2019 average); AR(1) after 2025 (20.1)
+  ai_change: { mean: -0.10, phi: 0.8, shock_sd: 0.08, bounds: [-0.5, 0.5] } # fraction a year; AI compute index's yearly change, AR(1) after 2025, drawn each January (20.1)
+  confidence_exponent: 0.5 # adoption x (cc / 100)^this in the confidence segments (20.1)
+  confidence_segments: [consumer, smb] # segments.yaml keys whose adoption follows consumer confidence (20.1)
+  downturn:
+    monthly: 0.012 # probability a downturn starts in a month after 2025 (20.1)
+    gap_months: 36 # months without a downturn needed before another can start (20.1)
+    months: 12 # months a downturn lasts (20.1)
+    rate: -0.25 # % points pushed onto the base rate each downturn month, before the AR(1) step (20.1)
+    climate: -0.04 # pushed onto the venture climate each downturn month (20.1)
+    confidence: -1.5 # index points pushed onto consumer confidence each downturn month (20.1)
+
+debt:
+  take_energy: 10 # founder energy to sign a loan (20.3)
+  repay_energy: 5 # founder energy to repay early (20.3)
+  venture:
+    window_turns: 12 # turns after a priced round closes during which venture debt is offered (20.3)
+    max_of_round_bp: 3000 # bp of that round's amount; most venture debt against one round (20.3)
+    spread_bp: 600 # bp a year over the base rate (20.3)
+    term_months: 36 # months to repay (20.3)
+    interest_only_months: 12 # months of interest only before equal principal (20.3)
+    warrant_bp: 25 # bp of fully diluted shares (after issue) granted to the lender at signing (20.3)
+    covenant_burn_months: 3 # cash must cover this many months of last month's burn (20.3)
+  bank:
+    stage: 3 # company stage needed for a bank loan (20.3)
+    profit_months: 3 # months of positive operating profit needed, each (20.3)
+    max_of_arr_bp: 10000 # bp of ARR; most bank debt outstanding (20.3)
+    spread_bp: 300 # bp a year over the base rate (20.3)
+    term_months: 48 # months to repay, equal principal from the first (20.3)
+    covenant_profit_months: 3 # operating profit summed over this many months must be positive (20.3)
+    covenant_cash_bp: 1000 # bp of the balance; cash must cover at least this (20.3)
+  min_cents: 10000000 # cents; smallest loan, $100,000 (UI and rules floor)
+  breach:
+    waiver_fee_bp: 100 # bp of the balance; the waiver fee choice (20.3)
+    rate_up_bp: 200 # bp a year added for the rest of the term; the higher-rate choice (20.3)
+    repay_bp: 2500 # bp of the balance repaid at once; the partial-repayment choice (20.3)
+    cure_months: 3 # months after a breach before covenants are tested again (M10 decision)
+    call_window_months: 6 # a second breach within this many months of the first makes the balance due (20.3)

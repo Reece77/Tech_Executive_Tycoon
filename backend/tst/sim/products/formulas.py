@@ -15,7 +15,6 @@ from tst.sim.data_models import (
     SCORE_MAX,
     AppealWeights,
     CategoryDef,
-    ComputeIndexFile,
     MarketBalance,
     ProductsBalance,
 )
@@ -237,7 +236,8 @@ def monthly_growth(category: CategoryDef, year: int) -> float:
     return float((1 + category.growth_in(year)) ** (1 / MONTHS_PER_YEAR))
 
 
-def hosting_cents(category: CategoryDef, segment: str, index: ComputeIndexFile, year: int) -> float:
-    """h per customer per month; x compute_index(year) for an indexed category (18.6)."""
+def hosting_cents(category: CategoryDef, segment: str, ai_index: float) -> float:
+    """h per customer per month; x the AI compute index for an indexed category (18.6): the
+    macro layer's `ai` (20.1), which is compute_index.yaml through 2025."""
     h = float(category.market(segment).hosting_cents)
-    return h * index.of(year) if category.compute_indexed else h
+    return h * ai_index if category.compute_indexed else h

@@ -11,11 +11,19 @@ from dataclasses import dataclass
 from fractions import Fraction
 from typing import Final, Literal
 
-from tst.sim.data_models import Series
+from tst.sim.data_models import Instrument, Series
 
 type HolderKind = Literal["person", "firm", "group", "pool"]
 type ShareClass = Literal[
-    "common", "preferred_seed", "preferred_a", "preferred_b", "safe_conversion", "option_pool"
+    "common",
+    "preferred_seed",
+    "preferred_a",
+    "preferred_b",
+    "preferred_c",  # M10 (20.2)
+    "preferred_d",
+    "safe_conversion",
+    "option_pool",
+    "warrant",  # M10 (20.3): a venture lender's warrants
 ]
 type GrantStatus = Literal["active", "ended"]
 type SafeKind = Literal["safe", "bridge"]
@@ -28,14 +36,23 @@ type RoundStatus = Literal["open", "accepted", "closed", "failed", "lapsed"]
 type SheetStatus = Literal["offered", "accepted", "lapsed"]
 type SeatKind = Literal["common", "investor", "independent"]
 type GameOutcome = Literal["active", "bankrupt", "founder_removed"]
+type LoanStatus = Literal["active", "repaid", "called"]  # M10 (20.3)
 
 GAME_STATES: Final[tuple[GameOutcome, ...]] = ("active", "bankrupt", "founder_removed")
 PREFERRED_CLASS: Final[dict[Series, ShareClass]] = {
     "seed": "preferred_seed",
     "a": "preferred_a",
     "b": "preferred_b",
+    "c": "preferred_c",
+    "d": "preferred_d",
 }
-SERIES_LABELS: Final[dict[Series, str]] = {"seed": "Seed", "a": "Series A", "b": "Series B"}
+SERIES_LABELS: Final[dict[Series, str]] = {
+    "seed": "Seed",
+    "a": "Series A",
+    "b": "Series B",
+    "c": "Series C",
+    "d": "Series D",
+}
 POOL_NAME: Final = "Option pool (unallocated)"
 SAFE_HOLDERS: Final = "SAFE holders"
 BRIDGE_HOLDERS: Final = "Bridge investors"
@@ -172,3 +189,42 @@ class BoardSeat:
     def votes(self) -> bool:
         """Investor and independent directors can vote to remove the founder."""
         return self.kind != "common"
+
+
+@dataclass(frozen=True, slots=True)
+class Loan:
+    """Venture debt or a bank loan (M10, formulas.md 20.3). The rate is fixed at signing
+    (base rate + spread) and rises only by a breach's higher-rate choice. Principal is
+    re-amortized each month over the months left, so equal principal holds until a partial
+    repayment shortens what is owed, never the term."""
+
+    id: int
+    company_id: int
+    instrument: Instrument
+    lender: str  # investors.yaml lenders key
+    principal_cents: int  # the amount borrowed
+    balance_cents: int  # principal still owed
+    rate_bp: int  # a year
+    signed_turn: int
+    term_months: int
+    interest_only_months: int
+    round_id: int | None = None  # venture debt: the round it follows
+    warrant_shares: int = 0
+    status: LoanStatus = "active"
+    closed_turn: int | None = None  # repaid or called
+    interest_paid_cents: int = 0
+    principal_paid_cents: int = 0
+    breach_turn: int | None = None  # the latest covenant breach
+    breaches: int = 0
+
+    @property
+    def active(self) -> bool:
+        return self.status == "active"
+
+    def month_index(self, turn: int) -> int:
+        """1 in the month it was signed (phase 7 charges that month's interest)."""
+        return turn - self.signed_turn + 1
+
+    @property
+    def last_turn(self) -> int:
+        return self.signed_turn + self.term_months - 1

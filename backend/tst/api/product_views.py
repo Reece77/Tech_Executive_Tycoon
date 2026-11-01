@@ -34,6 +34,7 @@ from tst.sim.actions.products import launch_problems
 from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import SegmentDef
 from tst.sim.errors import ProductRuleError
+from tst.sim.finance.macro import ai_index
 from tst.sim.org.rules import org_view
 from tst.sim.products import formulas as f
 from tst.sim.products.formulas import hosting_cents
@@ -140,9 +141,7 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
                     addressable=_addressable(state, cat.key, m.segment),
                     reference_price_cents=m.reference_price_cents,
                     hosting_cents=round(
-                        hosting_cents(
-                            cat, m.segment, data.game_data.compute_index, turn_to_ym(state.turn)[0]
-                        )
+                        hosting_cents(cat, m.segment, ai_index(state, data.game_data))
                     ),
                     weights=_weights(data.game_data.segment(m.segment)),
                     counts_users=m.segment == CONSUMER_SEGMENT,
@@ -418,12 +417,7 @@ def _hosting(state: GameState, product: Product, data: LoadedData) -> int:
         return 0
     category = data.game_data.category(product.category)
     return sum(
-        round(
-            seg.customers
-            * hosting_cents(
-                category, seg.segment, data.game_data.compute_index, turn_to_ym(state.turn)[0]
-            )
-        )
+        round(seg.customers * hosting_cents(category, seg.segment, ai_index(state, data.game_data)))
         for seg in state.segments_of(product.id)
     )
 

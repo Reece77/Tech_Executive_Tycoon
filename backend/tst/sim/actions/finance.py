@@ -13,14 +13,17 @@ from fractions import Fraction
 from typing import Literal
 
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
-from tst.sim.data_models import SERIES, Balance, GameData
+from tst.sim.data_models import INSTRUMENTS, SERIES, Balance, GameData, Instrument
 from tst.sim.errors import FinanceRuleError, UnknownSafeError, UnknownTermSheetError
+from tst.sim.finance import debt
 from tst.sim.finance.board import adds_common_seat, default_nominee, nominee_problem
 from tst.sim.finance.captable import open_round
 from tst.sim.finance.fundraising import safe_fraction, series_problem
 from tst.sim.finance.insolvency import bridge_amount
 from tst.sim.finance.models import FundingRound, Safe, SheetStatus
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
+from tst.sim.log import inbox_item
+from tst.sim.money import format_money
 from tst.sim.state import GameState, with_round, with_safe, with_seat, with_term_sheet
 
 # --- Action types ---------------------------------------------------------------------------
@@ -67,7 +70,29 @@ class NameNominee:
     kind: Literal["name_nominee"] = "name_nominee"
 
 
-type FinanceAction = RaiseSafe | StartRound | AcceptTermSheet | AcceptBridge | NameNominee
+@dataclass(frozen=True, slots=True)
+class TakeLoan:
+    """Sign venture debt or a bank loan (M10, 20.3): energy 10; the lender answers at once."""
+
+    actor_id: int
+    instrument: str  # venture_debt or bank_loan
+    amount_cents: int
+    kind: Literal["take_loan"] = "take_loan"
+
+
+@dataclass(frozen=True, slots=True)
+class RepayLoan:
+    """Repay a loan early, in part or in full, with no fee (M10, 20.3): energy 5. None: all."""
+
+    actor_id: int
+    loan_id: int
+    amount_cents: int | None = None
+    kind: Literal["repay_loan"] = "repay_loan"
+
+
+type FinanceAction = (
+    RaiseSafe | StartRound | AcceptTermSheet | AcceptBridge | NameNominee | TakeLoan | RepayLoan
+)
 
 
 def _founder_company(state: GameState, actor_id: int) -> int:
@@ -209,6 +234,76 @@ def accept_bridge(
     return Outcome(with_safe(state, replace(safe, status="accepted", amount_cents=amount)))
 
 
+def take_loan(state: GameState, action: TakeLoan, balance: Balance, data: GameData) -> Outcome:
+    company = _founder_company(state, action.actor_id)
+    if action.instrument not in INSTRUMENTS:
+        raise FinanceRuleError(
+            f"unknown instrument {action.instrument!r}; one of {list(INSTRUMENTS)}"
+        )
+    instrument: Instrument = action.instrument
+    _cents(action.amount_cents, "a loan amount")
+    problem = debt.amount_problem(state, company, instrument, action.amount_cents, balance, data)
+    if problem is not None:
+        raise FinanceRuleError(problem)
+    state = spend_energy(
+        state, action.actor_id, "take_loan", balance, cost=balance.debt.take_energy
+    )
+    state, loan, entries = debt.sign(state, company, instrument, action.amount_cents, balance, data)
+    log = inbox_item(
+        state.turn,
+        company,
+        "loan_signed",
+        link_kind="finance",
+        instrument=debt.INSTRUMENT_LABELS[instrument],
+        lender=debt.lender_name(loan, data),
+        amount_cents=loan.principal_cents,
+        rate=f"{loan.rate_bp / 100:.2f}%",
+        term=loan.term_months,
+    )
+    return Outcome(state, entries, (log,))
+
+
+def repay_loan(
+    state: GameState,
+    action: RepayLoan,
+    balance: Balance,
+    data: GameData,
+    ledger_balances: LedgerBalances,
+) -> Outcome:
+    company = _founder_company(state, action.actor_id)
+    loan = state.loan(action.loan_id)
+    if loan is None or loan.company_id != company:
+        raise FinanceRuleError(f"no loan {action.loan_id}")
+    if not loan.active:
+        raise FinanceRuleError("that loan is no longer outstanding")
+    amount = loan.balance_cents if action.amount_cents is None else action.amount_cents
+    _cents(amount, "a repayment")
+    if amount > loan.balance_cents:
+        raise FinanceRuleError(f"the balance is {format_money(loan.balance_cents)}")
+    if amount > account_balance(ledger_balances, company, CASH):
+        raise FinanceRuleError("there is not enough cash to repay that much")
+    state = spend_energy(
+        state, action.actor_id, "repay_loan", balance, cost=balance.debt.repay_energy
+    )
+    name = debt.lender_name(loan, data)
+    state, loan, entries = debt.repay(state, loan, amount, f"Early repayment: {name}")
+    logs = (
+        (
+            inbox_item(
+                state.turn,
+                company,
+                "loan_repaid",
+                link_kind="finance",
+                lender=name,
+                amount_cents=loan.principal_cents,
+            ),
+        )
+        if not loan.active
+        else ()
+    )
+    return Outcome(state, entries, logs)
+
+
 def apply_finance(
     state: GameState,
     action: FinanceAction,
@@ -227,3 +322,7 @@ def apply_finance(
             return accept_bridge(state, action, balance, data, ledger_balances)
         case NameNominee():
             return name_nominee(state, action, balance)
+        case TakeLoan():
+            return take_loan(state, action, balance, data)
+        case RepayLoan():
+            return repay_loan(state, action, balance, data, ledger_balances)

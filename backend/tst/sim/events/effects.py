@@ -9,17 +9,20 @@ from __future__ import annotations
 from dataclasses import replace
 
 from tst.sim.data_models import Balance, GameData
-from tst.sim.events.formulas import clamp_effect
+from tst.sim.events.data import LOAN_EFFECTS
+from tst.sim.events.formulas import cash_cap, clamp_effect
 from tst.sim.events.models import EventChoice, GameEvent, QueuedEvent
-from tst.sim.ledger import CASH, GENERAL_ADMIN, OTHER_INCOME, LedgerEntry
+from tst.sim.finance.debt import repay as repay_loan
+from tst.sim.ledger import CASH, GENERAL_ADMIN, INTEREST, OTHER_INCOME, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import exact
+from tst.sim.money import BP_DENOMINATOR, exact
 from tst.sim.org.rules import org_view
 from tst.sim.people.relationships import clamp_relationship, pair_key
 from tst.sim.state import (
     GameState,
     with_employment,
     with_event,
+    with_loan,
     with_person,
     with_person_state,
     with_product,
@@ -65,6 +68,40 @@ def _morale(state: GameState, person_ids: list[int], value: float) -> GameState:
             new = max(0.0, min(MORALE_MAX, ps.morale + value))
             state = with_person_state(state, replace(ps, morale=new))
     return state
+
+
+def _loan_effect(
+    state: GameState, kind: str, loan_id: int, share: float, event: GameEvent, balance: Balance
+) -> tuple[GameState, list[LedgerEntry]]:
+    """A lender event's choice (M10, 20.3), `share` of debt.breach's size: the waiver fee
+    (1% of the balance, held to the event's cash cap) to 7000_interest; the rate rise for the
+    rest of the term; or repaying part of the balance from cash at once."""
+    loan = state.loan(loan_id)
+    if loan is None or not loan.active or loan.company_id != event.company_id or share <= 0:
+        return state, []
+    bb = balance.debt.breach
+    memo = f"Event: {event.title or event.template_id}"
+    if kind == "loan_rate":
+        bump = round(exact(share) * bb.rate_up_bp)
+        return with_loan(state, replace(loan, rate_bp=loan.rate_bp + bump)), []
+    if kind == "loan_repay":
+        amount = round(exact(share) * loan.balance_cents * bb.repay_bp / BP_DENOMINATOR)
+        state, _, posted = repay_loan(state, loan, amount, memo)
+        return state, list(posted)
+    fee = exact(share) * loan.balance_cents * bb.waiver_fee_bp / BP_DENOMINATOR
+    cap = cash_cap(event.severity, balance.events, event.cash_base_cents, gain=False)
+    cents = round(min(fee, cap))
+    if cents <= 0:
+        return state, []
+    entry = LedgerEntry.transfer(
+        turn=state.turn,
+        company_id=event.company_id,
+        memo=memo,
+        debit=INTEREST,
+        credit=CASH,
+        amount=cents,
+    )
+    return state, [entry]
 
 
 def energy_next_month(state: GameState, person_id: int) -> int:
@@ -243,6 +280,9 @@ def apply_choice(
                         segment=event.segment,
                     ),
                 )
+        elif t in LOAN_EFFECTS and kind == "loan" and ids:
+            state, posted = _loan_effect(state, t, ids[0], value, event, balance)
+            entries += posted
         # energy_delta applies when energy resets for next month (energy_next_month).
     state = with_event(
         state,

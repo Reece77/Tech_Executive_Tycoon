@@ -29,6 +29,7 @@ def placeholder_names(
     rival_id: int | None = None,
     months: int | None = None,
     amount: str | None = None,
+    lender: str | None = None,
 ) -> dict[str, str]:
     company = state.company(company_id)
     founder = state.founder_of(company_id)
@@ -53,7 +54,18 @@ def placeholder_names(
         names["months"] = str(months)
     if amount is not None:
         names["amount"] = amount
+    if lender is not None:
+        names["lender"] = lender
     return names
+
+
+def loan_names(state: GameState, data: GameData, loan_id: int | None) -> dict[str, str]:
+    """{lender} and {amount} (the balance) for a lender event (M10, 20.3)."""
+    loan = state.loan(loan_id) if loan_id is not None else None
+    if loan is None:
+        return {}
+    lender = next((x.name for x in data.lenders if x.key == loan.lender), loan.lender)
+    return {"lender": lender, "amount": f"${loan.balance_cents / 100:,.0f}"}  # tunable-exempt
 
 
 def render(text: str, names: Mapping[str, str]) -> str:

@@ -39,6 +39,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `rival_spawn` | 18 | `(category_index,)` | Founding rival startups (§15.4) | M5 |
 | `poach` | 19 | `(approach_id,)` | An employee's answer to a rival's approach (§15.6) | M5 |
 | `entrants` | 20 | `(entrant_index,)` | A scheduled entrant's people, generated at senior level when it is founded (formulas.md 18.7); founding itself draws nothing | M8 |
+| `macro` | 21 | `(indicator_index,)` (0 base rate, 1 venture climate, 2 consumer confidence, 3 AI compute index); `(99,)` for downturns | Macro indicators after 2025 (formulas.md §20.1); one generator per indicator each month, one standard-normal draw each (the AI index's is used only in January), and one uniform draw for downturns | M10 |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).
@@ -60,6 +61,5 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | Name | Id | Key | Use | Milestone |
 | --- | --- | --- | --- | --- |
 | `entrants` | 20 | `(entrant_index,)` | Generating a scheduled entrant's people (formulas.md §18.7) | M8 |
-| `macro` | 21 | `(indicator_index,)`; `(99,)` for downturns | Macro indicators after 2025 (formulas.md §20.1) | M10 (lane B) |
 | `rival_region` | 22 | `(startup_id,)` | A rival startup's founding region (formulas.md §19.6) | M9 (lane A) |
 | — | 23–29 | — | Reserved for M11 (lane A) and M12 (lane B): 23–25 lane A, 26–29 lane B | M11, M12 |

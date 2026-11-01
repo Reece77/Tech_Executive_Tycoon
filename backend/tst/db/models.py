@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 21
+SCHEMA_VERSION = 22
 
 
 class Base(DeclarativeBase):
@@ -762,6 +762,7 @@ class EventRow(Base):
     chosen: Mapped[str | None] = mapped_column(String(1), nullable=True)
     resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
     source: Mapped[str] = mapped_column(String(16), nullable=False)
+    loan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # M10 (0022)
 
 
 class EventQueueRow(Base):
@@ -771,13 +772,15 @@ class EventQueueRow(Base):
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
     template_id: Mapped[str] = mapped_column(String(64), nullable=False)
     due_turn: Mapped[int] = mapped_column(Integer, nullable=False)
-    source_event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), nullable=False)
+    # None: queued by the engine, not by answering an event (a lender event, M10)
+    source_event_id: Mapped[int | None] = mapped_column(ForeignKey("event.id"), nullable=True)
     person_ids: Mapped[list[int]] = mapped_column(JSON, nullable=False)
     product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     rival_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     segment: Mapped[str | None] = mapped_column(String(32), nullable=True)
     done: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+    loan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # M10 (0022)
 
 
 class LLMTextRow(Base):
@@ -923,3 +926,55 @@ class InboxEventLinkRow(Base):
     position: Mapped[int] = mapped_column(Integer, primary_key=True)
     event_id: Mapped[int] = mapped_column(Integer, nullable=False)  # event (no FK)
     label: Mapped[str] = mapped_column(String(200), nullable=False)
+
+
+# --- Capital and macro (M10, migration 0022_capital_macro) -----------------------------------
+
+
+class MacroMonthRow(Base):
+    """One month's macro indicators (20.1). Rows exist only for months already played."""
+
+    __tablename__ = "macro_month"
+
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    base_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    climate: Mapped[float] = mapped_column(Float, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    ai_index: Mapped[float] = mapped_column(Float, nullable=False)
+    ai_change: Mapped[float] = mapped_column(Float, nullable=False)
+    downturn_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class LoanRow(Base):
+    """Venture debt or a bank loan (20.3)."""
+
+    __tablename__ = "loan"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    instrument: Mapped[str] = mapped_column(String(16), nullable=False)
+    lender: Mapped[str] = mapped_column(String(32), nullable=False)
+    principal_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    balance_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    rate_bp: Mapped[int] = mapped_column(Integer, nullable=False)
+    signed_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    term_months: Mapped[int] = mapped_column(Integer, nullable=False)
+    interest_only_months: Mapped[int] = mapped_column(Integer, nullable=False)
+    round_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    warrant_shares: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    interest_paid_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    principal_paid_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    breach_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    breaches: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class FinanceHistoryRow(Base):
+    """The player's operating result and burn at the last month ends (20.3 covenants)."""
+
+    __tablename__ = "finance_history"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    op_history: Mapped[list[int]] = mapped_column(JSON, nullable=False)
+    burn_history: Mapped[list[int]] = mapped_column(JSON, nullable=False)
