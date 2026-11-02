@@ -256,3 +256,26 @@ def test_the_named_coo_answers_ask_my_coo(loaded: LoadedData) -> None:
     assert coo_of(state) == EXEC  # the seat holder, not the longest-serving employee
     reply = offline_reply((), "Q1 2010: 3 staff.")
     assert "From my last report: Q1 2010: 3 staff." in reply
+
+
+@settings(max_examples=30, deadline=None)
+@given(st.integers(0, 6), st.integers(1, 8), st.integers(1, 30))
+def test_seller_hiring_never_exceeds_the_cro_cap(sellers: int, cap: int, seed: int) -> None:
+    state = _company(LOADED, "cro", "account_executive")
+    for pid in range(3, 3 + sellers):
+        state = with_employee(
+            LOADED, state, make_person(LOADED, pid, "account_executive"), 9_000_000
+        )
+    state = with_product(state, prices={"mid_market": 70_000}, customers={"mid_market": 10.0})
+    seg = state.segments_of(state.company_products(1)[0].id)[0]
+    state = with_product_segment(state, replace(seg, capacity_limited=True))
+    state = _give(state, "cro", LOADED.balance, headcount_cap=cap)
+    out, _, _, _ = _run(LOADED, state, seed)
+    on_staff = sum(
+        1
+        for e in out.staff(1)
+        if not out.person(e.person_id).is_founder
+        and LOADED.game_data.role(e.role).product_function == "seller"
+    )
+    planned = sum(p.target for p in out.plans)
+    assert on_staff + planned <= max(cap, on_staff)

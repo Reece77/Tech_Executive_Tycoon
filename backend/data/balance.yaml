@@ -650,7 +650,7 @@ exec_authority: # executives with authority (formulas.md 24, M10c)
   loan_share: 0.5 # share of the limit the CFO proposes to borrow
   defaults: # guardrails a seat starts with when given authority (24.1); the player changes them
     cto: { headcount_cap: 30, max_salary_ratio_bp: 11000, protected_units: [] } # builders; offer x ask in bp
-    cro: { headcount_cap: 10, price_band_pct: 10, max_salary_ratio_bp: 11000 } # sellers; +- % of the player's last price
+    cro: { headcount_cap: 20, price_band_pct: 10, max_salary_ratio_bp: 11000 } # sellers; +- % of the player's last price
     cmo: { marketing_pct_of_revenue: 15 } # % of last month's revenue spent on marketing in total
     coo: { coverage_target: 1.0, lease_approval_rent_cents: 0, max_salary_ratio_bp: 11000 } # support coverage; rent above which a lease is only proposed
     cfo: { runway_months: 9, repay_above_months: 24 } # months of burn: propose a round or loan below the first; repay debt early with cash above the second

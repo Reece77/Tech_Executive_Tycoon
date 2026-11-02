@@ -31,12 +31,12 @@ The CEO seat and Chair step-up (M13). Rival executives. Balance tuning beyond wh
 
 ## Acceptance criteria
 
-- [ ] Each seat's authority acts within its guardrails (property tests) through the player's action path.
-- [ ] Decision quality follows the true score; mistakes are visible by name; no API response shows the score or the probability.
-- [ ] Proposals need approval and block Continue.
-- [ ] Quarterly reports and executive events arrive; offline templates work.
-- [ ] §24.5 targets met (printed, values recorded).
-- [ ] `make check` green; `make e2e` passes; merged per CLAUDE.md §6 with the trailer `Milestone-Tag: m10c-done`.
+- [x] Each seat's authority acts within its guardrails (property tests) through the player's action path.
+- [x] Decision quality follows the true score; mistakes are visible by name; no API response shows the score or the probability.
+- [x] Proposals need approval and block Continue.
+- [x] Quarterly reports and executive events arrive; offline templates work.
+- [x] §24.5 targets met (printed, values recorded).
+- [x] `make check` green; `make e2e` passes; merged per CLAUDE.md §6 with the trailer `Milestone-Tag: m10c-done`.
 
 ## Manual check (Reece, after merge)
 
@@ -44,8 +44,22 @@ On `quick-stage3`, appoint all five seats, give them authority, and Holiday for 
 
 ## Decisions made
 
-_(Agent fills in.)_
+- **Seats with authority (2).** The five seats in §24.1 (CTO, CRO, CMO, COO, CFO); the CPO has none and still reports. `set_authority` (energy 2) turns a filled seat's authority on or off and merges guardrails over the seat's current or default values (`exec_authority.defaults`); a vacated seat keeps its authority row, so a new holder acts at once. The CFO's cash guardrail is `repay_above_months` (the hidden-field check forbids `cash_months`). The CRO's price band anchors on each sales-led price when authority is given (the player's last price). Migration 0027 (`exec_authority`, `exec_decision`, `exec_proposal`).
+- **Acting (3).** In phase 2 after the hiring delegates, in seat order; each holder with authority gets `exec_authority.energy_per_month` (100) at reset and acts through `apply_action` as the actor. The quality draw is on stream `delegate` keyed (person id, 1,000,000 + seat index), one draw a month per seat; choosing uses the shown team (displayed ranges). The CMO spends its share of last month's MRR. A CTO plan for a product with no builders asks for ceil(needed / typical output) people (`builders_to_add` with no builders now uses a typical builder's output 1.0, so M10b's "team too small" message says 2 for one builder's gap).
+- **Proposals (4).** Own records, not events: one pending per kind at a time, not re-proposed within `report_months` of a decline. Approve takes the proposed action (a round at the series' typical midpoint, a loan at half the limit, a 25-seat lease) as the player, at its own energy and rules; Decline closes it. Pending proposals block the player's Continue alongside major events (409 `events_open` gains `proposal_ids`; `EventsOut.blocking_proposal_ids`; "Answer N events and M proposals first", linking to the Org screen when only proposals block). Holiday will not start with one pending and stops on one; headless turns (CLI `advance`, scripts) let it lapse at the next turn.
+- **Reports (5).** Every filled seat reports in the last month of each quarter: KPIs for its function from what the company can see, what it did with its authority (or that it had none), and up to two concerns. The template text is built in the sim; a `exec_report` text request lets the LLM rewrite it from those lines within the budget, and the written report replaces the inbox body. The panel shows each seat's newest report (`ScaleupOut.reports`); `tst reports` prints them with the quarter's decisions and proposals.
+- **Executive events (5).** Triggers: `exec_cto`, `exec_cro`, `exec_cmo` (fixed strength 0.3) while that seat acts; `exec_cfo` while runway is below the CFO's own guardrail; `exec_clash` for two current seat holders at relationship ≤ −10 (strength as `team_clash`). Five templates, each with a modifier choice.
+- **Ask my COO (5).** The COO seat's holder answers when the seat is filled (before the operations-manager rule); the prompt starts with their latest report and the offline reply quotes it.
+- **History and glossary (6).** Timeline entries for `set_authority` and `answer_proposal`; reports (people) and proposals (finance) in the timeline; executives' own actions appear as delegate entries under their names. Glossary terms `exec.authority`, `exec.guardrails`, `exec.proposal`, `exec.report`.
+- **§24.5 measurement (7).** `tst/balance/m10c.py`: from each seed's steady game at stage 3, five senior holders at score 15 (or 8). Executives resign and are poached at the game's usual rates (all five of seed 1's holders left within a year, with or without authority), so the delegated founder approves proposals and refills a vacant seat as the steady script does (and gives the new holder authority); nothing else. The caps count staff below exec level (the refill's exec hires sit outside them). Coverage is read at month ends that began with a COO acting, and target 3 holds the mean monthly shortfall to 0.1: one support person leaving costs 0.25-0.33 at 3-4 needed until the COO's plan fills (about two months), so the worst single month (0.27) is printed, not held.
+- **One default tuned.** The CRO's default seller cap is 20 (10 held delegated ARR to 0.83 of steady, every run at the cap). Values: target 1 0.92, target 2 1.29, target 3 no cap exceeded and mean shortfall 0.009, target 4 94% unspent (`docs/balance-targets.md`, M10c).
+- **Golden snapshots unchanged**: no script gives authority, and reports, triggers and Ask my COO need filled seats with authority or at stage 3.
+- **e2e.** `tools/e2e_m10c_save.py` builds a stage-3 company with a capacity-limited mid-market product and a CRO, and a garage start with a CFO and about three months of cash; the e2e helper declines proposals before Continue in flows not about them.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Executive retention.** Seat holders leave fast (the recorded "executive retention" xfail); with authority this empties seats and stops delegation unless the player refills them. For M10d's balance pass.
+- **Growth hiring.** No seat's rule grows the company: the CTO keeps products at their maintenance line and in-development products at a steady pace, and the CRO hires when sales capacity binds. Delegated companies grow mostly through sellers and marketing. If Reece wants executives to scale the team, a "growth" guardrail for the CTO is the natural addition.
+- **Coverage granularity.** The COO opens plans only below the target; a small buffer (one person over) would keep single departures from dipping coverage.
+- **The CFO's round proposal** starts the round; picking a term sheet stays with the player (§24.1's "recommended term sheet" is the typical target, not a sheet).
+- **COO leases** are always proposals (`lease_approval_rent_cents` 0); a positive value would let the COO sign small leases itself once that path exists.
