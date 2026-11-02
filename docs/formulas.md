@@ -1227,7 +1227,7 @@ Monthly headlines (two or three lines added to Market news), quarterly board mee
 
 ### 16.9 What the API may show
 
-Events with their choices and, for each choice, its effects as words with a size ("small morale lift for Priya", "costs about $8,000"), never the caps or the trigger strengths. Relationship labels, never numbers. Storyline titles and summaries. The LLM meter: spend this month against the budget, and the adapter in use.
+Events with their choices and, for each choice, its effects as words with a size ("small morale lift for Priya", "costs about $8,000"), never the caps or the trigger strengths. **Replaced in M10b by §23.2:** effects show as plain numbers ("Priya's morale +5", "costs $8,000", "+5% brand target for Pipeline for 12 months"); caps and trigger strengths stay hidden. Relationship labels, never numbers. Storyline titles and summaries. The LLM meter: spend this month against the budget, and the adapter in use.
 
 ### 16.10 Balance targets (M6 acceptance, printed, with `MockLLMAdapter` choosing the first choice)
 

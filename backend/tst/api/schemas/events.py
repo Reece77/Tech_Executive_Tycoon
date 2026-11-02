@@ -13,7 +13,11 @@ from pydantic import BaseModel, Field
 class EventChoiceOut(BaseModel):
     key: str
     label: str
-    effects: list[str] = Field(description="What the choice does, in words with a size")
+    effects: list[str] = Field(
+        description="What the choice does, as numbers: '+3 brand for Pipeline', 'costs $8,000', "
+        "'+5% brand target for Pipeline for 12 months' (23.2, M10b)"
+    )
+    do_nothing: bool = Field(description="An explicit 'Do nothing' choice: no effect (23.2)")
 
 
 class EventStorylineOut(BaseModel):

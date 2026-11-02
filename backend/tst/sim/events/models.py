@@ -15,6 +15,8 @@ from typing import Literal
 
 from tst.sim.events.data import Severity
 
+PCT = 100  # tunable-exempt: percent
+
 type EventStatus = Literal["pending", "open", "answered", "auto"]
 type StorylineStatus = Literal["active", "ended"]
 type Tone = Literal["grounded", "light"]
@@ -23,11 +25,36 @@ type Tone = Literal["grounded", "light"]
 @dataclass(frozen=True, slots=True)
 class Effect:
     """One validated effect. `target` is "person:<id>", "pair:<a>-<b>", "unit:<id>",
-    "company:<id>", "product:<id>", "founder:<id>", "board" or "" (follow_up)."""
+    "company:<id>", "product:<id>", "founder:<id>", "board" or "" (follow_up). A `modifier`
+    (23.2, M10b) also names its `stat` and how many `months` it runs; its value is percent."""
 
     type: str
     target: str
     value: float = 0.0
+    stat: str = ""
+    months: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class Modifier:
+    """A running effect of an event choice (23.2, M10b): `stat` of `target` x (1 + value_pct /
+    100) every month from `start_turn` until `end_turn` (exclusive), then it expires."""
+
+    id: int
+    company_id: int
+    event_id: int | None
+    target: str  # "product:<id>", "unit:<id>", "person:<id>", "company:<id>", "founder:<id>"
+    stat: str
+    value_pct: float
+    start_turn: int
+    end_turn: int
+
+    def active(self, turn: int) -> bool:
+        return self.start_turn <= turn < self.end_turn
+
+    @property
+    def factor(self) -> float:
+        return 1 + self.value_pct / PCT
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,6 +62,7 @@ class EventChoice:
     key: str
     label: str
     effects: tuple[Effect, ...] = ()
+    do_nothing: bool = False  # an explicit "Do nothing" choice (23.2, M10b)
 
 
 @dataclass(frozen=True, slots=True)

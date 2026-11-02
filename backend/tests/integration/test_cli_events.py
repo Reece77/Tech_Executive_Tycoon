@@ -35,7 +35,7 @@ def run(*args: str, code: int = 0) -> str:
 def test_events_choose_storylines_and_the_critical_block(save: Path, loaded: LoadedData) -> None:
     event_id = open_event(save, loaded, "quiet_tax_credit", severity="minor")
     out = run("events", "--save", SAVE)
-    assert f"Event {event_id} [Finance, minor]" in out and "A. Claim it — brings in about $" in out
+    assert f"Event {event_id} [Finance, minor]" in out and "A. Claim it — brings in $" in out
     assert "Answered" in run("choose", "--save", SAVE, "--event", str(event_id), "--choice", "a")
     assert f"Answered {event_id} (you chose)" in run("events", "--save", SAVE)
     crit = open_event(save, loaded, "runway_payroll_crunch", severity="critical")

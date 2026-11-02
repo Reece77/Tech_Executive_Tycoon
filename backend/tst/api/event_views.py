@@ -1,5 +1,6 @@
-"""Events, storylines and relationships as the player sees them (docs/formulas.md 16.9):
-effects as words with a size, relationship labels, never caps, trigger strengths or numbers."""
+"""Events, storylines and relationships as the player sees them: effects as plain numbers
+(formulas.md 23.2, M10b, replacing 16.9's words with a size), relationship labels; never caps
+or trigger strengths."""
 
 from __future__ import annotations
 
@@ -14,10 +15,8 @@ from tst.api.schemas.events import (
 )
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
-from tst.sim.events.effects import parse_target
-from tst.sim.events.formulas import size_word
-from tst.sim.events.models import Effect, GameEvent, Storyline
-from tst.sim.events.render import full_name
+from tst.sim.events.describe import choice_texts, person_label
+from tst.sim.events.models import GameEvent, Storyline
 from tst.sim.org.rules import org_view
 from tst.sim.people.relationships import pair_key, relationship_label
 from tst.sim.state import GameState
@@ -32,99 +31,6 @@ CATEGORY_LABELS = {
     "founder": "Founder",
 }
 SOURCE_LABELS = {"claude": "Claude", "template": "template", "mock": "mock", "replay": "replay"}
-CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
-MONTHS_PER_YEAR = 12  # tunable-exempt: calendar
-
-
-def about_dollars(cents: float) -> str:
-    """Round to two significant figures: "about $8,000"."""
-    dollars = abs(cents) / CENTS_PER_DOLLAR
-    if dollars < 1:
-        return "$1"
-    digits = len(str(int(dollars)))
-    step = 10 ** max(0, digits - 2)
-    return f"${round(dollars / step) * step:,.0f}"
-
-
-def _name(state: GameState, person_id: int) -> str:
-    person = next((p for p in state.people if p.id == person_id), None)
-    return full_name(person) if person else "someone who has left"
-
-
-def _who(state: GameState, target: str) -> str:
-    kind, ids = parse_target(target)
-    if kind == "person" and ids:
-        return _name(state, ids[0])
-    if kind == "unit" and ids:
-        unit = state.unit(ids[0])
-        return unit.name if unit else "the team"
-    if kind == "pair" and len(ids) == 2:  # tunable-exempt: a pair
-        return f"{_name(state, ids[0])} and {_name(state, ids[1])}"
-    if kind == "product" and ids:
-        product = state.product(ids[0])
-        return product.name if product else "the product"
-    return "everyone"
-
-
-def effect_words(state: GameState, event: GameEvent, effect: Effect, data: LoadedData) -> str:
-    v = effect.value
-    size = size_word(effect.type, v, event.severity, data.balance.events)
-    sized = f"{size} " if size else ""
-    up = v > 0
-    who = _who(state, effect.target)
-    match effect.type:
-        case "morale_delta":
-            return f"{sized}morale {'lift' if up else 'hit'} for {who}"
-        case "relationship_delta":
-            return f"{sized}{'warmer' if up else 'cooler'} relationship between {who}"
-        case "cash_delta":
-            return f"{'brings in' if up else 'costs'} about {about_dollars(v)}"
-        case "brand_delta":
-            return f"{sized}brand {'lift' if up else 'hit'} for {who}"
-        case "quality_delta":
-            return f"{sized}quality {'gain' if up else 'loss'} for {who}"
-        case "customers_pct":
-            return f"{sized}{'customer gain' if up else 'customer loss'} for {who}"
-        case "growth_boost":
-            return f"{sized}skill growth for {who}"
-        case "reveal_tag":
-            return f"you learn more about {who}"
-        case "energy_delta":
-            return f"{sized}{'more' if up else 'less'} energy for you next month"
-        case "board_confidence":
-            return f"{sized}board confidence {'lift' if up else 'drop'}"
-        case "salary_change":
-            _, ids = parse_target(effect.target)
-            employment = state.employment_of(ids[0]) if ids else None
-            if employment is None:
-                return f"{sized}raise for {who}"
-            cost = employment.salary_cents * v / 100  # tunable-exempt: percent
-            return f"{sized}raise for {who} · costs about {about_dollars(cost)} a year"
-        case "resign":
-            return f"{who} leaves"
-        case "follow_up":
-            return "a follow-up decision comes next month"
-        case "loan_fee" | "loan_rate" | "loan_repay":
-            return _loan_words(state, effect, data)
-    return effect.type.replace("_", " ")
-
-
-def _loan_words(state: GameState, effect: Effect, data: LoadedData) -> str:
-    """A lender event's choice in words with its amount (M10, 20.3)."""
-    _, ids = parse_target(effect.target)
-    loan = state.loan(ids[0]) if ids else None
-    br = data.balance.debt.breach
-    if loan is None:
-        return "the loan has closed"
-    if effect.type == "loan_rate":
-        points = effect.value * br.rate_up_bp / 100  # tunable-exempt: bp to points
-        now = loan.rate_bp / 100  # tunable-exempt: bp to %
-        return f"the rate rises {points:g} points, to {now + points:.2f}%"
-    share = br.repay_bp if effect.type == "loan_repay" else br.waiver_fee_bp
-    cents = effect.value * loan.balance_cents * share / 10_000  # tunable-exempt: bp
-    if effect.type == "loan_repay":
-        return f"repays about {about_dollars(cents)} of the balance from cash now"
-    return f"a waiver fee of about {about_dollars(cents)}"
 
 
 def event_out(state: GameState, event: GameEvent, data: LoadedData) -> EventOut:
@@ -152,7 +58,8 @@ def event_out(state: GameState, event: GameEvent, data: LoadedData) -> EventOut:
             EventChoiceOut(
                 key=c.key,
                 label=c.label,
-                effects=[effect_words(state, event, e, data) for e in c.effects],
+                effects=choice_texts(state, event, c, data.balance),
+                do_nothing=c.do_nothing,
             )
             for c in event.choices
         ],
@@ -197,7 +104,7 @@ def relationships_out(state: GameState, person_id: int, data: LoadedData) -> lis
         out.append(
             RelationshipOut(
                 person_id=other,
-                name=_name(state, other),
+                name=person_label(state, other),
                 link=link,
                 label=relationship_label(current.value, data.balance.relationships),
             )
@@ -217,7 +124,9 @@ def team_mood(state: GameState, unit_id: int | None, data: LoadedData) -> TeamMo
             if label in ("strained", "hostile"):
                 pairs.append(
                     TeamMoodPairOut(
-                        a_name=_name(state, rel.a), b_name=_name(state, rel.b), label=label
+                        a_name=person_label(state, rel.a),
+                        b_name=person_label(state, rel.b),
+                        label=label,
                     )
                 )
     if not pairs:

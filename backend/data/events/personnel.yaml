@@ -154,7 +154,7 @@ templates:
         label: "Back it fully: time, travel, rehearsal"
         effects:
           - { type: morale_delta, target: person, share: 0.6 }
-          - { type: brand_delta, target: product, share: 0.6 }
+          - { type: modifier, target: product, share: 0.8, stat: brand_target, months: 12 }
           - { type: cash_delta, target: company, share: -0.2 }
       - key: C
         label: "Not this year"
@@ -496,7 +496,7 @@ templates:
     choices:
       - key: A
         label: "Note it and say nothing"
-        effects: []
+        do_nothing: true
       - key: B
         label: "Acknowledge it openly with {person}"
         effects:
@@ -543,6 +543,7 @@ templates:
         effects:
           - { type: morale_delta, target: unit, share: 0.7 }
           - { type: cash_delta, target: company, share: -0.3 }
+          - { type: modifier, target: unit, share: 0.6, stat: morale_target, months: 6 }
       - key: C
         label: "Wait for the next win to lift spirits"
         effects:

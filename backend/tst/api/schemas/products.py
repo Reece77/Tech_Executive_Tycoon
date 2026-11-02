@@ -12,7 +12,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from tst.api.schemas.common import BreakdownOut
-from tst.api.schemas.people import EnergyOut
+from tst.api.schemas.people import ActiveEffectOut, EnergyOut
 
 
 class AppealWeightsOut(BaseModel):
@@ -209,6 +209,9 @@ class ProductOut(BaseModel):
     brand_trend: str = Field(description="rising | falling | steady, from the last two months")
     counts_users: bool = Field(description="Every segment counts consumer users")
     segments: list[ProductSegmentOut]
+    active_effects: list[ActiveEffectOut] = Field(
+        description="Event modifiers on this product (23.2, M10b)"
+    )
     regional_prices: list[RegionalPriceOut] = Field(
         description="Its prices in other regions it has launched in (M10b)"
     )

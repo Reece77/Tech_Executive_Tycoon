@@ -24,6 +24,7 @@ templates:
         effects:
           - { type: brand_delta, target: product, share: 0.5 }
           - { type: cash_delta, target: company, share: -0.2 }
+          - { type: modifier, target: product, share: 0.6, stat: awareness, months: 6 }
 
   - id: rival_move_noticed
     category: rivals
@@ -96,3 +97,4 @@ templates:
         effects:
           - { type: morale_delta, target: company, share: 0.2 }
           - { type: energy_delta, target: founder, share: -0.4 }
+          - { type: modifier, target: company, share: 0.6, stat: morale_target, months: 12 }

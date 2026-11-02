@@ -131,8 +131,10 @@ def test_trigger_table_and_caps_are_data(loaded: LoadedData) -> None:
         "energy_delta": [5, 10, 15],
         "board_confidence": [3, 6, 12],
         "salary_change": [5, 10, 15],
+        "modifier": [5, 10, 20],  # M10b (23.2): percent of a stat while it runs
     }
     assert events.caps == caps
+    assert events.modifier_months == [6, 12, 12]
     # M10: loan effects are shares of debt.breach's sizes, not capped in events.caps (20.3).
     loan = {"loan_fee", "loan_rate", "loan_repay"}
     assert set(caps) | {"reveal_tag", "resign", "follow_up"} | loan == set(EFFECT_TYPES)

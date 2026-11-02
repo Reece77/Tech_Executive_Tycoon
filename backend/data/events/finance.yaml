@@ -44,7 +44,7 @@ templates:
           - { type: energy_delta, target: founder, share: -0.3 }
       - key: B
         label: "Don't ask"
-        effects: []
+        do_nothing: true
 
   - id: runway_payroll_crunch
     category: finance
@@ -121,6 +121,7 @@ templates:
         effects:
           - { type: morale_delta, target: company, share: 0.8 }
           - { type: cash_delta, target: company, share: -0.2 }
+          - { type: modifier, target: company, share: 0.4, stat: morale_target, months: 6 }
 
   - id: funding_spending_pressure
     category: finance
@@ -160,7 +161,7 @@ templates:
           - { type: energy_delta, target: founder, share: -0.4 }
       - key: B
         label: "Not worth the hassle"
-        effects: []
+        do_nothing: true
 
   - id: quiet_audit
     category: finance
@@ -179,4 +180,4 @@ templates:
           - { type: board_confidence, target: board, share: 0.3 }
       - key: B
         label: "Next year"
-        effects: []
+        do_nothing: true

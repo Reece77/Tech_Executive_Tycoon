@@ -12,6 +12,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.events.data import LOAN_EFFECTS
 from tst.sim.events.formulas import cash_cap, clamp_effect
 from tst.sim.events.models import EventChoice, GameEvent, QueuedEvent
+from tst.sim.events.modifiers import start as start_modifier
 from tst.sim.finance.debt import repay as repay_loan
 from tst.sim.ledger import CASH, GENERAL_ADMIN, INTEREST, OTHER_INCOME, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
@@ -283,6 +284,8 @@ def apply_choice(
         elif t in LOAN_EFFECTS and kind == "loan" and ids:
             state, posted = _loan_effect(state, t, ids[0], value, event, balance)
             entries += posted
+        elif t == "modifier":  # runs for its months from this one (M10b, 23.2)
+            state = start_modifier(state, cid, event.id, effect, event.severity, balance.events)
         # energy_delta applies when energy resets for next month (energy_next_month).
     state = with_event(
         state,

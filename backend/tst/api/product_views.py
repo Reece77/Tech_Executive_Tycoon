@@ -30,7 +30,7 @@ from tst.api.schemas.products import (
     RegionalPriceOut,
     RegionOptionOut,
 )
-from tst.api.views import person_name
+from tst.api.views import person_name, product_effects
 from tst.loader import LoadedData
 from tst.sim.actions.geo import default_regional_price
 from tst.sim.actions.products import launch_problems
@@ -397,6 +397,7 @@ def product_out(
         counts_users=bool(segments) and all(s.counts_users for s in segments),
         segments=segments,
         regional_prices=_regional_prices(state, product, data),
+        active_effects=product_effects(state, product.id),
         assigned_units=[
             AssignedUnitOut(
                 unit_id=u,

@@ -10629,6 +10629,59 @@
         ],
         "title": "ActionOut"
       },
+      "ActiveEffectOut": {
+        "properties": {
+          "modifier_id": {
+            "type": "integer",
+            "title": "Modifier Id"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "The event's title"
+          },
+          "stat": {
+            "type": "string",
+            "title": "Stat"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "e.g. '+5% brand target for Pipeline for 4 months'"
+          },
+          "value_pct": {
+            "type": "number",
+            "title": "Value Pct"
+          },
+          "months_left": {
+            "type": "integer",
+            "title": "Months Left"
+          }
+        },
+        "type": "object",
+        "required": [
+          "modifier_id",
+          "event_id",
+          "source",
+          "stat",
+          "text",
+          "value_pct",
+          "months_left"
+        ],
+        "title": "ActiveEffectOut",
+        "description": "A running event modifier (23.2, M10b): what it does, where from, how long is left."
+      },
       "AppealWeightsOut": {
         "properties": {
           "quality": {
@@ -12055,6 +12108,14 @@
             "title": "Morale History",
             "description": "Last 12 months, oldest first"
           },
+          "active_effects": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveEffectOut"
+            },
+            "type": "array",
+            "title": "Active Effects",
+            "description": "Event modifiers on this person's morale (M10b)"
+          },
           "learned": {
             "$ref": "#/components/schemas/LearnedOut"
           }
@@ -12081,6 +12142,7 @@
           "work_style",
           "work_style_matches_role",
           "morale_history",
+          "active_effects",
           "learned"
         ],
         "title": "CheckOut",
@@ -13204,6 +13266,33 @@
         ],
         "title": "EmploymentOut"
       },
+      "EnergyAdjustmentOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "e.g. '-10 from A director calls between meetings'"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "description": "Energy points (or percent, for a modifier)"
+          },
+          "percent": {
+            "type": "boolean",
+            "title": "Percent",
+            "description": "True: a modifier on monthly energy, in percent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "value",
+          "percent"
+        ],
+        "title": "EnergyAdjustmentOut",
+        "description": "Why this month's founder energy differs from the usual (23.2, M10b)."
+      },
       "EnergyOut": {
         "properties": {
           "energy": {
@@ -13213,12 +13302,21 @@
           "max": {
             "type": "integer",
             "title": "Max"
+          },
+          "adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/EnergyAdjustmentOut"
+            },
+            "type": "array",
+            "title": "Adjustments",
+            "description": "Event effects on this month's energy (M10b)"
           }
         },
         "type": "object",
         "required": [
           "energy",
-          "max"
+          "max",
+          "adjustments"
         ],
         "title": "EnergyOut"
       },
@@ -13295,14 +13393,20 @@
             },
             "type": "array",
             "title": "Effects",
-            "description": "What the choice does, in words with a size"
+            "description": "What the choice does, as numbers: '+3 brand for Pipeline', 'costs $8,000', '+5% brand target for Pipeline for 12 months' (23.2, M10b)"
+          },
+          "do_nothing": {
+            "type": "boolean",
+            "title": "Do Nothing",
+            "description": "An explicit 'Do nothing' choice: no effect (23.2)"
           }
         },
         "type": "object",
         "required": [
           "key",
           "label",
-          "effects"
+          "effects",
+          "do_nothing"
         ],
         "title": "EventChoiceOut"
       },
@@ -18226,6 +18330,14 @@
               }
             ],
             "description": "From stage 3 (M8)"
+          },
+          "active_effects": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveEffectOut"
+            },
+            "type": "array",
+            "title": "Active Effects",
+            "description": "Every running event modifier (23.2, M10b)"
           }
         },
         "type": "object",
@@ -18262,7 +18374,8 @@
           "stage_since_turn",
           "stage_since_label",
           "stage_history",
-          "funding"
+          "funding",
+          "active_effects"
         ],
         "title": "OverviewOut"
       },
@@ -18806,6 +18919,14 @@
             "type": "array",
             "title": "Morale History",
             "description": "Last 12 months, oldest first"
+          },
+          "active_effects": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveEffectOut"
+            },
+            "type": "array",
+            "title": "Active Effects",
+            "description": "Event modifiers on this person's morale (M10b)"
           }
         },
         "type": "object",
@@ -18829,7 +18950,8 @@
           "interests",
           "work_style",
           "work_style_matches_role",
-          "morale_history"
+          "morale_history",
+          "active_effects"
         ],
         "title": "PersonProfileOut"
       },
@@ -19658,6 +19780,14 @@
             "type": "array",
             "title": "Segments"
           },
+          "active_effects": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveEffectOut"
+            },
+            "type": "array",
+            "title": "Active Effects",
+            "description": "Event modifiers on this product (23.2, M10b)"
+          },
           "regional_prices": {
             "items": {
               "$ref": "#/components/schemas/RegionalPriceOut"
@@ -19763,6 +19893,7 @@
           "brand_trend",
           "counts_users",
           "segments",
+          "active_effects",
           "regional_prices",
           "assigned_units",
           "builders",

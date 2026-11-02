@@ -37,6 +37,8 @@ from tst.db.mappers import (
     game_state_from_rows,
     market_from_row,
     market_to_row,
+    modifier_from_row,
+    modifier_to_row,
     next_ids_from_meta,
     next_ids_to_meta,
     offer_from_row,
@@ -75,6 +77,7 @@ from tst.db.models import (
     CompanyHqRow,
     CompanyRow,
     EmploymentRow,
+    EventModifierRow,
     EventQueueRow,
     EventRow,
     ExecSeatRow,
@@ -606,6 +609,17 @@ def _event_state(session: Session, turn: int) -> dict[str, Any]:
                 .order_by(EventQueueRow.id)
             )
         ),
+        # M10b (23.2): modifiers still running; expired rows stay for history.
+        "modifiers": tuple(
+            modifier_from_row(r)
+            for r in session.scalars(
+                select(EventModifierRow)
+                .where(EventModifierRow.end_turn > turn)
+                .order_by(EventModifierRow.id)
+            )
+        )
+        if has_table(session, EventModifierRow)
+        else (),
     }
 
 
@@ -618,9 +632,12 @@ def _event_ids(session: Session, ids: NextIds) -> NextIds:
     def after(model: Any) -> int:
         return int(session.scalar(select(func.max(model.id))) or 0) + 1
 
-    return replace(
+    ids = replace(
         ids, event=after(EventRow), storyline=after(StorylineRow), queued=after(EventQueueRow)
     )
+    if has_table(session, EventModifierRow):  # M10b
+        ids = replace(ids, modifier=after(EventModifierRow))
+    return ids
 
 
 def has_table(session: Session, model: Any) -> bool:
@@ -919,6 +936,9 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         _write(session, old.events, new.events, lambda e: e.id, event_to_row)
         session.flush()
         _write(session, old.queued, new.queued, lambda q: q.id, queued_to_row)
+    if old.modifiers != new.modifiers and has_table(session, EventModifierRow):
+        session.flush()  # after the events they name (M10b, 23.2)
+        _write(session, old.modifiers, new.modifiers, lambda m: m.id, modifier_to_row)
 
     if old.relationships != new.relationships and has_table(session, RelationshipRow):
         _sync_relationships(session, old, new)
@@ -1129,4 +1149,5 @@ def live_view(state: GameState) -> GameState:
         ),
         storylines=tuple(s for s in state.storylines if s.status == "active"),
         queued=tuple(q for q in state.queued if not q.done),
+        modifiers=tuple(m for m in state.modifiers if m.end_turn > state.turn),
     )

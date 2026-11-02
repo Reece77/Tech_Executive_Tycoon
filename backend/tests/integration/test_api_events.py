@@ -20,7 +20,7 @@ def test_events_choose_block_and_follow_up(tmp_path: Path, loaded: LoadedData) -
         assert events["to_answer"] >= 1 and events["blocking_event_id"] is None
         card = next(e for e in events["open"] if e["event_id"] == event_id)
         assert card["written_by"] == "template" and len(card["choices"]) == 2
-        assert any("brings in about $" in w for w in card["choices"][0]["effects"])
+        assert any(w.startswith("brings in $") for w in card["choices"][0]["effects"])  # 23.2
         before = api.get(f"{BASE}/overview")["cash_cents"]
         out = api.post(f"{BASE}/events/{event_id}/choose", {"choice": "A"})
         assert out["event"]["status"] == "answered" and out["event"]["chosen"] == "A"

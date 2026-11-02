@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router';
 import { OverviewTip } from '../components/Term';
 import { CashChart } from '../components/CashChart';
 import { KpiTile } from '../components/KpiTile';
+import { ActiveEffects } from '../components/ActiveEffects';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOverview, type Overview, type OverviewBreakdowns } from '../hooks/api';
 import { formatMoneyShort, formatMoneyWhole, formatRunway, formatWhole } from '../lib/format';
@@ -179,6 +180,7 @@ export function OverviewScreen() {
         </Panel>
         <CostsPanel overview={data} month={month} />
       </div>
+      <ActiveEffects saveId={saveId} effects={data.active_effects} />
       <Panel
         title="Latest in your inbox"
         label="Latest messages"

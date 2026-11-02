@@ -16,9 +16,11 @@ from tst.sim.calendar import format_turn
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.errors import CriticalEventOpenError, EventsOpenError, GameOverError
+from tst.sim.events.describe import month_choices
 from tst.sim.events.director import direct
 from tst.sim.events.effects import auto_resolve, blocking_events, energy_next_month
 from tst.sim.events.models import EventRequest, TextRequest
+from tst.sim.events.modifiers import expire as expire_modifiers
 from tst.sim.finance import debt, fundraising, insolvency, macro
 from tst.sim.finance.board import average_confidence, board_month, vacate_departed
 from tst.sim.finance.captable import founder_bp
@@ -34,7 +36,7 @@ from tst.sim.ledger import (
     account_balance,
     apply_entries,
 )
-from tst.sim.log import LogItem
+from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
 from tst.sim.org.delegates import run_delegates
 from tst.sim.org.divisions import division_months
@@ -312,6 +314,12 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
         history = (*company.mrr_history, ctx.revenue.get(company.id, 0))[-keep:]
         state = with_company(state, replace(company, mrr_history=history))
     state = _debt_history(state, ctx, types)  # M10 (20.3): covenants read completed months
+    # M10b (23.2): the month's choices in one line; modifiers whose last month this was expire.
+    expiring = tuple(m for m in state.modifiers if m.end_turn <= state.turn + 1)
+    summary = month_choices(state, expiring, state.player.id, ctx.balance)
+    state, _ = expire_modifiers(state)
+    if summary:
+        items.append(inbox_item(ctx.turn, state.player.id, "choices_month", summary=summary))
     ctx = replace(
         ctx,
         state=state,

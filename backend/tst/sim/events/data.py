@@ -76,6 +76,8 @@ EFFECT_TYPES: Final = (
     "loan_fee",
     "loan_rate",
     "loan_repay",
+    # M10b (23.2): a lasting percent change to one stat for some months.
+    "modifier",
 )
 LOAN_EFFECTS: Final = ("loan_fee", "loan_rate", "loan_repay")
 VALUELESS: Final = ("reveal_tag", "resign", "follow_up")  # no size: they happen or not
@@ -99,6 +101,30 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "loan_fee": ("loan",),
     "loan_rate": ("loan",),
     "loan_repay": ("loan",),
+    "modifier": ("product", "unit", "person", "other", "company", "founder"),
+}
+
+# M10b (23.2): what a modifier can change, and the target words each stat accepts. A company
+# target reaches every product, unit and person of the company.
+MODIFIER_STATS: Final[dict[str, tuple[str, ...]]] = {
+    "brand_target": ("product", "company"),
+    "quality_cap": ("product", "company"),
+    "builder_output": ("product", "unit", "company"),
+    "seller_capacity": ("product", "unit", "company"),
+    "awareness": ("product", "company"),
+    "churn": ("product", "company"),
+    "morale_target": ("person", "other", "unit", "company"),
+    "founder_energy": ("founder",),
+}
+STAT_LABELS: Final[dict[str, str]] = {
+    "brand_target": "brand target",
+    "quality_cap": "quality cap",
+    "builder_output": "builder output",
+    "seller_capacity": "seller capacity",
+    "awareness": "awareness",
+    "churn": "churn",
+    "morale_target": "morale target",
+    "founder_energy": "monthly energy",
 }
 
 # What each trigger can name. Company, founder, product and board can always be asked for;
@@ -155,11 +181,22 @@ class EffectSpec(_Frozen):
     type: str
     target: str = ""
     share: float = Field(default=0.0, ge=-1.0, le=1.0)
+    stat: str | None = None  # modifier only (23.2)
+    months: int | None = Field(default=None, ge=1)  # modifier only, held to the severity's
 
     @model_validator(mode="after")
     def _check(self) -> EffectSpec:
         if self.type not in EFFECT_TYPES:
             raise ValueError(f"unknown effect {self.type!r}")
+        if self.type == "modifier":
+            if self.stat not in MODIFIER_STATS or self.months is None:
+                raise ValueError(f"a modifier needs a stat in {list(MODIFIER_STATS)} and months")
+            if self.target not in MODIFIER_STATS[self.stat]:
+                raise ValueError(
+                    f"a {self.stat} modifier may target {list(MODIFIER_STATS[self.stat])}"
+                )
+        elif self.stat is not None or self.months is not None:
+            raise ValueError("only a modifier has a stat and months")
         if self.target not in EFFECT_TARGETS[self.type]:
             raise ValueError(
                 f"{self.type} may target {list(EFFECT_TARGETS[self.type])}, not {self.target!r}"
@@ -177,6 +214,15 @@ class ChoiceSpec(_Frozen):
     key: str = Field(pattern=r"^[ABC]$")
     label: str = Field(min_length=1, max_length=80)  # tunable-exempt: button text length
     effects: tuple[EffectSpec, ...] = Field(default=(), max_length=3)  # tunable-exempt: 16.3
+    do_nothing: bool = False  # 23.2: the one kind of choice allowed no effect
+
+    @model_validator(mode="after")
+    def _check(self) -> ChoiceSpec:
+        if not self.effects and not self.do_nothing:
+            raise ValueError(f"choice {self.key}: give it an effect or mark it do_nothing (23.2)")
+        if self.effects and self.do_nothing:
+            raise ValueError(f"choice {self.key}: a do_nothing choice has no effects")
+        return self
 
 
 class StorylineSpec(_Frozen):
@@ -209,6 +255,12 @@ class EventTemplate(_Frozen):
     def texts(self) -> tuple[str, ...]:
         story = (self.storyline.summary, self.storyline.title or "") if self.storyline else ()
         return (self.title, self.body, *(c.label for c in self.choices), *story)
+
+    def modifier_stats(self) -> frozenset[str]:
+        """The stats the LLM may attach modifiers for: those the template's own use (23.2)."""
+        return frozenset(
+            e.stat for c in self.choices for e in c.effects if e.type == "modifier" and e.stat
+        )
 
     def needs(self) -> frozenset[str]:
         """Everything the template names: placeholders and effect targets."""

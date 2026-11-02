@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 24
+SCHEMA_VERSION = 25
 
 
 class Base(DeclarativeBase):
@@ -783,6 +783,22 @@ class EventQueueRow(Base):
     segment: Mapped[str | None] = mapped_column(String(32), nullable=True)
     done: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
     loan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # M10 (0022)
+
+
+class EventModifierRow(Base):
+    """An event choice's lasting effect on one stat (M10b, formulas.md 23.2; 0025). Rows stay
+    after they expire, for history; the state loads those still running."""
+
+    __tablename__ = "event_modifier"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    event_id: Mapped[int | None] = mapped_column(ForeignKey("event.id"), nullable=True)
+    target: Mapped[str] = mapped_column(String(32), nullable=False)
+    stat: Mapped[str] = mapped_column(String(32), nullable=False)
+    value_pct: Mapped[float] = mapped_column(Float, nullable=False)
+    start_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_turn: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
 
 
 class LLMTextRow(Base):

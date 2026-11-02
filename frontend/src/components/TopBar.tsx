@@ -57,10 +57,24 @@ function Stat({ label, children }: { label: ReactNode; children: ReactNode }) {
   );
 }
 
-export function EnergyMeter({ energy, max }: { energy: number; max: number }) {
+export function EnergyMeter({
+  energy,
+  max,
+  adjustments = [],
+}: {
+  energy: number;
+  max: number;
+  adjustments?: { label: string }[];
+}) {
   const pct = max > 0 ? Math.round((energy / max) * 100) : 0;
+  // Event effects on this month's energy (23.2, M10b), e.g. "-10 from the board dinner".
+  const tip = adjustments.length ? adjustments.map((a) => a.label).join('\n') : undefined;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 140 }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 140 }}
+      title={tip}
+      data-testid="energy-meter"
+    >
       <span className="tst-ptitle" style={{ margin: 0, fontSize: 11, fontWeight: 400 }}>
         Founder energy{' '}
         <span className="tst-num" style={{ color: 'var(--tst-text)' }} data-testid="energy">
@@ -187,7 +201,11 @@ export function TopBar({
           )}
         </Stat>
         {overview && !ended && (
-          <EnergyMeter energy={overview.energy.energy} max={overview.energy.max} />
+          <EnergyMeter
+            energy={overview.energy.energy}
+            max={overview.energy.max}
+            adjustments={overview.energy.adjustments}
+          />
         )}
         {ended && overview && (
           <Link to={`/game/${overview.save_id}/over`} style={BADGE} data-testid="game-over-badge">

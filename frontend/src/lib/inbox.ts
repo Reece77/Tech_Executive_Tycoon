@@ -69,6 +69,8 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   critical_event: { label: 'Critical', group: 'company' },
   // M7b: "While you were away"
   holiday_summary: { label: 'Holiday', group: 'company' },
+  // M10b: the month's event choices and their modifiers (23.2)
+  choices_month: { label: 'Event', group: 'company' },
 };
 
 /** The Finance tab a finance message opens (M4b). */

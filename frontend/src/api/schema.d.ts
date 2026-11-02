@@ -2418,6 +2418,32 @@ export interface components {
             unread_inbox: number;
         };
         /**
+         * ActiveEffectOut
+         * @description A running event modifier (23.2, M10b): what it does, where from, how long is left.
+         */
+        ActiveEffectOut: {
+            /** Modifier Id */
+            modifier_id: number;
+            /** Event Id */
+            event_id: number | null;
+            /**
+             * Source
+             * @description The event's title
+             */
+            source: string;
+            /** Stat */
+            stat: string;
+            /**
+             * Text
+             * @description e.g. '+5% brand target for Pipeline for 4 months'
+             */
+            text: string;
+            /** Value Pct */
+            value_pct: number;
+            /** Months Left */
+            months_left: number;
+        };
+        /**
          * AppealWeightsOut
          * @description How a segment's buyers weigh the four scores (formulas.md 11.6); they sum to 1.
          */
@@ -3008,6 +3034,11 @@ export interface components {
              * @description Last 12 months, oldest first
              */
             morale_history: components["schemas"]["MoralePointOut"][];
+            /**
+             * Active Effects
+             * @description Event modifiers on this person's morale (M10b)
+             */
+            active_effects: components["schemas"]["ActiveEffectOut"][];
             learned: components["schemas"]["LearnedOut"];
         };
         /** ChooseEventIn */
@@ -3476,12 +3507,38 @@ export interface components {
             /** @description Null without a grant */
             options?: components["schemas"]["OptionsOut"] | null;
         };
+        /**
+         * EnergyAdjustmentOut
+         * @description Why this month's founder energy differs from the usual (23.2, M10b).
+         */
+        EnergyAdjustmentOut: {
+            /**
+             * Label
+             * @description e.g. '-10 from A director calls between meetings'
+             */
+            label: string;
+            /**
+             * Value
+             * @description Energy points (or percent, for a modifier)
+             */
+            value: number;
+            /**
+             * Percent
+             * @description True: a modifier on monthly energy, in percent
+             */
+            percent: boolean;
+        };
         /** EnergyOut */
         EnergyOut: {
             /** Energy */
             energy: number;
             /** Max */
             max: number;
+            /**
+             * Adjustments
+             * @description Event effects on this month's energy (M10b)
+             */
+            adjustments: components["schemas"]["EnergyAdjustmentOut"][];
         };
         /**
          * ErrorOut
@@ -3513,9 +3570,14 @@ export interface components {
             label: string;
             /**
              * Effects
-             * @description What the choice does, in words with a size
+             * @description What the choice does, as numbers: '+3 brand for Pipeline', 'costs $8,000', '+5% brand target for Pipeline for 12 months' (23.2, M10b)
              */
             effects: string[];
+            /**
+             * Do Nothing
+             * @description An explicit 'Do nothing' choice: no effect (23.2)
+             */
+            do_nothing: boolean;
         };
         /** EventLinkOut */
         EventLinkOut: {
@@ -5534,6 +5596,11 @@ export interface components {
             funding: components["schemas"]["FundingTileOut"];
             /** @description From stage 3 (M8) */
             support?: components["schemas"]["SupportTileOut"] | null;
+            /**
+             * Active Effects
+             * @description Every running event modifier (23.2, M10b)
+             */
+            active_effects: components["schemas"]["ActiveEffectOut"][];
         };
         /**
          * OwnershipEventOut
@@ -5774,6 +5841,11 @@ export interface components {
              * @description Last 12 months, oldest first
              */
             morale_history: components["schemas"]["MoralePointOut"][];
+            /**
+             * Active Effects
+             * @description Event modifiers on this person's morale (M10b)
+             */
+            active_effects: components["schemas"]["ActiveEffectOut"][];
         };
         /** PersonRecordOut */
         PersonRecordOut: {
@@ -6127,6 +6199,11 @@ export interface components {
             counts_users: boolean;
             /** Segments */
             segments: components["schemas"]["ProductSegmentOut"][];
+            /**
+             * Active Effects
+             * @description Event modifiers on this product (23.2, M10b)
+             */
+            active_effects: components["schemas"]["ActiveEffectOut"][];
             /**
              * Regional Prices
              * @description Its prices in other regions it has launched in (M10b)

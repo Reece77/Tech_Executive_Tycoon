@@ -66,7 +66,7 @@ def _template(**changes: Any) -> dict[str, Any]:
                 "label": "A",
                 "effects": [{"type": "morale_delta", "target": "person", "share": 0.5}],
             },
-            {"key": "B", "label": "B"},
+            {"key": "B", "label": "B", "do_nothing": True},  # 23.2: said as such
         ],
     }
     base.update(changes)

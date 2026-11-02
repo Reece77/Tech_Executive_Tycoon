@@ -10,9 +10,17 @@ from dataclasses import dataclass
 from typing import Any
 
 from tst.sim.data_models import EventsBalance
-from tst.sim.events.data import EFFECT_TARGETS, EFFECT_TYPES, VALUELESS, EventTemplate, Severity
+from tst.sim.events.data import (
+    EFFECT_TARGETS,
+    EFFECT_TYPES,
+    MODIFIER_STATS,
+    VALUELESS,
+    EventTemplate,
+    Severity,
+)
 from tst.sim.events.formulas import clamp_effect
 from tst.sim.events.models import Effect, EventChoice
+from tst.sim.events.modifiers import clamp_modifier
 
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
 TITLE_CHARS = 120  # tunable-exempt: inbox title width
@@ -50,10 +58,34 @@ def allowed_effects(
             continue
         if effect == "follow_up" and (severity != "critical" or not template.follow_up):
             continue
+        if effect == "modifier" and not template.modifier_stats():  # 23.2: template's list
+            continue
         words = {TARGET_KIND.get(w, w) for w in EFFECT_TARGETS[effect]}
         if words & kinds:
             out.append(effect)
     return out
+
+
+def _modifier(
+    item: dict[str, Any],
+    target: str,
+    value: float,
+    template: EventTemplate,
+    severity: Severity,
+    events: EventsBalance,
+) -> Effect | None:
+    """A modifier effect from the draft: its stat must be one the template's own modifiers
+    use, for a target that stat accepts; value and months are clamped (23.2)."""
+    stat, months = item.get("stat"), item.get("months")
+    if not isinstance(stat, str) or stat not in template.modifier_stats():
+        return None
+    if isinstance(months, bool) or not isinstance(months, int):
+        return None
+    words = {TARGET_KIND.get(w, w) for w in MODIFIER_STATS[stat]}
+    if (target.partition(":")[0] if target else "") not in words:
+        return None
+    value_pct, months = clamp_modifier(value, months, severity, events)
+    return None if value_pct == 0 else Effect("modifier", target, value_pct, stat, months)
 
 
 def _words(text: str, limit: int) -> str:
@@ -112,6 +144,15 @@ def validate_event(
             if isinstance(value, bool) or not isinstance(value, (int, float)):
                 dropped += 1
                 continue
+            if kind == "modifier":  # M10b (23.2): a stat the template allows, months capped
+                modifier = _modifier(item, target, float(value), template, severity, events)
+                if modifier is None:
+                    dropped += 1
+                    continue
+                if (modifier.value, modifier.months) != (float(value), item.get("months")):
+                    dropped += 1
+                effects.append(modifier)
+                continue
             raw_value = float(value) * (CENTS_PER_DOLLAR if kind == "cash_delta" else 1)
             clamped = clamp_effect(kind, raw_value, severity, events, cash_base_cents)
             if clamped != raw_value:
@@ -119,7 +160,10 @@ def validate_event(
             if clamped == 0:
                 continue
             effects.append(Effect(kind, target, clamped))
-        choices.append(EventChoice(KEYS[len(choices)], label.strip()[:LABEL_CHARS], tuple(effects)))
+        do_nothing = not effects and raw.get("do_nothing") is True  # 23.2: said as such
+        choices.append(
+            EventChoice(KEYS[len(choices)], label.strip()[:LABEL_CHARS], tuple(effects), do_nothing)
+        )
     if len(choices) < MIN_CHOICES:
         return Rejection(f"needs {MIN_CHOICES} or {MAX_CHOICES} valid choices")
     summary = draft.get("storyline_summary")

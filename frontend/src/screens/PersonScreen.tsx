@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { Line, LineChart, ResponsiveContainer, YAxis } from 'recharts';
 import { AttributeRange } from '../components/AttributeRange';
 import { MoraleBar } from '../components/MoraleBar';
+import { ActiveEffects } from '../components/ActiveEffects';
 import { RelationshipsPanel } from '../components/Relationships';
 import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../components/PersonOrg';
 import { BreakdownTip } from '../components/Term';
@@ -205,6 +206,7 @@ function ProfileBody({
         <PersonActions saveId={saveId} p={p} />
       </section>
       <MoraleBreakdownPanel saveId={saveId} p={p} overview={overview} />
+      <ActiveEffects saveId={saveId} effects={p.active_effects} />
       {!p.is_founder && p.employment && (
         <RelationshipsPanel saveId={saveId} personId={p.person_id} />
       )}

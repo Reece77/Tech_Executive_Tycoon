@@ -14,6 +14,7 @@ from tst.db.models import (
     CompanyRow,
     DecisionLogRow,
     EmploymentRow,
+    EventModifierRow,
     EventQueueRow,
     EventRow,
     FreeAgentRow,
@@ -54,7 +55,14 @@ from tst.db.models import (
     WorkforcePoolRow,
 )
 from tst.sim.decisions import Decisions
-from tst.sim.events.models import Effect, EventChoice, GameEvent, QueuedEvent, Storyline
+from tst.sim.events.models import (
+    Effect,
+    EventChoice,
+    GameEvent,
+    Modifier,
+    QueuedEvent,
+    Storyline,
+)
 from tst.sim.finance.models import (
     BoardSeat,
     CapEntry,
@@ -828,7 +836,8 @@ def event_to_row(event: GameEvent) -> EventRow:
         {
             "key": c.key,
             "label": c.label,
-            "effects": [{"type": e.type, "target": e.target, "value": e.value} for e in c.effects],
+            "effects": [_effect_json(e) for e in c.effects],
+            **({"do_nothing": True} if c.do_nothing else {}),
         }
         for c in event.choices
     ]
@@ -842,11 +851,29 @@ def event_from_row(row: EventRow) -> GameEvent:
         EventChoice(
             c["key"],
             c["label"],
-            tuple(Effect(e["type"], e["target"], float(e["value"])) for e in c.get("effects", ())),
+            tuple(
+                Effect(
+                    e["type"],
+                    e["target"],
+                    float(e["value"]),
+                    str(e.get("stat", "")),
+                    int(e.get("months", 0)),
+                )
+                for e in c.get("effects", ())
+            ),
+            bool(c.get("do_nothing", False)),
         )
         for c in row.choices or ()
     )
     return GameEvent(**values)
+
+
+def _effect_json(e: Effect) -> dict[str, Any]:
+    """An effect in event.choices; a modifier adds its stat and months (M10b, 23.2)."""
+    out: dict[str, Any] = {"type": e.type, "target": e.target, "value": e.value}
+    if e.type == "modifier":
+        out |= {"stat": e.stat, "months": e.months}
+    return out
 
 
 def storyline_to_row(story: Storyline) -> StorylineRow:
@@ -871,3 +898,14 @@ def queued_from_row(row: EventQueueRow) -> QueuedEvent:
     values = {f.name: getattr(row, f.name) for f in fields(QueuedEvent)}
     values["person_ids"] = tuple(row.person_ids or ())
     return QueuedEvent(**values)
+
+
+# --- Event modifiers (M10b, 23.2) -------------------------------------------------------------
+
+
+def modifier_to_row(m: Modifier) -> EventModifierRow:
+    return EventModifierRow(**asdict(m))
+
+
+def modifier_from_row(row: EventModifierRow) -> Modifier:
+    return Modifier(**{f.name: getattr(row, f.name) for f in fields(Modifier)})

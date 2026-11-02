@@ -152,6 +152,9 @@ class PersonProfileOut(PersonSummaryOut):
     work_style: str | None = Field(description="Null until an interview or network intro")
     work_style_matches_role: bool | None = Field(description="Null while work style is unknown")
     morale_history: list[MoralePointOut] = Field(description="Last 12 months, oldest first")
+    active_effects: list[ActiveEffectOut] = Field(
+        description="Event modifiers on this person's morale (M10b)"
+    )
 
 
 class RangeChangeOut(BaseModel):
@@ -245,9 +248,32 @@ class OfferPreviewOut(BaseModel):
     reasons: list[str] = Field(description="Why the hint reads as it does, from known values only")
 
 
+class EnergyAdjustmentOut(BaseModel):
+    """Why this month's founder energy differs from the usual (23.2, M10b)."""
+
+    label: str = Field(description="e.g. '-10 from A director calls between meetings'")
+    value: float = Field(description="Energy points (or percent, for a modifier)")
+    percent: bool = Field(description="True: a modifier on monthly energy, in percent")
+
+
 class EnergyOut(BaseModel):
     energy: int
     max: int
+    adjustments: list[EnergyAdjustmentOut] = Field(
+        description="Event effects on this month's energy (M10b)"
+    )
+
+
+class ActiveEffectOut(BaseModel):
+    """A running event modifier (23.2, M10b): what it does, where from, how long is left."""
+
+    modifier_id: int
+    event_id: int | None
+    source: str = Field(description="The event's title")
+    stat: str
+    text: str = Field(description="e.g. '+5% brand target for Pipeline for 4 months'")
+    value_pct: float
+    months_left: int
 
 
 class ActionOut(BaseModel):

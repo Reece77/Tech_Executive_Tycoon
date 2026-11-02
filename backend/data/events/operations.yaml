@@ -19,6 +19,7 @@ templates:
         effects:
           - { type: quality_delta, target: product, share: 0.8 }
           - { type: customers_pct, target: product, share: -0.2 }
+          - { type: modifier, target: product, share: 0.6, stat: quality_cap, months: 12 }
       - key: C
         label: "Not now; customers want features"
         effects:
@@ -50,6 +51,7 @@ templates:
         effects:
           - { type: brand_delta, target: product, share: -0.6 }
           - { type: customers_pct, target: product, share: -0.4 }
+          - { type: modifier, target: product, share: 0.6, stat: churn, months: 12 }
 
   - id: slipping_security_report
     category: operations
@@ -86,6 +88,7 @@ templates:
         label: "Over-provision for a month"
         effects:
           - { type: cash_delta, target: company, share: -0.2 }
+          - { type: modifier, target: product, share: -0.6, stat: churn, months: 6 }
       - key: B
         label: "Ride it out"
         effects:
@@ -150,6 +153,7 @@ templates:
         label: "Outsource first-line support"
         effects:
           - { type: cash_delta, target: company, share: -0.3 }
+          - { type: modifier, target: product, share: -0.6, stat: churn, months: 6 }
       - key: C
         label: "Let the queue grow"
         effects:
@@ -190,6 +194,7 @@ templates:
         effects:
           - { type: quality_delta, target: product, share: 0.3 }
           - { type: morale_delta, target: company, share: 0.2 }
+          - { type: modifier, target: company, share: 0.6, stat: builder_output, months: 6 }
       - key: B
         label: "Buy faster machines instead"
         effects:

@@ -7,9 +7,10 @@ whatever the company cannot know (13.11), so the arithmetic lives in one place.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from tst.sim.data_models import Balance, GameData
+from tst.sim.events.modifiers import person_factor
 from tst.sim.hiring.formulas import fit_term, market_mid_cents, pay_term, runway_term
 from tst.sim.hiring.rules import matching_interests
 from tst.sim.money import Cents
@@ -34,6 +35,7 @@ class MoraleTerms:
     relationships: float = 0.0  # W_rel (M6, 16.7)
     support: float = 0.0  # W_support, "Admin and support" (M8, 18.4)
     crowded: float = 0.0  # "Crowded office" (M9, 19.2)
+    events: float = 0.0  # event modifiers on the morale target (M10b, 23.2)
 
     @property
     def team_total(self) -> float:
@@ -55,6 +57,7 @@ class MoraleTerms:
             + self.relationships
             + self.support
             + self.crowded
+            + self.events
         )
 
 
@@ -93,7 +96,7 @@ def morale_terms(
     person = state.person(employment.person_id)
     company = state.company(employment.company_id)
     role = data.role(employment.role)
-    return MoraleTerms(
+    terms = MoraleTerms(
         base=cfg.target_base,
         pay=pay_term(
             employment.salary_cents, market_mid_for(state, employment, balance, data), cfg
@@ -116,3 +119,7 @@ def morale_terms(
         ).get(person.id, 0.0),
         crowded=balance.office.crowded_morale if person.id in crowded else 0.0,
     )
+    factor = person_factor(
+        state, employment.company_id, person.id, employment.unit_id, "morale_target"
+    )
+    return terms if factor == 1 else replace(terms, events=terms.target * (factor - 1))

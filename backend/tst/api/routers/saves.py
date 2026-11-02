@@ -92,6 +92,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
     month_total = sum(c.amount_cents for c in projected) + sum(c.amount_cents for c in month_paid)
     month_revenue = projected_revenue(state, player.id)
     return OverviewOut(
+        active_effects=views.active_effects(state),
         save_id=save_id,
         company_name=ov.company_name,
         turn=ov.turn,

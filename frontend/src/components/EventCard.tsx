@@ -73,7 +73,7 @@ export function EventCard({ saveId, event }: { saveId: string; event: GameEventO
                 {c.key}. {c.label}
               </Button>
               <span className="tst-muted" style={{ fontSize: 12, paddingLeft: 4 }}>
-                {c.effects.length ? c.effects.join(' · ') : 'Nothing else changes'}
+                {c.effects.length ? c.effects.join(' · ') : 'Nothing changes'}
               </span>
             </div>
           );

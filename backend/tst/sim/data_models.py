@@ -861,6 +861,7 @@ class EventsBalance(_Frozen):
     cash_revenue_months: float = Field(ge=0)
     cash_gain_share: float = Field(ge=0, le=1)
     effect_size_bounds: Span
+    modifier_months: list[int]  # M10b (23.2): the longest a modifier runs, by severity
 
     @model_validator(mode="after")
     def _check(self) -> EventsBalance:
@@ -876,10 +877,17 @@ class EventsBalance(_Frozen):
         for effect, caps in self.caps.items():
             if len(caps) != len(SEVERITIES) or any(c <= 0 for c in caps) or caps != sorted(caps):
                 raise ValueError(f"events.caps.{effect}: three rising positive caps")
+        months = self.modifier_months
+        if len(months) != len(SEVERITIES) or any(m < 1 for m in months) or months != sorted(months):
+            raise ValueError("events.modifier_months: three rising positive month counts")
         return self
 
     def cap(self, effect: str, severity: str) -> float:
         return self.caps[effect][SEVERITIES.index(severity)]
+
+    def max_months(self, severity: str) -> int:
+        """The longest a modifier of this severity runs (23.2)."""
+        return self.modifier_months[SEVERITIES.index(severity)]
 
 
 class RelationshipsBalance(_Frozen):
