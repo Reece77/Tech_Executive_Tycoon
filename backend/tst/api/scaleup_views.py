@@ -13,6 +13,7 @@ from tst.api.finance_views import _label
 from tst.api.schemas.saves import SupportTileOut
 from tst.api.schemas.scaleup import (
     AppointCandidateOut,
+    AuthorityOut,
     CrossDivisionOut,
     DivisionColumnOut,
     DivisionOut,
@@ -25,9 +26,10 @@ from tst.api.schemas.scaleup import (
 )
 from tst.api.views import person_name, role_label
 from tst.loader import LoadedData
+from tst.sim.actions.authority import default_authority
 from tst.sim.actions.scaleup import appoint_problem, exec_salary_cents
-from tst.sim.calendar import MONTHS_PER_YEAR
-from tst.sim.data_models import AccountType, Balance
+from tst.sim.calendar import MONTHS_PER_YEAR, format_turn
+from tst.sim.data_models import AUTHORITY_SEATS, AccountType, Balance
 from tst.sim.finance import statements as fs
 from tst.sim.finance.divisions import DivisionLines, DivisionStatement, division_report
 from tst.sim.hiring.formulas import energy_cost
@@ -82,6 +84,32 @@ def effect_pct(seat: str, e: float, b: Balance) -> float:
     return round(coefficient * e * PCT, 1)
 
 
+ACTS_ON = {  # 24.1, in words
+    "cto": "Moves builders to products below their maintenance line and opens builder hiring plans",
+    "cro": "Opens seller hiring plans when sales capacity limits a segment; moves sales-led "
+    "prices within its band",
+    "cmo": "Splits the marketing budget across products toward the best brand gaps",
+    "coo": "Opens support hiring plans to keep coverage at target; proposes leases for crowded "
+    "offices",
+    "cfo": "Proposes a round or a loan when runway is short; repays debt early when cash is "
+    "plentiful",
+}
+
+
+def _authority_out(
+    state: GameState, company_id: int, seat: str, data: LoadedData
+) -> AuthorityOut | None:
+    if seat not in AUTHORITY_SEATS:
+        return None
+    a = default_authority(state, company_id, seat, data.balance)
+    return AuthorityOut(
+        enabled=a.enabled,
+        guardrails={k: list(v) if isinstance(v, tuple) else v for k, v in a.guardrails},
+        since_label=format_turn(a.since_turn) if a.enabled else None,
+        acts_on=ACTS_ON[seat],
+    )
+
+
 def _seat_out(state: GameState, company_id: int, seat: str, data: LoadedData) -> SeatOut:
     b = data.balance
     holder = state.seat_holder(company_id, seat)
@@ -96,6 +124,7 @@ def _seat_out(state: GameState, company_id: int, seat: str, data: LoadedData) ->
     else:
         holder = None
     return SeatOut(
+        authority=_authority_out(state, company_id, seat, data),
         seat=seat,
         label=b.exec_seats.seats[seat].label,
         effect_label=EFFECT_LABELS[seat],

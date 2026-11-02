@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 26 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`, `0014_free_agents`, `0015_relationships`, `0016_events`, `0017_save_display_name`, `0018_person_rating_log`, `0019_coo_answer`, `0020_divisions`, `0021_former_staff`, `0022_capital_macro`, `0023_geo`, `0024_inbox_bookmark`, `0025_event_modifiers`, `0026_marketing_split`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 27 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`, `0014_free_agents`, `0015_relationships`, `0016_events`, `0017_save_display_name`, `0018_person_rating_log`, `0019_coo_answer`, `0020_divisions`, `0021_former_staff`, `0022_capital_macro`, `0023_geo`, `0024_inbox_bookmark`, `0025_event_modifiers`, `0026_marketing_split`, `0027_exec_authority`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -1031,3 +1031,49 @@ A product's marketing budget split across the regions it sells in (formulas.md 2
 | `product_id` | INTEGER FK product | no | The product. |
 | `region` | VARCHAR(32) | no | `regions.yaml` key: the home region or one it is live in. |
 | `share_bp` | INTEGER | no | Its share of the budget, basis points; a product's rows sum to 10,000. |
+
+## Executives with authority (migration `0027_exec_authority`, M10c)
+
+### exec_authority
+
+A seat's authority over its function (formulas.md 24.1). Primary key `(company_id, seat)`; a row exists once authority was first given.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | The company. |
+| `seat` | VARCHAR(8) | no | `cto`, `cro`, `cmo`, `coo` or `cfo`. |
+| `enabled` | BOOLEAN | no | The executive acts in phase 2 while true. |
+| `guardrails` | JSON | no | `{key: value}`: `headcount_cap`, `max_salary_ratio_bp`, `protected_units` (CTO), `price_band_pct` (CRO), `marketing_pct_of_revenue` (CMO), `coverage_target`, `lease_approval_rent_cents` (COO), `runway_months`, `repay_above_months` (CFO). Defaults from `exec_authority.defaults`. |
+| `since_turn` | INTEGER | no | When authority was last given. |
+| `price_anchors` | JSON | no | CRO: `[[product_id, segment, cents], ...]`, the player's sales-led prices when authority was given; the CRO moves prices within its band of these. |
+
+### exec_decision
+
+What an executive with authority did, or got wrong (24.1-24.2). The state holds the last `exec_authority.memory_months` (12); rows are only appended.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The company. |
+| `seat` | VARCHAR(8) | no | The seat. |
+| `person_id` | INTEGER | no | The executive (no FK). |
+| `turn` | INTEGER | no | The month. |
+| `text` | TEXT | no | What they did, in words. |
+| `mistake` | BOOLEAN | no | They took a plausible but worse option (24.2). |
+
+### exec_proposal
+
+A CFO or COO proposal waiting for the player (24.1). Pending proposals block Continue (23.1).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER FK company | no | The company. |
+| `seat` | VARCHAR(8) | no | `cfo` or `coo`. |
+| `person_id` | INTEGER | no | The executive who proposed it. |
+| `turn` | INTEGER | no | The month it was made. |
+| `kind` | VARCHAR(8) | no | `round`, `loan` or `lease`. |
+| `params` | JSON | no | The terms: a round's series and target, a loan's kind and amount, a lease's city and seats. |
+| `text` | TEXT | no | The proposal in words. |
+| `status` | VARCHAR(10) | no | `pending`, `approved`, `declined` or `lapsed`. |
+| `resolved_turn` | INTEGER | yes | When it was answered. |

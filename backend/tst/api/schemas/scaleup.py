@@ -46,6 +46,20 @@ class CrossDivisionOut(BaseModel):
     fix: str = Field(description="The move that removes the factor")
 
 
+class AuthorityOut(BaseModel):
+    """A seat's authority (24.1, M10c): on or off and its guardrails. Never the decision
+    quality or the holder's score (24.4)."""
+
+    enabled: bool
+    guardrails: dict[str, float | list[int]] = Field(
+        description="headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct "
+        "(CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents "
+        "(COO), runway_months and repay_above_months (CFO)"
+    )
+    since_label: str | None = Field(description="Given since; null while off")
+    acts_on: str = Field(description="What the seat does with authority")
+
+
 class SeatOut(BaseModel):
     seat: str = Field(description="coo | cfo | cto | cpo | cmo | cro")
     label: str
@@ -58,6 +72,9 @@ class SeatOut(BaseModel):
         "tax and support shortfall"
     )
     vacancy_penalty_pct: float | None = Field(description="The penalty while vacant (stage 3+)")
+    authority: AuthorityOut | None = Field(
+        description="Authority over the seat's function (M10c, 24.1); null for the CPO"
+    )
 
 
 class ScaleupOut(BaseModel):
@@ -85,6 +102,14 @@ class SharedServicesIn(BaseModel):
 
 class ProductDivisionIn(BaseModel):
     division_id: int | None = Field(description="Null makes the product corporate")
+
+
+class AuthorityIn(BaseModel):
+    """Give, change or withdraw a seat's authority (24.1); guardrails left out keep their
+    current or default values."""
+
+    enabled: bool
+    guardrails: dict[str, float | list[int]] = Field(default_factory=dict)
 
 
 class AppointIn(BaseModel):

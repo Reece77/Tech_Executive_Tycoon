@@ -91,3 +91,64 @@ class HiringPlan:
     closed_turn: int | None = None
     last_activity: PlanActivity | None = None
     focus: PlanFocus = "current"
+
+
+# --- Executives with authority (formulas.md 24, M10c) -----------------------------------------
+
+type GuardValue = int | float | tuple[int, ...]
+type ProposalKind = Literal["round", "loan", "lease"]
+type ProposalStatus = Literal["pending", "approved", "declined", "lapsed"]
+
+
+@dataclass(frozen=True, slots=True)
+class Authority:
+    """A seat's authority (24.1): on or off, with the guardrails the player set. The CRO's
+    price anchors are the prices when authority was given: it moves a sales-led price only
+    within its band of these."""
+
+    company_id: int
+    seat: str
+    enabled: bool
+    guardrails: tuple[tuple[str, GuardValue], ...]
+    since_turn: int
+    price_anchors: tuple[tuple[int, str, int], ...] = ()  # (product id, segment, cents)
+
+    def guard(self, key: str) -> GuardValue:
+        return dict(self.guardrails)[key]
+
+    def number(self, key: str) -> float:
+        value = self.guard(key)
+        assert not isinstance(value, tuple)
+        return float(value)
+
+
+@dataclass(frozen=True, slots=True)
+class ExecDecision:
+    """One thing an executive with authority did, or got wrong (24.1, 24.2)."""
+
+    id: int
+    company_id: int
+    seat: str
+    person_id: int
+    turn: int
+    text: str
+    mistake: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class Proposal:
+    """A CFO or COO proposal waiting for the player's Approve or Decline (24.1)."""
+
+    id: int
+    company_id: int
+    seat: str
+    person_id: int
+    turn: int
+    kind: ProposalKind
+    params: tuple[tuple[str, int | str], ...]
+    text: str
+    status: ProposalStatus = "pending"
+    resolved_turn: int | None = None
+
+    def param(self, key: str) -> int | str:
+        return dict(self.params)[key]

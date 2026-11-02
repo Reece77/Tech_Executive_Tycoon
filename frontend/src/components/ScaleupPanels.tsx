@@ -30,6 +30,9 @@ function Body({ saveId, org, s }: { saveId: string; org: Org; s: Scaleup }) {
   const meta = useOrgMeta();
   const costs = meta.data?.energy_costs ?? {};
   const [seat, setSeat] = useState<string | null>(null);
+  const [authorityKey, setAuthorityKey] = useState<string | null>(null);
+  const setAuthority = (x: Seat) => setAuthorityKey(x.seat);
+  const authority = s.seats.find((x) => x.seat === authorityKey) ?? null;
   const corporate = org.units.find((u) => u.unit_id === null);
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
@@ -114,6 +117,7 @@ function Body({ saveId, org, s }: { saveId: string; org: Org; s: Scaleup }) {
             removeCost={costs.remove_executive ?? 0}
             onAppoint={() => setSeat(x.seat)}
             onRemove={() => act.mutate({ action: 'remove', seat: x.seat })}
+            onAuthority={() => setAuthority(x)}
           />
         ))}
         <p className="tst-muted" style={{ fontSize: 12 }}>
@@ -121,6 +125,14 @@ function Body({ saveId, org, s }: { saveId: string; org: Org; s: Scaleup }) {
         </p>
       </Panel>
       {seat !== null && <AppointDialog saveId={saveId} seat={seat} onClose={() => setSeat(null)} />}
+      {authority && (
+        <AuthorityDialog
+          saveId={saveId}
+          seat={authority}
+          energy={costs.set_authority ?? 0}
+          onClose={() => setAuthorityKey(null)}
+        />
+      )}
     </div>
   );
 }
@@ -194,12 +206,14 @@ function SeatRow({
   removeCost,
   onAppoint,
   onRemove,
+  onAuthority,
 }: {
   saveId: string;
   seat: Seat;
   removeCost: number;
   onAppoint: () => void;
   onRemove: () => void;
+  onAuthority: () => void;
 }) {
   return (
     <div className="tst-row" data-testid={`seat-${seat.seat}`} style={{ gap: 8 }}>
@@ -230,11 +244,110 @@ function SeatRow({
           Appoint…
         </Button>
       ) : (
-        <Button size="compact-sm" variant="default" onClick={onRemove} data-testid="remove-exec">
-          Remove · {removeCost}
-        </Button>
+        <>
+          {seat.authority && (
+            <Button
+              size="compact-sm"
+              variant={seat.authority.enabled ? 'filled' : 'default'}
+              onClick={onAuthority}
+              data-testid="authority"
+              title={seat.authority.acts_on}
+            >
+              {seat.authority.enabled ? 'Authority on' : 'Give authority…'}
+            </Button>
+          )}
+          <Button size="compact-sm" variant="default" onClick={onRemove} data-testid="remove-exec">
+            Remove · {removeCost}
+          </Button>
+        </>
       )}
     </div>
+  );
+}
+
+const GUARD_LABELS: Record<string, string> = {
+  headcount_cap: 'Headcount cap',
+  max_salary_ratio_bp: 'Max offer, % of the ask',
+  price_band_pct: 'Price band, ± %',
+  marketing_pct_of_revenue: 'Marketing, % of revenue',
+  coverage_target: 'Support coverage target',
+  lease_approval_rent_cents: 'Leases above this rent need your approval ($ a month)',
+  runway_months: 'Propose funding below this runway (months)',
+  repay_above_months: 'Repay debt with cash above (months of burn)',
+};
+
+/** A seat's authority and guardrails (24.1, M10c). Percent-of-ask is entered as a percent;
+ * cents as dollars. */
+export function AuthorityDialog({
+  saveId,
+  seat,
+  energy,
+  onClose,
+}: {
+  saveId: string;
+  seat: Seat;
+  energy: number;
+  onClose: () => void;
+}) {
+  const act = useScaleupAction(saveId);
+  const a = seat.authority;
+  const shown = (key: string, v: number): number =>
+    key === 'max_salary_ratio_bp' ? v / 100 : key === 'lease_approval_rent_cents' ? v / 100 : v;
+  const stored = (key: string, v: number): number =>
+    key === 'max_salary_ratio_bp' || key === 'lease_approval_rent_cents' ? Math.round(v * 100) : v;
+  const [values, setValues] = useState<Record<string, number>>(() =>
+    Object.fromEntries(
+      Object.entries(a?.guardrails ?? {})
+        .filter(([, v]) => typeof v === 'number')
+        .map(([k, v]) => [k, shown(k, v as number)]),
+    ),
+  );
+  if (!a) return null;
+  const submit = (enabled: boolean) =>
+    act.mutate(
+      {
+        action: 'authority',
+        seat: seat.seat,
+        enabled,
+        guardrails: Object.fromEntries(Object.entries(values).map(([k, v]) => [k, stored(k, v)])),
+      },
+      { onSuccess: onClose },
+    );
+  return (
+    <Modal opened onClose={onClose} title={`${seat.label} authority`}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <p className="tst-muted" style={{ margin: 0, fontSize: 13 }}>
+          {a.acts_on}. {seat.holder_name} acts each month with their own energy, through the same
+          actions as you; how well depends on how good they are at the job.
+        </p>
+        {Object.keys(values).map((k) => (
+          <NumberInput
+            key={k}
+            label={GUARD_LABELS[k] ?? k}
+            min={0}
+            value={values[k]}
+            onChange={(v) => setValues({ ...values, [k]: Number(v) || 0 })}
+            data-testid={`guard-${k}`}
+          />
+        ))}
+        {act.error && <Alert color="warn">{act.error.message}</Alert>}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button loading={act.isPending} onClick={() => submit(true)} data-testid="authority-on">
+            {a.enabled ? 'Save guardrails' : 'Give authority'} · {energy}
+          </Button>
+          {a.enabled && (
+            <Button
+              variant="default"
+              loading={act.isPending}
+              onClick={() => submit(false)}
+              data-testid="authority-off"
+            >
+              Withdraw · {energy}
+            </Button>
+          )}
+        </div>
+      </div>
+    </Modal>
   );
 }
 

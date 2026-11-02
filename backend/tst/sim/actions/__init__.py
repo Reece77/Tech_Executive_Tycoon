@@ -14,6 +14,7 @@ from typing import Any
 
 import numpy as np
 
+from tst.sim.actions.authority import SetAuthority, set_authority
 from tst.sim.actions.events import ChooseEvent, choose_event
 from tst.sim.actions.finance import (
     AcceptBridge,
@@ -136,6 +137,7 @@ type Action = (
     | FinanceAction
     | ChooseEvent
     | ScaleupAction
+    | SetAuthority
     | GeoAction
 )
 
@@ -188,6 +190,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "launch_in_region": LaunchInRegion,
     "set_regional_price": SetRegionalPrice,
     "set_marketing_split": SetMarketingSplit,
+    "set_authority": SetAuthority,
 }
 
 __all__ = [
@@ -228,6 +231,7 @@ __all__ = [
     "RepayLoan",
     "Scout",
     "ScoutSearch",
+    "SetAuthority",
     "SetLeader",
     "SetMarketing",
     "SetMarketingSplit",
@@ -383,6 +387,8 @@ def apply_action(
             out = set_regional_price(state, action, balance, data)
         case SetMarketingSplit():
             out = set_marketing_split(state, action, balance, data)
+        case SetAuthority():
+            out = set_authority(state, action, balance, data)
     new_state = out.state
     actor = new_state.employment_of(action.actor_id) or state.employment_of(action.actor_id)
     if actor is not None:  # people live where they work (M9, 19.2)

@@ -18,6 +18,7 @@ from tst.api.routers.game import _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.scaleup import (
     AppointIn,
+    AuthorityIn,
     DivisionStatementsOut,
     ProductDivisionIn,
     ScaleupActionOut,
@@ -34,6 +35,7 @@ from tst.sim.actions import (
     SetProductDivision,
     SetSharedServices,
 )
+from tst.sim.actions.authority import SetAuthority
 from tst.sim.errors import InvalidActionError
 from tst.sim.org.models import SEATS
 from tst.sim.state import GameState
@@ -131,6 +133,24 @@ def appoint(
     return _act(
         path, data, AppointExecutive(founder, _seat(seat), body.person_id, body.salary_cents)
     )
+
+
+@router.post(
+    "/scaleup/seats/{seat}/authority",
+    response_model=ScaleupActionOut,
+    responses=ERRORS,
+    operation_id="setAuthority",
+)
+def set_authority(
+    save_id: str, seat: str, body: AuthorityIn, settings: SettingsDep, data: DataDep
+) -> ScaleupActionOut:
+    """Give, change or withdraw a seat's authority over its function (24.1)."""
+    path = _path(settings, save_id)
+    founder = _founder_id(_state(path))
+    guardrails = tuple(
+        sorted((k, tuple(v) if isinstance(v, list) else v) for k, v in body.guardrails.items())
+    )
+    return _act(path, data, SetAuthority(founder, _seat(seat), body.enabled, guardrails))
 
 
 @router.post(

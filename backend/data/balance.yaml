@@ -653,7 +653,7 @@ exec_authority: # executives with authority (formulas.md 24, M10c)
     cro: { headcount_cap: 10, price_band_pct: 10, max_salary_ratio_bp: 11000 } # sellers; +- % of the player's last price
     cmo: { marketing_pct_of_revenue: 15 } # % of last month's revenue spent on marketing in total
     coo: { coverage_target: 1.0, lease_approval_rent_cents: 0, max_salary_ratio_bp: 11000 } # support coverage; rent above which a lease is only proposed
-    cfo: { runway_months: 9, cash_months: 24 } # propose a round or loan below; repay debt early above (months of burn)
+    cfo: { runway_months: 9, repay_above_months: 24 } # months of burn: propose a round or loan below the first; repay debt early with cash above the second
 
 # --- Capital and macro (formulas.md section 20, M10 lane B) -------------------------------
 macro:

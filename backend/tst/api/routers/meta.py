@@ -188,7 +188,8 @@ def org_meta(data: DataDep) -> OrgMetaOut:
     """Energy costs, unlock rule and options for the org screens (formulas.md 6, 13)."""
     org, reorg = data.balance.org, data.balance.org.reorg
     return OrgMetaOut(
-        energy_costs={key: energy_cost(key, data.balance) for key in ORG_ACTION_ENERGY},
+        energy_costs={key: energy_cost(key, data.balance) for key in ORG_ACTION_ENERGY}
+        | {"set_authority": data.balance.exec_authority.change_energy},  # M10c (24.1)
         department_unlock_headcount=org.department_unlock_headcount,
         department_unlock_stage=DEPARTMENT_STAGE,
         unit_kinds=list(UNIT_KINDS),

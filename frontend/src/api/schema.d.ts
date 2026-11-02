@@ -2051,6 +2051,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/scaleup/seats/{seat}/authority": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Authority
+         * @description Give, change or withdraw a seat's authority over its function (24.1).
+         */
+        post: operations["setAuthority"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/scaleup/seats/{seat}/remove": {
         parameters: {
             query?: never;
@@ -2596,6 +2616,45 @@ export interface components {
             /** Group */
             group: string;
             range: components["schemas"]["RangeOut"];
+        };
+        /**
+         * AuthorityIn
+         * @description Give, change or withdraw a seat's authority (24.1); guardrails left out keep their
+         *     current or default values.
+         */
+        AuthorityIn: {
+            /** Enabled */
+            enabled: boolean;
+            /** Guardrails */
+            guardrails?: {
+                [key: string]: number | number[];
+            };
+        };
+        /**
+         * AuthorityOut
+         * @description A seat's authority (24.1, M10c): on or off and its guardrails. Never the decision
+         *     quality or the holder's score (24.4).
+         */
+        AuthorityOut: {
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Guardrails
+             * @description headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct (CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents (COO), runway_months and repay_above_months (CFO)
+             */
+            guardrails: {
+                [key: string]: number | number[];
+            };
+            /**
+             * Since Label
+             * @description Given since; null while off
+             */
+            since_label: string | null;
+            /**
+             * Acts On
+             * @description What the seat does with authority
+             */
+            acts_on: string;
         };
         /** BackgroundOut */
         BackgroundOut: {
@@ -7400,6 +7459,8 @@ export interface components {
              * @description The penalty while vacant (stage 3+)
              */
             vacancy_penalty_pct: number | null;
+            /** @description Authority over the seat's function (M10c, 24.1); null for the CPO */
+            authority: components["schemas"]["AuthorityOut"] | null;
         };
         /** SegmentIn */
         SegmentIn: {
@@ -14821,6 +14882,69 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AppointIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setAuthority: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                seat: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthorityIn"];
             };
         };
         responses: {

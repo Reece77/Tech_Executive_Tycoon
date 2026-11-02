@@ -9473,6 +9473,98 @@
         }
       }
     },
+    "/api/saves/{save_id}/scaleup/seats/{seat}/authority": {
+      "post": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Set Authority",
+        "description": "Give, change or withdraw a seat's authority over its function (24.1).",
+        "operationId": "setAuthority",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "seat",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Seat"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorityIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/scaleup/seats/{seat}/remove": {
       "post": {
         "tags": [
@@ -11111,6 +11203,89 @@
           "range"
         ],
         "title": "AttributeOut"
+      },
+      "AuthorityIn": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "guardrails": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Guardrails"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "title": "AuthorityIn",
+        "description": "Give, change or withdraw a seat's authority (24.1); guardrails left out keep their\ncurrent or default values."
+      },
+      "AuthorityOut": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "guardrails": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Guardrails",
+            "description": "headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct (CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents (COO), runway_months and repay_above_months (CFO)"
+          },
+          "since_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since Label",
+            "description": "Given since; null while off"
+          },
+          "acts_on": {
+            "type": "string",
+            "title": "Acts On",
+            "description": "What the seat does with authority"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "guardrails",
+          "since_label",
+          "acts_on"
+        ],
+        "title": "AuthorityOut",
+        "description": "A seat's authority (24.1, M10c): on or off and its guardrails. Never the decision\nquality or the holder's score (24.4)."
       },
       "BackgroundOut": {
         "properties": {
@@ -22667,6 +22842,17 @@
             ],
             "title": "Vacancy Penalty Pct",
             "description": "The penalty while vacant (stage 3+)"
+          },
+          "authority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthorityOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Authority over the seat's function (M10c, 24.1); null for the CPO"
           }
         },
         "type": "object",
@@ -22678,7 +22864,8 @@
           "holder_name",
           "fit",
           "estimated_effect_pct",
-          "vacancy_penalty_pct"
+          "vacancy_penalty_pct",
+          "authority"
         ],
         "title": "SeatOut"
       },

@@ -26,7 +26,7 @@ def test_exec_authority_keys(loaded: LoadedData) -> None:
     assert ea.mistake_budget_off == 0.20
     assert sorted(ea.defaults) == sorted(AUTHORITY_SEATS) == ["cfo", "cmo", "coo", "cro", "cto"]
     assert ea.defaults["cro"]["price_band_pct"] == 10
-    assert ea.defaults["cfo"] == {"runway_months": 9, "cash_months": 24}
+    assert ea.defaults["cfo"] == {"runway_months": 9, "repay_above_months": 24}
     assert ea.defaults["coo"]["coverage_target"] == 1.0
 
 

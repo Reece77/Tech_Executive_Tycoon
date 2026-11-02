@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 26
+SCHEMA_VERSION = 27
 
 
 class Base(DeclarativeBase):
@@ -1071,6 +1071,51 @@ class RegionalMarketRow(Base):
     segment: Mapped[str] = mapped_column(String(32), primary_key=True)
     region: Mapped[str] = mapped_column(String(32), primary_key=True)
     addressable: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class AuthorityRow(Base):
+    """A seat's authority and guardrails (M10c, formulas.md 24.1; 0027)."""
+
+    __tablename__ = "exec_authority"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    seat: Mapped[str] = mapped_column(String(8), primary_key=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    guardrails: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    since_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    price_anchors: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+
+
+class ExecDecisionRow(Base):
+    """What an executive with authority did, or got wrong (M10c, 24.1-24.2; 0027)."""
+
+    __tablename__ = "exec_decision"
+    __table_args__ = (Index("ix_exec_decision_turn", "turn"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    seat: Mapped[str] = mapped_column(String(8), nullable=False)
+    person_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    mistake: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+
+class ProposalRow(Base):
+    """A CFO or COO proposal for the player's Approve or Decline (M10c, 24.1; 0027)."""
+
+    __tablename__ = "exec_proposal"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    seat: Mapped[str] = mapped_column(String(8), nullable=False)
+    person_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[str] = mapped_column(String(8), nullable=False)
+    params: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(10), nullable=False)
+    resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class MarketingSplitRow(Base):

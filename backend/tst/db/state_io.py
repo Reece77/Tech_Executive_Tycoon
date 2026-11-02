@@ -69,6 +69,7 @@ from tst.db.mappers import (
     unit_to_row,
 )
 from tst.db.models import (
+    AuthorityRow,
     BoardSeatHistoryRow,
     BoardSeatRow,
     CandidateRelocationRow,
@@ -80,6 +81,7 @@ from tst.db.models import (
     EventModifierRow,
     EventQueueRow,
     EventRow,
+    ExecDecisionRow,
     ExecSeatRow,
     FinanceHistoryRow,
     FormerStaffRow,
@@ -112,6 +114,7 @@ from tst.db.models import (
     ProductRegionRow,
     ProductRow,
     ProductSegmentRow,
+    ProposalRow,
     RegionalMarketRow,
     RegionalSegmentRow,
     RelationshipRow,
@@ -150,7 +153,7 @@ from tst.sim.geo.models import (
 )
 from tst.sim.hiring.models import NextIds
 from tst.sim.ledger import LedgerEntry
-from tst.sim.org.models import ExecSeat
+from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Proposal
 from tst.sim.people.models import Person, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.rivals.models import (
@@ -447,6 +450,7 @@ def load_state(session: Session) -> GameState:
         next_ids=_event_ids(session, next_ids_from_meta(meta)),
     )
     state = _load_m10(session, state)
+    state = _load_exec(session, state)
     return _load_geo(session, state, product_ids)
 
 
@@ -528,6 +532,120 @@ def _load_geo(session: Session, state: GameState, product_ids: list[int]) -> Gam
         ),
         next_ids=replace(state.next_ids, office=last_office + 1),
     )
+
+
+EXEC_MEMORY = 12  # months of executive decisions the state holds (exec_authority.memory_months)
+
+
+def _load_exec(session: Session, state: GameState) -> GameState:
+    """Authority, recent executive decisions and open or recent proposals (M10c, 0027)."""
+    if not has_table(session, AuthorityRow):
+        return state
+    turn = state.turn
+
+    def after(model: Any) -> int:
+        return int(session.scalar(select(func.max(model.id))) or 0) + 1
+
+    return replace(
+        state,
+        authorities=tuple(
+            Authority(
+                r.company_id,
+                r.seat,
+                bool(r.enabled),
+                tuple(
+                    sorted(
+                        (k, tuple(v) if isinstance(v, list) else v)
+                        for k, v in (r.guardrails or {}).items()
+                    )
+                ),
+                r.since_turn,
+                tuple((int(a[0]), str(a[1]), int(a[2])) for a in r.price_anchors or ()),
+            )
+            for r in session.scalars(
+                select(AuthorityRow).order_by(AuthorityRow.company_id, AuthorityRow.seat)
+            )
+        ),
+        exec_decisions=tuple(
+            ExecDecision(r.id, r.company_id, r.seat, r.person_id, r.turn, r.text, bool(r.mistake))
+            for r in session.scalars(
+                select(ExecDecisionRow)
+                .where(ExecDecisionRow.turn > turn - EXEC_MEMORY)
+                .order_by(ExecDecisionRow.id)
+            )
+        ),
+        proposals=tuple(
+            Proposal(
+                r.id,
+                r.company_id,
+                r.seat,
+                r.person_id,
+                r.turn,
+                r.kind,  # type: ignore[arg-type]
+                tuple(sorted((r.params or {}).items())),
+                r.text,
+                r.status,  # type: ignore[arg-type]
+                r.resolved_turn,
+            )
+            for r in session.scalars(
+                select(ProposalRow)
+                .where((ProposalRow.status == "pending") | (ProposalRow.turn > turn - EXEC_MEMORY))
+                .order_by(ProposalRow.id)
+            )
+        ),
+        next_ids=replace(
+            state.next_ids, exec_decision=after(ExecDecisionRow), proposal=after(ProposalRow)
+        ),
+    )
+
+
+def _sync_exec(session: Session, old: GameState, new: GameState) -> None:
+    """Authority records, new decisions and changed proposals (M10c)."""
+    if (old.authorities, old.exec_decisions, old.proposals) == (
+        new.authorities,
+        new.exec_decisions,
+        new.proposals,
+    ) or not has_table(session, AuthorityRow):
+        return
+    session.flush()
+    for a in _changed(old.authorities, new.authorities, lambda a: (a.company_id, a.seat)):
+        session.merge(
+            AuthorityRow(
+                company_id=a.company_id,
+                seat=a.seat,
+                enabled=a.enabled,
+                guardrails={k: list(v) if isinstance(v, tuple) else v for k, v in a.guardrails},
+                since_turn=a.since_turn,
+                price_anchors=[list(x) for x in a.price_anchors],
+            )
+        )
+    for d in _changed(old.exec_decisions, new.exec_decisions, lambda d: d.id):
+        session.merge(
+            ExecDecisionRow(
+                id=d.id,
+                company_id=d.company_id,
+                seat=d.seat,
+                person_id=d.person_id,
+                turn=d.turn,
+                text=d.text,
+                mistake=d.mistake,
+            )
+        )
+    for p in _changed(old.proposals, new.proposals, lambda p: p.id):
+        session.merge(
+            ProposalRow(
+                id=p.id,
+                company_id=p.company_id,
+                seat=p.seat,
+                person_id=p.person_id,
+                turn=p.turn,
+                kind=p.kind,
+                params=dict(p.params),
+                text=p.text,
+                status=p.status,
+                resolved_turn=p.resolved_turn,
+            )
+        )
 
 
 def _load_m10(session: Session, state: GameState) -> GameState:
@@ -963,6 +1081,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_m10(session, old, new)
     _sync_geo(session, old, new)
     _sync_marketing(session, old, new)
+    _sync_exec(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()
         for row in former_rows(old, new):  # M7c: what the player knew when they left
@@ -1180,6 +1299,10 @@ def live_view(state: GameState) -> GameState:
         offices=tuple(o for o in state.offices if o.status == "open"),
         product_regions=tuple(r for r in state.product_regions if r.product_id in product_ids),
         marketing_splits=tuple(m for m in state.marketing_splits if m.product_id in product_ids),
+        exec_decisions=tuple(d for d in state.exec_decisions if d.turn > turn - EXEC_MEMORY),
+        proposals=tuple(
+            p for p in state.proposals if p.status == "pending" or p.turn > turn - EXEC_MEMORY
+        ),
         regional_segments=tuple(s for s in state.regional_segments if s.product_id in product_ids),
         free_agents=free_agents,
         events=tuple(
