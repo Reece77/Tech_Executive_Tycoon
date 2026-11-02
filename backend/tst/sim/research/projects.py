@@ -14,6 +14,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 from tst.sim.data_models import Balance, GameData
+from tst.sim.events import modifiers as mf
 from tst.sim.finance import macro
 from tst.sim.ledger import CASH, RESEARCH, LedgerEntry
 from tst.sim.org.rules import OrgView, org_view
@@ -84,6 +85,12 @@ def lab(
     mods = modifiers(state, view, balance, data)
     out: list[Researcher] = []
     members = view.members.get(project.unit_id, ()) if project.unit_id is not None else ()
+    # event modifiers on the unit's builder output (M10b, 23.2) count for research too
+    unit_factor = (
+        mf.unit_factor(state, project.company_id, project.unit_id, "builder_output")
+        if project.unit_id is not None
+        else 1.0
+    )
     for person_id in members:
         person = state.person(person_id)
         if not person.is_founder:
@@ -94,6 +101,7 @@ def lab(
         lam = pf.tag_multiplier(person.tags, pb) * (
             mods.builder.get(person_id, 1.0) if mods else 1.0
         )
+        lam *= unit_factor
         r = research_skill(person.skills.as_dict(), domain)
         out.append(Researcher(person_id, r, r / ATTR_NEUTRAL * m * lam))
     output = pf.coord_factor(len(out), pb) * sum(r.output for r in out) if out else 0.0

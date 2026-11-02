@@ -27,7 +27,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `events` | 6 | `(turn,)` | The event director's monthly draw (formulas.md §16.1) | M6 |
 | `founder` | 7 | none | Founder hidden traits, PA, random personality (turn 0) | M1a |
 | `growth` | 8 | `(person_id,)` | Monthly skill growth noise | M1a |
-| `reveal` | 9 | `(observer_company_id, person_id)` | Center offsets when a knowledge record is created | M1a |
+| `reveal` | 9 | `(observer_company_id, person_id)`; `(observer_company_id, 1,000,000 + company_id, domain_index)` | Center offsets when a knowledge record is created; from M11 the offset of another company's research-lead range (formulas.md §21.7), drawn at turn 0 | M1a, M11 |
 | `tags` | 10 | `(person_id,)` | Monthly tag reveal rolls for employees | M1b |
 | `resign` | 11 | `(person_id,)` | Monthly resignation roll | M1b |
 | `retire` | 12 | `(person_id,)` | Monthly retirement roll | M1b |
