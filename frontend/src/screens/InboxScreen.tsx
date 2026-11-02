@@ -11,6 +11,7 @@ import {
   INBOX_PAGE,
   useApproaches,
   useArchive,
+  useBookmark,
   useEvent,
   useEvents,
   useInbox,
@@ -176,6 +177,11 @@ export function InboxScreen() {
                       color: m.read ? 'var(--tst-text-2)' : 'var(--tst-text)',
                     }}
                   >
+                    {m.bookmarked && (
+                      <span aria-label="Bookmarked" title="Bookmarked: never auto-archived">
+                        ★{' '}
+                      </span>
+                    )}
                     {m.title}
                   </span>
                   <span
@@ -292,6 +298,7 @@ function MessageDetail({
           >
             {item.archived ? 'Move to inbox' : 'Archive'}
           </Button>
+          <BookmarkButton saveId={saveId} item={item} />
         </div>
       </article>
     );
@@ -456,6 +463,7 @@ function MessageDetail({
         >
           {item.archived ? 'Move to inbox' : 'Archive'}
         </Button>
+        <BookmarkButton saveId={saveId} item={item} />
       </div>
     </article>
   );
@@ -544,4 +552,22 @@ export function EventRedirect() {
   if (item.error) return <LoadError title="Could not find this event" error={item.error} />;
   if (!item.data) return <Loading />;
   return <Navigate to={`/game/${saveId}/inbox/${item.data.item_id}`} replace />;
+}
+
+/** Keep a message in the inbox: read messages older than three months archive themselves
+ * unless starred (23.1, M10b). */
+function BookmarkButton({ saveId, item }: { saveId: string; item: InboxItem }) {
+  const bookmark = useBookmark(saveId);
+  return (
+    <Button
+      variant="default"
+      h={44}
+      loading={bookmark.isPending}
+      onClick={() => bookmark.mutate({ itemId: item.item_id, bookmarked: !item.bookmarked })}
+      title="Bookmarked messages stay in the inbox; read ones archive after three months"
+      data-testid={item.bookmarked ? 'inbox-unbookmark' : 'inbox-bookmark'}
+    >
+      {item.bookmarked ? '★ Bookmarked' : '☆ Bookmark'}
+    </Button>
+  );
 }

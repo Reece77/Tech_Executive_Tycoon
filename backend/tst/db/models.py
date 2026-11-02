@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 23
+SCHEMA_VERSION = 24
 
 
 class Base(DeclarativeBase):
@@ -399,6 +399,8 @@ class InboxItemRow(Base):
     read: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
     # Hidden from the inbox unless asked for (M4c, migration 0012); a UI flag, no game effect.
     archived: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+    # Kept in the inbox: never auto-archived (M10b, migration 0024); a UI flag.
+    bookmarked: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
 
 
 # --- Organization (M2a, migration 0005_org) --------------------------------------------------

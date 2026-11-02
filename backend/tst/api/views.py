@@ -121,6 +121,7 @@ def inbox_item(m: InboxMessage) -> InboxItemOut:
         link_id=m.link_id,
         read=m.read,
         archived=m.archived,
+        bookmarked=m.bookmarked,
         event_links=[EventLinkOut(event_id=e, label=label) for e, label in m.event_links],
     )
 

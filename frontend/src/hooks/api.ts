@@ -417,6 +417,22 @@ export function useArchive(saveId: string) {
   });
 }
 
+/** Star a message so it is never auto-archived, or unstar it (23.1, M10b). UI state only. */
+export function useBookmark(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async ({ itemId, bookmarked }: { itemId: number; bookmarked: boolean }) => {
+      const params = { params: { path: { save_id: saveId, item_id: itemId } } };
+      return unwrap(
+        bookmarked
+          ? await api.POST('/api/saves/{save_id}/inbox/{item_id}/bookmark', params)
+          : await api.POST('/api/saves/{save_id}/inbox/{item_id}/unbookmark', params),
+      );
+    },
+    onSuccess: invalidate,
+  });
+}
+
 /** Mark every message read, or archive every read message (M4c). */
 export function useInboxBulk(saveId: string) {
   const invalidate = useInvalidateSave(saveId);

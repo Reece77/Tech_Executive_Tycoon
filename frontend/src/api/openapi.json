@@ -2534,6 +2534,169 @@
         }
       }
     },
+    "/api/saves/{save_id}/inbox/{item_id}/bookmark": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Bookmark Inbox Item",
+        "description": "Star a message: it stays in the inbox, never auto-archived (23.1, M10b).",
+        "operationId": "bookmarkInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/{item_id}/unbookmark": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Unbookmark Inbox Item",
+        "operationId": "unbookmarkInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/founder/energy": {
       "get": {
         "tags": [
@@ -7430,7 +7593,7 @@
           "events"
         ],
         "summary": "List Events",
-        "description": "This month's events to answer (minor and major resolve to their first choice at\nContinue; an open critical event blocks it) and recently answered ones (16.3).",
+        "description": "This month's events to answer (minor ones resolve to their first choice at Continue;\nopen major and critical events block it, 23.1) and recently answered ones (16.3).",
         "operationId": "listEvents",
         "parameters": [
           {
@@ -13080,6 +13243,21 @@
             ],
             "title": "Event Id"
           },
+          "event_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Ids",
+            "description": "events_open: the major and critical events to answer (M10b)"
+          },
           "retryable": {
             "anyOf": [
               {
@@ -13298,7 +13476,15 @@
               }
             ],
             "title": "Blocking Event Id",
-            "description": "An open critical event blocks Continue"
+            "description": "An open critical event: it opens as a modal and blocks Continue"
+          },
+          "blocking_event_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Blocking Event Ids",
+            "description": "Every open major and critical event: each blocks Continue (23.1, M10b)"
           },
           "open": {
             "items": {
@@ -13329,6 +13515,7 @@
         "required": [
           "to_answer",
           "blocking_event_id",
+          "blocking_event_ids",
           "open",
           "recent",
           "ai_spend_cents",
@@ -15343,6 +15530,11 @@
             "title": "Archived",
             "description": "Hidden from the inbox unless the archive is shown (M4c)"
           },
+          "bookmarked": {
+            "type": "boolean",
+            "title": "Bookmarked",
+            "description": "Starred: never auto-archived (23.1, M10b)"
+          },
           "quote": {
             "anyOf": [
               {
@@ -15375,7 +15567,8 @@
           "link_kind",
           "link_id",
           "read",
-          "archived"
+          "archived",
+          "bookmarked"
         ],
         "title": "InboxItemOut"
       },

@@ -50,7 +50,7 @@ test('(b) a critical event blocks Continue until answered', async ({ page }) => 
   const modal = page.getByRole('dialog');
   await expect(modal).toContainText('Payroll is at risk');
   await expect(page.getByTestId('continue')).toBeDisabled();
-  await expect(page.getByTestId('continue-blocked')).toHaveText('Answer the critical event first');
+  await expect(page.getByTestId('continue-blocked')).toHaveText('Answer 1 event first');
   await page.keyboard.press('Escape'); // the modal cannot be dismissed
   await expect(modal).toBeVisible();
   await modal.locator('[data-choice="A"]').click();

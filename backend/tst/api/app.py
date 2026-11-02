@@ -28,6 +28,7 @@ from tst.db.saves import IronmanSaveError
 from tst.sim.errors import (
     CriticalEventOpenError,
     EventError,
+    EventsOpenError,
     GameOverError,
     InterviewRequired,
     NotFoundError,
@@ -46,6 +47,7 @@ ERROR_STATUS: dict[type[SimError], int] = {
     GameOverError: status.HTTP_409_CONFLICT,  # ADR-0018
     SaveBusyError: status.HTTP_409_CONFLICT,  # M6 sub-task 0
     CriticalEventOpenError: status.HTTP_409_CONFLICT,  # M6: answer it first (ADR-0006)
+    EventsOpenError: status.HTTP_409_CONFLICT,  # M10b: answer major events first (23.1)
     EventError: status.HTTP_409_CONFLICT,
     UpgradeNeededError: status.HTTP_409_CONFLICT,
     IronmanSaveError: status.HTTP_409_CONFLICT,  # M7b: no duplicate or restore
@@ -86,6 +88,9 @@ def create_app() -> FastAPI:
             (code for cls, code in ERROR_STATUS.items() if isinstance(exc, cls)),
             status.HTTP_400_BAD_REQUEST,
         )
+        if isinstance(exc, EventsOpenError):
+            body = ErrorOut(code=exc.code, message=exc.message, event_ids=list(exc.event_ids))
+            return JSONResponse(status_code=status_code, content=body.model_dump())
         if isinstance(exc, CriticalEventOpenError):
             body = ErrorOut(code=exc.code, message=exc.message, event_id=exc.event_id)
             return JSONResponse(status_code=status_code, content=body.model_dump())

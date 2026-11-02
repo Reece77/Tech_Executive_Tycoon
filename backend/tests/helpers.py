@@ -338,6 +338,21 @@ def answer_critical(path: Path, loaded: LoadedData) -> None:
             run_action(path, loaded, ChooseEvent(founder.id, event.id, event.choices[0].key))
 
 
+def answer_events(path: Path, loaded: LoadedData) -> None:
+    """Answer every open major and critical event with its first choice, as the player must
+    before their own Continue (23.1, M10b)."""
+    from tst.db.repository import load_state, open_session, run_action
+    from tst.sim.actions import ChooseEvent
+    from tst.sim.events.effects import blocking_events
+
+    with open_session(path) as session:
+        state = load_state(session)
+    founder = state.founder_of(state.player.id)
+    for event in blocking_events(state):
+        if founder is not None:
+            run_action(path, loaded, ChooseEvent(founder.id, event.id, event.choices[0].key))
+
+
 def play_turn(path: Path, loaded: LoadedData) -> Any:
     """run_turn after answering any open critical event (M6)."""
     from tst.db.repository import run_turn

@@ -9,7 +9,8 @@ interface Props {
   overview: Overview | undefined;
   summary?: FinanceSummary;
   advancing: boolean;
-  blocked?: boolean; // an open critical event (M6)
+  blocking?: number; // open major and critical events: they block Continue (23.1, M10b)
+  eventsHref?: string; // where they are answered
   away?: boolean; // a holiday is running (M7b)
   onContinue: () => void;
   onHoliday?: () => void;
@@ -91,13 +92,16 @@ export function TopBar({
   overview,
   summary,
   advancing,
-  blocked = false,
+  blocking = 0,
+  eventsHref,
   away = false,
   onContinue,
   onHoliday,
   onCoo,
 }: Props) {
   const ended = overview !== undefined && overview.game_state !== 'active';
+  const blocked = blocking > 0;
+  const blockText = `Answer ${blocking} event${blocking === 1 ? '' : 's'} first`;
   return (
     <header
       style={{
@@ -225,7 +229,7 @@ export function TopBar({
           px={28}
           onClick={onContinue}
           disabled={!overview || advancing || ended || blocked || away}
-          title={blocked ? 'Answer the critical event first' : undefined}
+          title={blocked ? blockText : undefined}
           leftSection={advancing ? <Loader size="xs" color="dark" /> : undefined}
           data-testid="continue"
         >
@@ -233,7 +237,7 @@ export function TopBar({
         </Button>
         {blocked && (
           <span style={{ fontSize: 12, color: 'var(--tst-warn)' }} data-testid="continue-blocked">
-            Answer the critical event first
+            {eventsHref ? <Link to={eventsHref}>{blockText}</Link> : blockText}
           </span>
         )}
       </div>

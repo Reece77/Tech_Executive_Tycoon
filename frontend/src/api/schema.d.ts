@@ -554,6 +554,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/inbox/{item_id}/bookmark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bookmark Inbox Item
+         * @description Star a message: it stays in the inbox, never auto-archived (23.1, M10b).
+         */
+        post: operations["bookmarkInboxItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/inbox/{item_id}/unbookmark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unbookmark Inbox Item */
+        post: operations["unbookmarkInboxItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/founder/energy": {
         parameters: {
             query?: never;
@@ -1603,8 +1640,8 @@ export interface paths {
         };
         /**
          * List Events
-         * @description This month's events to answer (minor and major resolve to their first choice at
-         *     Continue; an open critical event blocks it) and recently answered ones (16.3).
+         * @description This month's events to answer (minor ones resolve to their first choice at Continue;
+         *     open major and critical events block it, 23.1) and recently answered ones (16.3).
          */
         get: operations["listEvents"];
         put?: never;
@@ -3458,6 +3495,11 @@ export interface components {
             /** Event Id */
             event_id?: number | null;
             /**
+             * Event Ids
+             * @description events_open: the major and critical events to answer (M10b)
+             */
+            event_ids?: number[] | null;
+            /**
              * Retryable
              * @description True: refused before anything was written, so the same request may be sent again (save_busy; M8r). Absent: do not retry automatically.
              */
@@ -3541,9 +3583,14 @@ export interface components {
             to_answer: number;
             /**
              * Blocking Event Id
-             * @description An open critical event blocks Continue
+             * @description An open critical event: it opens as a modal and blocks Continue
              */
             blocking_event_id: number | null;
+            /**
+             * Blocking Event Ids
+             * @description Every open major and critical event: each blocks Continue (23.1, M10b)
+             */
+            blocking_event_ids: number[];
             /** Open */
             open: components["schemas"]["EventOut"][];
             /**
@@ -4309,6 +4356,11 @@ export interface components {
              * @description Hidden from the inbox unless the archive is shown (M4c)
              */
             archived: boolean;
+            /**
+             * Bookmarked
+             * @description Starred: never auto-archived (23.1, M10b)
+             */
+            bookmarked: boolean;
             /**
              * Quote
              * @description An exit-interview line (M6, 16.8)
@@ -9483,6 +9535,124 @@ export interface operations {
         };
     };
     markInboxUnread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    bookmarkInboxItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    unbookmarkInboxItem: {
         parameters: {
             query?: never;
             header?: never;

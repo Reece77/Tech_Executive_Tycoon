@@ -42,7 +42,12 @@ class EventOut(BaseModel):
 
 class EventsOut(BaseModel):
     to_answer: int
-    blocking_event_id: int | None = Field(description="An open critical event blocks Continue")
+    blocking_event_id: int | None = Field(
+        description="An open critical event: it opens as a modal and blocks Continue"
+    )
+    blocking_event_ids: list[int] = Field(
+        description="Every open major and critical event: each blocks Continue (23.1, M10b)"
+    )
     open: list[EventOut]
     recent: list[EventOut] = Field(description="Answered events of the last few months")
     ai_spend_cents: float = Field(description="Real cents spent this calendar month")

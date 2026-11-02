@@ -61,6 +61,7 @@ class InboxMessage:
     link_id: int | None
     read: bool
     archived: bool = False
+    bookmarked: bool = False  # M10b (23.1)
     event_links: tuple[tuple[int, str], ...] = ()  # (event id, label), M7c
 
 
@@ -98,6 +99,7 @@ def inbox_rows(
                 link_id=item.link_id,
                 read=False,
                 archived=False,
+                bookmarked=False,
             )
         )
     return rows
@@ -213,6 +215,53 @@ def archive_read(session: Session, company_id: int) -> int:
     return int(result.rowcount or 0)  # type: ignore[attr-defined]
 
 
+def bookmark(
+    session: Session, company_id: int, item_id: int, *, bookmarked: bool = True
+) -> InboxMessage:
+    """Star an item so it is never auto-archived (23.1, M10b); a bookmarked item that was
+    archived comes back to the inbox."""
+    row = _own(session, company_id, item_id)
+    row.bookmarked = bookmarked
+    if bookmarked:
+        row.archived = False
+    return _message(row)
+
+
+def archive_events(session: Session, company_id: int, event_ids: Iterable[int]) -> int:
+    """Archive the inbox items of answered events (23.1, M10b); returns how many changed."""
+    ids = sorted(set(event_ids))
+    if not ids:
+        return 0
+    result = session.execute(
+        update(InboxItemRow)
+        .where(
+            InboxItemRow.company_id == company_id,
+            InboxItemRow.link_kind == "event",
+            InboxItemRow.link_id.in_(ids),
+            InboxItemRow.archived.is_(False),
+            InboxItemRow.bookmarked.is_(False),
+        )
+        .values(archived=True, read=True)
+    )
+    return int(result.rowcount or 0)  # type: ignore[attr-defined]
+
+
+def auto_archive(session: Session, company_id: int, turn: int, months: int) -> int:
+    """At month end, archive read, unbookmarked items `months` or more old (23.1, M10b)."""
+    result = session.execute(
+        update(InboxItemRow)
+        .where(
+            InboxItemRow.company_id == company_id,
+            InboxItemRow.read.is_(True),
+            InboxItemRow.archived.is_(False),
+            InboxItemRow.bookmarked.is_(False),
+            InboxItemRow.turn <= turn - months,
+        )
+        .values(archived=True)
+    )
+    return int(result.rowcount or 0)  # type: ignore[attr-defined]
+
+
 def _message(row: InboxItemRow) -> InboxMessage:
     return InboxMessage(
         id=row.id,
@@ -224,6 +273,7 @@ def _message(row: InboxItemRow) -> InboxMessage:
         link_id=row.link_id,
         read=row.read,
         archived=row.archived,
+        bookmarked=row.bookmarked,
     )
 
 

@@ -18,7 +18,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from tst.db import migrate
+from tst.db import inbox, migrate
 from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
 from tst.db.events import has_pending, write_pending
 from tst.db.inbox import inbox_rows
@@ -791,7 +791,9 @@ class _PendingEvents(Exception):
     """Events or texts from an earlier turn are still unwritten (the service did not finish)."""
 
 
-def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnResult:
+def _play_turn(
+    save_path: Path, data: LoadedData, decisions: Decisions, block_major: bool = False
+) -> TurnResult:
     with write_session(save_path) as session:
         if has_pending(session):
             raise _PendingEvents
@@ -810,10 +812,23 @@ def _play_turn(save_path: Path, data: LoadedData, decisions: Decisions) -> TurnR
             balances,
             prior_flow=prior_flow,
             prior_operating=prior_operating,
+            block_major=block_major,
         )
         apply_turn_result(session, result, decisions, state, data)
+        _tidy_inbox(session, state, result.new_state, data)
         publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
     return result
+
+
+def _tidy_inbox(session: Session, before: GameState, after: GameState, data: LoadedData) -> None:
+    """Answered events' items archive themselves; at month end (`after` a new turn) read,
+    unbookmarked items older than inbox.auto_archive_months archive too (23.1, M10b)."""
+    player = after.player.id
+    still_open = {e.id for e in after.open_events(player)}
+    answered = [e.id for e in before.open_events(player) if e.id not in still_open]
+    inbox.archive_events(session, player, answered)
+    if after.turn > before.turn:
+        inbox.auto_archive(session, player, after.turn, data.balance.inbox.auto_archive_months)
 
 
 def run_turn(
@@ -823,11 +838,13 @@ def run_turn(
     *,
     adapter: LLMAdapter | None = None,
     events_from: Path | None = None,
+    block_major: bool = False,
 ) -> TurnResult:
     """Play one turn in a single transaction; any exception rolls everything back. Then the
     event service writes next month's events and texts in a transaction of its own (M6):
     `adapter` overrides the settings' adapter; replay passes `events_from`, the original save,
-    so no adapter is called."""
+    so no adapter is called. `block_major`: the player's own Continue, which open major
+    events block (23.1, M10b); Holiday and scripts answer them with their first choice."""
     decisions = decisions or Decisions()
     migrate.ensure_current(save_path)
     # The turn and its event writing hold the save together (M8r, Codex review 1 finding 2):
@@ -840,10 +857,10 @@ def run_turn(
     try:
         with holding(token) if token is not None else nullcontext():
             try:
-                result = _play_turn(save_path, data, decisions)
+                result = _play_turn(save_path, data, decisions, block_major)
             except _PendingEvents:  # an earlier write did not finish: write them, then play
                 write_pending(save_path, data, adapter=adapter, copy_from=events_from)
-                result = _play_turn(save_path, data, decisions)
+                result = _play_turn(save_path, data, decisions, block_major)
             _after_commit(save_path, data, result, adapter, events_from)
     finally:
         if token is not None:
@@ -926,6 +943,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
                 actor_id=action.actor_id,
             )
         )
+        _tidy_inbox(session, state, result.new_state, data)
         publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
     return result
 

@@ -15,9 +15,9 @@ from tst.sim.actions import Action
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.decisions import Decisions
-from tst.sim.errors import CriticalEventOpenError, GameOverError
+from tst.sim.errors import CriticalEventOpenError, EventsOpenError, GameOverError
 from tst.sim.events.director import direct
-from tst.sim.events.effects import auto_resolve, energy_next_month
+from tst.sim.events.effects import auto_resolve, blocking_events, energy_next_month
 from tst.sim.events.models import EventRequest, TextRequest
 from tst.sim.finance import debt, fundraising, insolvency, macro
 from tst.sim.finance.board import average_confidence, board_month, vacate_departed
@@ -409,12 +409,15 @@ def advance_turn(
     *,
     prior_flow: Mapping[int, Cents] | None = None,
     prior_operating: Mapping[int, Cents] | None = None,
+    block_major: bool = False,
 ) -> TurnResult:
     """Resolve turn `state.turn` and return the next state plus everything to persist.
     `prior_flow`: cash from operating and investing that this month's actions already moved,
     per company (from the ledger), so the stored burn covers the whole month (14.1; M8r).
     `prior_operating`: the operating result of those entries, classified by account, for the
-    debt history (M10r finding 1)."""
+    debt history (M10r finding 1).
+    `block_major`: the player is at the controls, so open major events block Continue too
+    (23.1, M10b); otherwise (Holiday, scripts) they take their first choice in phase 1."""
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
     for event in state.open_events(state.player.id):
@@ -422,6 +425,12 @@ def advance_turn(
             raise CriticalEventOpenError(
                 f"answer the critical event {event.title or event.template_id!r} first", event.id
             )
+    blocking = blocking_events(state) if block_major else ()
+    if blocking:
+        n = len(blocking)
+        raise EventsOpenError(
+            f"Answer {n} event{'s' if n != 1 else ''} first", tuple(e.id for e in blocking)
+        )
     ctx = TurnContext(
         state=state,
         decisions=decisions,

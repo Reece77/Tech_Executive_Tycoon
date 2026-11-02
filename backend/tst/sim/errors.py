@@ -208,6 +208,17 @@ class CriticalEventOpenError(SimError):
         self.event_id = event_id
 
 
+class EventsOpenError(SimError):
+    """Open major or critical events block the player's Continue until answered (23.1, M10b).
+    Holiday and headless scripts answer major events with their first choice instead."""
+
+    code = "events_open"
+
+    def __init__(self, message: str, event_ids: tuple[int, ...]) -> None:
+        super().__init__(message)
+        self.event_ids = event_ids
+
+
 class EventError(SimError):
     """An event choice that cannot be made (closed, not shown yet, unknown key)."""
 

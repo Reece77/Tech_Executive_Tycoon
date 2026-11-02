@@ -501,6 +501,33 @@ def mark_inbox_unread(save_id: str, item_id: int, settings: SettingsDep) -> Inbo
         return views.inbox_item(inbox.mark_read(session, player.id, item_id, read=False))
 
 
+@router.post(
+    "/inbox/{item_id}/bookmark",
+    response_model=InboxItemOut,
+    responses=ERRORS,
+    operation_id="bookmarkInboxItem",
+)
+def bookmark_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
+    """Star a message: it stays in the inbox, never auto-archived (23.1, M10b)."""
+    path = _path(settings, save_id)
+    with repository.write_session(path) as session:
+        player = repository.load_state(session).player
+        return views.inbox_item(inbox.bookmark(session, player.id, item_id))
+
+
+@router.post(
+    "/inbox/{item_id}/unbookmark",
+    response_model=InboxItemOut,
+    responses=ERRORS,
+    operation_id="unbookmarkInboxItem",
+)
+def unbookmark_inbox_item(save_id: str, item_id: int, settings: SettingsDep) -> InboxItemOut:
+    path = _path(settings, save_id)
+    with repository.write_session(path) as session:
+        player = repository.load_state(session).player
+        return views.inbox_item(inbox.bookmark(session, player.id, item_id, bookmarked=False))
+
+
 @router.get(
     "/founder/energy", response_model=EnergyOut, responses=ERRORS, operation_id="getFounderEnergy"
 )

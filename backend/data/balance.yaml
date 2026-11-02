@@ -31,6 +31,9 @@ backup:
   every_n_turns: 12 # turns; periodic save backup after every Nth committed turn (ADR-0004)
   keep_periodic: 10 # count; periodic backups kept per save, oldest deleted first (ADR-0004)
 
+inbox: # the player's inbox (formulas.md 23.1, M10b)
+  auto_archive_months: 3 # months; read, unbookmarked items this old archive at month end
+
 holiday: # auto-advance: ordinary Continues until a stop reason (formulas.md 17.1)
   max_months: 24 # months; the longest holiday the player can choose
   default_months: 6 # months; the dialog's starting value

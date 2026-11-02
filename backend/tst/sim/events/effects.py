@@ -300,6 +300,19 @@ def apply_choice(
     return state, tuple(entries), tuple(logs)
 
 
+BLOCKING_SEVERITIES = ("major", "critical")  # 23.1 (M10b)
+
+
+def blocking_events(state: GameState) -> tuple[GameEvent, ...]:
+    """The player's written major and critical events still to answer: they block Continue
+    while the player is at the controls (23.1, M10b)."""
+    return tuple(
+        e
+        for e in state.open_events(state.player.id)
+        if e.severity in BLOCKING_SEVERITIES and e.status == "open"
+    )
+
+
 def auto_resolve(
     state: GameState, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...]]:

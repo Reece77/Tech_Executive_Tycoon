@@ -310,7 +310,7 @@ def get_overview(save_id: str, settings: SettingsDep, data: DataDep) -> Overview
 )
 def advance(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
     path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
-    repository.run_turn(path, data)
+    repository.run_turn(path, data, block_major=True)  # the player at the controls (23.1)
     return _overview(save_id, settings, data)
 
 

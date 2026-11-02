@@ -38,7 +38,10 @@ def test_events_choose_block_and_follow_up(tmp_path: Path, loaded: LoadedData) -
         api.post(f"{BASE}/advance")
         titles = [e["title"] for e in api.get(f"{BASE}/events")["open"]]
         assert any("morning after" in t for t in titles)
-        inbox = api.get(f"{BASE}/inbox")["items"]
+        inbox = [
+            *api.get(f"{BASE}/inbox")["items"],
+            *api.get(f"{BASE}/inbox?archived=true")["items"],
+        ]
         assert {"event", "critical_event"} <= {i["kind"] for i in inbox}
         assert api.get(f"{BASE}/news")["headlines"]  # written after the turn
         assert isinstance(api.get(f"{BASE}/storylines"), list)

@@ -55,6 +55,12 @@ class BackupBalance(_Frozen):
     keep_periodic: int = Field(gt=0)
 
 
+class InboxBalance(_Frozen):
+    """The inbox (formulas.md 23.1, M10b)."""
+
+    auto_archive_months: int = Field(gt=0)
+
+
 class HolidayBalance(_Frozen):
     """Auto-advance (formulas.md 17.1)."""
 
@@ -1030,6 +1036,7 @@ class Balance(_Frozen):
     difficulty: dict[str, DifficultyBalance]
     backup: BackupBalance
     holiday: HolidayBalance  # M7b (formulas.md 17.1)
+    inbox: InboxBalance  # M10b (formulas.md 23.1)
     coo: CooBalance  # M7b (formulas.md 17.3)
     people: PeopleBalance
     payroll: PayrollBalance

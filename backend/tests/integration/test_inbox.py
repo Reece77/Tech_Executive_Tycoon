@@ -350,7 +350,8 @@ def test_inbox_persists_from_turns_and_actions(tmp_path: Path, loaded: LoadedDat
         run_action(path, loaded, MakeOffer(1, c.person_id, round(ask * 1.5), 0))
     run_turn(path, loaded)
     with open_session(path) as session, session.begin():
-        messages = list_inbox(session, 1)
+        # an event answered at Continue archives itself, read (23.1, M10b)
+        messages = list_inbox(session, 1, archived=False)
         accepted = [m for m in messages if m.template == "offer_accepted"]
         assert accepted and all(m.link_kind == "person" for m in accepted)
         assert "a year" in accepted[0].body and "$" in accepted[0].body
