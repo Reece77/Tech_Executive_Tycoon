@@ -100,6 +100,14 @@ INBOX_CATEGORY: dict[str, str] = {
     # M10c: executives' quarterly reports and proposals (24.1, 24.3)
     "exec_report": "people",
     "exec_proposal": "finance",
+    # M12a: data centres, contracts, Cloud hosting and outages (22.6)
+    "facility_ordered": "products",
+    "facility_live": "products",
+    "facility_sold": "products",
+    "contract_signed": "finance",
+    "contract_settled": "finance",
+    "cloud_started": "products",
+    "outage_hit": "products",
 }
 PRODUCT_KINDS = frozenset(
     {
@@ -114,6 +122,10 @@ PRODUCT_KINDS = frozenset(
         "cancel_product",
         "launch_in_region",  # M9
         "set_regional_price",
+        "build_facility",  # M12a
+        "sell_facility",
+        "staff_facility",
+        "sell_capacity",
     }
 )
 FINANCE_KINDS = frozenset(
@@ -125,6 +137,7 @@ FINANCE_KINDS = frozenset(
         "name_nominee",
         "take_loan",  # M10
         "repay_loan",
+        "sign_contract",  # M12a
     }
 )
 END_REASONS = {
