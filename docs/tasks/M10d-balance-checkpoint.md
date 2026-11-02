@@ -45,13 +45,13 @@ New features. Changing formulas' shape. This pass tunes keys in `balance.yaml` a
 
 ## Acceptance criteria
 
-- [ ] The nightly workflow is green on `main` after merge, S2 included.
-- [ ] Median morale 58–68; executive retention met; its xfail removed.
-- [ ] Expansion within 1.4–2.5×; home-only blitzscale viable.
-- [ ] T2, T3, M8 seats, M10 covenants and debt pass; near misses pass or have approved re-bands.
-- [ ] Founder energy binds when hands-on and frees up when delegated.
-- [ ] No xfail remains without an approved, written reason.
-- [ ] `make check` green; `make e2e` passes; merged per CLAUDE.md §6 with the trailer `Milestone-Tag: m10d-done`.
+- [x] The nightly workflow is green on `main` after merge, S2 included.
+- [x] Median morale 58–68; executive retention met; its xfail removed.
+- [x] Expansion within 1.4–2.5×; home-only blitzscale viable.
+- [x] T2, T3, M8 seats, M10 covenants and debt pass; near misses pass or have approved re-bands.
+- [x] Founder energy binds when hands-on and frees up when delegated (hands-on: a manual check in Reece's next playtest, product manager 2026-11-02; delegated 94% unspent).
+- [x] No xfail remains without an approved, written reason.
+- [x] `make check` green; `make e2e` passes; merged per CLAUDE.md §6 with the trailer `Milestone-Tag: m10d-done`.
 
 ## Manual check (Reece, after merge)
 
@@ -61,7 +61,7 @@ A short game of 3 years hands-on, then 3 years delegated on `quick-stage3`. Does
 
 Product manager decisions (2026-11-02), after the stop report: (1) blitzscale raises Series C and D as soon as allowed; (2) keep `morale.target_base` 56 and the poach morale midpoint, re-band poaching acceptance to 10–40%, add a target for staff lost to rivals, raise crisis chances; (3) founder energy when hands-on becomes a manual check; (4) re-measure the near misses after (1), re-bands approved where still missing; S2 at CI's measured need plus 25%; then, after a second question: a rival's poach target is drawn by CA with seat holders ×0.4, T5 blitzscale re-banded to 0–40%, and the regional market sizes may shrink.
 
-- **Speed (0).** `GameState.person` by binary search with a C key (`operator.attrgetter`), the flexible-seat cost memoized, and the tests' `answer_critical` loads the state only when a critical event is open: a profiled 120-turn balance game 36 s to 27.8 s; S2 locally 18.8 to 14.9. CI's nightly is three matrix jobs: `make balance` alone (gates S2) and `make nightly-ci SHARD=1..4`, the nightly tests in four shards balanced by `tests/durations.json` (refreshed with the nightly tests), 60 minutes each (the single 45-minute job was cancelled at its limit, and so were two shards). S2's budget for v2 is 43 worker-minutes: CI's highest reading, 34.2, plus 25% (CI read 30.3, 18.0, 33.5 and 34.2 over four runs). Inside the parallel nightly, `test_balance_targets` prints S2 but does not gate it (60 locally under load; M10b recorded the same). No check job passes 17 minutes, so no third check shard.
+- **Speed (0).** `GameState.person` by binary search with a C key (`operator.attrgetter`), the flexible-seat cost memoized, and the tests' `answer_critical` loads the state only when a critical event is open: a profiled 120-turn balance game 36 s to 27.8 s; S2 locally 18.8 to 14.9. CI's nightly is five matrix jobs: `make balance` alone (gates S2) and `make nightly-ci SHARD=1..4`, the nightly tests in four shards balanced by `tests/durations.json` (refreshed with the nightly tests), 60 minutes each (the single 45-minute job was cancelled at its limit, and so were two shards). S2's budget for v2 is 43 worker-minutes: CI's highest reading, 34.2, plus 25% (CI read 30.3, 18.0, 33.5 and 34.2 over four runs). Inside the parallel nightly, `test_balance_targets` prints S2 but does not gate it (60 locally under load; M10b recorded the same). No check job passes 17 minutes, so no third check shard.
 - **Morale and retention (1).** `morale.target_base` 56 (median 62.3 steady, 60.2 blitzscale). `resign.morale_floor` 40 to 50, so the floor stays about ten points below the median and underpaid misfits still leave more (`test_underpaid_misfits_lose_morale_and_resign_more`: 17 to 17 at 56 and 40; 19 to 17 at 50). Executive retention 8/10. The worked examples of §9 and §10 keep 50 and 40, and their tests use them, as M7a did for `resign.base_bp`.
 - **Poaching (2, formula change approved).** `player_target` draws among the top 30% by CA without a pending approach, weighted by CA with current seat holders ×`rivals.poach.seat_holder_weight` (0.4), on stream `poach` key `(new approach id, 1)` through the stream's one call site `poaching.poach_draw` (the answer keeps `(approach id,)`; ADR-0013's table updated). Before, it was always the single highest-CA employee, so any rise in approach frequency fell on the executives. `rivals.poach.leave_penalty` −0.5 to −0.3 brings acceptance in the fast-growth script to 14% (7% without) at 4.00 approaches a year; `poach_gain` stays 0.007 (0.005 and 0.006 pushed the approaches over 4 a year). New target 15.7.6 (`tst/balance/m10d.py`, `tests/balance/test_m10d_balance.py`): 0.58 (steady) and 1.05 (blitzscale) staff a year lost to rivals with 30+ staff. `test_rival_replay` moved from seed 7 to seed 3 (seed 7 saw no approach in its 24 turns once targets are drawn). §15.8's Priya example keeps −0.5.
 - **Strategy balance (3).** With C and D, blitzscale succeeds on 10/10 but ends at 8–12% ownership, far behind steady; the frugal strategy was within a few percent of steady. The ARR multiple now weighs growth more (`4 + 4 g` to `2.5 + 5.5 g`): T2 steady 6, frugal 4. §14 worked example updated (9.112, $16.49M).
@@ -78,4 +78,5 @@ Product manager decisions (2026-11-02), after the stop report: (1) blitzscale ra
 - **Late-round sizing (M15, product manager):** blitzscale ends with $1.5–2.9B idle cash because it takes the largest Series C/D offered regardless of need. Check whether investors should size late rounds to the company's burn and plan (e.g. at most 24 months of runway), and whether blitzscale should raise only what it can deploy.
 - **Narrow margins** (deterministic, so they hold, but small changes may tip them): poaching approaches 4.00 a year (cap 4), steady's staff lost 0.58 (floor 0.5), executive retention 8/10, T2 steady 6 (cap 6), covenants 60% (cap 60%).
 - **S2 varies on CI** (18.0 to 34.2 worker-minutes for the same work); if it drifts toward 43, a dedicated runner or a wall-clock measure would be steadier.
+- **The nightly's first shard** (the full balance run and the M8 arms) took 43 of its 60 minutes on CI; a fifth shard or splitting `test_balance_targets` is the next step if it grows.
 - **Hands-on founder energy** needs Reece's playtest verdict; a hands-on script could make it measurable.
