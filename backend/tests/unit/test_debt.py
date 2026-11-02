@@ -28,7 +28,7 @@ def test_venture_debt_after_the_seed_signs_with_warrants(loaded: LoadedData) -> 
     game = _game(loaded)
     t = debt.terms(game.state, PLAYER, "venture_debt", loaded.balance, loaded.game_data)
     assert t.problem is None and t.lender is not None and t.lender.key == "svb"
-    assert t.max_cents == 150_000_000 * 3000 // 10_000  # 30% of the $1.5M seed
+    assert t.max_cents == 150_000_000 * 5000 // 10_000  # 50% of the $1.5M seed (M10d)
     assert t.rate_bp == round(0.11 * 100) + 600  # January 2010: 0.11% + 6%
     fd = fd_shares(game.state, PLAYER)
     cash = game.cash

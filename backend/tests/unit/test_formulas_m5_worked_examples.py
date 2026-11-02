@@ -44,7 +44,8 @@ def test_poaching_priya(
     p: float,
     band: str,
 ) -> None:
-    pb = loaded.balance.rivals.poach
+    # formulas.md 15.8 keeps the M5 leaving penalty of -0.5 (M10d tuned balance.yaml to -0.3)
+    pb = loaded.balance.rivals.poach.model_copy(update={"leave_penalty": -0.5})
     s = f.poach_score(ratio, morale, loyalty, unvested, pb)
     assert s == pytest.approx(score, abs=2e-3)
     assert f.poach_probability(s, pb) == pytest.approx(p, abs=1e-3)

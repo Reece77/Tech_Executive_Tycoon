@@ -40,7 +40,8 @@ def _venture(amount: int, rate: int) -> Loan:
 def test_venture_debt_example(loaded: LoadedData) -> None:
     """$6M after a $20M Series A at r = 0.25%: 6.25%; month-1 interest $31,250; from month 13,
     $250,000 of principal a month."""
-    vb = loaded.balance.debt.venture
+    # formulas.md 20.6 keeps 30% of the round (M10d tuned balance.yaml to 50%)
+    vb = loaded.balance.debt.venture.model_copy(update={"max_of_round_bp": 3000})
     assert 20_000_000_00 * vb.max_of_round_bp // 10_000 == 6_000_000_00
     r = rate_bp(0.25, vb.spread_bp)
     assert r == 625

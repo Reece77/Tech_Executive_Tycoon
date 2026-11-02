@@ -41,13 +41,6 @@ PUSHES = {"price_cut", "feature_push", "quality_push", "brand_push"}
 V1_CATEGORIES = frozenset({"b2b_saas", "dev_tools", "consumer_apps", "cybersecurity"})
 
 
-LAUNCHES_REASON = (
-    "recorded miss: startup launches per v1 category a seed 0.925 (needs 1.0; 1.0 on main "
-    "before M9): most startups are founded abroad, so fewer launch into the v1 home markets "
-    "(M9, Reece 2026-11-01); rebalance in M15"
-)
-
-
 @pytest.fixture(scope="module")
 def living(loaded: LoadedData) -> tuple[int, float]:
     """Target 1's runs: (seeds with a share breach, launches per v1 category a seed)."""
@@ -106,7 +99,6 @@ def test_1_living_market(living: tuple[int, float]) -> None:
 
 
 @pytest.mark.nightly
-@pytest.mark.xfail(strict=False, reason=LAUNCHES_REASON)
 def test_1_living_market_launches(living: tuple[int, float]) -> None:
     assert living[1] >= 1.0
 

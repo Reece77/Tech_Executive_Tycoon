@@ -1088,7 +1088,7 @@ U(a) = need(a) \times w_{personality}(a) + N(0,\, 0.1)
 | `brand_push` | `(best brand in segment − own) / 30` | +1 brand a month for 6 months; marketing budget +50% for 6 months |
 | `enter_segment` | a category segment it does not serve, with `unserved / D ≥ 0.4` and cash ≥ 12 months of costs: `(unserved / D − 0.4) / 0.4` | sells there at `p_ref × price_factor` |
 | `cut_costs` | cash covers fewer than 12 months of costs: `(12 − months) / 6` | every pool −15%; marketing −30% |
-| `poach` | the player gained `gain` share points over 6 months in a segment they share: `gain / 0.05`, and the player has an employee in the top 30% of its CA | approach the player's best such employee (§15.6) |
+| `poach` | the player gained `gain` share points over 6 months in a segment they share: `gain / 0.05`, and the player has an employee in the top 30% of its CA | approach one such employee, drawn by CA (§15.6; the best one until M10d) |
 
 | Personality | price_cut | price_rise | feature | quality | brand | enter | cut_costs | poach | `price_factor` |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1139,7 +1139,7 @@ Tune only `rivals.*` keys and the personality weights to meet them; record the v
 
 **A premium incumbent ignores a small threat.** Salesforce's SMB share fell 1 point: `need` = 0.2, `U` = 0.2 × 0.6 = 0.12, below 0.5: no action.
 
-**Poaching Priya** (salary $118,000, morale 62, loyalty 12, 52,084 unvested options at $1.0295; `leave_penalty` −0.5 from M5, Reece's decision): Salesforce offers $143,750 (`R` = 1.218, `u` = 0.454): `s` = −1.086, **p = 10.2%**. If the player counters with a raise to $135,000 (`R` = 1.065, `u` = 0.397): `s` = −1.585, **p = 4.0%**. An underpaid, unhappy employee with no options (`R` = 1.218, morale 40, loyalty 8, `u` = 0): `s` = 1.323, **p = 93.4%**. (Before the leaving penalty: −0.586 and 23.7%, −1.085 and 10.2%, 1.823 and 97.5%.)
+**Poaching Priya** (salary $118,000, morale 62, loyalty 12, 52,084 unvested options at $1.0295; `leave_penalty` −0.5 from M5, Reece's decision): Salesforce offers $143,750 (`R` = 1.218, `u` = 0.454): `s` = −1.086, **p = 10.2%**. If the player counters with a raise to $135,000 (`R` = 1.065, `u` = 0.397): `s` = −1.585, **p = 4.0%**. An underpaid, unhappy employee with no options (`R` = 1.218, morale 40, loyalty 8, `u` = 0): `s` = 1.323, **p = 93.4%**. (Before the leaving penalty: −0.586 and 23.7%, −1.085 and 10.2%, 1.823 and 97.5%.) **M10d balance pass:** `rivals.poach.leave_penalty` is now −0.3, so happier staff (median morale 58–68) still take some offers; the example keeps −0.5, and its test uses it.
 
 ## 16. Events, storylines and relationships (M6)
 
@@ -1634,7 +1634,7 @@ Four indicators, set each month in phase 1:
 
 | Instrument | Available | Size | Rate | Term |
 | --- | --- | --- | --- | --- |
-| Venture debt | within 12 months after a priced round | up to 30% of that round's amount | `r + 6%` | 36 months: 12 interest-only, then equal principal; warrants of 0.25% of FD to the lender at signing |
+| Venture debt | within 12 months after a priced round | up to 30% of that round's amount (50% from M10d) | `r + 6%` | 36 months: 12 interest-only, then equal principal; warrants of 0.25% of FD to the lender at signing |
 | Bank loan | stage 3 and positive operating profit for the last 3 months | up to 1 × ARR | `r + 3%` | 48 months, equal principal |
 
 - **Taking a loan** is an immediate action (energy 10): choose the instrument and amount. A lender answers at once (no draw): it says yes if the gate holds, and the rate is fixed at signing.
@@ -1670,7 +1670,7 @@ Four indicators, set each month in phase 1:
 
 ### 20.6 Worked examples
 
-**Venture debt.** $6M after a $20M Series A with `r = 0.25%`: rate 6.25%. Month-1 interest = `$6,000,000 × 0.0625 / 12` = **$31,250**. From month 13, principal is $250,000 a month.
+**Venture debt.** $6M after a $20M Series A with `r = 0.25%`: rate 6.25%. Month-1 interest = `$6,000,000 × 0.0625 / 12` = **$31,250**. From month 13, principal is $250,000 a month. (M10d balance pass: the limit is now 50% of the round, `debt.venture.max_of_round_bp` 5000, so a seed's loan carries blitzscale nearer its Series A and covenants bite on 60% of seeds rather than 80%; the example keeps 30%, and its test uses it.)
 
 **AR(1) step.** Climate 1.30 in a month with shock +0.02: `1.1 + 0.95 × (1.30 − 1.1) + 0.02` = **1.31**.
 

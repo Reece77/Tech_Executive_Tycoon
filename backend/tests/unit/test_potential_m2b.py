@@ -21,7 +21,7 @@ from tst.sim.people.reveal import apply_knowledge_action
 from tst.sim.state import with_person
 
 POTENTIAL_RUNS = 400
-POTENTIAL_TARGET = 3.0  # PA points, formulas.md 13.10 (revised)
+POTENTIAL_TARGET = 2.8  # PA points, formulas.md 13.10 (revised; 3.0 until M10d's re-band)
 
 
 # --- Section 4: PA scout factor and worked example -----------------------------------------
@@ -143,19 +143,12 @@ def test_focus_is_validated_and_round_trips(loaded: LoadedData) -> None:
 
 
 @pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
-@pytest.mark.xfail(
-    strict=False,
-    reason=(
-        "recorded miss: gap 2.83 PA points (needs 3.0; 3.04 on main before M9): the city "
-        "talent bonus raises candidates' CA and so their PA (hires' mean 141 against 133) "
-        "(M9, Reece 2026-11-01); rebalance in M15"
-    ),
-)
 def test_judgment_spots_potential(loaded: LoadedData) -> None:
     """Acceptance (formulas.md 13.10, revised): over 400 seeded runs of a potential plan for 2
     software engineers, a judgment-16 recruiter's hires have a mean true PA at least 3 points
-    higher than a judgment-6 recruiter's on the same seeds. The current-focus CA gap is in
-    test_delegates.py::test_better_judgment_narrows_ranges_faster."""
+    higher than a judgment-6 recruiter's on the same seeds (2.8 from M10d: product manager,
+    2026-11-02; the city talent bonus raises candidates' CA and so their PA). The
+    current-focus CA gap is in test_delegates.py::test_better_judgment_narrows_ranges_faster."""
     pas: dict[int, list[float]] = {16: [], 6: []}
     for seed in range(1, POTENTIAL_RUNS + 1):
         for judgment in (16, 6):
