@@ -2278,6 +2278,131 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/research": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Research
+         * @description The Research screen: levels, projects, rivals' levels as ranges, licences and eras.
+         */
+        get: operations["getResearch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/eras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Eras
+         * @description The era timeline (the Market screen shows it too, 21.4).
+         */
+        get: operations["getEras"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/research/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Project */
+        post: operations["startProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/research/projects/{project_id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop Project */
+        post: operations["stopProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/research/projects/{project_id}/budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Project Budget */
+        post: operations["setProjectBudget"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/research/licenses/in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** License In */
+        post: operations["licenseIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/research/licenses/out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** License Out */
+        post: operations["licenseOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -3030,6 +3155,33 @@ export interface components {
              */
             counts_users: boolean;
         };
+        /** CategoryTechOut */
+        CategoryTechOut: {
+            /** Category */
+            category: string;
+            /** Label */
+            label: string;
+            /**
+             * Lead
+             * @description Your research lead for the market (weighted domains)
+             */
+            lead: number;
+            /**
+             * Cap Lift Pct
+             * @description Percent added to what product teams can reach
+             */
+            cap_lift_pct: number;
+            /**
+             * Feature Lift Pct
+             * @description Percent added to feature progress
+             */
+            feature_lift_pct: number;
+            /**
+             * First Mover
+             * @description A first-mover head start is running
+             */
+            first_mover: boolean;
+        };
         /** ChangePreviewOut */
         ChangePreviewOut: {
             /** Allowed */
@@ -3602,6 +3754,52 @@ export interface components {
              */
             periods: components["schemas"]["DivisionPeriodOut"][];
         };
+        /** DomainOut */
+        DomainOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Baseline
+             * @description The world's level, free to everyone (D)
+             */
+            baseline: number;
+            /**
+             * Lead
+             * @description Your lead beyond the baseline (R)
+             */
+            lead: number;
+            /**
+             * Level
+             * @description baseline + lead
+             */
+            level: number;
+            /**
+             * Feeds
+             * @description Market labels this domain counts for
+             */
+            feeds: string[];
+            /**
+             * Next Era
+             * @description The domain's next era, if any
+             */
+            next_era: string | null;
+            /**
+             * Next Threshold
+             * @description The level that brings it early
+             */
+            next_threshold: number | null;
+        };
+        /** DomainRivalsOut */
+        DomainRivalsOut: {
+            /** Domain */
+            domain: string;
+            /** Domain Label */
+            domain_label: string;
+            /** Rivals */
+            rivals: components["schemas"]["RivalLeadOut"][];
+        };
         /** EmploymentOut */
         EmploymentOut: {
             /** Employment Id */
@@ -3677,6 +3875,42 @@ export interface components {
              * @description Event effects on this month's energy (M10b)
              */
             adjustments: components["schemas"]["EnergyAdjustmentOut"][];
+        };
+        /** EraOut */
+        EraOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Domain Label */
+            domain_label: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "arrived" | "next" | "later";
+            /**
+             * Arrived
+             * @description Month it arrived
+             */
+            arrived: string | null;
+            /** On Schedule */
+            on_schedule: boolean | null;
+            /** Months Early */
+            months_early: number | null;
+            /**
+             * Caused By
+             * @description Company that caused it early ('You' for yours)
+             */
+            caused_by: string | null;
+            /** Threshold */
+            threshold: number;
+            /** Your Level */
+            your_level: number;
+            /** Accelerates */
+            accelerates: string;
+            /** First Mover Reward */
+            first_mover_reward: string;
         };
         /**
          * ErrorOut
@@ -4875,6 +5109,42 @@ export interface components {
             to_label: string;
             /** Months */
             months: number;
+        };
+        /** LicenseIn */
+        LicenseIn: {
+            /**
+             * Company Id
+             * @description The rival licensing to you, or from you
+             */
+            company_id: number;
+            /** Domain */
+            domain: string;
+            /** Points */
+            points: number;
+        };
+        /** LicenseOut */
+        LicenseOut: {
+            /** License Id */
+            license_id: number;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "in" | "out";
+            /** Company */
+            company: string;
+            /** Domain Label */
+            domain_label: string;
+            /** Points */
+            points: number;
+            /** Price Cents */
+            price_cents: number;
+            /** Royalty Pct */
+            royalty_pct: number;
+            /** Royalty Months Left */
+            royalty_months_left: number;
+            /** Signed */
+            signed: string;
         };
         /** LoanIn */
         LoanIn: {
@@ -6747,6 +7017,70 @@ export interface components {
             /** Net Result Cents */
             net_result_cents: number;
         };
+        /** ProjectBudgetIn */
+        ProjectBudgetIn: {
+            /**
+             * Budget Cents
+             * @description Null = full funding
+             */
+            budget_cents?: number | null;
+        };
+        /** ProjectOut */
+        ProjectOut: {
+            /** Project Id */
+            project_id: number;
+            /** Unit Id */
+            unit_id: number;
+            /** Unit Name */
+            unit_name: string;
+            /** Domain */
+            domain: string;
+            /** Domain Label */
+            domain_label: string;
+            /** Researchers */
+            researchers: number;
+            /**
+             * Budget Cents
+             * @description Monthly budget; null = full funding
+             */
+            budget_cents: number | null;
+            /**
+             * Needed Cents
+             * @description Full funding this month
+             */
+            needed_cents: number;
+            /** Funded Pct */
+            funded_pct: number;
+            /**
+             * Gain Per Month
+             * @description Estimated lead gained a month, before decay
+             */
+            gain_per_month: number;
+            /**
+             * Last Month Gain
+             * @description Lead gained last month
+             */
+            last_month_gain: number | null;
+            /** Next Era */
+            next_era: string | null;
+            /**
+             * Months To Era
+             * @description At this pace; null if not within 10 years
+             */
+            months_to_era: number | null;
+            /**
+             * Months Before History
+             * @description How early that would be; null if the era is not yet visible by date
+             */
+            months_before_history: number | null;
+            /**
+             * Last Event
+             * @description 'Breakthrough, June 2016' or a dead end
+             */
+            last_event: string | null;
+            /** Started */
+            started: string;
+        };
         /**
          * ProposalOut
          * @description An executive's proposal (24.1, M10c): pending ones block Continue.
@@ -6909,6 +7243,106 @@ export interface components {
             date_label: string;
             /** Text */
             text: string;
+        };
+        /** ResearchActionOut */
+        ResearchActionOut: {
+            research: components["schemas"]["ResearchOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** ResearchOut */
+        ResearchOut: {
+            /** Domains */
+            domains: components["schemas"]["DomainOut"][];
+            /** Categories */
+            categories: components["schemas"]["CategoryTechOut"][];
+            /** Projects */
+            projects: components["schemas"]["ProjectOut"][];
+            /**
+             * Units
+             * @description Units free to start a project
+             */
+            units: components["schemas"]["UnitChoiceOut"][];
+            /** Rivals */
+            rivals: components["schemas"]["DomainRivalsOut"][];
+            /** Licenses */
+            licenses: components["schemas"]["LicenseOut"][];
+            /** Eras */
+            eras: components["schemas"]["EraOut"][];
+            /**
+             * Decay Pct
+             * @description Percent of every lead lost each month
+             */
+            decay_pct: number;
+            /**
+             * Price Per Point Cents
+             * @description Licensing in, a point, at your ARR
+             */
+            price_per_point_cents: number;
+            /**
+             * Margin
+             * @description Points a licensor keeps ahead of the licensee
+             */
+            margin: number;
+            /** Royalty Pct */
+            royalty_pct: number;
+            /** Royalty Months */
+            royalty_months: number;
+            /** Start Energy */
+            start_energy: number;
+            /** Stop Energy */
+            stop_energy: number;
+            /** License Energy */
+            license_energy: number;
+        };
+        /** RivalLeadOut */
+        RivalLeadOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Is Startup */
+            is_startup: boolean;
+            /**
+             * Founded
+             * @description A startup's founding month
+             */
+            founded: string | null;
+            /**
+             * Low
+             * @description Lead range, low
+             */
+            low: number;
+            /**
+             * High
+             * @description Lead range, high
+             */
+            high: number;
+            /**
+             * Licensed
+             * @description You have a licence with them (narrower range)
+             */
+            licensed: boolean;
+            /** Can License In */
+            can_license_in: boolean;
+            /**
+             * Why Not
+             * @description Why licensing in from them is not possible
+             */
+            why_not: string | null;
+            /**
+             * Max Points
+             * @description Points you can safely ask for (from the range)
+             */
+            max_points: number;
+            /** Can License Out */
+            can_license_out: boolean;
+            /**
+             * Max Out Points
+             * @description Points you can grant them (from the range)
+             */
+            max_out_points: number;
         };
         /** RivalMoveOut */
         RivalMoveOut: {
@@ -7702,6 +8136,18 @@ export interface components {
             /** Date Label */
             date_label: string;
         };
+        /** StartProjectIn */
+        StartProjectIn: {
+            /** Unit Id */
+            unit_id: number;
+            /** Domain */
+            domain: string;
+            /**
+             * Budget Cents
+             * @description Null = full funding
+             */
+            budget_cents?: number | null;
+        };
         /** StatementLineOut */
         StatementLineOut: {
             /** Account */
@@ -8083,6 +8529,18 @@ export interface components {
             tables?: {
                 [key: string]: components["schemas"]["TableViews"];
             };
+        };
+        /** UnitChoiceOut */
+        UnitChoiceOut: {
+            /** Unit Id */
+            unit_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Researchers
+             * @description Members in builder roles who would research
+             */
+            researchers: number;
         };
         /** UnitOfficeIn */
         UnitOfficeIn: {
@@ -15796,6 +16254,430 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProductRegionsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getResearch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getEras: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EraOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartProjectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    stopProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                project_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setProjectBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                project_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectBudgetIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    licenseIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicenseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    licenseOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicenseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchActionOut"];
                 };
             };
             /** @description Bad Request */
