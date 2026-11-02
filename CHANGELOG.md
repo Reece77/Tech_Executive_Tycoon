@@ -4,6 +4,17 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M12a Cloud, data centres and supply shocks (formulas.md §22, lane B):
+  - One generic facility model (ADR-0020): general and GPU data centres are its first kinds (`facility.kinds`); build (energy 12), capex paid as built to `1500_ppe`, depreciation from completion to `6700_depreciation` / `1510_accumulated_depreciation` (new accounts; depreciation counts with compute in cost of revenue, non-cash in the cash flow), operating cost in phase 6, staff coverage and reliability from a unit of DevOps or security engineers, sale at half book value. Migration `0028_facilities`.
+  - Compute units: a product's hosting at index 1.0 / $1,000; own products served first from capacity in their region or its neighbour, cheapest first; their spot hosting falls by the share served. A company that never builds posts exactly the same costs.
+  - Market goods: server and GPU indexes and allocation from `components_history.yaml` to 2025, then a seeded AR(1) on the yearly change with shocks (stream `supply`, 26); shortage delays; component contracts with full allocation and take-or-pay (energy 6).
+  - Cloud and GPU hosting (`cloud_hosting`, new `hyperscalers` segment): sell spare capacity with customers capped by spare CU; quality is reliability, features 50 + 2 x the infrastructure lead (0 until M11's `research.lead` is wired at merge). Rivals AWS, Azure, Rackspace and IBM SoftLayer; entrants Google Cloud (Apr 2012) and CoreWeave (Jan 2019). Not a product the New product dialog offers; rival startups are not founded in it.
+  - Outages (stream `facility`, 27) as the critical `facility_outage` event.
+  - Infrastructure screen (from Products): component strip, data centres, Cloud hosting panel, contracts, Build / Contract / Sell dialogs; `tst facilities`, `build-dc`, `sell-dc`, `staff-dc`, `contract`, `sell-capacity`.
+  - §22.7 targets (`tools/m12a_targets.py`, nightly): T2 0.62 / 1.23 (built Jan 2016), T3 9/10, T4 +30% / +60%, T5 8/10, T6 1.05 / 0.17; T4's own-GPU margin gap -6.0 points against +15 is **not met** (reported). `facility.outage.base` 0.002 -> 0.016 for T6.
+  - Earlier guard: T5 bootstrap-frugal bankrupt 0% (20-50%); the four cloud incumbents renumber later rival startups and so reseed their `rivals` stream. On main the measure is 2/10 on seeds 1-10 but 2/30 on seeds 11-40 on both main and this branch (reported, not tuned).
+  - Golden snapshots move with the cloud incumbents (company, product and rival people ids); they are regenerated once, on the combined code, when M12a merges after M11.
+
 - M10d Balance checkpoint (product manager's decisions of 2026-11-02; table in `docs/balance-targets.md`, M10d):
   - Speed: people by binary search, the seat cost memoized; the nightly as five CI jobs (`make balance` alone gates S2; four duration-balanced shards); S2 for v2 is 43 worker-minutes on CI; `tests/durations.json` refreshed.
   - Morale target base 56 (median 62 steady, 60 blitzscale) and resignation floor 50; executive retention 8/10.

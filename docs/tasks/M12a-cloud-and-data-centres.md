@@ -87,8 +87,22 @@ On a stage-3 save, build a 500-CU general data centre in your home region and wa
 
 ## Decisions made
 
-_(Agent fills in.)_
+- **CU need** is hosting at index 1.0 / $1,000 (22.1's "÷ $1,000 × the index" read as ÷ ($1,000 × index)); GPU need does not move with the AI index, its price does.
+- **Kinds and goods are data.** `facility.kinds` (`data_centre_general`, `data_centre_gpu`) name their input good (`server`, `gpu` in `components_history.yaml`) and output good (`compute.goods`). Shared lifecycle in `tst/sim/facilities/lifecycle.py`; goods in `goods.py`. `player_companies(state)` added (ADR-0020 1); the cloud cap and the Cloud product's quality apply to the player's companies only, as rivals' capacity is abstract.
+- **History** is anchor months with geometric interpolation (`components_history.yaml`). GPU 2019-2022 continues -10% a year and 2024-2025 too (22.4 does not say). After a shock its rise fades over as many months as it ran.
+- **Accounts.** Depreciation (`6700`) is a cost of revenue with hosting; data centres' operating cost posts to `6300_compute` as "Data centre operations". Take-or-pay posts to general and administrative. The cash flow counts `6700` and `1510` with investing.
+- **Cloud market.** One market in general CU; each segment's customer buys a fixed number of CU (`units_per_customer`); GPU spare sells at its spot value. Cloud hosting cannot be created as a product; the Infrastructure screen's "Sell spare capacity" starts it (live at once, reference prices, energy as create_product). Rival startups are not founded in it. CoreWeave's "GPU only" is its segments (enterprise, hyperscalers).
+- **Outside my namespaces in balance.yaml:** `products.seller_rate.hyperscalers` (0.03) and `rivals.function_mix.cloud_hosting` (the loader requires one per sales segment and per category).
+- **Outages** are rolled in phase 6 after the month's costs; hosted products lose `customers_share` (0.5) of the critical `customers_pct` cap (8%), cloud customers' churn x3 comes off at once; one critical event per month however many sites fail.
+- **API naming.** Facility sizes are `units` (the hidden-field guard bans `capacity`, 11.13).
+- **Cloud incumbents' cash** (AWS 120 months, Rackspace 60) and cost (55% of reference): with 24 and 12 months and 65% they went bankrupt in price wars.
+- **22.7 values** (tools/m12a_targets.py, 10 seeds): T2 at 80% 0.62, at 40% 1.23 (build in January 2016, server index 0.61; 2010 prices give 0.81 at 80%). T3 9/10 (staffed 2,000 CU, $50,000 a month of marketing, prices 0.9 x reference). T4 server +30%, GPU +60%; **AI margin gap -6.0 points: not met** (own 76.5%, spot 82.5%; own compute $965 a CU, spot $718). T5 8/10. T6 1.05 a year at coverage 0.5, 0.17 at full coverage (base 0.016).
+- **Earlier guard moved (reported, not tuned):** T5 bootstrap-frugal bankrupt 0% (band 20-50%; main 20%). The cloud incumbents shift later rival startups' company ids, which key stream `rivals`. With the main data files on this code the value is main's 20%; seeds 11-40 give 2/30 on both main and this branch.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- Reece: target 4's margin gap needs a design decision (the AI index's 2023 level, the GPU table's power cost, or the target).
+- Reece: T5 bootstrap-frugal bankrupt sits at its band's floor by seed luck (about 10% over 40 seeds on main); a re-band or a strategy change is a product decision.
+- Data centres past their life keep running at operating cost: refurbishment or retirement is open.
+- Rivals' physical capacity, power markets, regional risk fields in regions.yaml (ADR-0020 5) and a separate GPU hosting market are not built.
+- Wire `research.lead(state, company_id, "infrastructure")` into `facilities.cloud.infrastructure_lead` at the merge with M11.

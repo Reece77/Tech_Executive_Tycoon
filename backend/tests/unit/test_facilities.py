@@ -364,15 +364,15 @@ def test_cloud_customers_capped_by_spare(loaded: LoadedData) -> None:
 
     seg = state.product_segment(cloud.id, "smb")
     assert seg is not None
-    state = with_product_segment(state, replace(seg, customers=1000.0))  # 2,000 CU wanted
+    state = with_product_segment(state, replace(seg, customers=1000.0))  # 4,000 CU wanted
     from tst.sim.facilities.cloud import trim_to_capacity
 
     trimmed, removed = trim_to_capacity(state, loaded.balance, loaded.game_data)
     seg = trimmed.product_segment(cloud.id, "smb")
-    assert seg is not None and seg.customers * 2 == pytest.approx(400)
+    assert seg is not None and seg.customers * 4 == pytest.approx(400)
     alloc = compute.allocate(trimmed, 1, loaded.balance, loaded.game_data)
     assert alloc.used(state.facilities[0].id) == pytest.approx(500)
-    assert removed[(cloud.id, "smb")] == pytest.approx(800)
+    assert removed[(cloud.id, "smb")] == pytest.approx(900)
     hosting, _ = product_costs(trimmed, 1, loaded.game_data, loaded.balance)
     assert hosting == 0  # every CU, own and sold, comes from the data centre
 

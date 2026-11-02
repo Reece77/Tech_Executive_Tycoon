@@ -446,7 +446,7 @@ companies:
         features: 75
         brand: 70
         segments:
-          smb: { price_cents: 180000, share_bp: 3000 }
+          smb: { price_cents: 360000, share_bp: 3000 }
           mid_market: { price_cents: 1800000, share_bp: 2500 }
           enterprise: { price_cents: 18000000, share_bp: 1500 }
           hyperscalers: { price_cents: 180000000, share_bp: 1500 }
@@ -465,7 +465,7 @@ companies:
         features: 55
         brand: 60
         segments:
-          smb: { price_cents: 200000, share_bp: 500 }
+          smb: { price_cents: 400000, share_bp: 500 }
           mid_market: { price_cents: 2000000, share_bp: 800 }
           enterprise: { price_cents: 20000000, share_bp: 1000 }
           hyperscalers: { price_cents: 200000000, share_bp: 500 }
@@ -484,7 +484,7 @@ companies:
         features: 50
         brand: 55
         segments:
-          smb: { price_cents: 170000, share_bp: 1500 }
+          smb: { price_cents: 340000, share_bp: 1500 }
           mid_market: { price_cents: 1700000, share_bp: 1500 }
           enterprise: { price_cents: 18000000, share_bp: 500 }
 

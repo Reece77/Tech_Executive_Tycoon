@@ -773,7 +773,7 @@ facility:
   reliability_floor: 0.7 # reliability = 100 x coverage x (floor + skill share x mean skill / 20) (22.2)
   reliability_skill: 0.3 # the skill share of that formula; floor + skill = 1 (22.2)
   outage:
-    base: 0.002 # chance a month x (100 - reliability) / 10 (22.5)
+    base: 0.016 # chance a month x (100 - reliability) / 10 (22.5; M12a tuning from 0.002, 22.7 target 6: 0.002 gave 0.13 outages a year at coverage 0.5, not >= 1)
     customers_share: 0.5 # share of the critical customers_pct cap every hosted product loses in an outage (22.5)
     cloud_churn_mult: 3 # cloud customers' churn x this in the outage month (22.5)
 
