@@ -420,9 +420,10 @@ def test_morale_converges_toward_target(loaded: LoadedData) -> None:
     game = _staff_game(loaded, 3, 1.0, True, count=1)
     for _ in range(24):
         game.turn()
-    # target = 50 + pay 0 + fit 2 x 5 = 60 with healthy runway; noise sd is small
+    # target = target_base + pay 0 + fit 2 x 5 with healthy runway; noise sd is small
+    target = loaded.balance.morale.target_base + 2 * loaded.balance.morale.fit_per_interest
     morale = game.state.person_state(20).morale
-    assert morale is not None and 52 <= morale <= 68
+    assert morale is not None and target - 8 <= morale <= target + 8
 
 
 def test_retirement_from_60(loaded: LoadedData) -> None:

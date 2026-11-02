@@ -19,7 +19,7 @@ def flexible_seat_cents(rent_index: float, balance: Balance) -> Cents:
     return _seat_cents(balance.payroll.office_cost_per_head_cents, rent_index)
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=256)  # tunable-exempt: cache size, not game balance
 def _seat_cents(per_head_cents: int, rent_index: float) -> Cents:
     """Memoized: phase 6 and every projection ask it once per employee (M10d speed)."""
     return round_cents(exact(per_head_cents) * exact(rent_index))

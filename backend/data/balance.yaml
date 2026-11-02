@@ -234,7 +234,7 @@ hiring:
 # --- Morale (formulas.md section 9) -----------------------------------------------------
 morale:
   new_hire: 65 # morale points; starting morale for a new hire
-  target_base: 50 # morale points; target = target_base + pay + fit + runway + workload
+  target_base: 56 # morale points; target = target_base + pay + fit + runway + workload (M10d: 50 -> 56 for a median employee at 58-68)
   pay_slope: 60 # morale points per unit of (salary / market mid - 1)
   pay_min: -20 # morale points; floor of the pay term
   pay_max: 15 # morale points; ceiling of the pay term
@@ -254,7 +254,7 @@ morale:
 resign:
   base_bp: 80 # bp per month before modifiers (M7a: 50 -> 80 for 10-25% of staff leaving a year, docs/balance-targets.md T6)
   cap_bp: 2000 # bp per month at most
-  morale_floor: 40 # morale points; below this the chance rises
+  morale_floor: 50 # morale points; below this the chance rises (M10d: 40 -> 50 with morale.target_base 56: the floor stays about 10 below the median employee, so underpaid misfits still leave more)
   morale_divisor: 20 # morale points per +100% chance below the floor
   loyalty_divisor: 10 # loyalty term (21 - loyalty) / loyalty_divisor
   job_hopper_mult: 2.0 # multiplier for the job_hopper tag

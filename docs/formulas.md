@@ -341,6 +341,8 @@ morale \leftarrow morale + 0.3\,(target - morale) + Normal\!\left(0,\; 2 \cdot \
 
 **Worked example.** Paid $85,000 against a $90,000 market mid, one matching interest, healthy runway, M2 terms zero: P = 60 × (0.944 − 1) = −3.33; target = 50 − 3.33 + 5 = 51.67. Starting at 65, morale after 6 months is **53.2** (before noise).
 
+**M10d balance pass:** the target base is now 56 (`morale.target_base`), so the median employee of the steady and blitzscale strategies sits at 58–68; the worked example keeps 50, and its test uses it.
+
 ## 10. Resignations and tag reveals (phase 8)
 
 **Resignation chance per month** (stream `resign`, key `person_id`), capped at 2,000 bp:
@@ -356,6 +358,8 @@ p_{bp} = 50 \times \left(1 + \frac{\max(0,\,40 - morale)}{20}\right) \times \fra
 | Morale 25, loyalty 6, job hopper | 263 bp (2.6%) |
 
 **M7a balance pass:** the base is now 80 bp (`resign.base_bp`), so about 10–25% of staff leave a year (docs/balance-targets.md T6); the formula and the table above keep the original 50 bp, and their tests use it.
+
+**M10d balance pass:** the morale floor is now 50 (`resign.morale_floor`), about ten points below the median employee after §9's new target base; the formula and the table keep 40, and their tests use it.
 
 **M4:** the chance is then multiplied by the retention factor for unvested options, `max(0.5, 1 − 0.5 u)` (§14.2), before the cap.
 
@@ -659,7 +663,7 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `scenario.<id>.starting_cash_cents` | see §8a | cents | §8a |
 | `difficulty.<level>.starting_cash_mult_bp` | see §8a | bp | §8a |
 | `payroll.severance_months` | 1 | months | §8 |
-| `morale.target_base` | 50 | morale points | §9 |
+| `morale.target_base` | 50 (56 from M10d) | morale points | §9 |
 | `morale.pay_slope` / `.pay_min` / `.pay_max` | 60 / −20 / 15 | morale points | §9 |
 | `morale.fit_per_interest` / `.work_style_mismatch` | 5 / −5 | morale points | §9 |
 | `morale.runway_warn_months` / `.runway_crit_months` | 6 / 3 | months | §9 |
@@ -669,7 +673,7 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `morale.noise_scale` | 2.0 | morale points | §9 |
 | `morale.fire_penalty` / `.fire_penalty_culture_carrier` | −3 / −6 | morale points | §9 |
 | `resign.base_bp` / `.cap_bp` | 50 / 2000 | bp per month | §10 |
-| `resign.morale_floor` / `.morale_divisor` | 40 / 20 | morale points | §10 |
+| `resign.morale_floor` / `.morale_divisor` | 40 (50 from M10d) / 20 | morale points | §10 |
 | `resign.loyalty_divisor` | 10 | attribute points | §10 |
 | `resign.job_hopper_mult` | 2.0 | multiplier | §10 |
 | `tags.reveal_bp_per_month` / `.reveal_bp_on_check` | 500 / 1500 | bp | §10 |
