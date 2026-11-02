@@ -2008,3 +2008,86 @@ Each seat's authority, guardrails, decisions this month (with outcomes), proposa
 2. **Quality matters.** The same run with every seat holder at score 8 against score 15 differs by at least 15% median ARR.
 3. **No runaway hiring:** headcount never exceeds the guardrail caps, and support coverage stays within 0.1 of the target.
 4. **Founder energy:** delegated runs leave the founder at least 60% of their monthly energy unspent on average.
+
+## 25. IPO, public company, and Chair and CEO (M13, lane B)
+
+Reece's decisions (2026-10-31, ADR-0019 §10–§12): the IPO is an event chain; public life runs on quarterly earnings that the player guides; when the founder steps up to Chair, the CEO runs day-to-day operations. ADR-0020 §7: listings, shares and prices belong to a `company_id`, so a subsidiary can list in v3. Stage 4 begins at the listing.
+
+### 25.1 Eligibility
+
+- **Stage 3,** ARR ≥ `ipo.min_arr` ($80M, 2010 dollars), and the last 4 quarters either profitable at the operating line or growing revenue ≥ 40% a year.
+- **Board approval:** average director confidence ≥ 50 at the decision.
+
+### 25.2 The IPO chain (an event chain; templates and LLM within §16)
+
+1. **Hire banks** (immediate action, energy 10): choose a lead underwriter from `banks.yaml` (Goldman Sachs, Morgan Stanley, J.P. Morgan; each with a fee of 5.5–7% and a quality from 0.9 to 1.1).
+2. **File (S-1),** month 1: a major event (regulator questions, restating a metric). Choices carry delay, cost and brand modifiers.
+3. **Roadshow,** months 2–3: three major events whose choices set the ambition (price range high, middle or low), the share sold (10–25% of post-IPO fully diluted shares, new shares), and dual-class shares, which keep the founder's voting control but price 5% lower.
+4. **Pricing** (month 4, a critical event):
+   - **Fundamental value** `V_f` (§25.3) × bank quality × the ambition factor (high 1.15, middle 1.0, low 0.9) gives the offer price.
+   - **Book demand** `d = clamp(N(1.0 + 0.6 × (v − 1), 0.2), 0.3, 3.0)`, where `v` is the venture climate (§20.1); stream `ipo` (id 33), key `(company_id,)`.
+   - The player chooses to price at the range, raise it 10% (only if `d ≥ 1.3`), cut it 15%, or pull the IPO. Pulling costs the bank fee × 0.3 and damages board confidence (−10).
+5. **Listing day:** first-day return `r = clamp(0.25 × (d − 1) − 0.15 × (ambition − 1)/0.15, −0.3, +0.8)`. The company raises `price × new shares` minus the bank fee (posted to `3000_common_equity`, net of fees). The closing share price after day one is `price × (1 + r)`.
+
+### 25.3 Share price each month (phase 7; stream `market_sentiment` id 34, key `(company_id,)`)
+
+- **Fundamental value:**
+
+```latex
+V_f = ARR \times m, \qquad m = clamp\big(2 + 25\,g + 15\,margin - 1.5\,(r_{base} - 2)\big,\ 1,\ 30) \times v
+```
+
+  with `g` the trailing annual revenue growth, `margin` the trailing operating margin, `r_base` the base rate in percent (§20.1), and `v` the venture climate.
+- **Price:** `P = V_f / shares × S`. Sentiment `S` follows an AR(1) toward 1.0 (φ 0.9, shock sd 0.06), clamped to [0.5, 1.8], plus earnings jumps (§25.4).
+- **Analysts:** 3–8, more as market cap grows. Each holds a rating (buy, hold or sell) and a target price, `V_f × (1 + N(0, 0.1))`, refreshed after each earnings report. Ratings follow `target / P`: above 1.15 buy, below 0.9 sell, otherwise hold.
+
+### 25.4 Quarterly earnings and guidance
+
+- **Guidance:** at each quarter start the player sets revenue and operating-margin guidance for the quarter (immediate action, energy 4). The default is the analysts' consensus, the trailing trend.
+- **Report** at quarter end. With surprise `s = (actual revenue / guided revenue − 1)` and margin surprise `sm = actual margin − guided margin` (points):
+  - sentiment jumps `S × (1 + clamp(3 s + 0.02 sm, −0.25, +0.20))`;
+  - two consecutive misses (`s < −0.02`) cut every director's confidence by 8;
+  - beating three quarters in a row adds +5 sentiment points.
+- **Activists:** when `P` is below 0.7 × `V_f / shares` for 6 months, or after 3 misses in 4 quarters, an activist investor builds a stake. That starts a critical event chain: board seats demanded, a buyback or spin-off demanded, or a proxy fight.
+- **Takeover interest:** when market cap stays below 0.6 × `V_f` for 6 months, a takeover-bid event can arrive. Accepting or fighting is handled as an event in M13; acquisitions themselves are M14.
+
+### 25.5 Capital actions once public
+
+- **Buyback** (energy 6): buy shares at `P × 1.02`. Cash leaves to `3000_common_equity` (treasury); shares outstanding fall.
+- **Dividend** (energy 4): a cash amount per share, paid next month.
+- **Secondary offering** (energy 10): new shares at `P × 0.95`, less a 3% fee.
+- **Founder's stake:** shown as shares × `P` (personal wealth, read-only until v3's trading).
+
+### 25.6 Chair and CEO
+
+- **Appoint a CEO** (stage 4, energy 10): an employee at exec level, or an exec-level search. The founder becomes **Chair**.
+- **What the CEO does.** Each month in phase 2, as a super-delegate (ADR-0015, §24), the CEO uses every authority the player allows: all five seats' functions (§24.1) plus product priorities (assigning teams, launching ready products, setting prices within ±10% of the player's last price) and hiring plans within headcount guardrails. CEO decision quality follows §24.2 with the CEO's score (weights: leadership 0.3, strategy 0.3, communication 0.2, product 0.1, finance 0.1).
+- **The Chair keeps** capital decisions (rounds, debt, buybacks, dividends, the IPO and later M&A), executive appointments, guidance and strategy. An **override** of a CEO decision costs 6 energy.
+- **The board and the CEO:** with confidence below 30 for 3 months, directors may vote to replace the CEO (an event). The founder as Chair can only be removed under §14.6's rules, with public-company seats.
+- The founder's monthly energy as Chair is `ceo.chair_energy` (40). A Chair's job is fewer, larger decisions.
+
+### 25.7 Stage 4 and the board
+
+- Listing sets stage 4.
+- **The board** gains two independent directors (generated people) and moves to a public mix: founder, two common seats, investor seats (lapsing one per year after listing as funds sell), and independents. Patience follows the analysts' consensus.
+- **Board confidence** adds an earnings term: +4 per beat, −6 per miss, in the month of the report.
+
+### 25.8 What the API may show
+
+The IPO chain's status and choices; the price range and book demand as words ("strong demand", from `d`), never the draw; the share price and its history; market cap; analysts' ratings and targets; guidance against actuals; the founder's stake; the CEO's decisions and overrides. Never `V_f`'s components beyond what the analysts publish, future sentiment, or the takeover threshold.
+
+### 25.9 Balance targets (M13 acceptance, printed)
+
+1. All earlier targets pass as before (no new xfails).
+2. **IPOs happen.** blitzscale and steady reach an IPO on at least 4 of 10 seeds each by turn 180 (15 years), with median first-day return 0–30%.
+3. **Guidance matters.** A company that guides 10% above trend misses in at least 60% of quarters, and its median share price after 3 years is at least 15% below a company that guides at trend.
+4. **Prices are believable.** The median price-to-sales multiple at listing is 4–15× in 2012–2019 and 8–25× in 2020–2021, falling at least 30% between Jan 2022 and Dec 2022.
+5. **The CEO runs things.** A CEO with score 14 and full authority keeps a stage-4 company within 15% of the scripted strategy's median ARR over 36 months, with the founder spending at most 40% of the Chair's energy.
+
+### 25.10 Worked examples
+
+**Fundamental value.** ARR $120M, growth 45%, operating margin −5%, base rate 1.5%, climate 1.2: `m = (2 + 11.25 − 0.75 + 0.75) × 1.2 = 13.25 × 1.2` = **15.9**, so `V_f` = **$1.908B**.
+
+**Listing.** With 100M fully diluted shares before the IPO and 15% sold as new shares: 17.65M new shares. A middle-ambition offer at `V_f / 117.65M` = $16.22 raises 17.65M × $16.22 = $286M before a 6% fee ($269M net). Book demand 1.4 gives `r = 0.25 × 0.4` = **+10%**, so the stock closes day one at $17.84.
+
+**Earnings.** Guidance $32M; actual $33M (`s = +3.1%`); margin on guidance: sentiment × `(1 + 0.094)`, a +9.4% jump.

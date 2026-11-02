@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs: M13 brief (IPO, public company, Chair and CEO; lane B, merges before M12b) and formulas.md §25.
 - M10d Balance checkpoint (product manager's decisions of 2026-11-02; table in `docs/balance-targets.md`, M10d):
   - Speed: people by binary search, the seat cost memoized; the nightly as five CI jobs (`make balance` alone gates S2; four duration-balanced shards); S2 for v2 is 43 worker-minutes on CI; `tests/durations.json` refreshed.
   - Morale target base 56 (median 62 steady, 60 blitzscale) and resignation floor 50; executive retention 8/10.
