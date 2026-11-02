@@ -119,4 +119,4 @@ def test_regional_incumbents(loaded: LoadedData) -> None:
         "Baidu": ("fast_follower", 12, "ai_models", ("east_asia",)),
         "Infosys": ("cost_leader", 11, "fintech", ("south_southeast_asia",)),
     }
-    assert set(loaded.game_data.incumbents[-1].products[0].segments) == {"enterprise"}
+    assert set(loaded.game_data.incumbents[-5].products[0].segments) == {"enterprise"}
