@@ -23,6 +23,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.people.models import current_ability
 from tst.sim.products import formulas as pf
 from tst.sim.products.models import SELLING, Product, ProductSegment
+from tst.sim.research.levels import tech_factor
 from tst.sim.rivals import formulas as f
 from tst.sim.rivals.models import PoachApproach, RivalEffect, RivalMove, SegmentShare
 from tst.sim.rivals.poaching import TARGET_KEY, poach_draw
@@ -665,6 +666,8 @@ def apply_effects(state: GameState, balance: Balance, data: GameData) -> GameSta
                 product = _add_feature(product, rv.feature_push_rate, data, turn)
             elif e.kind == "quality_push":
                 target = rv.qcap_per_skill * (company.builder_skill or 0.0)
+                # the rival's own lead and first-mover window (M11, 21.2)
+                target = tech_factor(state, company.id, product.category, balance, data).cap(target)
                 step = min(rv.quality_push_rate, max(0.0, target - product.quality))
                 product = replace(product, quality=product.quality + step)
             elif e.kind == "brand_push":

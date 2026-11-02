@@ -1,0 +1,75 @@
+# Era milestones (docs/formulas.md 21.4, M11; ADR-0019 section 7). Each era arrives at its
+# historical month, or earlier on the first month any company's level in its domain reaches
+# its threshold: the domain's baseline at the end of the historical month (with the eras of
+# that domain historically before it) + rnd.era_lead. On arrival the domain's baseline rises
+# rnd.era_baseline and the boosts run from that month.
+#
+# Boosts: `growth` adds annual growth points (fraction) to the category's demand growth in the
+# listed segments (all when omitted) for `months`; `adoption` multiplies the segments' monthly
+# adoption for `months`. The categories an era boosts are the ones its first mover's window
+# covers (21.4).
+eras:
+  - key: mobile_first
+    label: Mobile-first
+    domain: software_platform
+    arrival: [2011, 1] # [year, month]
+    boosts:
+      - { category: consumer_apps, growth: 0.15, months: 36 }
+      - { category: consumer_apps, segments: [consumer], adoption: 1.2, months: 24 }
+  - key: deep_learning
+    label: Deep learning
+    domain: ai
+    arrival: [2012, 10]
+    boosts:
+      - { category: ai_models, growth: 0.05, months: 60 } # fitted with base_growth (21.8 target 1)
+  - key: cloud_native
+    label: Cloud-native
+    domain: infrastructure
+    arrival: [2014, 6]
+    boosts:
+      - { category: dev_tools, growth: 0.10, months: 36 }
+  - key: transformers
+    label: Transformers
+    domain: ai
+    arrival: [2017, 6]
+    boosts:
+      - { category: ai_models, growth: 0.20, months: 60 } # fitted
+  - key: open_banking
+    label: Open banking
+    domain: software_platform
+    arrival: [2018, 1]
+    boosts:
+      - { category: fintech, growth: 0.10, months: 36 }
+  - key: zero_trust
+    label: Zero trust
+    domain: infrastructure
+    arrival: [2020, 1]
+    boosts:
+      - { category: cybersecurity, growth: 0.10, months: 36 }
+  - key: large_language_models
+    label: Large language models
+    domain: ai
+    arrival: [2022, 11]
+    boosts:
+      - { category: ai_models, growth: 1.80, months: 24 } # fitted
+      - { category: ai_models, segments: [consumer], adoption: 1.5, months: 24 }
+  - key: ai_agents
+    label: AI agents
+    domain: ai
+    arrival: [2025, 3]
+    boosts:
+      - { category: ai_models, segments: [enterprise], growth: 0.40, months: 36 }
+      - { category: b2b_saas, segments: [mid_market, enterprise], growth: 0.05, months: 24 }
+
+# Base demand growth (fraction a year) for categories whose eras' boosts are already in the
+# curves M8-M10 were tuned on (21.4, 21.8 target 1): it replaces categories.yaml's `growth`
+# and `growth_by_year` for demand. By calendar year, the latest year at or before the month.
+# With every era on its historical date, demand matches before M11: AI models' January 2024
+# demand is 350x January 2010 (M8: 359x); consumer apps and developer tools match in January
+# 2020, fintech in January 2021 (0.94 of before in January 2020). Zero trust and AI agents
+# arrive after the tuned decade and add growth.
+base_growth:
+  ai_models: { 2010: 0.28, 2016: 0.35, 2020: 0.40, 2025: 0.50, 2030: 0.25 } # replaces M8's growth_by_year
+  consumer_apps: { 2010: 0.2568, 2020: 0.30 } # mobile-first's +15 points for 2011-2013
+  dev_tools: { 2010: 0.2208, 2020: 0.25 } # cloud-native's +10 points from June 2014
+  fintech: { 2010: 0.2235, 2021: 0.25 } # open banking's +10 points from January 2018

@@ -57,10 +57,13 @@ def regional_addressable_at(
     return value
 
 
-def regional_monthly_growth(data: GameData, category: str, region: str, year: int) -> float:
-    """(1 + g x region multiplier)^(1/12) (19.5)."""
-    cat = data.category(category)
-    return float((1 + regional_growth(cat.growth_in(year), region, data)) ** (1 / 12))
+def regional_monthly_growth(
+    data: GameData, category: str, region: str, year: int, growth: float | None = None
+) -> float:
+    """(1 + g x region multiplier)^(1/12) (19.5); `growth` the category's annual growth this
+    month with era boosts (M11, 21.4), else categories.yaml's for the year."""
+    g = data.category(category).growth_in(year) if growth is None else growth
+    return float((1 + regional_growth(g, region, data)) ** (1 / 12))
 
 
 def initial_market(

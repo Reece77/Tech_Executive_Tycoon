@@ -47,6 +47,8 @@ from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
 from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
+from tst.sim.research.eras import arrive_eras
+from tst.sim.research.projects import decay_leads, run_projects
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rivals.poaching import answer_approaches, join_rivals
@@ -190,11 +192,14 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
 
 
 def research_progress(ctx: TurnContext) -> TurnContext:
-    """Product development: quality and features (formulas.md 11.4, ADR-0017). The v2
-    technology tree joins this phase later."""
+    """Product development: quality and features (formulas.md 11.4, ADR-0017); then the R&D
+    tree (M11, 21): research projects spend and progress, leads decay, and eras arrive."""
     state, logs = products.develop(ctx.state, ctx.rng, ctx.balance, ctx.data)
     state = apply_effects(state, ctx.balance, ctx.data)  # rival pushes and drags (M5, 15.2)
-    return replace(ctx, state=state).log(*logs)
+    state, research = run_projects(state, ctx.rng, ctx.balance, ctx.data)
+    state = decay_leads(state, ctx.data, ctx.balance)
+    state, arrived = arrive_eras(state, ctx.data, ctx.balance)
+    return replace(ctx, state=state).post(*research).log(*logs, *arrived)
 
 
 def production_and_capacity(ctx: TurnContext) -> TurnContext:  # v2

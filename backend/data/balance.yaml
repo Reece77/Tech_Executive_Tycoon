@@ -578,6 +578,8 @@ events: # event director, effect caps, storylines (formulas.md 16; ADR-0005, ADR
     exec_cmo: { strength: 0.3 } # the CMO proposes a campaign
     exec_cfo: { strength: 0.4 } # the CFO warns about runway (runway below the CFO's threshold)
     exec_clash: { at_most: -10, span: 30 } # relationship points between two seat holders: (at_most - rel) / span
+    research_breakthrough: { strength: 0.7 } # M11 (21.3): a project's breakthrough this month
+    research_dead_end: { strength: 0.6 } # M11 (21.3): a project's dead end this month
   caps: # largest effect per choice by severity [minor, major, critical] (16.3)
     morale_delta: [3, 10, 20] # morale points (minor tuned in M6.9 from 5)
     relationship_delta: [10, 20, 40] # relationship points
@@ -735,3 +737,49 @@ geo:
     span: 0.2 # unserved share above `unserved` for need 1 (tuned in M9 from 0.4, so an empty region still has need 1)
     cash_months: 12 # months of costs in cash needed to enter a region
     cooldown_turns: 6 # turns; a rival enters at most one region in this many (M9 pacing, so entries do not crowd out 15.3's other actions)
+
+# --- R&D tree and era milestones (formulas.md 21, M11, lane A) ---------------------------
+rnd:
+  decay: 0.015 # fraction of each lead lost a month, after progress (21.1): a lead halves in about 46 months
+  cap_per_point: 0.004 # Q_cap multiplier per point of category lead (21.2)
+  cap_points: 50 # points; the most category lead that lifts Q_cap, so at most x1.20 (21.2)
+  feature_per_point: 0.002 # feature points gained x (1 + this x lead) (21.2)
+  feature_points: 50 # points; the most category lead that lifts features (21.2)
+  rate: 0.25 # lead points per point of research output a month at zero lead (21.3)
+  half: 30 # points of lead at which progress is half as fast (21.3)
+  start_energy: 6 # founder energy to start a research project (21.3)
+  stop_energy: 2 # founder energy to stop one (21.3)
+  budget_energy: 0 # energy to set a project's budget (M11 decision: as a product's marketing budget, free)
+  breakthrough_chance: 0.02 # a month per active project, x q (21.3)
+  breakthrough_points: 5 # lead points at once on a breakthrough (21.3)
+  dead_end_chance: 0.015 # a month per active project, / q (21.3)
+  dead_end_share: 0.5 # fraction of the last progress_window months' progress lost on a dead end (21.3)
+  progress_window: 3 # months of progress a dead end looks back over (21.3)
+  quality_skill: 12 # mean research skill at which q = 1 (21.3)
+  quality_clamp: [0.5, 1.5] # q's range (21.3)
+  era_lead: 15 # points; an era's threshold is the baseline at its historical month plus this (21.4)
+  era_baseline: 5 # points added to the domain's baseline when an era arrives (21.4)
+  first_mover_months: 12 # months of the first mover's window (21.4)
+  first_mover_cap: 5 # quality-cap points for the first mover's products in the era's categories (21.4)
+  first_mover_brand: 10 # brand-target points for those products (21.4)
+  license: # licensing (21.5)
+    energy: 8 # founder energy to license in or out
+    margin: 10 # points; the licensor keeps this much of its lead over the licensee
+    price_per_point_cents: 15000000 # cents; $150,000 a point, once (no inflation in the game: nominal)
+    price_arr_cents: 2000000000 # cents; the licensee's ARR at which the price doubles ($20M)
+    royalty_bp: 200 # bp of the licensee's monthly revenue in the domain's categories, licensing out
+    royalty_months: 24 # months the royalty runs
+  leak: # a researcher on a project who leaves for a rival (21.5)
+    share: 0.1 # fraction of the company's lead in the project's domain the rival gains
+    cap: 10 # points; at most this
+  rival: # incumbents' research action (21.6)
+    rate: 0.8 # lead points a month = rate x builder skill / 10 while it runs
+    need_span: 15 # points of lead gap (best lead in its domains - own) for need 1
+    era_bonus: 0.3 # need added when an era in the domain is within era_window_months of its historical date
+    era_window_months: 24 # months
+    months: 6 # months one research action runs
+    pool_cost: 0.10 # builder pool +10% while it runs, returned at the end
+    weights: { premium: 1.2, fast_follower: 0.9, aggressive: 1.0, cost_leader: 0.6 } # by personality
+  reveal: # how exactly the player sees a rival's lead (21.7)
+    range: 5 # points either side of the true lead
+    licensed_range: 2 # points either side once the two companies have a licence

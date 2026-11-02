@@ -1,0 +1,92 @@
+# Research event templates (docs/formulas.md 21.3, M11): a project's breakthrough or dead end,
+# drawn on stream `research` in phase 3, becomes a trigger for the director in phase 12.
+# Conventions: see personnel.yaml. The project's unit is {unit}.
+templates:
+  - id: research_breakthrough_paper
+    category: research
+    trigger: research_breakthrough
+    severities: [minor, major]
+    weight: 1.0
+    title: "{unit} cracked something"
+    body: >-
+      The {unit} team came in grinning: an idea that has failed for months finally works, and
+      the results are better than anyone dared hope. They want to write it up, and someone has
+      already suggested a celebration.
+    choices:
+      - key: A
+        label: "Celebrate and keep it in-house"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.6 }
+      - key: B
+        label: "Let them publish; it helps recruiting"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.4 }
+          - { type: brand_delta, target: product, share: 0.4 }
+      - key: C
+        label: "Push on while the idea is hot"
+        effects:
+          - { type: modifier, target: unit, share: 0.5, stat: builder_output, months: 6 }
+          - { type: morale_delta, target: unit, share: -0.2 }
+
+  - id: research_breakthrough_poach_risk
+    category: research
+    trigger: research_breakthrough
+    severities: [minor]
+    weight: 0.6
+    title: "Word of {unit}'s result is getting around"
+    body: >-
+      A recruiter has started messaging the {unit} team after a conference talk mentioned their
+      result. Nobody has left, but the team has noticed the attention.
+    choices:
+      - key: A
+        label: "Thank the team in front of the company"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.5 }
+          - { type: energy_delta, target: founder, share: -0.2 }
+      - key: B
+        label: "Do nothing"
+        do_nothing: true
+
+  - id: research_dead_end_regroup
+    category: research
+    trigger: research_dead_end
+    severities: [minor, major]
+    weight: 1.0
+    title: "{unit} hit a dead end"
+    body: >-
+      Three months of work in {unit} rested on an approach that, it turns out, cannot scale.
+      The team is deflated and half of the recent progress has to be thrown away.
+    choices:
+      - key: A
+        label: "Take the team out and regroup"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.4 }
+          - { type: cash_delta, target: company, share: -0.1 }
+      - key: B
+        label: "Ask for a written post-mortem"
+        effects:
+          - { type: modifier, target: unit, share: 0.3, stat: builder_output, months: 6 }
+          - { type: morale_delta, target: unit, share: -0.3 }
+      - key: C
+        label: "Do nothing"
+        do_nothing: true
+
+  - id: research_dead_end_blame
+    category: research
+    trigger: research_dead_end
+    severities: [minor]
+    weight: 0.6
+    title: "Finger-pointing in {unit}"
+    body: >-
+      After the failed approach, two camps in {unit} each blame the other for pushing it. The
+      arguments are spilling into stand-ups.
+    choices:
+      - key: A
+        label: "Step in and reset the plan yourself"
+        effects:
+          - { type: morale_delta, target: unit, share: 0.4 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Let the unit's leader sort it out"
+        effects:
+          - { type: morale_delta, target: unit, share: -0.2 }

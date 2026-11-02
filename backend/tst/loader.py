@@ -41,6 +41,7 @@ from tst.sim.data_models import (
 )
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
 from tst.sim.ledger import ENGINE_ACCOUNTS
+from tst.sim.research.data import ErasFile, TechFrontierFile
 
 BALANCE_FILE = "balance.yaml"
 SCENARIOS_FILE = "scenarios.yaml"
@@ -61,6 +62,8 @@ MACRO_HISTORY_FILE = "macro_history.yaml"  # M10 (formulas.md 20.1); folds in cl
 COMPUTE_INDEX_FILE = "compute_index.yaml"  # M8 (formulas.md 18.6)
 ENTRANTS_FILE = "entrants.yaml"  # M8 (formulas.md 18.7)
 CITIES_FILE = "cities.yaml"  # M9 (formulas.md 19.1)
+TECH_FILE = "tech_frontier.yaml"  # M11 (formulas.md 21.1-21.3)
+ERAS_FILE = "eras.yaml"  # M11 (formulas.md 21.4)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -70,6 +73,7 @@ DATA_FILES = (
     CITIES_FILE,
     COMPUTE_INDEX_FILE,
     ENTRANTS_FILE,
+    ERAS_FILE,
     INBOX_FILE,
     INCUMBENTS_FILE,
     INVESTORS_FILE,
@@ -82,6 +86,7 @@ DATA_FILES = (
     SCENARIOS_FILE,
     SKILLS_FILE,
     TAGS_FILE,
+    TECH_FILE,
 )
 
 
@@ -266,6 +271,37 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
                 )
 
 
+def research_problems(balance: Balance, data: GameData) -> list[str]:
+    """M11 (21): domains' skills, categories, eras' domains and boosts, and personalities
+    all name things the other files define."""
+    problems: list[str] = []
+    if data.tech is None:
+        return problems
+    skills = set(data.skill_keys)
+    domains = {d.key for d in data.tech.domains}
+    categories = {c.key for c in data.categories}
+    for d in data.tech.domains:
+        if bad := sorted(set(d.research_skill) - skills):
+            problems.append(f"domain {d.key!r}: unknown skills {bad}")
+    if bad := sorted(set(data.tech.tech_weights) - categories):
+        problems.append(f"tech_weights: unknown categories {bad}")
+    for era in data.eras.eras:
+        if era.domain not in domains:
+            problems.append(f"era {era.key!r}: unknown domain {era.domain!r}")
+        for b in era.boosts:
+            if b.category not in categories:
+                problems.append(f"era {era.key!r}: unknown category {b.category!r}")
+            elif b.segments and (
+                bad := sorted(set(b.segments) - set(data.category(b.category).segment_keys))
+            ):
+                problems.append(f"era {era.key!r}: {b.category} has no segments {bad}")
+    if bad := sorted(set(data.eras.base_growth) - categories):
+        problems.append(f"base_growth: unknown categories {bad}")
+    if bad := sorted(set(balance.rivals.weights) - set(balance.rnd.rival.weights)):
+        problems.append(f"rnd.rival.weights: no weight for {bad}")
+    return problems
+
+
 def load_all(path: Path) -> LoadedData:
     """Load and cross-check every data file in `path`. Raises DataLoadError on any problem."""
     parsed: dict[str, Any] = {}
@@ -309,6 +345,8 @@ def load_all(path: Path) -> LoadedData:
     compute_index = _validate(ComputeIndexFile, parsed[COMPUTE_INDEX_FILE], COMPUTE_INDEX_FILE)
     entrants = _validate(EntrantsFile, parsed[ENTRANTS_FILE], ENTRANTS_FILE)
     cities = _validate(CitiesFile, parsed[CITIES_FILE], CITIES_FILE)
+    tech = _validate(TechFrontierFile, parsed[TECH_FILE], TECH_FILE)
+    eras = _validate(ErasFile, parsed[ERAS_FILE], ERAS_FILE)
     game_data = _validate(
         GameData,
         {
@@ -340,10 +378,14 @@ def load_all(path: Path) -> LoadedData:
             "home_city_region": cities.home_city_region,
             "region_markets": categories.regions,
             "event_templates": tuple(event_templates),
+            "tech": tech,
+            "eras": eras,
         },
         "seed data cross-check",
     )
     _check_against_balance(balance, game_data)
+    if problems := research_problems(balance, game_data):
+        raise DataLoadError(f"{TECH_FILE}, {ERAS_FILE}: " + "; ".join(problems))
 
     scenario_ids = {s.id for s in game_data.scenarios}
     missing = sorted(scenario_ids - set(balance.scenario))

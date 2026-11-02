@@ -21,6 +21,7 @@ from tst.sim.events.data import (
     EventTemplate,
 )
 from tst.sim.money import BP_DENOMINATOR
+from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
 
@@ -1122,6 +1123,7 @@ class Balance(_Frozen):
     office: OfficeBalance  # M9 (formulas.md 19.2)
     markets: RegionalMarketsBalance  # M9 (formulas.md 19.4-19.5)
     geo: GeoBalance  # M9 (formulas.md 19.1, 19.3, 19.6)
+    rnd: RndBalance  # M11 (formulas.md 21)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1746,6 +1748,8 @@ class GameData(_Frozen):
     region_growth: dict[str, float] = Field(default_factory=dict)  # M9 (19.5)
     home_city_region: dict[str, str] = Field(default_factory=dict)  # M9: regions without a city
     region_markets: tuple[RegionMarketDef, ...] = ()  # M9 (19.5), categories.yaml regions
+    tech: TechFrontierFile | None = None  # M11 (21.1-21.3): None = no research domains
+    eras: ErasFile = ErasFile()  # M11 (21.4)
 
     def event_template(self, template_id: str) -> EventTemplate:
         for template in self.event_templates:

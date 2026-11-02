@@ -36,7 +36,7 @@ from tst.api.views import person_name, product_effects
 from tst.loader import LoadedData
 from tst.sim.actions.geo import default_regional_price
 from tst.sim.actions.products import launch_problems
-from tst.sim.calendar import format_turn, turn_to_ym
+from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, SegmentDef
 from tst.sim.errors import ProductRuleError
 from tst.sim.finance.macro import ai_index
@@ -59,6 +59,7 @@ from tst.sim.products.phases import (
     team_of,
 )
 from tst.sim.products.team import Team
+from tst.sim.research.eras import annual_growth
 from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState
 
@@ -173,7 +174,7 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
         CategoryOut(
             key=cat.key,
             label=cat.label,
-            annual_growth=cat.growth_in(turn_to_ym(state.turn)[0]),
+            annual_growth=annual_growth(state, data.game_data, cat.key),  # M11 (21.4)
             note="Compute costs follow the market" if cat.compute_indexed else None,
             launch_quality=max(data.balance.products.launch_min_quality, cat.launch_quality or 0),
             segments=[
@@ -256,8 +257,7 @@ def market_out(
                 products=products,
             )
         )
-    year = turn_to_ym(state.turn)[0]
-    growth = cat.growth_in(year)
+    growth = annual_growth(state, data.game_data, cat.key)  # with era boosts (M11, 21.4)
     if region is not None:
         growth = regional_growth(growth, region, data.game_data)
     shown = region or home
