@@ -1077,3 +1077,63 @@ A CFO or COO proposal waiting for the player (24.1). Pending proposals block Con
 | `text` | TEXT | no | The proposal in words. |
 | `status` | VARCHAR(10) | no | `pending`, `approved`, `declined` or `lapsed`. |
 | `resolved_turn` | INTEGER | yes | When it was answered. |
+
+## Research and eras (migration `0028_research`, M11)
+
+Every row belongs to a company (ADR-0020) except `era_arrival`, which is the world's. Existing saves start with no leads, projects or licences; eras whose historical month is before the save's turn are recorded as arrived on schedule.
+
+### research_lead
+
+A company's lead in one research domain beyond the world's baseline (formulas.md 21.1). Hidden for rivals: the API shows another company's lead only as a range (21.7).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key, with `domain`. |
+| `domain` | VARCHAR(32) | no | `tech_frontier.yaml` domain key. |
+| `lead` | FLOAT | no | Points of lead, >= 0; decays 1.5% a month. |
+
+### research_project
+
+A research project (21.3), or a rival's research action (21.6) when `unit_id` is NULL.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER FK company | no | The company researching. |
+| `domain` | VARCHAR(32) | no | The domain researched. |
+| `unit_id` | INTEGER | yes | The org unit working on it; NULL for a rival's research action. |
+| `start_turn` | INTEGER | no | The month it started. |
+| `status` | VARCHAR(8) | no | `active` or `stopped`. |
+| `budget_cents` | BIGINT | yes | Monthly budget; NULL = whatever full funding needs. |
+| `end_turn` | INTEGER | yes | The month it stopped, or a rival action's last month. |
+| `recent` | JSON | no | Lead gained in the last months (rnd.progress_window), oldest first; a dead end halves them. |
+| `gained` | FLOAT | no | Lead gained in total, before decay. |
+| `last_event` | VARCHAR(16) | yes | `breakthrough` or `dead_end`, the latest one. |
+| `last_event_turn` | INTEGER | yes | When it happened. |
+
+### era_arrival
+
+An era milestone that has arrived (21.4).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `key` | VARCHAR(32) | no | Primary key: `eras.yaml` era key. |
+| `turn` | INTEGER | no | The month it arrived. |
+| `company_id` | INTEGER | yes | The company whose level reached the threshold; NULL on its historical date. |
+| `months_early` | INTEGER | no | Months before its historical date (0 on schedule). |
+
+### research_license
+
+A licence of research lead from one company to another (21.5).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `licensor_id` | INTEGER FK company | no | The company whose know-how it is. |
+| `licensee_id` | INTEGER FK company | no | The company that gained the points. |
+| `domain` | VARCHAR(32) | no | The domain. |
+| `points` | FLOAT | no | Lead points granted. |
+| `turn` | INTEGER | no | The month it was signed. |
+| `price_cents` | BIGINT | no | Paid once by the licensee (licensing in); 0 for a royalty licence. |
+| `royalty_bp` | INTEGER | no | Basis points of the licensee's monthly revenue in the domain's categories (licensing out); 0 if none. |
+| `royalty_end_turn` | INTEGER | yes | The last month the royalty is paid. |

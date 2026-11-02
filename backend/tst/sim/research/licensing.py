@@ -7,8 +7,6 @@ rule, not a draw. A researcher who leaves a project for a rival takes some of th
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, LICENSE_REVENUE, RESEARCH, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
@@ -91,12 +89,23 @@ def price_entries(
     )
 
 
-def royalties(
-    state: GameState, revenue: Mapping[int, int], balance: Balance, data: GameData
-) -> tuple[LedgerEntry, ...]:
+def product_revenue(state: GameState, company_id: int, categories: set[str]) -> int:
+    """The month's revenue of a company's selling products in some categories, at home and
+    abroad, as phase 5 booked it (11.8, 19.5)."""
+    total = 0
+    for p in state.company_products(company_id):
+        if p.status not in SELLING or p.category not in categories:
+            continue
+        total += sum(round(s.customers * (s.price_cents or 0)) for s in state.segments_of(p.id))
+        total += sum(
+            round(s.customers * (s.price_cents or 0)) for s in state.regional_segments_of(p.id)
+        )
+    return total
+
+
+def royalties(state: GameState, balance: Balance, data: GameData) -> tuple[LedgerEntry, ...]:
     """Phase 5, after revenue: each licensee with a running royalty pays royalty_bp of the
-    month's revenue in the domain's categories to its licensor (21.5). `revenue` is the
-    month's revenue by product id."""
+    month's revenue in the domain's categories to its licensor (21.5)."""
     out: list[LedgerEntry] = []
     for lic in state.licenses:
         if not lic.royalty_bp or lic.royalty_end_turn is None:
@@ -105,14 +114,7 @@ def royalties(
             continue
         if not state.company(lic.licensee_id).alive:
             continue
-        cats = set(levels.feeds(data, lic.domain))
-        base = sum(
-            amount
-            for pid, amount in revenue.items()
-            if (p := state.product(pid)) is not None
-            and p.company_id == lic.licensee_id
-            and p.category in cats
-        )
+        base = product_revenue(state, lic.licensee_id, set(levels.feeds(data, lic.domain)))
         amount = royalty_cents(base, balance)
         if amount <= 0:
             continue

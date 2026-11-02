@@ -24,6 +24,7 @@ from tst.sim.people.models import current_ability
 from tst.sim.products import formulas as pf
 from tst.sim.products.models import SELLING, Product, ProductSegment
 from tst.sim.research.levels import tech_factor
+from tst.sim.research.rivals import RESEARCH, research_needs, researching, start_research
 from tst.sim.rivals import formulas as f
 from tst.sim.rivals.models import PoachApproach, RivalEffect, RivalMove, SegmentShare
 from tst.sim.rivals.poaching import TARGET_KEY, poach_draw
@@ -351,13 +352,20 @@ def candidates(
     out.append(Candidate("cut_costs", f.need_cut_costs(months, need)))
     order = {a: i for i, a in enumerate(RIVAL_ACTIONS)}
     ranked = sorted(out, key=lambda c: (c.product_id or 0, c.segment or "", order[c.action]))
-    # Region entry (M9, 19.6) comes after v1's candidates, so their draws are unchanged.
-    return ranked + region_candidates(state, company, months, balance, data)
+    # Region entry (M9, 19.6) comes after v1's candidates, so their draws are unchanged;
+    # research (M11, 21.6) after those, one candidate per domain, its domain in `segment`.
+    research = [
+        Candidate(RESEARCH, n.need, None, n.domain)
+        for n in research_needs(state, company, balance, data)
+    ]
+    return ranked + region_candidates(state, company, months, balance, data) + research
 
 
 def _cooling(state: GameState, company_id: int, c: Candidate, balance: Balance) -> bool:
     rv = balance.rivals
     since = state.turn - rv.cooldown_turns
+    if c.action == RESEARCH:  # M11 (21.6): one research action at a time
+        return researching(state, company_id)
     if c.action == ENTER_REGION:  # M9: one region entry per rival per its cooldown (19.6)
         after = state.turn - balance.geo.region_entry.cooldown_turns
         return any(
@@ -403,7 +411,12 @@ def choose(
         noise = float(gen.normal(0.0, rv.noise_sd))
         if c.need <= 0 or _cooling(state, company.id, c, balance):
             continue
-        u = f.utility(c.need, weights.get(c.action, weights["enter_segment"]), noise)
+        weight = (
+            balance.rnd.rival.weights.get(company.personality or "fast_follower", 1.0)
+            if c.action == RESEARCH  # M11 (21.6)
+            else weights.get(c.action, weights["enter_segment"])
+        )
+        u = f.utility(c.need, weight, noise)
         if best is None or u > best[1]:
             best = (c, u)
     if best is None or best[1] < rv.act_threshold:
@@ -451,7 +464,7 @@ def act(
     """Apply the chosen action; returns the news words."""
     rv = balance.rivals
     product = state.product(c.product_id) if c.product_id is not None else None
-    seg_label = segment_label(data, c.segment) if c.action != ENTER_REGION else ""
+    seg_label = segment_label(data, c.segment) if c.action not in (ENTER_REGION, RESEARCH) else ""
     if c.action in ("price_cut", "price_rise") and product is not None:
         seg = next(s for s in state.segments_of(product.id) if s.segment == c.segment)
         factor = rv.price_cut if c.action == "price_cut" else rv.price_rise
@@ -483,6 +496,8 @@ def act(
             ),
         )
         return state, f"entered {seg_label} with {product.name}"
+    if c.action == RESEARCH and c.segment is not None:  # M11 (21.6)
+        return start_research(state, company, c.segment, balance, data)
     if c.action == ENTER_REGION and product is not None and c.segment is not None:
         return enter_region(state, company, product, c.segment, balance, data)
     if c.action == "cut_costs":
