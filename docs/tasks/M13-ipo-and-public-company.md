@@ -2,7 +2,7 @@
 
 **Goal:** stage 4. A grown company can go public through an IPO event chain (banks, filing, roadshow, pricing, listing day). Once public it lives by quarterly earnings it guides: a share price from fundamentals and sentiment, analysts, buybacks, dividends and secondary offerings, and activists and takeover interest when the price lags. The founder can appoint a CEO and step up to Chair, letting the CEO run day-to-day operations while the Chair keeps capital and strategy.
 
-**Spec sections:** §3 (stage 4), §10 (IPO, public stock, board dynamics) · **ADRs:** 0002, 0003, 0005, 0015, 0018, 0019 (§10–§12), 0020 (§7: listings per company) · **Formulas:** `docs/formulas.md` §25 (all), with §14, §20 and §24 · **Wireframes:** `docs/wireframes.md` (M13 screens), drawn with this brief's first sub-task if not yet present · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M12a (`m12a-done`)
+**Spec sections:** §3 (stage 4), §10 (IPO, public stock, board dynamics) · **ADRs:** 0002, 0003, 0005, 0015, 0018, 0019 (§10–§12), 0020 (§7: listings per company) · **Formulas:** `docs/formulas.md` §25 (all), with §14, §20 and §24 · **Wireframes:** `docs/wireframes.md` (M13 screens) and `docs/wireframes/source/IPO.dc.html`, `Stock.dc.html` · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M12a (`m12a-done`)
 
 ## Lane
 
@@ -34,7 +34,6 @@ Acquisitions (M14; M13 only raises takeover-bid events). Personal stock trading 
 1. **Data, wireframes and formula tests:**
    - `banks.yaml`, `ipo.*`, `public.*`, `ceo.*` keys; IPO, earnings, activist and takeover templates;
    - every §25.10 worked example as a unit test;
-   - two wireframes in the design canvas style: the IPO flow and the Stock tab (or ask the product manager to draw them first).
 2. **Eligibility and the IPO chain** (§25.1, §25.2):
    - the hire-banks action, the filing and roadshow events, the pricing critical event with book demand on stream `ipo`, the listing with new shares and the fee, dual-class shares, pulling the IPO;
    - stage 4, the board changes (§25.7), migration and data dictionary;
