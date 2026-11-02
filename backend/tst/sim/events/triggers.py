@@ -236,6 +236,18 @@ def triggers(
 
     hits += _executive_hits(state, balance, runway)
 
+    for project in state.research_projects:  # M11 (21.3): this month's breakthroughs, dead ends
+        if (
+            project.company_id == cid
+            and project.last_event_turn == state.turn
+            and project.last_event is not None
+            and project.unit_id is not None
+        ):
+            trigger = f"research_{project.last_event}"
+            leader = view.leader_of(project.unit_id)
+            people = (leader,) if leader is not None and leader != founder_id else ()
+            hits.append(TriggerHit(trigger, _fixed(t[trigger]), people, project.unit_id))
+
     own = state.company_products(cid)
     if not any(p.status == "live" for p in own):  # early_days (M7a): nothing to sell yet
         building = next((p.id for p in own if p.status == "in_development"), None)

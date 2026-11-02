@@ -264,3 +264,26 @@ One pass over v1 and M8-M10c (product manager's decisions of 2026-11-02 in the M
 Strategy change (product manager, 2026-11-02): blitzscale raises every round as soon as allowed, now including Series C ($80M) and D ($200M), largest amount offered.
 
 Keys and data tuned: `morale.target_base` 50 to 56; `resign.morale_floor` 40 to 50; `finance.multiple_base` 4 to 2.5 and `multiple_per_growth` 4 to 5.5; `rivals.need.poach_gain` 0.007 (unchanged after trials); `rivals.poach.leave_penalty` -0.5 to -0.3 and the new `seat_holder_weight` 0.4; `geo.region_entry.unserved` 0.8 to 0.6 and `cooldown_turns` 12 to 6; `markets.localize_cents` $40,000 to $80,000 and `localize_months` 3 to 6; Europe and East Asia sizes 0.80 and 0.70 to 0.55 and 0.45 (`categories.yaml`); `debt.venture.max_of_round_bp` 3000 to 5000; `events.crisis.breach_chance` 0.004 to 0.008, `outage_chance` 0.003 to 0.006, `key_exit_top_fraction` 0.10 to 0.20. One formula change, approved: a rival's poach target is drawn by CA (§15.6).
+
+### M11 R&D tree and era milestones (2026-11-02, lane A)
+
+`make balance` on the merged-first M11 code against main at `m10d-done` (M10d table above); 10 seeds. The full nightly suite (27 tests: every v1, M8, M9, M10, M10b-d target and M11's) passes; **no xfail added**.
+
+| Target | Before (m10d-done) | After (M11) | Result |
+| --- | --- | --- | --- |
+| T1 do-nothing fails | 10/10 | 10/10 | pass |
+| T2 wins per strategy (each <= 6) | steady 6, frugal 4 | steady 6, frugal 4 | pass (at 21.6's `era_bonus` 0.3 it was steady 7: tuned to 0.15) |
+| T3 succeeds: frugal / steady / blitzscale | 8 / 10 / 10 | 8 / 10 / 10 | pass |
+| T4a-c | 4 and 1; 27.5 and 18; 36 on 10/10 | 4 and 1; 27.5 and 18; 36 on 10/10 | pass |
+| T5 steady easy / standard / hard; blitzscale; frugal | 0 / 0 / 0%; 0%; 20% | 0 / 0 / 0%; 0%; 20% | pass |
+| T6 tenure; leaving a year; first-year leavers | 22; 12%; 11% | 21; 12%; 11% | pass |
+| T7 incumbents; startups alive 5 years | 23/23; 61% | 23/23; 60% of 99 | pass |
+| T8 median ARR: frugal / steady / blitzscale | printed | $23.8M / $75.4M / $90.9M | printed |
+| E3, S2 | pass | pass; 15.3 worker-minutes locally | pass |
+| 21.8 target 1: AI demand January 2024; others January 2020 | 359x | 350x; 0.944-1.000 of before | pass |
+| 21.8 target 2: research / steady median ARR net; quality | - | 1.11 (gross 1.13); +18.7 | pass |
+| 21.8 target 3: AI lab before 2017; rivals early in do-nothing | - | 10/10; 0% | pass |
+| 21.8 target 4: a lead of 30 after 46 months | - | 14.95 | pass |
+| 21.8 target 5: licence / research for 15 points | - | 0.67 | pass |
+
+Tuned (`rnd.*` only; the M11 brief's Decisions): `rival.era_bonus` 0.15, `rival.need_span` 30, `rate` 0.4, `cap_per_point` 0.010, `feature_per_point` 0.005, `license.price_per_point_cents` $24,000. Golden snapshots unchanged.

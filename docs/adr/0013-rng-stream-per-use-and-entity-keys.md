@@ -41,6 +41,9 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `entrants` | 20 | `(entrant_index,)` | A scheduled entrant's people, generated at senior level when it is founded (formulas.md 18.7); founding itself draws nothing | M8 |
 | `macro` | 21 | `(indicator_index,)` (0 base rate, 1 venture climate, 2 consumer confidence, 3 AI compute index); `(99,)` for downturns | Macro indicators after 2025 (formulas.md §20.1); one generator per indicator each month, one standard-normal draw each (the AI index's is used only in January), and one uniform draw for downturns | M10 |
 | `rival_region` | 22 | `(startup_id,)` | A rival startup's founding region, one draw weighted by its category's addressable demand in each region (formulas.md §19.6) | M9 |
+| `research` | 23 | `(project_id,)` | A research project's breakthrough and dead-end draws, two uniforms a month in project id order: breakthrough, then dead end only without one (formulas.md §21.3) | M11 |
+| `rival_research` | 24 | `(company_id,)` | A researching rival's monthly breakthrough draw, one uniform (formulas.md §21.6) | M11 |
+| `lead_reveal` | 25 | `(observer_company_id, company_id, domain_index)` | The offset of another company's research-lead range, one uniform drawn at turn 0, so the range's midpoint is not the true lead (formulas.md §21.7) | M11 |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).
@@ -62,9 +65,6 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | Name | Id | Key | Use | Milestone |
 | --- | --- | --- | --- | --- |
 | `entrants` | 20 | `(entrant_index,)` | Generating a scheduled entrant's people (formulas.md §18.7) | M8 |
-| `research` | 23 | `(project_id,)` | Breakthroughs and dead ends (formulas.md §21.3) | M11 (lane A) |
-| `rival_research` | 24 | `(company_id,)` | Rivals' research breakthroughs (formulas.md §21.6) | M11 (lane A) |
-| — | 25 | — | Reserved for lane A | M11 |
 | `supply` | 26 | `(index,)` | Component indexes and supply shocks after 2025 (formulas.md §22.4) | M12a (lane B) |
 | `facility` | 27 | `(facility_id,)` | Data-centre outages (formulas.md §22.5) | M12a (lane B) |
 | — | 28–29 | — | Reserved for lane B | M12a |

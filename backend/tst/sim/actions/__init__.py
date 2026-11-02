@@ -119,6 +119,19 @@ from tst.sim.actions.products import (
     sunset_product,
     unassign_unit,
 )
+from tst.sim.actions.research import (
+    LicenseIn,
+    LicenseOut,
+    ResearchAction,
+    SetProjectBudget,
+    StartProject,
+    StopProject,
+    license_in,
+    license_out,
+    set_project_budget,
+    start_project,
+    stop_project,
+)
 from tst.sim.actions.scaleup import (
     AppointExecutive,
     RemoveExecutive,
@@ -148,6 +161,7 @@ type Action = (
     | SetAuthority
     | AnswerProposal
     | GeoAction
+    | ResearchAction
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -201,6 +215,11 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "set_marketing_split": SetMarketingSplit,
     "set_authority": SetAuthority,
     "answer_proposal": AnswerProposal,
+    "start_project": StartProject,  # M11
+    "stop_project": StopProject,
+    "set_project_budget": SetProjectBudget,
+    "license_in": LicenseIn,
+    "license_out": LicenseOut,
 }
 
 __all__ = [
@@ -229,6 +248,8 @@ __all__ = [
     "LaunchInRegion",
     "LaunchProduct",
     "LeaseOffice",
+    "LicenseIn",
+    "LicenseOut",
     "MakeOffer",
     "MovePerson",
     "MoveUnit",
@@ -249,10 +270,13 @@ __all__ = [
     "SetPolicy",
     "SetPrice",
     "SetProductDivision",
+    "SetProjectBudget",
     "SetRegionalPrice",
     "SetSharedServices",
     "SetUnitOffice",
+    "StartProject",
     "StartRound",
+    "StopProject",
     "SunsetProduct",
     "TakeLoan",
     "UnassignUnit",
@@ -417,6 +441,16 @@ def apply_action(
             out = set_marketing_split(state, action, balance, data)
         case SetAuthority():
             out = set_authority(state, action, balance, data)
+        case StartProject():
+            out = start_project(state, action, balance, data)
+        case StopProject():
+            out = stop_project(state, action, balance)
+        case SetProjectBudget():
+            out = set_project_budget(state, action, balance)
+        case LicenseIn():
+            out = license_in(state, action, balance, data, ledger_balances)
+        case LicenseOut():
+            out = license_out(state, action, balance, data)
     new_state = out.state
     actor = new_state.employment_of(action.actor_id) or state.employment_of(action.actor_id)
     if actor is not None:  # people live where they work (M9, 19.2)

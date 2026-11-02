@@ -84,6 +84,12 @@ export type SeatCandidates = Schemas['SeatCandidatesOut'];
 export type DivisionStatements = Schemas['DivisionStatementsOut'];
 export type DivisionColumn = Schemas['DivisionColumnOut'];
 export type Geo = Schemas['GeoOut'];
+export type Research = Schemas['ResearchOut'];
+export type ResearchProject = Schemas['ProjectOut'];
+export type Era = Schemas['EraOut'];
+export type RivalLead = Schemas['RivalLeadOut'];
+export type ResearchDomain = Schemas['DomainOut'];
+export type ResearchLicense = Schemas['LicenseOut'];
 export type Office = Schemas['OfficeOut'];
 export type City = Schemas['CityOut'];
 export type LeasePreview = Schemas['LeasePreviewOut'];
@@ -190,6 +196,8 @@ export const keys = {
   market: (saveId: string, category: string, region: string | null = null) =>
     ['saves', saveId, 'market', category, region] as const,
   geo: (saveId: string) => ['saves', saveId, 'geo'] as const,
+  research: (saveId: string) => ['saves', saveId, 'research'] as const, // M11
+  eras: (saveId: string) => ['saves', saveId, 'eras'] as const,
   leasePreview: (saveId: string, city: string, seats: number) =>
     ['saves', saveId, 'lease-preview', city, seats] as const,
   productRegions: (saveId: string, productId: number) =>
@@ -1777,6 +1785,74 @@ export function useRegionAction(saveId: string, productId: number) {
   const invalidate = useInvalidateSave(saveId);
   return useMutation({
     mutationFn: (a: RegionAction) => applyRegion(saveId, productId, a),
+    onSuccess: invalidate,
+  });
+}
+
+// --- Research (M11, formulas.md 21) --------------------------------------------------------
+
+export function useResearch(saveId: string) {
+  return useQuery({
+    queryKey: keys.research(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/research', path(saveId))),
+  });
+}
+
+export function useEras(saveId: string) {
+  return useQuery({
+    queryKey: keys.eras(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/eras', path(saveId))),
+  });
+}
+
+export type ResearchAction =
+  | { kind: 'start'; unitId: number; domain: string; budgetCents: number | null }
+  | { kind: 'stop'; projectId: number }
+  | { kind: 'budget'; projectId: number; budgetCents: number | null }
+  | { kind: 'licenseIn' | 'licenseOut'; companyId: number; domain: string; points: number };
+
+async function applyResearch(saveId: string, a: ResearchAction) {
+  switch (a.kind) {
+    case 'start':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/research/projects', {
+          ...path(saveId),
+          body: { unit_id: a.unitId, domain: a.domain, budget_cents: a.budgetCents },
+        }),
+      );
+    case 'stop':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/research/projects/{project_id}/stop', {
+          params: { path: { save_id: saveId, project_id: a.projectId } },
+        }),
+      );
+    case 'budget':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/research/projects/{project_id}/budget', {
+          params: { path: { save_id: saveId, project_id: a.projectId } },
+          body: { budget_cents: a.budgetCents },
+        }),
+      );
+    case 'licenseIn':
+    case 'licenseOut':
+      return unwrap(
+        await api.POST(
+          a.kind === 'licenseIn'
+            ? '/api/saves/{save_id}/research/licenses/in'
+            : '/api/saves/{save_id}/research/licenses/out',
+          {
+            ...path(saveId),
+            body: { company_id: a.companyId, domain: a.domain, points: a.points },
+          },
+        ),
+      );
+  }
+}
+
+export function useResearchAction(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: (a: ResearchAction) => applyResearch(saveId, a),
     onSuccess: invalidate,
   });
 }

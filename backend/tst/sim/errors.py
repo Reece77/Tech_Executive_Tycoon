@@ -242,3 +242,13 @@ class GeoRuleError(SimError):
     """An office or regional launch that the rules do not allow (M9, 19.2, 19.5)."""
 
     code = "geo_rule"
+
+
+class ResearchRuleError(SimError):
+    """A research project or licence that the rules do not allow (M11, 21.3, 21.5)."""
+
+    code = "research_rule"
+
+
+class UnknownProjectError(NotFoundError):
+    code = "unknown_project"

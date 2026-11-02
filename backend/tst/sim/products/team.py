@@ -18,6 +18,7 @@ from tst.sim.org.rules import OrgView
 from tst.sim.org.scaleup import modifiers
 from tst.sim.products import formulas as f
 from tst.sim.products.models import Product
+from tst.sim.research.levels import IDENTITY, TechFactor, tech_factor
 from tst.sim.state import GameState
 
 PERFECTIONIST = "perfectionist"
@@ -60,6 +61,7 @@ class Team:
     region_factor: float = 1.0  # builders in several regions (M9, 19.4)
     seller_mult: float = 1.0  # event modifiers on seller capacity (M10b, 23.2)
     builder_regions: int = 1  # how many regions the builders work in (M9, shown)
+    tech: TechFactor = IDENTITY  # the company's research lead in the category (M11, 21.2)
 
     @property
     def mavericks(self) -> int:
@@ -72,12 +74,20 @@ class Team:
         return f.coord_factor(n, balance.products) * total * self.output_mult * self.region_factor
 
     def qcap(self, balance: Balance) -> float | None:
-        """Q_cap (11.4) x the CTO's factor (18.3)."""
+        """Q_cap (11.4) x the CTO's factor (18.3), then the tech factor (21.2)."""
         pb = balance.products
         cap = f.quality_cap(
             [(b.output, f.qcap_skill(b.d, b.perfectionist, pb)) for b in self.builders], pb
         )
-        return cap if cap is None or self.qcap_mult == 1 else cap * self.qcap_mult
+        if cap is None:
+            return None
+        cap = cap if self.qcap_mult == 1 else cap * self.qcap_mult
+        return self.tech.cap(cap)
+
+    @property
+    def gain_mult(self) -> float:
+        """Feature points gained x the CPO (18.3) x the tech factor (21.2)."""
+        return self.feature_mult * self.tech.feature_mult
 
     @property
     def mu(self) -> float:
@@ -196,4 +206,5 @@ def product_team(
         awareness_mult=(mods.awareness if mods else 1.0) * ev("awareness"),
         pricing_power=mods.pricing if mods else 1.0,
         seller_mult=ev("seller_capacity"),
+        tech=tech_factor(state, cid, product.category, balance, data),  # M11 (21.2)
     )

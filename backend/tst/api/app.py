@@ -18,6 +18,7 @@ from tst.api.routers import (
     meta,
     org,
     products,
+    research,
     rivals,
     saves,
     scaleup,
@@ -79,6 +80,7 @@ def create_app() -> FastAPI:
     app.include_router(coo.router)
     app.include_router(scaleup.router)
     app.include_router(geo.router)  # M9
+    app.include_router(research.router)  # M11
     app.include_router(events.settings_router)
     app.include_router(meta.router)
 

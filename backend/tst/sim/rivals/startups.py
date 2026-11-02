@@ -15,7 +15,7 @@ from dataclasses import replace
 
 import numpy as np
 
-from tst.sim.calendar import turn_to_ym, ym_to_turn
+from tst.sim.calendar import ym_to_turn
 from tst.sim.data_models import FUNCTIONS, Balance, CategoryDef, GameData
 from tst.sim.finance.fundraising import climate
 from tst.sim.geo import formulas as gf
@@ -24,6 +24,7 @@ from tst.sim.geo.models import ProductRegion, RegionalSegment
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.products.models import Product, ProductSegment
+from tst.sim.research.eras import annual_growth
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rivals.setup import hire_key_people, key_people_split
 from tst.sim.rng import RngFactory
@@ -82,7 +83,8 @@ def found_startups(
         if len(alive_startups(state, data)) >= sb.max_alive:  # entrants do not count (18.7)
             break
         gen = rng.stream(state.turn, "rival_spawn", index)
-        chance = sb.found_rate * mood * (1 + category.growth_in(turn_to_ym(state.turn)[0]))
+        growth = annual_growth(state, data, category.key)  # with era boosts (M11, 21.4)
+        chance = sb.found_rate * mood * (1 + growth)
         if float(gen.random()) >= chance:
             continue
         taken = {c.name for c in state.companies}

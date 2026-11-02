@@ -6,6 +6,16 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 - Docs: M12b brief (hardware, devices and fabless chips; lane A, merges after M13) and formulas.md §26, written against M12a's facility model on its branch.
 - Docs: M13 brief (IPO, public company, Chair and CEO; lane B, merges before M12b) and formulas.md §25.
+- M11 R&D tree and era milestones (lane A; formulas.md 21):
+  - Domains and levels (`tech_frontier.yaml`): software platform, AI, infrastructure, chip design and devices; the world's baseline plus each company's lead, decaying 1.5% a month; the tech factor on the quality cap, features and rivals' quality target, one hook (`research.levels.tech_factor`). A company that never researches has a factor of exactly 1.
+  - Research projects: `start_project` (energy 6), `stop_project` (2), `set_project_budget`; a unit works on a product or a project, never both; output from research skills, budget to 6500 (AI x the compute index), diminishing progress; breakthroughs and dead ends on stream `research` (23) as director triggers with four templates (`events/research.yaml`).
+  - Eras (`eras.yaml`): eight, on their historical month or early when a company's level reaches the threshold; +5 to the domain's baseline; growth and adoption boosts in phase 9; a 12-month first-mover window (+5 quality cap, +10 brand target, no decay). The AI `growth_by_year` is replaced by base growth plus three AI era boosts (January 2024 demand 350x, M8 359x); consumer apps, developer tools and fintech base growth is lowered so their eras' boosts net out by 2020-2021.
+  - Licensing in (once, a price a point x (1 + ARR / $20M)) and out (2% royalty for 24 months, 4100); leaks when a researcher on a project joins a rival; incumbents' `research` action (stream `rival_research`, 24).
+  - 21.8 targets (`tools/m11_targets.py`, nightly): 1 AI demand 350x (M8 359x), other categories 0.944-1.000; 2 research / steady median ARR net 1.11, quality +18.7; 3 Transformers early on 10/10 seeds, rivals early 0%; 4 lead 14.95; 5 licence / research 0.67. Tuned (`rnd.*` only): `rival.era_bonus` 0.15 (T2 broke at 21.6's 0.3), `rival.need_span` 30, `rate` 0.4, `cap_per_point` 0.010, `feature_per_point` 0.005, `license.price_per_point_cents` $24,000.
+  - Golden snapshots unchanged (they cover the player's B2B SaaS KPIs over 24 months; no research runs there).
+  - Migration `0028_research` (`research_lead`, `research_project`, `era_arrival`, `research_license`; past eras recorded on schedule); `player_companies(state)` (ADR-0020).
+  - Research screen (`/products/research`), the era timeline on Market, the tech factor in the product quality breakdown, History entries, glossary terms; `GET /research`, `GET /eras` and five actions; `tst research|project|license`; rivals' leads only as seeded ranges (planted-value test).
+
 - M10d Balance checkpoint (product manager's decisions of 2026-11-02; table in `docs/balance-targets.md`, M10d):
   - Speed: people by binary search, the seat cost memoized; the nightly as five CI jobs (`make balance` alone gates S2; four duration-balanced shards); S2 for v2 is 43 worker-minutes on CI; `tests/durations.json` refreshed.
   - Morale target base 56 (median 62 steady, 60 blitzscale) and resignation floor 50; executive retention 8/10.

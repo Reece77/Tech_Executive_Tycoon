@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import { EraTimeline } from '../components/EraTimeline';
 import { MacroStrip } from '../components/MacroStrip';
 import { MarketTable } from '../components/MarketTable';
 import { LoadError, Loading } from '../components/ScreenState';
-import { useCategories, useMarket } from '../hooks/api';
+import { useCategories, useEras, useMarket } from '../hooks/api';
 import { useTableViews } from '../hooks/useTableViews';
 import { segmentSummary } from '../lib/products';
 
@@ -47,6 +48,7 @@ export function MarketScreen() {
               {c.label}
             </button>
           ))}
+          <MarketEras saveId={saveId} />
         </div>
         {regions.length > 0 && (
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
@@ -104,5 +106,17 @@ export function MarketScreen() {
         scores.
       </p>
     </>
+  );
+}
+
+/** The era timeline on Market (M11, formulas.md 21.4): what is coming and who caused what. */
+function MarketEras({ saveId }: { saveId: string }) {
+  const eras = useEras(saveId);
+  if (!eras.data) return null;
+  return (
+    <section aria-label="Eras" data-testid="market-eras">
+      <h2 style={{ margin: '8px 0', fontSize: 17, fontWeight: 600 }}>Eras</h2>
+      <EraTimeline eras={eras.data} />
+    </section>
   );
 }

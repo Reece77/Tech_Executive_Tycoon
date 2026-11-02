@@ -35,6 +35,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M10r-review-fixes.md](M10r-review-fixes.md) | Fixes from Codex review 2: lender fees below operating profit, interest out of division statements, inherited offices on closure, overseas sales in product totals, exact regional prices, a repayment test that cannot skip | M9 |
 | [M10b-feel-fixes.md](M10b-feel-fixes.md) | Reece's playtest: the inbox archives and blocks on major events, event modifiers shown as numbers, critical crises, explanations that say what to do, self-serve abroad and marketing by region, former staff stories | M10r |
 | [M10c-executive-authority.md](M10c-executive-authority.md) | Executives with authority: guardrails per seat, executives acting each month through the player's actions with decision quality from their true score, CFO and COO proposals that block Continue, quarterly reports, executive events, Ask my COO from the COO's report | M10b |
+| [M11-rnd-tree.md](M11-rnd-tree.md) | R&D tree and era milestones: domain levels, research projects, the tech factor on quality and features, eight eras on their dates or early by threshold with a first-mover window, licensing, leaks and rivals' research, the Research screen (lane A, merges before M12a) | M10d |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 
