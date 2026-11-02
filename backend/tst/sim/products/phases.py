@@ -18,6 +18,7 @@ from dataclasses import dataclass, replace
 
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
 from tst.sim.data_models import SCORE_MAX, Balance, GameData, ProductsBalance
+from tst.sim.facilities import cloud, compute
 from tst.sim.finance import macro
 from tst.sim.geo.markets import ReachContext, reach_context
 from tst.sim.geo.models import RegionalSegment
@@ -307,6 +308,11 @@ def run_markets(
                     )
                     logs += more
 
+    # M12a (22.3): the player's Cloud hosting customers fit its spare capacity.
+    state, removed = cloud.trim_to_capacity(state, balance, data)
+    for trimmed, gone in removed.items():
+        if trimmed in flows:
+            flows[trimmed] = replace(flows[trimmed], new=max(0.0, flows[trimmed].new - gone))
     state, entries_out, revenue, flows, more_logs = _revenue(state, flows, data)
     return MarketOutcome(
         state=state,
@@ -590,14 +596,20 @@ def projected_revenue(state: GameState, company_id: int) -> Cents:
 
 
 def product_costs_by_division(
-    state: GameState, company_id: int, data: GameData
+    state: GameState, company_id: int, data: GameData, balance: Balance | None = None
 ) -> tuple[dict[int | None, Cents], dict[int | None, Cents]]:
     """(hosting, marketing) per division (None = corporate) for one company this month:
     round(C x h) per segment of every selling product, and the budget of every product that
-    is not retired (11.8, 18.1)."""
+    is not retired (11.8, 18.1). With `balance`, the share of each product's hosting in a
+    region that the company's own data centres serve comes off (M12a, 22.2): none for a
+    company that never builds, so its costs are exactly as before."""
     hosting: dict[int | None, Cents] = {}
     marketing: dict[int | None, Cents] = {}
     ai = macro.ai_index(state, data)  # M10 (20.1)
+    alloc = None
+    if balance is not None and state.company_facilities(company_id):  # M12a (22.2)
+        alloc = compute.allocate(state, company_id, balance, data)
+        home = compute.home_region_of(state, balance, data)
     for product in state.company_products(company_id):
         if product.status == "retired":
             continue
@@ -606,18 +618,31 @@ def product_costs_by_division(
         if product.status not in SELLING:
             continue
         category = data.category(product.category)
+        by_region: dict[str | None, Cents] = {None: 0}
         for seg in state.segments_of(product.id):
             h = f.hosting_cents(category, seg.segment, ai)
-            hosting[d] = hosting.get(d, 0) + round(seg.customers * h)
+            by_region[None] += round(seg.customers * h)
         for rseg in state.regional_segments_of(product.id):  # other regions (M9)
             h = f.hosting_cents(category, rseg.segment, ai)
-            hosting[d] = hosting.get(d, 0) + round(rseg.customers * h)
+            by_region[rseg.region] = by_region.get(rseg.region, 0) + round(rseg.customers * h)
+        hosting[d] = hosting.get(d, 0) + sum(by_region.values())
+        if alloc is not None:
+            if category.capacity_market:  # its CU come from the company's own capacity
+                saved = sum(by_region.values()) * alloc.sold_share
+            else:
+                saved = sum(
+                    amount * alloc.served_share(product.id, home if r is None else r)
+                    for r, amount in by_region.items()
+                )
+            hosting[d] -= round(saved)
     return hosting, marketing
 
 
-def product_costs(state: GameState, company_id: int, data: GameData) -> tuple[Cents, Cents]:
-    """(hosting, marketing) for one company this month (11.8)."""
-    hosting, marketing = product_costs_by_division(state, company_id, data)
+def product_costs(
+    state: GameState, company_id: int, data: GameData, balance: Balance | None = None
+) -> tuple[Cents, Cents]:
+    """(hosting, marketing) for one company this month (11.8); own capacity with `balance`."""
+    hosting, marketing = product_costs_by_division(state, company_id, data, balance)
     return sum(hosting.values()), sum(marketing.values())
 
 

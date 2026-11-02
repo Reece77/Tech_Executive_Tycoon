@@ -242,3 +242,13 @@ class GeoRuleError(SimError):
     """An office or regional launch that the rules do not allow (M9, 19.2, 19.5)."""
 
     code = "geo_rule"
+
+
+class FacilityRuleError(SimError):
+    """A data-centre build, sale, staffing or contract the rules do not allow (M12a, 22)."""
+
+    code = "facility_rule"
+
+
+class UnknownFacilityError(NotFoundError):  # M12a
+    code = "unknown_facility"

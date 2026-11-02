@@ -9,6 +9,7 @@ from operator import attrgetter
 from typing import Any
 
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
+from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
 from tst.sim.finance.macro import MacroMonth
 from tst.sim.finance.models import (
     BoardSeat,
@@ -168,6 +169,13 @@ class GameState:
     # M10b (23.5): marketing budget split by region, by (product_id, region)
     marketing_splits: tuple[MarketingSplit, ...] = ()
     regional_segments: tuple[RegionalSegment, ...] = ()
+    # M12a (22): facilities that are not closed, by id; each market good's latest month, in
+    # components_history.yaml order (empty before phase 4 first runs); component contracts
+    # active or settled in the last 24 months, by id; outages of the last 24 months, by id.
+    facilities: tuple[Facility, ...] = ()
+    supply: tuple[GoodMonth, ...] = ()
+    contracts: tuple[SupplyContract, ...] = ()
+    outages: tuple[Outage, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -442,12 +450,37 @@ class GameState:
             if s.product_id == product_id and (region is None or s.region == region)
         )
 
+    # --- Facilities (M12a) ------------------------------------------------------------------
+
+    def facility(self, facility_id: int) -> Facility | None:
+        return next((f for f in self.facilities if f.id == facility_id), None)
+
+    def company_facilities(self, company_id: int) -> tuple[Facility, ...]:
+        return tuple(
+            f for f in self.facilities if f.company_id == company_id and f.status != "closed"
+        )
+
+    def contract(self, contract_id: int) -> SupplyContract | None:
+        return next((c for c in self.contracts if c.id == contract_id), None)
+
+    def company_contracts(self, company_id: int) -> tuple[SupplyContract, ...]:
+        return tuple(c for c in self.contracts if c.company_id == company_id)
+
+    def good_month(self, good: str) -> GoodMonth | None:
+        return next((g for g in self.supply if g.good == good), None)
+
     @property
     def player(self) -> CompanyState:
         for company in self.companies:
             if company.is_player:
                 return company
         raise LookupError("game state has no player company")
+
+
+def player_companies(state: GameState) -> tuple[CompanyState, ...]:
+    """The companies the player controls (ADR-0020 1): the one player company until M16,
+    when it becomes the group. Use this wherever "the player" is meant."""
+    return tuple(c for c in state.companies if c.is_player)
 
 
 def company_cash(balances: LedgerBalances, company_id: int) -> Cents:
@@ -665,3 +698,15 @@ def with_regional_segment(state: GameState, seg: RegionalSegment) -> GameState:
             state.regional_segments, seg, lambda s: (s.product_id, s.region, s.segment)
         ),
     )
+
+
+def with_facility(state: GameState, facility: Facility) -> GameState:
+    return replace(state, facilities=_upsert(state.facilities, facility, lambda f: f.id))
+
+
+def with_contract(state: GameState, contract: SupplyContract) -> GameState:
+    return replace(state, contracts=_upsert(state.contracts, contract, lambda c: c.id))
+
+
+def with_outage(state: GameState, outage: Outage) -> GameState:
+    return replace(state, outages=_upsert(state.outages, outage, lambda o: o.id))

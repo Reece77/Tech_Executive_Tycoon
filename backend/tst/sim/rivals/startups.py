@@ -81,6 +81,8 @@ def found_startups(
     for index, category in enumerate(data.categories):
         if len(alive_startups(state, data)) >= sb.max_alive:  # entrants do not count (18.7)
             break
+        if category.capacity_market:  # M12a (22.3): selling capacity needs data centres
+            continue
         gen = rng.stream(state.turn, "rival_spawn", index)
         chance = sb.found_rate * mood * (1 + category.growth_in(turn_to_ym(state.turn)[0]))
         if float(gen.random()) >= chance:

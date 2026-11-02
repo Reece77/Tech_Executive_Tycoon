@@ -82,9 +82,9 @@ def last_hire(state: GameState, company_id: int = 1) -> Employment:
 
 
 DIRECTOR_IDS_FROM = 900  # test fixtures put employees at ids 2.., so directors move out of the way
-FIRST_PRODUCT = 24  # the first product id after the 23 incumbent products (M8 added five,
-# M9 six regional ones)
-INCUMBENTS = 23  # incumbent companies (ids 2..24)
+FIRST_PRODUCT = 28  # the first product id after the 27 incumbent products (M8 added five,
+# M9 six regional ones, M12a four cloud ones)
+INCUMBENTS = 27  # incumbent companies (ids 2..28)
 
 
 def move_directors(state: GameState) -> GameState:

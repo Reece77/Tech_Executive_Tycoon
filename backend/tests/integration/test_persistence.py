@@ -79,8 +79,8 @@ def test_create_save(save: Path, loaded: LoadedData) -> None:
         assert state.player.name == "Test Co"
         assert meta.master_seed == 42
         assert meta.data_hashes == loaded.hashes
-        # M10b: 0024-0026; M10c: 0027_exec_authority
-        assert meta.schema_version == SCHEMA_VERSION == 27
+        # M10b: 0024-0026; M10c: 0027_exec_authority; M12a: 0028_facilities
+        assert meta.schema_version == SCHEMA_VERSION == 28
         assert company_cash(ledger_balances(session), state.player.id) == GARAGE_CASH
 
 

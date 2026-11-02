@@ -1717,6 +1717,13 @@ INBOX_TEMPLATE_KEYS = (
     "office_closed",
     "region_launched",
     "region_live",
+    "facility_ordered",  # M12a (formulas.md 22)
+    "facility_live",
+    "facility_sold",
+    "contract_signed",
+    "contract_settled",
+    "cloud_started",
+    "outage_hit",
 )
 
 

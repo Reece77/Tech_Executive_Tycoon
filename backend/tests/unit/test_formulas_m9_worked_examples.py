@@ -109,7 +109,7 @@ def test_regional_incumbents(loaded: LoadedData) -> None:
     """19.5's table: six regional incumbents, each listing only its own region."""
     rows = {
         c.name: (c.personality, c.builder_skill, c.products[0].category, c.products[0].regions)
-        for c in loaded.game_data.incumbents[-6:]
+        for c in loaded.game_data.incumbents[-10:-4]  # M12a's four cloud hosts come after
     }
     assert rows == {
         "SAP": ("premium", 13, "b2b_saas", ("europe",)),

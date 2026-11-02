@@ -23,6 +23,19 @@ from tst.sim.actions.authority import (
     set_authority,
 )
 from tst.sim.actions.events import ChooseEvent, choose_event
+from tst.sim.actions.facilities import (
+    BuildFacility,
+    FacilityAction,
+    SellCapacity,
+    SellFacility,
+    SignContract,
+    StaffFacility,
+    build_facility,
+    sell_capacity,
+    sell_facility,
+    sign_contract,
+    staff_facility,
+)
 from tst.sim.actions.finance import (
     AcceptBridge,
     AcceptTermSheet,
@@ -148,6 +161,7 @@ type Action = (
     | SetAuthority
     | AnswerProposal
     | GeoAction
+    | FacilityAction
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -201,6 +215,11 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "set_marketing_split": SetMarketingSplit,
     "set_authority": SetAuthority,
     "answer_proposal": AnswerProposal,
+    "build_facility": BuildFacility,  # M12a
+    "sell_facility": SellFacility,
+    "staff_facility": StaffFacility,
+    "sign_contract": SignContract,
+    "sell_capacity": SellCapacity,
 }
 
 __all__ = [
@@ -213,6 +232,7 @@ __all__ = [
     "AnswerProposal",
     "AppointExecutive",
     "AssignUnit",
+    "BuildFacility",
     "CancelProduct",
     "ChooseEvent",
     "CloseOffice",
@@ -242,6 +262,8 @@ __all__ = [
     "RepayLoan",
     "Scout",
     "ScoutSearch",
+    "SellCapacity",
+    "SellFacility",
     "SetAuthority",
     "SetLeader",
     "SetMarketing",
@@ -252,6 +274,8 @@ __all__ = [
     "SetRegionalPrice",
     "SetSharedServices",
     "SetUnitOffice",
+    "SignContract",
+    "StaffFacility",
     "StartRound",
     "SunsetProduct",
     "TakeLoan",
@@ -417,6 +441,16 @@ def apply_action(
             out = set_marketing_split(state, action, balance, data)
         case SetAuthority():
             out = set_authority(state, action, balance, data)
+        case BuildFacility():  # M12a
+            out = build_facility(state, action, balance, data, ledger_balances)
+        case SellFacility():
+            out = sell_facility(state, action, balance, data)
+        case StaffFacility():
+            out = staff_facility(state, action, balance)
+        case SignContract():
+            out = sign_contract(state, action, balance, data)
+        case SellCapacity():
+            out = sell_capacity(state, action, balance, data)
     new_state = out.state
     actor = new_state.employment_of(action.actor_id) or state.employment_of(action.actor_id)
     if actor is not None:  # people live where they work (M9, 19.2)
