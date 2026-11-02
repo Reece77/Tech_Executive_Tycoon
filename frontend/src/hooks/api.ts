@@ -89,6 +89,10 @@ export type City = Schemas['CityOut'];
 export type LeasePreview = Schemas['LeasePreviewOut'];
 export type ProductRegions = Schemas['ProductRegionsOut'];
 export type ProductRegion = Schemas['ProductRegionOut'];
+export type Infrastructure = Schemas['InfrastructureOut']; // M12a
+export type Facility = Schemas['FacilityOut'];
+export type BuildPreview = Schemas['BuildPreviewOut'];
+export type SupplyContract = Schemas['ContractOut'];
 
 /** One scale-up action (M8): shared services, a product's division, a seat. */
 export type ScaleupAction =
@@ -190,6 +194,14 @@ export const keys = {
   market: (saveId: string, category: string, region: string | null = null) =>
     ['saves', saveId, 'market', category, region] as const,
   geo: (saveId: string) => ['saves', saveId, 'geo'] as const,
+  infrastructure: (saveId: string) => ['saves', saveId, 'infrastructure'] as const,
+  buildPreview: (
+    saveId: string,
+    kind: string,
+    region: string,
+    units: number,
+    contract: number | null,
+  ) => ['saves', saveId, 'build-preview', kind, region, units, contract] as const,
   leasePreview: (saveId: string, city: string, seats: number) =>
     ['saves', saveId, 'lease-preview', city, seats] as const,
   productRegions: (saveId: string, productId: number) =>
@@ -1777,6 +1789,97 @@ export function useRegionAction(saveId: string, productId: number) {
   const invalidate = useInvalidateSave(saveId);
   return useMutation({
     mutationFn: (a: RegionAction) => applyRegion(saveId, productId, a),
+    onSuccess: invalidate,
+  });
+}
+
+// --- Infrastructure (M12a) --------------------------------------------------------------------
+
+export function useInfrastructure(saveId: string) {
+  return useQuery({
+    queryKey: keys.infrastructure(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/infrastructure', path(saveId))),
+  });
+}
+
+export function useBuildPreview(
+  saveId: string,
+  kind: string,
+  region: string,
+  units: number,
+  contractId: number | null,
+) {
+  return useQuery({
+    queryKey: keys.buildPreview(saveId, kind, region, units, contractId),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/infrastructure/build-preview', {
+          params: {
+            path: { save_id: saveId },
+            query: { kind, region, units, contract_id: contractId },
+          },
+        }),
+      ),
+    enabled: kind !== '' && region !== '',
+  });
+}
+
+export type InfraAction =
+  | {
+      kind: 'build';
+      facilityKind: string;
+      region: string;
+      units: number;
+      contractId: number | null;
+    }
+  | { kind: 'sell'; facilityId: number }
+  | { kind: 'staff'; facilityId: number; unitId: number | null }
+  | { kind: 'contract'; good: string; months: number; volume: number }
+  | { kind: 'cloud' };
+
+async function applyInfra(saveId: string, a: InfraAction) {
+  switch (a.kind) {
+    case 'build':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/infrastructure/facilities', {
+          ...path(saveId),
+          body: {
+            kind: a.facilityKind,
+            region: a.region,
+            units: a.units,
+            contract_id: a.contractId,
+          },
+        }),
+      );
+    case 'sell':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/infrastructure/facilities/{facility_id}/sell', {
+          params: { path: { save_id: saveId, facility_id: a.facilityId } },
+        }),
+      );
+    case 'staff':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/infrastructure/facilities/{facility_id}/staff', {
+          params: { path: { save_id: saveId, facility_id: a.facilityId } },
+          body: { unit_id: a.unitId },
+        }),
+      );
+    case 'contract':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/infrastructure/contracts', {
+          ...path(saveId),
+          body: { good: a.good, months: a.months, volume: a.volume },
+        }),
+      );
+    case 'cloud':
+      return unwrap(await api.POST('/api/saves/{save_id}/infrastructure/cloud', path(saveId)));
+  }
+}
+
+export function useInfraAction(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: (a: InfraAction) => applyInfra(saveId, a),
     onSuccess: invalidate,
   });
 }

@@ -59,6 +59,13 @@ export function ProductsScreen() {
             >
               Markets
             </Link>
+            <Link
+              to={`/game/${saveId}/products/infrastructure`}
+              style={{ fontSize: 13 }}
+              data-testid="infrastructure-link"
+            >
+              Infrastructure
+            </Link>
             <Button
               variant="default"
               style={{ marginLeft: 'auto' }}
@@ -298,7 +305,7 @@ function NewProductDialog({
   const [categoryKey, setCategoryKey] = useState('');
   const [chosen, setChosen] = useState<string[]>([]);
 
-  const list = categories.data ?? [];
+  const list = (categories.data ?? []).filter((c) => !c.capacity_market); // M12a
   const category: Category | undefined = list.find((c) => c.key === categoryKey) ?? list[0];
   const cost = meta.energy_costs.create_product;
   const ready = name.trim() !== '' && chosen.length > 0 && category !== undefined;
