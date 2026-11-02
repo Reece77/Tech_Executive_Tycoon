@@ -1888,3 +1888,116 @@ Data centres with capacity, utilization (own and sold), reliability, staff cover
 **Reliability.** 2,000 CU needs 10 staff; with 8 at mean infrastructure skill 15, `c_f = 0.8` and `rel = 100 × 0.8 × (0.7 + 0.225)` = **74**, giving an outage chance of `0.002 × 2.6` = **0.52%** a month.
 
 **GPU build in the crunch.** 500 GPU CU in Jul 2023 (GPU index 1.60, allocation 40%): capex `500 × $64,000` = $32M. 200 CU complete on time and 300 arrive 6 months late.
+
+## 23. Feel fixes from Reece's v1 playtest (M10b)
+
+From Reece's playtest on 2026-11-01 (Playtest Log): "It is fun, works well. Needs some fine tuning." His decisions the same day: visible, lasting event effects; major and critical events block Continue; self-serve sells abroad without a local presence. These rules change what the player sees and decides. Tuning waits for M10d.
+
+### 23.1 Inbox
+
+- **Answered events archive themselves.** Choosing (or the default at Continue) moves the event's inbox item to the archive. It stays readable from History and its deep link.
+- **Auto-archive:** any read, unbookmarked item older than `inbox.auto_archive_months` (3) is archived at month end. A **bookmark** (star) action keeps an item in the inbox.
+- **Blocking:** an open **major** or **critical** event blocks Continue (and Holiday's next month) until answered. The top bar says "Answer 2 events first". Minor events still take their first choice at Continue. This replaces §16.3's rule that major events default at Continue.
+- **Holiday** still stops for events at or above the chosen severity (§17.1). A major event below the chosen stop level is answered with its first choice during Holiday, as now; blocking applies only when the player is at the controls.
+
+### 23.2 Events with visible, lasting effects
+
+- **New effect type `modifier`:** `{target, stat, value_pct, months}`. Targets are a product, a unit, a person or the company. Stats are brand target, quality cap, builder output, seller capacity, awareness, churn, morale target and founder energy. It applies every month for `months`, then expires.
+
+| Severity | Modifier cap | Longest duration |
+| --- | --- | --- |
+| minor | ±5% | 6 months |
+| major | ±10% | 12 months |
+| critical | ±20% | 12 months |
+
+  The validator clamps modifiers like every other effect (§16.3). The LLM may attach modifiers from the template's allowed list.
+- **Effects show as numbers.** This replaces §16.9's words-with-a-size. Each choice lists its effects plainly, for example "+3 brand target for 12 months", "costs $8,000", "Priya's morale +5", "−10 founder energy next month". Caps and trigger strengths stay hidden.
+- **Active effects panel** on Overview, Product and Person: every running modifier with its source event, value and months left.
+- **Month-end report:** one "Your choices this month" line listing the effects applied and the modifiers that started or expired.
+- **No empty choices.** Every template choice carries at least one effect, except an explicit "Do nothing" choice labelled as such. Templates whose story implies a benefit (a domain for sale, a conference talk, a press feature) carry a matching modifier.
+- **Energy effects** show in the top bar's energy tooltip ("−10 from the board dinner") and reduce the energy available that month.
+
+### 23.3 More critical events
+
+New critical templates and triggers, so a growing company meets a crisis now and then:
+
+| Trigger | Holds when | Critical template |
+| --- | --- | --- |
+| `key_exit` | a seat holder, president or top-10% employee resigns or is poached | the exit: counter-offer (a big raise), let go with a handover (an output modifier), or emergency hire |
+| `security_breach` | monthly chance `0.004 × (1 − security coverage)` for a live product with 1,000+ customers, where coverage is the product team's mean security skill / 15, capped at 1 | breach: disclose, pay, or patch quietly (churn and brand modifiers, cash) |
+| `outage` | monthly chance `0.003` for a live product with quality < 45 and 5,000+ customers | outage: credits (cash) against churn and brand |
+| `pr_crisis` | an event chain or a storyline step marked critical | press crisis: brand modifier choices |
+
+- Critical spacing stays at most one in any 6 months (§16.1).
+- Draws use the existing `events` stream with keys in a fixed order.
+- **Target:** a company with 20+ staff meets on average at least one critical event per 18 months (§23.7).
+
+### 23.4 Explanations
+
+- **Product team strength.** The product profile shows output against two lines: **maintains** at `0.25 σ` and **full speed** at `σ` (§11.4). For example: "Output 1.1. Below 1.5 your product slips; full speed at 6. Add about 1 builder to stop the slide."
+- **The slipping message** distinguishes "Nobody is working on {product}" (no builders) from "{product}'s team is too small to maintain it (output 1.1 of 1.5 needed)". Reece read the old message as a bug.
+- **Sales capacity message:** "{n} sellers win up to {cap} {segment} customers a month; {demand} wanted to buy. Each extra seller adds about {per_seller}."
+- **Role descriptions** (`roles.yaml` gains `summary` and `why_hire`): what the role does, its product function, the skills that matter, and when to hire one. Shown in Recruitment, the hiring-plan dialog and the profile.
+- **Structure guide** on the Org screen: a panel explaining what departments, teams and divisions do, with this company's live numbers: span of control and manager quality (§13), layer tax and cross-division factor (§18.2), support coverage (§18.4), and executive effects (§18.3).
+
+### 23.5 Regions
+
+- **Self-serve segments** (consumer, SMB) sell abroad at full awareness once localized: `markets.foreign_awareness` becomes 1.0 for self-serve. This replaces §19.5's 0.6 without presence.
+- **Sales-led segments** still need sellers in the region or its neighbour (§19.5).
+- **Marketing by region:** a product's marketing budget may be split across its live regions (default: in proportion to revenue). Brand stays global; awareness in a region uses that region's share of marketing points. A region with no marketing spend uses 70% of the global awareness.
+- The Regions panel explains these rules in one line per segment type.
+
+### 23.6 Former staff profiles
+
+Former employee profiles (M7c) add their job history at the company (each role, level and unit, with months) and what they led: units, products they built as part of a unit's team, seats held, research projects (once M11 exists), and storylines they appeared in.
+
+### 23.7 Acceptance targets (printed)
+
+1. Critical events: at least one per 18 months on average for companies with 20+ staff, over 10 seeds × 120 turns of the steady strategy; spacing never under 6 months.
+2. Every event template has at least one choice with an effect (data test), and every "benefit" template carries a modifier (data review list in the brief).
+3. Event balance (§16.10) stays within ±5% of revenue for cash and ±3 for morale on every seed, now counting modifiers' effects. Tuning, if needed, uses only `events.*` keys.
+4. Earlier targets: recorded misses stay recorded. Any other guard that moves is reported for M10d, not tuned here.
+
+## 24. Executives with authority (M10c)
+
+Reece (2026-11-01): executive seats need more power, and the player needs better ways to let teams run without him as the company grows. This is the delegation layer before M13's CEO.
+
+### 24.1 Authority (per seat, immediate action, energy 2 to change)
+
+Each filled seat (§18.3) can be given **authority** over its function, with guardrails the player sets. With authority, the executive acts each month in phase 2 as a delegate (ADR-0015), through the same actions as the player. It uses its own energy (100), with randomness on stream `delegate` keyed by person id.
+
+| Seat | Acts on | Guardrails (player sets) |
+| --- | --- | --- |
+| CTO | Assigns builders between units, products and projects, so every live product stays at or above its maintenance line and products in development reach a target pace; opens builder hiring plans | headcount cap for builders; max salary ratio; protected units it can't move |
+| CRO | Opens seller hiring plans when sales capacity limits a segment; sets sales-led prices within ±10% of the player's last price | seller headcount cap; price band |
+| CMO | Splits the total marketing budget across products and regions, toward products with the best brand gap and growth | total marketing as % of revenue |
+| COO | Keeps support coverage at or above a target by opening support hiring plans; flags crowded offices and proposes leases | coverage target; lease approval above a monthly rent (proposals need the player's OK) |
+| CFO | Watches runway. Below a threshold it proposes a round or a loan, with a recommended term sheet the player approves. Above a cash threshold it repays debt early | runway threshold; cash threshold; approval always needed for rounds |
+
+- **Proposals** are inbox items with Approve and Decline (major severity, so they block Continue under §23.1).
+- An executive without authority still gives its seat effect (§18.3) and its reports.
+
+### 24.2 Decision quality
+
+An executive's choices use the company's displayed knowledge (ADR-0015), and their quality comes from their true skills. With seat score `s`:
+- each monthly decision runs the right rule with probability `clamp(0.55 + 0.03 s, 0.6, 0.98)`;
+- otherwise it takes a plausible but worse option: the second-best candidate, a slower pace or a budget split off by 20%.
+
+Mistakes are logged with the executive's name in the decision log and History, so a weak CTO shows up as visibly worse staffing.
+
+### 24.3 Reports and executive events
+
+- **Quarterly report** from each seat holder: their function's KPIs for the quarter, what they did with their authority, and one or two concerns (written by the LLM within the budget, or a template). It appears in the inbox and on the Executive team panel.
+- **Executive events:** new templates triggered by executives, for example a CTO asking for a research budget, a CRO wanting a price change, a CMO proposing a campaign, a CFO warning about runway, and executives clashing (relationships). Their choices carry modifiers (§23.2).
+- **Ask my COO** (§17.3) answers from the named COO's report when the seat is filled.
+
+### 24.4 What the API may show
+
+Each seat's authority, guardrails, decisions this month (with outcomes), proposals and reports. Never the decision-quality probability or the executive's true score.
+
+### 24.5 Acceptance targets (printed)
+
+1. **Delegation works.** A stage-3 steady company with all five seats given authority, and the founder taking no actions for 36 months, ends within 15% of the same company played by the steady script (median ARR, 10 seeds), and never lets a live product drop below its maintenance line for more than 2 months.
+2. **Quality matters.** The same run with every seat holder at score 8 against score 15 differs by at least 15% median ARR.
+3. **No runaway hiring:** headcount never exceeds the guardrail caps, and support coverage stays within 0.1 of the target.
+4. **Founder energy:** delegated runs leave the founder at least 60% of their monthly energy unspent on average.

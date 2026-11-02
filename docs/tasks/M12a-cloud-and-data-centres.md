@@ -2,7 +2,7 @@
 
 **Goal:** compute becomes something a company can own. It can build general or GPU data centres in a region, run its own products on them for less than spot when they're well used, and sell spare capacity to other companies as Cloud and GPU hosting against AWS, Azure and Google. Component prices and allocation follow real history (the 2021 chip shortage, the 2023 GPU crunch), then seeded shocks, so owning capacity before a crunch pays off and building at the wrong time hurts.
 
-**Spec sections:** §7.1 (Cloud and GPU hosting), §8 (value chain, sourcing), §9 (hyperscaler segment) · **ADRs:** 0002, 0003, 0004, 0013 (streams `supply` 26, `facility` 27, reserved), 0019 (§2 simplified facilities, §8 sell spare capacity, §9 supply shocks) · **Formulas:** `docs/formulas.md` §22 (all), with §11, §16, §19 and §20 · **Wireframes:** `docs/wireframes.md` (M12a screens) and `docs/wireframes/source/DataCentres.dc.html` · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M10 (`m10-done`) and M9 (`m9-done`, for regions)
+**Spec sections:** §7.1 (Cloud and GPU hosting), §8 (value chain, sourcing), §9 (hyperscaler segment) · **ADRs:** 0002, 0003, 0004, 0013 (streams `supply` 26, `facility` 27, reserved), 0019 (§2 simplified facilities, §8 sell spare capacity, §9 supply shocks) · **Formulas:** `docs/formulas.md` §22 (all), with §11, §16, §19 and §20 · **Wireframes:** `docs/wireframes.md` (M12a screens) and `docs/wireframes/source/DataCentres.dc.html` · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M10d (`m10d-done`)
 
 ## Lane
 

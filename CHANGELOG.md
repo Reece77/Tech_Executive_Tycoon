@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs: Reece's v1 playtest (2026-11-01) turned into M10b (feel fixes), M10c (executives with authority) and M10d (balance checkpoint), with formulas.md §23–§24; M11 and M12a now depend on m10d-done.
 - M10r fixes from Codex review 2 (each with a regression test written first and seen failing; resolution table in `docs/reviews/codex-review-2.md`):
   - 1 (P2) The debt history's monthly operating result (bank-loan gate, profit covenant) classifies the whole month's ledger by account: `advance_turn` takes `prior_operating` beside `prior_flow`, from `repository.month_so_far` and the balance runner. A waiver fee paid before Continue is interest, below operating profit; burn is unchanged (`test_m10r_lender_fee.py`, `test_m10r_month_operating.py`).
   - 2 (P2) Division statements leave interest and tax out of every column and of the shared-services allocation, so the company column equals the P&L's operating result (`test_m10r_division_interest.py`; the division property test now draws interest, rent and R&D).

@@ -2,7 +2,7 @@
 
 **Goal:** technology becomes something a company can push. Research units raise domain levels above the world's baseline, which lifts their products' quality caps and features. Leads decay unless they're maintained, can be licensed, and leak when researchers leave. Named era milestones (mobile-first, deep learning, transformers, large language models and others) arrive on their historical dates and accelerate their markets. A company that researches far enough ahead can pull one forward and take a head-start window.
 
-**Spec sections:** §7.3 (technology tree), §9 · **ADRs:** 0002, 0005, 0007, 0013 (streams `research` 23, `rival_research` 24, reserved), 0019 (§7 era milestones) · **Formulas:** `docs/formulas.md` §21 (all), with §11.3–§11.5, §15 and §18 · **Wireframes:** `docs/wireframes.md` (M11 screens) and `docs/wireframes/source/Research.dc.html` · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M9 (`m9-done`) and the v1-feel milestone if it lands first
+**Spec sections:** §7.3 (technology tree), §9 · **ADRs:** 0002, 0005, 0007, 0013 (streams `research` 23, `rival_research` 24, reserved), 0019 (§7 era milestones) · **Formulas:** `docs/formulas.md` §21 (all), with §11.3–§11.5, §15 and §18 · **Wireframes:** `docs/wireframes.md` (M11 screens) and `docs/wireframes/source/Research.dc.html` · **Roadmap:** `docs/v2-roadmap.md` (lane rules) · **Depends on:** M10d (`m10d-done`)
 
 ## Lane
 
