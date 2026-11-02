@@ -68,7 +68,7 @@ test('(c) a one-engineer product shows "team too small" with the maintenance lin
   await continueMonth(page);
   await page.goto(`/game/${save}/products`);
   await page.getByRole('link', { name: 'Pipeline' }).first().click();
-  await expect(page.getByTestId('product-quality')).toContainText('the team is too small');
+  await expect(page.getByText('Falling: the team is too small')).toBeVisible();
 });
 
 test('(d) set a regional price and see it shown', async ({ page }) => {

@@ -26,6 +26,11 @@ async function hire(request: APIRequestContext, base: string, employees: number)
     channel: 'job_post',
   });
   for (let turn = 0; turn < 8; turn++) {
+    // Open major and critical events block Continue (23.1, M10b): take the first choice.
+    const events = await api<{ blocking_event_ids: number[] }>(request, 'GET', `${base}/events`);
+    for (const id of events.blocking_event_ids) {
+      await api(request, 'POST', `${base}/events/${id}/choose`, { choice: 'A' });
+    }
     await api(request, 'POST', `${base}/advance`);
     const staff = await api<Person[]>(request, 'GET', `${base}/people`);
     if (staff.filter((p) => !p.is_founder).length >= employees) return;

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { answerBlocking } from './helpers.ts';
 
 // M7b flows: (a) a Holiday stops on a major event and the summary appears; (b) rename,
 // duplicate and restore a save; (c) search History for a hire and open their profile;
@@ -40,6 +41,9 @@ test('(a) a 6-month Holiday stops on a major event and the summary appears', asy
   await done.getByTestId('holiday-summary-link').click();
   await expect(page.getByTestId('message-title')).toHaveText('While you were away: 1 month');
   await expect(page.getByTestId('message-body')).toContainText('Cash:');
+  // The major event that stopped it now needs an answer before Continue (23.1, M10b).
+  await expect(page.getByTestId('continue-blocked')).toHaveText('Answer 1 event first');
+  await answerBlocking(page);
   await expect(page.getByTestId('continue')).toBeEnabled();
 });
 
@@ -52,10 +56,9 @@ test('(b) rename, duplicate and restore a save, and find the restored copy', asy
   // A periodic backup comes every 12 months; play to it through the API.
   for (let i = 0; i < 10; i++) {
     const events = await (await request.get(`/api/saves/${save}/events`)).json();
-    if (events.blocking_event_id !== null) {
-      await request.post(`/api/saves/${save}/events/${events.blocking_event_id}/choose`, {
-        data: { choice: 'A' },
-      });
+    for (const id of events.blocking_event_ids as number[]) {
+      // major and critical events block Continue (23.1, M10b)
+      await request.post(`/api/saves/${save}/events/${id}/choose`, { data: { choice: 'A' } });
     }
     expect((await request.post(`/api/saves/${save}/advance`)).ok()).toBe(true);
   }

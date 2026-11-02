@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
-import { api, continueMonth } from './helpers.ts';
+import { answerBlocking, api, continueMonth } from './helpers.ts';
 
 // M4b flows: (a) raise a SAFE and see the answer at Continue; (b) start a seed, compare two
 // term sheets' dilution previews, accept one, Continue, and see the cap table match the
@@ -162,6 +162,10 @@ test('(c) run out of cash, see the insolvency badge and bridge, ignore it, reach
     if (await critical.isVisible()) {
       await critical.locator('[data-choice="A"]').click();
       await expect(critical).toBeHidden();
+      continue;
+    }
+    if (await page.getByTestId('continue-blocked').isVisible()) {
+      await answerBlocking(page); // a major event blocks Continue too (23.1, M10b)
       continue;
     }
     const before = await date.textContent();

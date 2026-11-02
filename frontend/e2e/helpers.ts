@@ -111,11 +111,10 @@ export async function api<T>(
  * flows that are not about events).
  */
 export async function answerCritical(request: APIRequestContext, base: string) {
-  type Events = { blocking_event_id: number | null };
+  // Since M10b (23.1) open major events block Continue too: answer every blocking event.
+  type Events = { blocking_event_ids: number[] };
   const events = await api<Events>(request, 'GET', `${base}/events`);
-  if (events.blocking_event_id !== null) {
-    await api(request, 'POST', `${base}/events/${events.blocking_event_id}/choose`, {
-      choice: 'A',
-    });
+  for (const id of events.blocking_event_ids) {
+    await api(request, 'POST', `${base}/events/${id}/choose`, { choice: 'A' });
   }
 }

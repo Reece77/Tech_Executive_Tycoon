@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { continueMonth } from './helpers.ts';
+import { answerBlocking, continueMonth } from './helpers.ts';
 
 // M8 flows: (a) at stage 3, create a division, move a department into it and see its P&L
 // tab; (b) appoint a CTO and see the estimated effect, then vacate it and see the penalty;
@@ -54,6 +54,7 @@ test('(a) create a division, move a department into it and see its P&L', async (
 
 test('(b) appoint a CTO, see the estimate, then vacate the seat', async ({ page }) => {
   await page.goto(`/game/${SCALE}/org`);
+  await answerBlocking(page); // e.g. a key exit (23.3, M10b) would cover the screen
   const cto = page.getByTestId('seat-cto');
   await expect(cto.getByTestId('vacancy-penalty')).toContainText('−5%');
   await cto.getByTestId('appoint').click();
