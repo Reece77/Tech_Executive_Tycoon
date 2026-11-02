@@ -94,7 +94,7 @@ def test_product_regions_launch_and_price(api: tuple[Client, Path]) -> None:
     rows = {r["region"]: r for r in regions["regions"]}
     assert rows["north_america"]["status"] == "home"
     europe = rows["europe"]
-    assert europe["status"] == "not_launched" and europe["launch_cost_cents"] == 4_000_000
+    assert europe["status"] == "not_launched" and europe["launch_cost_cents"] == 8_000_000
     assert europe["rivals"] > 0 and europe["addressable"] > 0
     assert europe["local_presence"] is False and "full awareness" in europe["reach_note"]
     assert len(regions["rules"]) == 3 and regions["marketing_custom"] is False
@@ -157,5 +157,5 @@ def test_cli_cities_offices_lease_and_launch(api: tuple[Client, Path], tmp_path:
     assert "$10,125.00 a month" in run("lease", "--save", SAVE, "--city", "berlin", "--seats", "50")
     assert "Berlin" in run("offices", "--save", SAVE)
     out = run("launch-region", "--save", SAVE, "--product", str(PRODUCT), "--region", "europe")
-    assert "Localizing for Europe; live in Apr 2010" in out
-    assert "Localizing until Apr 2010" in run("regions", "--save", SAVE, "--product", str(PRODUCT))
+    assert "Localizing for Europe; live in Jul 2010" in out
+    assert "Localizing until Jul 2010" in run("regions", "--save", SAVE, "--product", str(PRODUCT))

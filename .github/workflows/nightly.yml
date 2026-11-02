@@ -1,5 +1,5 @@
 # The long balance runs (M7a, Reece's D4a): `make balance` prints the docs/balance-targets.md table,
-# then `make nightly` runs every test marked `nightly` (the balance targets in full and the
+# then `make nightly` runs every test marked `nightly` (on CI: three matrix jobs, M10d) (the balance targets in full and the
 # statistical tests that PR CI skips). Every night, and on demand from the Actions tab.
 name: nightly
 
@@ -13,8 +13,15 @@ permissions:
 
 jobs:
   nightly:
+    # M10d: `make balance` alone (it gates S2, the run's worker-minutes, on a machine it does not
+    # share) and the nightly tests in four shards (two took over 45 minutes each on CI).
+    name: nightly (${{ matrix.part }})
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [balance, "nightly-ci SHARD=1", "nightly-ci SHARD=2", "nightly-ci SHARD=3", "nightly-ci SHARD=4"]
     steps:
       - uses: actions/checkout@v4
 
@@ -30,8 +37,5 @@ jobs:
       - name: Install backend dependencies
         run: uv sync --project backend --locked
 
-      - name: make balance
-        run: make balance
-
-      - name: make nightly
-        run: make nightly
+      - name: make ${{ matrix.part }}
+        run: make ${{ matrix.part }}

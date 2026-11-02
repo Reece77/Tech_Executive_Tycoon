@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { continueMonth } from './helpers.ts';
 
 // M9 flows: (a) lease a Berlin office, move a team there, and see costs and market rates
-// change; (b) launch a product in Europe and see it go live after 3 months; (c) search for
+// change; (b) launch a product in Europe and see it go live after 6 months; (c) search for
 // engineers in Bangalore and see city and salary on candidates.
 test.describe.configure({ mode: 'serial' });
 
@@ -63,17 +63,17 @@ test('(a) lease a Berlin office, move a team there, see costs and rates change',
   await expect(page.locator('body')).toContainText('$65,481');
 });
 
-test('(b) launch a product in Europe and see it go live after 3 months', async ({ page }) => {
+test('(b) launch a product in Europe and see it go live after 6 months', async ({ page }) => {
   await page.goto(`/game/${GEO}/products`);
   await page.getByRole('link', { name: 'Pipeline' }).first().click();
   const regions = page.getByTestId('regions-panel');
   await expect(regions.getByTestId('region-status-north_america')).toHaveText('Home');
   await expect(regions.getByTestId('region-status-europe')).toHaveText('Not launched');
   await regions.getByTestId('launch-europe').click();
-  await expect(page.getByRole('dialog')).toContainText('$40,000');
+  await expect(page.getByRole('dialog')).toContainText('$80,000');
   await page.getByTestId('launch-confirm').click();
   await expect(regions.getByTestId('region-status-europe')).toContainText('Localizing until');
-  for (let i = 0; i < 3; i += 1) await continueMonth(page);
+  for (let i = 0; i < 6; i += 1) await continueMonth(page); // localization: 6 months (M10d)
   await page.goto(`/game/${GEO}/products`);
   await page.getByRole('link', { name: 'Pipeline' }).first().click();
   await expect(page.getByTestId('regions-panel').getByTestId('region-status-europe')).toContainText(

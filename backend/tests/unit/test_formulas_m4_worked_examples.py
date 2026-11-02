@@ -123,9 +123,9 @@ def test_investors_base_value(loaded: LoadedData) -> None:
     g6 = f.growth_6(mrr_now, mrr_then, fb)
     assert round(mrr_now / mrr_then, 4) == pytest.approx(1.4840, abs=1e-4)
     assert g6 == pytest.approx(1.2022, abs=1e-3)
-    assert f.arr_multiple(g6, 1.0, fb) == pytest.approx(8.809, abs=2e-3)
+    assert f.arr_multiple(g6, 1.0, fb) == pytest.approx(9.112, abs=2e-3)  # M10d: 2.5 + 5.5 g6
     value = f.base_value_cents(181_000_000, g6, 1.0, True, 12, fb)
-    assert value / 1e8 == pytest.approx(15.94, abs=0.01)  # $15.94M, above the floor
+    assert value / 1e8 == pytest.approx(16.49, abs=0.01)  # $16.49M, above the floor
 
 
 def test_growth_and_floor_edge_cases(loaded: LoadedData) -> None:

@@ -14,13 +14,6 @@ def _jobs() -> int:
     return int(os.environ.get("TST_BALANCE_JOBS", str(os.cpu_count() or 1)))
 
 
-GAIN_REASON = (
-    "recorded miss: debt saves +4.8 founder points (needs +5; +5.2 on main before M9): "
-    "incumbents' sales abroad fund bigger rival teams, so steady grows a little slower "
-    "(M9, Reece 2026-11-01); rebalance in M15"
-)
-
-
 @pytest.fixture(scope="module")
 def dilution() -> tuple[float, float]:
     """20.5 target 2: (founder points saved by debt, extra bankruptcy points)."""
@@ -37,20 +30,11 @@ def test_2_debt_bankruptcy_risk(dilution: tuple[float, float]) -> None:
 
 
 @pytest.mark.nightly
-@pytest.mark.xfail(strict=False, reason=GAIN_REASON)
 def test_2_debt_saves_dilution(dilution: tuple[float, float]) -> None:
     assert dilution[0] >= 5
 
 
 @pytest.mark.nightly
-@pytest.mark.xfail(
-    strict=False,
-    reason=(
-        "recorded miss: 90% of seeds breach (needs 20-60%): blitzscale with venture debt goes "
-        "below zero cash before its next round on 8 of 10 seeds, which breaks any cash-vs-burn "
-        "covenant (Reece 2026-11-01); rebalance in M15"
-    ),
-)
 def test_3_covenants_bite_sometimes() -> None:
     runs = m10.run(("blitz_debt",), m10.SEEDS, _jobs())
     rate = m10.share(runs, "blitz_debt", "breached")

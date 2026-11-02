@@ -41,13 +41,6 @@ PUSHES = {"price_cut", "feature_push", "quality_push", "brand_push"}
 V1_CATEGORIES = frozenset({"b2b_saas", "dev_tools", "consumer_apps", "cybersecurity"})
 
 
-LAUNCHES_REASON = (
-    "recorded miss: startup launches per v1 category a seed 0.925 (needs 1.0; 1.0 on main "
-    "before M9): most startups are founded abroad, so fewer launch into the v1 home markets "
-    "(M9, Reece 2026-11-01); rebalance in M15"
-)
-
-
 @pytest.fixture(scope="module")
 def living(loaded: LoadedData) -> tuple[int, float]:
     """Target 1's runs: (seeds with a share breach, launches per v1 category a seed)."""
@@ -106,7 +99,6 @@ def test_1_living_market(living: tuple[int, float]) -> None:
 
 
 @pytest.mark.nightly
-@pytest.mark.xfail(strict=False, reason=LAUNCHES_REASON)
 def test_1_living_market_launches(living: tuple[int, float]) -> None:
     assert living[1] >= 1.0
 
@@ -165,13 +157,14 @@ def test_4_poaching_felt_not_crushing(loaded: LoadedData) -> None:
     rate = accepted / decided if decided else 0.0
     print(f"\n4 poaching: {per_year:.2f} approaches a year, {rate:.0%} of answered accepted")
     assert 1.0 <= per_year <= 4.0
-    assert 0.20 <= rate <= 0.60
+    assert 0.10 <= rate <= 0.40  # re-banded in M10d (product manager, 2026-11-02)
 
 
 def test_5_speed(tmp_path: Path, loaded: LoadedData) -> None:
+    from tests.helpers import play_turn
     from tests.integration.test_api_products import staff
     from tst.db.mappers import entry_to_row
-    from tst.db.repository import create_save, open_session, run_turn
+    from tst.db.repository import create_save, open_session
     from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 
     path = create_save(
@@ -193,7 +186,7 @@ def test_5_speed(tmp_path: Path, loaded: LoadedData) -> None:
         )
     start_time = time.perf_counter()
     for _ in range(SPEED_TURNS):
-        run_turn(path, loaded)
+        play_turn(path, loaded)  # answers a critical event first (M10b: key exits)
     per_turn = (time.perf_counter() - start_time) / SPEED_TURNS
     print(f"\n5 speed: {per_turn * 1000:.0f} ms a turn over {SPEED_TURNS} turns")
     assert per_turn < 1.0

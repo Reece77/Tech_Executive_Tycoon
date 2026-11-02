@@ -29,8 +29,8 @@
 # in North America, size and price index are taken relative to the home region's row.
 regions:
   - { region: north_america, size: 1.00, price_index: 1.00, neighbour: latin_america }
-  - { region: europe, size: 0.80, price_index: 0.90, neighbour: africa }
-  - { region: east_asia, size: 0.70, price_index: 0.80, neighbour: south_southeast_asia }
+  - { region: europe, size: 0.55, price_index: 0.90, neighbour: africa }
+  - { region: east_asia, size: 0.45, price_index: 0.80, neighbour: south_southeast_asia }
   - { region: south_southeast_asia, size: 0.40, price_index: 0.35, neighbour: east_asia }
   - { region: latin_america, size: 0.25, price_index: 0.50, neighbour: north_america }
   - { region: africa, size: 0.06, price_index: 0.35, neighbour: europe }

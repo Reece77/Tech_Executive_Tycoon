@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fractions import Fraction
+from functools import lru_cache
 
 from tst.sim.data_models import Balance, CityDef, GameData
 from tst.sim.money import Cents, exact, pct_of
@@ -15,7 +16,13 @@ def round_cents(value: Fraction) -> Cents:
 
 def flexible_seat_cents(rent_index: float, balance: Balance) -> Cents:
     """Flexible space: `$600 x rent index` a head a month (19.2, 8)."""
-    return round_cents(exact(balance.payroll.office_cost_per_head_cents) * exact(rent_index))
+    return _seat_cents(balance.payroll.office_cost_per_head_cents, rent_index)
+
+
+@lru_cache(maxsize=256)  # tunable-exempt: cache size, not game balance
+def _seat_cents(per_head_cents: int, rent_index: float) -> Cents:
+    """Memoized: phase 6 and every projection ask it once per employee (M10d speed)."""
+    return round_cents(exact(per_head_cents) * exact(rent_index))
 
 
 def lease_rent_cents(seats: int, rent_index: float, balance: Balance) -> Cents:

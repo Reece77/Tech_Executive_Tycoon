@@ -4,6 +4,16 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M10d Balance checkpoint (product manager's decisions of 2026-11-02; table in `docs/balance-targets.md`, M10d):
+  - Speed: people by binary search, the seat cost memoized; the nightly as five CI jobs (`make balance` alone gates S2; four duration-balanced shards); S2 for v2 is 43 worker-minutes on CI; `tests/durations.json` refreshed.
+  - Morale target base 56 (median 62 steady, 60 blitzscale) and resignation floor 50; executive retention 8/10.
+  - A rival's poach target is drawn among the top 30% by CA, seat holders x0.4 (formulas.md §15.6; stream `poach`, key (new approach id, 1)); leaving penalty -0.3; poaching acceptance re-banded to 10-40%; a new target: 0.5-1.5 staff a year lost to rivals with 30+ staff (0.58 steady, 1.05 blitzscale).
+  - Blitzscale raises Series C and D as soon as allowed; the ARR multiple weighs growth more (2.5 + 5.5 g); T2 steady 6, frugal 4; T3 blitzscale 10/10.
+  - Expansion 6.9x to 2.2x: rivals enter regions more readily, localization 6 months and $80,000, Europe and East Asia 0.55 and 0.45 of North America's demand.
+  - Covenants breach 60% (venture debt up to 50% of a round); critical events 1.19 per 18 months (more departures count as key exits; breach and outage chances doubled).
+  - Re-bands (approved): T5 blitzscale bankrupt 0-40%, T7 startups alive 20-65%, potential gap >= 2.8. Hands-on founder energy is a manual check. No xfail remains.
+  - **Golden snapshots regenerated** (three times during the pass): morale and resignations; valuations, rival poach targets, regions and localization, crises; the leaving penalty and venture-debt size.
+
 - Docs: v3 outline (`docs/v3-outline.md`, M16–M23) and ADR-0020 (design v2 so v3 can extend it), with Reece's 2026-11-02 v3 decisions; M11 and M12a briefs gain a "Design for v3" section.
 - CI: `tag-milestone` also finds a `Milestone-Tag: mX-done` line anywhere in the head commit's message, not only as a git trailer (the trailer was missed at M7b and M10c when it sat in its own paragraph).
 - M10c Executives with authority (formulas.md §24):

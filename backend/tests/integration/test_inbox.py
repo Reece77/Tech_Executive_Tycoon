@@ -306,7 +306,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     geo.act(LeaseOffice(1, "berlin", 25))
     geo.act(CloseOffice(1, geo.state.company_offices(1)[0].id))
     geo.act(LaunchInRegion(1, FIRST_PRODUCT, "europe"))
-    for _ in range(3):
+    for _ in range(loaded.balance.markets.localize_months):  # live once localized (19.5)
         geo.turn()
     finance = finance_games(loaded)
     games = (sad, hiring, broke, org, delegated, products, scale, geo, *finance.games)

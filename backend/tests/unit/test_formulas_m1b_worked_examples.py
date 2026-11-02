@@ -152,9 +152,13 @@ def test_section_8_other_costs(loaded: LoadedData) -> None:
 # --- Section 9: morale ----------------------------------------------------------------------
 
 
+DOCUMENTED_TARGET_BASE = 50  # formulas.md section 9's base; M10d tuned balance.yaml to 56
+
+
 def test_section_9_worked_example(loaded: LoadedData) -> None:
-    """$85,000 against a $90,000 market mid, one matching interest, healthy runway."""
-    morale = loaded.balance.morale
+    """$85,000 against a $90,000 market mid, one matching interest, healthy runway (at the
+    documented target base of 50; M10d tuned balance.yaml to 56)."""
+    morale = loaded.balance.morale.model_copy(update={"target_base": DOCUMENTED_TARGET_BASE})
     pay = pay_term(8_500_000, 9_000_000, morale)
     assert round(pay, 2) == -3.33
     fit = fit_term(1, style_mismatch=False, morale=morale)
@@ -191,6 +195,7 @@ def test_section_9_terms(loaded: LoadedData) -> None:
 # --- Section 10: resignations (and section 3 retirement) ------------------------------------
 
 DOCUMENTED_BASE_BP = 50  # formulas.md section 10's base; M7a tuned balance.yaml to 80
+DOCUMENTED_FLOOR = 40  # formulas.md section 10's morale floor; M10d tuned balance.yaml to 50
 
 
 @pytest.mark.parametrize(
@@ -202,12 +207,16 @@ def test_section_10_resignation_table(
 ) -> None:
     """The formulas.md table shows these rounded: 45, 131 and 263 bp (at the documented base of
     50 bp; balance.yaml holds the M7a-tuned base)."""
-    resign = loaded.balance.resign.model_copy(update={"base_bp": DOCUMENTED_BASE_BP})
+    resign = loaded.balance.resign.model_copy(
+        update={"base_bp": DOCUMENTED_BASE_BP, "morale_floor": DOCUMENTED_FLOOR}
+    )
     assert resignation_bp(morale, loyalty, hopper, resign) == pytest.approx(chance)
 
 
 def test_section_10_cap(loaded: LoadedData) -> None:
-    resign = loaded.balance.resign.model_copy(update={"base_bp": DOCUMENTED_BASE_BP})
+    resign = loaded.balance.resign.model_copy(
+        update={"base_bp": DOCUMENTED_BASE_BP, "morale_floor": DOCUMENTED_FLOOR}
+    )
     # With the defaults the chance tops out at 50 x 3 x 2 x 2 = 600 bp (morale 0, loyalty 1,
     # job hopper), so the 2,000 bp cap does not bind; check it with a larger base.
     assert resignation_bp(0, 1, True, resign) == pytest.approx(600)

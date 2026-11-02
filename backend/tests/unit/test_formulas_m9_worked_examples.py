@@ -47,25 +47,25 @@ def test_market_rate(loaded: LoadedData) -> None:
 
 
 def test_regional_market(loaded: LoadedData) -> None:
-    """B2B SaaS SMB in Europe: D0 = 400,000 x 0.80 = 320,000 and p_ref = $50 x 0.90 = $45."""
+    """B2B SaaS SMB in Europe: D0 = 400,000 x 0.55 = 220,000 (M10d) and p_ref = $50 x 0.90 = $45."""
     data = loaded.game_data
     market = data.category("b2b_saas").market("smb")
     assert regional_d0(market.addressable, "europe", "north_america", data) == pytest.approx(
-        320_000
+        220_000
     )
     assert regional_price_cents(market.reference_price_cents, "europe", "north_america", data) == (
         4_500
     )
-    # Relative to another home region's row (19.5): Europe home, North America is 1/0.8.
-    assert regional_d0(400_000, "north_america", "europe", data) == pytest.approx(500_000)
+    # Relative to another home region's row (19.5): Europe home, North America is 1/0.55.
+    assert regional_d0(400_000, "north_america", "europe", data) == pytest.approx(400_000 / 0.55)
 
 
 def test_localization(loaded: LoadedData) -> None:
-    """A cybersecurity product (sigma = 7): $40,000 x 7 / 6 = $46,667."""
+    """A cybersecurity product (sigma = 7): $80,000 x 7 / 6 = $93,333 (M10d)."""
     scope = loaded.game_data.category("cybersecurity").scope
     assert scope == 7
-    assert localization_cents(scope, loaded.balance) == 4_666_667
-    assert loaded.balance.markets.localize_months == 3
+    assert localization_cents(scope, loaded.balance) == 9_333_333
+    assert loaded.balance.markets.localize_months == 6
 
 
 def test_cross_region_factor(loaded: LoadedData) -> None:

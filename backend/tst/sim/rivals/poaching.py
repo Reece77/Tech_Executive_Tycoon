@@ -36,6 +36,15 @@ from tst.sim.state import (
 POACH_CHANNEL = "poach"
 
 
+TARGET_KEY = 1  # tunable-exempt: sub-key of the target draw (M10d), apart from the answer's
+
+
+def poach_draw(rng: RngFactory, turn: int, approach_id: int, *sub: int) -> float:
+    """The `poach` stream's one call site (ADR-0013): an employee's answer to an approach,
+    key (approach id,); with sub-key TARGET_KEY, whom a new approach targets (M10d)."""
+    return float(rng.stream(turn, "poach", approach_id, *sub).random())
+
+
 def unvested_ratio(state: GameState, person_id: int) -> float:
     """u = unvested option value / annual salary at today's share price (14.2)."""
     employment = state.employment_of(person_id)
@@ -97,7 +106,7 @@ def answer_approaches(
             )
             continue
         p = approach_probability(state, approach, balance)
-        draw = float(rng.stream(state.turn, "poach", approach.id).random())
+        draw = poach_draw(rng, state.turn, approach.id)
         accepted = draw < p
         state = with_approach(
             state,

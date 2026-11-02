@@ -348,14 +348,21 @@ def steady(game: Game, appoint: bool = True) -> None:
 BLITZ_EARLY = 15  # employees by month 12
 BLITZ_EARLY_TURNS = 12
 BLITZ_RUNWAY = 12  # after month 12, hire while runway is above this
-BLITZ_ROUNDS = {"seed": 300_000_000, "a": 1_000_000_000, "b": 3_000_000_000}
+# M10d (product manager, 2026-11-02): every round as soon as allowed includes M10's C and D.
+BLITZ_ROUNDS = {
+    "seed": 300_000_000,
+    "a": 1_000_000_000,
+    "b": 3_000_000_000,
+    "c": 8_000_000_000,  # $80M, the top of the typical band, as "largest amount"
+    "d": 20_000_000_000,  # $200M
+}
 BLITZ_MARKETING_MIN = 2_500_000  # at least $25,000 a month, else 40% of revenue
 BLITZ_MARKETING = 0.40
 
 
 def blitzscale(game: Game, second: tuple[str, str, tuple[str, ...]] = SECOND_PRODUCT) -> None:
     """15 staff by month 12, then hires while runway is above 12 months; every round as soon
-    as allowed (seed, A, B), largest amount; a second product at Series A."""
+    as allowed (seed, A, B, C, D), largest amount; a second product at Series A."""
     accept_bridges(game)
     fundraise(game, BLITZ_ROUNDS, pick="amount")
     ensure_product(game, 0)

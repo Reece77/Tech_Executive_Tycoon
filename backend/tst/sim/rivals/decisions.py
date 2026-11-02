@@ -25,6 +25,7 @@ from tst.sim.products import formulas as pf
 from tst.sim.products.models import SELLING, Product, ProductSegment
 from tst.sim.rivals import formulas as f
 from tst.sim.rivals.models import PoachApproach, RivalEffect, RivalMove, SegmentShare
+from tst.sim.rivals.poaching import TARGET_KEY, poach_draw
 from tst.sim.rivals.startups import startup_funding
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -217,9 +218,13 @@ def _rivals_in(
     return out
 
 
-def player_target(state: GameState, balance: Balance, data: GameData) -> int | None:
-    """The player's employee with the highest true CA in the top 30% (ties by id), not the
-    founder and not already approached (15.6)."""
+def player_target(
+    state: GameState, balance: Balance, data: GameData, u: float | None = None
+) -> int | None:
+    """A player's employee in the top 30% by true CA, not the founder and not already
+    approached (15.6). With a draw `u` in [0, 1) the target is drawn among them weighted by
+    CA, a seat holder's weight x `seat_holder_weight` (M10d, product manager 2026-11-02);
+    without one, the first eligible by CA (ties by id), which says whether anyone is free."""
     player = state.player.id
     pending = {a.person_id for a in state.approaches if a.status == "pending"}
     staff = [
@@ -234,10 +239,26 @@ def player_target(state: GameState, balance: Balance, data: GameData) -> int | N
         key=lambda e: (-current_ability(state.person(e.person_id), data), e.person_id),
     )
     top = max(1, int(len(ranked) * balance.rivals.poach.top_fraction))
-    for e in ranked[:top]:
-        if e.person_id not in pending:
+    free = [e for e in ranked[:top] if e.person_id not in pending]
+    if not free:
+        return None
+    if u is None:
+        return free[0].person_id
+    seated = {s.person_id for s in state.exec_seats if s.company_id == player and s.person_id}
+    weight = balance.rivals.poach.seat_holder_weight
+    weights = [
+        current_ability(state.person(e.person_id), data) * (weight if e.person_id in seated else 1)
+        for e in free
+    ]
+    total = sum(weights)
+    if total <= 0:
+        return free[0].person_id
+    point, run = u * total, 0.0
+    for e, w in zip(free, weights, strict=True):
+        run += w
+        if point < run:
             return e.person_id
-    return None
+    return free[-1].person_id
 
 
 def candidates(
@@ -424,6 +445,7 @@ def act(
     c: Candidate,
     balance: Balance,
     data: GameData,
+    rng: RngFactory | None = None,
 ) -> tuple[GameState, str]:
     """Apply the chosen action; returns the news words."""
     rv = balance.rivals
@@ -473,7 +495,10 @@ def act(
         state = _effect(state, company.id, "cut_costs", None, balance)
         return state, "cut costs"
     if c.action == "poach":
-        target = player_target(state, balance, data)
+        u = None
+        if rng is not None:  # keyed by the new approach's id (M10d)
+            u = poach_draw(rng, state.turn, state.next_ids.approach, TARGET_KEY)
+        target = player_target(state, balance, data, u)
         if target is None:
             return state, ""
         state = approach(state, company, target, balance, data)
@@ -597,7 +622,7 @@ def rival_month(
         if chosen is None:
             continue
         c, _ = chosen
-        state, words = act(state, company, c, balance, data)
+        state, words = act(state, company, c, balance, data, rng)
         if not words:
             continue
         move_id, ids = state.next_ids.take("rival_move")

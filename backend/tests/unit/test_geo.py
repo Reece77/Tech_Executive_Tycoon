@@ -78,12 +78,12 @@ def test_new_game_with_another_hq(loaded: LoadedData) -> None:
         hq_city="berlin",
     )
     assert home_region(state, loaded.balance, loaded.game_data) == "europe"
-    # The home region's markets are v1's; North America is a regional market at 1/0.8.
+    # The home region's markets are v1's; North America is a regional market at 1/0.55 (M10d).
     smb = state.market("b2b_saas", "smb")
     na = state.regional_market("b2b_saas", "smb", "north_america")
     assert smb is not None and na is not None
     assert smb.addressable == pytest.approx(400_000)
-    assert na.addressable == pytest.approx(500_000)
+    assert na.addressable == pytest.approx(400_000 / 0.55)
     assert state.regional_market("b2b_saas", "smb", "europe") is None
 
 

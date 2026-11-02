@@ -35,7 +35,9 @@ STREAM_IDS: Final = MappingProxyType(
         "finance": 16,  # key (safe_id,) or (round_id, firm_index): investors' answers (M4)
         "board": 17,  # key (seat_id,): generating a director (M4)
         "rival_spawn": 18,  # key (category_index,): founding rival startups (M5, 15.4)
-        "poach": 19,  # key (approach_id,): an employee's answer to a rival approach (M5, 15.6)
+        # key (approach_id,): an employee's answer to a rival approach (M5, 15.6);
+        # (approach_id, 1): whom a new approach targets (M10d, product manager 2026-11-02)
+        "poach": 19,
         "entrants": 20,  # key (entrant_index,): a scheduled entrant's people (M8, 18.7)
         "macro": 21,  # key (indicator_index,), (99,) for downturns: indicators after 2025 (M10)
         "rival_region": 22,  # key (startup_id,): a rival startup's founding region (M9, 19.6)
