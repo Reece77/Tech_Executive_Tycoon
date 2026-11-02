@@ -3842,6 +3842,16 @@ export interface components {
              * @description Their History entries, newest first
              */
             history: components["schemas"]["HistoryRowOut"][];
+            /**
+             * Job History
+             * @description Each role, level and unit they held, oldest first (23.6, M10b)
+             */
+            job_history: components["schemas"]["JobPeriodOut"][];
+            /**
+             * Led
+             * @description Units they led, seats they held, products their unit built and the storylines they were in (23.6, M10b)
+             */
+            led: components["schemas"]["LedOut"][];
         };
         /**
          * FounderIn
@@ -4511,6 +4521,27 @@ export interface components {
             /** Items */
             items: components["schemas"]["InboxItemOut"][];
         };
+        /**
+         * JobPeriodOut
+         * @description One stretch of a former employee's time at the company (23.6, M10b).
+         */
+        JobPeriodOut: {
+            /** Role Label */
+            role_label: string;
+            /** Level */
+            level: string;
+            /**
+             * Unit Name
+             * @description Null: the company root
+             */
+            unit_name: string | null;
+            /** From Label */
+            from_label: string;
+            /** To Label */
+            to_label: string;
+            /** Months */
+            months: number;
+        };
         /** KeyPersonOut */
         KeyPersonOut: {
             /** Person Id */
@@ -4717,6 +4748,25 @@ export interface components {
             example_rate_cents: number;
             /** Energy */
             energy: number;
+        };
+        /**
+         * LedOut
+         * @description Something a former employee led or was part of (23.6, M10b).
+         */
+        LedOut: {
+            /**
+             * Kind
+             * @description unit | seat | product | storyline
+             */
+            kind: string;
+            /** Name */
+            name: string;
+            /** From Label */
+            from_label: string;
+            /** To Label */
+            to_label: string;
+            /** Months */
+            months: number;
         };
         /** LoanIn */
         LoanIn: {

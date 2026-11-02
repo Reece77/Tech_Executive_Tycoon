@@ -1,6 +1,14 @@
 import { Link } from 'react-router';
 import { AttributeRange } from '../components/AttributeRange';
 import { Panel } from '../components/ScreenState';
+
+/** 23.6 (M10b): what each kind of entry in 'What they led' is. */
+const LED_KINDS: Record<string, string> = {
+  unit: 'Led',
+  seat: 'Seat',
+  product: 'Built',
+  storyline: 'Story',
+};
 import type { FormerProfile } from '../hooks/api';
 import { formatMonths, humanize } from '../lib/format';
 
@@ -97,6 +105,39 @@ export function FormerProfileView({ saveId, p }: { saveId: string; p: FormerProf
             <div className="tst-row" key={t.key} data-testid="former-tag">
               <span>{t.label}</span>
               <span className="tst-muted">noticed {t.noticed_date_label}</span>
+            </div>
+          ))}
+        </Panel>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
+        <Panel title="Job history" style={{ flex: '2 1 420px' }}>
+          {p.job_history.map((j) => (
+            <div className="tst-row" key={`${j.from_label}-${j.level}`} data-testid="former-job">
+              <span>
+                {humanize(j.level)} {j.role_label}
+                {j.unit_name ? ` · ${j.unit_name}` : ''}
+              </span>
+              <span className="tst-muted tst-num" style={{ fontSize: 13 }}>
+                {j.from_label} to {j.to_label} · {j.months} month{j.months === 1 ? '' : 's'}
+              </span>
+            </div>
+          ))}
+        </Panel>
+        <Panel title="What they led" style={{ flex: '1 1 300px' }}>
+          {p.led.length === 0 && <p className="tst-muted">Nothing they led on record.</p>}
+          {p.led.map((x) => (
+            <div
+              className="tst-row"
+              key={`${x.kind}-${x.name}-${x.from_label}`}
+              data-testid="former-led"
+            >
+              <span>
+                <span className="tst-muted">{LED_KINDS[x.kind] ?? x.kind}: </span>
+                {x.name}
+              </span>
+              <span className="tst-muted tst-num" style={{ fontSize: 13 }}>
+                {x.from_label} to {x.to_label}
+              </span>
             </div>
           ))}
         </Panel>

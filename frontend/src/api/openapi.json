@@ -14137,6 +14137,22 @@
             "type": "array",
             "title": "History",
             "description": "Their History entries, newest first"
+          },
+          "job_history": {
+            "items": {
+              "$ref": "#/components/schemas/JobPeriodOut"
+            },
+            "type": "array",
+            "title": "Job History",
+            "description": "Each role, level and unit they held, oldest first (23.6, M10b)"
+          },
+          "led": {
+            "items": {
+              "$ref": "#/components/schemas/LedOut"
+            },
+            "type": "array",
+            "title": "Led",
+            "description": "Units they led, seats they held, products their unit built and the storylines they were in (23.6, M10b)"
           }
         },
         "type": "object",
@@ -14162,7 +14178,9 @@
           "noticed_tags",
           "interests",
           "work_style",
-          "history"
+          "history",
+          "job_history",
+          "led"
         ],
         "title": "FormerProfileOut",
         "description": "A person who has left the company (M7c): read-only, as the player knew them at\ndeparture. Displayed ranges and noticed tags only (ADR-0007)."
@@ -15907,6 +15925,53 @@
         ],
         "title": "InboxOut"
       },
+      "JobPeriodOut": {
+        "properties": {
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "unit_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Name",
+            "description": "Null: the company root"
+          },
+          "from_label": {
+            "type": "string",
+            "title": "From Label"
+          },
+          "to_label": {
+            "type": "string",
+            "title": "To Label"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role_label",
+          "level",
+          "unit_name",
+          "from_label",
+          "to_label",
+          "months"
+        ],
+        "title": "JobPeriodOut",
+        "description": "One stretch of a former employee's time at the company (23.6, M10b)."
+      },
       "KeyPersonOut": {
         "properties": {
           "person_id": {
@@ -16455,6 +16520,41 @@
           "energy"
         ],
         "title": "LeasePreviewOut"
+      },
+      "LedOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "unit | seat | product | storyline"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "from_label": {
+            "type": "string",
+            "title": "From Label"
+          },
+          "to_label": {
+            "type": "string",
+            "title": "To Label"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "name",
+          "from_label",
+          "to_label",
+          "months"
+        ],
+        "title": "LedOut",
+        "description": "Something a former employee led or was part of (23.6, M10b)."
       },
       "LoanIn": {
         "properties": {

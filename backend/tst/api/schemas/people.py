@@ -326,6 +326,27 @@ class InboxOut(BaseModel):
     items: list[InboxItemOut]
 
 
+class JobPeriodOut(BaseModel):
+    """One stretch of a former employee's time at the company (23.6, M10b)."""
+
+    role_label: str
+    level: str
+    unit_name: str | None = Field(description="Null: the company root")
+    from_label: str
+    to_label: str
+    months: int
+
+
+class LedOut(BaseModel):
+    """Something a former employee led or was part of (23.6, M10b)."""
+
+    kind: str = Field(description="unit | seat | product | storyline")
+    name: str
+    from_label: str
+    to_label: str
+    months: int
+
+
 class FormerProfileOut(BaseModel):
     """A person who has left the company (M7c): read-only, as the player knew them at
     departure. Displayed ranges and noticed tags only (ADR-0007)."""
@@ -352,3 +373,10 @@ class FormerProfileOut(BaseModel):
     interests: list[str] | None
     work_style: str | None
     history: list[HistoryRowOut] = Field(description="Their History entries, newest first")
+    job_history: list[JobPeriodOut] = Field(
+        description="Each role, level and unit they held, oldest first (23.6, M10b)"
+    )
+    led: list[LedOut] = Field(
+        description="Units they led, seats they held, products their unit built and the "
+        "storylines they were in (23.6, M10b)"
+    )

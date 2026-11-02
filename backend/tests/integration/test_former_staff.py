@@ -12,7 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import update
 
-from tests.helpers import make_person, move_save_directors, with_employee
+from tests.helpers import make_person, move_save_directors, play_turn, with_employee
 from tests.integration.test_api_hiring import Client
 from tst.api.app import create_app
 from tst.config import Settings, get_settings
@@ -98,3 +98,25 @@ def test_upgrade_to_0021_backfills_past_departures(api: tuple[Client, Path]) -> 
     assert {s["key"]: [s["range"]["min"], s["range"]["max"]] for s in expected["skills"]} == {
         k: v for k, v in ranges.items() if k in {s["key"] for s in expected["skills"]}
     }
+
+
+def test_a_former_profile_tells_their_story(api: tuple[Client, Path], loaded: LoadedData) -> None:
+    """23.6 (M10b): job history (role, level and unit with months) and what they led."""
+    client, path = api
+    unit = client.post(f"{BASE}/org/units", {"kind": "team", "name": "Platform"}, status=201)
+    unit_id = next(u["unit_id"] for u in unit["org"]["units"] if u["name"] == "Platform")
+    client.post(f"{BASE}/org/people/2/move", {"unit_id": unit_id})
+    client.post(f"{BASE}/org/units/{unit_id}/leader", {"person_id": 2})
+    for _ in range(3):
+        play_turn(path, loaded)
+    client.post(f"{BASE}/people/2/promote")
+    for _ in range(2):
+        play_turn(path, loaded)
+    client.call("POST", f"{BASE}/people/2/fire")
+    former = client.get(f"{BASE}/people/2/former")
+    jobs = former["job_history"]
+    assert [(j["unit_name"], j["months"]) for j in jobs] == [("Platform", 3), ("Platform", 2)]
+    assert jobs[0]["level"] != jobs[1]["level"]  # the promotion
+    assert sum(j["months"] for j in jobs) == former["tenure_months"]
+    led = [(x["kind"], x["name"], x["months"]) for x in former["led"]]
+    assert ("unit", "Platform", 5) in led
