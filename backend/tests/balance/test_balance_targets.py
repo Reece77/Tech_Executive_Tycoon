@@ -26,5 +26,12 @@ def results() -> list[RunResult]:
 def test_balance_targets(results: list[RunResult]) -> None:
     rows = evaluate(results)
     print("\n" + runs_table(results) + "\n\n" + table(rows))
-    failed = [f"{r.target} {r.measure}: {r.value} ({r.band})" for r in rows if r.ok is False]
+    # S2 is gated by `make balance`, which runs alone (CI's nightly "balance" job); here the
+    # balance run shares the machine with the other nightly tests, so S2 is printed only
+    # (M10d: 13.6 worker-minutes alone, about 60 inside the parallel nightly).
+    failed = [
+        f"{r.target} {r.measure}: {r.value} ({r.band})"
+        for r in rows
+        if r.ok is False and r.target != "S2"
+    ]
     assert not failed, "\n".join(failed)

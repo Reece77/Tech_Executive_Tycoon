@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci-1 nightly-ci-2 test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
 
 check: check-backend check-api check-frontend
 
@@ -21,6 +21,10 @@ balance:
 # The long statistical tests, including the balance targets in full (CI: nightly).
 nightly:
 	cd backend && uv run pytest -q -n auto -m nightly -s
+
+# CI's nightly matrix (M10d): the nightly tests in two shards balanced by tests/durations.json.
+nightly-ci-%:
+	cd backend && uv run pytest -q -n auto -m nightly -s --shard $*/2
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20
