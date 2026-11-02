@@ -139,12 +139,16 @@ function ProductBody({
       <Tiles p={p} />
       {p.team_strength && (
         <p
-          className={p.team_strength.estimated_output < p.team_strength.maintains ? undefined : 'tst-muted'}
+          className={
+            p.team_strength.estimated_output < p.team_strength.maintains ? undefined : 'tst-muted'
+          }
           style={{
             margin: 0,
             fontSize: 14,
             color:
-              p.team_strength.estimated_output < p.team_strength.maintains ? 'var(--tst-warn)' : undefined,
+              p.team_strength.estimated_output < p.team_strength.maintains
+                ? 'var(--tst-warn)'
+                : undefined,
           }}
           data-testid="product-team-strength"
         >
