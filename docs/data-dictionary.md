@@ -1154,6 +1154,17 @@ A data-centre outage (22.5). The state holds the last 24 months.
 | `turn` | INTEGER | no | The month (indexed). |
 | `customers_lost` | FLOAT | no | Customers its hosted products and Cloud hosting lost. |
 
+### company_rival_key
+
+A rival's stable identity for its RNG keys (ADR-0013 amendment). Primary key `company_id`; the player and rivals of older saves have no row.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | The rival. |
+| `rival_key` | JSON | no | `[0, i]` incumbent at position i of incumbents.yaml, `[1, i]` entrant at position i of entrants.yaml, `[2, c, n]` the n-th startup founded in category c. |
+
+New games number incumbents' products from 900,000 (10 per incumbent) and their key people and employments from 5,000,001 (100 per incumbent), by position in incumbents.yaml.
+
 ### New accounts
 
 `1510_accumulated_depreciation` (asset, credit balance) and `6700_depreciation` (expense, with compute in cost of revenue). The cash flow counts both with investing, where depreciation cancels and a sale leaves its proceeds.

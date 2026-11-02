@@ -57,6 +57,25 @@ A second problem is order dependence: if one generator is shared by everyone in 
 - Keep one stream per subsystem and pass a single generator through each phase: works, but any added draw shifts all later draws, and call sites can still collide.
 - Store generator state: rejected in ADR-0002.
 
+## Amendment (M12a, 2026-11-02, Reece): rivals keyed by stable identity
+
+**Problem.** Rivals' streams were keyed by database ids: `rivals` and `rival_region` by company id, rivals' `people_gen` by (company id, n), `poach` by approach id, and `product_dev` and the person streams by ids that incumbents took first. Appending four cloud incumbents to `incumbents.yaml` renumbered every later startup, product and person, which reseeded rivals and the player alike and moved earlier balance guards by seed luck.
+
+**Decision.** Stream keys change (no new stream, no new id):
+
+| Stream | Key before | Key now |
+| --- | --- | --- |
+| `rivals` | `(company_id,)` | `(*rival_key,)` |
+| `rival_region` | `(startup_id,)` | `(*rival_key,)` |
+| `people_gen` (a rival's own hires) | `(company_id, n)` | `(*rival_key, n)`; a search's batch stays `(search_id,)` |
+| `poach` | `(approach_id,)`, `(approach_id, 1)` | answer `(*rival_key, 0, month the approach was made)`, target `(*rival_key, 1)` (a rival approaches at most once a month) |
+
+`rival_key` is stored per company (`company_rival_key`, migration 0028): `(0, i)` for the incumbent at position i of `incumbents.yaml`, `(1, i)` for the entrant at position i of `entrants.yaml`, `(2, c, n)` for the n-th startup founded in the category at position c of `categories.yaml` (counting failed ones). It is never a database id. A company without one (the player; rivals of saves made before M12a) is keyed `(3, company_id)`. The leading tag keeps the kinds apart.
+
+In a new game an incumbent's products take ids from `900,000 + 10 i` and its key people and employments from `5,000,001 + 100 i`, so the player's products (from 1) and startups' people (from 1,000,001) no longer depend on how many incumbents there are; `product_dev` and the person-keyed streams keep their keys. Saves made before M12a keep their ids.
+
+**Consequences.** Appending a company to the data changes only what it really touches: the rivals of its own category compete with it. A test appends an incumbent and checks every rival outside its category decides exactly as before over 24 turns (`tests/unit/test_rival_keys.py`). Golden snapshots were regenerated once for this (CHANGELOG).
+
 ## Reserved stream ids (v2 lanes)
 
 Ids reserved before parallel lanes start, so two lanes never pick the same one (ADR-0019, `docs/v2-roadmap.md`). The milestone that builds a stream moves its row into the table above.
