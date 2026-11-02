@@ -10,6 +10,7 @@ from sqlalchemy.exc import OperationalError
 from tst.api.routers import (
     coo,
     events,
+    facilities,
     finance,
     game,
     geo,
@@ -79,6 +80,7 @@ def create_app() -> FastAPI:
     app.include_router(coo.router)
     app.include_router(scaleup.router)
     app.include_router(geo.router)  # M9
+    app.include_router(facilities.router)  # M12a
     app.include_router(events.settings_router)
     app.include_router(meta.router)
 

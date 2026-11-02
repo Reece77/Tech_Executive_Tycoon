@@ -174,8 +174,8 @@ def facility_out(
         if facility.status != "building"
         else "live",
         since=format_turn(facility.ordered_turn if building else facility.ready_turn),
-        capacity=facility.capacity,
-        live_capacity=live,
+        units=facility.capacity,
+        live_units=live,
         own_use=own,
         sold_use=sold,
         free=max(0.0, live - used),
@@ -323,8 +323,8 @@ def infrastructure_out(state: GameState, data: LoadedData, stored: Stored) -> In
         components=components_out(state, data, stored),
         spot=spot_out(state, data),
         facilities=facilities,
-        live_units=sum(f.live_capacity for f in facilities),
-        building_units=sum(f.capacity - f.live_capacity for f in facilities),
+        total_live_units=sum(f.live_units for f in facilities),
+        total_building_units=sum(f.units - f.live_units for f in facilities),
         contracts=contracts_out(state, data),
         cloud=cloud_out(state, alloc, data),
         kinds=[
@@ -374,7 +374,7 @@ def build_preview(
     return BuildPreviewOut(
         kind=kind,
         region=region,
-        capacity=capacity,
+        units=capacity,
         index=q.index,
         capex_cents=q.capex_cents,
         monthly_capex_cents=q.monthly_capex_cents,

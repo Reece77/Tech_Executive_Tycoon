@@ -44,15 +44,15 @@ class FacilityOut(BaseModel):
     kind_label: str
     region: str
     region_label: str
-    unit: str = Field(description="Capacity unit, e.g. CU")
+    unit: str = Field(description="Unit of size, e.g. CU")
     status: str = Field(description="building, live or closed")
     since: str = Field(description="Ordered (building) or live since (Mon YYYY)")
-    capacity: int
-    live_capacity: int
+    units: int = Field(description="Units it is built for")
+    live_units: int
     own_use: float = Field(description="Units your own products use this month")
     sold_use: float = Field(description="Units sold as Cloud hosting this month")
     free: float
-    utilization: float = Field(description="Used / live capacity (0-1)")
+    utilization: float = Field(description="Used / live units (0-1)")
     reliability: float | None = Field(description="0-100; null while building")
     staff: int
     staff_needed: int
@@ -135,8 +135,8 @@ class InfrastructureOut(BaseModel):
     components: list[ComponentOut]
     spot: list[SpotOut]
     facilities: list[FacilityOut]
-    live_units: int
-    building_units: int
+    total_live_units: int
+    total_building_units: int
     contracts: list[ContractOut]
     cloud: CloudOut
     kinds: list[KindOut]
@@ -161,7 +161,7 @@ class RegionOptionOut(BaseModel):
 class BuildPreviewOut(BaseModel):
     kind: str
     region: str
-    capacity: int
+    units: int
     index: float
     capex_cents: int
     monthly_capex_cents: int
@@ -184,7 +184,7 @@ class BuildPreviewOut(BaseModel):
 class BuildIn(BaseModel):
     kind: str
     region: str
-    capacity: int
+    units: int
     contract_id: int | None = None
 
 

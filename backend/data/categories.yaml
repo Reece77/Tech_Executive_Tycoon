@@ -167,7 +167,7 @@ categories:
   # features come from its infrastructure lead. Each customer buys units_per_customer CU, so
   # D0 and p_ref per CU are addressable x units and reference price / units ($1,000 a CU,
   # x M10's AI index for GPU CU, which sell here at their spot value). Rivals' capacity is
-  # abstract: hosting_cents is their cost of a customer's CU (65% of p_ref).
+  # abstract: hosting_cents is their cost of a customer's CU (55% of p_ref).
   - key: cloud_hosting
     label: Cloud and GPU hosting
     growth: 0.30
@@ -178,7 +178,7 @@ categories:
     capacity_market: true
     dev_weights: { infrastructure: 0.45, software_engineering: 0.25, security: 0.20, data: 0.10 }
     markets:
-      - { segment: smb, addressable: 40000, reference_price_cents: 200000, hosting_cents: 130000, units_per_customer: 2 }
-      - { segment: mid_market, addressable: 2500, reference_price_cents: 2000000, hosting_cents: 1300000, units_per_customer: 20 }
-      - { segment: enterprise, addressable: 300, reference_price_cents: 20000000, hosting_cents: 13000000, units_per_customer: 200 }
-      - { segment: hyperscalers, addressable: 30, reference_price_cents: 200000000, hosting_cents: 130000000, units_per_customer: 2000 }
+      - { segment: smb, addressable: 40000, reference_price_cents: 200000, hosting_cents: 110000, units_per_customer: 2 }
+      - { segment: mid_market, addressable: 2500, reference_price_cents: 2000000, hosting_cents: 1100000, units_per_customer: 20 }
+      - { segment: enterprise, addressable: 300, reference_price_cents: 20000000, hosting_cents: 11000000, units_per_customer: 200 }
+      - { segment: hyperscalers, addressable: 30, reference_price_cents: 200000000, hosting_cents: 110000000, units_per_customer: 2000 }

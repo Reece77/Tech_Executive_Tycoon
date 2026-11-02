@@ -438,7 +438,7 @@ companies:
     personality: aggressive
     builder_skill: 15
     target_margin_bp: 2500
-    cash_months: 24
+    cash_months: 120 # Amazon's balance sheet behind it (M12a: 24 went bankrupt in price wars)
     products:
       - name: AWS EC2
         category: cloud_hosting
@@ -476,7 +476,7 @@ companies:
     personality: cost_leader
     builder_skill: 12
     target_margin_bp: 1500
-    cash_months: 12
+    cash_months: 60 # M12a: 12 went bankrupt in AWS's price wars
     products:
       - name: Rackspace Cloud
         category: cloud_hosting

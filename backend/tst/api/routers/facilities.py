@@ -92,7 +92,7 @@ def preview_build(
     data: DataDep,
     kind: Annotated[str, Query()],
     region: Annotated[str, Query()],
-    capacity: Annotated[int, Query()],
+    units: Annotated[int, Query()],
     contract_id: Annotated[int | None, Query()] = None,
 ) -> BuildPreviewOut:
     """Capex, build time, shortage delay and staff for a build (the Build dialog)."""
@@ -104,7 +104,7 @@ def preview_build(
         from tst.sim.errors import FacilityRuleError
 
         raise FacilityRuleError(f"unknown facility kind {kind!r}")
-    return facility_views.build_preview(state, kind, region, capacity, contract_id, balances, data)
+    return facility_views.build_preview(state, kind, region, units, contract_id, balances, data)
 
 
 @router.post(
@@ -118,7 +118,7 @@ def build_facility(
 ) -> InfrastructureActionOut:
     path = _path(settings, save_id)
     action = BuildFacility(
-        _founder_id(_state(path)), body.kind, body.region, body.capacity, body.contract_id
+        _founder_id(_state(path)), body.kind, body.region, body.units, body.contract_id
     )
     return _act(path, data, action)
 
