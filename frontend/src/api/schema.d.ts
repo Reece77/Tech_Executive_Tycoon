@@ -6075,6 +6075,11 @@ export interface components {
             counts_users: boolean;
             /** Segments */
             segments: components["schemas"]["ProductSegmentOut"][];
+            /**
+             * Regional Prices
+             * @description Its prices in other regions it has launched in (M10b)
+             */
+            regional_prices: components["schemas"]["RegionalPriceOut"][];
             /** Assigned Units */
             assigned_units: components["schemas"]["AssignedUnitOut"][];
             /** Builders */
@@ -6422,6 +6427,32 @@ export interface components {
             segment: string;
             /** Price Cents */
             price_cents: number;
+        };
+        /**
+         * RegionalPriceOut
+         * @description A price the product charges in another region (19.5; M10b).
+         */
+        RegionalPriceOut: {
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Segment */
+            segment: string;
+            /** Segment Label */
+            segment_label: string;
+            /** Price Cents */
+            price_cents: number | null;
+            /**
+             * Default Price Cents
+             * @description p_ref x the region's price index
+             */
+            default_price_cents: number;
+            /**
+             * Live
+             * @description Selling there now (false while localizing)
+             */
+            live: boolean;
         };
         /** RelationshipOut */
         RelationshipOut: {

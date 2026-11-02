@@ -26,7 +26,9 @@ export function RegionsPanel({ saveId, productId }: { saveId: string; productId:
 function Body({ saveId, r }: { saveId: string; r: ProductRegions }) {
   const act = useRegionAction(saveId, r.product_id);
   const [launching, setLaunching] = useState<ProductRegion | null>(null);
-  const [pricing, setPricing] = useState<ProductRegion | null>(null);
+  // The region's key, not a copy: the dialog reads the fresh row after each price (M10b).
+  const [pricingKey, setPricingKey] = useState<string | null>(null);
+  const pricing = r.regions.find((x) => x.region === pricingKey) ?? null;
   const columns = useMemo(
     () =>
       helper.columns([
@@ -112,7 +114,12 @@ function Body({ saveId, r }: { saveId: string; r: ProductRegions }) {
                 Launch
               </Button>
             ) : row.original.status !== 'home' ? (
-              <Button size="xs" variant="subtle" onClick={() => setPricing(row.original)}>
+              <Button
+                size="xs"
+                variant="subtle"
+                onClick={() => setPricingKey(row.original.region)}
+                data-testid={`prices-${row.original.region}`}
+              >
                 Prices
               </Button>
             ) : null,
@@ -182,7 +189,7 @@ function Body({ saveId, r }: { saveId: string; r: ProductRegions }) {
         <PriceDialog
           region={pricing}
           busy={act.isPending}
-          onClose={() => setPricing(null)}
+          onClose={() => setPricingKey(null)}
           onSet={(segment, priceCents) =>
             act.mutate({ kind: 'price', region: pricing.region, segment, priceCents })
           }
@@ -210,7 +217,8 @@ function PriceDialog({
         {region.segments.map((s) => (
           <div key={s.segment} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
             <TextInput
-              label={`${s.label} (usual ${formatMoneyWhole(s.default_price_cents)})`}
+              label={`${s.label}: now ${s.price_cents === null ? 'no price' : formatMoneyWhole(s.price_cents)} (usual ${formatMoneyWhole(s.default_price_cents)})`}
+              data-testid={`region-price-${s.segment}`}
               placeholder={s.price_cents === null ? '' : formatMoneyWhole(s.price_cents)}
               value={text[s.segment] ?? ''}
               onChange={(e) => setText({ ...text, [s.segment]: e.currentTarget.value })}
@@ -218,7 +226,10 @@ function PriceDialog({
             <Button
               loading={busy}
               disabled={!(parseDollars(text[s.segment] ?? '') > 0)}
-              onClick={() => onSet(s.segment, parseDollars(text[s.segment] ?? ''))}
+              onClick={() => {
+                onSet(s.segment, parseDollars(text[s.segment] ?? ''));
+                setText({ ...text, [s.segment]: '' });
+              }}
             >
               Set
             </Button>

@@ -19465,6 +19465,14 @@
             "type": "array",
             "title": "Segments"
           },
+          "regional_prices": {
+            "items": {
+              "$ref": "#/components/schemas/RegionalPriceOut"
+            },
+            "type": "array",
+            "title": "Regional Prices",
+            "description": "Its prices in other regions it has launched in (M10b)"
+          },
           "assigned_units": {
             "items": {
               "$ref": "#/components/schemas/AssignedUnitOut"
@@ -19562,6 +19570,7 @@
           "brand_trend",
           "counts_users",
           "segments",
+          "regional_prices",
           "assigned_units",
           "builders",
           "sellers",
@@ -20271,6 +20280,59 @@
           "price_cents"
         ],
         "title": "RegionalPriceIn"
+      },
+      "RegionalPriceOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "segment_label": {
+            "type": "string",
+            "title": "Segment Label"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "default_price_cents": {
+            "type": "integer",
+            "title": "Default Price Cents",
+            "description": "p_ref x the region's price index"
+          },
+          "live": {
+            "type": "boolean",
+            "title": "Live",
+            "description": "Selling there now (false while localizing)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "region_label",
+          "segment",
+          "segment_label",
+          "price_cents",
+          "default_price_cents",
+          "live"
+        ],
+        "title": "RegionalPriceOut",
+        "description": "A price the product charges in another region (19.5; M10b)."
       },
       "RelationshipOut": {
         "properties": {

@@ -148,6 +148,18 @@ class ProductTotalMonthOut(BaseModel):
     revenue_cents: int
 
 
+class RegionalPriceOut(BaseModel):
+    """A price the product charges in another region (19.5; M10b)."""
+
+    region: str
+    region_label: str
+    segment: str
+    segment_label: str
+    price_cents: int | None
+    default_price_cents: int = Field(description="p_ref x the region's price index")
+    live: bool = Field(description="Selling there now (false while localizing)")
+
+
 class LaunchReadinessOut(BaseModel):
     ready: bool
     missing: list[str] = Field(description="What still stands between it and launch")
@@ -197,6 +209,9 @@ class ProductOut(BaseModel):
     brand_trend: str = Field(description="rising | falling | steady, from the last two months")
     counts_users: bool = Field(description="Every segment counts consumer users")
     segments: list[ProductSegmentOut]
+    regional_prices: list[RegionalPriceOut] = Field(
+        description="Its prices in other regions it has launched in (M10b)"
+    )
     assigned_units: list[AssignedUnitOut]
     builders: list[NamedOut]
     sellers: list[NamedOut]

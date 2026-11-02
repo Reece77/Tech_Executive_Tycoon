@@ -166,6 +166,7 @@ function ProductBody({
             selling
           />
           <AddSegments saveId={saveId} p={p} meta={meta} run={run} busy={act.isPending} />
+          <RegionalPrices p={p} />
         </section>
       )}
       {developing && (
@@ -993,5 +994,31 @@ function DivisionPicker({ saveId, p }: { saveId: string; p: Product }) {
         });
       }}
     />
+  );
+}
+
+/** Prices in other regions (M10b): set in the Regions panel, shown here beside home's. */
+function RegionalPrices({ p }: { p: Product }) {
+  if (p.regional_prices.length === 0) return null;
+  return (
+    <div data-testid="regional-prices" style={{ fontSize: 14 }}>
+      <h3 style={{ margin: '4px 0', fontSize: 15, fontWeight: 600 }}>Prices in other regions</h3>
+      {p.regional_prices.map((r) => (
+        <div
+          key={`${r.region}-${r.segment}`}
+          className="tst-row"
+          data-testid={`regional-price-${r.region}-${r.segment}`}
+        >
+          <span>
+            {r.region_label} · {r.segment_label}
+            {r.live ? '' : ' (localizing)'}
+          </span>
+          <span className="tst-num">
+            {r.price_cents === null ? '—' : formatMoneyWhole(r.price_cents)}
+            <span className="tst-muted"> usual {formatMoneyWhole(r.default_price_cents)}</span>
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }

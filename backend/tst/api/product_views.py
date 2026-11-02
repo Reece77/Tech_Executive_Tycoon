@@ -27,10 +27,12 @@ from tst.api.schemas.products import (
     ProductOut,
     ProductSegmentOut,
     ProductTotalMonthOut,
+    RegionalPriceOut,
     RegionOptionOut,
 )
 from tst.api.views import person_name
 from tst.loader import LoadedData
+from tst.sim.actions.geo import default_regional_price
 from tst.sim.actions.products import launch_problems
 from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import SegmentDef
@@ -394,6 +396,7 @@ def product_out(
         series_label=HOME_SCOPE_LABEL,
         counts_users=bool(segments) and all(s.counts_users for s in segments),
         segments=segments,
+        regional_prices=_regional_prices(state, product, data),
         assigned_units=[
             AssignedUnitOut(
                 unit_id=u,
@@ -444,6 +447,33 @@ def product_out(
             if (turn := next(iter(rows.values())).turn) in last_turns
         ],
     )
+
+
+def _regional_prices(
+    state: GameState, product: Product, data: LoadedData
+) -> list[RegionalPriceOut]:
+    """Prices in every other region the product launched in, by region then segment (19.5)."""
+    game = data.game_data
+    out = []
+    for region in game.region_keys:
+        launch = state.product_region(product.id, region)
+        if launch is None:
+            continue
+        for seg in state.regional_segments_of(product.id, region):
+            out.append(
+                RegionalPriceOut(
+                    region=region,
+                    region_label=game.region(region).label,
+                    segment=seg.segment,
+                    segment_label=game.segment(seg.segment).label,
+                    price_cents=seg.price_cents,
+                    default_price_cents=default_regional_price(
+                        state, product.category, seg.segment, region, data.balance, game
+                    ),
+                    live=launch.live(state.turn),
+                )
+            )
+    return out
 
 
 def _months(history: Sequence[ProductMonth]) -> list[dict[str, ProductMonth]]:
