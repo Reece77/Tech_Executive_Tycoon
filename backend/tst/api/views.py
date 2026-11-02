@@ -5,16 +5,18 @@ Ranges come from the company's knowledge records; true values never leave this m
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tst.api import breakdowns
 from tst.api.schemas.people import (
+    ActiveEffectOut,
     AttributeOut,
     CandidacyOut,
     EmploymentOut,
+    EnergyAdjustmentOut,
     EnergyOut,
     EventLinkOut,
     InboxItemOut,
@@ -36,6 +38,10 @@ from tst.db.models import DecisionLogRow, PersonMoraleLogRow
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.errors import UnknownPersonError
+from tst.sim.events.data import MODIFIER_STATS
+from tst.sim.events.describe import running_text, signed
+from tst.sim.events.models import Modifier
+from tst.sim.events.modifiers import founder_factor, running
 from tst.sim.finance.captable import fd_shares
 from tst.sim.finance.options import at_cliff, next_vesting
 from tst.sim.geo.cities import home_city, person_work_city
@@ -106,7 +112,85 @@ def energy(state: GameState, data: LoadedData) -> EnergyOut:
     founder = state.founder_of(state.player.id)
     left = state.person_state(founder.id).energy if founder else None
     cap = data.balance.founder.energy_per_month
-    return EnergyOut(energy=cap if left is None else left, max=cap)
+    adjustments: list[EnergyAdjustmentOut] = []
+    if founder is not None:  # M10b (23.2): last month's answers and running modifiers
+        boost = founder_factor(state, state.player.id, founder.id)
+        cap = cap if boost == 1 else max(0, round(cap * boost))
+        for event in state.events:
+            if event.resolved_turn != state.turn - 1 or event.chosen is None:
+                continue
+            choice = event.choice(event.chosen)
+            for e in choice.effects if choice else ():
+                if e.type == "energy_delta" and e.target == f"founder:{founder.id}" and e.value:
+                    adjustments.append(
+                        EnergyAdjustmentOut(
+                            label=f"{signed(e.value)} from {event.title or 'an event'}",
+                            value=e.value,
+                            percent=False,
+                        )
+                    )
+        for m in running(state, state.player.id):
+            if m.stat == "founder_energy":
+                adjustments.append(
+                    EnergyAdjustmentOut(
+                        label=f"{signed(m.value_pct)}% a month from {_source(state, m)} "
+                        f"({m.end_turn - state.turn} months left)",
+                        value=m.value_pct,
+                        percent=True,
+                    )
+                )
+    return EnergyOut(energy=cap if left is None else left, max=cap, adjustments=adjustments)
+
+
+def _source(state: GameState, m: Modifier) -> str:
+    event = next((e for e in state.events if e.id == m.event_id), None)
+    return event.title if event is not None and event.title else "an event"
+
+
+def active_effects(
+    state: GameState, keep: Callable[[Modifier], bool] = lambda _m: True
+) -> list[ActiveEffectOut]:
+    """Running event modifiers of the player company, newest first (23.2, M10b)."""
+    return [
+        ActiveEffectOut(
+            modifier_id=m.id,
+            event_id=m.event_id,
+            source=_source(state, m),
+            stat=m.stat,
+            text=running_text(state, m),
+            value_pct=m.value_pct,
+            months_left=m.end_turn - state.turn,
+        )
+        for m in sorted(running(state, state.player.id), key=lambda m: -m.id)
+        if keep(m)
+    ]
+
+
+PRODUCT_STATS = frozenset(
+    s for s, words in MODIFIER_STATS.items() if "product" in words
+)  # M10b: what a product's panel lists
+
+
+def product_effects(state: GameState, product_id: int) -> list[ActiveEffectOut]:
+    return active_effects(
+        state,
+        lambda m: (
+            m.target == f"product:{product_id}"
+            or (m.target.startswith("company:") and m.stat in PRODUCT_STATS)
+        ),
+    )
+
+
+def person_effects(state: GameState, person_id: int) -> list[ActiveEffectOut]:
+    employment = state.employment_of(person_id)
+    unit = f"unit:{employment.unit_id}" if employment and employment.unit_id else None
+    return active_effects(
+        state,
+        lambda m: (
+            m.target in (f"person:{person_id}", f"founder:{person_id}", unit)
+            or (m.target.startswith("company:") and m.stat == "morale_target")
+        ),
+    )
 
 
 def inbox_item(m: InboxMessage) -> InboxItemOut:
@@ -121,6 +205,7 @@ def inbox_item(m: InboxMessage) -> InboxItemOut:
         link_id=m.link_id,
         read=m.read,
         archived=m.archived,
+        bookmarked=m.bookmarked,
         event_links=[EventLinkOut(event_id=e, label=label) for e, label in m.event_links],
     )
 
@@ -352,6 +437,7 @@ def person_profile(
     ).all()
     return PersonProfileOut(
         **summary.model_dump(),
+        active_effects=person_effects(state, person_id),
         work_style=person.work_style if known else None,
         work_style_matches_role=None
         if not known or role is None

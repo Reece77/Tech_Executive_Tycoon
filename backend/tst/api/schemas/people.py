@@ -152,6 +152,9 @@ class PersonProfileOut(PersonSummaryOut):
     work_style: str | None = Field(description="Null until an interview or network intro")
     work_style_matches_role: bool | None = Field(description="Null while work style is unknown")
     morale_history: list[MoralePointOut] = Field(description="Last 12 months, oldest first")
+    active_effects: list[ActiveEffectOut] = Field(
+        description="Event modifiers on this person's morale (M10b)"
+    )
 
 
 class RangeChangeOut(BaseModel):
@@ -245,9 +248,32 @@ class OfferPreviewOut(BaseModel):
     reasons: list[str] = Field(description="Why the hint reads as it does, from known values only")
 
 
+class EnergyAdjustmentOut(BaseModel):
+    """Why this month's founder energy differs from the usual (23.2, M10b)."""
+
+    label: str = Field(description="e.g. '-10 from A director calls between meetings'")
+    value: float = Field(description="Energy points (or percent, for a modifier)")
+    percent: bool = Field(description="True: a modifier on monthly energy, in percent")
+
+
 class EnergyOut(BaseModel):
     energy: int
     max: int
+    adjustments: list[EnergyAdjustmentOut] = Field(
+        description="Event effects on this month's energy (M10b)"
+    )
+
+
+class ActiveEffectOut(BaseModel):
+    """A running event modifier (23.2, M10b): what it does, where from, how long is left."""
+
+    modifier_id: int
+    event_id: int | None
+    source: str = Field(description="The event's title")
+    stat: str
+    text: str = Field(description="e.g. '+5% brand target for Pipeline for 4 months'")
+    value_pct: float
+    months_left: int
 
 
 class ActionOut(BaseModel):
@@ -279,6 +305,7 @@ class InboxItemOut(BaseModel):
     link_id: int | None
     read: bool
     archived: bool = Field(description="Hidden from the inbox unless the archive is shown (M4c)")
+    bookmarked: bool = Field(description="Starred: never auto-archived (23.1, M10b)")
     quote: str | None = Field(default=None, description="An exit-interview line (M6, 16.8)")
     event_links: list[EventLinkOut] = Field(
         default_factory=list, description="Events this message links to (M7c)"
@@ -297,6 +324,27 @@ class InboxOut(BaseModel):
     total: int = Field(description="Messages matching the query, before paging (M2b)")
     offset: int = 0
     items: list[InboxItemOut]
+
+
+class JobPeriodOut(BaseModel):
+    """One stretch of a former employee's time at the company (23.6, M10b)."""
+
+    role_label: str
+    level: str
+    unit_name: str | None = Field(description="Null: the company root")
+    from_label: str
+    to_label: str
+    months: int
+
+
+class LedOut(BaseModel):
+    """Something a former employee led or was part of (23.6, M10b)."""
+
+    kind: str = Field(description="unit | seat | product | storyline")
+    name: str
+    from_label: str
+    to_label: str
+    months: int
 
 
 class FormerProfileOut(BaseModel):
@@ -325,3 +373,10 @@ class FormerProfileOut(BaseModel):
     interests: list[str] | None
     work_style: str | None
     history: list[HistoryRowOut] = Field(description="Their History entries, newest first")
+    job_history: list[JobPeriodOut] = Field(
+        description="Each role, level and unit they held, oldest first (23.6, M10b)"
+    )
+    led: list[LedOut] = Field(
+        description="Units they led, seats they held, products their unit built and the "
+        "storylines they were in (23.6, M10b)"
+    )

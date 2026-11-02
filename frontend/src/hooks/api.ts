@@ -417,6 +417,22 @@ export function useArchive(saveId: string) {
   });
 }
 
+/** Star a message so it is never auto-archived, or unstar it (23.1, M10b). UI state only. */
+export function useBookmark(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async ({ itemId, bookmarked }: { itemId: number; bookmarked: boolean }) => {
+      const params = { params: { path: { save_id: saveId, item_id: itemId } } };
+      return unwrap(
+        bookmarked
+          ? await api.POST('/api/saves/{save_id}/inbox/{item_id}/bookmark', params)
+          : await api.POST('/api/saves/{save_id}/inbox/{item_id}/unbookmark', params),
+      );
+    },
+    onSuccess: invalidate,
+  });
+}
+
 /** Mark every message read, or archive every read message (M4c). */
 export function useInboxBulk(saveId: string) {
   const invalidate = useInvalidateSave(saveId);
@@ -636,6 +652,15 @@ export function useOrg(saveId: string) {
   return useQuery({
     queryKey: keys.org(saveId),
     queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/org', path(saveId))),
+  });
+}
+
+/** The structure guide: what units, managers, divisions, support and seats do, with live
+ * numbers (23.4, M10b). */
+export function useOrgGuide(saveId: string) {
+  return useQuery({
+    queryKey: [...keys.org(saveId), 'guide'] as const,
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/org/guide', path(saveId))),
   });
 }
 
@@ -1694,9 +1719,18 @@ export function useProductRegions(saveId: string, productId: number) {
 
 export type RegionAction =
   | { kind: 'launch'; region: string }
-  | { kind: 'price'; region: string; segment: string; priceCents: number };
+  | { kind: 'price'; region: string; segment: string; priceCents: number }
+  | { kind: 'marketing'; shares: Record<string, number> }; // bp; {} = by revenue (23.5)
 
 async function applyRegion(saveId: string, productId: number, a: RegionAction) {
+  if (a.kind === 'marketing') {
+    return unwrap(
+      await api.POST('/api/saves/{save_id}/products/{product_id}/regions/marketing', {
+        params: { path: { save_id: saveId, product_id: productId } },
+        body: { shares: a.shares },
+      }),
+    );
+  }
   if (a.kind === 'launch') {
     return unwrap(
       await api.POST('/api/saves/{save_id}/products/{product_id}/regions', {

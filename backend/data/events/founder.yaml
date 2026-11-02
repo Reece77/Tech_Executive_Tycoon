@@ -21,9 +21,10 @@ templates:
         label: "Say yes and put the first call in the diary"
         effects:
           - { type: energy_delta, target: founder, share: 0.4 }
+          - { type: modifier, target: founder, share: 1.0, stat: founder_energy, months: 6 }
       - key: B
         label: "Thank them; you'd rather work it out alone"
-        effects: []
+        do_nothing: true
 
   - id: early_customer_interviews
     category: founder
@@ -40,9 +41,10 @@ templates:
         label: "Book the twenty calls"
         effects:
           - { type: energy_delta, target: founder, share: -0.5 }
+          - { type: modifier, target: company, share: 1.0, stat: quality_cap, months: 6 }
       - key: B
         label: "You know this market already"
-        effects: []
+        do_nothing: true
 
   - id: early_consulting_gig
     category: founder
@@ -62,7 +64,7 @@ templates:
           - { type: energy_delta, target: founder, share: -0.8 }
       - key: B
         label: "Turn it down and stay focused"
-        effects: []
+        do_nothing: true
 
   - id: early_meetup_talk
     category: founder
@@ -80,9 +82,10 @@ templates:
         effects:
           - { type: cash_delta, target: company, share: -0.2 }
           - { type: energy_delta, target: founder, share: -0.3 }
+          - { type: modifier, target: company, share: 0.6, stat: awareness, months: 6 }
       - key: B
         label: "Not yet; nothing to show"
-        effects: []
+        do_nothing: true
 
   - id: early_coworking_desk
     category: founder
@@ -100,9 +103,10 @@ templates:
         effects:
           - { type: cash_delta, target: company, share: -0.4 }
           - { type: energy_delta, target: founder, share: 0.5 }
+          - { type: modifier, target: founder, share: 0.8, stat: founder_energy, months: 6 }
       - key: B
         label: "Keep the kitchen table"
-        effects: []
+        do_nothing: true
 
   - id: early_family_worry
     category: founder
@@ -156,11 +160,12 @@ templates:
     choices:
       - key: A
         label: "Pick a different name for the site"
-        effects: []
+        do_nothing: true
       - key: B
         label: "Buy it"
         effects:
           - { type: cash_delta, target: company, share: -0.5 }
+          - { type: modifier, target: company, share: 0.8, stat: awareness, months: 6 }
 
   - id: early_accelerator_invite
     category: founder
@@ -178,9 +183,10 @@ templates:
         effects:
           - { type: cash_delta, target: company, share: 0.4 }
           - { type: energy_delta, target: founder, share: -0.6 }
+          - { type: modifier, target: company, share: 1.0, stat: awareness, months: 6 }
       - key: B
         label: "Not this batch"
-        effects: []
+        do_nothing: true
 
   - id: early_long_hours
     category: founder
@@ -202,6 +208,7 @@ templates:
         label: "Push through to the next milestone"
         effects:
           - { type: energy_delta, target: founder, share: -0.4 }
+          - { type: modifier, target: founder, share: -0.8, stat: founder_energy, months: 6 }
 
   - id: early_open_source
     category: founder
@@ -219,9 +226,10 @@ templates:
         effects:
           - { type: brand_delta, target: product, share: 0.6 }
           - { type: energy_delta, target: founder, share: -0.3 }
+          - { type: modifier, target: product, share: 0.8, stat: awareness, months: 6 }
       - key: B
         label: "Keep it in-house"
-        effects: []
+        do_nothing: true
 
   - id: early_advisor
     category: founder
@@ -238,9 +246,10 @@ templates:
         effects:
           - { type: energy_delta, target: founder, share: 0.4 }
           - { type: cash_delta, target: company, share: -0.2 }
+          - { type: modifier, target: founder, share: 0.8, stat: founder_energy, months: 6 }
       - key: B
         label: "Politely decline"
-        effects: []
+        do_nothing: true
 
   - id: early_market_report
     category: founder

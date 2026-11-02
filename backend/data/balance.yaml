@@ -31,6 +31,9 @@ backup:
   every_n_turns: 12 # turns; periodic save backup after every Nth committed turn (ADR-0004)
   keep_periodic: 10 # count; periodic backups kept per save, oldest deleted first (ADR-0004)
 
+inbox: # the player's inbox (formulas.md 23.1, M10b)
+  auto_archive_months: 3 # months; read, unbookmarked items this old archive at month end
+
 holiday: # auto-advance: ordinary Continues until a stop reason (formulas.md 17.1)
   max_months: 24 # months; the longest holiday the player can choose
   default_months: 6 # months; the dialog's starting value
@@ -579,6 +582,16 @@ events: # event director, effect caps, storylines (formulas.md 16; ADR-0005, ADR
     energy_delta: [5, 10, 15] # founder energy next month
     board_confidence: [3, 6, 12] # confidence points for every director
     salary_change: [5, 10, 15] # percent raise, never a cut
+    modifier: [5, 10, 20] # percent change to a stat each month while it runs (23.2, M10b)
+  modifier_months: [6, 12, 12] # months; the longest a modifier runs, by severity (23.2)
+  crisis: # critical events from crises (23.3, M10b); draws on the events stream, own keys
+    key_exit_top_fraction: 0.10 # share of staff by current ability whose exit is a crisis
+    breach_chance: 0.004 # a month, x (1 - security coverage), per qualifying live product
+    breach_min_customers: 1000 # customers a product needs before a breach is news
+    security_full_at: 15 # mean security skill of the product team that gives full coverage
+    outage_chance: 0.003 # a month, per qualifying live product
+    outage_max_quality: 45 # quality below which a busy product can go down
+    outage_min_customers: 5000 # customers a product needs before an outage is a crisis
   cash_revenue_months: 3 # months of revenue in the cash cap base (16.3)
   cash_gain_share: 0.5 # gains reach at most this share of the cost cap (16.3)
   effect_size_bounds: [0.34, 0.67] # share of the cap: up to the first "small", above the second "large" (16.9)
@@ -678,7 +691,8 @@ markets:
   localize_months: 3 # months from launch in a region until it sells there (19.5)
   localize_slowdown: 0.10 # fraction; feature points grow this much slower while any region localizes (19.5)
   launch_energy: 4 # energy to launch a product in a region (19.5)
-  foreign_awareness: 0.6 # multiplier on self-serve awareness in a region without local presence (19.5)
+  foreign_awareness: 1.0 # multiplier on self-serve awareness in a region without local presence (19.5; 1.0 since M10b, 23.5: self-serve needs no presence)
+  no_marketing_awareness: 0.7 # share of awareness in a region given none of the product's marketing (23.5, M10b)
   presence_people: 5 # people working in a region that count as local presence without an office (19.5)
   neighbour_sellers: 0.5 # fraction of sellers in the neighbour region that count in a sales-led segment (19.5)
   cross_region_step: 0.05 # output lost per extra region the builders work in (19.4)

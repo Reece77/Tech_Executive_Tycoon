@@ -57,7 +57,7 @@ test('(b) a scripted covenant breach raises the lender event', async ({ page }) 
   const modal = page.getByRole('dialog');
   await expect(modal).toContainText('Silicon Valley Bank says a covenant is broken');
   await expect(page.getByTestId('continue')).toBeDisabled();
-  await expect(modal).toContainText('repays about $100,000 of the balance from cash now');
+  await expect(modal).toContainText('repays $100,000 of the balance from cash now');
   await modal.locator('[data-choice="C"]').click();
   await expect(modal).toBeHidden();
   await expect(page.getByTestId('continue')).toBeEnabled();

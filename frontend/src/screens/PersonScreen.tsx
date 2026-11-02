@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { Line, LineChart, ResponsiveContainer, YAxis } from 'recharts';
 import { AttributeRange } from '../components/AttributeRange';
 import { MoraleBar } from '../components/MoraleBar';
+import { ActiveEffects } from '../components/ActiveEffects';
 import { RelationshipsPanel } from '../components/Relationships';
 import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../components/PersonOrg';
 import { BreakdownTip } from '../components/Term';
@@ -27,6 +28,7 @@ import {
 import { formatMoneyWhole, formatMonths, formatWhole, humanize } from '../lib/format';
 import { formatFraction, formatShares } from '../lib/finance';
 import { statusOf } from '../lib/status';
+import { RoleHelp } from '../components/RoleHelp';
 
 const SPARK_MONTHS = 5;
 const GROUPS = [
@@ -167,6 +169,7 @@ function ProfileBody({
             {emp && <StatusChip status={statusOf(p)} />}
           </span>
           <UnitManagerLine saveId={saveId} p={p} />
+          {emp && <RoleHelp role={hiring.roles.find((r) => r.key === emp.role)} />}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 28 }}>
           {emp && !p.is_founder && (
@@ -205,6 +208,7 @@ function ProfileBody({
         <PersonActions saveId={saveId} p={p} />
       </section>
       <MoraleBreakdownPanel saveId={saveId} p={p} overview={overview} />
+      <ActiveEffects saveId={saveId} effects={p.active_effects} />
       {!p.is_founder && p.employment && (
         <RelationshipsPanel saveId={saveId} personId={p.person_id} />
       )}

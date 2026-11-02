@@ -121,6 +121,14 @@ class ProductRegionOut(BaseModel):
     launch_cost_cents: int | None = Field(description="Localization cost, if not launched")
     live_label: str | None = Field(description="When a launch now would go live")
     launch_problem: str | None = Field(description="Why it cannot launch there now")
+    marketing_share: float | None = Field(
+        description="Share of the product's marketing budget spent here (23.5); null if not "
+        "selling here"
+    )
+    awareness_factor: float | None = Field(
+        description="Self-serve awareness here against the global awareness, from the "
+        "marketing share (23.5): 0.7 with no spend, 1 at the default split"
+    )
 
 
 class TeamRegionOut(BaseModel):
@@ -137,6 +145,11 @@ class ProductRegionsOut(BaseModel):
     time_zone_factor: float = Field(description="Cross-region factor on output (19.4)")
     launch_energy: int
     localize_months: int
+    marketing_custom: bool = Field(
+        description="The player set the split; false: it follows revenue by region (23.5)"
+    )
+    rules: list[str] = Field(description="How reach works abroad, one line per segment type")
+    marketing_energy: int
 
 
 class LaunchRegionIn(BaseModel):
@@ -146,6 +159,13 @@ class LaunchRegionIn(BaseModel):
 class RegionalPriceIn(BaseModel):
     segment: str
     price_cents: int
+
+
+class MarketingSplitIn(BaseModel):
+    """Shares of the marketing budget by region, in basis points summing to 10,000; empty
+    returns to the default split by revenue (23.5)."""
+
+    shares: dict[str, int]
 
 
 class ProductRegionsActionOut(BaseModel):

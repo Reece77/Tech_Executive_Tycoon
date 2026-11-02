@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from tst.sim.data_models import Balance, CategoryDef, GameData
+from tst.sim.events import modifiers as mf
 from tst.sim.geo.cities import work_region
 from tst.sim.geo.formulas import cross_region_factor
 from tst.sim.org.rules import OrgView
@@ -57,6 +58,7 @@ class Team:
     awareness_mult: float = 1.0  # CMO (18.3)
     pricing_power: float = 1.0  # CRO on p_ref in sales segments (18.3)
     region_factor: float = 1.0  # builders in several regions (M9, 19.4)
+    seller_mult: float = 1.0  # event modifiers on seller capacity (M10b, 23.2)
     builder_regions: int = 1  # how many regions the builders work in (M9, shown)
 
     @property
@@ -84,15 +86,18 @@ class Team:
     def capacity(self, segment: str, balance: Balance) -> float:
         """New customers a month the sellers can close in a sales segment (11.3)."""
         rate = balance.products.seller_rate.get(segment, 0.0)
-        return f.seller_capacity(rate, (s.contribution for s in self.sellers))
+        return f.seller_capacity(rate, (s.contribution for s in self.sellers)) * self.seller_mult
 
     def capacity_weighted(
         self, segment: str, balance: Balance, weights: Mapping[int, float]
     ) -> float:
         """Capacity from the sellers in `weights`, each x its weight (19.5)."""
         rate = balance.products.seller_rate.get(segment, 0.0)
-        return f.seller_capacity(
-            rate, (s.contribution * weights.get(s.person_id, 0.0) for s in self.sellers)
+        return (
+            f.seller_capacity(
+                rate, (s.contribution * weights.get(s.person_id, 0.0) for s in self.sellers)
+            )
+            * self.seller_mult
         )
 
 
@@ -131,7 +136,10 @@ def product_team(
     marketers: list[Contributor] = []
     units = assigned_units(state, product)
     mods = modifiers(state, view, balance, data, estimate=estimate)  # M8 (18.5); None for v1
+    cid = product.company_id
     for unit_id in units:
+        unit_output = mf.unit_factor(state, cid, unit_id, "builder_output")  # M10b (23.2)
+        unit_selling = mf.unit_factor(state, cid, unit_id, "seller_capacity")
         for person_id in view.members.get(unit_id, ()):
             person = state.person(person_id)
             m = f.morale_factor(state.person_state(person_id).morale, pb)
@@ -151,14 +159,15 @@ def product_team(
                         person_id=person_id,
                         d=d,
                         output=f.builder_output(d, m, t)
-                        * (mods.builder.get(person_id, 1.0) if mods else 1.0),
+                        * (mods.builder.get(person_id, 1.0) if mods else 1.0)
+                        * unit_output,
                         perfectionist=PERFECTIONIST in person.tags,
                         maverick=MAVERICK in person.tags,
                     )
                 )
             elif function == "seller":
                 sell = f.sell_skill(skills["sales"], skills["negotiation"], skills["communication"])
-                factor = mods.seller.get(person_id, 1.0) if mods else 1.0
+                factor = (mods.seller.get(person_id, 1.0) if mods else 1.0) * unit_selling
                 sellers.append(Contributor(person_id, f.contribution(sell, m) * factor))
             elif function == "marketer":
                 mkt = f.marketing_skill(
@@ -166,6 +175,10 @@ def product_team(
                 )
                 marketers.append(Contributor(person_id, f.contribution(mkt, m)))
     regions = builder_regions(state, product, builders, balance, data)
+
+    def ev(stat: str) -> float:  # event modifiers on the product and company (M10b, 23.2)
+        return mf.product_factor(state, cid, product.id, stat)
+
     return Team(
         region_factor=cross_region_factor(regions, balance),
         builder_regions=regions,
@@ -173,12 +186,14 @@ def product_team(
         builders=tuple(builders),
         sellers=tuple(sellers),
         marketers=tuple(marketers),
-        output_mult=mods.output_factor(state, view, product) if mods else 1.0,
+        output_mult=(mods.output_factor(state, view, product) if mods else 1.0)
+        * ev("builder_output"),
         feature_mult=mods.cpo if mods else 1.0,
         marketing_mult=mods.marketing_factor(state, product) if mods else 1.0,
-        qcap_mult=mods.qcap if mods else 1.0,
-        churn_mult=mods.churn_factor(state, product) if mods else 1.0,
-        brand_mult=mods.brand if mods else 1.0,
-        awareness_mult=mods.awareness if mods else 1.0,
+        qcap_mult=(mods.qcap if mods else 1.0) * ev("quality_cap"),
+        churn_mult=(mods.churn_factor(state, product) if mods else 1.0) * ev("churn"),
+        brand_mult=(mods.brand if mods else 1.0) * ev("brand_target"),
+        awareness_mult=(mods.awareness if mods else 1.0) * ev("awareness"),
         pricing_power=mods.pricing if mods else 1.0,
+        seller_mult=ev("seller_capacity"),
     )

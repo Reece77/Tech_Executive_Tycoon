@@ -3,6 +3,12 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  retained: # M10b (23.3): a counter-offer kept someone serving notice
+    title: "{name} is staying"
+    body: "{name} has accepted your counter-offer and withdrawn their notice."
+  choices_month: # M10b (formulas.md 23.2): the month-end report's one line on event choices
+    title: "Your choices this month"
+    body: "{summary}"
   candidates_arrived:
     title: "{count} candidates for {role}"
     body: "Your {channel} search for {role:a} turned up {count} candidates. They will consider offers for the next {shelf} months."
@@ -58,10 +64,13 @@ templates:
     body: "Annual recurring revenue is now {arr_cents} ({mrr_cents} a month)."
   sales_capacity_limited:
     title: "Sales capacity limited {product}"
-    body: "Sales capacity limited new customers in {segment}. More sellers on the product would close more deals."
+    body: "{sellers} win up to about {cap} {segment} customers a month; {wanted} wanted to buy. Each extra seller adds about {per_seller}. Open a seller hiring plan or move sellers onto {product}."
   product_rotting:
     title: "{product} is slipping"
     body: "Nobody is working on {product}, so its quality is falling. Assign a unit to it."
+  product_understaffed: # M10b (23.4): builders, but too few to hold quality
+    title: "{product}'s team is too small"
+    body: "{product}'s team is too small to maintain it (output about {output} of {needed} needed; full speed at {full_speed}), so its quality is falling. Add about {builders} to stop the slide."
   # M4a finance (formulas.md 14)
   safe_filled:
     title: "SAFE filled: {amount_cents} at a {cap_cents} cap"

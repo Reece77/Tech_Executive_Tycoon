@@ -32,6 +32,8 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M8-divisions-and-new-markets.md](M8-divisions-and-new-markets.md) | Divisions and division P&L, executive seats, support and shared services, Fintech and AI markets, scheduled entrants (first v2 milestone) | M7b |
 | [M10-capital-and-macro.md](M10-capital-and-macro.md) | Macro layer (history to 2025, then seeded cycles and downturns), Series C and D with growth investors, venture debt and bank loans with covenants and the lender event (lane B) | M8r |
 | [M9-cities-and-regions.md](M9-cities-and-regions.md) | Cities and HQ, offices, hiring by city, regional markets and launches, regional incumbents and rivals' region entry (lane A, merges after M10) | M8r |
+| [M10r-review-fixes.md](M10r-review-fixes.md) | Fixes from Codex review 2: lender fees below operating profit, interest out of division statements, inherited offices on closure, overseas sales in product totals, exact regional prices, a repayment test that cannot skip | M9 |
+| [M10b-feel-fixes.md](M10b-feel-fixes.md) | Reece's playtest: the inbox archives and blocks on major events, event modifiers shown as numbers, critical crises, explanations that say what to do, self-serve abroad and marketing by region, former staff stories | M10r |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

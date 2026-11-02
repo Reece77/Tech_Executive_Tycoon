@@ -92,6 +92,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
     month_total = sum(c.amount_cents for c in projected) + sum(c.amount_cents for c in month_paid)
     month_revenue = projected_revenue(state, player.id)
     return OverviewOut(
+        active_effects=views.active_effects(state),
         save_id=save_id,
         company_name=ov.company_name,
         turn=ov.turn,
@@ -310,7 +311,7 @@ def get_overview(save_id: str, settings: SettingsDep, data: DataDep) -> Overview
 )
 def advance(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
     path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
-    repository.run_turn(path, data)
+    repository.run_turn(path, data, block_major=True)  # the player at the controls (23.1)
     return _overview(save_id, settings, data)
 
 

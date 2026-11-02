@@ -21,8 +21,10 @@ export function GameLayout() {
   const advance = useAdvance(saveId);
   const ended = overview.data !== undefined && overview.data.game_state !== 'active';
   const events = useEvents(saveId);
-  // An open critical event blocks Continue until answered (M6, ADR-0006 amended).
-  const blocked = events.data?.blocking_event_id != null;
+  // Open major and critical events block Continue until answered (23.1, M10b); a critical
+  // one also opens as a modal (M6).
+  const blocking = events.data?.blocking_event_ids.length ?? 0;
+  const blocked = blocking > 0;
   const holiday = useHoliday(saveId);
   const away = holiday.data?.status === 'running';
   const [holidayOpen, setHolidayOpen] = useState(false);
@@ -58,7 +60,8 @@ export function GameLayout() {
         overview={overview.data}
         summary={summary.data}
         advancing={advance.isPending}
-        blocked={blocked}
+        blocking={blocking}
+        eventsHref={`/game/${saveId}/inbox`}
         away={away}
         onContinue={onContinue}
         onHoliday={onHoliday}

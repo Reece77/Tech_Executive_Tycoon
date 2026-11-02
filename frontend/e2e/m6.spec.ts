@@ -35,7 +35,7 @@ test('(a) answer an event and see its effect', async ({ page }) => {
   await page.getByTestId('inbox-item').filter({ hasText: 'has gone quiet' }).click();
   const card = page.getByTestId('event-card');
   await expect(card).toBeVisible();
-  await expect(card).toContainText(/costs about \$/);
+  await expect(card).toContainText(/costs \$[0-9]/); // numbers since M10b (23.2)
   const before = await cash(page);
   await card.locator('[data-choice="B"]').click();
   await expect(card.getByTestId('event-answered')).toHaveText('You chose B.');
@@ -50,7 +50,7 @@ test('(b) a critical event blocks Continue until answered', async ({ page }) => 
   const modal = page.getByRole('dialog');
   await expect(modal).toContainText('Payroll is at risk');
   await expect(page.getByTestId('continue')).toBeDisabled();
-  await expect(page.getByTestId('continue-blocked')).toHaveText('Answer the critical event first');
+  await expect(page.getByTestId('continue-blocked')).toHaveText('Answer 1 event first');
   await page.keyboard.press('Escape'); // the modal cannot be dismissed
   await expect(modal).toBeVisible();
   await modal.locator('[data-choice="A"]').click();

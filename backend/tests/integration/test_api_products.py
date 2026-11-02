@@ -12,7 +12,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.helpers import FIRST_PRODUCT, make_person, move_save_directors, with_employee
+from tests.helpers import FIRST_PRODUCT, make_person, move_save_directors, play_turn, with_employee
 from tests.integration.test_api_hiring import Client
 from tst.api.app import create_app
 from tst.config import Settings, get_settings
@@ -122,13 +122,13 @@ def test_create_staff_launch_and_sunset_through_the_api(
     for _ in range(12):
         if api.get(f"{BASE}/products/{PRODUCT}")["launch"]["ready"]:
             break
-        run_turn(path, loaded)
+        play_turn(path, loaded)  # answers a critical event first (M10b: key exits)
     product = api.get(f"{BASE}/products/{PRODUCT}")
     assert product["launch"] == {"ready": True, "missing": []}
     out = api.post(f"{BASE}/products/{PRODUCT}/launch")
     assert out["product"]["status"] == "live" and out["unread_inbox"] >= 1
     for _ in range(3):
-        run_turn(path, loaded)
+        play_turn(path, loaded)  # answers a critical event first (M10b: key exits)
     product = api.get(f"{BASE}/products/{PRODUCT}")
     assert product["mrr_cents"] > 0 and product["history"]
     assert product["lifecycle_label"] in {"Growth", "Mature", "Live"}

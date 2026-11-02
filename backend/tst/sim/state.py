@@ -7,7 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from typing import Any
 
-from tst.sim.events.models import GameEvent, QueuedEvent, Storyline
+from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.finance.macro import MacroMonth
 from tst.sim.finance.models import (
     BoardSeat,
@@ -19,7 +19,13 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
-from tst.sim.geo.models import Office, ProductRegion, RegionalMarket, RegionalSegment
+from tst.sim.geo.models import (
+    MarketingSplit,
+    Office,
+    ProductRegion,
+    RegionalMarket,
+    RegionalSegment,
+)
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
@@ -134,6 +140,7 @@ class GameState:
     events: tuple[GameEvent, ...] = ()  # the last 24 months' events and any open, by id (M6)
     storylines: tuple[Storyline, ...] = ()  # active storylines, by id (M6, 16.6)
     queued: tuple[QueuedEvent, ...] = ()  # follow-ups not yet shown, by id (M6, 16.3)
+    modifiers: tuple[Modifier, ...] = ()  # event modifiers still running, by id (M10b, 23.2)
     exec_seats: tuple[ExecSeat, ...] = ()  # seats ever filled, by (company_id, seat) (M8, 18.3)
     macro: MacroMonth | None = None  # the indicators phase 1 last set (M10, 20.1)
     loans: tuple[Loan, ...] = ()  # every loan, sorted by id (M10, 20.3)
@@ -143,6 +150,8 @@ class GameState:
     offices: tuple[Office, ...] = ()
     regional_markets: tuple[RegionalMarket, ...] = ()
     product_regions: tuple[ProductRegion, ...] = ()
+    # M10b (23.5): marketing budget split by region, by (product_id, region)
+    marketing_splits: tuple[MarketingSplit, ...] = ()
     regional_segments: tuple[RegionalSegment, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
@@ -530,6 +539,21 @@ def with_event(state: GameState, event: GameEvent) -> GameState:
 
 def with_storyline(state: GameState, story: Storyline) -> GameState:
     return replace(state, storylines=_upsert(state.storylines, story, lambda s: s.id))
+
+
+def with_marketing_split(
+    state: GameState, product_id: int, shares: tuple[MarketingSplit, ...]
+) -> GameState:
+    """Replace a product's marketing split by region (23.5); () returns it to the default."""
+    rest = tuple(m for m in state.marketing_splits if m.product_id != product_id)
+    return replace(
+        state,
+        marketing_splits=tuple(sorted((*rest, *shares), key=lambda m: (m.product_id, m.region))),
+    )
+
+
+def with_modifier(state: GameState, modifier: Modifier) -> GameState:
+    return replace(state, modifiers=_upsert(state.modifiers, modifier, lambda m: m.id))
 
 
 def with_queued(state: GameState, queued: QueuedEvent) -> GameState:

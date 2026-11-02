@@ -9,7 +9,8 @@ interface Props {
   overview: Overview | undefined;
   summary?: FinanceSummary;
   advancing: boolean;
-  blocked?: boolean; // an open critical event (M6)
+  blocking?: number; // open major and critical events: they block Continue (23.1, M10b)
+  eventsHref?: string; // where they are answered
   away?: boolean; // a holiday is running (M7b)
   onContinue: () => void;
   onHoliday?: () => void;
@@ -56,10 +57,24 @@ function Stat({ label, children }: { label: ReactNode; children: ReactNode }) {
   );
 }
 
-export function EnergyMeter({ energy, max }: { energy: number; max: number }) {
+export function EnergyMeter({
+  energy,
+  max,
+  adjustments = [],
+}: {
+  energy: number;
+  max: number;
+  adjustments?: { label: string }[];
+}) {
   const pct = max > 0 ? Math.round((energy / max) * 100) : 0;
+  // Event effects on this month's energy (23.2, M10b), e.g. "-10 from the board dinner".
+  const tip = adjustments.length ? adjustments.map((a) => a.label).join('\n') : undefined;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 140 }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 140 }}
+      title={tip}
+      data-testid="energy-meter"
+    >
       <span className="tst-ptitle" style={{ margin: 0, fontSize: 11, fontWeight: 400 }}>
         Founder energy{' '}
         <span className="tst-num" style={{ color: 'var(--tst-text)' }} data-testid="energy">
@@ -91,13 +106,16 @@ export function TopBar({
   overview,
   summary,
   advancing,
-  blocked = false,
+  blocking = 0,
+  eventsHref,
   away = false,
   onContinue,
   onHoliday,
   onCoo,
 }: Props) {
   const ended = overview !== undefined && overview.game_state !== 'active';
+  const blocked = blocking > 0;
+  const blockText = `Answer ${blocking} event${blocking === 1 ? '' : 's'} first`;
   return (
     <header
       style={{
@@ -183,7 +201,11 @@ export function TopBar({
           )}
         </Stat>
         {overview && !ended && (
-          <EnergyMeter energy={overview.energy.energy} max={overview.energy.max} />
+          <EnergyMeter
+            energy={overview.energy.energy}
+            max={overview.energy.max}
+            adjustments={overview.energy.adjustments}
+          />
         )}
         {ended && overview && (
           <Link to={`/game/${overview.save_id}/over`} style={BADGE} data-testid="game-over-badge">
@@ -225,7 +247,7 @@ export function TopBar({
           px={28}
           onClick={onContinue}
           disabled={!overview || advancing || ended || blocked || away}
-          title={blocked ? 'Answer the critical event first' : undefined}
+          title={blocked ? blockText : undefined}
           leftSection={advancing ? <Loader size="xs" color="dark" /> : undefined}
           data-testid="continue"
         >
@@ -233,7 +255,7 @@ export function TopBar({
         </Button>
         {blocked && (
           <span style={{ fontSize: 12, color: 'var(--tst-warn)' }} data-testid="continue-blocked">
-            Answer the critical event first
+            {eventsHref ? <Link to={eventsHref}>{blockText}</Link> : blockText}
           </span>
         )}
       </div>

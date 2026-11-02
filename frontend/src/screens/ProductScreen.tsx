@@ -14,10 +14,11 @@ import {
 } from 'recharts';
 import { KpiTile } from '../components/KpiTile';
 import { RegionsPanel } from '../components/RegionsPanel';
-import { BreakdownTip } from '../components/Term';
+import { BreakdownTip, Term } from '../components/Term';
 import { LifecycleChip } from '../components/LifecycleChip';
 import { ScoreBar, ScoreLegend, type ScoreBarItem } from '../components/ScoreBar';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
+import { ActiveEffects } from '../components/ActiveEffects';
 import { SegmentTable } from '../components/SegmentTable';
 import {
   useCategories,
@@ -136,6 +137,24 @@ function ProductBody({
         </Alert>
       )}
       <Tiles p={p} />
+      {p.team_strength && (
+        <p
+          className={
+            p.team_strength.estimated_output < p.team_strength.maintains ? undefined : 'tst-muted'
+          }
+          style={{
+            margin: 0,
+            fontSize: 14,
+            color:
+              p.team_strength.estimated_output < p.team_strength.maintains
+                ? 'var(--tst-warn)'
+                : undefined,
+          }}
+          data-testid="product-team-strength"
+        >
+          <Term term="product.team_strength">Team strength</Term>: {p.team_strength.text}
+        </p>
+      )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         <Competition p={p} market={market.data} segment={shownSegment} onSegment={setSegment} />
         <TeamAndMarketing saveId={saveId} p={p} meta={meta} run={run} busy={act.isPending} />
@@ -166,11 +185,13 @@ function ProductBody({
             selling
           />
           <AddSegments saveId={saveId} p={p} meta={meta} run={run} busy={act.isPending} />
+          <RegionalPrices p={p} />
         </section>
       )}
       {developing && (
         <AddSegments saveId={saveId} p={p} meta={meta} run={run} busy={act.isPending} />
       )}
+      <ActiveEffects saveId={saveId} effects={p.active_effects} />
       <RegionsPanel saveId={saveId} productId={p.product_id} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         {editing && (
@@ -221,7 +242,13 @@ function Tiles({ p }: { p: Product }) {
         term="quality"
         label="Quality"
         value={formatScore(p.quality)}
-        note={p.rotting ? 'Falling: nobody works on it' : `Pace: ${p.pace}`}
+        note={
+          p.rotting
+            ? p.builders.length
+              ? 'Falling: the team is too small'
+              : 'Falling: nobody works on it'
+            : `Pace: ${p.pace}`
+        }
         warn={p.rotting}
         drivers={(v) => (
           <BreakdownTip breakdown={p.quality_breakdown} title="Quality" testId="quality-drivers">
@@ -993,5 +1020,31 @@ function DivisionPicker({ saveId, p }: { saveId: string; p: Product }) {
         });
       }}
     />
+  );
+}
+
+/** Prices in other regions (M10b): set in the Regions panel, shown here beside home's. */
+function RegionalPrices({ p }: { p: Product }) {
+  if (p.regional_prices.length === 0) return null;
+  return (
+    <div data-testid="regional-prices" style={{ fontSize: 14 }}>
+      <h3 style={{ margin: '4px 0', fontSize: 15, fontWeight: 600 }}>Prices in other regions</h3>
+      {p.regional_prices.map((r) => (
+        <div
+          key={`${r.region}-${r.segment}`}
+          className="tst-row"
+          data-testid={`regional-price-${r.region}-${r.segment}`}
+        >
+          <span>
+            {r.region_label} · {r.segment_label}
+            {r.live ? '' : ' (localizing)'}
+          </span>
+          <span className="tst-num">
+            {r.price_cents === null ? '—' : formatMoneyWhole(r.price_cents)}
+            <span className="tst-muted"> usual {formatMoneyWhole(r.default_price_cents)}</span>
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }

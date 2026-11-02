@@ -30,14 +30,17 @@ const EVENT: GameEventOut = {
   title: 'Priya Patel has gone quiet',
   body: 'Priya used to be first into every design review.',
   choices: [
-    { key: 'A', label: 'Book a long one-to-one', effects: ['morale lift for Priya Patel'] },
+    {
+      key: 'A',
+      label: 'Book a long one-to-one',
+      effects: ["Priya Patel's morale +5"],
+      do_nothing: false,
+    },
     {
       key: 'B',
       label: 'Give Priya a raise',
-      effects: [
-        'large morale lift for Priya Patel',
-        'raise for Priya Patel · costs about $11,800 a year',
-      ],
+      effects: ["Priya Patel's morale +8", '+10% raise for Priya Patel (costs $11,800 a year)'],
+      do_nothing: false,
     },
   ],
   chosen: null,
@@ -48,13 +51,13 @@ const EVENT: GameEventOut = {
 };
 
 describe('event card (M6)', () => {
-  it('shows the story, choices and their effects in words, never numbers or caps', () => {
+  it('shows the story, choices and their effects as numbers, never caps (23.2)', () => {
     const html = wrap(<EventCard saveId="s" event={EVENT} />);
     expect(html).toContain('Priya Patel has gone quiet');
     expect(html).toContain('Priya is running hot · step 2');
     expect(html).toContain('A. Book a long one-to-one');
-    expect(html).toContain('large morale lift for Priya Patel');
-    expect(html).toContain('costs about $11,800 a year');
+    expect(html).toContain('Priya Patel&#x27;s morale +8');
+    expect(html).toContain('costs $11,800 a year');
     expect(html).toContain('Effects apply at once. Written by AI');
     expect(html).not.toMatch(/cap|strength/i);
   });

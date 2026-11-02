@@ -12,7 +12,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from tst.api.schemas.common import BreakdownOut
-from tst.api.schemas.people import EnergyOut
+from tst.api.schemas.people import ActiveEffectOut, EnergyOut
 
 
 class AppealWeightsOut(BaseModel):
@@ -148,6 +148,31 @@ class ProductTotalMonthOut(BaseModel):
     revenue_cents: int
 
 
+class TeamStrengthOut(BaseModel):
+    """The team's output against the two lines that matter (11.4; 23.4, M10b)."""
+
+    estimated_output: float = Field(
+        description="Builder output a month as you can judge it: from the displayed ranges "
+        "and noticed tags (est.; ADR-0007)"
+    )
+    maintains: float = Field(description="Below this the product slips (0.25 x scope)")
+    full_speed: float = Field(description="Quality and features at full speed (scope)")
+    builders_to_add: int = Field(description="About how many builders to reach the next line")
+    text: str = Field(description="The line the product screen shows")
+
+
+class RegionalPriceOut(BaseModel):
+    """A price the product charges in another region (19.5; M10b)."""
+
+    region: str
+    region_label: str
+    segment: str
+    segment_label: str
+    price_cents: int | None
+    default_price_cents: int = Field(description="p_ref x the region's price index")
+    live: bool = Field(description="Selling there now (false while localizing)")
+
+
 class LaunchReadinessOut(BaseModel):
     ready: bool
     missing: list[str] = Field(description="What still stands between it and launch")
@@ -197,6 +222,15 @@ class ProductOut(BaseModel):
     brand_trend: str = Field(description="rising | falling | steady, from the last two months")
     counts_users: bool = Field(description="Every segment counts consumer users")
     segments: list[ProductSegmentOut]
+    active_effects: list[ActiveEffectOut] = Field(
+        description="Event modifiers on this product (23.2, M10b)"
+    )
+    team_strength: TeamStrengthOut | None = Field(
+        description="Output against the maintenance and full-speed lines (23.4); null if retired"
+    )
+    regional_prices: list[RegionalPriceOut] = Field(
+        description="Its prices in other regions it has launched in (M10b)"
+    )
     assigned_units: list[AssignedUnitOut]
     builders: list[NamedOut]
     sellers: list[NamedOut]

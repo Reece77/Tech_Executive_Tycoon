@@ -13,7 +13,7 @@ from typing import Any
 
 from tst.events.validator import allowed_effects
 from tst.sim.data_models import Balance, GameData
-from tst.sim.events.data import EFFECT_TARGETS, EventTemplate
+from tst.sim.events.data import EFFECT_TARGETS, MODIFIER_STATS, EventTemplate
 from tst.sim.events.formulas import effect_cap
 from tst.sim.events.models import GameEvent
 from tst.sim.events.render import full_name
@@ -161,6 +161,10 @@ def build_prompt(
         if effect == "cash_delta":
             entry["max_cost_dollars"] = round(cap / CENTS_PER_DOLLAR)
             entry["max_gain_dollars"] = round(cap * ev.cash_gain_share / CENTS_PER_DOLLAR)
+        elif effect == "modifier":  # M10b (23.2): percent a month, for at most max_months
+            entry["max_percent"] = cap
+            entry["max_months"] = ev.max_months(event.severity)
+            entry["stats"] = {s: list(MODIFIER_STATS[s]) for s in sorted(template.modifier_stats())}
         elif cap:
             entry["max"] = cap
         allowed.append(entry)

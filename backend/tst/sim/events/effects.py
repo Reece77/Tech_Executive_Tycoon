@@ -12,6 +12,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.events.data import LOAN_EFFECTS
 from tst.sim.events.formulas import cash_cap, clamp_effect
 from tst.sim.events.models import EventChoice, GameEvent, QueuedEvent
+from tst.sim.events.modifiers import start as start_modifier
 from tst.sim.finance.debt import repay as repay_loan
 from tst.sim.ledger import CASH, GENERAL_ADMIN, INTEREST, OTHER_INCOME, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
@@ -20,6 +21,7 @@ from tst.sim.org.rules import org_view
 from tst.sim.people.relationships import clamp_relationship, pair_key
 from tst.sim.state import (
     GameState,
+    with_approach,
     with_employment,
     with_event,
     with_loan,
@@ -102,6 +104,34 @@ def _loan_effect(
         amount=cents,
     )
     return state, [entry]
+
+
+def _retain(state: GameState, person_id: int) -> tuple[GameState, list[LogItem]]:
+    """Someone serving notice after resigning or accepting a rival stays (23.3): the notice
+    is withdrawn and an accepted approach lapses."""
+    employment = state.employment_of(person_id)
+    if employment is None or employment.status != "notice":
+        return state, []
+    if employment.end_reason not in ("resigned", "poached"):
+        return state, []
+    state = with_employment(
+        state, replace(employment, status="active", end_turn=None, end_reason=None)
+    )
+    for approach in state.approaches:
+        if approach.person_id == person_id and approach.status == "accepted":
+            state = with_approach(
+                state, replace(approach, status="lapsed", resolved_turn=state.turn)
+            )
+    person = state.person(person_id)
+    log = inbox_item(
+        state.turn,
+        employment.company_id,
+        "retained",
+        link_kind="person",
+        link_id=person_id,
+        name=f"{person.first_name} {person.last_name}",
+    )
+    return state, [log]
 
 
 def energy_next_month(state: GameState, person_id: int) -> int:
@@ -283,6 +313,11 @@ def apply_choice(
         elif t in LOAN_EFFECTS and kind == "loan" and ids:
             state, posted = _loan_effect(state, t, ids[0], value, event, balance)
             entries += posted
+        elif t == "retain" and kind == "person" and ids:  # a counter-offer (M10b, 23.3)
+            state, kept = _retain(state, ids[0])
+            logs += kept
+        elif t == "modifier":  # runs for its months from this one (M10b, 23.2)
+            state = start_modifier(state, cid, event.id, effect, event.severity, balance.events)
         # energy_delta applies when energy resets for next month (energy_next_month).
     state = with_event(
         state,
@@ -298,6 +333,19 @@ def apply_choice(
         if story is not None and story.status == "active" and story.next_template is None:
             state = with_storyline(state, replace(story, status="ended", ended_turn=state.turn))
     return state, tuple(entries), tuple(logs)
+
+
+BLOCKING_SEVERITIES = ("major", "critical")  # 23.1 (M10b)
+
+
+def blocking_events(state: GameState) -> tuple[GameEvent, ...]:
+    """The player's written major and critical events still to answer: they block Continue
+    while the player is at the controls (23.1, M10b)."""
+    return tuple(
+        e
+        for e in state.open_events(state.player.id)
+        if e.severity in BLOCKING_SEVERITIES and e.status == "open"
+    )
 
 
 def auto_resolve(

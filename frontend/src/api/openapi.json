@@ -2534,6 +2534,169 @@
         }
       }
     },
+    "/api/saves/{save_id}/inbox/{item_id}/bookmark": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Bookmark Inbox Item",
+        "description": "Star a message: it stays in the inbox, never auto-archived (23.1, M10b).",
+        "operationId": "bookmarkInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/inbox/{item_id}/unbookmark": {
+      "post": {
+        "tags": [
+          "game"
+        ],
+        "summary": "Unbookmark Inbox Item",
+        "operationId": "unbookmarkInboxItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxItemOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/founder/energy": {
       "get": {
         "tags": [
@@ -2631,6 +2794,79 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrgOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/org/guide": {
+      "get": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Get Org Guide",
+        "description": "What units, managers, divisions, support and seats do, with live numbers (23.4).",
+        "operationId": "getOrgGuide",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StructureGuideOut"
                 }
               }
             }
@@ -7430,7 +7666,7 @@
           "events"
         ],
         "summary": "List Events",
-        "description": "This month's events to answer (minor and major resolve to their first choice at\nContinue; an open critical event blocks it) and recently answered ones (16.3).",
+        "description": "This month's events to answer (minor ones resolve to their first choice at Continue;\nopen major and critical events block it, 23.1) and recently answered ones (16.3).",
         "operationId": "listEvents",
         "parameters": [
           {
@@ -10113,6 +10349,98 @@
         }
       }
     },
+    "/api/saves/{save_id}/products/{product_id}/regions/marketing": {
+      "post": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Set Marketing Split",
+        "description": "Split the product's marketing across its regions (23.5); empty: back to by revenue.",
+        "operationId": "setMarketingSplit",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingSplitIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRegionsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -10465,6 +10793,59 @@
           "unread_inbox"
         ],
         "title": "ActionOut"
+      },
+      "ActiveEffectOut": {
+        "properties": {
+          "modifier_id": {
+            "type": "integer",
+            "title": "Modifier Id"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "The event's title"
+          },
+          "stat": {
+            "type": "string",
+            "title": "Stat"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "e.g. '+5% brand target for Pipeline for 4 months'"
+          },
+          "value_pct": {
+            "type": "number",
+            "title": "Value Pct"
+          },
+          "months_left": {
+            "type": "integer",
+            "title": "Months Left"
+          }
+        },
+        "type": "object",
+        "required": [
+          "modifier_id",
+          "event_id",
+          "source",
+          "stat",
+          "text",
+          "value_pct",
+          "months_left"
+        ],
+        "title": "ActiveEffectOut",
+        "description": "A running event modifier (23.2, M10b): what it does, where from, how long is left."
       },
       "AppealWeightsOut": {
         "properties": {
@@ -11892,6 +12273,14 @@
             "title": "Morale History",
             "description": "Last 12 months, oldest first"
           },
+          "active_effects": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveEffectOut"
+            },
+            "type": "array",
+            "title": "Active Effects",
+            "description": "Event modifiers on this person's morale (M10b)"
+          },
           "learned": {
             "$ref": "#/components/schemas/LearnedOut"
           }
@@ -11918,6 +12307,7 @@
           "work_style",
           "work_style_matches_role",
           "morale_history",
+          "active_effects",
           "learned"
         ],
         "title": "CheckOut",
@@ -13041,6 +13431,33 @@
         ],
         "title": "EmploymentOut"
       },
+      "EnergyAdjustmentOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "e.g. '-10 from A director calls between meetings'"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "description": "Energy points (or percent, for a modifier)"
+          },
+          "percent": {
+            "type": "boolean",
+            "title": "Percent",
+            "description": "True: a modifier on monthly energy, in percent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "value",
+          "percent"
+        ],
+        "title": "EnergyAdjustmentOut",
+        "description": "Why this month's founder energy differs from the usual (23.2, M10b)."
+      },
       "EnergyOut": {
         "properties": {
           "energy": {
@@ -13050,12 +13467,21 @@
           "max": {
             "type": "integer",
             "title": "Max"
+          },
+          "adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/EnergyAdjustmentOut"
+            },
+            "type": "array",
+            "title": "Adjustments",
+            "description": "Event effects on this month's energy (M10b)"
           }
         },
         "type": "object",
         "required": [
           "energy",
-          "max"
+          "max",
+          "adjustments"
         ],
         "title": "EnergyOut"
       },
@@ -13079,6 +13505,21 @@
               }
             ],
             "title": "Event Id"
+          },
+          "event_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Ids",
+            "description": "events_open: the major and critical events to answer (M10b)"
           },
           "retryable": {
             "anyOf": [
@@ -13117,14 +13558,20 @@
             },
             "type": "array",
             "title": "Effects",
-            "description": "What the choice does, in words with a size"
+            "description": "What the choice does, as numbers: '+3 brand for Pipeline', 'costs $8,000', '+5% brand target for Pipeline for 12 months' (23.2, M10b)"
+          },
+          "do_nothing": {
+            "type": "boolean",
+            "title": "Do Nothing",
+            "description": "An explicit 'Do nothing' choice: no effect (23.2)"
           }
         },
         "type": "object",
         "required": [
           "key",
           "label",
-          "effects"
+          "effects",
+          "do_nothing"
         ],
         "title": "EventChoiceOut"
       },
@@ -13298,7 +13745,15 @@
               }
             ],
             "title": "Blocking Event Id",
-            "description": "An open critical event blocks Continue"
+            "description": "An open critical event: it opens as a modal and blocks Continue"
+          },
+          "blocking_event_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Blocking Event Ids",
+            "description": "Every open major and critical event: each blocks Continue (23.1, M10b)"
           },
           "open": {
             "items": {
@@ -13329,6 +13784,7 @@
         "required": [
           "to_answer",
           "blocking_event_id",
+          "blocking_event_ids",
           "open",
           "recent",
           "ai_spend_cents",
@@ -13681,6 +14137,22 @@
             "type": "array",
             "title": "History",
             "description": "Their History entries, newest first"
+          },
+          "job_history": {
+            "items": {
+              "$ref": "#/components/schemas/JobPeriodOut"
+            },
+            "type": "array",
+            "title": "Job History",
+            "description": "Each role, level and unit they held, oldest first (23.6, M10b)"
+          },
+          "led": {
+            "items": {
+              "$ref": "#/components/schemas/LedOut"
+            },
+            "type": "array",
+            "title": "Led",
+            "description": "Units they led, seats they held, products their unit built and the storylines they were in (23.6, M10b)"
           }
         },
         "type": "object",
@@ -13706,7 +14178,9 @@
           "noticed_tags",
           "interests",
           "work_style",
-          "history"
+          "history",
+          "job_history",
+          "led"
         ],
         "title": "FormerProfileOut",
         "description": "A person who has left the company (M7c): read-only, as the player knew them at\ndeparture. Displayed ranges and noticed tags only (ADR-0007)."
@@ -14429,6 +14903,40 @@
           "fraction"
         ],
         "title": "GrantOut"
+      },
+      "GuideSectionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "What this part of the structure does"
+          },
+          "lines": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Lines",
+            "description": "This company's live numbers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "text",
+          "lines"
+        ],
+        "title": "GuideSectionOut",
+        "description": "One part of the Org structure guide (23.4, M10b)."
       },
       "HTTPValidationError": {
         "properties": {
@@ -15343,6 +15851,11 @@
             "title": "Archived",
             "description": "Hidden from the inbox unless the archive is shown (M4c)"
           },
+          "bookmarked": {
+            "type": "boolean",
+            "title": "Bookmarked",
+            "description": "Starred: never auto-archived (23.1, M10b)"
+          },
           "quote": {
             "anyOf": [
               {
@@ -15375,7 +15888,8 @@
           "link_kind",
           "link_id",
           "read",
-          "archived"
+          "archived",
+          "bookmarked"
         ],
         "title": "InboxItemOut"
       },
@@ -15410,6 +15924,53 @@
           "items"
         ],
         "title": "InboxOut"
+      },
+      "JobPeriodOut": {
+        "properties": {
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "unit_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Name",
+            "description": "Null: the company root"
+          },
+          "from_label": {
+            "type": "string",
+            "title": "From Label"
+          },
+          "to_label": {
+            "type": "string",
+            "title": "To Label"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role_label",
+          "level",
+          "unit_name",
+          "from_label",
+          "to_label",
+          "months"
+        ],
+        "title": "JobPeriodOut",
+        "description": "One stretch of a former employee's time at the company (23.6, M10b)."
       },
       "KeyPersonOut": {
         "properties": {
@@ -15959,6 +16520,41 @@
           "energy"
         ],
         "title": "LeasePreviewOut"
+      },
+      "LedOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "unit | seat | product | storyline"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "from_label": {
+            "type": "string",
+            "title": "From Label"
+          },
+          "to_label": {
+            "type": "string",
+            "title": "To Label"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "name",
+          "from_label",
+          "to_label",
+          "months"
+        ],
+        "title": "LedOut",
+        "description": "Something a former employee led or was part of (23.6, M10b)."
       },
       "LoanIn": {
         "properties": {
@@ -16726,6 +17322,23 @@
           "budget_cents"
         ],
         "title": "MarketingIn"
+      },
+      "MarketingSplitIn": {
+        "properties": {
+          "shares": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shares"
+        ],
+        "title": "MarketingSplitIn",
+        "description": "Shares of the marketing budget by region, in basis points summing to 10,000; empty\nreturns to the default split by revenue (23.5)."
       },
       "MoraleBreakdownOut": {
         "properties": {
@@ -18033,6 +18646,14 @@
               }
             ],
             "description": "From stage 3 (M8)"
+          },
+          "active_effects": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveEffectOut"
+            },
+            "type": "array",
+            "title": "Active Effects",
+            "description": "Every running event modifier (23.2, M10b)"
           }
         },
         "type": "object",
@@ -18069,7 +18690,8 @@
           "stage_since_turn",
           "stage_since_label",
           "stage_history",
-          "funding"
+          "funding",
+          "active_effects"
         ],
         "title": "OverviewOut"
       },
@@ -18613,6 +19235,14 @@
             "type": "array",
             "title": "Morale History",
             "description": "Last 12 months, oldest first"
+          },
+          "active_effects": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveEffectOut"
+            },
+            "type": "array",
+            "title": "Active Effects",
+            "description": "Event modifiers on this person's morale (M10b)"
           }
         },
         "type": "object",
@@ -18636,7 +19266,8 @@
           "interests",
           "work_style",
           "work_style_matches_role",
-          "morale_history"
+          "morale_history",
+          "active_effects"
         ],
         "title": "PersonProfileOut"
       },
@@ -19465,6 +20096,33 @@
             "type": "array",
             "title": "Segments"
           },
+          "active_effects": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveEffectOut"
+            },
+            "type": "array",
+            "title": "Active Effects",
+            "description": "Event modifiers on this product (23.2, M10b)"
+          },
+          "team_strength": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamStrengthOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Output against the maintenance and full-speed lines (23.4); null if retired"
+          },
+          "regional_prices": {
+            "items": {
+              "$ref": "#/components/schemas/RegionalPriceOut"
+            },
+            "type": "array",
+            "title": "Regional Prices",
+            "description": "Its prices in other regions it has launched in (M10b)"
+          },
           "assigned_units": {
             "items": {
               "$ref": "#/components/schemas/AssignedUnitOut"
@@ -19562,6 +20220,9 @@
           "brand_trend",
           "counts_users",
           "segments",
+          "active_effects",
+          "team_strength",
+          "regional_prices",
           "assigned_units",
           "builders",
           "sellers",
@@ -19731,6 +20392,30 @@
             ],
             "title": "Launch Problem",
             "description": "Why it cannot launch there now"
+          },
+          "marketing_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marketing Share",
+            "description": "Share of the product's marketing budget spent here (23.5); null if not selling here"
+          },
+          "awareness_factor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awareness Factor",
+            "description": "Self-serve awareness here against the global awareness, from the marketing share (23.5): 0.7 with no spend, 1 at the default split"
           }
         },
         "type": "object",
@@ -19751,7 +20436,9 @@
           "rivals",
           "launch_cost_cents",
           "live_label",
-          "launch_problem"
+          "launch_problem",
+          "marketing_share",
+          "awareness_factor"
         ],
         "title": "ProductRegionOut"
       },
@@ -19814,6 +20501,23 @@
           "localize_months": {
             "type": "integer",
             "title": "Localize Months"
+          },
+          "marketing_custom": {
+            "type": "boolean",
+            "title": "Marketing Custom",
+            "description": "The player set the split; false: it follows revenue by region (23.5)"
+          },
+          "rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rules",
+            "description": "How reach works abroad, one line per segment type"
+          },
+          "marketing_energy": {
+            "type": "integer",
+            "title": "Marketing Energy"
           }
         },
         "type": "object",
@@ -19824,7 +20528,10 @@
           "team",
           "time_zone_factor",
           "launch_energy",
-          "localize_months"
+          "localize_months",
+          "marketing_custom",
+          "rules",
+          "marketing_energy"
         ],
         "title": "ProductRegionsOut"
       },
@@ -20271,6 +20978,59 @@
           "price_cents"
         ],
         "title": "RegionalPriceIn"
+      },
+      "RegionalPriceOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "segment_label": {
+            "type": "string",
+            "title": "Segment Label"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "default_price_cents": {
+            "type": "integer",
+            "title": "Default Price Cents",
+            "description": "p_ref x the region's price index"
+          },
+          "live": {
+            "type": "boolean",
+            "title": "Live",
+            "description": "Selling there now (false while localizing)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "region_label",
+          "segment",
+          "segment_label",
+          "price_cents",
+          "default_price_cents",
+          "live"
+        ],
+        "title": "RegionalPriceOut",
+        "description": "A price the product charges in another region (19.5; M10b)."
       },
       "RelationshipOut": {
         "properties": {
@@ -20760,6 +21520,21 @@
             },
             "type": "array",
             "title": "Secondary Skills"
+          },
+          "product_function": {
+            "type": "string",
+            "title": "Product Function",
+            "description": "builder, seller, marketer or none (11.3)"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "What the role does (23.4, M10b)"
+          },
+          "why_hire": {
+            "type": "string",
+            "title": "Why Hire",
+            "description": "When to hire one (23.4, M10b)"
           }
         },
         "type": "object",
@@ -20767,7 +21542,10 @@
           "key",
           "label",
           "primary_skills",
-          "secondary_skills"
+          "secondary_skills",
+          "product_function",
+          "summary",
+          "why_hire"
         ],
         "title": "RoleOut"
       },
@@ -22484,6 +23262,22 @@
         ],
         "title": "StorylineOut"
       },
+      "StructureGuideOut": {
+        "properties": {
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/GuideSectionOut"
+            },
+            "type": "array",
+            "title": "Sections"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sections"
+        ],
+        "title": "StructureGuideOut"
+      },
       "SupportPoolOut": {
         "properties": {
           "key": {
@@ -22807,6 +23601,45 @@
           "builders"
         ],
         "title": "TeamRegionOut"
+      },
+      "TeamStrengthOut": {
+        "properties": {
+          "estimated_output": {
+            "type": "number",
+            "title": "Estimated Output",
+            "description": "Builder output a month as you can judge it: from the displayed ranges and noticed tags (est.; ADR-0007)"
+          },
+          "maintains": {
+            "type": "number",
+            "title": "Maintains",
+            "description": "Below this the product slips (0.25 x scope)"
+          },
+          "full_speed": {
+            "type": "number",
+            "title": "Full Speed",
+            "description": "Quality and features at full speed (scope)"
+          },
+          "builders_to_add": {
+            "type": "integer",
+            "title": "Builders To Add",
+            "description": "About how many builders to reach the next line"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The line the product screen shows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "estimated_output",
+          "maintains",
+          "full_speed",
+          "builders_to_add",
+          "text"
+        ],
+        "title": "TeamStrengthOut",
+        "description": "The team's output against the two lines that matter (11.4; 23.4, M10b)."
       },
       "TermSheetOut": {
         "properties": {

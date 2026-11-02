@@ -34,6 +34,7 @@ import { formatBpPercent, formatMoneyWhole, formatRatio, humanize } from '../lib
 import { formatFraction, formatShares } from '../lib/finance';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 import { useTableViews } from '../hooks/useTableViews';
+import { RoleHelp } from '../components/RoleHelp';
 
 type Channel = HiringMeta['channels'][number];
 const helper = createColumnHelper<GameTableFeatures, Person>();
@@ -485,6 +486,7 @@ function OpenSearchPanel({
           .map((r) => ({ value: r.key, label: r.label }))}
         data-testid="search-role"
       />
+      <RoleHelp role={hiring.roles.find((r) => r.key === role)} />
       <div
         role="radiogroup"
         aria-label="Channel"

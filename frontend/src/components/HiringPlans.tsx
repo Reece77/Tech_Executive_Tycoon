@@ -34,6 +34,7 @@ import { useTableViews } from '../hooks/useTableViews';
 import { AttributeRange } from './AttributeRange';
 import { DataTable } from './DataTable';
 import { LoadError } from './ScreenState';
+import { RoleHelp } from './RoleHelp';
 
 const helper = createColumnHelper<GameTableFeatures, HiringPlan>();
 const BP = 10_000; // basis points in 1.0 (display and input conversion only)
@@ -393,6 +394,7 @@ function PlanDialog({
               .sort((a, b) => a.label.localeCompare(b.label))
               .map((r) => ({ value: r.key, label: r.label }))}
           />
+          <RoleHelp role={hiring.roles.find((r) => r.key === role)} />
           <NumberInput
             label="How many"
             min={1}

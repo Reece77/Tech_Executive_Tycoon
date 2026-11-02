@@ -19,6 +19,7 @@ from tst.api.schemas.geo import (
     LaunchRegionIn,
     LeaseIn,
     LeasePreviewOut,
+    MarketingSplitIn,
     ProductRegionsActionOut,
     ProductRegionsOut,
     RegionalPriceIn,
@@ -31,6 +32,7 @@ from tst.sim.actions.geo import (
     CloseOffice,
     LaunchInRegion,
     LeaseOffice,
+    SetMarketingSplit,
     SetRegionalPrice,
     SetUnitOffice,
 )
@@ -171,4 +173,24 @@ def set_regional_price(
     action = SetRegionalPrice(
         _founder_id(_state(path)), product_id, region, body.segment, body.price_cents
     )
+    return _regions_act(path, data, action, product_id)
+
+
+@router.post(
+    "/products/{product_id}/regions/marketing",
+    response_model=ProductRegionsActionOut,
+    responses=ERRORS,
+    operation_id="setMarketingSplit",
+)
+def set_marketing_split(
+    save_id: str,
+    product_id: int,
+    body: MarketingSplitIn,
+    settings: SettingsDep,
+    data: DataDep,
+) -> ProductRegionsActionOut:
+    """Split the product's marketing across its regions (23.5); empty: back to by revenue."""
+    path = _path(settings, save_id)
+    shares = tuple(sorted(body.shares.items()))
+    action = SetMarketingSplit(_founder_id(_state(path)), product_id, shares)
     return _regions_act(path, data, action, product_id)

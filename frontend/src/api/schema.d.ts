@@ -554,6 +554,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/inbox/{item_id}/bookmark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bookmark Inbox Item
+         * @description Star a message: it stays in the inbox, never auto-archived (23.1, M10b).
+         */
+        post: operations["bookmarkInboxItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/inbox/{item_id}/unbookmark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unbookmark Inbox Item */
+        post: operations["unbookmarkInboxItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/founder/energy": {
         parameters: {
             query?: never;
@@ -580,6 +617,26 @@ export interface paths {
         };
         /** Get Org */
         get: operations["getOrg"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/org/guide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Org Guide
+         * @description What units, managers, divisions, support and seats do, with live numbers (23.4).
+         */
+        get: operations["getOrgGuide"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1603,8 +1660,8 @@ export interface paths {
         };
         /**
          * List Events
-         * @description This month's events to answer (minor and major resolve to their first choice at
-         *     Continue; an open critical event blocks it) and recently answered ones (16.3).
+         * @description This month's events to answer (minor ones resolve to their first choice at Continue;
+         *     open major and critical events block it, 23.1) and recently answered ones (16.3).
          */
         get: operations["listEvents"];
         put?: never;
@@ -2161,6 +2218,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/products/{product_id}/regions/marketing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Marketing Split
+         * @description Split the product's marketing across its regions (23.5); empty: back to by revenue.
+         */
+        post: operations["setMarketingSplit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -2379,6 +2456,32 @@ export interface components {
             energy: components["schemas"]["EnergyOut"];
             /** Unread Inbox */
             unread_inbox: number;
+        };
+        /**
+         * ActiveEffectOut
+         * @description A running event modifier (23.2, M10b): what it does, where from, how long is left.
+         */
+        ActiveEffectOut: {
+            /** Modifier Id */
+            modifier_id: number;
+            /** Event Id */
+            event_id: number | null;
+            /**
+             * Source
+             * @description The event's title
+             */
+            source: string;
+            /** Stat */
+            stat: string;
+            /**
+             * Text
+             * @description e.g. '+5% brand target for Pipeline for 4 months'
+             */
+            text: string;
+            /** Value Pct */
+            value_pct: number;
+            /** Months Left */
+            months_left: number;
         };
         /**
          * AppealWeightsOut
@@ -2971,6 +3074,11 @@ export interface components {
              * @description Last 12 months, oldest first
              */
             morale_history: components["schemas"]["MoralePointOut"][];
+            /**
+             * Active Effects
+             * @description Event modifiers on this person's morale (M10b)
+             */
+            active_effects: components["schemas"]["ActiveEffectOut"][];
             learned: components["schemas"]["LearnedOut"];
         };
         /** ChooseEventIn */
@@ -3439,12 +3547,38 @@ export interface components {
             /** @description Null without a grant */
             options?: components["schemas"]["OptionsOut"] | null;
         };
+        /**
+         * EnergyAdjustmentOut
+         * @description Why this month's founder energy differs from the usual (23.2, M10b).
+         */
+        EnergyAdjustmentOut: {
+            /**
+             * Label
+             * @description e.g. '-10 from A director calls between meetings'
+             */
+            label: string;
+            /**
+             * Value
+             * @description Energy points (or percent, for a modifier)
+             */
+            value: number;
+            /**
+             * Percent
+             * @description True: a modifier on monthly energy, in percent
+             */
+            percent: boolean;
+        };
         /** EnergyOut */
         EnergyOut: {
             /** Energy */
             energy: number;
             /** Max */
             max: number;
+            /**
+             * Adjustments
+             * @description Event effects on this month's energy (M10b)
+             */
+            adjustments: components["schemas"]["EnergyAdjustmentOut"][];
         };
         /**
          * ErrorOut
@@ -3457,6 +3591,11 @@ export interface components {
             message: string;
             /** Event Id */
             event_id?: number | null;
+            /**
+             * Event Ids
+             * @description events_open: the major and critical events to answer (M10b)
+             */
+            event_ids?: number[] | null;
             /**
              * Retryable
              * @description True: refused before anything was written, so the same request may be sent again (save_busy; M8r). Absent: do not retry automatically.
@@ -3471,9 +3610,14 @@ export interface components {
             label: string;
             /**
              * Effects
-             * @description What the choice does, in words with a size
+             * @description What the choice does, as numbers: '+3 brand for Pipeline', 'costs $8,000', '+5% brand target for Pipeline for 12 months' (23.2, M10b)
              */
             effects: string[];
+            /**
+             * Do Nothing
+             * @description An explicit 'Do nothing' choice: no effect (23.2)
+             */
+            do_nothing: boolean;
         };
         /** EventLinkOut */
         EventLinkOut: {
@@ -3541,9 +3685,14 @@ export interface components {
             to_answer: number;
             /**
              * Blocking Event Id
-             * @description An open critical event blocks Continue
+             * @description An open critical event: it opens as a modal and blocks Continue
              */
             blocking_event_id: number | null;
+            /**
+             * Blocking Event Ids
+             * @description Every open major and critical event: each blocks Continue (23.1, M10b)
+             */
+            blocking_event_ids: number[];
             /** Open */
             open: components["schemas"]["EventOut"][];
             /**
@@ -3693,6 +3842,16 @@ export interface components {
              * @description Their History entries, newest first
              */
             history: components["schemas"]["HistoryRowOut"][];
+            /**
+             * Job History
+             * @description Each role, level and unit they held, oldest first (23.6, M10b)
+             */
+            job_history: components["schemas"]["JobPeriodOut"][];
+            /**
+             * Led
+             * @description Units they led, seats they held, products their unit built and the storylines they were in (23.6, M10b)
+             */
+            led: components["schemas"]["LedOut"][];
         };
         /**
          * FounderIn
@@ -3978,6 +4137,26 @@ export interface components {
              * @default false
              */
             next_vest_is_cliff?: boolean;
+        };
+        /**
+         * GuideSectionOut
+         * @description One part of the Org structure guide (23.4, M10b).
+         */
+        GuideSectionOut: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /**
+             * Text
+             * @description What this part of the structure does
+             */
+            text: string;
+            /**
+             * Lines
+             * @description This company's live numbers
+             */
+            lines: string[];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -4310,6 +4489,11 @@ export interface components {
              */
             archived: boolean;
             /**
+             * Bookmarked
+             * @description Starred: never auto-archived (23.1, M10b)
+             */
+            bookmarked: boolean;
+            /**
              * Quote
              * @description An exit-interview line (M6, 16.8)
              */
@@ -4336,6 +4520,27 @@ export interface components {
             offset?: number;
             /** Items */
             items: components["schemas"]["InboxItemOut"][];
+        };
+        /**
+         * JobPeriodOut
+         * @description One stretch of a former employee's time at the company (23.6, M10b).
+         */
+        JobPeriodOut: {
+            /** Role Label */
+            role_label: string;
+            /** Level */
+            level: string;
+            /**
+             * Unit Name
+             * @description Null: the company root
+             */
+            unit_name: string | null;
+            /** From Label */
+            from_label: string;
+            /** To Label */
+            to_label: string;
+            /** Months */
+            months: number;
         };
         /** KeyPersonOut */
         KeyPersonOut: {
@@ -4543,6 +4748,25 @@ export interface components {
             example_rate_cents: number;
             /** Energy */
             energy: number;
+        };
+        /**
+         * LedOut
+         * @description Something a former employee led or was part of (23.6, M10b).
+         */
+        LedOut: {
+            /**
+             * Kind
+             * @description unit | seat | product | storyline
+             */
+            kind: string;
+            /** Name */
+            name: string;
+            /** From Label */
+            from_label: string;
+            /** To Label */
+            to_label: string;
+            /** Months */
+            months: number;
         };
         /** LoanIn */
         LoanIn: {
@@ -4914,6 +5138,17 @@ export interface components {
         MarketingIn: {
             /** Budget Cents */
             budget_cents: number;
+        };
+        /**
+         * MarketingSplitIn
+         * @description Shares of the marketing budget by region, in basis points summing to 10,000; empty
+         *     returns to the default split by revenue (23.5).
+         */
+        MarketingSplitIn: {
+            /** Shares */
+            shares: {
+                [key: string]: number;
+            };
         };
         /**
          * MoraleBreakdownOut
@@ -5482,6 +5717,11 @@ export interface components {
             funding: components["schemas"]["FundingTileOut"];
             /** @description From stage 3 (M8) */
             support?: components["schemas"]["SupportTileOut"] | null;
+            /**
+             * Active Effects
+             * @description Every running event modifier (23.2, M10b)
+             */
+            active_effects: components["schemas"]["ActiveEffectOut"][];
         };
         /**
          * OwnershipEventOut
@@ -5722,6 +5962,11 @@ export interface components {
              * @description Last 12 months, oldest first
              */
             morale_history: components["schemas"]["MoralePointOut"][];
+            /**
+             * Active Effects
+             * @description Event modifiers on this person's morale (M10b)
+             */
+            active_effects: components["schemas"]["ActiveEffectOut"][];
         };
         /** PersonRecordOut */
         PersonRecordOut: {
@@ -6075,6 +6320,18 @@ export interface components {
             counts_users: boolean;
             /** Segments */
             segments: components["schemas"]["ProductSegmentOut"][];
+            /**
+             * Active Effects
+             * @description Event modifiers on this product (23.2, M10b)
+             */
+            active_effects: components["schemas"]["ActiveEffectOut"][];
+            /** @description Output against the maintenance and full-speed lines (23.4); null if retired */
+            team_strength: components["schemas"]["TeamStrengthOut"] | null;
+            /**
+             * Regional Prices
+             * @description Its prices in other regions it has launched in (M10b)
+             */
+            regional_prices: components["schemas"]["RegionalPriceOut"][];
             /** Assigned Units */
             assigned_units: components["schemas"]["AssignedUnitOut"][];
             /** Builders */
@@ -6202,6 +6459,16 @@ export interface components {
              * @description Why it cannot launch there now
              */
             launch_problem: string | null;
+            /**
+             * Marketing Share
+             * @description Share of the product's marketing budget spent here (23.5); null if not selling here
+             */
+            marketing_share: number | null;
+            /**
+             * Awareness Factor
+             * @description Self-serve awareness here against the global awareness, from the marketing share (23.5): 0.7 with no spend, 1 at the default split
+             */
+            awareness_factor: number | null;
         };
         /** ProductRegionsActionOut */
         ProductRegionsActionOut: {
@@ -6235,6 +6502,18 @@ export interface components {
             launch_energy: number;
             /** Localize Months */
             localize_months: number;
+            /**
+             * Marketing Custom
+             * @description The player set the split; false: it follows revenue by region (23.5)
+             */
+            marketing_custom: boolean;
+            /**
+             * Rules
+             * @description How reach works abroad, one line per segment type
+             */
+            rules: string[];
+            /** Marketing Energy */
+            marketing_energy: number;
         };
         /** ProductSegmentOut */
         ProductSegmentOut: {
@@ -6422,6 +6701,32 @@ export interface components {
             segment: string;
             /** Price Cents */
             price_cents: number;
+        };
+        /**
+         * RegionalPriceOut
+         * @description A price the product charges in another region (19.5; M10b).
+         */
+        RegionalPriceOut: {
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Segment */
+            segment: string;
+            /** Segment Label */
+            segment_label: string;
+            /** Price Cents */
+            price_cents: number | null;
+            /**
+             * Default Price Cents
+             * @description p_ref x the region's price index
+             */
+            default_price_cents: number;
+            /**
+             * Live
+             * @description Selling there now (false while localizing)
+             */
+            live: boolean;
         };
         /** RelationshipOut */
         RelationshipOut: {
@@ -6623,6 +6928,21 @@ export interface components {
             primary_skills: string[];
             /** Secondary Skills */
             secondary_skills: string[];
+            /**
+             * Product Function
+             * @description builder, seller, marketer or none (11.3)
+             */
+            product_function: string;
+            /**
+             * Summary
+             * @description What the role does (23.4, M10b)
+             */
+            summary: string;
+            /**
+             * Why Hire
+             * @description When to hire one (23.4, M10b)
+             */
+            why_hire: string;
         };
         /** RoundIn */
         RoundIn: {
@@ -7311,6 +7631,11 @@ export interface components {
             /** Started Label */
             started_label: string;
         };
+        /** StructureGuideOut */
+        StructureGuideOut: {
+            /** Sections */
+            sections: components["schemas"]["GuideSectionOut"][];
+        };
         /** SupportPoolOut */
         SupportPoolOut: {
             /**
@@ -7477,6 +7802,37 @@ export interface components {
             label: string;
             /** Builders */
             builders: number;
+        };
+        /**
+         * TeamStrengthOut
+         * @description The team's output against the two lines that matter (11.4; 23.4, M10b).
+         */
+        TeamStrengthOut: {
+            /**
+             * Estimated Output
+             * @description Builder output a month as you can judge it: from the displayed ranges and noticed tags (est.; ADR-0007)
+             */
+            estimated_output: number;
+            /**
+             * Maintains
+             * @description Below this the product slips (0.25 x scope)
+             */
+            maintains: number;
+            /**
+             * Full Speed
+             * @description Quality and features at full speed (scope)
+             */
+            full_speed: number;
+            /**
+             * Builders To Add
+             * @description About how many builders to reach the next line
+             */
+            builders_to_add: number;
+            /**
+             * Text
+             * @description The line the product screen shows
+             */
+            text: string;
         };
         /** TermSheetOut */
         TermSheetOut: {
@@ -9510,6 +9866,124 @@ export interface operations {
             };
         };
     };
+    bookmarkInboxItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    unbookmarkInboxItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     getFounderEnergy: {
         parameters: {
             query?: never;
@@ -9586,6 +10060,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrgOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getOrgGuide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StructureGuideOut"];
                 };
             };
             /** @description Bad Request */
@@ -14899,6 +15431,69 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["RegionalPriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductRegionsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setMarketingSplit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarketingSplitIn"];
             };
         };
         responses: {

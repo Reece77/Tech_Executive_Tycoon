@@ -67,7 +67,7 @@ def hiring_client(tmp_path: Path) -> Iterator[Client]:
 def test_full_hiring_flow(api: Client) -> None:
     ov = api.get(f"{BASE}/overview")
     assert ov["mission"] == ["ai", "enterprise"]
-    assert ov["energy"] == {"energy": 60, "max": 60}
+    assert ov["energy"] == {"energy": 60, "max": 60, "adjustments": []}
     assert ov["headcount"] == 1 and ov["stage"] == 0
 
     people = api.get(f"{BASE}/people")
@@ -81,7 +81,7 @@ def test_full_hiring_flow(api: Client) -> None:
         f"{BASE}/recruitment/searches", {"role": "software_engineer", "channel": "job_post"}, 201
     )
     assert search["monthly_cost_cents"] == 50_000 and search["status"] == "open"
-    assert api.get(f"{BASE}/founder/energy") == {"energy": 55, "max": 60}
+    assert api.get(f"{BASE}/founder/energy") == {"energy": 55, "max": 60, "adjustments": []}
     assert [s["search_id"] for s in api.get(f"{BASE}/recruitment/searches")] == [1]
 
     api.post(f"{BASE}/advance")

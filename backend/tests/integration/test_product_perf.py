@@ -7,9 +7,9 @@ import contextlib
 import time
 from pathlib import Path
 
-from tests.helpers import FIRST_PRODUCT, fund_save
+from tests.helpers import FIRST_PRODUCT, fund_save, play_turn
 from tests.integration.test_api_org import seed_staff
-from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
+from tst.db.repository import create_save, load_state, open_session, run_action
 from tst.loader import LoadedData
 from tst.sim.actions import (
     AssignUnit,
@@ -66,7 +66,7 @@ def test_product_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
             if product.status == "in_development" and product.quality >= 25:
                 with contextlib.suppress(LaunchNotReadyError):  # features not there yet
                     run_action(path, loaded, LaunchProduct(founder, product.id))
-        run_turn(path, loaded)
+        play_turn(path, loaded)  # answers a critical event first (M10b: key exits)
     per_turn = (time.perf_counter() - start) / TURNS
     with open_session(path) as session:
         state = load_state(session)

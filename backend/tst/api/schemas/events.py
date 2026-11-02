@@ -13,7 +13,11 @@ from pydantic import BaseModel, Field
 class EventChoiceOut(BaseModel):
     key: str
     label: str
-    effects: list[str] = Field(description="What the choice does, in words with a size")
+    effects: list[str] = Field(
+        description="What the choice does, as numbers: '+3 brand for Pipeline', 'costs $8,000', "
+        "'+5% brand target for Pipeline for 12 months' (23.2, M10b)"
+    )
+    do_nothing: bool = Field(description="An explicit 'Do nothing' choice: no effect (23.2)")
 
 
 class EventStorylineOut(BaseModel):
@@ -42,7 +46,12 @@ class EventOut(BaseModel):
 
 class EventsOut(BaseModel):
     to_answer: int
-    blocking_event_id: int | None = Field(description="An open critical event blocks Continue")
+    blocking_event_id: int | None = Field(
+        description="An open critical event: it opens as a modal and blocks Continue"
+    )
+    blocking_event_ids: list[int] = Field(
+        description="Every open major and critical event: each blocks Continue (23.1, M10b)"
+    )
     open: list[EventOut]
     recent: list[EventOut] = Field(description="Answered events of the last few months")
     ai_spend_cents: float = Field(description="Real cents spent this calendar month")

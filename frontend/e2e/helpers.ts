@@ -26,8 +26,24 @@ export async function setupGame(page: Page, opts: SetupOptions): Promise<string>
   return new URL(page.url()).pathname.split('/')[2];
 }
 
-/** Press Continue and wait for the date to move on. */
+/** Answer every open major and critical event with its first choice through the API, as a
+ * player must before Continue (23.1, M10b). Flows that are not about events use this. */
+export async function answerBlocking(page: Page) {
+  const save = new URL(page.url()).pathname.split('/')[2];
+  const events = await (await page.request.get(`/api/saves/${save}/events`)).json();
+  for (const id of events.blocking_event_ids as number[]) {
+    await page.request.post(`/api/saves/${save}/events/${id}/choose`, { data: { choice: 'A' } });
+  }
+  if ((events.blocking_event_ids as number[]).length) {
+    await page.reload();
+    await expect(page.getByTestId('continue-blocked')).toHaveCount(0);
+  }
+}
+
+/** Press Continue and wait for the date to move on; open major and critical events are
+ * answered first with their first choice (23.1, M10b). */
 export async function continueMonth(page: Page) {
+  await answerBlocking(page);
   const date = page.getByTestId('game-date');
   const before = await date.textContent();
   await page.getByTestId('continue').click();
@@ -95,11 +111,10 @@ export async function api<T>(
  * flows that are not about events).
  */
 export async function answerCritical(request: APIRequestContext, base: string) {
-  type Events = { blocking_event_id: number | null };
+  // Since M10b (23.1) open major events block Continue too: answer every blocking event.
+  type Events = { blocking_event_ids: number[] };
   const events = await api<Events>(request, 'GET', `${base}/events`);
-  if (events.blocking_event_id !== null) {
-    await api(request, 'POST', `${base}/events/${events.blocking_event_id}/choose`, {
-      choice: 'A',
-    });
+  for (const id of events.blocking_event_ids) {
+    await api(request, 'POST', `${base}/events/${id}/choose`, { choice: 'A' });
   }
 }

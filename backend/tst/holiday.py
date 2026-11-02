@@ -23,6 +23,7 @@ from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.errors import CriticalEventOpenError, GameOverError, SimError
+from tst.sim.events.effects import blocking_events
 from tst.sim.finance.statements import projected_runway
 from tst.sim.money import Cents, format_money
 from tst.sim.state import GameState, company_cash
@@ -117,11 +118,11 @@ def check_start(path: Path, data: LoadedData, months: int, stop: str) -> None:
         state = repository.read_state(session)
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
-    for event in state.open_events(state.player.id):
-        if event.severity == "critical" and event.status == "open":
-            raise CriticalEventOpenError(
-                f"answer the critical event {event.title or event.template_id!r} first", event.id
-            )
+    for event in blocking_events(state):  # major ones too (23.1, M10b)
+        raise CriticalEventOpenError(
+            f"answer the {event.severity} event {event.title or event.template_id!r} first",
+            event.id,
+        )
 
 
 @dataclass
@@ -282,6 +283,7 @@ def write_summary(
             link_id=None,
             read=False,
             archived=False,
+            bookmarked=False,
         )
         session.add(row)
         session.flush()

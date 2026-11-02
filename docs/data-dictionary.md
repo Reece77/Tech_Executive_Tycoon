@@ -2,7 +2,7 @@
 
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
-- **Schema version:** 19 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`, `0014_free_agents`, `0015_relationships`, `0016_events`, `0017_save_display_name`, `0018_person_rating_log`, `0019_coo_answer`). Alembic also records its revision in its own `alembic_version` table.
+- **Schema version:** 26 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`, `0014_free_agents`, `0015_relationships`, `0016_events`, `0017_save_display_name`, `0018_person_rating_log`, `0019_coo_answer`, `0020_divisions`, `0021_former_staff`, `0022_capital_macro`, `0023_geo`, `0024_inbox_bookmark`, `0025_event_modifiers`, `0026_marketing_split`). Alembic also records its revision in its own `alembic_version` table.
 - **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
@@ -557,7 +557,7 @@ One row per seat. A table of its own rather than a column on `board_seat`, becau
 
 ### inbox_item
 
-Messages for the player company, rendered from `inbox_templates.yaml` when the turn or action that produced them is saved. Rows are only appended, except `read` and `archived`. Index `ix_inbox_item_company_read (company_id, read)`.
+Messages for the player company, rendered from `inbox_templates.yaml` when the turn or action that produced them is saved. Rows are only appended, except `read`, `archived` and `bookmarked`. Index `ix_inbox_item_company_read (company_id, read)`.
 
 | Column | Type | Null | Description |
 | --- | --- | --- | --- |
@@ -570,7 +570,8 @@ Messages for the player company, rendered from `inbox_templates.yaml` when the t
 | `link_kind` | VARCHAR(16) | yes | `person`, `candidate`, `search`, or null. |
 | `link_id` | INTEGER | yes | Id of the linked person or search. |
 | `read` | BOOLEAN | no | Marked read by the player. |
-| `archived` | BOOLEAN | no | Archived by the player (migration `0012_inbox_archive`, M4c): hidden from the inbox unless the Archived filter is on; archiving also marks it read. UI state only: no game effect, not in `decision_log`. |
+| `archived` | BOOLEAN | no | Archived by the player (migration `0012_inbox_archive`, M4c): hidden from the inbox unless the Archived filter is on; archiving also marks it read. Since M10b (formulas.md 23.1) an answered event's item archives itself, and a read, unbookmarked item `inbox.auto_archive_months` (3) old archives at month end. UI state only: no game effect, not in `decision_log`. |
+| `bookmarked` | BOOLEAN | no | Starred by the player (migration `0024_inbox_bookmark`, M10b): never auto-archived; starring an archived item brings it back. UI state only. |
 
 ## Rivals (migration `0013_rivals`, M5)
 
@@ -663,7 +664,7 @@ Phase 12 queues next month's events as `pending` rows; after the turn commits th
 | `storyline_id` | INTEGER FK → storyline.id | yes | The storyline this event is a step of. |
 | `status` | VARCHAR(16) | no | `pending`, `open`, `answered` or `auto`. |
 | `title` / `body` | VARCHAR(160) / TEXT | no | Written by the LLM or the template (empty while pending). |
-| `choices` | JSON | no | `[{key, label, effects: [{type, target, value}]}]`, validated and clamped. |
+| `choices` | JSON | no | `[{key, label, effects: [{type, target, value}]}]`, validated and clamped. Since M10b (23.2) a `modifier` effect also carries `stat` and `months`, and an explicit "Do nothing" choice carries `do_nothing: true` (no effects). |
 | `chosen` / `resolved_turn` | VARCHAR(1) / INTEGER | yes | The choice taken and when. |
 | `source` | VARCHAR(16) | no | Who wrote the words: `claude`, `template`, `mock` or `replay`. |
 
@@ -1001,3 +1002,32 @@ Side tables, as M8's: migration 0013 loads `company`, `person`, `org_unit` and `
 | `added_turn` | INTEGER | no | When the row was added. |
 
 `save_meta.schema_version` is 23.
+
+## Event modifiers (migration `0025_event_modifiers`, M10b)
+
+### event_modifier
+
+An event choice's lasting percent change to one stat (formulas.md 23.2). It applies every month from `start_turn` up to but not including `end_turn`, then expires at that month end. Rows stay after they expire, for history; the game state loads those still running (`end_turn` > the current turn). Index on `end_turn`.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; the next id is max(id) + 1 (not in `save_meta`). |
+| `company_id` | INTEGER FK company | no | The company (the player's in M10b). |
+| `event_id` | INTEGER FK event | yes | The event whose choice started it. |
+| `target` | VARCHAR(32) | no | `product:<id>`, `unit:<id>`, `person:<id>`, `company:<id>` or `founder:<id>`. A company target reaches every product, unit and person. |
+| `stat` | VARCHAR(32) | no | `brand_target`, `quality_cap`, `builder_output`, `seller_capacity`, `awareness`, `churn`, `morale_target` or `founder_energy`. |
+| `value_pct` | FLOAT | no | Percent; the stat is multiplied by 1 + value_pct / 100. Held to `events.caps.modifier` (5 / 10 / 20 by severity). |
+| `start_turn` | INTEGER | no | The month it was chosen; it applies from this month. |
+| `end_turn` | INTEGER | no | The first month it no longer applies; at most `events.modifier_months` (6 / 12 / 12) after `start_turn`. |
+
+## Marketing by region (migration `0026_marketing_split`, M10b)
+
+### product_marketing_split
+
+A product's marketing budget split across the regions it sells in (formulas.md 23.5). No rows: the budget follows revenue by region. Rows for regions the product no longer sells in are ignored (the rest are renormalized). Primary key `(product_id, region)`.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `product_id` | INTEGER FK product | no | The product. |
+| `region` | VARCHAR(32) | no | `regions.yaml` key: the home region or one it is live in. |
+| `share_bp` | INTEGER | no | Its share of the budget, basis points; a product's rows sum to 10,000. |

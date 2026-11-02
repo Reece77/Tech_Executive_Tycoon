@@ -22,9 +22,9 @@ from tst.sim.events.data import (
 def test_the_library(loaded: LoadedData) -> None:
     templates = loaded.game_data.event_templates
     assert Counter(t.category for t in templates) == {
-        "personnel": 24,  # M6: 20; M7a: +4
-        "market": 14,  # M6: 12; M7a: +2
-        "operations": 12,  # M6: 10; M7a: +2
+        "personnel": 25,  # M6: 20; M7a: +4; M10b: key exit (23.3)
+        "market": 16,  # M6: 12; M7a: +2; M10b: the press storyline (23.3)
+        "operations": 14,  # M6: 10; M7a: +2; M10b: breach and outage (23.3)
         "finance": 8,
         "board": 6,
         "rivals": 4,
@@ -42,6 +42,7 @@ def test_the_library(loaded: LoadedData) -> None:
         "key_customer",
         "investor_say",
         "poaching_war",
+        "press_scrutiny",  # M10b: its second step is a press crisis (23.3)
     }
     for key in stories:
         steps = sorted(
@@ -66,7 +67,7 @@ def _template(**changes: Any) -> dict[str, Any]:
                 "label": "A",
                 "effects": [{"type": "morale_delta", "target": "person", "share": 0.5}],
             },
-            {"key": "B", "label": "B"},
+            {"key": "B", "label": "B", "do_nothing": True},  # 23.2: said as such
         ],
     }
     base.update(changes)

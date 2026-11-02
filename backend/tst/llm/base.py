@@ -26,6 +26,7 @@ EVENT_SCHEMA: dict[str, Any] = {
                 "properties": {
                     "key": {"type": "string", "enum": ["A", "B", "C"]},
                     "label": {"type": "string"},
+                    "do_nothing": {"type": "boolean"},  # M10b (23.2): no effects, said so
                     "effects": {
                         "type": "array",
                         "items": {
@@ -34,6 +35,9 @@ EVENT_SCHEMA: dict[str, Any] = {
                                 "type": {"type": "string"},
                                 "target": {"type": "string"},
                                 "value": {"type": "number"},
+                                # modifier only (M10b, 23.2)
+                                "stat": {"type": "string"},
+                                "months": {"type": "integer"},
                             },
                             "required": ["type", "target", "value"],
                             "additionalProperties": False,

@@ -2,6 +2,8 @@
 
 `geo <save dir> <name>`: a funded spinout with four senior engineers in a "Platform" team
 and a live B2B SaaS product ("Pipeline", SMB at $40) built by the company root.
+`small <save dir> <name>` (M10b): the same, but the product is built by a "Solo" team with a
+single junior engineer, below its maintenance line (23.4).
 
 Usage: uv run --project backend python tools/e2e_m9_save.py geo <save dir> <name>
 """
@@ -36,7 +38,7 @@ ENGINEERS = 4
 FUNDING_CENTS = 2_000_000_000  # $20M: the flows are not about solvency
 
 
-def geo(save_dir: Path, name: str, data: LoadedData) -> Path:
+def geo(save_dir: Path, name: str, data: LoadedData, small: bool = False) -> Path:
     path = create_save(
         name, SEED, "funded_spinout", company_name="Geo Co", data=data, save_dir=save_dir
     )
@@ -53,6 +55,7 @@ def geo(save_dir: Path, name: str, data: LoadedData) -> Path:
         before = load_state(session)
         game = Game(data, before, {})
         engineers = add_staff(game, "software_engineer", "senior", ENGINEERS)
+        solo = add_staff(game, "software_engineer", "junior", 1) if small else []
         sync_state(session, before, game.state)
     run_action(path, data, CreateUnit(FOUNDER, "team", "Platform"))
     for pid in engineers:
@@ -61,7 +64,12 @@ def geo(save_dir: Path, name: str, data: LoadedData) -> Path:
         product = load_state(session).next_ids.product
     run_action(path, data, CreateProduct(FOUNDER, "Pipeline", "b2b_saas", ("smb",)))
     run_action(path, data, SetPrice(FOUNDER, product, "smb", 4000))
-    run_action(path, data, AssignUnit(FOUNDER, product, None))
+    if small:  # one junior engineer builds it (M10b, 23.4)
+        run_action(path, data, CreateUnit(FOUNDER, "team", "Solo"))
+        run_action(path, data, MovePerson(FOUNDER, solo[0], 2))
+        run_action(path, data, AssignUnit(FOUNDER, product, 2))
+    else:
+        run_action(path, data, AssignUnit(FOUNDER, product, None))
     with open_session(path) as session, session.begin():
         before = load_state(session)
         pipeline = before.product(product)
@@ -80,8 +88,8 @@ def geo(save_dir: Path, name: str, data: LoadedData) -> Path:
 
 def main(argv: list[str]) -> int:
     data = load_all(Settings().data_dir)
-    if len(argv) == 3 and argv[0] == "geo":
-        print(geo(Path(argv[1]), argv[2], data))
+    if len(argv) == 3 and argv[0] in ("geo", "small"):
+        print(geo(Path(argv[1]), argv[2], data, small=argv[0] == "small"))
         return 0
     print(__doc__)
     return 2

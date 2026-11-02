@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 23
+SCHEMA_VERSION = 26
 
 
 class Base(DeclarativeBase):
@@ -399,6 +399,8 @@ class InboxItemRow(Base):
     read: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
     # Hidden from the inbox unless asked for (M4c, migration 0012); a UI flag, no game effect.
     archived: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+    # Kept in the inbox: never auto-archived (M10b, migration 0024); a UI flag.
+    bookmarked: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
 
 
 # --- Organization (M2a, migration 0005_org) --------------------------------------------------
@@ -783,6 +785,22 @@ class EventQueueRow(Base):
     loan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # M10 (0022)
 
 
+class EventModifierRow(Base):
+    """An event choice's lasting effect on one stat (M10b, formulas.md 23.2; 0025). Rows stay
+    after they expire, for history; the state loads those still running."""
+
+    __tablename__ = "event_modifier"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    event_id: Mapped[int | None] = mapped_column(ForeignKey("event.id"), nullable=True)
+    target: Mapped[str] = mapped_column(String(32), nullable=False)
+    stat: Mapped[str] = mapped_column(String(32), nullable=False)
+    value_pct: Mapped[float] = mapped_column(Float, nullable=False)
+    start_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_turn: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+
+
 class LLMTextRow(Base):
     __tablename__ = "llm_text"
     __table_args__ = (Index("ix_llm_text_turn_kind", "turn", "kind"),)
@@ -1053,6 +1071,17 @@ class RegionalMarketRow(Base):
     segment: Mapped[str] = mapped_column(String(32), primary_key=True)
     region: Mapped[str] = mapped_column(String(32), primary_key=True)
     addressable: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class MarketingSplitRow(Base):
+    """A product's marketing budget share in one region, bp (23.5, M10b; 0026). No rows: the
+    budget follows revenue by region."""
+
+    __tablename__ = "product_marketing_split"
+
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id"), primary_key=True)
+    region: Mapped[str] = mapped_column(String(32), primary_key=True)
+    share_bp: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 class ProductRegionRow(Base):

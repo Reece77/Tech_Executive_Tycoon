@@ -148,6 +148,9 @@ def hiring_meta(data: DataDep) -> HiringMetaOut:
                 label=r.label,
                 primary_skills=list(r.primary),
                 secondary_skills=list(r.secondary),
+                product_function=r.product_function,
+                summary=r.summary,
+                why_hire=r.why_hire,
             )
             for r in data.game_data.roles
         ],

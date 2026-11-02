@@ -11,6 +11,9 @@ class ErrorOut(BaseModel):
     code: str
     message: str
     event_id: int | None = None  # critical_event_open: the event blocking Continue (M6)
+    event_ids: list[int] | None = Field(
+        default=None, description="events_open: the major and critical events to answer (M10b)"
+    )
     retryable: bool | None = Field(
         default=None,
         description="True: refused before anything was written, so the same request may be "

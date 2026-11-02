@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from tst.api.schemas.people import EnergyOut, InboxItemOut
+from tst.api.schemas.people import ActiveEffectOut, EnergyOut, InboxItemOut
 from tst.db.repository import MAX_STORED_SEED
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.people.founder import FounderSpec
@@ -212,3 +212,6 @@ class OverviewOut(BaseModel):
     stage_history: list[StageReachedOut] = Field(description="Each stage reached, oldest first")
     funding: FundingTileOut
     support: SupportTileOut | None = Field(default=None, description="From stage 3 (M8)")
+    active_effects: list[ActiveEffectOut] = Field(
+        description="Every running event modifier (23.2, M10b)"
+    )

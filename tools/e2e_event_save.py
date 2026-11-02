@@ -4,10 +4,13 @@ in for the director, one event is queued for this month and written by the event
 the template adapter, as after a real turn. Events the director queued itself are answered
 first, so the scripted one is the only one open. `--critical` queues the critical payroll
 event instead (formulas.md 16.3); `--queued` opens no event but queues the payroll event's
-follow-up for next month, so the next Continue brings a known event. It runs before the API
+follow-up for next month, so the next Continue brings a known event; `--modifier` opens the
+minor award event whose first choice starts a morale-target modifier (M10b, 23.2). It runs
+before the API
 opens the file. Never used by the game itself.
 
-Usage: uv run --project backend python tools/e2e_event_save.py <dir> <name> [--critical|--queued]
+Usage: uv run --project backend python tools/e2e_event_save.py <dir> <name>
+       [--critical|--queued|--modifier]
 """
 
 from __future__ import annotations
@@ -45,6 +48,7 @@ def main(argv: list[str]) -> int:
         return 2
     save_dir, name = Path(argv[0]), argv[1]
     critical, queued = argv[2:] == ["--critical"], argv[2:] == ["--queued"]
+    modifier = argv[2:] == ["--modifier"]
     data = load_all(Settings().data_dir)
     offline = TemplateAdapter()
     path = create_save(
@@ -87,6 +91,16 @@ def main(argv: list[str]) -> int:
             months=2 if critical else None,
             cash_base_cents=cash_base_cents(150_000_000, 0, data.balance.events),
         )
+        if modifier:  # M10b: a minor event whose choice A starts a modifier (23.2)
+            event = replace(
+                event,
+                template_id="quiet_award",
+                category="market",
+                severity="minor",
+                trigger="quiet_month",
+                person_ids=(),
+                strength=0.3,
+            )
         new = with_event(replace(state, next_ids=ids), event)
         if queued:  # the event is answered already; its follow-up comes next month
             event = replace(

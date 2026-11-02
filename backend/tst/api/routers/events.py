@@ -36,6 +36,7 @@ from tst.llm.settings import (
 )
 from tst.sim.actions import ChooseEvent
 from tst.sim.errors import NotFoundError
+from tst.sim.events.effects import blocking_events
 from tst.ui_settings import TABLE_ID, TableViews, UISettings, load_ui, save_table
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["events"])
@@ -63,8 +64,8 @@ class UnknownEventError(NotFoundError):
 
 @router.get("/events", response_model=EventsOut, responses=ERRORS, operation_id="listEvents")
 def list_events(save_id: str, settings: SettingsDep, data: DataDep) -> EventsOut:
-    """This month's events to answer (minor and major resolve to their first choice at
-    Continue; an open critical event blocks it) and recently answered ones (16.3)."""
+    """This month's events to answer (minor ones resolve to their first choice at Continue;
+    open major and critical events block it, 23.1) and recently answered ones (16.3)."""
     state = _state(_path(settings, save_id))
     cid = state.player.id
     shown = [e for e in state.open_events(cid) if e.status == "open"]
@@ -79,10 +80,12 @@ def list_events(save_id: str, settings: SettingsDep, data: DataDep) -> EventsOut
         key=lambda e: -e.id,
     )[:RECENT_LIMIT]
     blocking = next((e.id for e in shown if e.severity == "critical"), None)
+    blocking_ids = [e.id for e in blocking_events(state)]
     llm = load_settings(settings.resolved_save_dir())
     return EventsOut(
         to_answer=len(shown),
         blocking_event_id=blocking,
+        blocking_event_ids=blocking_ids,
         open=[event_views.event_out(state, e, data) for e in shown],
         recent=[event_views.event_out(state, e, data) for e in recent],
         ai_spend_cents=round(month_spend(settings.resolved_save_dir()).cents, 4),

@@ -12,7 +12,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from tst.api import org_views, views
+from tst.api import guide_views, org_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
@@ -33,6 +33,7 @@ from tst.api.schemas.org import (
     RenameUnitIn,
     SetLeaderIn,
     SetPolicyIn,
+    StructureGuideOut,
 )
 from tst.api.schemas.people import PersonProfileOut
 from tst.db import inbox, repository
@@ -79,6 +80,14 @@ def _org_act(path: Path, data: LoadedData, action: Action) -> OrgActionOut:
 def get_org(save_id: str, settings: SettingsDep, data: DataDep) -> OrgOut:
     state = _state(_path(settings, save_id))
     return org_views.org_out(state, state.player.id, data)
+
+
+@router.get(
+    "/org/guide", response_model=StructureGuideOut, responses=ERRORS, operation_id="getOrgGuide"
+)
+def get_org_guide(save_id: str, settings: SettingsDep, data: DataDep) -> StructureGuideOut:
+    """What units, managers, divisions, support and seats do, with live numbers (23.4)."""
+    return guide_views.structure_guide(_state(_path(settings, save_id)), data)
 
 
 @router.post(

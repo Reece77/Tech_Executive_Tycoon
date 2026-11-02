@@ -8,11 +8,14 @@
 # "founder" and CA uses the best-fit role below (formulas.md section 1).
 # - product_function: what the role does on a product (formulas.md 11.3, M3): builder,
 #   seller, marketer or none. The founder always counts as a builder.
+# - summary and why_hire (M10b, formulas.md 23.4): what the role does and when to hire one.
 # Drafted for M1a; M1a adds the schema and loads this file. Values are design defaults.
 roles:
   - key: software_engineer
     label: Software engineer
     product_function: builder
+    summary: "Builds and maintains the product: features, fixes and the code that keeps quality up. A builder on any product; software engineering and infrastructure matter most."
+    why_hire: "Hire one when a product slips or develops too slowly: each adds output toward its maintenance line and full speed."
     primary: [software_engineering, infrastructure]
     secondary: [data, security, communication, product]
     work_style: builder
@@ -23,6 +26,8 @@ roles:
   - key: data_scientist
     label: Data scientist
     product_function: builder
+    summary: "Builds the data and machine-learning side of a product. A builder; data and ML research matter most, so they shine in AI and data-heavy categories."
+    why_hire: "Hire one for AI and analytics products, where their skills count for more of a builder's output."
     primary: [data, ml_research]
     secondary: [software_engineering, communication, product, strategy]
     work_style: researcher
@@ -33,6 +38,8 @@ roles:
   - key: devops_engineer
     label: DevOps engineer
     product_function: builder
+    summary: "Keeps infrastructure running and secure, and builds alongside engineers. A builder; infrastructure and security matter most."
+    why_hire: "Hire one as a product grows: they add builder output and raise the team's security, which makes a breach less likely."
     primary: [infrastructure, security]
     secondary: [software_engineering, operations, data, communication]
     work_style: operator
@@ -43,6 +50,8 @@ roles:
   - key: security_engineer
     label: Security engineer
     product_function: builder
+    summary: "Finds and fixes security weaknesses and builds secure features. A builder; security and infrastructure matter most."
+    why_hire: "Hire one before a product passes 1,000 customers: security coverage lowers the monthly chance of a breach."
     primary: [security, infrastructure]
     secondary: [software_engineering, legal, communication, data]
     work_style: builder
@@ -53,6 +62,8 @@ roles:
   - key: product_manager
     label: Product manager
     product_function: builder
+    summary: "Decides what to build and keeps the team on the right problems. A builder; product, strategy and communication matter most."
+    why_hire: "Hire one when the team is large enough that direction, not hands, limits progress."
     primary: [product, strategy]
     secondary: [communication, design, data, leadership]
     work_style: operator
@@ -63,6 +74,8 @@ roles:
   - key: designer
     label: Designer
     product_function: builder
+    summary: "Designs how the product looks and works. A builder; design and product matter most, and consumer categories weigh design heavily."
+    why_hire: "Hire one for consumer and design-led products, where design counts for more of a builder's output."
     primary: [design, product]
     secondary: [communication, marketing, software_engineering]
     work_style: builder
@@ -73,6 +86,8 @@ roles:
   - key: sales_representative
     label: Sales representative
     product_function: seller
+    summary: "Sells to smaller customers. A seller; sales, negotiation and communication set how many deals they close."
+    why_hire: "Hire one when 'sales capacity limited' appears in an SMB or sales-led segment: each adds customers a month."
     primary: [sales, negotiation]
     secondary: [communication, product, marketing]
     work_style: seller
@@ -83,6 +98,8 @@ roles:
   - key: account_executive
     label: Account executive
     product_function: seller
+    summary: "Closes larger deals with mid-market and enterprise customers. A seller; sales and negotiation matter most."
+    why_hire: "Hire one when a mid-market or enterprise segment is capacity limited: sellers set how many customers you can win there."
     primary: [sales, negotiation]
     secondary: [communication, strategy, product, finance]
     work_style: seller
@@ -93,6 +110,8 @@ roles:
   - key: marketer
     label: Marketer
     product_function: marketer
+    summary: "Builds the brand and brings customers in. A marketer; marketing, communication and design set how far the budget goes."
+    why_hire: "Hire one when brand lags: marketers multiply what the marketing budget buys toward the brand target."
     primary: [marketing, communication]
     secondary: [design, data, product, sales]
     work_style: seller
@@ -103,6 +122,8 @@ roles:
   - key: finance_manager
     label: Finance manager
     product_function: none
+    summary: "Runs the books, fundraising paperwork and reporting. Support staff, not on a product; finance and operations matter most."
+    why_hire: "Hire one from about 15 staff, or before stage 3: support staff cover the admin load that otherwise slows everyone."
     primary: [finance, strategy]
     secondary: [legal, operations, data, negotiation]
     work_style: operator
@@ -113,6 +134,8 @@ roles:
   - key: recruiter
     label: Recruiter
     product_function: none
+    summary: "Finds and screens candidates. Support staff, not on a product; recruiting and communication matter most."
+    why_hire: "Hire one when you hire often: recruiters run hiring plans and keep support coverage up as headcount grows."
     primary: [recruiting, judgment_of_talent]
     secondary: [communication, negotiation, sales]
     work_style: seller
@@ -123,6 +146,8 @@ roles:
   - key: operations_manager
     label: Operations manager
     product_function: none
+    summary: "Keeps the company running: offices, processes and vendors. Support staff, not on a product; operations matters most."
+    why_hire: "Hire one as the company passes about 15 staff: support coverage keeps output and morale from slipping."
     primary: [operations, leadership]
     secondary: [finance, procurement, communication, strategy]
     work_style: operator

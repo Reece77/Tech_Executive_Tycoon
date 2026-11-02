@@ -12,11 +12,12 @@ ordinary products, except that they use awareness 1 and no sales-capacity limit 
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
-from tst.sim.data_models import SCORE_MAX, Balance, GameData
+from tst.sim.data_models import SCORE_MAX, Balance, GameData, ProductsBalance
 from tst.sim.finance import macro
 from tst.sim.geo.markets import ReachContext, reach_context
 from tst.sim.geo.models import RegionalSegment
@@ -26,6 +27,7 @@ from tst.sim.money import Cents, exact
 from tst.sim.org.executives import CRO, side_factor
 from tst.sim.org.rules import OrgView, org_view
 from tst.sim.products import formulas as f
+from tst.sim.products.estimates import shown_team
 from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegment
 from tst.sim.products.setup import regional_monthly_growth
 from tst.sim.products.team import Team, product_team
@@ -177,16 +179,10 @@ def develop(
             output *= noise
         quality = f.next_quality(product.quality, output, category.scope, team.qcap(balance), pb)
         rotting = f.is_rotting(output, category.scope, pb)
-        if rotting and not product.rotting:
+        if rotting and not product.rotting:  # numbers as the player can judge them (23.4)
+            shown = shown_team(state, product.company_id, team, category, balance)
             logs.append(
-                inbox_item(
-                    turn,
-                    product.company_id,
-                    "product_rotting",
-                    link_kind=PRODUCT_LINK,
-                    link_id=product.id,
-                    product=product.name,
-                )
+                _slipping(turn, product, shown, shown.base_output(balance), category.scope, pb)
             )
         gained = output * team.feature_mult  # CPO (18.3)
         if localizing(state, product.id):  # 10% slower while localizing (M9, 19.5)
@@ -389,6 +385,7 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     )
     won = {s.product_id: 0.0 for s in entries}
     limited: set[int] = set()
+    capacity_notes: dict[int, tuple[int, float, float, float]] = {}  # 23.4, M10b
     for s, share in zip(live, shares, strict=True):
         product = products[s.product_id]
         wanted = in_play * share
@@ -397,7 +394,7 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
         elif seg_def.reach == "self_serve":
             aware = f.awareness(product.brand, mb) * team(product).awareness_mult  # CMO (18.3)
             if geo is not None and region is not None:
-                aware *= geo.awareness_factor(product.company_id, region)  # 19.5
+                aware *= geo.awareness_factor(product.company_id, region, product.id)  # 19.5, 23.5
             won[s.product_id] = wanted * min(1.0, aware)
         else:
             t = team(product)
@@ -410,12 +407,23 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             won[s.product_id] = min(wanted, cap)
             if wanted > cap:
                 limited.add(s.product_id)
+                # The note's numbers as the player can judge them (23.4, ADR-0007).
+                shown = shown_team(
+                    state, product.company_id, t, data.category(product.category), balance
+                )
+                sellers = len(t.sellers)
+                full = t.capacity(seg_key, balance)
+                seen = cap * shown.capacity(seg_key, balance) / full if full else cap
+                rate = balance.products.seller_rate.get(seg_key, 0.0)
+                per = seen / sellers if sellers else f.seller_capacity(rate, (1.0,))
+                capacity_notes[s.product_id] = (sellers, seen, wanted, per)
     done: dict[S, Flow] = {}
     for s in entries:
         product = products[s.product_id]
         customers = max(0.0, s.customers - churned[s.product_id] + won[s.product_id])
         capacity_limited = s.product_id in limited
         if capacity_limited and not s.capacity_limited:
+            sellers, cap, wanted, per = capacity_notes[s.product_id]
             logs.append(
                 inbox_item(
                     turn,
@@ -425,6 +433,10 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
                     link_id=product.id,
                     product=product.name,
                     segment=seg_def.label,
+                    sellers=f"{sellers} seller{'s' if sellers != 1 else ''}",
+                    cap=f"{cap:,.0f}",
+                    wanted=f"{wanted:,.0f}",
+                    per_seller=f"{per:,.0f}",
                 )
             )
         updated = replace(s, customers=customers, capacity_limited=capacity_limited)
@@ -434,6 +446,44 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             state = with_regional_segment(state, updated)
         done[s] = Flow(new=won[s.product_id], churned=churned[s.product_id])
     return state, done, logs
+
+
+def builders_to_add(output: float, builders: int, needed: float) -> int:
+    """About how many more builders like the current ones reach `needed` output (23.4)."""
+    if output >= needed:
+        return 0
+    if builders == 0 or output <= 0:
+        return 1
+    return math.ceil((needed - output) / (output / builders))
+
+
+def _slipping(
+    turn: int, product: Product, team: Team, output: float, scope: float, pb: ProductsBalance
+) -> LogItem:
+    """23.4: nobody is working on it, or its team is too small (with the numbers)."""
+    if not team.builders:
+        return inbox_item(
+            turn,
+            product.company_id,
+            "product_rotting",
+            link_kind=PRODUCT_LINK,
+            link_id=product.id,
+            product=product.name,
+        )
+    needed = pb.rot_threshold * scope
+    add = builders_to_add(output, len(team.builders), needed)
+    return inbox_item(
+        turn,
+        product.company_id,
+        "product_understaffed",
+        link_kind=PRODUCT_LINK,
+        link_id=product.id,
+        product=product.name,
+        output=f"{output:.1f}",
+        needed=f"{needed:.1f}",
+        full_speed=f"{scope:g}",
+        builders=f"{add} builder{'s' if add != 1 else ''}",
+    )
 
 
 def _revenue(

@@ -55,7 +55,16 @@ TRIGGERS: Final = (
 # M10 (20.3): the debt phase queues these itself (a covenant breach, a called loan).
 ENGINE_QUEUED: Final = ("covenant_breach",)
 SCHEDULED: Final = ("storyline", "follow_up", *ENGINE_QUEUED)
-CRITICAL_TRIGGERS: Final = ("runway_short", "covenant_breach")  # 16.2; 20.3
+# M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
+# critical template whenever it holds and no critical event came in the last 6 months.
+CRISIS_TRIGGERS: Final = ("key_exit", "security_breach", "outage")
+# A storyline step may be critical too: a press crisis (`pr_crisis`, 23.3).
+CRITICAL_TRIGGERS: Final = (
+    "runway_short",
+    "covenant_breach",
+    *CRISIS_TRIGGERS,
+    "storyline",
+)  # 16.2; 20.3; 23.3
 
 EFFECT_TYPES: Final = (
     "morale_delta",
@@ -76,9 +85,13 @@ EFFECT_TYPES: Final = (
     "loan_fee",
     "loan_rate",
     "loan_repay",
+    # M10b (23.2): a lasting percent change to one stat for some months.
+    "modifier",
+    # M10b (23.3): a counter-offer that keeps someone who resigned or was poached.
+    "retain",
 )
 LOAN_EFFECTS: Final = ("loan_fee", "loan_rate", "loan_repay")
-VALUELESS: Final = ("reveal_tag", "resign", "follow_up")  # no size: they happen or not
+VALUELESS: Final = ("reveal_tag", "resign", "follow_up", "retain")  # no size: happen or not
 NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
 
 # Template target words and the effects that may use each (16.3 "Target" column).
@@ -99,6 +112,31 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "loan_fee": ("loan",),
     "loan_rate": ("loan",),
     "loan_repay": ("loan",),
+    "modifier": ("product", "unit", "person", "other", "company", "founder"),
+    "retain": ("person",),
+}
+
+# M10b (23.2): what a modifier can change, and the target words each stat accepts. A company
+# target reaches every product, unit and person of the company.
+MODIFIER_STATS: Final[dict[str, tuple[str, ...]]] = {
+    "brand_target": ("product", "company"),
+    "quality_cap": ("product", "company"),
+    "builder_output": ("product", "unit", "company"),
+    "seller_capacity": ("product", "unit", "company"),
+    "awareness": ("product", "company"),
+    "churn": ("product", "company"),
+    "morale_target": ("person", "other", "unit", "company"),
+    "founder_energy": ("founder",),
+}
+STAT_LABELS: Final[dict[str, str]] = {
+    "brand_target": "brand target",
+    "quality_cap": "quality cap",
+    "builder_output": "builder output",
+    "seller_capacity": "seller capacity",
+    "awareness": "awareness",
+    "churn": "churn",
+    "morale_target": "morale target",
+    "founder_energy": "monthly energy",
 }
 
 # What each trigger can name. Company, founder, product and board can always be asked for;
@@ -127,6 +165,9 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "early_days": frozenset(),  # names the product in development, if any
     "quiet_month": frozenset(),
     "covenant_breach": frozenset({"loan", "lender"}),  # M10
+    "key_exit": _PERSON,  # M10b (23.3)
+    "security_breach": frozenset({"segment"}),
+    "outage": frozenset({"segment"}),
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
 PLACEHOLDERS: Final = (
@@ -155,11 +196,22 @@ class EffectSpec(_Frozen):
     type: str
     target: str = ""
     share: float = Field(default=0.0, ge=-1.0, le=1.0)
+    stat: str | None = None  # modifier only (23.2)
+    months: int | None = Field(default=None, ge=1)  # modifier only, held to the severity's
 
     @model_validator(mode="after")
     def _check(self) -> EffectSpec:
         if self.type not in EFFECT_TYPES:
             raise ValueError(f"unknown effect {self.type!r}")
+        if self.type == "modifier":
+            if self.stat not in MODIFIER_STATS or self.months is None:
+                raise ValueError(f"a modifier needs a stat in {list(MODIFIER_STATS)} and months")
+            if self.target not in MODIFIER_STATS[self.stat]:
+                raise ValueError(
+                    f"a {self.stat} modifier may target {list(MODIFIER_STATS[self.stat])}"
+                )
+        elif self.stat is not None or self.months is not None:
+            raise ValueError("only a modifier has a stat and months")
         if self.target not in EFFECT_TARGETS[self.type]:
             raise ValueError(
                 f"{self.type} may target {list(EFFECT_TARGETS[self.type])}, not {self.target!r}"
@@ -177,6 +229,15 @@ class ChoiceSpec(_Frozen):
     key: str = Field(pattern=r"^[ABC]$")
     label: str = Field(min_length=1, max_length=80)  # tunable-exempt: button text length
     effects: tuple[EffectSpec, ...] = Field(default=(), max_length=3)  # tunable-exempt: 16.3
+    do_nothing: bool = False  # 23.2: the one kind of choice allowed no effect
+
+    @model_validator(mode="after")
+    def _check(self) -> ChoiceSpec:
+        if not self.effects and not self.do_nothing:
+            raise ValueError(f"choice {self.key}: give it an effect or mark it do_nothing (23.2)")
+        if self.effects and self.do_nothing:
+            raise ValueError(f"choice {self.key}: a do_nothing choice has no effects")
+        return self
 
 
 class StorylineSpec(_Frozen):
@@ -210,6 +271,12 @@ class EventTemplate(_Frozen):
         story = (self.storyline.summary, self.storyline.title or "") if self.storyline else ()
         return (self.title, self.body, *(c.label for c in self.choices), *story)
 
+    def modifier_stats(self) -> frozenset[str]:
+        """The stats the LLM may attach modifiers for: those the template's own use (23.2)."""
+        return frozenset(
+            e.stat for c in self.choices for e in c.effects if e.type == "modifier" and e.stat
+        )
+
     def needs(self) -> frozenset[str]:
         """Everything the template names: placeholders and effect targets."""
         names = {m for t in self.texts() for m in PLACEHOLDER_RE.findall(t)}
@@ -225,7 +292,7 @@ class EventTemplate(_Frozen):
     def _check(self) -> EventTemplate:
         if self.category not in CATEGORIES:
             raise ValueError(f"unknown category {self.category!r}")
-        if self.trigger not in TRIGGERS + SCHEDULED:
+        if self.trigger not in TRIGGERS + SCHEDULED + CRISIS_TRIGGERS:
             raise ValueError(f"unknown trigger {self.trigger!r}")
         keys = [c.key for c in self.choices]
         if keys != ["A", "B", "C"][: len(keys)]:
@@ -238,6 +305,8 @@ class EventTemplate(_Frozen):
         types = {e.type for c in self.choices for e in c.effects}
         if "resign" in types and self.severities == ("minor",):
             raise ValueError("resign is for major and critical events only (16.3)")
+        if "retain" in types and not self.is_critical:
+            raise ValueError("retain is for critical events only (23.3)")
         if "follow_up" in types and (not self.is_critical or not self.follow_up):
             raise ValueError("follow_up needs a critical template that names its follow_up")
         if self.follow_up and not self.is_critical:
@@ -287,10 +356,15 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
                 origin.setdefault(current, t.trigger)
                 step = by_id.get(current)
                 current = step.storyline.next_template if step and step.storyline else None
-    for trigger in ENGINE_QUEUED:
+    for trigger in (*ENGINE_QUEUED, *CRISIS_TRIGGERS):
         if not any(t.trigger == trigger and t.is_critical for t in templates):
-            problems.append(f"engine trigger {trigger!r} has no critical template")
+            problems.append(f"trigger {trigger!r} has no critical template")
     for t in templates:
+        if t.trigger in CRISIS_TRIGGERS:
+            missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
+            if missing:
+                problems.append(f"{t.id}: trigger {t.trigger!r} cannot supply {missing}")
+            continue
         if t.trigger in ENGINE_QUEUED:
             missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
             if missing:

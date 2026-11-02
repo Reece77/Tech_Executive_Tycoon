@@ -40,6 +40,7 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   arr_milestone: { label: 'Product', group: 'products' },
   sales_capacity_limited: { label: 'Product', group: 'products' },
   product_rotting: { label: 'Product', group: 'products' },
+  product_understaffed: { label: 'Product', group: 'products' }, // M10b (23.4)
   // M4: finance (SAFE answers, term sheets, closings, the board, insolvency and bridges)
   safe_filled: { label: 'Finance', group: 'finance' },
   safe_declined: { label: 'Finance', group: 'finance' },
@@ -69,6 +70,9 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   critical_event: { label: 'Critical', group: 'company' },
   // M7b: "While you were away"
   holiday_summary: { label: 'Holiday', group: 'company' },
+  // M10b: the month's event choices and their modifiers (23.2)
+  choices_month: { label: 'Event', group: 'company' },
+  retained: { label: 'Notice', group: 'people' }, // a counter-offer kept them (23.3)
 };
 
 /** The Finance tab a finance message opens (M4b). */

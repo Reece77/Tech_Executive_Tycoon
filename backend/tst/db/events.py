@@ -73,6 +73,7 @@ def event_inbox_row(event: GameEvent) -> InboxItemRow:
         link_id=event.id,
         read=False,
         archived=False,
+        bookmarked=False,
     )
 
 

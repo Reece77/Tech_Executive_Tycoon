@@ -55,6 +55,12 @@ class BackupBalance(_Frozen):
     keep_periodic: int = Field(gt=0)
 
 
+class InboxBalance(_Frozen):
+    """The inbox (formulas.md 23.1, M10b)."""
+
+    auto_archive_months: int = Field(gt=0)
+
+
 class HolidayBalance(_Frozen):
     """Auto-advance (formulas.md 17.1)."""
 
@@ -836,6 +842,18 @@ class TriggerBalance(_Frozen):
     months: list[float] | None = None
 
 
+class CrisisBalance(_Frozen):
+    """Critical events from crises (formulas.md 23.3, M10b)."""
+
+    key_exit_top_fraction: float = Field(gt=0, le=1)
+    breach_chance: float = Field(ge=0, le=1)
+    breach_min_customers: float = Field(ge=0)
+    security_full_at: float = Field(gt=0)
+    outage_chance: float = Field(ge=0, le=1)
+    outage_max_quality: float = Field(ge=0)
+    outage_min_customers: float = Field(ge=0)
+
+
 class EventsBalance(_Frozen):
     """Event director, effect caps and storylines (formulas.md 16)."""
 
@@ -855,6 +873,8 @@ class EventsBalance(_Frozen):
     cash_revenue_months: float = Field(ge=0)
     cash_gain_share: float = Field(ge=0, le=1)
     effect_size_bounds: Span
+    modifier_months: list[int]  # M10b (23.2): the longest a modifier runs, by severity
+    crisis: CrisisBalance  # M10b (23.3)
 
     @model_validator(mode="after")
     def _check(self) -> EventsBalance:
@@ -870,10 +890,17 @@ class EventsBalance(_Frozen):
         for effect, caps in self.caps.items():
             if len(caps) != len(SEVERITIES) or any(c <= 0 for c in caps) or caps != sorted(caps):
                 raise ValueError(f"events.caps.{effect}: three rising positive caps")
+        months = self.modifier_months
+        if len(months) != len(SEVERITIES) or any(m < 1 for m in months) or months != sorted(months):
+            raise ValueError("events.modifier_months: three rising positive month counts")
         return self
 
     def cap(self, effect: str, severity: str) -> float:
         return self.caps[effect][SEVERITIES.index(severity)]
+
+    def max_months(self, severity: str) -> int:
+        """The longest a modifier of this severity runs (23.2)."""
+        return self.modifier_months[SEVERITIES.index(severity)]
 
 
 class RelationshipsBalance(_Frozen):
@@ -1001,6 +1028,7 @@ class RegionalMarketsBalance(_Frozen):
     localize_slowdown: float = Field(ge=0, le=1)
     launch_energy: int = Field(ge=0)
     foreign_awareness: float = Field(ge=0, le=1)
+    no_marketing_awareness: float = Field(ge=0, le=1)  # M10b (23.5)
     presence_people: int = Field(ge=0)
     neighbour_sellers: float = Field(ge=0, le=1)
     cross_region_step: float = Field(ge=0)
@@ -1030,6 +1058,7 @@ class Balance(_Frozen):
     difficulty: dict[str, DifficultyBalance]
     backup: BackupBalance
     holiday: HolidayBalance  # M7b (formulas.md 17.1)
+    inbox: InboxBalance  # M10b (formulas.md 23.1)
     coo: CooBalance  # M7b (formulas.md 17.3)
     people: PeopleBalance
     payroll: PayrollBalance
@@ -1191,6 +1220,8 @@ class Role(_Frozen):
     key: str = Field(pattern=_KEY)
     label: str = Field(min_length=1)
     product_function: ProductFunction
+    summary: str = Field(min_length=1)  # M10b (23.4): what the role does
+    why_hire: str = Field(min_length=1)  # M10b (23.4): when to hire one
     primary: tuple[str, ...] = Field(min_length=1)
     secondary: tuple[str, ...]
     work_style: str
@@ -1595,6 +1626,9 @@ INBOX_TEMPLATE_KEYS = (
     "arr_milestone",
     "sales_capacity_limited",
     "product_rotting",
+    "product_understaffed",  # M10b (23.4): builders, but too few to hold quality
+    "choices_month",  # M10b (23.2): the month's event choices and modifiers
+    "retained",  # M10b (23.3): a counter-offer kept someone
     # M4a (formulas.md 14)
     "safe_filled",
     "safe_declined",

@@ -93,9 +93,17 @@ def template_draft(
             )
             if spec.type == "cash_delta":
                 value = value / CENTS_PER_DOLLAR
-            effects.append({"type": spec.type, "target": target, "value": value})
+            effect: dict[str, Any] = {"type": spec.type, "target": target, "value": value}
+            if spec.type == "modifier":  # M10b (23.2)
+                effect |= {"stat": spec.stat, "months": spec.months}
+            effects.append(effect)
         choices.append(
-            {"key": choice.key, "label": render(choice.label, names), "effects": effects}
+            {
+                "key": choice.key,
+                "label": render(choice.label, names),
+                "effects": effects,
+                **({"do_nothing": True} if choice.do_nothing else {}),
+            }
         )
     summary = render(template.storyline.summary, names) if template.storyline else ""
     return {

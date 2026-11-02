@@ -12,6 +12,7 @@ from collections.abc import Mapping
 from dataclasses import replace
 
 from tst.sim.data_models import LEVELS, Balance, GameData
+from tst.sim.events.modifiers import founder_factor
 from tst.sim.finance.options import grant_on_hire, retention
 from tst.sim.geo.cities import home_city, office_city
 from tst.sim.geo.models import ANYWHERE
@@ -763,5 +764,8 @@ def reset_energy(state: GameState, balance: Balance, data: GameData | None = Non
             if view is not None and data is not None and delegate and ps.person_id in view.unit_of:
                 factor = delegate_energy_factor(state, view, ps.person_id, balance, data)
                 cap = math.floor(cap * factor)
+            if not delegate:  # event modifiers on the founder's monthly energy (M10b, 23.2)
+                boost = founder_factor(state, player.id, ps.person_id)
+                cap = cap if boost == 1 else max(0, round(cap * boost))
             state = with_person_state(state, replace(ps, energy=cap))
     return state

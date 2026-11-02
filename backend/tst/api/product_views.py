@@ -1,8 +1,9 @@
 """Build product and market responses (M3a) from the state and the sim's formulas.
 
 Everything shown is public (formulas.md 11.13): scores, prices, appeal, customers, shares,
-churn and MRR. Team output, Q_cap, skills and sales capacity stay inside; the team appears
-only as names and a pace label, and a capacity limit only as a note.
+churn and MRR. Q_cap and skills stay inside. Since M10b (23.4) the team's total output is
+shown against its maintenance and full-speed lines, and a capacity limit with its numbers,
+so every warning says what to do; individual skills never are.
 """
 
 from __future__ import annotations
@@ -27,13 +28,16 @@ from tst.api.schemas.products import (
     ProductOut,
     ProductSegmentOut,
     ProductTotalMonthOut,
+    RegionalPriceOut,
     RegionOptionOut,
+    TeamStrengthOut,
 )
-from tst.api.views import person_name
+from tst.api.views import person_name, product_effects
 from tst.loader import LoadedData
+from tst.sim.actions.geo import default_regional_price
 from tst.sim.actions.products import launch_problems
 from tst.sim.calendar import format_turn, turn_to_ym
-from tst.sim.data_models import SegmentDef
+from tst.sim.data_models import Balance, SegmentDef
 from tst.sim.errors import ProductRuleError
 from tst.sim.finance.macro import ai_index
 from tst.sim.geo.cities import home_region
@@ -41,9 +45,11 @@ from tst.sim.geo.formulas import regional_growth, relative_row
 from tst.sim.geo.models import RegionalSegment
 from tst.sim.org.rules import org_view
 from tst.sim.products import formulas as f
+from tst.sim.products.estimates import shown_team
 from tst.sim.products.formulas import hosting_cents
 from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegment
 from tst.sim.products.phases import (
+    builders_to_add,
     current_feature,
     pricing_power,
     product_costs,
@@ -52,6 +58,7 @@ from tst.sim.products.phases import (
     shown_turn,
     team_of,
 )
+from tst.sim.products.team import Team
 from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState
 
@@ -301,6 +308,7 @@ def product_out(
     # Seat effects shown as estimates from displayed ranges (18.8; M8r).
     team = team_of(state, org_view(state, company.id), product, data.balance, game, estimate=True)
     category = game.category(product.category)
+    shown = shown_team(state, company.id, team, category, data.balance)  # 23.4: as judged
     months = _months(history)
     last = months[-1] if months else {}
     segments = []
@@ -329,11 +337,7 @@ def product_out(
                 share_of_served=(share := seg.customers / served if served else 0.0),
                 churn_rate=None if mine is None else _churn(mine, rows, data, team.churn_mult),
                 mrr_cents=_mrr(seg),
-                note=(
-                    f"Sales capacity limited new customers in {seg_def.label}"
-                    if seg.capacity_limited
-                    else None
-                ),
+                note=capacity_note(shown, seg_def, seg.capacity_limited, data.balance),
                 new_last_month=last[seg.segment].new if seg.segment in last else 0.0,
                 churned_last_month=last[seg.segment].churned if seg.segment in last else 0.0,
                 counts_users=seg.segment == CONSUMER_SEGMENT,
@@ -394,6 +398,9 @@ def product_out(
         series_label=HOME_SCOPE_LABEL,
         counts_users=bool(segments) and all(s.counts_users for s in segments),
         segments=segments,
+        regional_prices=_regional_prices(state, product, data),
+        team_strength=team_strength(product, shown, category.scope, data.balance),
+        active_effects=product_effects(state, product.id),
         assigned_units=[
             AssignedUnitOut(
                 unit_id=u,
@@ -444,6 +451,85 @@ def product_out(
             if (turn := next(iter(rows.values())).turn) in last_turns
         ],
     )
+
+
+def team_strength(
+    product: Product, team: Team, scope: float, balance: Balance
+) -> TeamStrengthOut | None:
+    """'Output 1.1. Below 1.5 your product slips; full speed at 6. Add about 1 builder to stop
+    the slide.' (23.4, M10b)"""
+    if product.status == "retired":
+        return None
+    pb = balance.products
+    output = team.base_output(balance)
+    maintains = pb.rot_threshold * scope
+    n = len(team.builders)
+    head = (
+        f"Output about {output:.1f} (est.). Below {maintains:.1f} {product.name} slips; "
+        f"full speed at {scope:g}."
+    )
+    if not team.builders:
+        add = 1
+        text = f"Nobody is working on {product.name}: assign a unit to it. {head}"
+    elif output < maintains:
+        add = builders_to_add(output, n, maintains)
+        text = f"{head} Add about {add} builder{'s' if add != 1 else ''} to stop the slide."
+    elif output < scope:
+        add = builders_to_add(output, n, scope)
+        text = f"{head} About {add} more builder{'s' if add != 1 else ''} reach full speed."
+    else:
+        add = 0
+        text = f"{head} The team is at full speed."
+    return TeamStrengthOut(
+        estimated_output=round(output, 2),
+        maintains=round(maintains, 2),
+        full_speed=scope,
+        builders_to_add=add,
+        text=text,
+    )
+
+
+def capacity_note(team: Team, seg_def: SegmentDef, limited: bool, balance: Balance) -> str | None:
+    """'2 sellers win up to 40 SMB customers a month, fewer than wanted to buy. Each extra
+    seller adds about 20.' (23.4, M10b); None while capacity is not the limit."""
+    if not limited:
+        return None
+    sellers = len(team.sellers)
+    cap = team.capacity(seg_def.key, balance)
+    rate = balance.products.seller_rate.get(seg_def.key, 0.0)
+    per = cap / sellers if sellers else f.seller_capacity(rate, (1.0,))
+    return (
+        f"{sellers} seller{'s' if sellers != 1 else ''} win up to about {cap:,.0f} "
+        f"{seg_def.label} customers a month (est.), fewer than wanted to buy. Each extra "
+        f"seller adds about {per:,.0f}."
+    )
+
+
+def _regional_prices(
+    state: GameState, product: Product, data: LoadedData
+) -> list[RegionalPriceOut]:
+    """Prices in every other region the product launched in, by region then segment (19.5)."""
+    game = data.game_data
+    out = []
+    for region in game.region_keys:
+        launch = state.product_region(product.id, region)
+        if launch is None:
+            continue
+        for seg in state.regional_segments_of(product.id, region):
+            out.append(
+                RegionalPriceOut(
+                    region=region,
+                    region_label=game.region(region).label,
+                    segment=seg.segment,
+                    segment_label=game.segment(seg.segment).label,
+                    price_cents=seg.price_cents,
+                    default_price_cents=default_regional_price(
+                        state, product.category, seg.segment, region, data.balance, game
+                    ),
+                    live=launch.live(state.turn),
+                )
+            )
+    return out
 
 
 def _months(history: Sequence[ProductMonth]) -> list[dict[str, ProductMonth]]:
