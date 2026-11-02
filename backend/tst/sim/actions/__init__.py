@@ -31,11 +31,13 @@ from tst.sim.actions.geo import (
     GeoAction,
     LaunchInRegion,
     LeaseOffice,
+    SetMarketingSplit,
     SetRegionalPrice,
     SetUnitOffice,
     close_office,
     launch_in_region,
     lease_office,
+    set_marketing_split,
     set_regional_price,
     set_unit_office,
 )
@@ -185,6 +187,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "set_unit_office": SetUnitOffice,
     "launch_in_region": LaunchInRegion,
     "set_regional_price": SetRegionalPrice,
+    "set_marketing_split": SetMarketingSplit,
 }
 
 __all__ = [
@@ -227,6 +230,7 @@ __all__ = [
     "ScoutSearch",
     "SetLeader",
     "SetMarketing",
+    "SetMarketingSplit",
     "SetPolicy",
     "SetPrice",
     "SetProductDivision",
@@ -377,6 +381,8 @@ def apply_action(
             out = launch_in_region(state, action, balance, data, ledger_balances)
         case SetRegionalPrice():
             out = set_regional_price(state, action, balance, data)
+        case SetMarketingSplit():
+            out = set_marketing_split(state, action, balance, data)
     new_state = out.state
     actor = new_state.employment_of(action.actor_id) or state.employment_of(action.actor_id)
     if actor is not None:  # people live where they work (M9, 19.2)

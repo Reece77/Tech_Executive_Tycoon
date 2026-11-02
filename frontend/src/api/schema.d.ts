@@ -2218,6 +2218,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/products/{product_id}/regions/marketing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Marketing Split
+         * @description Split the product's marketing across its regions (23.5); empty: back to by revenue.
+         */
+        post: operations["setMarketingSplit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -5070,6 +5090,17 @@ export interface components {
             budget_cents: number;
         };
         /**
+         * MarketingSplitIn
+         * @description Shares of the marketing budget by region, in basis points summing to 10,000; empty
+         *     returns to the default split by revenue (23.5).
+         */
+        MarketingSplitIn: {
+            /** Shares */
+            shares: {
+                [key: string]: number;
+            };
+        };
+        /**
          * MoraleBreakdownOut
          * @description Why someone's morale is heading where it is (formulas.md 9, 13.11).
          *
@@ -6378,6 +6409,16 @@ export interface components {
              * @description Why it cannot launch there now
              */
             launch_problem: string | null;
+            /**
+             * Marketing Share
+             * @description Share of the product's marketing budget spent here (23.5); null if not selling here
+             */
+            marketing_share: number | null;
+            /**
+             * Awareness Factor
+             * @description Self-serve awareness here against the global awareness, from the marketing share (23.5): 0.7 with no spend, 1 at the default split
+             */
+            awareness_factor: number | null;
         };
         /** ProductRegionsActionOut */
         ProductRegionsActionOut: {
@@ -6411,6 +6452,18 @@ export interface components {
             launch_energy: number;
             /** Localize Months */
             localize_months: number;
+            /**
+             * Marketing Custom
+             * @description The player set the split; false: it follows revenue by region (23.5)
+             */
+            marketing_custom: boolean;
+            /**
+             * Rules
+             * @description How reach works abroad, one line per segment type
+             */
+            rules: string[];
+            /** Marketing Energy */
+            marketing_energy: number;
         };
         /** ProductSegmentOut */
         ProductSegmentOut: {
@@ -15328,6 +15381,69 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["RegionalPriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductRegionsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setMarketingSplit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarketingSplitIn"];
             };
         };
         responses: {

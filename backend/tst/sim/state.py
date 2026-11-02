@@ -19,7 +19,13 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
-from tst.sim.geo.models import Office, ProductRegion, RegionalMarket, RegionalSegment
+from tst.sim.geo.models import (
+    MarketingSplit,
+    Office,
+    ProductRegion,
+    RegionalMarket,
+    RegionalSegment,
+)
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
@@ -144,6 +150,8 @@ class GameState:
     offices: tuple[Office, ...] = ()
     regional_markets: tuple[RegionalMarket, ...] = ()
     product_regions: tuple[ProductRegion, ...] = ()
+    # M10b (23.5): marketing budget split by region, by (product_id, region)
+    marketing_splits: tuple[MarketingSplit, ...] = ()
     regional_segments: tuple[RegionalSegment, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
@@ -531,6 +539,17 @@ def with_event(state: GameState, event: GameEvent) -> GameState:
 
 def with_storyline(state: GameState, story: Storyline) -> GameState:
     return replace(state, storylines=_upsert(state.storylines, story, lambda s: s.id))
+
+
+def with_marketing_split(
+    state: GameState, product_id: int, shares: tuple[MarketingSplit, ...]
+) -> GameState:
+    """Replace a product's marketing split by region (23.5); () returns it to the default."""
+    rest = tuple(m for m in state.marketing_splits if m.product_id != product_id)
+    return replace(
+        state,
+        marketing_splits=tuple(sorted((*rest, *shares), key=lambda m: (m.product_id, m.region))),
+    )
 
 
 def with_modifier(state: GameState, modifier: Modifier) -> GameState:

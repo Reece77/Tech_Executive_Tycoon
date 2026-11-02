@@ -1028,6 +1028,7 @@ class RegionalMarketsBalance(_Frozen):
     localize_slowdown: float = Field(ge=0, le=1)
     launch_energy: int = Field(ge=0)
     foreign_awareness: float = Field(ge=0, le=1)
+    no_marketing_awareness: float = Field(ge=0, le=1)  # M10b (23.5)
     presence_people: int = Field(ge=0)
     neighbour_sellers: float = Field(ge=0, le=1)
     cross_region_step: float = Field(ge=0)

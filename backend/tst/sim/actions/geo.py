@@ -13,6 +13,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import GeoRuleError, InsufficientCashError, UnknownCityError
 from tst.sim.geo import formulas as gf
 from tst.sim.geo.cities import home_region, hq_city, settle_home_cities, unit_office_id
+from tst.sim.geo.marketing import selling_regions, split_rows
 from tst.sim.geo.models import Office, ProductRegion, RegionalSegment
 from tst.sim.ledger import (
     CASH,
@@ -26,11 +27,14 @@ from tst.sim.ledger import (
 from tst.sim.log import inbox_item
 from tst.sim.state import (
     GameState,
+    with_marketing_split,
     with_office,
     with_product_region,
     with_regional_segment,
     with_unit,
 )
+
+SPLIT_BP = 10_000  # tunable-exempt: a whole budget in basis points
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,7 +192,25 @@ class SetRegionalPrice:
     kind: Literal["set_regional_price"] = "set_regional_price"
 
 
-type GeoAction = LeaseOffice | CloseOffice | SetUnitOffice | LaunchInRegion | SetRegionalPrice
+@dataclass(frozen=True, slots=True)
+class SetMarketingSplit:
+    """A product's marketing budget split across the regions it sells in, in basis points
+    summing to 10,000; empty returns it to the default (by revenue) (23.5, M10b)."""
+
+    actor_id: int
+    product_id: int
+    shares: tuple[tuple[str, int], ...]
+    kind: Literal["set_marketing_split"] = "set_marketing_split"
+
+
+type GeoAction = (
+    LeaseOffice
+    | CloseOffice
+    | SetUnitOffice
+    | LaunchInRegion
+    | SetRegionalPrice
+    | SetMarketingSplit
+)
 
 
 def default_regional_price(
@@ -309,3 +331,28 @@ def set_regional_price(
         raise GeoRuleError("that is already the price")
     state = spend_energy(state, action.actor_id, "set_price", balance)
     return Outcome(with_regional_segment(state, replace(seg, price_cents=price)))
+
+
+def set_marketing_split(
+    state: GameState, action: SetMarketingSplit, balance: Balance, data: GameData
+) -> Outcome:
+    """Energy as set_marketing (23.5): shares only for the home region and regions the product
+    is live in, none negative, summing to 10,000 bp."""
+    company = acting_company(state, action.actor_id)
+    product = state.product(action.product_id)
+    if product is None or product.company_id != company:
+        raise GeoRuleError(f"no product {action.product_id}")
+    regions = selling_regions(state, product, home_region(state, balance, data))
+    shares = dict(action.shares)
+    if len(shares) != len(action.shares):
+        raise GeoRuleError("each region once")
+    if shares:
+        unknown = sorted(set(shares) - set(regions))
+        if unknown:
+            raise GeoRuleError(f"{product.name} does not sell in {', '.join(unknown)}")
+        if any(isinstance(v, bool) or not isinstance(v, int) or v < 0 for v in shares.values()):
+            raise GeoRuleError("shares are whole basis points, none negative")
+        if sum(shares.values()) != SPLIT_BP:
+            raise GeoRuleError("the shares must add up to 100%")
+    state = spend_energy(state, action.actor_id, "set_marketing", balance)
+    return Outcome(with_marketing_split(state, product.id, split_rows(product.id, shares)))

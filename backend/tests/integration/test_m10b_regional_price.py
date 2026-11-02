@@ -39,3 +39,28 @@ def test_a_regional_price_shows_and_is_charged(
     (seg,) = state.regional_segments_of(PRODUCT, "europe")
     assert seg.price_cents == PRICE
     assert europe["segments"][0]["mrr_cents"] == round(seg.customers * PRICE)
+
+
+def test_marketing_split_by_region(
+    api: tuple[Client, Path],  # noqa: F811
+    loaded: LoadedData,
+) -> None:
+    """23.5: the Regions panel shows each region's marketing share and awareness, and the
+    player can split the budget (all at home leaves Europe at 70%)."""
+    client, path = api
+    client.post(f"{BASE}/products/{PRODUCT}/regions", {"region": "europe"})
+    for _ in range(loaded.balance.markets.localize_months + 1):
+        play_turn(path, loaded)
+    out = client.post(
+        f"{BASE}/products/{PRODUCT}/regions/marketing", {"shares": {"north_america": 10_000}}
+    )["regions"]
+    rows = {r["region"]: r for r in out["regions"]}
+    assert out["marketing_custom"] is True
+    assert rows["north_america"]["marketing_share"] == 1.0
+    assert rows["europe"]["marketing_share"] == 0.0 and rows["europe"]["awareness_factor"] == 0.7
+    assert rows["east_asia"]["marketing_share"] is None  # not selling there
+    client.post(
+        f"{BASE}/products/{PRODUCT}/regions/marketing", {"shares": {"europe": 100}}, status=400
+    )
+    back = client.post(f"{BASE}/products/{PRODUCT}/regions/marketing", {"shares": {}})["regions"]
+    assert back["marketing_custom"] is False

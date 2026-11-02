@@ -10349,6 +10349,98 @@
         }
       }
     },
+    "/api/saves/{save_id}/products/{product_id}/regions/marketing": {
+      "post": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Set Marketing Split",
+        "description": "Split the product's marketing across its regions (23.5); empty: back to by revenue.",
+        "operationId": "setMarketingSplit",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingSplitIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRegionsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -17131,6 +17223,23 @@
         ],
         "title": "MarketingIn"
       },
+      "MarketingSplitIn": {
+        "properties": {
+          "shares": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shares"
+        ],
+        "title": "MarketingSplitIn",
+        "description": "Shares of the marketing budget by region, in basis points summing to 10,000; empty\nreturns to the default split by revenue (23.5)."
+      },
       "MoraleBreakdownOut": {
         "properties": {
           "person_id": {
@@ -20183,6 +20292,30 @@
             ],
             "title": "Launch Problem",
             "description": "Why it cannot launch there now"
+          },
+          "marketing_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marketing Share",
+            "description": "Share of the product's marketing budget spent here (23.5); null if not selling here"
+          },
+          "awareness_factor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awareness Factor",
+            "description": "Self-serve awareness here against the global awareness, from the marketing share (23.5): 0.7 with no spend, 1 at the default split"
           }
         },
         "type": "object",
@@ -20203,7 +20336,9 @@
           "rivals",
           "launch_cost_cents",
           "live_label",
-          "launch_problem"
+          "launch_problem",
+          "marketing_share",
+          "awareness_factor"
         ],
         "title": "ProductRegionOut"
       },
@@ -20266,6 +20401,23 @@
           "localize_months": {
             "type": "integer",
             "title": "Localize Months"
+          },
+          "marketing_custom": {
+            "type": "boolean",
+            "title": "Marketing Custom",
+            "description": "The player set the split; false: it follows revenue by region (23.5)"
+          },
+          "rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rules",
+            "description": "How reach works abroad, one line per segment type"
+          },
+          "marketing_energy": {
+            "type": "integer",
+            "title": "Marketing Energy"
           }
         },
         "type": "object",
@@ -20276,7 +20428,10 @@
           "team",
           "time_zone_factor",
           "launch_energy",
-          "localize_months"
+          "localize_months",
+          "marketing_custom",
+          "rules",
+          "marketing_energy"
         ],
         "title": "ProductRegionsOut"
       },

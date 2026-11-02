@@ -39,6 +39,16 @@ class RegionalMarket:
 
 
 @dataclass(frozen=True, slots=True)
+class MarketingSplit:
+    """A product's marketing budget share in one region, in basis points (23.5, M10b). With
+    no rows the budget follows revenue by region."""
+
+    product_id: int
+    region: str
+    share_bp: int
+
+
+@dataclass(frozen=True, slots=True)
 class ProductRegion:
     """A product launched in a region other than the home region (19.5): it sells there
     from `live_turn`."""

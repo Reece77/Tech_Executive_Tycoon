@@ -1719,9 +1719,18 @@ export function useProductRegions(saveId: string, productId: number) {
 
 export type RegionAction =
   | { kind: 'launch'; region: string }
-  | { kind: 'price'; region: string; segment: string; priceCents: number };
+  | { kind: 'price'; region: string; segment: string; priceCents: number }
+  | { kind: 'marketing'; shares: Record<string, number> }; // bp; {} = by revenue (23.5)
 
 async function applyRegion(saveId: string, productId: number, a: RegionAction) {
+  if (a.kind === 'marketing') {
+    return unwrap(
+      await api.POST('/api/saves/{save_id}/products/{product_id}/regions/marketing', {
+        params: { path: { save_id: saveId, product_id: productId } },
+        body: { shares: a.shares },
+      }),
+    );
+  }
   if (a.kind === 'launch') {
     return unwrap(
       await api.POST('/api/saves/{save_id}/products/{product_id}/regions', {

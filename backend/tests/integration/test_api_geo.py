@@ -96,7 +96,8 @@ def test_product_regions_launch_and_price(api: tuple[Client, Path]) -> None:
     europe = rows["europe"]
     assert europe["status"] == "not_launched" and europe["launch_cost_cents"] == 4_000_000
     assert europe["rivals"] > 0 and europe["addressable"] > 0
-    assert europe["local_presence"] is False and "x 0.6" in europe["reach_note"]
+    assert europe["local_presence"] is False and "full awareness" in europe["reach_note"]
+    assert len(regions["rules"]) == 3 and regions["marketing_custom"] is False
     out = client.post(f"{BASE}/products/{PRODUCT}/regions", {"region": "europe"})
     europe = next(r for r in out["regions"]["regions"] if r["region"] == "europe")
     assert europe["status"] == "localizing" and europe["status_label"].startswith("Localizing")

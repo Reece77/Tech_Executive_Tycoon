@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 25
+SCHEMA_VERSION = 26
 
 
 class Base(DeclarativeBase):
@@ -1071,6 +1071,17 @@ class RegionalMarketRow(Base):
     segment: Mapped[str] = mapped_column(String(32), primary_key=True)
     region: Mapped[str] = mapped_column(String(32), primary_key=True)
     addressable: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class MarketingSplitRow(Base):
+    """A product's marketing budget share in one region, bp (23.5, M10b; 0026). No rows: the
+    budget follows revenue by region."""
+
+    __tablename__ = "product_marketing_split"
+
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id"), primary_key=True)
+    region: Mapped[str] = mapped_column(String(32), primary_key=True)
+    share_bp: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 class ProductRegionRow(Base):

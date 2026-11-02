@@ -23,9 +23,11 @@ from tst.sim.actions.geo import default_regional_price, launch_problem, office_r
 from tst.sim.calendar import format_turn
 from tst.sim.errors import GeoRuleError, UnknownCityError, UnknownProductError
 from tst.sim.geo import formulas as gf
+from tst.sim.geo import marketing as mk
 from tst.sim.geo.cities import home_region, hq_city, person_work_city, unit_office_id
 from tst.sim.geo.markets import reach_context
 from tst.sim.geo.offices import crowded_people, flexible_seat_cents, office_members, office_of
+from tst.sim.hiring.formulas import energy_cost
 from tst.sim.hiring.phases import employment_monthly_cost_cents
 from tst.sim.org.rules import is_remote, org_view
 from tst.sim.products.models import SELLING, Product
@@ -186,6 +188,8 @@ def product_regions_out(state: GameState, product_id: int, data: LoadedData) -> 
     product = _own_product(state, product_id)
     category = game.category(product.category)
     home = home_region(state, b, game)
+    factors = mk.awareness_factors(state, product, home, b)  # 23.5 (M10b)
+    shares = mk.split(state, product, home)
     geo = reach_context(state, b, game)
     assert geo is not None
     team = team_of(state, org_view(state, state.player.id), product, b, game, estimate=True)
@@ -237,11 +241,10 @@ def product_regions_out(state: GameState, product_id: int, data: LoadedData) -> 
         near = sum(1 for p in sellers if geo.regions_of.get(p) == neighbour)
         present = region == home or region in geo.present
         reach_bits = []
-        reach_bits.append(
-            "Local presence: full awareness"
-            if present
-            else f"No local presence: self-serve awareness x {b.markets.foreign_awareness:g}"
-        )
+        if region in factors:
+            reach_bits.append(f"Self-serve awareness x {factors[region]:.2f} from its marketing")
+        elif region != home:
+            reach_bits.append("Self-serve sells at full awareness once localized")
         if not here and not near:
             reach_bits.append("no sellers in or next to the region")
         addressable = 0.0
@@ -276,6 +279,8 @@ def product_regions_out(state: GameState, product_id: int, data: LoadedData) -> 
                 if status == "not_launched"
                 else None,
                 launch_problem=problem if status == "not_launched" else None,
+                marketing_share=round(shares[region], 4) if region in shares else None,
+                awareness_factor=round(factors[region], 4) if region in factors else None,
             )
         )
     return ProductRegionsOut(
@@ -288,6 +293,16 @@ def product_regions_out(state: GameState, product_id: int, data: LoadedData) -> 
         ],
         time_zone_factor=team.region_factor,
         launch_energy=b.markets.launch_energy,
+        marketing_custom=any(m.product_id == product.id for m in state.marketing_splits),
+        marketing_energy=energy_cost("set_marketing", b),
+        rules=[
+            "Self-serve (consumer, SMB): sells abroad at full awareness once localized; "
+            f"its awareness follows its marketing share ({b.markets.no_marketing_awareness:.0%} "
+            "with none).",
+            "Sales-led (mid-market, enterprise): needs sellers working in the region, or its "
+            f"neighbour at x{b.markets.neighbour_sellers:g}.",
+            "Brand is global; marketing is split by region, by revenue unless you set it.",
+        ],
         localize_months=b.markets.localize_months,
     )
 

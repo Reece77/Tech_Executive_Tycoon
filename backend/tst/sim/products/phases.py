@@ -394,7 +394,7 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
         elif seg_def.reach == "self_serve":
             aware = f.awareness(product.brand, mb) * team(product).awareness_mult  # CMO (18.3)
             if geo is not None and region is not None:
-                aware *= geo.awareness_factor(product.company_id, region)  # 19.5
+                aware *= geo.awareness_factor(product.company_id, region, product.id)  # 19.5, 23.5
             won[s.product_id] = wanted * min(1.0, aware)
         else:
             t = team(product)

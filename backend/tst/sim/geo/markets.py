@@ -7,11 +7,13 @@ Built once per phase 5 from the state at its start. Rivals sell by region withou
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geo.cities import home_region, work_region
 from tst.sim.geo.formulas import relative_row
+from tst.sim.geo.marketing import awareness_factors
+from tst.sim.products.models import SELLING
 from tst.sim.state import GameState
 
 
@@ -25,15 +27,19 @@ class ReachContext:
     indexes: Mapping[str, float]  # region -> price index relative to the home region
     foreign_awareness: float
     neighbour_sellers: float
+    # M10b (23.5): (product id, region) -> awareness factor from the marketing split
+    marketing: Mapping[tuple[int, str], float] = field(default_factory=dict)
 
     def price_index(self, region: str) -> float:
         return 1.0 if region == self.home else self.indexes[region]
 
-    def awareness_factor(self, company_id: int, region: str) -> float:
-        """x foreign_awareness on self-serve awareness without local presence (19.5)."""
+    def awareness_factor(self, company_id: int, region: str, product_id: int = 0) -> float:
+        """x the product's marketing factor in the region (23.5), then x foreign_awareness on
+        self-serve awareness without local presence (19.5; 1.0 since M10b)."""
+        factor = self.marketing.get((product_id, region), 1.0)
         if company_id != self.player_id or region == self.home or region in self.present:
-            return 1.0
-        return self.foreign_awareness
+            return factor
+        return factor * self.foreign_awareness
 
     def splits(self, company_id: int) -> bool:
         """Whether the company's sellers sell only where they work (the player's)."""
@@ -87,4 +93,10 @@ def reach_context(state: GameState, balance: Balance, data: GameData) -> ReachCo
         indexes={r: relative_row(r, home, data)[1] for r in data.region_keys},
         foreign_awareness=balance.markets.foreign_awareness,
         neighbour_sellers=balance.markets.neighbour_sellers,
+        marketing={
+            (p.id, region): factor
+            for p in state.company_products(state.player.id)
+            if p.status in SELLING
+            for region, factor in awareness_factors(state, p, home, balance).items()
+        },
     )

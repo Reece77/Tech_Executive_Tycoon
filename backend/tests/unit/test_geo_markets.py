@@ -112,18 +112,18 @@ def test_regional_price_and_selling_only_once_live(loaded: LoadedData) -> None:
     assert live.regional_segments_of(PRODUCT, "europe")[0].customers > 0
 
 
-def test_foreign_awareness_until_local_presence(loaded: LoadedData) -> None:
-    """Self-serve reach abroad is x 0.6 until an office or 5 people work there (19.5)."""
+def test_local_presence_regions(loaded: LoadedData) -> None:
+    """Presence (an office or 5 people) still counts for sales-led reach; self-serve needs none
+    since M10b (23.5: foreign_awareness 1.0)."""
     b, data = loaded.balance, loaded.game_data
     state = _live(loaded)
     geo = reach_context(state, b, data)
     assert geo is not None
-    assert geo.awareness_factor(1, "europe") == 0.6
-    assert geo.awareness_factor(1, "north_america") == 1.0
-    assert geo.awareness_factor(2, "europe") == 1.0  # rivals sell without offices
+    assert geo.awareness_factor(1, "europe") == 1.0 == b.markets.foreign_awareness
+    assert "europe" not in geo.present
     leased = _act(loaded, state, LeaseOffice(FOUNDER, "london", 25)).new_state
     geo = reach_context(leased, b, data)
-    assert geo is not None and geo.awareness_factor(1, "europe") == 1.0
+    assert geo is not None and "europe" in geo.present
     remote = replace(
         state, companies=(replace(state.player, work_policy="remote"), *state.companies[1:])
     )

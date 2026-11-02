@@ -90,6 +90,7 @@ from tst.db.models import (
     LedgerLineRow,
     LoanRow,
     MacroMonthRow,
+    MarketingSplitRow,
     MarketSegmentRow,
     OfferRow,
     OfficeRow,
@@ -140,7 +141,13 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
-from tst.sim.geo.models import Office, ProductRegion, RegionalMarket, RegionalSegment
+from tst.sim.geo.models import (
+    MarketingSplit,
+    Office,
+    ProductRegion,
+    RegionalMarket,
+    RegionalSegment,
+)
 from tst.sim.hiring.models import NextIds
 from tst.sim.ledger import LedgerEntry
 from tst.sim.org.models import ExecSeat
@@ -481,6 +488,16 @@ def _load_geo(session: Session, state: GameState, product_ids: list[int]) -> Gam
                 )
             )
         ),
+        marketing_splits=tuple(
+            MarketingSplit(r.product_id, r.region, r.share_bp)
+            for r in session.scalars(
+                select(MarketingSplitRow)
+                .where(MarketingSplitRow.product_id.in_(product_ids))
+                .order_by(MarketingSplitRow.product_id, MarketingSplitRow.region)
+            )
+        )
+        if has_table(session, MarketingSplitRow)
+        else (),
         product_regions=tuple(
             ProductRegion(r.product_id, r.region, r.launched_turn, r.live_turn)
             for r in session.scalars(
@@ -945,6 +962,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_m8(session, old, new)
     _sync_m10(session, old, new)
     _sync_geo(session, old, new)
+    _sync_marketing(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()
         for row in former_rows(old, new):  # M7c: what the player knew when they left
@@ -993,6 +1011,27 @@ def _sync_m8(session: Session, old: GameState, new: GameState) -> None:
     session.flush()
     for row in rows:
         session.merge(row)
+
+
+def _sync_marketing(session: Session, old: GameState, new: GameState) -> None:
+    """A product's marketing split is replaced whole when it changes (M10b, 23.5)."""
+    if old.marketing_splits == new.marketing_splits or not has_table(session, MarketingSplitRow):
+        return
+    before: dict[int, list[MarketingSplit]] = {}
+    after: dict[int, list[MarketingSplit]] = {}
+    for m in old.marketing_splits:
+        before.setdefault(m.product_id, []).append(m)
+    for m in new.marketing_splits:
+        after.setdefault(m.product_id, []).append(m)
+    session.flush()
+    for pid in sorted(set(before) | set(after)):
+        if before.get(pid) == after.get(pid):
+            continue
+        session.execute(delete(MarketingSplitRow).where(MarketingSplitRow.product_id == pid))
+        session.add_all(
+            MarketingSplitRow(product_id=m.product_id, region=m.region, share_bp=m.share_bp)
+            for m in after.get(pid, ())
+        )
 
 
 def _sync_geo(session: Session, old: GameState, new: GameState) -> None:
@@ -1140,6 +1179,7 @@ def live_view(state: GameState) -> GameState:
         segment_shares=tuple(s for s in state.segment_shares if s.product_id in product_ids),
         offices=tuple(o for o in state.offices if o.status == "open"),
         product_regions=tuple(r for r in state.product_regions if r.product_id in product_ids),
+        marketing_splits=tuple(m for m in state.marketing_splits if m.product_id in product_ids),
         regional_segments=tuple(s for s in state.regional_segments if s.product_id in product_ids),
         free_agents=free_agents,
         events=tuple(
