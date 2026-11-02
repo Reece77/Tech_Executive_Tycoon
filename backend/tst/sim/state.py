@@ -5,6 +5,7 @@ from __future__ import annotations
 from bisect import bisect_left
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
+from operator import attrgetter
 from typing import Any
 
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
@@ -49,6 +50,8 @@ from tst.sim.rivals.models import (
     SegmentShare,
     WorkforcePool,
 )
+
+_ID = attrgetter("id")  # sort key of id-sorted collections (C speed for bisect)
 
 
 @dataclass(frozen=True, slots=True)
@@ -177,7 +180,7 @@ class GameState:
         """By binary search: `people` is kept sorted by id (`with_person`); the scan after a
         miss only matters for a hand-built, unsorted tuple."""
         people = self.people
-        i = bisect_left(people, person_id, key=_person_id)
+        i = bisect_left(people, person_id, key=_ID)
         if i < len(people) and people[i].id == person_id:
             return people[i]
         for person in people:
@@ -453,10 +456,6 @@ def company_cash(balances: LedgerBalances, company_id: int) -> Cents:
 
 
 # --- Updating tuples by key (each returns a new GameState) -----------------------------------
-
-
-def _person_id(person: Person) -> int:
-    return person.id
 
 
 def _upsert[T](items: tuple[T, ...], item: T, key: Callable[[T], Any]) -> tuple[T, ...]:
