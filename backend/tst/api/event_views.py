@@ -29,6 +29,7 @@ CATEGORY_LABELS = {
     "board": "Board and investors",
     "rivals": "Rivals",
     "founder": "Founder",
+    "executive": "Executives",  # M10c (24.3)
 }
 SOURCE_LABELS = {"claude": "Claude", "template": "template", "mock": "mock", "replay": "replay"}
 

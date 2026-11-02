@@ -6,6 +6,15 @@ templates:
   retained: # M10b (23.3): a counter-offer kept someone serving notice
     title: "{name} is staying"
     body: "{name} has accepted your counter-offer and withdrawn their notice."
+  exec_report: # M10c (24.3): a seat holder's quarterly report
+    title: "{seat} report: {name}"
+    body: "{report}"
+  exec_decisions: # M10c (24.1): what executives with authority did this month
+    title: "Your executives this month"
+    body: "{summary}"
+  exec_proposal: # M10c (24.1): a proposal waiting for Approve or Decline
+    title: "{name} proposes: {what}"
+    body: "{detail} Approve or decline it on the Executive team panel before you continue."
   choices_month: # M10b (formulas.md 23.2): the month-end report's one line on event choices
     title: "Your choices this month"
     body: "{summary}"
