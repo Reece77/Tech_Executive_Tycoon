@@ -35,7 +35,7 @@ test('(a) answer an event and see its effect', async ({ page }) => {
   await page.getByTestId('inbox-item').filter({ hasText: 'has gone quiet' }).click();
   const card = page.getByTestId('event-card');
   await expect(card).toBeVisible();
-  await expect(card).toContainText(/costs about \$/);
+  await expect(card).toContainText(/costs \$[0-9]/); // numbers since M10b (23.2)
   const before = await cash(page);
   await card.locator('[data-choice="B"]').click();
   await expect(card.getByTestId('event-answered')).toHaveText('You chose B.');
