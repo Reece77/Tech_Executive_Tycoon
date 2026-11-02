@@ -23,8 +23,11 @@ nightly:
 	cd backend && uv run pytest -q -n auto -m nightly -s
 
 # CI's nightly matrix (M10d): the nightly tests in two shards balanced by tests/durations.json.
-nightly-ci-%:
-	cd backend && uv run pytest -q -n auto -m nightly -s --shard $*/2
+nightly-ci-1:
+	cd backend && uv run pytest -q -n auto -m nightly -s --shard 1/2
+
+nightly-ci-2:
+	cd backend && uv run pytest -q -n auto -m nightly -s --shard 2/2
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20
