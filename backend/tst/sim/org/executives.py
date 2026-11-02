@@ -5,9 +5,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from tst.sim.data_models import LEVELS, Balance
+from tst.sim.data_models import AUTHORITY_SEATS, LEVELS, Balance
 from tst.sim.org.formulas import coo_factor, seat_effect, seat_multiplier, seat_score
-from tst.sim.org.models import SEATS
+from tst.sim.org.models import SEATS, Authority
 from tst.sim.people.reveal import revealed_range
 from tst.sim.state import GameState
 
@@ -119,3 +119,32 @@ def displayed_score(
         lo, hi = revealed_range(person, reveal, key)
         total += w * (lo + hi) / 2
     return total
+
+
+# --- Authority (M10c, 24.1) ------------------------------------------------------------------
+
+
+def _employed(state: GameState, person_id: int, company_id: int) -> bool:
+    e = state.employment_of(person_id)
+    return e is not None and e.company_id == company_id and e.status == "active"
+
+
+def acting_seats(state: GameState, company_id: int) -> list[tuple[Authority, int]]:
+    """(authority, holder) for every enabled seat with a holder on staff, in 24.1 order."""
+    out = []
+    for seat in AUTHORITY_SEATS:
+        a = state.authority(company_id, seat)
+        holder = state.seat_holder(company_id, seat)
+        if (
+            a is not None
+            and a.enabled
+            and holder is not None
+            and _employed(state, holder, company_id)
+        ):
+            out.append((a, holder))
+    return out
+
+
+def exec_energy_holders(state: GameState) -> set[int]:
+    """Seat holders acting with authority: they get exec_authority.energy_per_month."""
+    return {holder for c in state.ledger_companies() for _, holder in acting_seats(state, c.id)}

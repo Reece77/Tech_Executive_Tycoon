@@ -12,8 +12,8 @@ from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.data_models import AUTHORITY_SEATS, Balance, GameData
 from tst.sim.errors import InvalidActionError, OrgRuleError
 from tst.sim.org.executives import seats_in_play
-from tst.sim.org.models import Authority, GuardValue
-from tst.sim.state import GameState, with_authority
+from tst.sim.org.models import Authority, GuardValue, Proposal, ProposalStatus
+from tst.sim.state import GameState, with_authority, with_proposal
 
 PROTECTED_UNITS = "protected_units"  # the CTO's guardrail that is a list of unit ids
 FRACTIONAL = frozenset({"coverage_target"})  # guardrails that may be fractions
@@ -126,3 +126,40 @@ def default_authority(state: GameState, company: int, seat: str, balance: Balanc
         Authority(company, seat, False, (), state.turn),
         guardrails=guardrails_for(None, seat, (), state, company, balance),
     )
+
+
+@dataclass(frozen=True, slots=True)
+class AnswerProposal:
+    """Approve or decline an executive's proposal (24.1). Approving takes the proposed action
+    with the player as actor: a round, a loan or a lease, at its own energy and rules."""
+
+    actor_id: int
+    proposal_id: int
+    approve: bool
+    kind: Literal["answer_proposal"] = "answer_proposal"
+
+
+def proposal_action(proposal: Proposal, actor_id: int) -> object:
+    """The action a proposal stands for."""
+    from tst.sim.actions.finance import StartRound, TakeLoan
+    from tst.sim.actions.geo import LeaseOffice
+
+    p = dict(proposal.params)
+    if proposal.kind == "round":
+        return StartRound(actor_id, str(p["series"]), int(p["target_cents"]))
+    if proposal.kind == "loan":
+        return TakeLoan(actor_id, str(p["loan_kind"]), int(p["amount_cents"]))
+    return LeaseOffice(actor_id, str(p["city"]), int(p["seats"]))
+
+
+def pending_proposal(state: GameState, company: int, proposal_id: int) -> Proposal:
+    proposal = next((p for p in state.proposals if p.id == proposal_id), None)
+    if proposal is None or proposal.company_id != company:
+        raise InvalidActionError(f"no proposal {proposal_id}")
+    if proposal.status != "pending":
+        raise InvalidActionError("that proposal has been answered")
+    return proposal
+
+
+def close_proposal(state: GameState, proposal: Proposal, status: ProposalStatus) -> GameState:
+    return with_proposal(state, replace(proposal, status=status, resolved_turn=state.turn))

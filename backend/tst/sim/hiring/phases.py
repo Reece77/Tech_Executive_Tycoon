@@ -51,6 +51,7 @@ from tst.sim.ledger import (
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
 from tst.sim.org.divisions import division_of_unit, is_scaleup
+from tst.sim.org.executives import exec_energy_holders
 from tst.sim.org.morale import morale_terms
 from tst.sim.org.rules import is_remote, org_view
 from tst.sim.org.scaleup import delegate_energy_factor, support_morale_terms
@@ -752,6 +753,7 @@ def reset_energy(state: GameState, balance: Balance, data: GameData | None = Non
     From stage 3 a delegate's energy is x the coverage c of their support pool (M8, 18.4)."""
     founders = {p.id for p in state.people if p.is_founder}
     player = state.player
+    executives = exec_energy_holders(state)  # with authority: their own energy (M10c, 24.1)
     view = org_view(state, player.id) if data and is_scaleup(player, balance) else None
     for ps in state.person_states:
         if ps.energy is not None:
@@ -761,7 +763,11 @@ def reset_energy(state: GameState, balance: Balance, data: GameData | None = Non
                 else balance.delegates.energy_per_month
             )
             delegate = ps.person_id not in founders
-            if view is not None and data is not None and delegate and ps.person_id in view.unit_of:
+            if ps.person_id in executives:
+                cap = balance.exec_authority.energy_per_month
+            elif (
+                view is not None and data is not None and delegate and ps.person_id in view.unit_of
+            ):
                 factor = delegate_energy_factor(state, view, ps.person_id, balance, data)
                 cap = math.floor(cap * factor)
             if not delegate:  # event modifiers on the founder's monthly energy (M10b, 23.2)

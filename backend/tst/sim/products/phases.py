@@ -448,12 +448,15 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     return state, done, logs
 
 
+TYPICAL_BUILDER_OUTPUT = 1.0  # tunable-exempt: d = 10, m = 1, t = 1 (11.4)
+
+
 def builders_to_add(output: float, builders: int, needed: float) -> int:
     """About how many more builders like the current ones reach `needed` output (23.4)."""
     if output >= needed:
         return 0
-    if builders == 0 or output <= 0:
-        return 1
+    if builders == 0 or output <= 0:  # nobody yet: builders of typical output (o = 1, 11.4)
+        return math.ceil(needed / TYPICAL_BUILDER_OUTPUT)
     return math.ceil((needed - output) / (output / builders))
 
 
