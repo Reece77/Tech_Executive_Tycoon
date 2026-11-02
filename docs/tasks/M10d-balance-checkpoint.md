@@ -59,7 +59,36 @@ A short game of 3 years hands-on, then 3 years delegated on `quick-stage3`. Does
 
 ## Decisions made
 
-_(Agent fills in.)_
+### Status at the stop for the product manager (2026-11-02)
+
+Work paused here, before any re-band, as instructed. Committed so far: sub-task 0's first speed fixes, and sub-task 1's morale and retention tuning.
+
+| Item | Before (m10c-done) | Now | Target | State |
+| --- | --- | --- | --- | --- |
+| S2 worker-minutes, CI nightly | 28.2 | 30.3 | < 20 | fails; brief: set at CI need + 25% once tuning ends |
+| S2 locally, balance run alone | 18.8 | 13.6 | - | `GameState.person` by bisect with a C key, seat cost memoized |
+| Median morale, steady / blitzscale | 56.5 / 53.7 | 61.6 / 59.0 | 58-68 | pass (`morale.target_base` 50 to 56) |
+| Executive retention (score-14 CTO, 6 months) | 7 of 10 | 8 of 10 | >= 8 of 10 | pass; xfail removed (`resign.morale_floor` 40 to 50 keeps underpaid misfits leaving more) |
+| M8 seats | 1.097 (xfail) | passes (xpass) | >= 1.15 | pass |
+| T2 wins | steady 7, frugal 3 | steady 9, frugal 1 | each <= 6 | fails |
+| T3 blitzscale succeeds | 5/10 | 4/10 | >= 3 | pass |
+| T5 blitzscale bankrupt | 0% | 0% | 10-40% | fails: 5 of 10 founders are removed by the board at turns 87-109 with cash near zero, before bankruptcy |
+| Expansion (19.8 target 2) | 6.93x | 6.93x | 1.4-2.5x | fails: home-only blitzscale ends at ARR 0 on 5 of 10 seeds (founder removed); where both arms live it is 3.4x |
+| T7 startups alive | 62% | 61% | 20-60% | fails narrowly (xfail) |
+| M10 covenants breach | 90% | 90% | 20-60% | fails (xfail) |
+| M10 debt saves dilution | +4.8 | passes (xpass) | +5 | pass |
+| M5 launches; potential gap | 0.925; 2.83 | unchanged (xfail) | 1.0; 3.0 | fail narrowly |
+| §23.7 critical events per 18 months, 20+ staff | 1.08 | 0.88 | >= 1 | **new miss**: happier staff, fewer key exits |
+| M5 poaching accepted | in band | 12.6% | 20-60% | **new miss**: the poach score's `morale_mid` 55 now sits below the median |
+| Founder energy, hands-on | - | steady never below 5 in years 2-5 (0 of 480 months); blitzscale 15 of 480 | runs out >= 1 month in 3 | fails; no script plays like a hands-on human |
+| Founder energy, delegated (§24.5 target 4) | 94% unspent | 94% | >= 60% | pass |
+
+Root causes and what each needs (proposals for the product manager):
+1. **Blitzscale's money runs out after its Series B.** The script raises seed, A and B only (written before M10's Series C and D). It burns into zero cash around turns 87-109, and the board removes the founder before bankruptcy. That one fact drives T2 (blitzscale never wins), T5 (removed, not bankrupt), T3's margin and the expansion ratio (zeros in the home arm), and plausibly the covenant breaches (blitzscale with debt). Proposal: the blitzscale script raises a Series C (say $50M, inside the $30-80M typical band) once its gate is met. This changes a strategy definition in `docs/balance-targets.md`, so it needs approval. Then re-measure T2, T3, T5, expansion and covenants before tuning any key.
+2. **Morale vs poaching and crises.** Raising morale (the brief's sub-task 1) lowers poaching acceptance (12.6%) and key-exit crises (0.88). Options: (a) move `rivals.poach.morale_mid` to 61 with the median (acceptance returns, but executives at ordinary morale read "might go" again, undoing the retention fix); (b) keep it at 55 and raise acceptance for non-executives through `rivals.poach.offer_mult` or `leave_penalty`; (c) re-band M5 target 4 to 10-50% and §23.7 target 1 to 0.8. Recommendation: (b) for poaching, plus a small rise in `events.crisis.breach_chance`/`outage_chance` for crises.
+3. **Founder energy "hands-on".** No balance script spends energy the way a hands-on player does (steady uses about 9 of 60 a month). Either define the measurement (for example, a hands-on script that interviews every candidate and sets prices and marketing monthly), or re-band it to a manual check. Cutting energy until steady runs out would refuse the scripts' own actions and move every other target.
+4. **Near misses** (T7 61%, M5 launches 0.925, potential 2.83): the M9 reasons stand (startups founded abroad; the city talent bonus). Proposal: re-band T7 to 20-65%, M5 launches to >= 0.9 and the potential gap to >= 2.8, with those reasons; or leave them for after item 1.
+5. **S2:** CI needs about 30 worker-minutes after this round; the brief sets the bound at that plus 25% (about 38) once tuning ends.
 
 ## Follow-ups
 
