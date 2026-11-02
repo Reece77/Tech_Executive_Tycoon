@@ -27,7 +27,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `events` | 6 | `(turn,)` | The event director's monthly draw (formulas.md §16.1) | M6 |
 | `founder` | 7 | none | Founder hidden traits, PA, random personality (turn 0) | M1a |
 | `growth` | 8 | `(person_id,)` | Monthly skill growth noise | M1a |
-| `reveal` | 9 | `(observer_company_id, person_id)`; `(observer_company_id, 1,000,000 + company_id, domain_index)` | Center offsets when a knowledge record is created; from M11 the offset of another company's research-lead range (formulas.md §21.7), drawn at turn 0 | M1a, M11 |
+| `reveal` | 9 | `(observer_company_id, person_id)` | Center offsets when a knowledge record is created | M1a |
 | `tags` | 10 | `(person_id,)` | Monthly tag reveal rolls for employees | M1b |
 | `resign` | 11 | `(person_id,)` | Monthly resignation roll | M1b |
 | `retire` | 12 | `(person_id,)` | Monthly retirement roll | M1b |
@@ -43,6 +43,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `rival_region` | 22 | `(startup_id,)` | A rival startup's founding region, one draw weighted by its category's addressable demand in each region (formulas.md §19.6) | M9 |
 | `research` | 23 | `(project_id,)` | A research project's breakthrough and dead-end draws, two uniforms a month in project id order: breakthrough, then dead end only without one (formulas.md §21.3) | M11 |
 | `rival_research` | 24 | `(company_id,)` | A researching rival's monthly breakthrough draw, one uniform (formulas.md §21.6) | M11 |
+| `lead_reveal` | 25 | `(observer_company_id, company_id, domain_index)` | The offset of another company's research-lead range, one uniform drawn at turn 0, so the range's midpoint is not the true lead (formulas.md §21.7) | M11 |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).
@@ -64,7 +65,6 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | Name | Id | Key | Use | Milestone |
 | --- | --- | --- | --- | --- |
 | `entrants` | 20 | `(entrant_index,)` | Generating a scheduled entrant's people (formulas.md §18.7) | M8 |
-| — | 25 | — | Reserved for lane A | M11 |
 | `supply` | 26 | `(index,)` | Component indexes and supply shocks after 2025 (formulas.md §22.4) | M12a (lane B) |
 | `facility` | 27 | `(facility_id,)` | Data-centre outages (formulas.md §22.5) | M12a (lane B) |
 | — | 28–29 | — | Reserved for lane B | M12a |

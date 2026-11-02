@@ -43,6 +43,7 @@ STREAM_IDS: Final = MappingProxyType(
         "rival_region": 22,  # key (startup_id,): a rival startup's founding region (M9, 19.6)
         "research": 23,  # key (project_id,): breakthroughs and dead ends (M11, 21.3)
         "rival_research": 24,  # key (company_id,): a researching rival's breakthroughs (M11, 21.6)
+        "lead_reveal": 25,  # key (observer, company_id, domain_index): a lead range's offset (M11)
         "misc": 99,
     }
 )

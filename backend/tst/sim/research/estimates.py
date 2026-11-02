@@ -21,7 +21,7 @@ from tst.sim.research.projects import Lab, progress, research_skill
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
-RIVAL_LEAD_KEY = 1_000_000  # reveal-stream sub-key base for companies' leads (ADR-0013)
+CENTRE = 0.5  # tunable-exempt: a uniform draw centred on 0
 
 
 def _shown_skills(state: GameState, company_id: int, person_id: int) -> dict[str, float] | None:
@@ -120,7 +120,7 @@ def lead_range(
 ) -> tuple[int, int]:
     """Another company's lead as whole points (21.7): +-rnd.reveal.range around the true
     value, +-licensed_range once the two have a licence, offset by a seeded draw (stream
-    `reveal`, key (observer, RIVAL_LEAD_KEY + company id, domain index)) so the midpoint
+    `lead_reveal`, key (observer, company id, domain index), drawn at turn 0) so the midpoint
     is not the true lead. Never below 0."""
     if observer_id == company_id:
         lead = state.research_lead(company_id, domain)
@@ -129,9 +129,9 @@ def lead_range(
     half = balance.rnd.reveal.licensed_range if licensed else balance.rnd.reveal.range
     index = levels.domain_keys(data).index(domain)
     gen = RngFactory(state.save_meta.master_seed).stream(
-        0, "reveal", observer_id, RIVAL_LEAD_KEY + company_id, index
+        0, "lead_reveal", observer_id, company_id, index
     )
-    offset = (float(gen.random()) - 0.5) * half
+    offset = (float(gen.random()) - CENTRE) * half
     lead = state.research_lead(company_id, domain)
     low = max(0, math.floor(lead + offset - half))
     high = max(low + 1, math.ceil(lead + offset + half))

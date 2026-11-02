@@ -1707,6 +1707,10 @@ INBOX_TEMPLATE_KEYS = (
     "office_closed",
     "region_launched",
     "region_live",
+    "era_arrived",  # M11 (21.4, 21.5)
+    "license_in",
+    "license_out",
+    "research_leak",
 )
 
 
