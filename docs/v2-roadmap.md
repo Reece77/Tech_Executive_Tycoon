@@ -50,6 +50,10 @@ v2 runs in two lanes where the systems are separate (Reece, 2026-10-29). Each la
 - **Sandbox mode and the company score** are in v2 (Reece, 2026-10-30), in M15 unless the retrospective moves them.
 - **v2 starts with divisions and new markets** (Reece, 2026-10-30).
 
+## Design for v3
+
+v3 is outlined in `docs/v3-outline.md`. Every v2 brief from M11 on carries a "Design for v3" section pointing to ADR-0020: one facility model with kinds, one market-good model, per-company everything (no single-player-company assumption), region risk fields, and per-company listings. M12b and M13 briefs must include it when written.
+
 ## Design settled ahead of the briefs
 
 M12b and M13 have their design decisions recorded (ADR-0019 §8, §10–§13). Their full briefs and formulas are written when M11 and M12a (for M12b) and M10 (for M13) are built, as every brief has been, so they match the code as it stands. M14 and M15 wait for M12b and M13.

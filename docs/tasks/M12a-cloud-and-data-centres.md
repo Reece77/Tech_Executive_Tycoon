@@ -25,6 +25,12 @@
   - `docs/formulas.md`: notes in §22 only;
   - `CHANGELOG.md`, `docs/data-dictionary.md`: keep both sides.
 
+## Design for v3 (ADR-0020)
+
+- **Generic facility model.** Build data centres as one **kind** of a generic facility model (kind, owner `company_id`, region and city, capacity unit, inputs, output good, utilization, staff role and ratio, reliability, capex and depreciation, operating cost, status). Kind-specific rules go in a small per-kind module; the build, depreciate, staff, utilize and close lifecycle is shared. M12b adds assembly plants as another kind; v3 adds mines, refineries, wafer plants and fabs.
+- **Market goods.** The server and GPU component indexes are **goods** in one market-good model (key, unit, history-then-seeded index, allocation, spot and contract with take-or-pay) that v3 extends to commodities.
+- **No single-company assumption.** Every new function takes a `company_id`; use `player_companies(state)` (add it if missing) wherever "the player" is meant.
+
 ## Out of scope
 
 Hardware, devices, chips and assembly plants (M12b). Rivals' physical capacity (abstract in M12a). Power markets and carbon. Owning a foundry (v3).

@@ -22,6 +22,10 @@
   - `CHANGELOG.md`, `docs/data-dictionary.md`: keep both sides.
 - **Shared hook:** `research.tech_factor(state, company_id, category)`, called once in the product quality cap and feature gain, and once in rivals' quality target. M12a's Cloud hosting features read `research.lead(state, company_id, "infrastructure")`; expose that function and keep its signature stable.
 
+## Design for v3 (ADR-0020)
+
+Leads, projects and licences belong to a `company_id`; use `player_companies(state)` wherever "the player" is meant. Keep domains as data, so v3 can add process and materials domains (fabs and refining) without code changes.
+
 ## Out of scope
 
 Chip and device products (M12b; their domains research now but feed nothing until then). Patents and lawsuits. Research for rival startups. Government grants.

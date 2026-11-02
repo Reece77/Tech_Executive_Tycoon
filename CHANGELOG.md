@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs: v3 outline (`docs/v3-outline.md`, M16–M23) and ADR-0020 (design v2 so v3 can extend it), with Reece's 2026-11-02 v3 decisions; M11 and M12a briefs gain a "Design for v3" section.
 - CI: `tag-milestone` also finds a `Milestone-Tag: mX-done` line anywhere in the head commit's message, not only as a git trailer (the trailer was missed at M7b and M10c when it sat in its own paragraph).
 - M10c Executives with authority (formulas.md §24):
   - Authority per seat (CTO, CRO, CMO, COO, CFO) with guardrails (headcount caps, pay ceiling, protected units, price band, marketing share of revenue, coverage target, runway and repayment thresholds); `set_authority` (energy 2); the Executive team panel's authority dialog; migration `0027_exec_authority`.
