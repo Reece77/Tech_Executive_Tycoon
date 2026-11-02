@@ -327,10 +327,22 @@ def event_cash_cents(path: Path, company_id: int = 1, through_turn: int | None =
 def answer_critical(path: Path, loaded: LoadedData) -> None:
     """Answer any open critical event with its first choice, as a player must before Continue
     (M6, ADR-0006 amended). Scripts that run a company low on cash call this each month."""
+    from sqlalchemy import select
+
+    from tst.db.models import EventRow
     from tst.db.repository import load_state, open_session, run_action
     from tst.sim.actions import ChooseEvent
 
-    with open_session(path) as session:
+    with open_session(path) as session:  # most months have none: skip loading the state
+        if (
+            session.scalar(
+                select(EventRow.id)
+                .where(EventRow.severity == "critical", EventRow.status == "open")
+                .limit(1)
+            )
+            is None
+        ):
+            return
         state = load_state(session)
     founder = state.founder_of(state.player.id)
     for event in state.open_events(state.player.id):

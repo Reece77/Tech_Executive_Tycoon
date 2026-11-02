@@ -11,6 +11,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Quarterly reports from every filled seat (template, or the LLM within the budget), executive events (research budget, sales playbook, campaign, runway warning, clash), Ask my COO answered by the named COO from their report.
   - History entries, glossary terms, `tst authority --seat --on/--off --guard key=value`, `tst reports`.
   - §24.5 targets: delegated/steady 0.92, score 15/8 1.29, no cap exceeded, mean coverage shortfall 0.009, founder energy 94% unspent (`tools/m10c_targets.py`, nightly). The CRO's default seller cap is 20. Golden snapshots unchanged.
+  - Speed: `GameState.person` by binary search; the tests' `answer_critical` loads the state only when a critical event is open (the product turn-time test 613 to 434 ms locally).
 
 - M10b Feel fixes from Reece's playtest (formulas.md §23):
   - Regional prices show on the product and in a fresh Regions dialog (the engine charged them; nothing showed them).

@@ -174,7 +174,13 @@ class GameState:
         raise KeyError(company_id)
 
     def person(self, person_id: int) -> Person:
-        for person in self.people:
+        """By binary search: `people` is kept sorted by id (`with_person`); the scan after a
+        miss only matters for a hand-built, unsorted tuple."""
+        people = self.people
+        i = bisect_left(people, person_id, key=_person_id)
+        if i < len(people) and people[i].id == person_id:
+            return people[i]
+        for person in people:
             if person.id == person_id:
                 return person
         raise KeyError(person_id)
@@ -447,6 +453,10 @@ def company_cash(balances: LedgerBalances, company_id: int) -> Cents:
 
 
 # --- Updating tuples by key (each returns a new GameState) -----------------------------------
+
+
+def _person_id(person: Person) -> int:
+    return person.id
 
 
 def _upsert[T](items: tuple[T, ...], item: T, key: Callable[[T], Any]) -> tuple[T, ...]:
