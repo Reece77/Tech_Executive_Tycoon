@@ -71,7 +71,14 @@ def outages_month(
     state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LogItem, ...]]:
     """Phase 6: roll outages and apply them (22.5)."""
-    hit = roll(state, rng, balance)
+    return apply_outages(state, roll(state, rng, balance), balance, data)
+
+
+def apply_outages(
+    state: GameState, hit: list[int], balance: Balance, data: GameData
+) -> tuple[GameState, tuple[LogItem, ...]]:
+    """The outages of the facilities in `hit` (ids), in order: lost customers, history, the
+    player's inbox note and one critical event (22.5)."""
     if not hit:
         return state, ()
     ob = balance.facility.outage
