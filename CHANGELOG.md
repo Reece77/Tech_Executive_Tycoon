@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- CI: `tag-milestone` also finds a `Milestone-Tag: mX-done` line anywhere in the head commit's message, not only as a git trailer (the trailer was missed at M7b and M10c when it sat in its own paragraph).
 - M10c Executives with authority (formulas.md §24):
   - Authority per seat (CTO, CRO, CMO, COO, CFO) with guardrails (headcount caps, pay ceiling, protected units, price band, marketing share of revenue, coverage target, runway and repayment thresholds); `set_authority` (energy 2); the Executive team panel's authority dialog; migration `0027_exec_authority`.
   - Executives act each month in phase 2 through the player's actions with their own energy; the right rule with probability clamp(0.55 + 0.03 s, 0.6, 0.98) from the true seat score, else a plausible worse choice named as a misstep. Decisions show on the panel and in "Your executives this month".

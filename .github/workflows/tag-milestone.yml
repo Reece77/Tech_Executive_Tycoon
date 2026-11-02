@@ -29,6 +29,11 @@ jobs:
         run: |
           tag="$(git log -1 --format='%(trailers:key=Milestone-Tag,valueonly,separator=%x20)' "$SHA" | tr -d '[:space:]')"
           if [ -z "$tag" ]; then
+            # Fallback: a "Milestone-Tag: mX-done" line anywhere in the message (twice the
+            # trailer sat in its own paragraph, where git doesn't read it as a trailer).
+            tag="$(git log -1 --format=%B "$SHA" | sed -n 's/^Milestone-Tag:[[:space:]]*\(m[0-9][0-9]*[a-z]\{0,1\}-done\)[[:space:]]*$/\1/p' | tail -n 1)"
+          fi
+          if [ -z "$tag" ]; then
             echo "No Milestone-Tag trailer on $SHA; nothing to tag."
             exit 0
           fi
