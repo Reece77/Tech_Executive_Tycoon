@@ -655,6 +655,15 @@ export function useOrg(saveId: string) {
   });
 }
 
+/** The structure guide: what units, managers, divisions, support and seats do, with live
+ * numbers (23.4, M10b). */
+export function useOrgGuide(saveId: string) {
+  return useQuery({
+    queryKey: [...keys.org(saveId), 'guide'] as const,
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/org/guide', path(saveId))),
+  });
+}
+
 /** One-off morale changes and energy for a reorganization; nothing is saved. */
 export function useOrgPreview(saveId: string, change: OrgChange | null) {
   return useQuery({

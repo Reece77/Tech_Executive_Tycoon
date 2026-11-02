@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 import { KpiTile } from '../components/KpiTile';
 import { RegionsPanel } from '../components/RegionsPanel';
-import { BreakdownTip } from '../components/Term';
+import { BreakdownTip, Term } from '../components/Term';
 import { LifecycleChip } from '../components/LifecycleChip';
 import { ScoreBar, ScoreLegend, type ScoreBarItem } from '../components/ScoreBar';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
@@ -137,6 +137,20 @@ function ProductBody({
         </Alert>
       )}
       <Tiles p={p} />
+      {p.team_strength && (
+        <p
+          className={p.team_strength.estimated_output < p.team_strength.maintains ? undefined : 'tst-muted'}
+          style={{
+            margin: 0,
+            fontSize: 14,
+            color:
+              p.team_strength.estimated_output < p.team_strength.maintains ? 'var(--tst-warn)' : undefined,
+          }}
+          data-testid="product-team-strength"
+        >
+          <Term term="product.team_strength">Team strength</Term>: {p.team_strength.text}
+        </p>
+      )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         <Competition p={p} market={market.data} segment={shownSegment} onSegment={setSegment} />
         <TeamAndMarketing saveId={saveId} p={p} meta={meta} run={run} busy={act.isPending} />
@@ -224,7 +238,13 @@ function Tiles({ p }: { p: Product }) {
         term="quality"
         label="Quality"
         value={formatScore(p.quality)}
-        note={p.rotting ? 'Falling: nobody works on it' : `Pace: ${p.pace}`}
+        note={
+          p.rotting
+            ? p.builders.length
+              ? 'Falling: the team is too small'
+              : 'Falling: nobody works on it'
+            : `Pace: ${p.pace}`
+        }
         warn={p.rotting}
         drivers={(v) => (
           <BreakdownTip breakdown={p.quality_breakdown} title="Quality" testId="quality-drivers">

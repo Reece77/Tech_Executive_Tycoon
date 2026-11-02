@@ -28,6 +28,7 @@ import {
 import { formatMoneyWhole, formatMonths, formatWhole, humanize } from '../lib/format';
 import { formatFraction, formatShares } from '../lib/finance';
 import { statusOf } from '../lib/status';
+import { RoleHelp } from '../components/RoleHelp';
 
 const SPARK_MONTHS = 5;
 const GROUPS = [
@@ -168,6 +169,7 @@ function ProfileBody({
             {emp && <StatusChip status={statusOf(p)} />}
           </span>
           <UnitManagerLine saveId={saveId} p={p} />
+          {emp && <RoleHelp role={hiring.roles.find((r) => r.key === emp.role)} />}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 28 }}>
           {emp && !p.is_founder && (

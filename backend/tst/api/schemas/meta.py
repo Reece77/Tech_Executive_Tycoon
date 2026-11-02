@@ -99,6 +99,9 @@ class RoleOut(BaseModel):
     label: str
     primary_skills: list[str]
     secondary_skills: list[str]
+    product_function: str = Field(description="builder, seller, marketer or none (11.3)")
+    summary: str = Field(description="What the role does (23.4, M10b)")
+    why_hire: str = Field(description="When to hire one (23.4, M10b)")
 
 
 class HiringMetaOut(BaseModel):

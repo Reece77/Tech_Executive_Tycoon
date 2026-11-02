@@ -41,3 +41,13 @@ def test_a_modifier_shows_runs_and_is_reported(tmp_path: Path, loaded: LoadedDat
         assert line["title"] == "Your choices this month"
         assert "+2 founder energy next month" in line["body"]
         assert "Started: +5% founder energy each month for 6 months" in line["body"]
+
+
+def test_the_structure_guide_and_role_help(tmp_path: Path) -> None:
+    """23.4: the Org guide has live numbers; every role says what it does and why hire."""
+    with hiring_client(tmp_path) as api:
+        guide = api.get(f"{BASE}/org/guide")["sections"]
+        assert [s["key"] for s in guide] == ["units", "span"]  # divisions etc. from stage 3
+        assert guide[0]["lines"][0].endswith("0 departments and 0 teams")
+        roles = api.get("/api/meta/hiring")["roles"]
+        assert all(r["summary"] and r["why_hire"].startswith("Hire one") for r in roles)

@@ -3,6 +3,8 @@ roles:
   - key: software_engineer
     label: Software engineer
     product_function: builder
+    summary: "x"
+    why_hire: "x"
     primary: [software_engineering]
     secondary: []
     work_style: builder

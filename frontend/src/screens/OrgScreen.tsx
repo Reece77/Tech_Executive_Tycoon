@@ -9,9 +9,10 @@ import { LeadsChip, OrgNode, UnitKindBadge } from '../components/OrgNode';
 import { WorksOn } from '../components/WorksOn';
 import { ChangeDialog, type Pending } from '../components/OrgChangeDialog';
 import { ScaleupPanels } from '../components/ScaleupPanels';
-import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
+import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import {
   useOrg,
+  useOrgGuide,
   useOrgMeta,
   usePeople,
   type Org,
@@ -322,6 +323,7 @@ function OrgBody({
         />
       </div>
       <ScaleupPanels saveId={saveId} org={org} />
+      <StructureGuide saveId={saveId} />
       {pending && (
         <ChangeDialog
           saveId={saveId}
@@ -682,5 +684,37 @@ function UnitPanel({
         }
       />
     </aside>
+  );
+}
+
+/** What the structure does and this company's numbers (23.4, M10b). */
+function StructureGuide({ saveId }: { saveId: string }) {
+  const guide = useOrgGuide(saveId);
+  if (!guide.data) return null;
+  return (
+    <Panel title="How structure helps" label="Structure guide">
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
+          gap: 16,
+        }}
+        data-testid="structure-guide"
+      >
+        {guide.data.sections.map((s) => (
+          <section key={s.key} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{s.title}</h3>
+            <p className="tst-muted" style={{ margin: 0, fontSize: 13, lineHeight: 1.45 }}>
+              {s.text}
+            </p>
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>
+              {s.lines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </Panel>
   );
 }

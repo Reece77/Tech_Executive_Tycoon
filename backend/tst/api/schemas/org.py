@@ -240,3 +240,16 @@ class OrgMetaOut(BaseModel):
     promote_morale: float
     reorg_morale: dict[str, float]
     promotion_levels: list[str]
+
+
+class GuideSectionOut(BaseModel):
+    """One part of the Org structure guide (23.4, M10b)."""
+
+    key: str
+    title: str
+    text: str = Field(description="What this part of the structure does")
+    lines: list[str] = Field(description="This company's live numbers")
+
+
+class StructureGuideOut(BaseModel):
+    sections: list[GuideSectionOut]

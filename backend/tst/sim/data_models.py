@@ -1219,6 +1219,8 @@ class Role(_Frozen):
     key: str = Field(pattern=_KEY)
     label: str = Field(min_length=1)
     product_function: ProductFunction
+    summary: str = Field(min_length=1)  # M10b (23.4): what the role does
+    why_hire: str = Field(min_length=1)  # M10b (23.4): when to hire one
     primary: tuple[str, ...] = Field(min_length=1)
     secondary: tuple[str, ...]
     work_style: str
@@ -1623,6 +1625,9 @@ INBOX_TEMPLATE_KEYS = (
     "arr_milestone",
     "sales_capacity_limited",
     "product_rotting",
+    "product_understaffed",  # M10b (23.4): builders, but too few to hold quality
+    "choices_month",  # M10b (23.2): the month's event choices and modifiers
+    "retained",  # M10b (23.3): a counter-offer kept someone
     # M4a (formulas.md 14)
     "safe_filled",
     "safe_declined",

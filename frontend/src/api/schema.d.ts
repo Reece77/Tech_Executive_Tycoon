@@ -625,6 +625,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/org/guide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Org Guide
+         * @description What units, managers, divisions, support and seats do, with live numbers (23.4).
+         */
+        get: operations["getOrgGuide"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/org/units": {
         parameters: {
             query?: never;
@@ -4088,6 +4108,26 @@ export interface components {
              */
             next_vest_is_cliff?: boolean;
         };
+        /**
+         * GuideSectionOut
+         * @description One part of the Org structure guide (23.4, M10b).
+         */
+        GuideSectionOut: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /**
+             * Text
+             * @description What this part of the structure does
+             */
+            text: string;
+            /**
+             * Lines
+             * @description This company's live numbers
+             */
+            lines: string[];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -6204,6 +6244,8 @@ export interface components {
              * @description Event modifiers on this product (23.2, M10b)
              */
             active_effects: components["schemas"]["ActiveEffectOut"][];
+            /** @description Output against the maintenance and full-speed lines (23.4); null if retired */
+            team_strength: components["schemas"]["TeamStrengthOut"] | null;
             /**
              * Regional Prices
              * @description Its prices in other regions it has launched in (M10b)
@@ -6783,6 +6825,21 @@ export interface components {
             primary_skills: string[];
             /** Secondary Skills */
             secondary_skills: string[];
+            /**
+             * Product Function
+             * @description builder, seller, marketer or none (11.3)
+             */
+            product_function: string;
+            /**
+             * Summary
+             * @description What the role does (23.4, M10b)
+             */
+            summary: string;
+            /**
+             * Why Hire
+             * @description When to hire one (23.4, M10b)
+             */
+            why_hire: string;
         };
         /** RoundIn */
         RoundIn: {
@@ -7471,6 +7528,11 @@ export interface components {
             /** Started Label */
             started_label: string;
         };
+        /** StructureGuideOut */
+        StructureGuideOut: {
+            /** Sections */
+            sections: components["schemas"]["GuideSectionOut"][];
+        };
         /** SupportPoolOut */
         SupportPoolOut: {
             /**
@@ -7637,6 +7699,37 @@ export interface components {
             label: string;
             /** Builders */
             builders: number;
+        };
+        /**
+         * TeamStrengthOut
+         * @description The team's output against the two lines that matter (11.4; 23.4, M10b).
+         */
+        TeamStrengthOut: {
+            /**
+             * Estimated Output
+             * @description Builder output a month as you can judge it: from the displayed ranges and noticed tags (est.; ADR-0007)
+             */
+            estimated_output: number;
+            /**
+             * Maintains
+             * @description Below this the product slips (0.25 x scope)
+             */
+            maintains: number;
+            /**
+             * Full Speed
+             * @description Quality and features at full speed (scope)
+             */
+            full_speed: number;
+            /**
+             * Builders To Add
+             * @description About how many builders to reach the next line
+             */
+            builders_to_add: number;
+            /**
+             * Text
+             * @description The line the product screen shows
+             */
+            text: string;
         };
         /** TermSheetOut */
         TermSheetOut: {
@@ -9864,6 +9957,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrgOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getOrgGuide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StructureGuideOut"];
                 };
             };
             /** @description Bad Request */

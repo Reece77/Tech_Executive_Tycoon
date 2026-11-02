@@ -40,6 +40,7 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   arr_milestone: { label: 'Product', group: 'products' },
   sales_capacity_limited: { label: 'Product', group: 'products' },
   product_rotting: { label: 'Product', group: 'products' },
+  product_understaffed: { label: 'Product', group: 'products' }, // M10b (23.4)
   // M4: finance (SAFE answers, term sheets, closings, the board, insolvency and bridges)
   safe_filled: { label: 'Finance', group: 'finance' },
   safe_declined: { label: 'Finance', group: 'finance' },

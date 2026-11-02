@@ -2841,6 +2841,79 @@
         }
       }
     },
+    "/api/saves/{save_id}/org/guide": {
+      "get": {
+        "tags": [
+          "org"
+        ],
+        "summary": "Get Org Guide",
+        "description": "What units, managers, divisions, support and seats do, with live numbers (23.4).",
+        "operationId": "getOrgGuide",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StructureGuideOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/org/units": {
       "post": {
         "tags": [
@@ -14721,6 +14794,40 @@
         ],
         "title": "GrantOut"
       },
+      "GuideSectionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "What this part of the structure does"
+          },
+          "lines": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Lines",
+            "description": "This company's live numbers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "text",
+          "lines"
+        ],
+        "title": "GuideSectionOut",
+        "description": "One part of the Org structure guide (23.4, M10b)."
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -19788,6 +19895,17 @@
             "title": "Active Effects",
             "description": "Event modifiers on this product (23.2, M10b)"
           },
+          "team_strength": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamStrengthOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Output against the maintenance and full-speed lines (23.4); null if retired"
+          },
           "regional_prices": {
             "items": {
               "$ref": "#/components/schemas/RegionalPriceOut"
@@ -19894,6 +20012,7 @@
           "counts_users",
           "segments",
           "active_effects",
+          "team_strength",
           "regional_prices",
           "assigned_units",
           "builders",
@@ -21146,6 +21265,21 @@
             },
             "type": "array",
             "title": "Secondary Skills"
+          },
+          "product_function": {
+            "type": "string",
+            "title": "Product Function",
+            "description": "builder, seller, marketer or none (11.3)"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "What the role does (23.4, M10b)"
+          },
+          "why_hire": {
+            "type": "string",
+            "title": "Why Hire",
+            "description": "When to hire one (23.4, M10b)"
           }
         },
         "type": "object",
@@ -21153,7 +21287,10 @@
           "key",
           "label",
           "primary_skills",
-          "secondary_skills"
+          "secondary_skills",
+          "product_function",
+          "summary",
+          "why_hire"
         ],
         "title": "RoleOut"
       },
@@ -22870,6 +23007,22 @@
         ],
         "title": "StorylineOut"
       },
+      "StructureGuideOut": {
+        "properties": {
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/GuideSectionOut"
+            },
+            "type": "array",
+            "title": "Sections"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sections"
+        ],
+        "title": "StructureGuideOut"
+      },
       "SupportPoolOut": {
         "properties": {
           "key": {
@@ -23193,6 +23346,45 @@
           "builders"
         ],
         "title": "TeamRegionOut"
+      },
+      "TeamStrengthOut": {
+        "properties": {
+          "estimated_output": {
+            "type": "number",
+            "title": "Estimated Output",
+            "description": "Builder output a month as you can judge it: from the displayed ranges and noticed tags (est.; ADR-0007)"
+          },
+          "maintains": {
+            "type": "number",
+            "title": "Maintains",
+            "description": "Below this the product slips (0.25 x scope)"
+          },
+          "full_speed": {
+            "type": "number",
+            "title": "Full Speed",
+            "description": "Quality and features at full speed (scope)"
+          },
+          "builders_to_add": {
+            "type": "integer",
+            "title": "Builders To Add",
+            "description": "About how many builders to reach the next line"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The line the product screen shows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "estimated_output",
+          "maintains",
+          "full_speed",
+          "builders_to_add",
+          "text"
+        ],
+        "title": "TeamStrengthOut",
+        "description": "The team's output against the two lines that matter (11.4; 23.4, M10b)."
       },
       "TermSheetOut": {
         "properties": {

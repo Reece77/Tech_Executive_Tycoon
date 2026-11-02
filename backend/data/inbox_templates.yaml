@@ -64,10 +64,13 @@ templates:
     body: "Annual recurring revenue is now {arr_cents} ({mrr_cents} a month)."
   sales_capacity_limited:
     title: "Sales capacity limited {product}"
-    body: "Sales capacity limited new customers in {segment}. More sellers on the product would close more deals."
+    body: "{sellers} win up to about {cap} {segment} customers a month; {wanted} wanted to buy. Each extra seller adds about {per_seller}. Open a seller hiring plan or move sellers onto {product}."
   product_rotting:
     title: "{product} is slipping"
     body: "Nobody is working on {product}, so its quality is falling. Assign a unit to it."
+  product_understaffed: # M10b (23.4): builders, but too few to hold quality
+    title: "{product}'s team is too small"
+    body: "{product}'s team is too small to maintain it (output about {output} of {needed} needed; full speed at {full_speed}), so its quality is falling. Add about {builders} to stop the slide."
   # M4a finance (formulas.md 14)
   safe_filled:
     title: "SAFE filled: {amount_cents} at a {cap_cents} cap"

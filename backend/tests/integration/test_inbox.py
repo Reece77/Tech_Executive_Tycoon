@@ -46,9 +46,10 @@ from tst.sim.actions import (
 )
 from tst.sim.actions.geo import CloseOffice, LaunchInRegion, LeaseOffice
 from tst.sim.data_models import INBOX_TEMPLATE_KEYS
+from tst.sim.decisions import Decisions
 from tst.sim.ledger import CASH
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.state import GameState, reach_stage, with_company
+from tst.sim.state import GameState, reach_stage, with_company, with_employment, with_event
 
 # Market news (M5) and events (M6) arrive alongside; these tests are about other messages.
 NOT_PRODUCT_NOTES = ("market_news", "event", "critical_event")
@@ -312,6 +313,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     items = [i for g in games for r in g.results for i in r.log_items]
     items += [i for g in games for i in g.action_logs] + finance.extra
     items += _loan_items(loaded)  # M10
+    items += _m10b_items(loaded)
     for item in items:
         if item.template is None:
             continue
@@ -320,6 +322,42 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
         seen.add(item.template)
     print(f"templates exercised: {sorted(seen)}")
     assert seen == set(INBOX_TEMPLATE_KEYS)
+
+
+def _m10b_items(loaded: LoadedData) -> list[LogItem]:
+    """A counter-offer that keeps someone, and the month-end line on the month's choices."""
+    from tests.unit.test_event_effects import _open
+    from tst.sim.events.effects import apply_choice
+    from tst.sim.events.models import Effect, EventChoice
+    from tst.sim.rng import RngFactory
+    from tst.sim.turn import TurnContext, snapshot_and_month_end_report
+
+    state = with_employee(loaded, fresh_game(loaded), make_person(loaded, 60), 9_000_000)
+    state = with_product(state, customers={"smb": 100.0})
+    e = state.employment_of(60)
+    assert e is not None
+    state = with_employment(
+        state, replace(e, status="notice", end_turn=state.turn + 1, end_reason="resigned")
+    )
+    product = state.company_products(1)[0].id
+    effects = (
+        Effect("retain", "person:60"),
+        Effect("modifier", f"product:{product}", 5.0, "awareness", 3),
+    )
+    event = _open(state, (EventChoice("A", "Counter", effects),), severity="critical")
+    state = with_event(state, event)
+    state, _, logs = apply_choice(state, event, "A", loaded.balance, loaded.game_data, auto=False)
+    ctx = TurnContext(
+        state=state,
+        decisions=Decisions(),
+        rng=RngFactory(1),
+        balance=loaded.balance,
+        data=loaded.game_data,
+        opening_balances={(1, "1000_cash"): 10**9},
+        balances={(1, "1000_cash"): 10**9},
+    )
+    out = snapshot_and_month_end_report(ctx)
+    return [*logs, *out.log_items]
 
 
 def _stage_3(loaded: LoadedData) -> GameState:
