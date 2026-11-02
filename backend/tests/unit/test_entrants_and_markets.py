@@ -102,7 +102,7 @@ def test_fintech_launch_needs_compliance_quality(loaded: LoadedData) -> None:
         feature_points=1000.0,
         root=False,
     )
-    product = state.products[-1]
+    product = state.company_products(1)[-1]
     assert any(
         "of the 30 needed" in p
         for p in launch_problems(state, product, loaded.balance, loaded.game_data)

@@ -56,7 +56,8 @@ def test_product_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
         state = load_state(session)
     assert state.board(1) and state.safes  # M4a: a board and a SAFE
     assert len(state.staff(1)) == STAFF + 1 and len(state.company_products(1)) == len(PRODUCTS)
-    assert len(state.products) == FIRST_PRODUCT - 1 + len(PRODUCTS)
+    incumbent_products = sum(len(c.products) for c in loaded.game_data.incumbents)
+    assert len(state.products) == incumbent_products + len(PRODUCTS)
 
     start = time.perf_counter()
     for _ in range(TURNS):

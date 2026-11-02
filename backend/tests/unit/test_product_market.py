@@ -8,7 +8,14 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import FIRST_PRODUCT, fresh_game, make_person, with_employee, with_product
+from tests.helpers import (
+    FIRST_PRODUCT,
+    SALES_CLOUD,
+    fresh_game,
+    make_person,
+    with_employee,
+    with_product,
+)
 from tst.loader import LoadedData
 from tst.sim.decisions import Decisions
 from tst.sim.ledger import CASH, COMPUTE, MARKETING, REVENUE_SUBSCRIPTIONS
@@ -82,7 +89,7 @@ def test_awareness_limits_self_serve_wins(loaded: LoadedData) -> None:
     state = base(loaded, brand=10.0)
     out = run_markets(state, RngFactory(4), loaded.balance, loaded.game_data)
     shares = smb_shares(state, loaded)
-    in_play = out.flows[(1, "smb")].new / shares[1]  # Sales Cloud wins share* x P in full
+    in_play = out.flows[(SALES_CLOUD, "smb")].new / shares[SALES_CLOUD]  # in full
     won = out.flows[(PRODUCT, "smb")].new
     aware = f.awareness(10.0, loaded.balance.market)
     assert aware == pytest.approx(0.05)
@@ -206,7 +213,8 @@ def test_brand_follows_marketing_and_demand_grows(loaded: LoadedData) -> None:
     assert product.brand == pytest.approx(0.1 * target)
     smb = after.market("b2b_saas", "smb")
     assert smb is not None and smb.addressable == pytest.approx(400_000 * 1.2 ** (1 / 12))
-    sales_cloud = after.products[0]
+    sales_cloud = after.product(SALES_CLOUD)
+    assert sales_cloud is not None
     assert sales_cloud.brand == 80  # incumbents keep their brand (ADR-0017)
 
 

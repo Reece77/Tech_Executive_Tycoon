@@ -245,7 +245,7 @@ def test_segments_unassign_and_errors(setup: tuple[Client, Path]) -> None:
     api.post(f"{BASE}/products/{PRODUCT}/assign", {"unit_id": None})
     out = api.post(f"{BASE}/products/{PRODUCT}/unassign", {"unit_id": None})
     assert out["product"]["assigned_units"] == []
-    api.get(f"{BASE}/products/1", status=404)  # Salesforce's product is not the player's
+    api.get(f"{BASE}/products/900000", status=404)  # Salesforce's product is not the player's
     api.post(f"{BASE}/products/999/launch", status=404)
     bad = {"name": "X", "category": "b2b_saas", "segments": ["consumer"]}
     assert api.post(f"{BASE}/products", bad, status=400)["code"] == "product_rule"

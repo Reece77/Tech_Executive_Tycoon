@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import FIRST_PRODUCT, fresh_game, with_candidates, with_product
+from tests.helpers import FIRST_PRODUCT, SALES_CLOUD, fresh_game, with_candidates, with_product
 from tst.loader import LoadedData
 from tst.sim.actions import (
     Action,
@@ -112,7 +112,7 @@ def test_rule_errors(loaded: LoadedData, action: Action, message: str) -> None:
 def test_actions_on_another_companys_product_are_refused(loaded: LoadedData) -> None:
     state = created(loaded)
     with pytest.raises(UnknownProductError):
-        act(state, SetPrice(FOUNDER, 1, "smb", 100), loaded)  # Salesforce's Sales Cloud
+        act(state, SetPrice(FOUNDER, SALES_CLOUD, "smb", 100), loaded)
     with pytest.raises(UnknownProductError):
         act(state, LaunchProduct(FOUNDER, 999), loaded)
 
@@ -208,7 +208,10 @@ def test_cancel_retires_a_product_in_development_and_frees_its_units(
         act(state, CancelProduct(FOUNDER, PRODUCT), loaded)
     # the name is free again and a freed unit can take another product
     state = act(state, CreateProduct(FOUNDER, "Pipeline", "b2b_saas", ("smb",)), loaded)
-    assert state.products[-1].name == "Pipeline" and state.products[-1].id != PRODUCT
+    assert (
+        state.company_products(1)[-1].name == "Pipeline"
+        and state.company_products(1)[-1].id != PRODUCT
+    )
 
 
 def test_only_a_product_in_development_can_be_cancelled(loaded: LoadedData) -> None:

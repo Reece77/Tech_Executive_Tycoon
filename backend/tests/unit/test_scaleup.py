@@ -139,7 +139,7 @@ def _deep_team(loaded: LoadedData, state: GameState) -> tuple[GameState, int, in
     state = run(loaded, state, CreateUnit(FOUNDER, "team", "Core", parent_id=dept))
     team = state.units[-1].id
     state = with_product(state, root=False)
-    product = state.products[-1].id
+    product = state.company_products(1)[-1].id
     state = run(
         loaded,
         state,
@@ -150,7 +150,7 @@ def _deep_team(loaded: LoadedData, state: GameState) -> tuple[GameState, int, in
 
 
 def _output(loaded: LoadedData, state: GameState) -> float:
-    product = state.products[-1]
+    product = state.company_products(1)[-1]
     return team_of(
         state, org_view(state, 1), product, loaded.balance, loaded.game_data
     ).base_output(loaded.balance)
@@ -171,13 +171,15 @@ def test_layer_tax_and_cross_division(loaded: LoadedData) -> None:
     state = run(loaded, state, CreateUnit(FOUNDER, "division", "Fintech"))
     other = state.units[-1].id
     state = run(loaded, state, CreateUnit(FOUNDER, "team", "Pay", parent_id=other))
-    state = run(loaded, state, AssignUnit(FOUNDER, state.products[-1].id, state.units[-1].id))
+    state = run(
+        loaded, state, AssignUnit(FOUNDER, state.company_products(1)[-1].id, state.units[-1].id)
+    )
     assert _output(loaded, state) == pytest.approx(one * 0.90)
 
 
 def test_dissolving_a_division_makes_its_products_corporate(loaded: LoadedData) -> None:
     state, _, div = _deep_team(loaded, game(loaded))
-    product = state.products[-1].id
+    product = state.company_products(1)[-1].id
     state = run(loaded, state, SetProductDivision(FOUNDER, product, div))
     assert state.product(product).division_id == div
     state = run(loaded, state, DissolveUnit(FOUNDER, div))
@@ -188,7 +190,7 @@ def test_ledger_division_lines(loaded: LoadedData) -> None:
     """Salaries go to the employee's division, a product's revenue and hosting to its
     division, base overhead to corporate; lines still sum to the old totals."""
     state, _team, div = _deep_team(loaded, game(loaded))
-    product = state.products[-1].id
+    product = state.company_products(1)[-1].id
     state = run(loaded, state, SetProductDivision(FOUNDER, product, div))
     lines = monthly_cost_lines(state, 1, loaded.balance, loaded.game_data)
     salaries = {d: a for memo, _, a, d in lines if memo == "Salaries"}
@@ -253,13 +255,15 @@ def test_each_seat_effect_and_vacancy(loaded: LoadedData, seat: str) -> None:
 def test_seats_reach_output_features_marketing_capacity_and_value(loaded: LoadedData) -> None:
     state, _, _ = _deep_team(loaded, game(loaded, staff=8))
     vacant = team_of(
-        state, org_view(state, 1), state.products[-1], loaded.balance, loaded.game_data
+        state, org_view(state, 1), state.company_products(1)[-1], loaded.balance, loaded.game_data
     )
     assert vacant.feature_mult == pytest.approx(1 - 0.15 * 0.5)  # CPO vacant
     for pid, seat in zip(range(5, 10), ("cpo", "cmo", "cfo", "cto", "cro"), strict=True):
         state = skilled(state, pid, 18.0)  # s = 18: e = 1
         state = run(loaded, state, AppointExecutive(FOUNDER, seat, pid))
-    team = team_of(state, org_view(state, 1), state.products[-1], loaded.balance, loaded.game_data)
+    team = team_of(
+        state, org_view(state, 1), state.company_products(1)[-1], loaded.balance, loaded.game_data
+    )
     assert team.feature_mult == pytest.approx(1.15)
     pools = support_pools(state, org_view(state, 1), loaded.balance, loaded.game_data)
     assert team.marketing_mult == pytest.approx(
@@ -352,7 +356,9 @@ def _filled(loaded: LoadedData, seats: tuple[str, ...], skill: float = 18.0) -> 
 
 
 def _team(loaded: LoadedData, state: GameState):  # type: ignore[no-untyped-def]
-    return team_of(state, org_view(state, 1), state.products[-1], loaded.balance, loaded.game_data)
+    return team_of(
+        state, org_view(state, 1), state.company_products(1)[-1], loaded.balance, loaded.game_data
+    )
 
 
 def test_cto_raises_the_quality_cap(loaded: LoadedData) -> None:
@@ -390,7 +396,7 @@ def test_cro_pricing_power_only_in_sales_segments(loaded: LoadedData) -> None:
     from tst.sim.products.phases import pricing_power, segment_appeal
 
     state = _filled(loaded, ("cro",))
-    product = state.products[-1]
+    product = state.company_products(1)[-1]
     power = pricing_power(state, product, loaded.balance)
     assert power == pytest.approx(1.10)
     data = loaded.game_data
