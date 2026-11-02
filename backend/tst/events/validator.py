@@ -60,6 +60,8 @@ def allowed_effects(
             continue
         if effect == "modifier" and not template.modifier_stats():  # 23.2: template's list
             continue
+        if effect == "retain" and (severity != "critical" or "retain" not in template_types):
+            continue  # 23.3: only a crisis template's own counter-offer
         words = {TARGET_KIND.get(w, w) for w in EFFECT_TARGETS[effect]}
         if words & kinds:
             out.append(effect)

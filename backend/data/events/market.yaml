@@ -289,7 +289,7 @@ templates:
         effects:
           - { type: morale_delta, target: company, share: 0.4 }
           - { type: cash_delta, target: company, share: -0.2 }
-          - { type: modifier, target: company, share: 0.6, stat: morale_target, months: 6 }
+          - { type: modifier, target: company, share: 0.2, stat: morale_target, months: 3 }
       - key: B
         label: "Send a short acceptance video, just in case"
         effects:

@@ -71,6 +71,7 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   holiday_summary: { label: 'Holiday', group: 'company' },
   // M10b: the month's event choices and their modifiers (23.2)
   choices_month: { label: 'Event', group: 'company' },
+  retained: { label: 'Notice', group: 'people' }, // a counter-offer kept them (23.3)
 };
 
 /** The Finance tab a finance message opens (M4b). */

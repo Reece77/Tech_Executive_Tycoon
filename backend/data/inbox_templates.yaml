@@ -3,6 +3,9 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  retained: # M10b (23.3): a counter-offer kept someone serving notice
+    title: "{name} is staying"
+    body: "{name} has accepted your counter-offer and withdrawn their notice."
   choices_month: # M10b (formulas.md 23.2): the month-end report's one line on event choices
     title: "Your choices this month"
     body: "{summary}"

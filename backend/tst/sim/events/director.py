@@ -18,7 +18,7 @@ from tst.sim.events.data import NO_STAFF_CATEGORIES, TRIGGERS, EventTemplate, Se
 from tst.sim.events.formulas import candidate_weight, cash_base_cents, severity_for
 from tst.sim.events.models import EventRequest, GameEvent, QueuedEvent, Storyline, Tone
 from tst.sim.events.render import loan_names, placeholder_names, render
-from tst.sim.events.triggers import TriggerHit, triggers
+from tst.sim.events.triggers import TriggerHit, crisis_hits, triggers
 from tst.sim.money import Cents
 from tst.sim.org.rules import org_view
 from tst.sim.rivals.models import RivalMove
@@ -279,6 +279,24 @@ def pick(
     return chosen
 
 
+PR_CRISIS = "pr_crisis"  # a critical storyline step (23.3)
+
+
+def _crisis(
+    state: GameState, hits: list[TriggerHit], data: GameData
+) -> tuple[EventTemplate, TriggerHit, Targets] | None:
+    """The first crisis hit with a critical template that can name its targets (23.3)."""
+    for hit in hits:
+        for template in data.event_templates:
+            if template.trigger != hit.trigger or not template.is_critical:
+                continue
+            base = Targets(hit.person_ids, hit.unit_id, hit.product_id, hit.segment)
+            targets = resolve(state, template, base)
+            if targets is not None:
+                return template, hit, targets
+    return None
+
+
 def _forced_severity(template: EventTemplate) -> Severity:
     usable = [s for s in template.severities if s != "critical"]
     return usable[-1] if usable else template.severities[0]
@@ -309,6 +327,11 @@ def direct(
     queue: list[
         tuple[EventTemplate, Targets, Severity, float, str, Storyline | None, QueuedEvent | None]
     ] = []
+    # At most one critical event in any critical_gap_turns months (16.1); a critical storyline
+    # step or a crisis takes the slot first (23.3, M10b).
+    critical_free = not any(
+        e.severity == "critical" for e in _recent(state, next_month, ev.critical_gap_turns)
+    )
     for q in state.queued:
         if q.company_id == cid and not q.done and q.due_turn <= next_month:
             template = data.event_template(q.template_id)
@@ -339,6 +362,8 @@ def direct(
             and story.next_turn <= next_month
         ):
             template = data.event_template(story.next_template)
+            press = template.is_critical and critical_free  # pr_crisis (23.3, M10b)
+            critical_free = critical_free and not press
             queue.append(
                 (
                     template,
@@ -349,9 +374,9 @@ def direct(
                         story.segment,
                         story.rival_id,
                     ),
-                    _forced_severity(template),
+                    "critical" if press else _forced_severity(template),
                     1.0,
-                    "storyline",
+                    PR_CRISIS if press else "storyline",
                     story,
                     None,
                 )
@@ -359,8 +384,15 @@ def direct(
 
     gen = rng.stream(state.turn, "events")
     count = draw_count(gen, balance)
+    crisis = _crisis(state, crisis_hits(state, gen, balance, data), data) if critical_free else None
+    if crisis is not None:  # 23.3: the first crisis that holds, in fixed order
+        template, hit, targets = crisis
+        queue.append((template, targets, "critical", hit.strength, hit.trigger, None, None))
+        critical_free = False
     hits = triggers(state, start, balance, data, cash, rival_moves)
     pool = candidates(state, hits, balance, data)
+    if not critical_free:  # this month's critical slot is taken
+        pool = [c for c in pool if c.severity != "critical"]
     for c in pick(
         gen, pool, max(0, count - len(queue)), fill_candidates(state, hits, balance, data)
     ):

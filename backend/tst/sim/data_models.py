@@ -842,6 +842,18 @@ class TriggerBalance(_Frozen):
     months: list[float] | None = None
 
 
+class CrisisBalance(_Frozen):
+    """Critical events from crises (formulas.md 23.3, M10b)."""
+
+    key_exit_top_fraction: float = Field(gt=0, le=1)
+    breach_chance: float = Field(ge=0, le=1)
+    breach_min_customers: float = Field(ge=0)
+    security_full_at: float = Field(gt=0)
+    outage_chance: float = Field(ge=0, le=1)
+    outage_max_quality: float = Field(ge=0)
+    outage_min_customers: float = Field(ge=0)
+
+
 class EventsBalance(_Frozen):
     """Event director, effect caps and storylines (formulas.md 16)."""
 
@@ -862,6 +874,7 @@ class EventsBalance(_Frozen):
     cash_gain_share: float = Field(ge=0, le=1)
     effect_size_bounds: Span
     modifier_months: list[int]  # M10b (23.2): the longest a modifier runs, by severity
+    crisis: CrisisBalance  # M10b (23.3)
 
     @model_validator(mode="after")
     def _check(self) -> EventsBalance:

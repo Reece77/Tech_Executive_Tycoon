@@ -111,6 +111,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return f"{raise_} (costs {dollars(employment.salary_cents * v / PCT)} a year)"
         case "resign":
             return f"{name} leaves"
+        case "retain":
+            return f"{name} stays: their notice is withdrawn"
         case "follow_up":
             return "a follow-up decision comes next month"
         case "loan_fee" | "loan_rate" | "loan_repay":

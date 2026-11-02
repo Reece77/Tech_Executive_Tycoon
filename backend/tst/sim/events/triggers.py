@@ -8,6 +8,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+import numpy as np
+
 from tst.sim.data_models import Balance, GameData, TriggerBalance
 from tst.sim.events.formulas import below_strength, clamp01
 from tst.sim.finance.board import average_confidence
@@ -238,4 +240,91 @@ def triggers(
 
     if not hits:
         hits.append(TriggerHit("quiet_month", _fixed(t["quiet_month"])))
+    return hits
+
+
+# --- Crises (M10b, 23.3) -------------------------------------------------------------------
+
+SECURITY = "security"  # skills.yaml key
+EXIT_REASONS = ("resigned", "poached")
+
+
+def key_people(state: GameState, data: GameData, balance: Balance) -> set[int]:
+    """Seat holders, division presidents and the top share of staff by current ability."""
+    cid = state.player.id
+    staff = [e for e in state.staff(cid) if not state.person(e.person_id).is_founder]
+    ranked = sorted(
+        staff, key=lambda e: (-current_ability(state.person(e.person_id), data), e.person_id)
+    )
+    share = balance.events.crisis.key_exit_top_fraction
+    top = {e.person_id for e in ranked[: math.ceil(len(ranked) * share)]} if ranked else set()
+    seats = {s.person_id for s in state.exec_seats if s.company_id == cid and s.person_id}
+    presidents = {
+        u.leader_id
+        for u in state.active_units(cid)
+        if u.kind == "division" and u.leader_id is not None
+    }
+    return top | seats | presidents
+
+
+def security_coverage(state: GameState, product_id: int, balance: Balance, data: GameData) -> float:
+    """The product team's mean security skill / security_full_at, at most 1 (23.3)."""
+    from tst.sim.products.phases import team_of
+
+    product = state.product(product_id)
+    if product is None:
+        return 0.0
+    team = team_of(state, org_view(state, product.company_id), product, balance, data)
+    ids = [*(b.person_id for b in team.builders), *(s.person_id for s in team.sellers)]
+    ids += [m.person_id for m in team.marketers]
+    if not ids:
+        return 0.0
+    mean = sum(state.person(p).skills[SECURITY] for p in ids) / len(ids)
+    return min(1.0, mean / balance.events.crisis.security_full_at)
+
+
+def crisis_hits(
+    state: GameState, gen: np.random.Generator, balance: Balance, data: GameData
+) -> list[TriggerHit]:
+    """23.3, in fixed order: key exits this month (by person id), then for each live
+    product by id a breach draw (1,000+ customers) and an outage draw (5,000+ customers and
+    quality under 45). `gen` is the director's events stream, right after the count."""
+    cfg = balance.events.crisis
+    cid = state.player.id
+    hits: list[TriggerHit] = []
+    key = key_people(state, data, balance)
+    view = org_view(state, cid)
+    for e in sorted(state.staff(cid), key=lambda e: e.person_id):
+        if (
+            e.status == "notice"
+            and e.end_turn == state.turn + 1
+            and e.end_reason in EXIT_REASONS
+            and e.person_id in key
+        ):
+            hits.append(
+                TriggerHit(
+                    "key_exit", 1.0, (e.person_id,), view.unit_of.get(e.person_id), critical_ok=True
+                )
+            )
+    for p in sorted(state.company_products(cid), key=lambda p: p.id):
+        if p.status != "live":
+            continue
+        segs = state.segments_of(p.id)
+        customers = sum(s.customers for s in segs)
+        top = max(segs, key=lambda s: s.customers).segment if segs else None
+        if customers >= cfg.breach_min_customers:
+            chance = cfg.breach_chance * (1 - security_coverage(state, p.id, balance, data))
+            draw = float(gen.random())
+            if draw < chance:
+                hits.append(
+                    TriggerHit(
+                        "security_breach", 1.0, product_id=p.id, segment=top, critical_ok=True
+                    )
+                )
+        if customers >= cfg.outage_min_customers and p.quality < cfg.outage_max_quality:
+            draw = float(gen.random())
+            if draw < cfg.outage_chance:
+                hits.append(
+                    TriggerHit("outage", 1.0, product_id=p.id, segment=top, critical_ok=True)
+                )
     return hits

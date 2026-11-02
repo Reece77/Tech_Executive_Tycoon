@@ -584,6 +584,14 @@ events: # event director, effect caps, storylines (formulas.md 16; ADR-0005, ADR
     salary_change: [5, 10, 15] # percent raise, never a cut
     modifier: [5, 10, 20] # percent change to a stat each month while it runs (23.2, M10b)
   modifier_months: [6, 12, 12] # months; the longest a modifier runs, by severity (23.2)
+  crisis: # critical events from crises (23.3, M10b); draws on the events stream, own keys
+    key_exit_top_fraction: 0.10 # share of staff by current ability whose exit is a crisis
+    breach_chance: 0.004 # a month, x (1 - security coverage), per qualifying live product
+    breach_min_customers: 1000 # customers a product needs before a breach is news
+    security_full_at: 15 # mean security skill of the product team that gives full coverage
+    outage_chance: 0.003 # a month, per qualifying live product
+    outage_max_quality: 45 # quality below which a busy product can go down
+    outage_min_customers: 5000 # customers a product needs before an outage is a crisis
   cash_revenue_months: 3 # months of revenue in the cash cap base (16.3)
   cash_gain_share: 0.5 # gains reach at most this share of the cost cap (16.3)
   effect_size_bounds: [0.34, 0.67] # share of the cap: up to the first "small", above the second "large" (16.9)

@@ -1,0 +1,144 @@
+# Critical events from crises (formulas.md 23.3, M10b). The director queues one whenever its
+# crisis holds and no critical event came in the last six months; a press crisis is a
+# critical storyline step. Shares are fractions of the critical caps (16.3, 23.2).
+templates:
+  - id: key_exit_crisis
+    category: personnel
+    trigger: key_exit
+    severities: [critical]
+    weight: 1.0
+    title: "{person} is leaving"
+    body: >-
+      {person} has told you they are going, and the people around them already know. Their
+      work holds up more of the company than any job description says. You have days, not
+      weeks, to decide what to do about it.
+    choices:
+      - key: A
+        label: "Let them go with a proper handover"
+        effects:
+          - { type: modifier, target: unit, share: -0.5, stat: builder_output, months: 6 }
+          - { type: morale_delta, target: unit, share: 0.2 }
+      - key: B
+        label: "Make a counter-offer they cannot easily refuse"
+        effects:
+          - { type: retain, target: person }
+          - { type: salary_change, target: person, share: 1.0 }
+          - { type: morale_delta, target: company, share: -0.2 }
+      - key: C
+        label: "Pay a recruiter for an emergency replacement"
+        effects:
+          - { type: cash_delta, target: company, share: -0.4 }
+          - { type: modifier, target: unit, share: -0.2, stat: builder_output, months: 3 }
+
+  - id: security_breach_crisis
+    category: operations
+    trigger: security_breach
+    severities: [critical]
+    weight: 1.0
+    title: "{product} has been breached"
+    body: >-
+      Someone got into {product} and walked out with customer data. Nobody outside knows yet,
+      but a security researcher has emailed asking for comment. Whatever you do next, your
+      customers in {segment} will remember it.
+    choices:
+      - key: A
+        label: "Disclose it fully and today"
+        effects:
+          - { type: brand_delta, target: product, share: -0.4 }
+          - { type: modifier, target: product, share: 0.4, stat: churn, months: 6 }
+      - key: B
+        label: "Pay for forensics and free monitoring for every customer"
+        effects:
+          - { type: cash_delta, target: company, share: -0.6 }
+          - { type: modifier, target: product, share: 0.2, stat: churn, months: 6 }
+      - key: C
+        label: "Patch it quietly and hope"
+        effects:
+          - { type: modifier, target: product, share: -0.6, stat: brand_target, months: 12 }
+          - { type: modifier, target: product, share: 0.6, stat: churn, months: 12 }
+
+  - id: outage_crisis
+    category: operations
+    trigger: outage
+    severities: [critical]
+    weight: 1.0
+    title: "{product} is down"
+    body: >-
+      {product} has been down for most of a day and the status page has run out of polite
+      things to say. Large customers in {segment} are asking for credits, and a few are asking
+      about their contracts.
+    choices:
+      - key: A
+        label: "Credit every affected customer"
+        effects:
+          - { type: cash_delta, target: company, share: -0.5 }
+          - { type: modifier, target: product, share: 0.2, stat: churn, months: 6 }
+      - key: B
+        label: "Apologise, but no credits"
+        effects:
+          - { type: brand_delta, target: product, share: -0.4 }
+          - { type: modifier, target: product, share: 0.6, stat: churn, months: 12 }
+      - key: C
+        label: "Stop feature work until it is solid"
+        effects:
+          - { type: cash_delta, target: company, share: -0.2 }
+          - { type: modifier, target: product, share: 0.4, stat: quality_cap, months: 12 }
+          - { type: modifier, target: product, share: 0.1, stat: churn, months: 6 }
+
+  - id: press_scrutiny_1
+    category: market
+    trigger: customer_milestone
+    severities: [minor, major]
+    weight: 0.5
+    title: "A journalist is asking about {product}"
+    body: >-
+      A business reporter is writing about fast-growing companies in your market and keeps
+      asking pointed questions about {product}: former staff, pricing, a complaint from a
+      customer. It might be nothing.
+    storyline:
+      key: press_scrutiny
+      step: 1
+      title: "Press scrutiny of {product}"
+      next_after_turns: 2
+      next_template: press_scrutiny_2
+      summary: "A reporter is digging into {product} and {company}."
+    choices:
+      - key: A
+        label: "Give them an interview and the numbers"
+        effects:
+          - { type: brand_delta, target: product, share: 0.2 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "No comment"
+        effects:
+          - { type: brand_delta, target: product, share: -0.2 }
+
+  - id: press_scrutiny_2
+    category: market
+    trigger: storyline
+    severities: [major, critical]
+    weight: 1.0
+    title: "The story about {company} runs"
+    body: >-
+      The piece is out, and it is not kind. It quotes an unhappy customer of {product} and a
+      former employee, and it is being shared widely. Investors and customers are both asking
+      what you intend to do.
+    storyline:
+      key: press_scrutiny
+      step: 2
+      summary: "The press story about {company} ran; the response decides how long it lingers."
+    choices:
+      - key: A
+        label: "Own the mistakes publicly and fix them"
+        effects:
+          - { type: modifier, target: product, share: -0.2, stat: brand_target, months: 6 }
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Push back hard on the story"
+        effects:
+          - { type: modifier, target: product, share: -0.5, stat: brand_target, months: 12 }
+          - { type: morale_delta, target: company, share: 0.3 }
+      - key: C
+        label: "Say nothing and let it pass"
+        effects:
+          - { type: modifier, target: product, share: -0.8, stat: brand_target, months: 12 }

@@ -21,6 +21,7 @@ from tst.sim.org.rules import org_view
 from tst.sim.people.relationships import clamp_relationship, pair_key
 from tst.sim.state import (
     GameState,
+    with_approach,
     with_employment,
     with_event,
     with_loan,
@@ -103,6 +104,34 @@ def _loan_effect(
         amount=cents,
     )
     return state, [entry]
+
+
+def _retain(state: GameState, person_id: int) -> tuple[GameState, list[LogItem]]:
+    """Someone serving notice after resigning or accepting a rival stays (23.3): the notice
+    is withdrawn and an accepted approach lapses."""
+    employment = state.employment_of(person_id)
+    if employment is None or employment.status != "notice":
+        return state, []
+    if employment.end_reason not in ("resigned", "poached"):
+        return state, []
+    state = with_employment(
+        state, replace(employment, status="active", end_turn=None, end_reason=None)
+    )
+    for approach in state.approaches:
+        if approach.person_id == person_id and approach.status == "accepted":
+            state = with_approach(
+                state, replace(approach, status="lapsed", resolved_turn=state.turn)
+            )
+    person = state.person(person_id)
+    log = inbox_item(
+        state.turn,
+        employment.company_id,
+        "retained",
+        link_kind="person",
+        link_id=person_id,
+        name=f"{person.first_name} {person.last_name}",
+    )
+    return state, [log]
 
 
 def energy_next_month(state: GameState, person_id: int) -> int:
@@ -284,6 +313,9 @@ def apply_choice(
         elif t in LOAN_EFFECTS and kind == "loan" and ids:
             state, posted = _loan_effect(state, t, ids[0], value, event, balance)
             entries += posted
+        elif t == "retain" and kind == "person" and ids:  # a counter-offer (M10b, 23.3)
+            state, kept = _retain(state, ids[0])
+            logs += kept
         elif t == "modifier":  # runs for its months from this one (M10b, 23.2)
             state = start_modifier(state, cid, event.id, effect, event.severity, balance.events)
         # energy_delta applies when energy resets for next month (energy_next_month).

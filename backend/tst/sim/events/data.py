@@ -55,7 +55,16 @@ TRIGGERS: Final = (
 # M10 (20.3): the debt phase queues these itself (a covenant breach, a called loan).
 ENGINE_QUEUED: Final = ("covenant_breach",)
 SCHEDULED: Final = ("storyline", "follow_up", *ENGINE_QUEUED)
-CRITICAL_TRIGGERS: Final = ("runway_short", "covenant_breach")  # 16.2; 20.3
+# M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
+# critical template whenever it holds and no critical event came in the last 6 months.
+CRISIS_TRIGGERS: Final = ("key_exit", "security_breach", "outage")
+# A storyline step may be critical too: a press crisis (`pr_crisis`, 23.3).
+CRITICAL_TRIGGERS: Final = (
+    "runway_short",
+    "covenant_breach",
+    *CRISIS_TRIGGERS,
+    "storyline",
+)  # 16.2; 20.3; 23.3
 
 EFFECT_TYPES: Final = (
     "morale_delta",
@@ -78,9 +87,11 @@ EFFECT_TYPES: Final = (
     "loan_repay",
     # M10b (23.2): a lasting percent change to one stat for some months.
     "modifier",
+    # M10b (23.3): a counter-offer that keeps someone who resigned or was poached.
+    "retain",
 )
 LOAN_EFFECTS: Final = ("loan_fee", "loan_rate", "loan_repay")
-VALUELESS: Final = ("reveal_tag", "resign", "follow_up")  # no size: they happen or not
+VALUELESS: Final = ("reveal_tag", "resign", "follow_up", "retain")  # no size: happen or not
 NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
 
 # Template target words and the effects that may use each (16.3 "Target" column).
@@ -102,6 +113,7 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "loan_rate": ("loan",),
     "loan_repay": ("loan",),
     "modifier": ("product", "unit", "person", "other", "company", "founder"),
+    "retain": ("person",),
 }
 
 # M10b (23.2): what a modifier can change, and the target words each stat accepts. A company
@@ -153,6 +165,9 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "early_days": frozenset(),  # names the product in development, if any
     "quiet_month": frozenset(),
     "covenant_breach": frozenset({"loan", "lender"}),  # M10
+    "key_exit": _PERSON,  # M10b (23.3)
+    "security_breach": frozenset({"segment"}),
+    "outage": frozenset({"segment"}),
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
 PLACEHOLDERS: Final = (
@@ -277,7 +292,7 @@ class EventTemplate(_Frozen):
     def _check(self) -> EventTemplate:
         if self.category not in CATEGORIES:
             raise ValueError(f"unknown category {self.category!r}")
-        if self.trigger not in TRIGGERS + SCHEDULED:
+        if self.trigger not in TRIGGERS + SCHEDULED + CRISIS_TRIGGERS:
             raise ValueError(f"unknown trigger {self.trigger!r}")
         keys = [c.key for c in self.choices]
         if keys != ["A", "B", "C"][: len(keys)]:
@@ -290,6 +305,8 @@ class EventTemplate(_Frozen):
         types = {e.type for c in self.choices for e in c.effects}
         if "resign" in types and self.severities == ("minor",):
             raise ValueError("resign is for major and critical events only (16.3)")
+        if "retain" in types and not self.is_critical:
+            raise ValueError("retain is for critical events only (23.3)")
         if "follow_up" in types and (not self.is_critical or not self.follow_up):
             raise ValueError("follow_up needs a critical template that names its follow_up")
         if self.follow_up and not self.is_critical:
@@ -339,10 +356,15 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
                 origin.setdefault(current, t.trigger)
                 step = by_id.get(current)
                 current = step.storyline.next_template if step and step.storyline else None
-    for trigger in ENGINE_QUEUED:
+    for trigger in (*ENGINE_QUEUED, *CRISIS_TRIGGERS):
         if not any(t.trigger == trigger and t.is_critical for t in templates):
-            problems.append(f"engine trigger {trigger!r} has no critical template")
+            problems.append(f"trigger {trigger!r} has no critical template")
     for t in templates:
+        if t.trigger in CRISIS_TRIGGERS:
+            missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
+            if missing:
+                problems.append(f"{t.id}: trigger {t.trigger!r} cannot supply {missing}")
+            continue
         if t.trigger in ENGINE_QUEUED:
             missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
             if missing:
