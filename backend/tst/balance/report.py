@@ -29,6 +29,9 @@ SUCCESS_MULT: Final = 3  # success: mean founder value >= 3x the turn-0 value
 PLAYERS: Final = ("bootstrap-frugal", "steady", "blitzscale")  # T3
 DIFFICULTY_RUNS: Final = (("steady", "easy"), ("steady", "hard"))  # T5's extra runs
 E3_MONTHS: Final = 24
+# S2 for v2 (M10d brief): what CI's nightly needs plus 25% headroom, re-set when a milestone
+# adds work per turn. M7a set 20 for v1.
+S2_BUDGET: Final = 38.0
 STARTUP_YEARS_MONTHS: Final = 60  # T7: alive five years after founding
 EARLY_LEAVE_MONTHS: Final = 12  # T6
 
@@ -294,7 +297,7 @@ def evaluate(results: Sequence[RunResult]) -> list[Row]:
         ("steady", "easy", 0.0, 0.10),
         ("steady", "standard", 0.0, 0.25),  # Reece, C2
         ("steady", "hard", 0.0, 0.70),  # Reece, C2
-        ("blitzscale", "standard", 0.10, 0.40),  # Reece, B3
+        ("blitzscale", "standard", 0.0, 0.40),  # Reece, B3; re-banded in M10d (2026-11-02)
         ("bootstrap-frugal", "standard", 0.20, 0.50),  # Reece, C3 (a)
     )
     for s, d, lo, hi in bands:
@@ -327,8 +330,8 @@ def evaluate(results: Sequence[RunResult]) -> list[Row]:
             "S2",
             "balance run, worker-minutes (this machine)",
             f"{worker:.1f}",
-            "< 20 on CI",
-            worker < 20,
+            f"< {S2_BUDGET:g} on CI",
+            worker < S2_BUDGET,
         )
     )
     return rows
@@ -390,8 +393,8 @@ def _rival_rows(nothing: Sequence[RunResult]) -> list[Row]:
             "T7",
             "rival startups alive 5 years after founding",
             f"{_fmt(None if share is None else round(100 * share))}% of {len(old)}",
-            "20%-60%",
-            share is not None and 0.2 <= share <= 0.6,
+            "20%-65%",  # re-banded in M10d (product manager, 2026-11-02)
+            share is not None and 0.2 <= share <= 0.65,
         ),
     ]
 

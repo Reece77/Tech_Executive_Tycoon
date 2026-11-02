@@ -63,19 +63,19 @@ def test_home_region_replays_v1(loaded: LoadedData) -> None:
 
 
 def test_launch_in_region(loaded: LoadedData) -> None:
-    """Energy 4, $40,000 x 6 / 6 = $40,000 to R&D, live three months later at p_ref x 0.9."""
+    """Energy 4, $80,000 x 6 / 6 = $80,000 to R&D, live six months later at p_ref x 0.9 (M10d)."""
     state = _live(loaded)
     energy = state.person_state(FOUNDER).energy or 0
     out = _act(loaded, state, LaunchInRegion(FOUNDER, PRODUCT, "europe"))
     after = out.new_state
     assert after.person_state(FOUNDER).energy == energy - 4
-    assert after.product_region(PRODUCT, "europe") == ProductRegion(PRODUCT, "europe", 0, 3)
+    assert after.product_region(PRODUCT, "europe") == ProductRegion(PRODUCT, "europe", 0, 6)
     (seg,) = after.regional_segments_of(PRODUCT, "europe")
     assert (seg.segment, seg.price_cents, seg.customers) == ("smb", 4_500, 0.0)
     (entry,) = out.ledger_entries
     assert {line.account: line.amount for line in entry.lines} == {
-        RESEARCH: 4_000_000,
-        CASH: -4_000_000,
+        RESEARCH: 8_000_000,
+        CASH: -8_000_000,
     }
     assert out.log_items[0].template == "region_launched"
     again = launch_problem(after, PRODUCT, "europe", loaded.balance, loaded.game_data)
@@ -108,7 +108,7 @@ def test_regional_price_and_selling_only_once_live(loaded: LoadedData) -> None:
     assert state.regional_segments_of(PRODUCT, "europe")[0].price_cents == 3_900
     localizing = run_markets(state, RngFactory(2), b, data).state
     assert localizing.regional_segments_of(PRODUCT, "europe")[0].customers == 0.0
-    live = run_markets(replace(state, turn=3), RngFactory(2), b, data).state
+    live = run_markets(replace(state, turn=b.markets.localize_months), RngFactory(2), b, data).state
     assert live.regional_segments_of(PRODUCT, "europe")[0].customers > 0
 
 

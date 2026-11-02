@@ -165,13 +165,14 @@ def test_4_poaching_felt_not_crushing(loaded: LoadedData) -> None:
     rate = accepted / decided if decided else 0.0
     print(f"\n4 poaching: {per_year:.2f} approaches a year, {rate:.0%} of answered accepted")
     assert 1.0 <= per_year <= 4.0
-    assert 0.20 <= rate <= 0.60
+    assert 0.10 <= rate <= 0.40  # re-banded in M10d (product manager, 2026-11-02)
 
 
 def test_5_speed(tmp_path: Path, loaded: LoadedData) -> None:
+    from tests.helpers import play_turn
     from tests.integration.test_api_products import staff
     from tst.db.mappers import entry_to_row
-    from tst.db.repository import create_save, open_session, run_turn
+    from tst.db.repository import create_save, open_session
     from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 
     path = create_save(
@@ -193,7 +194,7 @@ def test_5_speed(tmp_path: Path, loaded: LoadedData) -> None:
         )
     start_time = time.perf_counter()
     for _ in range(SPEED_TURNS):
-        run_turn(path, loaded)
+        play_turn(path, loaded)  # answers a critical event first (M10b: key exits)
     per_turn = (time.perf_counter() - start_time) / SPEED_TURNS
     print(f"\n5 speed: {per_turn * 1000:.0f} ms a turn over {SPEED_TURNS} turns")
     assert per_turn < 1.0

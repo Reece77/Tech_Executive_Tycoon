@@ -24,7 +24,7 @@ Research-heavy, acquirer and vertical-integrator need v2 and v3 systems and are 
 | **do-nothing** | none | founder alone | none raised | none |
 | **bootstrap-frugal** | one B2B SaaS product, launched as soon as allowed | founder + 1 engineer; an account executive at launch; then one more hire each time cash covers 12 months of costs, to at most 15 (Reece, M7a B1) | never raises | 10% of last month's revenue |
 | **steady** | one product, a second at $5M ARR | founder + 5 (the M3a earn-and-burn team); grows so that runway stays above 18 months | seed at launch or when runway falls below 12 months, whichever comes first (Reece, M7a B3); Series A when its gate allows; best term sheet; bridges when offered | $10,000 a month, then 20% of revenue |
-| **blitzscale** | one product, a second at Series A | 15 staff by month 12, then hires while runway is above 12 months | every round as soon as allowed (seed, A, B), largest amount offered; bridges when offered | 40% of revenue, at least $25,000 a month |
+| **blitzscale** | one product, a second at Series A | 15 staff by month 12, then hires while runway is above 12 months | every round as soon as allowed (seed, A, B, and from M10d C and D: product manager, 2026-11-02), largest amount offered; bridges when offered | 40% of revenue, at least $25,000 a month |
 
 Every strategy answers critical events with the first choice, sets prices at the category's reference price, and never fires anyone.
 

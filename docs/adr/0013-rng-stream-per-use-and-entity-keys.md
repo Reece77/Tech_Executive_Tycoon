@@ -37,7 +37,7 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `finance` | 16 | `(safe_id,)` or `(round_id, firm_index)` | SAFE answers and term sheets (ADR-0018); one call site, a helper both use | M4 |
 | `board` | 17 | `(seat_id,)` | Generating a board director (formulas.md 14.6) | M4 |
 | `rival_spawn` | 18 | `(category_index,)` | Founding rival startups (§15.4) | M5 |
-| `poach` | 19 | `(approach_id,)` | An employee's answer to a rival's approach (§15.6) | M5 |
+| `poach` | 19 | `(approach_id,)`; `(approach_id, 1)` | An employee's answer to a rival's approach (§15.6); from M10d also whom a new approach targets, keyed by the new approach's id and sub-key 1 (product manager, 2026-11-02) | M5, M10d |
 | `entrants` | 20 | `(entrant_index,)` | A scheduled entrant's people, generated at senior level when it is founded (formulas.md 18.7); founding itself draws nothing | M8 |
 | `macro` | 21 | `(indicator_index,)` (0 base rate, 1 venture climate, 2 consumer confidence, 3 AI compute index); `(99,)` for downturns | Macro indicators after 2025 (formulas.md §20.1); one generator per indicator each month, one standard-normal draw each (the AI index's is used only in January), and one uniform draw for downturns | M10 |
 | `rival_region` | 22 | `(startup_id,)` | A rival startup's founding region, one draw weighted by its category's addressable demand in each region (formulas.md §19.6) | M9 |

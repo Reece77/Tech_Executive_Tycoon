@@ -710,7 +710,7 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `finance.initial_fd_shares` / `.pool_target_bp` | 10000000 / 1000 | shares / bp of post-money FD | §14.2, §14.5 |
 | `finance.vesting_months` / `.cliff_months` | 48 / 12 | months | §14.2 |
 | `finance.retention_slope` / `.retention_floor` | 0.5 / 0.5 | multiplier | §14.2 |
-| `finance.multiple_base` / `.multiple_per_growth` / `.multiple_min` / `.multiple_max` | 4 / 4 / 3 / 20 | ARR multiple | §14.3 |
+| `finance.multiple_base` / `.multiple_per_growth` / `.multiple_min` / `.multiple_max` | 4 / 4 / 3 / 20 (2.5 / 5.5 / 3 / 20 from M10d) | ARR multiple | §14.3 |
 | `finance.floor_cents.<no_product\|live>` / `.floor_per_head_cents` / `.floor_head_cap` | 200000000 / 400000000 / 10000000 / 30 | cents / people | §14.3 |
 | `finance.safe.min_cents` / `.max_cents` / `.optimism` / `.steepness` / `.fee_cents` | 2500000 / 200000000 / 1.2 / 6 / 200000 | cents / multiplier / slope / cents | §14.4 |
 | `finance.safe.max_fraction` | 0.5 | fraction of the company | §14.4 (M4a: a SAFE is refused if outstanding SAFEs would claim this much, which keeps the §14.5 close defined) |
@@ -904,7 +904,7 @@ g_6 = \left(\frac{MRR_t}{MRR_{t-6}}\right)^{2} - 1 \qquad (g_6 = 3 \text{ if } M
 ```
 
 ```latex
-multiple = clamp(4 + 4\,g_6,\; 3,\; 20) \times climate(year), \qquad V_{traction} = ARR \times multiple
+multiple = clamp(2.5 + 5.5\,g_6,\; 3,\; 20) \times climate(year), \qquad V_{traction} = ARR \times multiple
 ```
 
 ```latex
@@ -1024,7 +1024,7 @@ Statements, the full cap table (holders, classes, shares, percentages, vesting p
 
 After each round the unallocated pool is exactly 10.00% of FD; after the seed the SAFE holders own 7.50% and the seed investor 25.00%; after Series B the Series B investor owns 20.00%.
 
-**Investors' base value.** ARR $1.81M with MRR growing 6.8% a month for 6 months: `MRR_t / MRR_{t−6}` = 1.4840, `g_6` = 1.2022, multiple = 8.809 (climate 1.0 in 2012), `V_traction` = **$15.94M**, above the floor.
+**Investors' base value.** ARR $1.81M with MRR growing 6.8% a month for 6 months: `MRR_t / MRR_{t−6}` = 1.4840, `g_6` = 1.2022, multiple = 9.112 (climate 1.0 in 2012), `V_traction` = **$16.49M**, above the floor. (M10d balance pass: the multiple was `4 + 4 g_6`, 8.809 and $15.94M here; growth now weighs more, so faster-growing strategies are worth more against steady, docs/balance-targets.md T2.)
 
 **SAFE acceptance.** With `V_base` = $4.5M: a cap of $5.4M gives p = 50%; $4.5M gives 76.9%; $7M gives 20.2%.
 
@@ -1112,7 +1112,7 @@ A monthly **Market news** inbox item lists every rival action and every startup 
 
 ### 15.6 Poaching
 
-**Rivals approach the player's people.** A `poach` action picks the player's employee with the highest true CA in the top 30% (ties by id) and offers `1.25 ×` their role and level's market rate. The approach arrives as an inbox item; the player may counter with a raise (§13.8) before Continue. In phase 1 of the next turn the employee decides (stream `poach`, key `(approach_id,)`):
+**Rivals approach the player's people.** A `poach` action picks one of the player's employees in the top 30% by true CA who has no approach pending (M10d, product manager 2026-11-02: drawn weighted by CA, a current seat holder's weight × `rivals.poach.seat_holder_weight` 0.4, since executives are better paid and harder to reach; stream `poach`, key `(new approach id, 1)`, so no other draw moves; before M10d it was always the highest CA, ties by id) and offers `1.25 ×` their role and level's market rate. The approach arrives as an inbox item; the player may counter with a raise (§13.8) before Continue. In phase 1 of the next turn the employee decides (stream `poach`, key `(approach_id,)`):
 
 ```latex
 s = 4\,(R - 1) + \frac{55 - morale}{20} - \frac{loyalty - 10}{10} - 2u + leave\_penalty, \qquad p = \frac{1}{1 + e^{-2s}}
@@ -1127,7 +1127,8 @@ s = 4\,(R - 1) + \frac{55 - morale}{20} - \frac{loyalty - 10}{10} - 2u + leave\_
 1. **Living market:** with no player product, over 120 turns on 10 seeds, no incumbent's share of a segment's served customers falls below half or rises above double its starting share, and on average at least one rival startup per category launches a product.
 2. **Rivals respond:** in the M3a earn-and-burn script, at least one incumbent cuts a price or starts a push in a segment the player sells to within 24 turns of launch, on at least 7 of 10 seeds.
 3. **Still winnable:** the earn-and-burn script's ARR at turn 36 stays within $500,000 to $4M on at least 8 of 10 seeds.
-4. **Poaching felt, not crushing:** in the fast-growth script, 1 to 4 approaches a year on average, and 20% to 60% of uncountered approaches accepted.
+4. **Poaching felt, not crushing:** in the fast-growth script, 1 to 4 approaches a year on average, and 10% to 40% of uncountered approaches accepted (20–60% before M10d; re-banded by the product manager on 2026-11-02: with the median employee at 58–68 morale, happier staff refuse more offers).
+6. **Rivals carry the threat (M10d, product manager 2026-11-02):** the player loses 0.5 to 1.5 staff a year to rivals while the company has 30 or more people (median of 10 seeds, steady and blitzscale, 120 turns); executive retention stays at 8 of 10 or better.
 5. **Speed:** 120 turns with 25 player staff, all incumbents and up to 8 startups under 1 second per turn on average.
 
 Tune only `rivals.*` keys and the personality weights to meet them; record the values.
@@ -1516,12 +1517,14 @@ A product whose builders work in more than one **region** loses output: × `max(
 | Region | Size (× North America's D₀) | Price index | Neighbour (for sales) |
 | --- | --- | --- | --- |
 | North America | 1.00 | 1.00 | Latin America |
-| Europe | 0.80 | 0.90 | Africa |
-| East Asia | 0.70 | 0.80 | South and Southeast Asia |
+| Europe | 0.80 (0.55 from M10d) | 0.90 | Africa |
+| East Asia | 0.70 (0.45 from M10d) | 0.80 | South and Southeast Asia |
 | South and Southeast Asia | 0.40 | 0.35 | East Asia |
 | Latin America | 0.25 | 0.50 | North America |
 | Africa | 0.06 | 0.35 | Europe |
 | Oceania | 0.10 | 0.95 | South and Southeast Asia |
+
+**M10d balance pass (product manager, 2026-11-02):** Europe and East Asia shrink to 0.55 and 0.45 of North America's `D₀`, so blitzscale with expansion reaches 2.2× home-only blitzscale (19.8 target 2, band 1.4–2.5×); with rivals entering regions more readily (`geo.region_entry.unserved` 0.6, `cooldown_turns` 6) and slower, dearer localization (6 months, $80,000), at 0.80 and 0.70 it was 2.65×.
 
   When the HQ isn't in North America, sizes are taken relative to the home region's row. A region's growth is the category's growth × its `growth_mult` in `cities.yaml`: 1.0 for North America and Europe, 1.3 for East Asia, 1.6 for South and Southeast Asia, 1.2 for Latin America, 1.8 for Africa, 1.0 for Oceania.
 - **Launching in a region** (immediate action, energy 4): the product must already be live at home. Localization costs `$40,000 × σ / 6` once (`6500_research_development`) and takes `markets.localize_months` (3). During those months the product's feature points grow 10% slower. It then sells there at the prices the player sets (default `p_ref × price index`).
@@ -1563,9 +1566,9 @@ Cities with their salary and rent indexes and talent bonuses. Offices with seats
 
 **Market rate.** A senior software engineer (band mid $115,000) working in Bangalore: `$115,000 × 0.30 × 0.876` (pay level) = **$30,222** a year.
 
-**Regional market.** B2B SaaS SMB in Europe: `D₀ = 400,000 × 0.80` = 320,000, and `p_ref = $50 × 0.90` = $45.
+**Regional market.** B2B SaaS SMB in Europe: `D₀ = 400,000 × 0.55` = 220,000 (0.80 before M10d), and `p_ref = $50 × 0.90` = $45.
 
-**Localization.** A cybersecurity product (σ = 7): `$40,000 × 7 / 6` = **$46,667**, live in the region three months later.
+**Localization.** A cybersecurity product (σ = 7): `$80,000 × 7 / 6` = **$93,333**, live in the region six months later (M10d balance pass: $40,000 and three months before).
 
 ### 19.10 Notes from the build (M9)
 

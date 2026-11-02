@@ -757,6 +757,7 @@ class StartupBalance(_Frozen):
 class PoachBalance(_Frozen):
     offer_mult: float = Field(gt=0)
     top_fraction: float = Field(gt=0, le=1)
+    seat_holder_weight: float = Field(ge=0)  # M10d: a seat holder's weight in the target draw
     ask_mult: float = Field(gt=0)
     leave_penalty: float
     key_builder_quality_hit: float = Field(ge=0)
