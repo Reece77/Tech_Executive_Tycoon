@@ -58,8 +58,8 @@ def _app(save_dir: Path) -> TestClient:
 
 
 def _answer_critical(api: Api) -> None:
-    blocking = api.get(f"{BASE}/events")["blocking_event_id"]
-    if blocking is not None:
+    """Every blocking event first: major ones block Continue and Holiday too (23.1, M10b)."""
+    for blocking in api.get(f"{BASE}/events")["blocking_event_ids"]:
         status, _ = api.post(f"{BASE}/events/{blocking}/choose", {"choice": "A"})
         assert status == 200
 

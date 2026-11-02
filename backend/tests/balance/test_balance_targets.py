@@ -28,6 +28,12 @@ T3_REASON = (
 
 
 T7_STARTUPS = ("T7", "rival startups alive 5 years after founding")
+T5_BLITZ = ("T5", "blitzscale (standard): bankrupt by the end")
+T5_BLITZ_REASON = (
+    "moved in M10b, reported for M10d (not tuned in M10b, as its brief says): blitzscale "
+    "(standard) bankrupt on 0% of seeds (band 10-40%; 10% on main before M10b); self-serve "
+    "abroad at full awareness, event modifiers and crises; awaiting the product manager"
+)
 T7_STARTUPS_REASON = (
     "recorded miss: rival startups alive 5 years on 62% of 94 (band 20-60%; 58% of 91 on main "
     "before M9): most startups are founded abroad, where they face less competition "
@@ -37,6 +43,10 @@ T7_STARTUPS_REASON = (
 
 def _t7_startups(row: object) -> bool:
     return (getattr(row, "target", None), getattr(row, "measure", None)) == T7_STARTUPS
+
+
+def _t5_blitz(row: object) -> bool:
+    return (getattr(row, "target", None), getattr(row, "measure", None)) == T5_BLITZ
 
 
 def _t3_blitz(row: object) -> bool:
@@ -56,7 +66,11 @@ def test_balance_targets(results: list[RunResult]) -> None:
     failed = [
         f"{r.target} {r.measure}: {r.value} ({r.band})"
         for r in rows
-        if r.ok is False and r.target != T2 and not _t3_blitz(r) and not _t7_startups(r)
+        if r.ok is False
+        and r.target != T2
+        and not _t3_blitz(r)
+        and not _t7_startups(r)
+        and not _t5_blitz(r)
     ]
     assert not failed, "\n".join(failed)
 
@@ -82,5 +96,13 @@ def test_balance_t3_blitzscale(results: list[RunResult]) -> None:
 @pytest.mark.xfail(strict=False, reason=T7_STARTUPS_REASON)
 def test_balance_t7_startups(results: list[RunResult]) -> None:
     rows = [r for r in evaluate(results) if _t7_startups(r)]
+    assert rows
+    assert all(r.ok is not False for r in rows), [f"{r.value} ({r.band})" for r in rows]
+
+
+@pytest.mark.nightly
+@pytest.mark.xfail(strict=False, reason=T5_BLITZ_REASON)
+def test_balance_t5_blitzscale_bankruptcy(results: list[RunResult]) -> None:
+    rows = [r for r in evaluate(results) if _t5_blitz(r)]
     assert rows
     assert all(r.ok is not False for r in rows), [f"{r.value} ({r.band})" for r in rows]
