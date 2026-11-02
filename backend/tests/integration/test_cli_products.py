@@ -47,39 +47,39 @@ def test_manual_check_flow(save_dir: Path) -> None:
     )  # fmt: skip
     assert "Pipeline" in out and "In development" in out and "energy 56/60" in out
     assert "Pipeline" in run("products", "--save", SAVE)
-    run("product", "assign", "--save", SAVE, "--product", "28")
-    out = run("product", "launch", "--save", SAVE, "--product", "28", code=1)
+    run("product", "assign", "--save", SAVE, "--product", "1")
+    out = run("product", "launch", "--save", SAVE, "--product", "1", code=1)
     assert "cannot launch yet" in out and "a price for SMB" in out
-    run("product", "price", "--save", SAVE, "--product", "28", "--segment", "smb", "--price", "40")
+    run("product", "price", "--save", SAVE, "--product", "1", "--segment", "smb", "--price", "40")
 
     for _ in range(MAX_TURNS):
-        if "Ready to launch" in run("product", "show", "--save", SAVE, "--product", "28"):
+        if "Ready to launch" in run("product", "show", "--save", SAVE, "--product", "1"):
             break
         run("advance", "--save", SAVE)
-    show = run("product", "show", "--save", SAVE, "--product", "28")
+    show = run("product", "show", "--save", SAVE, "--product", "1")
     assert "Ready to launch" in show and "builders:" in show
-    assert "Live" in run("product", "launch", "--save", SAVE, "--product", "28")
+    assert "Live" in run("product", "launch", "--save", SAVE, "--product", "1")
 
     run("advance", "--save", SAVE, "--turns", "3")
     market = run("market", "--save", SAVE, "--category", "b2b_saas")
     assert "Sales Cloud" in market and "Zoho CRM" in market
     assert re.search(r"\* Pipeline\s+Cli Co", market), market
-    before = new_customers(run("product", "show", "--save", SAVE, "--product", "28"))
+    before = new_customers(run("product", "show", "--save", SAVE, "--product", "1"))
     preview = run(
-        "product", "price", "--save", SAVE, "--product", "28",
+        "product", "price", "--save", SAVE, "--product", "1",
         "--segment", "smb", "--price", "30", "--preview",
     )  # fmt: skip
     assert "At $30.00: price score 83.3" in preview and "share*" in preview
-    run("product", "price", "--save", SAVE, "--product", "28", "--segment", "smb", "--price", "30")
+    run("product", "price", "--save", SAVE, "--product", "1", "--segment", "smb", "--price", "30")
     run("advance", "--save", SAVE)
-    after = new_customers(run("product", "show", "--save", SAVE, "--product", "28"))
+    after = new_customers(run("product", "show", "--save", SAVE, "--product", "1"))
     assert after > 0 and before > 0
     assert "MRR:" in run("inspect", "--save", SAVE)
 
-    run("product", "marketing", "--save", SAVE, "--product", "28", "--budget", "10000")
-    run("product", "segment", "--save", SAVE, "--product", "28", "--segment", "mid_market")
-    run("product", "unassign", "--save", SAVE, "--product", "28")
-    assert "Sunset" in run("product", "sunset", "--save", SAVE, "--product", "28")
+    run("product", "marketing", "--save", SAVE, "--product", "1", "--budget", "10000")
+    run("product", "segment", "--save", SAVE, "--product", "1", "--segment", "mid_market")
+    run("product", "unassign", "--save", SAVE, "--product", "1")
+    assert "Sunset" in run("product", "sunset", "--save", SAVE, "--product", "1")
 
 
 def test_cancel_a_product_in_development(save_dir: Path) -> None:
@@ -87,13 +87,13 @@ def test_cancel_a_product_in_development(save_dir: Path) -> None:
         "product", "create", "--save", SAVE, "--name", "Sentinel",
         "--category", "cybersecurity", "--segments", "smb",
     )  # fmt: skip
-    run("product", "assign", "--save", SAVE, "--product", "28")
-    out = run("product", "sunset", "--save", SAVE, "--product", "28", code=1)
+    run("product", "assign", "--save", SAVE, "--product", "1")
+    out = run("product", "sunset", "--save", SAVE, "--product", "1", code=1)
     assert "cancel its development instead" in out
-    out = run("product", "cancel", "--save", SAVE, "--product", "28")
+    out = run("product", "cancel", "--save", SAVE, "--product", "1")
     assert "Cancelled Sentinel; energy 51/60" in out
     assert "No products" in run("products", "--save", SAVE)
-    assert "no product 28" in run("product", "cancel", "--save", SAVE, "--product", "28", code=1)
+    assert "no product 1" in run("product", "cancel", "--save", SAVE, "--product", "1", code=1)
 
 
 def test_scout_a_search(save_dir: Path) -> None:

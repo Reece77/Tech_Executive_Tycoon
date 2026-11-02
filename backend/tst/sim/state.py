@@ -94,6 +94,11 @@ class CompanyState:
     op_history: tuple[int, ...] = ()
     burn_history: tuple[int, ...] = ()
     hq_city: str | None = None  # cities.yaml key; None = geo.default_hq_city (M9, 19.1)
+    # A rival's stable identity for its RNG keys (ADR-0013 amendment, M12a): (0, index) for
+    # an incumbent and (1, index) for a scheduled entrant, by position in incumbents.yaml or
+    # entrants.yaml; (2, category_index, n) for the nth startup founded in a category.
+    # Empty for the player and for rivals of saves made before M12a (keyed by company id).
+    rival_key: tuple[int, ...] = ()
 
     @property
     def is_rival(self) -> bool:

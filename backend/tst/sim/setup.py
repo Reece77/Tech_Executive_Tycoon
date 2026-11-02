@@ -128,6 +128,7 @@ def new_game(
         first_company_id=PLAYER_COMPANY_ID + 1,
         first_product_id=FIRST_PRODUCT_ID,
         home=data.city(hq).region,
+        incumbent_blocks=True,  # ADR-0013 amendment (M12a)
     )
     state = GameState(
         save_meta=SaveMeta(

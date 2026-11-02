@@ -12,9 +12,11 @@ from tst.sim.calendar import turn_to_ym, ym_to_turn
 from tst.sim.data_models import GameData, incumbent_regions
 from tst.sim.geo.formulas import regional_d0, regional_growth, regional_price_cents
 from tst.sim.geo.models import ProductRegion, RegionalMarket, RegionalSegment
+from tst.sim.hiring.models import INCUMBENT_PRODUCT_BLOCK, INCUMBENT_PRODUCT_IDS_FROM
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.products.formulas import held_feature_points, monthly_growth
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
+from tst.sim.rivals.models import INCUMBENT_KEY
 from tst.sim.state import CompanyState
 
 FOUNDED_MONTH = 1  # incumbents' founding is shown by year only
@@ -70,6 +72,7 @@ def initial_market(
     first_company_id: int,
     first_product_id: int,
     home: str | None = None,
+    incumbent_blocks: bool = False,
 ) -> InitialMarket:
     """Every market segment and every incumbent, in data-file order, as of `turn`.
 
@@ -109,6 +112,7 @@ def initial_market(
         )
     for offset, inc in enumerate(incumbents):
         company_id = first_company_id + offset
+        index = data.incumbents.index(inc)
         companies.append(
             CompanyState(
                 id=company_id,
@@ -116,8 +120,11 @@ def initial_market(
                 is_player=False,
                 stage=inc.stage,
                 founded_turn=ym_to_turn(inc.founded_year, FOUNDED_MONTH),
+                rival_key=(INCUMBENT_KEY, index) if incumbent_blocks else (),
             )
         )
+        if incumbent_blocks:  # ADR-0013 amendment (M12a): ids by position in the data
+            product_id = INCUMBENT_PRODUCT_IDS_FROM + index * INCUMBENT_PRODUCT_BLOCK
         for spec in inc.products:
             cat = data.category(spec.category)
             products.append(
@@ -186,7 +193,7 @@ def initial_market(
         products=tuple(products),
         product_segments=tuple(sorted(segments, key=lambda s: (s.product_id, s.segment))),
         markets=tuple(sorted(markets, key=lambda m: (m.category, m.segment))),
-        next_product_id=product_id,
+        next_product_id=first_product_id if incumbent_blocks else product_id,
         regional_markets=tuple(sorted(regional, key=lambda m: (m.category, m.segment, m.region))),
         product_regions=tuple(sorted(launches, key=lambda r: (r.product_id, r.region))),
         regional_segments=tuple(sorted(abroad, key=lambda s: (s.product_id, s.region, s.segment))),

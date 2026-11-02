@@ -14,7 +14,7 @@ import numpy as np
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import FUNCTIONS, LEVELS, Balance, GameData
 from tst.sim.hiring.formulas import benefits_cents, market_mid_cents, monthly_salary_cents
-from tst.sim.hiring.models import PersonState
+from tst.sim.hiring.models import INCUMBENT_PEOPLE_BLOCK, INCUMBENT_PEOPLE_IDS_FROM, PersonState
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment
@@ -22,7 +22,7 @@ from tst.sim.people.reveal import new_reveal_state
 from tst.sim.products.formulas import hosting_cents
 from tst.sim.products.models import SELLING
 from tst.sim.rivals import formulas as f
-from tst.sim.rivals.models import Function, WorkforcePool
+from tst.sim.rivals.models import INCUMBENT_KEY, Function, WorkforcePool, stream_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     CompanyState,
@@ -127,20 +127,28 @@ def hire_key_people(
     salary_mult: float = 1.0,
     levels: list[str] | None = None,
     gen: np.random.Generator | None = None,
+    first_id: int | None = None,
 ) -> GameState:
     """Generated individuals employed by the rival, strangers to the player (15.1, 15.5).
-    `gen` replaces stream people_gen keyed (company_id, stream_part) (entrants, 18.7)."""
+    `gen` replaces stream people_gen keyed (rival key, stream_part) (entrants, 18.7).
+    `first_id`: person and employment ids from this block instead of the rival counters (a
+    new game's incumbents, ADR-0013 amendment)."""
     if gen is None:
-        gen = people_gen_stream(rng, state.turn, company.id, stream_part)
+        key = stream_key(company.id, company.rival_key)
+        gen = people_gen_stream(rng, state.turn, *key, stream_part)
     for index, function in enumerate(functions):
         role = data.role(balance.rivals.function_roles[function])
         level = levels[index] if levels else _level_for(index, len(functions), balance)
-        person_id, ids = state.next_ids.take("rival_person")
+        if first_id is None:
+            person_id, ids = state.next_ids.take("rival_person")
+            emp_id, ids = ids.take("rival_employment")
+        else:
+            person_id = emp_id = first_id + index
+            ids = state.next_ids
         (person,) = generate_pool(
             gen, data, balance, state.turn, role, [level], first_person_id=person_id
         )
         person = replace(person, salary_expectation_cents=None)
-        emp_id, ids = ids.take("rival_employment")
         salary = round(market_salary_cents(role.key, level, balance, data) * salary_mult)
         state = replace(with_person(state, person), next_ids=ids)
         state = with_employment(
@@ -232,8 +240,18 @@ def setup_incumbents(
         marketing = sum(p.marketing_budget_cents for p in state.company_products(company.id))
         mix = function_mix(state, company.id, balance)
         functions = key_people_split(rv.key_people, mix)
+        block = None
+        if company.rival_key[:1] == (INCUMBENT_KEY,):  # a new game: ids by data position
+            block = INCUMBENT_PEOPLE_IDS_FROM + company.rival_key[1] * INCUMBENT_PEOPLE_BLOCK
         state = hire_key_people(
-            state, company, functions, rng, balance, data, stream_part=KEY_PEOPLE_STREAM_PART
+            state,
+            company,
+            functions,
+            rng,
+            balance,
+            data,
+            stream_part=KEY_PEOPLE_STREAM_PART,
+            first_id=block,
         )
         pool_budget = f.pool_budget_cents(revenue, spec.target_margin_bp, hosting, marketing)
         pool_budget = max(0.0, pool_budget - key_people_monthly_cents(state, company.id, balance))

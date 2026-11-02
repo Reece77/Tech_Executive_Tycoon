@@ -76,6 +76,7 @@ from tst.db.models import (
     CandidateRow,
     CapTableEntryRow,
     CompanyHqRow,
+    CompanyRivalKeyRow,
     CompanyRow,
     EmploymentRow,
     EventModifierRow,
@@ -734,6 +735,14 @@ def _load_facilities(session: Session, state: GameState) -> GameState:
     lately and recent outages (M12a, 0028)."""
     if not has_table(session, FacilityRow):
         return state
+    keys = {r.company_id: tuple(r.rival_key) for r in session.scalars(select(CompanyRivalKeyRow))}
+    if keys:
+        state = replace(
+            state,
+            companies=tuple(
+                replace(c, rival_key=keys[c.id]) if c.id in keys else c for c in state.companies
+            ),
+        )
     turn = state.turn
     facilities = tuple(
         facility_from_row(r)
@@ -795,6 +804,11 @@ def _sync_facilities(session: Session, old: GameState, new: GameState) -> None:
     if not has_table(session, FacilityRow):
         return
     session.flush()
+    before_keys = {c.id: c.rival_key for c in old.companies}
+    for company in new.companies:
+        if company.rival_key and before_keys.get(company.id) != company.rival_key:
+            row = CompanyRivalKeyRow(company_id=company.id, rival_key=list(company.rival_key))
+            session.merge(row)
     for f in _changed(old.facilities, new.facilities, lambda f: f.id):
         session.merge(facility_to_row(f))
     before = {(g.good, g.turn): g for g in old.supply}

@@ -55,6 +55,8 @@ T3_OWN_CUSTOMERS = 250_000.0  # B2B SaaS SMB customers: 1,000 CU of hosting at $
 T3_MARKETING = 5_000_000
 T3_PRICE = 0.9
 T4_CUSTOMERS = 100.0  # AI enterprise customers: 600 CU of GPU compute
+T4_PRICE = 0.45  # x p_ref: an AI company whose compute is 38% of revenue at spot (see report)
+T4_USE = 0.4  # the utilization of Reece's honesty check on the GPU table
 T6_SKILL = 14.0
 MONTHS_PER_YEAR = 12
 
@@ -249,19 +251,22 @@ class HistoryBites:
     margin_spot: float
     spot_cents_2023: float
     own_cents_2023: float
+    gap_at_reference: float  # the same comparison with prices at 1.0 x reference
+    gpu_40_worst: float  # the dearest build month's cost / spot per used CU at 40% use
 
     @property
     def margin_gap(self) -> float:
         return self.margin_own - self.margin_spot
 
 
-def _ai_margin_2023(own: bool) -> tuple[float, float]:
-    """(gross margin over 2023, compute cost per CU in December 2023)."""
+def _ai_margin_2023(own: bool, price_factor: float) -> tuple[float, float]:
+    """(gross margin over 2023, compute cost per CU a month) at `price_factor` x p_ref."""
     loaded = _loaded()
     start = ym_to_turn(2023, 1)
     g = _game(1, start)
-    state, pid = product(g.state, "ai_models", "enterprise", 2_500_000, T4_CUSTOMERS)
     market = loaded.game_data.category("ai_models").market("enterprise")
+    price = round(market.reference_price_cents * price_factor)
+    state, pid = product(g.state, "ai_models", "enterprise", price, T4_CUSTOMERS)
     units = round(T4_CUSTOMERS * market.hosting_cents / 100_000)
     if own:
         state = live_facility(state, loaded, "data_centre_gpu", units, ym_to_turn(2021, 1))
@@ -285,8 +290,10 @@ def target_4() -> HistoryBites:
     components = loaded.game_data.components
     assert components is not None
     server, gpu = components.good("server"), components.good("gpu")
-    own, own_cost = _ai_margin_2023(True)
-    spot, spot_cost = _ai_margin_2023(False)
+    own, own_cost = _ai_margin_2023(True, T4_PRICE)
+    spot, spot_cost = _ai_margin_2023(False, T4_PRICE)
+    own_ref, _ = _ai_margin_2023(True, 1.0)
+    spot_ref, _ = _ai_margin_2023(False, 1.0)
     return HistoryBites(
         server_shortage=server.index_at(ym_to_turn(2022, 4)) / server.index_at(ym_to_turn(2021, 4))
         - 1,
@@ -295,7 +302,25 @@ def target_4() -> HistoryBites:
         margin_spot=spot,
         spot_cents_2023=spot_cost,
         own_cents_2023=own_cost,
+        gap_at_reference=own_ref - spot_ref,
+        gpu_40_worst=gpu_40_worst(loaded),
     )
+
+
+def gpu_40_worst(loaded: LoadedData) -> float:
+    """A GPU data centre at 40% use, built in any month of the history: the lowest ratio of
+    its cost per used CU to that month's GPU spot price (Reece: at least 1.2)."""
+    components = loaded.game_data.components
+    assert components is not None
+    k = loaded.balance.facility.kinds["data_centre_gpu"]
+    spot = loaded.balance.compute.goods[k.output_good].spot_cents
+    worst = float("inf")
+    for turn in range(components.last_turn + 1):
+        index = components.good(k.input_good).index_at(turn)
+        full = k.capex_per_unit_cents * index / k.life_months + k.opex_per_unit_cents
+        ai = loaded.game_data.compute_index.of(2010 + turn // MONTHS_PER_YEAR)
+        worst = min(worst, full / T4_USE / (spot * ai))
+    return worst
 
 
 # --- target 5 ---------------------------------------------------------------------------------
@@ -376,8 +401,10 @@ def report(r: Results) -> str:
         f"T4 server shortage {r.t4.server_shortage:+.0%} (20%-40%), GPU crunch "
         f"{r.t4.gpu_crunch:+.0%} (40%-80%)",
         f"T4 AI gross margin 2023: own GPU {r.t4.margin_own:.1%}, spot {r.t4.margin_spot:.1%}, "
-        f"gap {100 * r.t4.margin_gap:+.1f} points (>= +15); compute per CU own "
-        f"${r.t4.own_cents_2023 / 100:,.0f}, spot ${r.t4.spot_cents_2023 / 100:,.0f}",
+        f"gap {100 * r.t4.margin_gap:+.1f} points (>= +15) at {T4_PRICE:g} x reference price "
+        f"({100 * r.t4.gap_at_reference:+.1f} at reference); compute per CU own "
+        f"${r.t4.own_cents_2023 / 100:,.0f}, spot ${r.t4.spot_cents_2023 / 100:,.0f}; GPU "
+        f"data centre at 40% use, dearest build month {r.t4.gpu_40_worst:.2f} x spot (>= 1.2)",
         f"T5 seeds with a supply shock by 2035: {sum(r.t5)}/{len(r.t5)} (>= 70%)",
         f"T6 outages a year: coverage 0.5 {r.t6.half_formula:.2f} (rolled {r.t6.half_rolled:.2f};"
         f" >= 1), full at skill 14 {r.t6.full_formula:.2f} (rolled {r.t6.full_rolled:.2f}; <= 0.2)",

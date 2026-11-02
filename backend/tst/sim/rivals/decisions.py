@@ -24,7 +24,7 @@ from tst.sim.people.models import current_ability
 from tst.sim.products import formulas as pf
 from tst.sim.products.models import SELLING, Product, ProductSegment
 from tst.sim.rivals import formulas as f
-from tst.sim.rivals.models import PoachApproach, RivalEffect, RivalMove, SegmentShare
+from tst.sim.rivals.models import PoachApproach, RivalEffect, RivalMove, SegmentShare, stream_key
 from tst.sim.rivals.poaching import TARGET_KEY, poach_draw
 from tst.sim.rivals.startups import startup_funding
 from tst.sim.rng import RngFactory
@@ -496,8 +496,8 @@ def act(
         return state, "cut costs"
     if c.action == "poach":
         u = None
-        if rng is not None:  # keyed by the new approach's id (M10d)
-            u = poach_draw(rng, state.turn, state.next_ids.approach, TARGET_KEY)
+        if rng is not None:  # keyed by the rival's identity (M10d; ADR-0013 amendment)
+            u = poach_draw(rng, state.turn, *stream_key(company.id, company.rival_key), TARGET_KEY)
         target = player_target(state, balance, data, u)
         if target is None:
             return state, ""
@@ -605,7 +605,7 @@ def rival_month(
     for company in state.rivals():
         if company.personality is None:
             continue
-        gen = rng.stream(state.turn, "rivals", company.id)
+        gen = rng.stream(state.turn, "rivals", *stream_key(company.id, company.rival_key))
         chosen = choose(state, company, gen, balances, balance, data)
         if company.is_startup:
             months = cash_months(state, company.id, balances, balance, data)

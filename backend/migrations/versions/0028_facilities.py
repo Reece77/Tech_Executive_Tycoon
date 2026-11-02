@@ -1,6 +1,7 @@
 """M12a: facilities, market goods and component contracts (formulas.md 22): data centres
 (`facility`), each good's month (`supply_month`), contracts (`supply_contract`) and outages
-(`facility_outage`). Existing saves start with none; their goods follow history.
+(`facility_outage`); rivals' stable RNG identity (`company_rival_key`, ADR-0013 amendment).
+Existing saves start with none; their goods follow history and their rivals stay keyed by id.
 
 Revision ID: 0028_facilities
 Revises: 0027_exec_authority
@@ -77,11 +78,17 @@ def upgrade() -> None:
         sa.Column("customers_lost", sa.Float(), nullable=False),
     )
     op.create_index("ix_facility_outage_turn", "facility_outage", ["turn"])
+    op.create_table(  # ADR-0013 amendment: rivals' stable RNG identity
+        "company_rival_key",
+        sa.Column("company_id", sa.Integer(), sa.ForeignKey("company.id"), primary_key=True),
+        sa.Column("rival_key", sa.JSON(), nullable=False),
+    )
     op.execute("UPDATE save_meta SET schema_version = 28")
 
 
 def downgrade() -> None:
     op.execute("UPDATE save_meta SET schema_version = 27")
+    op.drop_table("company_rival_key")
     op.drop_index("ix_facility_outage_turn", table_name="facility_outage")
     op.drop_table("facility_outage")
     op.drop_table("supply_contract")

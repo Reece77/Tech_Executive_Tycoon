@@ -148,8 +148,8 @@ def _rescale_primaries(skills: dict[str, float], role: Role, target_ca: float) -
 
 def people_gen_stream(rng: RngFactory, turn: int, *key: int) -> np.random.Generator:
     """Stream `people_gen` (ADR-0013): key `(search_id,)` for a search's batch (section 7), or
-    `(company_id, n)` for people a rival hires itself (formulas.md 15.1, 15.4). The two key
-    lengths never meet; this helper is the stream's one call site."""
+    `(*rival key, n)` for people a rival hires itself (formulas.md 15.1, 15.4; the rival key
+    since M12a's amendment). The key lengths never meet; this is the stream's one call site."""
     return rng.stream(turn, "people_gen", *key)
 
 

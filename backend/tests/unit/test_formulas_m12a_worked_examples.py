@@ -48,9 +48,9 @@ def test_reliability_example(loaded: LoadedData) -> None:
 
 def test_gpu_build_in_the_crunch(loaded: LoadedData) -> None:
     """500 GPU CU in Jul 2023 (GPU index 1.60, allocation 40%): capex 500 x $64,000 = $32M;
-    200 CU complete on time and 300 arrive 6 months late."""
-    kind = loaded.balance.facility.kinds["data_centre_gpu"]
-    assert ff.capex_cents(500, kind.capex_per_unit_cents, 1.60) == 32_000_000_00
+    200 CU complete on time and 300 arrive 6 months late. (22.8 states $40,000 a CU; M12a
+    tuned balance.yaml to $20,000 for target 4, Reece 2026-11-02.)"""
+    assert ff.capex_cents(500, 40_000_00, 1.60) == 32_000_000_00
     on_time, late, months = ff.allocation_split(500, 0.40, loaded.balance.supply.delay_step)
     assert (on_time, late, months) == (200, 300, 6)
     assert ff.allocation_split(500, 1.0, 0.1) == (500, 0, 0)
@@ -58,13 +58,14 @@ def test_gpu_build_in_the_crunch(loaded: LoadedData) -> None:
 
 
 def test_kind_table(loaded: LoadedData) -> None:
-    """The 22.2 table is data."""
+    """The 22.2 table is data (the GPU column tuned for target 4: $40,000 and $500 in 22.2;
+    Reece 2026-11-02)."""
     kinds = loaded.balance.facility.kinds
     general, gpu = kinds["data_centre_general"], kinds["data_centre_gpu"]
     assert (general.capex_per_unit_cents, general.build_months) == (24_000_00, 12)
     assert (general.opex_per_unit_cents, general.life_months) == (250_00, 60)
-    assert (gpu.capex_per_unit_cents, gpu.build_months) == (40_000_00, 9)
-    assert (gpu.opex_per_unit_cents, gpu.life_months) == (500_00, 48)
+    assert (gpu.capex_per_unit_cents, gpu.build_months) == (20_000_00, 9)
+    assert (gpu.opex_per_unit_cents, gpu.life_months) == (200_00, 48)
     assert (general.input_good, gpu.input_good) == ("server", "gpu")
     assert general.staff_per == gpu.staff_per == 200
     assert loaded.balance.facility.sizes == (100, 500, 2000, 10000)

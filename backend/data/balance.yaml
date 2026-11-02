@@ -758,9 +758,9 @@ facility:
       unit: CU
       input_good: gpu
       output_good: compute_gpu
-      capex_per_unit_cents: 4000000 # cents per CU in 2010 dollars, x the GPU index at the build (22.2)
+      capex_per_unit_cents: 2000000 # cents per CU in 2010 dollars, x the GPU index at the build (22.2; M12a tuning from $40,000 for 22.7 target 4, Reece 2026-11-02; with opex $200 the dearest month still costs 1.22x spot per used CU at 40% use)
       build_months: 9 # months, plus any allocation delay (22.2, 22.4)
-      opex_per_unit_cents: 50000 # cents per live CU a month, mostly power (22.2)
+      opex_per_unit_cents: 20000 # cents per live CU a month, mostly power (22.2; M12a tuning from $500, as capex above)
       life_months: 48 # months of depreciation (22.2)
       staff_per: 200 # CU per infrastructure person needed (22.2)
       staff_roles: [devops_engineer, security_engineer]

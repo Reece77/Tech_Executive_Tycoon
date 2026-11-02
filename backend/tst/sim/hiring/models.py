@@ -77,6 +77,13 @@ class PersonState:
 
 
 RIVAL_IDS_FROM = 1_000_001  # tunable-exempt: first id of rivals' own people and employments
+# New games (ADR-0013 amendment, M12a): an incumbent's products and key people take ids in a
+# block set by its position in incumbents.yaml, so appending an incumbent moves no one else's
+# ids (product and person ids key streams such as product_dev and growth).
+INCUMBENT_PRODUCT_IDS_FROM = 900_000  # tunable-exempt: id block base, above any player product
+INCUMBENT_PRODUCT_BLOCK = 10  # tunable-exempt: product ids per incumbent
+INCUMBENT_PEOPLE_IDS_FROM = 5_000_001  # tunable-exempt: id block base for incumbents' people
+INCUMBENT_PEOPLE_BLOCK = 100  # tunable-exempt: person and employment ids per incumbent
 
 
 @dataclass(frozen=True, slots=True)

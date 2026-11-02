@@ -413,9 +413,9 @@ def test_unstaffed_data_centre_has_outages_as_critical_events(loaded: LoadedData
     from tst.sim.facilities.outages import outages_month
 
     at = replace(state, turn=hit_turn)
-    before = at.product_segment(at.products[-1].id, "smb")
+    before = at.product_segment(at.company_products(1)[-1].id, "smb")
     after, logs = outages_month(at, rng, loaded.balance, loaded.game_data)
-    seg = after.product_segment(at.products[-1].id, "smb")
+    seg = after.product_segment(at.company_products(1)[-1].id, "smb")
     assert before is not None and seg is not None
     share = ob.customers_share * loaded.balance.events.caps["customers_pct"][2] / 100
     assert seg.customers == pytest.approx(before.customers * (1 - share))

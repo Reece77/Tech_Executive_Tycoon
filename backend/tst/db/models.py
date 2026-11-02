@@ -1230,3 +1230,13 @@ class FacilityOutageRow(Base):
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
     turn: Mapped[int] = mapped_column(Integer, nullable=False)
     customers_lost: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class CompanyRivalKeyRow(Base):
+    """A rival's stable identity for its RNG keys (ADR-0013 amendment, M12a; 0028). Companies
+    without a row (the player, rivals of older saves) are keyed by their id."""
+
+    __tablename__ = "company_rival_key"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    rival_key: Mapped[list[int]] = mapped_column(JSON, nullable=False)
