@@ -247,6 +247,19 @@ Two artboards in the canvas's twelfth row.
 
 **Not drawn (text only):** the CEO seat on the Executive team panel (appoint, authority, this month's decisions, override at energy 6); the activist and takeover-bid critical events; the stage-4 board with independents.
 
+## M12b screens (v2, lane A)
+
+One artboard in the canvas's thirteenth row. Kestrel in September 2021, during the chip shortage.
+
+**Hardware** (a new screen, reached from Products).
+- *Header:* counts and actions (sign a manufacturing contract, build a plant, new chip).
+- *Component strip:* device components index with this year's change and allocation, the foundry wafer price with allocation and your contract's allocation, and the plant equipment index.
+- *Unit cost panel* for a device: each line of the unit cost (components as BOM × index, the SoC as your own at cost or bought, assembly with its source and yield), then unit cost and gross margin, and a line comparing the alternatives (a bought chip, the contract instead of the plant).
+- *Manufacturing:* plant capacity and use (yours and sold), contract volume and use with take-or-pay, and demand against what shipped.
+- *Chips panel:* each chip's type, chips per wafer, yield and unit cost; units used in your devices and sold to device makers at a price; the wafer contract; and a note that own chips book no revenue and that an AI accelerator cuts GPU data-centre capex.
+
+**Not drawn (text only):** the plant build dialog (city, capacity, capex, staff, yield estimate); the contract dialogs; the contract-manufacturing market view; chip products in Market.
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).

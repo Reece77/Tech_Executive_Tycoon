@@ -4,6 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- Docs: M12b brief (hardware, devices and fabless chips; lane A, merges after M13) and formulas.md §26, written against M12a's facility model on its branch.
 - Docs: M13 brief (IPO, public company, Chair and CEO; lane B, merges before M12b) and formulas.md §25.
 - M10d Balance checkpoint (product manager's decisions of 2026-11-02; table in `docs/balance-targets.md`, M10d):
   - Speed: people by binary search, the seat cost memoized; the nightly as five CI jobs (`make balance` alone gates S2; four duration-balanced shards); S2 for v2 is 43 worker-minutes on CI; `tests/durations.json` refreshed.

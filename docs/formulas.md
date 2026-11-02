@@ -2091,3 +2091,82 @@ The IPO chain's status and choices; the price range and book demand as words ("s
 **Listing.** With 100M fully diluted shares before the IPO and 15% sold as new shares: 17.65M new shares. A middle-ambition offer at `V_f / 117.65M` = $16.22 raises 17.65M × $16.22 = $286M before a 6% fee ($269M net). Book demand 1.4 gives `r = 0.25 × 0.4` = **+10%**, so the stock closes day one at $17.84.
 
 **Earnings.** Guidance $32M; actual $33M (`s = +3.1%`); margin on guidance: sentiment × `(1 + 0.094)`, a +9.4% jump.
+
+## 26. Hardware, devices and fabless chips (M12b, lane A)
+
+Reece's decisions (ADR-0019 §8, §13): factories are allowed from the start, alongside contract manufacturing; an early factory is likely unprofitable, and its spare capacity can be sold to others. Fabless chips sell to a chip market and go into the player's own devices and data centres. ADR-0020: assembly plants are a **kind** in M12a's facility model (`balance.facility.kinds`), components and foundry wafers are **goods** in `components_history.yaml`, and chips used in-house are internal supply at cost. Principle: **a company that never enters hardware plays as before.** M12b merges after M13.
+
+### 26.1 Unit-sale categories (appended to `categories.yaml`, `revenue_model: units`)
+
+| Category | Segments | Replacement cycle (base churn) | Development skill |
+| --- | --- | --- | --- |
+| Devices (`devices`: phones, laptops, wearables) | consumer, SMB, enterprise | 1/30 a month consumer, 1/40 SMB and enterprise | hardware design 0.40, manufacturing 0.20, design 0.20, software engineering 0.10, chip design 0.10 |
+| Servers (`servers`) | enterprise, hyperscalers | 1/48 | hardware design 0.40, infrastructure 0.25, manufacturing 0.20, chip design 0.15 |
+| Chips (`chips`) | device OEMs (new, sales-led), hyperscalers | 1/24 (design wins renew) | chip design 0.60, hardware design 0.20, software engineering 0.10, manufacturing 0.10 |
+
+- **The market rules of §11.7 apply** with one change. A customer in play who chooses a product **buys one unit** (revenue `price × units`, once, to `4000_revenue_subscriptions`, renamed "Product revenue" in statements). The replacement cycle brings customers back into play.
+- **Units are capped by manufacturing capacity** (§26.2). Demand above the cap is lost to the next-best product that month.
+- **Launch** needs quality ≥ 30 and a manufacturing source (a contract or a live plant).
+- **Expected features** move fast: ΔF of 8 for devices and servers, and 10 for chips. A hardware team must keep designing or the product ages.
+- **Quality cap** uses M11's devices domain (devices and servers) and chip-design domain (chips) through `research.tech_factor`.
+
+### 26.2 Cost of a unit and manufacturing
+
+- **Bill of materials:** `bom = bom_base × good index` (goods `device_bom` and `server_bom`, appended to `components_history.yaml` with the 2021 shortage), plus the chip (§26.3: bought at the chip market price, or own at cost), plus assembly. It posts to `5000_cogs` when sold.
+- **Contract manufacturing** (immediate action, energy 6): a contract with a contract manufacturer (Foxconn, Pegatron; data) for `V` units a month for 12–24 months, at a fee per unit (Shenzhen cheaper). Take-or-pay: 50% of the fee on unused volume each month. A contract signed before a shortage keeps 100% allocation.
+- **Own assembly plant** (facility kind `assembly_plant`; unit `units/month`):
+  - capex `$300 × equipment index` per unit a month of capacity; build 12 months; life 96 months;
+  - operating cost `$20,000` a month fixed plus `$3` a unit;
+  - staff: one manufacturing-role person per 1,000 units a month;
+  - **yield** `0.85 + 0.10 × mean manufacturing skill / 20`, so assembly cost per good unit = (fixed + variable) / (units × yield).
+
+  Building in a city uses M9's city (Shenzhen's manufacturing bonus applies to its hires).
+- **Selling spare plant capacity:** category `contract_manufacturing` (segment device OEMs; customers buy units a month), like M12a's Cloud hosting. Quality is yield × reliability. Capped at spare capacity, sold against Foxconn and Pegatron as incumbents.
+
+### 26.3 Fabless chips
+
+- **Chip product types:** `mobile_soc`, `server_cpu` and `ai_accelerator` (a product attribute), with chips per wafer 600, 150 and 60.
+- **Foundry wafers:** a good, `foundry_wafer`, with an index and allocation history: tight in 2021–2022, advanced nodes tight in 2023–2024. A wafer contract (as §22.4) secures wafer starts a month from TSMC or Samsung Foundry (abstract suppliers, not rivals).
+- **Unit cost:** `wafer price / (chips per wafer × yield) + $8` for packaging and test, with yield `0.70 + 0.003 × chip-design lead` (M11), at most 0.92.
+- **Chip demand:**
+  - device OEM demand grows with the devices and servers markets;
+  - hyperscaler `ai_accelerator` demand grows with the AI models market (§18.6, M11's AI eras);
+  - `server_cpu` demand grows with general cloud capacity.
+- **Internal use** (ADR-0020 §4): the company's own devices and servers can use its own chip of the matching type at unit cost (no revenue). Its own GPU data centres using its own `ai_accelerator` cut GPU capex per CU to `capex × (0.4 + 0.6 × own unit cost / market chip price)`.
+- **Rivals** (appended to `incumbents.yaml`):
+  - chips: NVIDIA (aggressive; AI accelerators), Intel (premium; server CPUs), AMD (fast_follower; server CPUs and accelerators), Qualcomm (premium; mobile SoCs);
+  - devices: Apple (premium), Samsung (fast_follower), Lenovo (cost_leader);
+  - servers: Dell (fast_follower), HPE (premium), Supermicro (cost_leader);
+  - contract manufacturing: Foxconn and Pegatron.
+- **Entrants** (appended to `entrants.yaml`): Cerebras (Jan 2016, AI accelerators) and Groq (Sep 2016, AI accelerators).
+
+### 26.4 Eras (appended to M11's `eras.yaml`)
+
+| Era | Domain | Historical arrival | What it accelerates |
+| --- | --- | --- | --- |
+| Smartphone ubiquity | devices | Jan 2012 | devices: consumer growth +15 points for 36 months |
+| AI accelerators | chip design | May 2016 | chips: `ai_accelerator` demand growth +40 points for 36 months |
+| Custom silicon | chip design | Nov 2020 | devices with their own SoC: +5 quality cap for 24 months (everyone, not first-mover only) |
+
+### 26.5 What the API may show
+
+Bill of materials and unit cost by line; contracts with volume, use and take-or-pay; plants with capacity, utilization (own and sold), yield and staff coverage; chips with type, yield, unit cost, internal use and market sales; wafer and component indexes with history only.
+
+### 26.6 Balance targets (M12b acceptance, printed)
+
+1. **Without hardware, nothing moves.** All earlier targets pass as before (no new xfails).
+2. **Devices can work.** A 15-person devices company on contract manufacturing reaches a gross margin of 30–45% by year 3 on at least 6 of 10 seeds.
+3. **Plants need volume.** An assembly plant's cost per good unit is at most 0.7 times the contract fee at ≥ 75% utilization, and at least 1.3 times at 30%.
+4. **Own chips pay off.**
+   - A devices company using its own mobile SoC has a device gross margin at least 8 points higher after 3 years than one buying chips.
+   - An AI company using its own accelerators cuts GPU capex per CU by at least 20%.
+5. **History bites.** A contract-manufacturing-reliant company with no contract signed before the 2021 shortage ships 15–35% fewer units in 2021–2022 than one with a contract.
+6. **Incumbents hold.** NVIDIA holds at least 50% of hyperscaler `ai_accelerator` units in 2023 on at least 7 of 10 do-nothing seeds.
+
+### 26.7 Worked examples
+
+**Unit cost (device).** BOM $180 at index 1.0, a bought SoC at $40 and a contract fee of $13: **$233** a unit.
+
+**Plant cost.** A 20,000 units-a-month plant at 80% use (16,000 units), yield 0.92: `($20,000 + 16,000 × $3) / (16,000 × 0.92)` = $4.62 per good unit, plus depreciation `20,000 × $300 / 96` = $62,500 a month, or $4.25 per good unit. Total **$8.87**, or 0.68 times a $13 contract fee. At 30% use (6,000 units, 5,520 good): `($20,000 + $18,000) / 5,520 + $62,500 / 5,520` = **$18.21**, or 1.40 times the fee.
+
+**Chip cost.** An AI accelerator at a wafer price of $9,000, 60 chips per wafer and a chip-design lead of 20 (yield 0.76): `$9,000 / 45.6 + $8` = **$205.37**.
