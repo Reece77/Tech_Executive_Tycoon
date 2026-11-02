@@ -51,9 +51,9 @@ Every strategy answers critical events with the first choice, sets prices at the
 | T4b | Median months to a closed Series A (steady; blitzscale) | steady 24–60; blitzscale 12–36 |
 | T4c | Median months to a closed Series B (blitzscale) | 30–72, reached on at least 4/10 seeds |
 | T4d | Median months to IPO | not in v1 (IPO is v2); printed as "–" |
-| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 0–25%, hard 0–70% (Reece, M7a C2: a cautious strategy that keeps 18 months of runway and retries its seed should survive); blitzscale standard 10–40% (Reece, M7a B3: reached by round gates and investor appetite, so it fails when traction lags, not by its script); bootstrap-frugal standard 20–50% (Reece, M7a C3: today's launch gates kept; bootstrappers win whenever they survive) |
+| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 0–25%, hard 0–70% (Reece, M7a C2: a cautious strategy that keeps 18 months of runway and retries its seed should survive); blitzscale standard 0–40% (Reece, M7a B3: reached by round gates and investor appetite, so it fails when traction lags, not by its script; 10–40% until M10d, re-banded by the product manager on 2026-11-02 once blitzscale raises Series C and D); bootstrap-frugal standard 20–50% (Reece, M7a C3: today's launch gates kept; bootstrappers win whenever they survive) |
 | T6 | Employee tenure (player staff, all strategies pooled) | median tenure of leavers 18–48 months; 10–25% of staff leave each year; at most 25% of hires leave in their first 12 months |
-| T7 | Rival survival at turn 120 (do-nothing runs, so the player doesn't distort it) | incumbents: at least 10 of 12 in business on average; rival startups: 20–60% of those founded are alive 5 years later |
+| T7 | Rival survival at turn 120 (do-nothing runs, so the player doesn't distort it) | incumbents: at least 10 of 12 in business on average; rival startups: 20–65% of those founded are alive 5 years later (20–60% until M10d; re-banded by the product manager on 2026-11-02: most startups are founded abroad, where markets are less served) |
 | T8 | ARR at turn 120 (median per strategy) | printed only: bootstrap-frugal, steady and blitzscale should rank in that order on the median |
 
 ## Events (carried from M6, plus the two known issues)
@@ -71,7 +71,7 @@ E1 and E2 run on the M3a earn-and-burn script, so they are checked by `backend/t
 | # | Measure | Band |
 | --- | --- | --- |
 | S1 | Persisted turn 120 of the product-perf save (25 staff, 3 products, all rivals), local | under 300 ms (131 ms after M7a sub-task 0) |
-| S2 | The full balance run (4 strategies × 10 seeds × 120 turns, plus T5's 20 difficulty runs) | under 20 worker-minutes on CI (first measured run, M7a sub-task 2: 17.5 worker-minutes and 4m43s wall clock locally with 4 jobs; companies of 130+ staff cost about 0.5 s a turn) |
+| S2 | The full balance run (4 strategies × 10 seeds × 120 turns, plus T5's 20 difficulty runs) | under 43 worker-minutes on CI from M10d (CI's measured need plus 25%; `make balance` run alone gates it), under 20 for v1 (first measured run, M7a sub-task 2: 17.5 worker-minutes and 4m43s wall clock locally with 4 jobs; companies of 130+ staff cost about 0.5 s a turn) |
 
 ## Recorded results
 
@@ -226,3 +226,41 @@ The §24.5 targets (formulas.md §24.5), printed by `tools/m10c_targets.py` and 
 | 4. Founder energy unspent on average | 94% | pass |
 
 One balance default was set: the CRO's default seller cap `exec_authority.defaults.cro.headcount_cap` is 20 (10 held delegated ARR at 0.83 of steady; every delegated run sat at the cap). No other balance key changed; golden snapshots are unchanged (no script gives authority).
+
+### M10d balance checkpoint (2026-11-02)
+
+One pass over v1 and M8-M10c (product manager's decisions of 2026-11-02 in the M10d brief). Every target, before (`m10c-done`) and after; 10 seeds unless stated. **No xfail remains in the suite.**
+
+| Target | Before | After | Result |
+| --- | --- | --- | --- |
+| T1 do-nothing fails | 10/10 | 10/10 | pass |
+| T2 wins per strategy (each <= 6) | steady 7, frugal 3 | steady 6, frugal 4 | pass (xfail removed) |
+| T3 succeeds: frugal / steady / blitzscale | 8 / 10 / 5 | 8 / 10 / 10 | pass (xfail removed) |
+| T4a-c | 4 and 1; 27.5 and 18; 36 on 10/10 | 4 and 1; 27.5 and 18; 36 on 10/10 | pass |
+| T5 steady easy / standard / hard; frugal | 0 / 0 / 0%; 20% | 0 / 0 / 0%; 20% | pass |
+| **T5 blitzscale (standard) bankrupt** | 0% (band 10-40%) | 0% (**band 0-40%**) | **re-banded** (product manager, 2026-11-02): with Series C and D raised as soon as allowed, blitzscale's failure mode is board removal or slow growth, not bankruptcy; it ends every seed with $1.5-2.9B of cash (see the M15 follow-up on late-round sizing) |
+| T6 tenure; leaving a year; first-year leavers | 23; 11%; 10% | 22; 12%; 11% | pass |
+| T7 incumbents | 23/23 | 23/23 | pass |
+| **T7 startups alive 5 years** | 62% of 94 (band 20-60%) | 61% of 98 (**band 20-65%**) | **re-banded** (product manager, 2026-11-02): most startups are founded abroad, where markets are less served (M9) |
+| E3 template variety | pass | pass | pass |
+| **S2 balance run, worker-minutes on CI** | 28.2 (< 20) | 18.0-34.2 across four CI runs (**< 43**) | pass; **S2 for v2** is CI's need (34.2, its highest reading) plus 25%. `make balance` gates it alone (CI's nightly "balance" job); inside the parallel nightly it is printed only |
+| Median employee morale, steady / blitzscale | 56.5 / 53.7 | 62.3 / 60.2 | pass (58-68) |
+| Executive retention (score-14 CTO, 6 months) | 7/10 (xfail) | 8/10 | pass (>= 8; xfail removed) |
+| 15.7 target 4, poaching approaches a year; accepted | 1-4; in 20-60% | 4.00; 14% | pass (**acceptance band 10-40%**, re-banded by the product manager: happier staff refuse more offers) |
+| 15.7 target 6 (new), staff lost to rivals a year, 30+ staff: steady / blitzscale | 0.14 / 0.36 | 0.58 / 1.05 | pass (0.5-1.5) |
+| M5 launches per v1 category | 0.925 (xfail) | 1.02 | pass (xfail removed) |
+| Potential spotting gap (PA points) | 2.83 (xfail) | 2.83 | pass at the approved **re-band >= 2.8** (the city talent bonus raises candidates' CA and so their PA, M9) |
+| 18.9 seats | 1.097 (xfail) | 1.370 | pass (xfail removed) |
+| 18.9 support; blitz | 1.069 (xfail); pass | 1.101; 1.263 | pass (xfail removed) |
+| E1, E2 event balance | 1.37 a month; cash −1.68%; morale worst +1.38 | 1.37 a month; cash −1.36% (worst −2.62%); morale worst +1.54 | pass |
+| 19.8 target 2 expansion | 6.93x (home alive 5/10) | 2.18x (all alive) | pass (1.4-2.5x) |
+| 20.5 target 2 debt saves dilution | +4.8 (xfail) | +6.9 | pass (xfail removed) |
+| 20.5 target 3 covenants breach | 90% (xfail) | 60% | pass (20-60%; xfail removed) |
+| 20.5 targets 4, 5 | pass | 41/50, sd 0.171; 10/10 reach a C | pass |
+| 23.7 target 1 critical events per 18 months, 20+ staff | 1.08 | 1.19 | pass |
+| 24.5 targets 1-4 | 0.92; 1.29; 0 over caps, 0.009; 94% | 0.94; 1.33; 0 over caps, 0.012; 94% | pass |
+| Founder energy, hands-on (brief sub-task 5) | - | removed | **a manual check** in Reece's next playtest (product manager, 2026-11-02); the delegated target is 24.5 target 4 |
+
+Strategy change (product manager, 2026-11-02): blitzscale raises every round as soon as allowed, now including Series C ($80M) and D ($200M), largest amount offered.
+
+Keys and data tuned: `morale.target_base` 50 to 56; `resign.morale_floor` 40 to 50; `finance.multiple_base` 4 to 2.5 and `multiple_per_growth` 4 to 5.5; `rivals.need.poach_gain` 0.007 (unchanged after trials); `rivals.poach.leave_penalty` -0.5 to -0.3 and the new `seat_holder_weight` 0.4; `geo.region_entry.unserved` 0.8 to 0.6 and `cooldown_turns` 12 to 6; `markets.localize_cents` $40,000 to $80,000 and `localize_months` 3 to 6; Europe and East Asia sizes 0.80 and 0.70 to 0.55 and 0.45 (`categories.yaml`); `debt.venture.max_of_round_bp` 3000 to 5000; `events.crisis.breach_chance` 0.004 to 0.008, `outage_chance` 0.003 to 0.006, `key_exit_top_fraction` 0.10 to 0.20. One formula change, approved: a rival's poach target is drawn by CA (§15.6).

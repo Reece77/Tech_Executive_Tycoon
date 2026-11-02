@@ -31,7 +31,7 @@ DIFFICULTY_RUNS: Final = (("steady", "easy"), ("steady", "hard"))  # T5's extra 
 E3_MONTHS: Final = 24
 # S2 for v2 (M10d brief): what CI's nightly needs plus 25% headroom, re-set when a milestone
 # adds work per turn. M7a set 20 for v1.
-S2_BUDGET: Final = 38.0
+S2_BUDGET: Final = 43.0
 STARTUP_YEARS_MONTHS: Final = 60  # T7: alive five years after founding
 EARLY_LEAVE_MONTHS: Final = 12  # T6
 

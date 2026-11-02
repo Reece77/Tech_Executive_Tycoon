@@ -14,14 +14,14 @@ permissions:
 jobs:
   nightly:
     # M10d: `make balance` alone (it gates S2, the run's worker-minutes, on a machine it does not
-    # share) and the nightly tests in two shards, so no job nears the time limit.
+    # share) and the nightly tests in four shards (two took over 45 minutes each on CI).
     name: nightly (${{ matrix.part }})
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        part: [balance, nightly-ci-1, nightly-ci-2]
+        part: [balance, "nightly-ci SHARD=1", "nightly-ci SHARD=2", "nightly-ci SHARD=3", "nightly-ci SHARD=4"]
     steps:
       - uses: actions/checkout@v4
 

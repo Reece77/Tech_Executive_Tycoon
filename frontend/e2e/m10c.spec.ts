@@ -55,6 +55,7 @@ test('(b) a CFO proposal blocks Continue and approving it opens the round', asyn
   await page.getByTestId('continue').click();
   await expect(date).not.toHaveText(before ?? '');
   await page.goto(`/game/${CFO}/org`);
+  await answerBlocking(page, { proposals: false }); // a critical event's modal would cover it
   await expect(page.getByTestId('continue-blocked')).toContainText('1 proposal');
   await expect(page.getByTestId('continue')).toBeDisabled();
   const proposal = page.getByTestId('exec-proposal').first();

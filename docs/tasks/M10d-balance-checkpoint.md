@@ -59,37 +59,23 @@ A short game of 3 years hands-on, then 3 years delegated on `quick-stage3`. Does
 
 ## Decisions made
 
-### Status at the stop for the product manager (2026-11-02)
+Product manager decisions (2026-11-02), after the stop report: (1) blitzscale raises Series C and D as soon as allowed; (2) keep `morale.target_base` 56 and the poach morale midpoint, re-band poaching acceptance to 10–40%, add a target for staff lost to rivals, raise crisis chances; (3) founder energy when hands-on becomes a manual check; (4) re-measure the near misses after (1), re-bands approved where still missing; S2 at CI's measured need plus 25%; then, after a second question: a rival's poach target is drawn by CA with seat holders ×0.4, T5 blitzscale re-banded to 0–40%, and the regional market sizes may shrink.
 
-Work paused here, before any re-band, as instructed. Committed so far: sub-task 0's first speed fixes, and sub-task 1's morale and retention tuning.
-
-| Item | Before (m10c-done) | Now | Target | State |
-| --- | --- | --- | --- | --- |
-| S2 worker-minutes, CI nightly | 28.2 | 30.3 | < 20 | fails; brief: set at CI need + 25% once tuning ends |
-| S2 locally, balance run alone | 18.8 | 13.6 | - | `GameState.person` by bisect with a C key, seat cost memoized |
-| Median morale, steady / blitzscale | 56.5 / 53.7 | 61.6 / 59.0 | 58-68 | pass (`morale.target_base` 50 to 56) |
-| Executive retention (score-14 CTO, 6 months) | 7 of 10 | 8 of 10 | >= 8 of 10 | pass; xfail removed (`resign.morale_floor` 40 to 50 keeps underpaid misfits leaving more) |
-| M8 seats | 1.097 (xfail) | passes (xpass) | >= 1.15 | pass |
-| T2 wins | steady 7, frugal 3 | steady 9, frugal 1 | each <= 6 | fails |
-| T3 blitzscale succeeds | 5/10 | 4/10 | >= 3 | pass |
-| T5 blitzscale bankrupt | 0% | 0% | 10-40% | fails: 5 of 10 founders are removed by the board at turns 87-109 with cash near zero, before bankruptcy |
-| Expansion (19.8 target 2) | 6.93x | 6.93x | 1.4-2.5x | fails: home-only blitzscale ends at ARR 0 on 5 of 10 seeds (founder removed); where both arms live it is 3.4x |
-| T7 startups alive | 62% | 61% | 20-60% | fails narrowly (xfail) |
-| M10 covenants breach | 90% | 90% | 20-60% | fails (xfail) |
-| M10 debt saves dilution | +4.8 | passes (xpass) | +5 | pass |
-| M5 launches; potential gap | 0.925; 2.83 | unchanged (xfail) | 1.0; 3.0 | fail narrowly |
-| §23.7 critical events per 18 months, 20+ staff | 1.08 | 0.88 | >= 1 | **new miss**: happier staff, fewer key exits |
-| M5 poaching accepted | in band | 12.6% | 20-60% | **new miss**: the poach score's `morale_mid` 55 now sits below the median |
-| Founder energy, hands-on | - | steady never below 5 in years 2-5 (0 of 480 months); blitzscale 15 of 480 | runs out >= 1 month in 3 | fails; no script plays like a hands-on human |
-| Founder energy, delegated (§24.5 target 4) | 94% unspent | 94% | >= 60% | pass |
-
-Root causes and what each needs (proposals for the product manager):
-1. **Blitzscale's money runs out after its Series B.** The script raises seed, A and B only (written before M10's Series C and D). It burns into zero cash around turns 87-109, and the board removes the founder before bankruptcy. That one fact drives T2 (blitzscale never wins), T5 (removed, not bankrupt), T3's margin and the expansion ratio (zeros in the home arm), and plausibly the covenant breaches (blitzscale with debt). Proposal: the blitzscale script raises a Series C (say $50M, inside the $30-80M typical band) once its gate is met. This changes a strategy definition in `docs/balance-targets.md`, so it needs approval. Then re-measure T2, T3, T5, expansion and covenants before tuning any key.
-2. **Morale vs poaching and crises.** Raising morale (the brief's sub-task 1) lowers poaching acceptance (12.6%) and key-exit crises (0.88). Options: (a) move `rivals.poach.morale_mid` to 61 with the median (acceptance returns, but executives at ordinary morale read "might go" again, undoing the retention fix); (b) keep it at 55 and raise acceptance for non-executives through `rivals.poach.offer_mult` or `leave_penalty`; (c) re-band M5 target 4 to 10-50% and §23.7 target 1 to 0.8. Recommendation: (b) for poaching, plus a small rise in `events.crisis.breach_chance`/`outage_chance` for crises.
-3. **Founder energy "hands-on".** No balance script spends energy the way a hands-on player does (steady uses about 9 of 60 a month). Either define the measurement (for example, a hands-on script that interviews every candidate and sets prices and marketing monthly), or re-band it to a manual check. Cutting energy until steady runs out would refuse the scripts' own actions and move every other target.
-4. **Near misses** (T7 61%, M5 launches 0.925, potential 2.83): the M9 reasons stand (startups founded abroad; the city talent bonus). Proposal: re-band T7 to 20-65%, M5 launches to >= 0.9 and the potential gap to >= 2.8, with those reasons; or leave them for after item 1.
-5. **S2:** CI needs about 30 worker-minutes after this round; the brief sets the bound at that plus 25% (about 38) once tuning ends.
+- **Speed (0).** `GameState.person` by binary search with a C key (`operator.attrgetter`), the flexible-seat cost memoized, and the tests' `answer_critical` loads the state only when a critical event is open: a profiled 120-turn balance game 36 s to 27.8 s; S2 locally 18.8 to 14.9. CI's nightly is three matrix jobs: `make balance` alone (gates S2) and `make nightly-ci SHARD=1..4`, the nightly tests in four shards balanced by `tests/durations.json` (refreshed with the nightly tests), 60 minutes each (the single 45-minute job was cancelled at its limit, and so were two shards). S2's budget for v2 is 43 worker-minutes: CI's highest reading, 34.2, plus 25% (CI read 30.3, 18.0, 33.5 and 34.2 over four runs). Inside the parallel nightly, `test_balance_targets` prints S2 but does not gate it (60 locally under load; M10b recorded the same). No check job passes 17 minutes, so no third check shard.
+- **Morale and retention (1).** `morale.target_base` 56 (median 62.3 steady, 60.2 blitzscale). `resign.morale_floor` 40 to 50, so the floor stays about ten points below the median and underpaid misfits still leave more (`test_underpaid_misfits_lose_morale_and_resign_more`: 17 to 17 at 56 and 40; 19 to 17 at 50). Executive retention 8/10. The worked examples of §9 and §10 keep 50 and 40, and their tests use them, as M7a did for `resign.base_bp`.
+- **Poaching (2, formula change approved).** `player_target` draws among the top 30% by CA without a pending approach, weighted by CA with current seat holders ×`rivals.poach.seat_holder_weight` (0.4), on stream `poach` key `(new approach id, 1)` through the stream's one call site `poaching.poach_draw` (the answer keeps `(approach id,)`; ADR-0013's table updated). Before, it was always the single highest-CA employee, so any rise in approach frequency fell on the executives. `rivals.poach.leave_penalty` −0.5 to −0.3 brings acceptance in the fast-growth script to 14% (7% without) at 4.00 approaches a year; `poach_gain` stays 0.007 (0.005 and 0.006 pushed the approaches over 4 a year). New target 15.7.6 (`tst/balance/m10d.py`, `tests/balance/test_m10d_balance.py`): 0.58 (steady) and 1.05 (blitzscale) staff a year lost to rivals with 30+ staff. `test_rival_replay` moved from seed 7 to seed 3 (seed 7 saw no approach in its 24 turns once targets are drawn). §15.8's Priya example keeps −0.5.
+- **Strategy balance (3).** With C and D, blitzscale succeeds on 10/10 but ends at 8–12% ownership, far behind steady; the frugal strategy was within a few percent of steady. The ARR multiple now weighs growth more (`4 + 4 g` to `2.5 + 5.5 g`): T2 steady 6, frugal 4. §14 worked example updated (9.112, $16.49M).
+- **Expansion (2).** Rivals enter regions more readily (`geo.region_entry.unserved` 0.6, `cooldown_turns` 6) and localization is slower and dearer (6 months, $80,000): 3.45x to 2.65x; then Europe 0.55 and East Asia 0.45 of North America's demand (approved): 2.18x with every home arm alive. §19.5's table and worked examples updated; the geo tests follow the new values.
+- **Covenants (3).** Every breach was on the venture debt signed against the seed, as blitzscale spent to zero before its Series A; `covenant_burn_months` barely moved it. `debt.venture.max_of_round_bp` 3000 to 5000 carries it nearer the A: 80% to 60% of seeds breach (band 20–60%). §20.6's example keeps 30%.
+- **Crises (6).** Raising `breach_chance` and `outage_chance` (0.004 to 0.008, 0.003 to 0.006, as decided) did not move the rate alone (0.96–1.01): steady's teams keep security coverage near full and quality above the outage line. `events.crisis.key_exit_top_fraction` 0.10 to 0.20 counts more departures as key exits: 1.19 per 18 months.
+- **Near misses (4).** After the strategy change: M5 launches 1.02 (passes; no re-band), T7 startups 61% (re-banded to 20–65%), potential spotting at the approved >= 2.8.
+- **Founder energy (5).** Hands-on: a manual check for Reece's next playtest, no scripted target. Delegated: §24.5 target 4, 94% unspent.
+- **Golden snapshots** regenerated at each tuning commit (CHANGELOG).
+- Every value is in `docs/balance-targets.md` (M10d); every xfail is gone.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Late-round sizing (M15, product manager):** blitzscale ends with $1.5–2.9B idle cash because it takes the largest Series C/D offered regardless of need. Check whether investors should size late rounds to the company's burn and plan (e.g. at most 24 months of runway), and whether blitzscale should raise only what it can deploy.
+- **Narrow margins** (deterministic, so they hold, but small changes may tip them): poaching approaches 4.00 a year (cap 4), steady's staff lost 0.58 (floor 0.5), executive retention 8/10, T2 steady 6 (cap 6), covenants 60% (cap 60%).
+- **S2 varies on CI** (18.0 to 34.2 worker-minutes for the same work); if it drifts toward 43, a dedicated runner or a wall-clock measure would be steadier.
+- **Hands-on founder energy** needs Reece's playtest verdict; a hands-on script could make it measurable.
