@@ -1,0 +1,104 @@
+# Executive events (formulas.md 24.3, M10c): a seat holder with authority asks for something,
+# or two executives clash. Their choices carry modifiers (23.2). Shares are fractions of the
+# severity's caps (16.3).
+templates:
+  - id: exec_cto_research
+    category: executive
+    trigger: exec_cto
+    severities: [minor, major]
+    weight: 1.0
+    title: "{person} wants a research budget"
+    body: >-
+      {person} thinks the engineering team is spending all its time on today's features and
+      none on what comes next. They are asking for a budget to explore, and a little patience.
+    choices:
+      - key: A
+        label: "Fund it"
+        effects:
+          - { type: cash_delta, target: company, share: -0.3 }
+          - { type: modifier, target: company, share: 0.6, stat: quality_cap, months: 12 }
+      - key: B
+        label: "Not this year"
+        effects:
+          - { type: morale_delta, target: person, share: -0.3 }
+
+  - id: exec_cro_price
+    category: executive
+    trigger: exec_cro
+    severities: [minor, major]
+    weight: 1.0
+    title: "{person} wants to rework the sales playbook"
+    body: >-
+      {person} says the sellers are spending too long on deals that never close. They want a
+      month to retrain the team on a tighter playbook and new pricing conversations.
+    choices:
+      - key: A
+        label: "Give them the month"
+        effects:
+          - { type: modifier, target: company, share: 0.5, stat: seller_capacity, months: 6 }
+          - { type: energy_delta, target: founder, share: -0.2 }
+      - key: B
+        label: "Keep selling as we are"
+        effects:
+          - { type: morale_delta, target: person, share: -0.2 }
+
+  - id: exec_cmo_campaign
+    category: executive
+    trigger: exec_cmo
+    severities: [minor, major]
+    weight: 1.0
+    title: "{person} proposes a campaign"
+    body: >-
+      {person} has a campaign ready: a launch of {product}'s story in the trade press and at
+      the big conferences. It costs money now and pays back, they say, in awareness.
+    choices:
+      - key: A
+        label: "Run the campaign"
+        effects:
+          - { type: cash_delta, target: company, share: -0.4 }
+          - { type: modifier, target: company, share: 0.8, stat: awareness, months: 6 }
+      - key: B
+        label: "Not now"
+        effects:
+          - { type: morale_delta, target: person, share: -0.2 }
+
+  - id: exec_cfo_runway
+    category: executive
+    trigger: exec_cfo
+    severities: [minor, major]
+    weight: 1.0
+    title: "{person} is worried about runway"
+    body: >-
+      {person} has run the numbers again: at this burn the company has {months} months of
+      cash. They want spending cut now, before the board asks why it wasn't.
+    choices:
+      - key: A
+        label: "Cut discretionary spending"
+        effects:
+          - { type: cash_delta, target: company, share: 0.3 }
+          - { type: modifier, target: company, share: -0.4, stat: morale_target, months: 6 }
+      - key: B
+        label: "Noted; we are investing for growth"
+        effects:
+          - { type: board_confidence, target: board, share: -0.2 }
+
+  - id: exec_clash
+    category: executive
+    trigger: exec_clash
+    severities: [minor, major]
+    weight: 1.0
+    title: "{person} and {other} are at odds"
+    body: >-
+      Your executives {person} and {other} have stopped agreeing on anything, and their teams
+      have noticed. Decisions that need both of them are stalling.
+    choices:
+      - key: A
+        label: "Sit them down together"
+        effects:
+          - { type: relationship_delta, target: pair, share: 0.6 }
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Let them sort it out"
+        effects:
+          - { type: relationship_delta, target: pair, share: -0.3 }
+          - { type: modifier, target: company, share: -0.3, stat: builder_output, months: 3 }

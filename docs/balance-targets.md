@@ -213,3 +213,16 @@ The nightly guards run alone after M10b's feel fixes (event modifiers, crises, n
 | §23.7 target 1: critical events per 18 months with 20+ staff (steady, 10 seeds) | - | 1.08; shortest gap 6 months | pass |
 | §23.7 target 2: every template choice has an effect or says do nothing; 28 benefit templates carry a modifier | - | data tests | pass |
 | Ten-year run through the API | pass | pass | pass |
+
+### M10c (2026-11-02)
+
+The §24.5 targets (formulas.md §24.5), printed by `tools/m10c_targets.py` and checked nightly by `tests/balance/test_m10c_balance.py`. From each seed's steady game at its first month of stage 3 (M8's fork), five senior seat holders (CTO, CRO, CMO, COO, CFO) are added and appointed, then 36 months in three arms: `steady` (score 15, no authority, the steady script), `delegated` (score 15, every seat given authority at its defaults; the founder only approves proposals and refills a seat that falls vacant, as the steady script does) and `delegated_8` (the same at score 8). 10 seeds, all reach stage 3 (turns 78-89).
+
+| Target | Value | Result |
+| --- | --- | --- |
+| 1. Delegated within 15% of steady (median ARR) | 0.92; no live product below its maintenance line in any month | pass |
+| 2. Score 15 against score 8 (median ARR) | 1.29 | pass |
+| 3. No runaway hiring: caps; support coverage within 0.1 of the target | 0 runs over a builder or seller cap; mean monthly shortfall at most 0.009 (worst single month 0.27, seed 8: two support people left in one month and the COO's plan filled in two) | pass |
+| 4. Founder energy unspent on average | 94% | pass |
+
+One balance default was set: the CRO's default seller cap `exec_authority.defaults.cro.headcount_cap` is 20 (10 held delegated ARR at 0.83 of steady; every delegated run sat at the cap). No other balance key changed; golden snapshots are unchanged (no script gives authority).

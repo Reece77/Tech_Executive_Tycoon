@@ -571,6 +571,12 @@ events: # event director, effect caps, storylines (formulas.md 16; ADR-0005, ADR
     board_unhappy: { below: 50, span: 15 } # average board confidence points (tuned in M6.9 from 40)
     early_days: { strength: 0.4 } # no live product yet: the founder's early-days templates (M7a, E3 in docs/balance-targets.md)
     quiet_month: { strength: 0.2 }
+    # M10c (24.3): an executive with authority asks for something; two executives clash
+    exec_cto: { strength: 0.3 } # the CTO wants a research budget
+    exec_cro: { strength: 0.3 } # the CRO wants a price change
+    exec_cmo: { strength: 0.3 } # the CMO proposes a campaign
+    exec_cfo: { strength: 0.4 } # the CFO warns about runway (runway below the CFO's threshold)
+    exec_clash: { at_most: -10, span: 30 } # relationship points between two seat holders: (at_most - rel) / span
   caps: # largest effect per choice by severity [minor, major, critical] (16.3)
     morale_delta: [3, 10, 20] # morale points (minor tuned in M6.9 from 5)
     relationship_delta: [10, 20, 40] # relationship points
@@ -628,6 +634,26 @@ exec_seats:
     cpo: { label: CPO, effect: 0.15, churn: 0.15, weights: { product: 0.45, design: 0.15, strategy: 0.20, leadership: 0.20 } } # feature points gained x (1 + 0.15 e); base churn x (1 - 0.15 e)
     cmo: { label: CMO, effect: 0.20, brand: 0.10, awareness: 0.20, weights: { marketing: 0.45, communication: 0.20, strategy: 0.20, leadership: 0.15 } } # marketing points x (1 + 0.20 e); B* x (1 + 0.10 e); awareness x (1 + 0.20 e)
     cro: { label: CRO, effect: 0.20, pricing: 0.10, weights: { sales: 0.40, negotiation: 0.25, leadership: 0.20, communication: 0.15 } } # seller capacity x (1 + 0.20 e); p_ref x (1 + 0.10 e) in sales segments
+
+exec_authority: # executives with authority (formulas.md 24, M10c)
+  change_energy: 2 # founder energy to give, change or withdraw one seat's authority (24.1)
+  energy_per_month: 100 # an executive's own energy a month for acting (24.1)
+  quality: { base: 0.55, per_score: 0.03, min: 0.6, max: 0.98 } # P(the right rule) = clamp(base + per_score x s, min, max), s the true seat score (24.2)
+  mistake_budget_off: 0.20 # a mistaken budget split is off by this fraction (24.2)
+  report_months: 3 # a quarterly report from each seat holder (24.3)
+  plan_hires: 2 # people one hiring plan opened by an executive asks for at most
+  memory_months: 12 # months of decisions kept for reports and the panel
+  move_margin: 1.25 # a product gives up a builder only above this x its full speed (CTO)
+  price_step_pct: 5 # % the CRO moves a sales-led price in one month, within its band
+  lease_seats: 25 # seats in a lease the COO proposes
+  repay_share: 0.5 # share of the cash above the cash threshold the CFO repays early
+  loan_share: 0.5 # share of the limit the CFO proposes to borrow
+  defaults: # guardrails a seat starts with when given authority (24.1); the player changes them
+    cto: { headcount_cap: 30, max_salary_ratio_bp: 11000, protected_units: [] } # builders; offer x ask in bp
+    cro: { headcount_cap: 20, price_band_pct: 10, max_salary_ratio_bp: 11000 } # sellers; +- % of the player's last price
+    cmo: { marketing_pct_of_revenue: 15 } # % of last month's revenue spent on marketing in total
+    coo: { coverage_target: 1.0, lease_approval_rent_cents: 0, max_salary_ratio_bp: 11000 } # support coverage; rent above which a lease is only proposed
+    cfo: { runway_months: 9, repay_above_months: 24 } # months of burn: propose a round or loan below the first; repay debt early with cash above the second
 
 # --- Capital and macro (formulas.md section 20, M10 lane B) -------------------------------
 macro:

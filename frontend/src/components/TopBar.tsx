@@ -10,6 +10,7 @@ interface Props {
   summary?: FinanceSummary;
   advancing: boolean;
   blocking?: number; // open major and critical events: they block Continue (23.1, M10b)
+  proposals?: number; // executives' proposals waiting: they block Continue too (24.1, M10c)
   eventsHref?: string; // where they are answered
   away?: boolean; // a holiday is running (M7b)
   onContinue: () => void;
@@ -107,6 +108,7 @@ export function TopBar({
   summary,
   advancing,
   blocking = 0,
+  proposals = 0,
   eventsHref,
   away = false,
   onContinue,
@@ -114,8 +116,12 @@ export function TopBar({
   onCoo,
 }: Props) {
   const ended = overview !== undefined && overview.game_state !== 'active';
-  const blocked = blocking > 0;
-  const blockText = `Answer ${blocking} event${blocking === 1 ? '' : 's'} first`;
+  const blocked = blocking + proposals > 0;
+  const parts = [
+    blocking ? `${blocking} event${blocking === 1 ? '' : 's'}` : '',
+    proposals ? `${proposals} proposal${proposals === 1 ? '' : 's'}` : '',
+  ].filter(Boolean);
+  const blockText = `Answer ${parts.join(' and ')} first`;
   return (
     <header
       style={{

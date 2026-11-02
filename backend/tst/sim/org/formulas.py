@@ -10,7 +10,7 @@ import math
 from collections.abc import Mapping
 from typing import Literal
 
-from tst.sim.data_models import ExecSeatsBalance, HiringBalance, OrgBalance
+from tst.sim.data_models import ExecQuality, ExecSeatsBalance, HiringBalance, OrgBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.scale import ATTR_NEUTRAL
 
@@ -157,3 +157,9 @@ def allocate_shared(
 def support_churn(c: float, k_coo: float, org: OrgBalance) -> float:
     """A pool's products churn x (1 + 0.4 (1 - c) k_COO) (18.4)."""
     return 1 + org.support_churn * (1 - c) * k_coo
+
+
+def decision_quality(score: float, quality: ExecQuality) -> float:
+    """P(an executive with authority takes the right rule this month) =
+    clamp(base + per_score x s, min, max), s the true seat score (24.2, M10c)."""
+    return max(quality.min, min(quality.max, quality.base + quality.per_score * score))

@@ -13,21 +13,27 @@ from tst.api.finance_views import _label
 from tst.api.schemas.saves import SupportTileOut
 from tst.api.schemas.scaleup import (
     AppointCandidateOut,
+    AuthorityOut,
     CrossDivisionOut,
+    DecisionOut,
     DivisionColumnOut,
     DivisionOut,
     DivisionPeriodOut,
     DivisionStatementsOut,
+    ProposalOut,
+    ReportOut,
     ScaleupOut,
     SeatCandidatesOut,
     SeatOut,
     SupportPoolOut,
 )
 from tst.api.views import person_name, role_label
+from tst.db.models import InboxItemRow
 from tst.loader import LoadedData
+from tst.sim.actions.authority import default_authority
 from tst.sim.actions.scaleup import appoint_problem, exec_salary_cents
-from tst.sim.calendar import MONTHS_PER_YEAR
-from tst.sim.data_models import AccountType, Balance
+from tst.sim.calendar import MONTHS_PER_YEAR, format_turn
+from tst.sim.data_models import AUTHORITY_SEATS, AccountType, Balance
 from tst.sim.finance import statements as fs
 from tst.sim.finance.divisions import DivisionLines, DivisionStatement, division_report
 from tst.sim.hiring.formulas import energy_cost
@@ -82,6 +88,35 @@ def effect_pct(seat: str, e: float, b: Balance) -> float:
     return round(coefficient * e * PCT, 1)
 
 
+PROPOSALS_SHOWN = 10  # tunable-exempt: the panel's list length
+DECISION_MONTHS = 3  # tunable-exempt: the panel shows the last quarter's decisions
+
+ACTS_ON = {  # 24.1, in words
+    "cto": "Moves builders to products below their maintenance line and opens builder hiring plans",
+    "cro": "Opens seller hiring plans when sales capacity limits a segment; moves sales-led "
+    "prices within its band",
+    "cmo": "Splits the marketing budget across products toward the best brand gaps",
+    "coo": "Opens support hiring plans to keep coverage at target; proposes leases for crowded "
+    "offices",
+    "cfo": "Proposes a round or a loan when runway is short; repays debt early when cash is "
+    "plentiful",
+}
+
+
+def _authority_out(
+    state: GameState, company_id: int, seat: str, data: LoadedData
+) -> AuthorityOut | None:
+    if seat not in AUTHORITY_SEATS:
+        return None
+    a = default_authority(state, company_id, seat, data.balance)
+    return AuthorityOut(
+        enabled=a.enabled,
+        guardrails={k: list(v) if isinstance(v, tuple) else v for k, v in a.guardrails},
+        since_label=format_turn(a.since_turn) if a.enabled else None,
+        acts_on=ACTS_ON[seat],
+    )
+
+
 def _seat_out(state: GameState, company_id: int, seat: str, data: LoadedData) -> SeatOut:
     b = data.balance
     holder = state.seat_holder(company_id, seat)
@@ -96,6 +131,7 @@ def _seat_out(state: GameState, company_id: int, seat: str, data: LoadedData) ->
     else:
         holder = None
     return SeatOut(
+        authority=_authority_out(state, company_id, seat, data),
         seat=seat,
         label=b.exec_seats.seats[seat].label,
         effect_label=EFFECT_LABELS[seat],
@@ -109,8 +145,31 @@ def _seat_out(state: GameState, company_id: int, seat: str, data: LoadedData) ->
     )
 
 
+def reports_out(rows: Sequence[InboxItemRow]) -> list[ReportOut]:
+    """The newest report of each seat (24.3), in seat order; `rows` newest first."""
+    latest: dict[str, InboxItemRow] = {}
+    for row in rows:
+        seat = row.title.split(" report:", 1)[0].lower()
+        if seat in SEATS and row.link_id is not None:
+            latest.setdefault(seat, row)
+    return [
+        ReportOut(
+            seat=seat,
+            person_id=int(r.link_id or 0),
+            name=r.title.split(": ", 1)[-1],
+            date_label=format_turn(r.turn),
+            text=r.body,
+        )
+        for seat in SEATS
+        if (r := latest.get(seat)) is not None
+    ]
+
+
 def scaleup_out(
-    state: GameState, data: LoadedData, last_profit: dict[int, int] | None = None
+    state: GameState,
+    data: LoadedData,
+    last_profit: dict[int, int] | None = None,
+    reports: list[ReportOut] | None = None,
 ) -> ScaleupOut:
     b = data.balance
     company = state.player
@@ -204,6 +263,34 @@ def scaleup_out(
         cross_division=cross,
         seats=[_seat_out(state, company.id, seat, data) for seat in SEATS],
         note=NOTE,
+        proposals=[
+            ProposalOut(
+                proposal_id=p.id,
+                seat=p.seat,
+                person_id=p.person_id,
+                name=person_name(state.person(p.person_id)),
+                date_label=format_turn(p.turn),
+                kind=p.kind,
+                text=p.text,
+                status=p.status,
+            )
+            for p in sorted(
+                (p for p in state.proposals if p.company_id == company.id),
+                key=lambda p: (p.status != "pending", -p.id),
+            )[:PROPOSALS_SHOWN]
+        ],
+        decisions=[
+            DecisionOut(
+                seat=d.seat,
+                name=person_name(state.person(d.person_id)),
+                date_label=format_turn(d.turn),
+                text=d.text,
+                mistake=d.mistake,
+            )
+            for d in sorted(state.exec_decisions, key=lambda d: -d.id)
+            if d.company_id == company.id and d.turn > state.turn - DECISION_MONTHS
+        ],
+        reports=reports or [],
     )
 
 

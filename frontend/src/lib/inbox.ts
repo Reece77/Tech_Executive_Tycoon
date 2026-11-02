@@ -73,6 +73,10 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   // M10b: the month's event choices and their modifiers (23.2)
   choices_month: { label: 'Event', group: 'company' },
   retained: { label: 'Notice', group: 'people' }, // a counter-offer kept them (23.3)
+  // M10c: executives with authority (24)
+  exec_report: { label: 'Delegate', group: 'company' },
+  exec_decisions: { label: 'Delegate', group: 'company' },
+  exec_proposal: { label: 'Delegate', group: 'company' },
 };
 
 /** The Finance tab a finance message opens (M4b). */

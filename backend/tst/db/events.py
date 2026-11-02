@@ -29,6 +29,7 @@ from tst.loader import LoadedData
 from tst.sim.events.models import GameEvent
 from tst.sim.finance.statements import projected_runway
 from tst.sim.ledger import CASH, account_balance
+from tst.sim.org.reports import EXEC_REPORT
 from tst.sim.state import GameState, with_event
 
 log = logging.getLogger(__name__)
@@ -126,6 +127,17 @@ def _copy(session: Session, state: GameState, source: Path) -> GameState:
     return state
 
 
+def _report_row(session: Session, text: LLMTextRow) -> InboxItemRow | None:
+    """The inbox item an executive's report request came from (24.3)."""
+    return session.scalars(
+        select(InboxItemRow).where(
+            InboxItemRow.template == EXEC_REPORT,
+            InboxItemRow.turn == text.turn,
+            InboxItemRow.link_id == text.ref_id,
+        )
+    ).first()
+
+
 def write_pending(
     path: Path,
     data: LoadedData,
@@ -168,10 +180,14 @@ def write_pending(
             for text in session.scalars(
                 select(LLMTextRow).where(LLMTextRow.status == "pending").order_by(LLMTextRow.id)
             ):
+                report = _report_row(session, text) if text.kind == EXEC_REPORT else None
+                given = (report.body, [report.title, report.body]) if report else None
                 text.text, text.source = write_text(
-                    state, text.kind, text.turn, text.ref_id, writer
+                    state, text.kind, text.turn, text.ref_id, writer, given
                 )
                 text.status = "written"
+                if report is not None and text.source != "template":
+                    report.body = text.text  # the inbox shows the written report (24.3)
             now = datetime.now(UTC).isoformat(timespec="seconds")
             session.add_all(
                 LLMCallLogRow(

@@ -38,6 +38,7 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents
+from tst.sim.org.authority import run_executives
 from tst.sim.org.delegates import run_delegates
 from tst.sim.org.divisions import division_months
 from tst.sim.org.relationships import relationships_month
@@ -57,7 +58,7 @@ from tst.sim.rivals.startups import (
 )
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
-from tst.sim.state import GameState, with_company, with_person_state
+from tst.sim.state import GameState, with_company, with_person_state, with_proposal
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,11 +122,23 @@ class TurnContext:
 
 type Phase = Callable[[TurnContext], TurnContext]
 
+EXEC_REPORT = "exec_report"  # M10c (24.3): a seat holder's quarterly report
 BOARD_MEETING = "board_meeting"  # inbox templates that ask for read-only text (16.8)
 RESIGNED = "resigned"
 
 
 # --- Phases, in ADR-0006 order -------------------------------------------------------------
+
+
+def blocking_message(events: int, proposals: int) -> str:
+    """'Answer 2 events first', 'Answer 1 proposal first', 'Answer 1 event and 1 proposal
+    first' (23.1; 24.1)."""
+    parts = []
+    if events:
+        parts.append(f"{events} event{'s' if events != 1 else ''}")
+    if proposals:
+        parts.append(f"{proposals} proposal{'s' if proposals != 1 else ''}")
+    return f"Answer {' and '.join(parts)} first"
 
 
 def apply_player_decisions(ctx: TurnContext) -> TurnContext:
@@ -136,6 +149,11 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     The macro indicators for the month come first of all (M10, 20.1).
     """
     ctx = replace(ctx, state=macro.macro_phase(ctx.state, ctx.rng, ctx.balance, ctx.data))
+    # Proposals left unanswered (Holiday, scripts) lapse at the next Continue (24.1, M10c).
+    lapsed = ctx.state
+    for proposal in ctx.state.pending_proposals(ctx.state.player.id):
+        lapsed = with_proposal(lapsed, replace(proposal, status="lapsed", resolved_turn=ctx.turn))
+    ctx = replace(ctx, state=lapsed)
     state, event_entries, event_logs = auto_resolve(ctx.state, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*event_entries).log(*event_logs)
     state, ended = phases.end_notices(ctx.state)
@@ -158,6 +176,12 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
     )
     ctx = replace(ctx, state=state, delegate_actions=taken).post(*entries).log(*logs)
+    # Executives with authority act after the hiring delegates (M10c, 24.1).
+    state, entries, logs, acted = run_executives(
+        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
+    )
+    ctx = replace(ctx, state=state, delegate_actions=ctx.delegate_actions + acted)
+    ctx = ctx.post(*entries).log(*logs)
     state, moves, approached, raised = rival_month(
         ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
     )
@@ -378,7 +402,7 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
 
 def text_requests(logs: tuple[LogItem, ...], player: int, turn: int) -> tuple[TextRequest, ...]:
     """16.8: headlines every month; minutes after a quarterly board meeting; an exit line
-    for each resignation, all for the player."""
+    for each resignation; each executive's quarterly report (24.3), all for the player."""
     out = [TextRequest("headlines", player, turn)]
     mine = [i for i in logs if i.company_id == player]
     if any(i.template == BOARD_MEETING for i in mine):
@@ -387,6 +411,11 @@ def text_requests(logs: tuple[LogItem, ...], player: int, turn: int) -> tuple[Te
         TextRequest("exit_line", player, turn, i.link_id)
         for i in mine
         if i.template == RESIGNED and i.link_id is not None
+    ]
+    out += [
+        TextRequest("exec_report", player, turn, i.link_id)
+        for i in mine
+        if i.template == EXEC_REPORT and i.link_id is not None
     ]
     return tuple(out)
 
@@ -434,10 +463,12 @@ def advance_turn(
                 f"answer the critical event {event.title or event.template_id!r} first", event.id
             )
     blocking = blocking_events(state) if block_major else ()
-    if blocking:
-        n = len(blocking)
+    proposals = state.pending_proposals(state.player.id) if block_major else ()
+    if blocking or proposals:
         raise EventsOpenError(
-            f"Answer {n} event{'s' if n != 1 else ''} first", tuple(e.id for e in blocking)
+            blocking_message(len(blocking), len(proposals)),
+            tuple(e.id for e in blocking),
+            tuple(p.id for p in proposals),
         )
     ctx = TurnContext(
         state=state,

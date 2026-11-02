@@ -219,3 +219,8 @@ terms:
   product.team_strength: "The team's builder output a month against two lines: below the maintenance line quality falls; at full speed quality and features grow as fast as they can."
   org.structure_guide: "What departments, teams and divisions do, with your company's numbers: span of control, managers, the layer tax, cross-division work, support coverage and executive effects."
   role.why_hire: "What the role does on a product and when hiring one helps."
+  # --- M10c: executives with authority (formulas.md 24) -------------------------------------
+  exec.authority: "Lets a seat holder run their function each month within the guardrails you set, through the same actions you would take, with their own energy. Better executives make better calls; a misstep is a plausible but worse choice, named in their decisions."
+  exec.guardrails: "Limits on what an executive with authority may do: a headcount cap and pay ceiling, a price band, marketing as a share of revenue, a support coverage target, or the runway that triggers a funding proposal."
+  exec.proposal: "Something an executive wants you to approve: a funding round, a loan or an office lease. Pending proposals block Continue until you approve or decline them; approving takes the action as you."
+  exec.report: "Each seat holder's quarterly report: their function's numbers, what they did with their authority, and one or two concerns."

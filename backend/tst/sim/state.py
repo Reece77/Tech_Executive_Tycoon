@@ -29,7 +29,15 @@ from tst.sim.geo.models import (
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
-from tst.sim.org.models import ExecSeat, HiringPlan, OrgUnit, WorkPolicy
+from tst.sim.org.models import (
+    Authority,
+    ExecDecision,
+    ExecSeat,
+    HiringPlan,
+    OrgUnit,
+    Proposal,
+    WorkPolicy,
+)
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
@@ -142,6 +150,10 @@ class GameState:
     queued: tuple[QueuedEvent, ...] = ()  # follow-ups not yet shown, by id (M6, 16.3)
     modifiers: tuple[Modifier, ...] = ()  # event modifiers still running, by id (M10b, 23.2)
     exec_seats: tuple[ExecSeat, ...] = ()  # seats ever filled, by (company_id, seat) (M8, 18.3)
+    # M10c (24): authority by (company_id, seat); decisions of the last months and proposals
+    authorities: tuple[Authority, ...] = ()
+    exec_decisions: tuple[ExecDecision, ...] = ()
+    proposals: tuple[Proposal, ...] = ()
     macro: MacroMonth | None = None  # the indicators phase 1 last set (M10, 20.1)
     loans: tuple[Loan, ...] = ()  # every loan, sorted by id (M10, 20.3)
     # M9 (19.2, 19.5): open offices by id; other regions' markets by (category, segment,
@@ -162,7 +174,13 @@ class GameState:
         raise KeyError(company_id)
 
     def person(self, person_id: int) -> Person:
-        for person in self.people:
+        """By binary search: `people` is kept sorted by id (`with_person`); the scan after a
+        miss only matters for a hand-built, unsorted tuple."""
+        people = self.people
+        i = bisect_left(people, person_id, key=_person_id)
+        if i < len(people) and people[i].id == person_id:
+            return people[i]
+        for person in people:
             if person.id == person_id:
                 return person
         raise KeyError(person_id)
@@ -348,6 +366,17 @@ class GameState:
     def event(self, event_id: int) -> GameEvent | None:
         return next((e for e in self.events if e.id == event_id), None)
 
+    def authority(self, company_id: int, seat: str) -> Authority | None:
+        """A seat's authority record (M10c, 24.1); None if never given."""
+        return next(
+            (a for a in self.authorities if a.company_id == company_id and a.seat == seat), None
+        )
+
+    def pending_proposals(self, company_id: int) -> tuple[Proposal, ...]:
+        return tuple(
+            p for p in self.proposals if p.company_id == company_id and p.status == "pending"
+        )
+
     def open_events(self, company_id: int) -> tuple[GameEvent, ...]:
         """Events shown this month or earlier that are not answered yet."""
         return tuple(
@@ -424,6 +453,10 @@ def company_cash(balances: LedgerBalances, company_id: int) -> Cents:
 
 
 # --- Updating tuples by key (each returns a new GameState) -----------------------------------
+
+
+def _person_id(person: Person) -> int:
+    return person.id
 
 
 def _upsert[T](items: tuple[T, ...], item: T, key: Callable[[T], Any]) -> tuple[T, ...]:
@@ -550,6 +583,21 @@ def with_marketing_split(
         state,
         marketing_splits=tuple(sorted((*rest, *shares), key=lambda m: (m.product_id, m.region))),
     )
+
+
+def with_authority(state: GameState, authority: Authority) -> GameState:
+    return replace(
+        state,
+        authorities=_upsert(state.authorities, authority, lambda a: (a.company_id, a.seat)),
+    )
+
+
+def with_exec_decision(state: GameState, decision: ExecDecision) -> GameState:
+    return replace(state, exec_decisions=_upsert(state.exec_decisions, decision, lambda d: d.id))
+
+
+def with_proposal(state: GameState, proposal: Proposal) -> GameState:
+    return replace(state, proposals=_upsert(state.proposals, proposal, lambda p: p.id))
 
 
 def with_modifier(state: GameState, modifier: Modifier) -> GameState:

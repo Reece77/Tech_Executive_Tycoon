@@ -49,11 +49,13 @@ def speaker(state: GameState, person_id: int | None, data: GameData) -> str:
     return f"{full_name(state.person(person_id))}, {role}"
 
 
-def offline_reply(issues: Sequence[Issue]) -> str:
-    """The reply offline, over budget or after an error: the briefing still helps."""
+def offline_reply(issues: Sequence[Issue], report: str | None = None) -> str:
+    """The reply offline, over budget or after an error: the briefing still helps, and the
+    named COO's last quarterly report when there is one (24.3)."""
+    head = f"{OFFLINE} From my last report: {report}" if report else OFFLINE
     if not issues:
-        return f"{OFFLINE} Nothing urgent on my list, though."
-    return OFFLINE + " Here is what is on my list:\n" + "\n".join(f"- {i.text}" for i in issues)
+        return f"{head} Nothing urgent on my list, though."
+    return head + " Here is what is on my list:\n" + "\n".join(f"- {i.text}" for i in issues)
 
 
 def coo_prompt(
@@ -64,6 +66,7 @@ def coo_prompt(
     question: str,
     words: int,
     data: GameData,
+    report: str | None = None,
 ) -> tuple[str, str]:
     """(system, user) for one question. People are described as the 16.5 allowlist does."""
     company = state.player
@@ -96,8 +99,9 @@ def coo_prompt(
     briefing = "\n".join(f"- {i.text}" for i in issues) or "- Nothing urgent."
     who = speaker(state, person_id, data)
     system = SYSTEM.format(speaker=who, company=company.name, words=words)
+    mine = f"Your last quarterly report (answer from it first):\n{report}\n\n" if report else ""
     user = (
-        f"Briefing:\n{briefing}\n\nContext:\n{json.dumps(context, indent=1)}\n\n"
+        f"{mine}Briefing:\n{briefing}\n\nContext:\n{json.dumps(context, indent=1)}\n\n"
         f"The founder asks: {question}"
     )
     return system, user

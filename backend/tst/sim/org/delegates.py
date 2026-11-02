@@ -103,6 +103,12 @@ def still_needed(state: GameState, plan: HiringPlan) -> int:
     return plan.target - plan.hired - pending
 
 
+def delegate_draws(rng: RngFactory, turn: int, actor: int, n: int) -> np.random.Generator:
+    """Stream `delegate` keyed (person_id, n): the one call site for delegates and executives
+    with authority (ADR-0013, ADR-0015; 24.1)."""
+    return rng.stream(turn, "delegate", actor, n)
+
+
 @dataclass(slots=True)
 class _Run:
     """Accumulates one phase 2: the state, running balances, and everything to report."""
@@ -127,7 +133,7 @@ class _Run:
         turn = self.state.turn
 
         def draws() -> np.random.Generator:
-            return self.rng.stream(turn, "delegate", actor, n)
+            return delegate_draws(self.rng, turn, actor, n)
 
         try:
             out = apply_action(
@@ -274,3 +280,6 @@ def run_delegates(
             )
         )
     return run.state, tuple(run.entries), tuple(run.logs), tuple(run.taken)
+
+
+DelegateRun = _Run  # executives with authority act through the same runner (M10c, 24.1)

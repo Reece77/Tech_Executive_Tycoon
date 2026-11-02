@@ -326,6 +326,7 @@ def test_org_meta(make_api: Any) -> None:
         "appoint_executive": 5,  # M8
         "remove_executive": 5,
         "set_shared_services": 2,
+        "set_authority": 2,  # M10c (24.1)
     }
     assert (meta["department_unlock_headcount"], meta["department_unlock_stage"]) == (10, 2)
     assert meta["policies"] == ["office", "remote"] and meta["max_ratio_bp"] == 12_000

@@ -15,6 +15,7 @@ from tst.sim.events.formulas import below_strength, clamp01
 from tst.sim.finance.board import average_confidence
 from tst.sim.finance.statements import projected_runway
 from tst.sim.money import Cents
+from tst.sim.org.executives import acting_seats
 from tst.sim.org.morale import market_mid_for
 from tst.sim.org.rules import org_view
 from tst.sim.people.models import current_ability
@@ -233,6 +234,8 @@ def triggers(
     if s is not None:
         hits.append(TriggerHit("board_unhappy", s))
 
+    hits += _executive_hits(state, balance, runway)
+
     own = state.company_products(cid)
     if not any(p.status == "live" for p in own):  # early_days (M7a): nothing to sell yet
         building = next((p.id for p in own if p.status == "in_development"), None)
@@ -240,6 +243,30 @@ def triggers(
 
     if not hits:
         hits.append(TriggerHit("quiet_month", _fixed(t["quiet_month"])))
+    return hits
+
+
+def _executive_hits(state: GameState, balance: Balance, runway: int | None) -> list[TriggerHit]:
+    """M10c (24.3): each seat holder with authority can raise their function's event; the
+    CFO warns when runway is below their own guardrail; two seat holders clash when their
+    relationship is low."""
+    t = balance.events.trigger
+    cid = state.player.id
+    hits: list[TriggerHit] = []
+    acting = acting_seats(state, cid)
+    for a, holder in acting:
+        if a.seat in ("cto", "cro", "cmo"):
+            key = f"exec_{a.seat}"
+            hits.append(TriggerHit(key, _fixed(t[key]), (holder,)))
+        elif a.seat == "cfo" and runway is not None and runway < a.number("runway_months"):
+            hits.append(TriggerHit("exec_cfo", _fixed(t["exec_cfo"]), (holder,), months=runway))
+    holders = {h for h in (state.seat_holder(cid, s.seat) for s in state.exec_seats) if h}
+    holders = {h for h in holders if (e := state.employment_of(h)) and e.company_id == cid}
+    clash = t["exec_clash"]
+    for r in state.relationships:
+        if r.a in holders and r.b in holders and r.value <= float(clash.at_most or 0):
+            s = clamp01((float(clash.at_most or 0) - r.value) / float(clash.span or 1))
+            hits.append(TriggerHit("exec_clash", s, (r.a, r.b)))
     return hits
 
 

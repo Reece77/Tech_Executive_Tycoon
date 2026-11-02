@@ -89,7 +89,12 @@ def create_app() -> FastAPI:
             status.HTTP_400_BAD_REQUEST,
         )
         if isinstance(exc, EventsOpenError):
-            body = ErrorOut(code=exc.code, message=exc.message, event_ids=list(exc.event_ids))
+            body = ErrorOut(
+                code=exc.code,
+                message=exc.message,
+                event_ids=list(exc.event_ids),
+                proposal_ids=list(exc.proposal_ids),
+            )
             return JSONResponse(status_code=status_code, content=body.model_dump())
         if isinstance(exc, CriticalEventOpenError):
             body = ErrorOut(code=exc.code, message=exc.message, event_id=exc.event_id)

@@ -46,6 +46,20 @@ class CrossDivisionOut(BaseModel):
     fix: str = Field(description="The move that removes the factor")
 
 
+class AuthorityOut(BaseModel):
+    """A seat's authority (24.1, M10c): on or off and its guardrails. Never the decision
+    quality or the holder's score (24.4)."""
+
+    enabled: bool
+    guardrails: dict[str, float | list[int]] = Field(
+        description="headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct "
+        "(CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents "
+        "(COO), runway_months and repay_above_months (CFO)"
+    )
+    since_label: str | None = Field(description="Given since; null while off")
+    acts_on: str = Field(description="What the seat does with authority")
+
+
 class SeatOut(BaseModel):
     seat: str = Field(description="coo | cfo | cto | cpo | cmo | cro")
     label: str
@@ -58,6 +72,42 @@ class SeatOut(BaseModel):
         "tax and support shortfall"
     )
     vacancy_penalty_pct: float | None = Field(description="The penalty while vacant (stage 3+)")
+    authority: AuthorityOut | None = Field(
+        description="Authority over the seat's function (M10c, 24.1); null for the CPO"
+    )
+
+
+class ProposalOut(BaseModel):
+    """An executive's proposal (24.1, M10c): pending ones block Continue."""
+
+    proposal_id: int
+    seat: str
+    person_id: int
+    name: str
+    date_label: str
+    kind: str = Field(description="round | loan | lease")
+    text: str
+    status: str = Field(description="pending | approved | declined | lapsed")
+
+
+class DecisionOut(BaseModel):
+    """Something an executive with authority did this month or lately (24.1-24.2)."""
+
+    seat: str
+    name: str
+    date_label: str
+    text: str
+    mistake: bool = Field(description="A plausible but worse choice (24.2)")
+
+
+class ReportOut(BaseModel):
+    """A seat holder's latest quarterly report (24.3), as the inbox shows it."""
+
+    seat: str
+    person_id: int
+    name: str
+    date_label: str
+    text: str
 
 
 class ScaleupOut(BaseModel):
@@ -71,6 +121,11 @@ class ScaleupOut(BaseModel):
     cross_division: list[CrossDivisionOut]
     seats: list[SeatOut]
     note: str
+    proposals: list[ProposalOut] = Field(description="Pending first, then the latest (M10c)")
+    decisions: list[DecisionOut] = Field(
+        description="Executives' decisions of the last 3 months, newest first (M10c)"
+    )
+    reports: list[ReportOut] = Field(description="Each seat's latest quarterly report (M10c, 24.3)")
 
 
 class ScaleupActionOut(BaseModel):
@@ -85,6 +140,14 @@ class SharedServicesIn(BaseModel):
 
 class ProductDivisionIn(BaseModel):
     division_id: int | None = Field(description="Null makes the product corporate")
+
+
+class AuthorityIn(BaseModel):
+    """Give, change or withdraw a seat's authority (24.1); guardrails left out keep their
+    current or default values."""
+
+    enabled: bool
+    guardrails: dict[str, float | list[int]] = Field(default_factory=dict)
 
 
 class AppointIn(BaseModel):

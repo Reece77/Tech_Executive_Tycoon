@@ -7,7 +7,7 @@ validates it with these models. Unknown keys and out-of-range values fail valida
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -854,6 +854,40 @@ class CrisisBalance(_Frozen):
     outage_min_customers: float = Field(ge=0)
 
 
+AUTHORITY_SEATS = ("cto", "cro", "cmo", "coo", "cfo")  # seats that take authority (24.1)
+
+
+class ExecQuality(_Frozen):
+    base: float = Field(ge=0, le=1)
+    per_score: float = Field(ge=0)
+    min: float = Field(ge=0, le=1)
+    max: float = Field(ge=0, le=1)
+
+
+class ExecAuthorityBalance(_Frozen):
+    """Executives with authority (formulas.md 24, M10c)."""
+
+    change_energy: int = Field(ge=0)
+    energy_per_month: int = Field(gt=0)
+    quality: ExecQuality
+    mistake_budget_off: float = Field(ge=0, le=1)
+    report_months: int = Field(gt=0)
+    plan_hires: int = Field(gt=0)
+    memory_months: int = Field(gt=0)
+    move_margin: float = Field(ge=1)
+    price_step_pct: float = Field(ge=0)
+    lease_seats: int = Field(gt=0)
+    repay_share: float = Field(ge=0, le=1)
+    loan_share: float = Field(gt=0, le=1)
+    defaults: dict[str, dict[str, Any]]
+
+    @model_validator(mode="after")
+    def _check(self) -> ExecAuthorityBalance:
+        if sorted(self.defaults) != sorted(AUTHORITY_SEATS):
+            raise ValueError(f"exec_authority.defaults must cover {list(AUTHORITY_SEATS)}")
+        return self
+
+
 class EventsBalance(_Frozen):
     """Event director, effect caps and storylines (formulas.md 16)."""
 
@@ -1058,6 +1092,7 @@ class Balance(_Frozen):
     difficulty: dict[str, DifficultyBalance]
     backup: BackupBalance
     holiday: HolidayBalance  # M7b (formulas.md 17.1)
+    exec_authority: ExecAuthorityBalance  # M10c (formulas.md 24)
     inbox: InboxBalance  # M10b (formulas.md 23.1)
     coo: CooBalance  # M7b (formulas.md 17.3)
     people: PeopleBalance
@@ -1629,6 +1664,9 @@ INBOX_TEMPLATE_KEYS = (
     "product_understaffed",  # M10b (23.4): builders, but too few to hold quality
     "choices_month",  # M10b (23.2): the month's event choices and modifiers
     "retained",  # M10b (23.3): a counter-offer kept someone
+    "exec_report",  # M10c (24.3)
+    "exec_decisions",  # M10c (24.1)
+    "exec_proposal",  # M10c (24.1)
     # M4a (formulas.md 14)
     "safe_filled",
     "safe_declined",

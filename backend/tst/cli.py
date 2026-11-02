@@ -1557,8 +1557,9 @@ def _scaleup(path: Path, state: GameState, data: LoadedData) -> Any:
     with repository.open_session(path) as session:
         lines = repository.division_lines(session, state.player.id)
         months = repository.division_months(session, state.player.id)
+        reports = scaleup_views.reports_out(repository.exec_reports(session, state.player.id))
     profit = scaleup_views.last_month_profit(lines, months, state, data)
-    return scaleup_views.scaleup_out(state, data, profit)
+    return scaleup_views.scaleup_out(state, data, profit, reports)
 
 
 @app.command()
@@ -1641,6 +1642,59 @@ def appoint(
         f"{who.first_name} {who.last_name} is now {seat.upper()} (exec level, {paid} a year)"
     )
     typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command()
+def authority(
+    save: SaveOpt,
+    seat: Annotated[str, typer.Option(help="cto|cro|cmo|coo|cfo")],
+    on: Annotated[bool, typer.Option("--on/--off", help="Give or withdraw authority")] = True,
+    guard: Annotated[
+        list[str] | None,
+        typer.Option(help="A guardrail as key=value, e.g. headcount_cap=20 (repeatable)"),
+    ] = None,
+) -> None:
+    """Give a filled seat authority over its function within guardrails, or withdraw it; the
+    executive then acts each month in phase 2 (24.1). Energy 2."""
+    from tst.sim.actions.authority import SetAuthority
+
+    path, data, state = _game(save)
+    rails: list[tuple[str, int | float | tuple[int, ...]]] = []
+    for g in guard or []:
+        key, _, value = g.partition("=")
+        if not value:
+            raise _fail(f"a guardrail is key=value, not {g!r}")
+        if key == "protected_units":
+            rails.append((key, tuple(int(x) for x in value.split(",") if x)))
+        else:
+            try:
+                number = float(value)
+            except ValueError as exc:
+                raise _fail(f"{key} takes a number, not {value!r}") from exc
+            rails.append((key, int(number) if number.is_integer() else number))
+    result = _run(path, data, SetAuthority(_actor(state), seat.lower(), on, tuple(rails)))
+    a = result.new_state.authority(result.new_state.player.id, seat.lower())
+    shown = ", ".join(f"{k}={v}" for k, v in a.guardrails) if a else ""
+    typer.echo(f"{seat.upper()} authority {'on' if on else 'off'}: {shown}")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command()
+def reports(save: SaveOpt) -> None:
+    """Each seat's latest quarterly report, then this quarter's decisions and the proposals
+    (24.3, 24.4)."""
+    path, data, state = _game(save)
+    out = _scaleup(path, state, data)
+    if not out.reports:
+        typer.echo("No reports yet: filled seats report at the end of each quarter.")
+    for r in out.reports:
+        typer.echo(f"{r.seat.upper()} {r.name}, {r.date_label}:")
+        typer.echo(f"  {r.text}")
+    for d in out.decisions:
+        slip = " (a misstep)" if d.mistake else ""
+        typer.echo(f"{d.date_label}  {d.name} ({d.seat.upper()}) {d.text}{slip}")
+    for p in out.proposals:
+        typer.echo(f"Proposal {p.proposal_id} [{p.status}] {p.name}: {p.text}")
 
 
 # --- Debt and macro (M10, formulas.md 20) ------------------------------------------------------

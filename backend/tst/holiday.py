@@ -118,6 +118,8 @@ def check_start(path: Path, data: LoadedData, months: int, stop: str) -> None:
         state = repository.read_state(session)
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
+    for proposal in state.pending_proposals(state.player.id):  # M10c (24.1)
+        raise CriticalEventOpenError(f"answer the proposal: {proposal.text}", 0)
     for event in blocking_events(state):  # major ones too (23.1, M10b)
         raise CriticalEventOpenError(
             f"answer the {event.severity} event {event.title or event.template_id!r} first",
@@ -194,6 +196,9 @@ def _reason(
         r.company_id == player and STOP_LEVELS.index(r.severity) >= rank
         for r in result.event_requests
     ):
+        return "event"
+    major = STOP_LEVELS.index("major")
+    if rank <= major and state.pending_proposals(player):  # a proposal is major (24.1)
         return "event"
     runway = end.runway_months
     if runway is not None and (runway < RUNWAY_FLOOR_MONTHS or (runway < limit and not warned)):

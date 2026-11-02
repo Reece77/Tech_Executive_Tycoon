@@ -31,7 +31,7 @@ def test_builders_to_add() -> None:
     assert builders_to_add(1.1, 1, 1.5) == 1
     assert builders_to_add(1.0, 2, 6.0) == 10  # 0.5 a builder, 5 more output
     assert builders_to_add(2.0, 1, 1.5) == 0
-    assert builders_to_add(0.0, 0, 1.5) == 1
+    assert builders_to_add(0.0, 0, 1.5) == 2  # nobody: builders of typical output 1
 
 
 def test_team_strength_names_both_lines(loaded: LoadedData) -> None:

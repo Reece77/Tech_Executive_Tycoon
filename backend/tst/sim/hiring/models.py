@@ -111,6 +111,8 @@ class NextIds:
     loan: int = 1  # M10: loaded as max(id) + 1 of the loan table, like the M6 counters
     office: int = 1  # M9: loaded as max(id) + 1 of the office table, like M6's counters
     modifier: int = 1  # M10b: loaded as max(id) + 1 of the event_modifier table
+    exec_decision: int = 1  # M10c: loaded as max(id) + 1 of the exec_decision table
+    proposal: int = 1  # M10c: loaded as max(id) + 1 of the exec_proposal table
 
     def take(
         self,
@@ -139,6 +141,8 @@ class NextIds:
             "loan",
             "office",
             "modifier",
+            "exec_decision",
+            "proposal",
         ],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)

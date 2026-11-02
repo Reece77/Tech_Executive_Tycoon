@@ -97,6 +97,9 @@ INBOX_CATEGORY: dict[str, str] = {
     "office_closed": "people",
     "region_launched": "products",
     "region_live": "products",
+    # M10c: executives' quarterly reports and proposals (24.1, 24.3)
+    "exec_report": "people",
+    "exec_proposal": "finance",
 }
 PRODUCT_KINDS = frozenset(
     {
@@ -247,6 +250,11 @@ def _describe(
         "take_loan": f"Signed {str(p.get('instrument', 'a loan')).replace('_', ' ')} for "
         f"{format_money(int(p.get('amount_cents', 0)))}",
         "repay_loan": "Repaid a loan early",
+        # M10c (24.1): authority and the answers to executives' proposals
+        "set_authority": f"{'Gave' if p.get('enabled') else 'Withdrew'} the "
+        f"{str(p.get('seat', '')).upper()}'s authority",
+        "answer_proposal": f"{'Approved' if p.get('approve') else 'Declined'} an executive's "
+        "proposal",
     }
     text = texts.get(kind, kind.replace("_", " ").capitalize())
     category = (

@@ -95,7 +95,14 @@ export type ScaleupAction =
   | { action: 'services'; unit_id: number; services: 'central' | 'embedded' }
   | { action: 'product_division'; product_id: number; division_id: number | null }
   | { action: 'appoint'; seat: string; person_id: number; salary_cents?: number }
-  | { action: 'remove'; seat: string };
+  | { action: 'remove'; seat: string }
+  | { action: 'proposal'; proposal_id: number; approve: boolean } // M10c (24.1)
+  | {
+      action: 'authority';
+      seat: string;
+      enabled: boolean;
+      guardrails?: Record<string, number | number[]>;
+    }; // M10c (24.1)
 
 /** One product action, as the product screens build it; maps to its route. */
 export type ProductAction =
@@ -1534,6 +1541,25 @@ async function applyScaleup(saveId: string, a: ScaleupAction) {
       return unwrap(
         await api.POST('/api/saves/{save_id}/scaleup/seats/{seat}/remove', {
           params: { path: { save_id: saveId, seat: a.seat } },
+        }),
+      );
+    case 'proposal':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/scaleup/proposals/{proposal_id}/{answer}', {
+          params: {
+            path: {
+              save_id: saveId,
+              proposal_id: a.proposal_id,
+              answer: a.approve ? 'approve' : 'decline',
+            },
+          },
+        }),
+      );
+    case 'authority':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/scaleup/seats/{seat}/authority', {
+          params: { path: { save_id: saveId, seat: a.seat } },
+          body: { enabled: a.enabled, guardrails: a.guardrails ?? {} },
         }),
       );
   }

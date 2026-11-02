@@ -200,10 +200,16 @@ def fallback_text(
 
 
 def write_text(
-    state: GameState, kind: str, turn: int, ref_id: int | None, writer: Writer
+    state: GameState,
+    kind: str,
+    turn: int,
+    ref_id: int | None,
+    writer: Writer,
+    given: tuple[str, list[str]] | None = None,
 ) -> tuple[str, str]:
-    """(text, source) for one read-only text."""
-    fallback, facts = fallback_text(state, kind, turn, ref_id)
+    """(text, source) for one read-only text. `given` is (template text, facts) when the turn
+    already wrote it (an executive's report, 24.3)."""
+    fallback, facts = given or fallback_text(state, kind, turn, ref_id)
     if not writer.live or not writer.can_spend():
         return fallback, "template"
     system, user = text_prompt(kind, facts, state.player.name)

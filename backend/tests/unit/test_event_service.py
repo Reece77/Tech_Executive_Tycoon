@@ -336,6 +336,23 @@ def test_no_prompt_contains_a_hidden_value(loaded: LoadedData) -> None:
     for who in (PRIYA, None):
         system, user = coo_prompt(state, who, issues, kpis, "Who is best?", 200, loaded.game_data)
         texts.append(system + user)
+    # M10c (24.3): Priya in every seat, with her quarterly report, its prompt, and Ask my COO
+    # answering from it.
+    from tst.events.context import text_prompt
+    from tst.sim.org.models import SEATS, ExecSeat
+    from tst.sim.org.reports import report_text
+    from tst.sim.state import reach_stage, with_company, with_exec_seat
+
+    staged = with_company(state, reach_stage(state.player, 3, 0))
+    for seat in SEATS:
+        seated = with_exec_seat(staged, ExecSeat(1, seat, PRIYA, 0))
+        report = report_text(seated, seat, PRIYA, 1_000_000, loaded.balance, loaded.game_data)
+        system, user = text_prompt("exec_report", [report], state.player.name)
+        texts.append(system + user)
+        system, user = coo_prompt(
+            seated, PRIYA, issues, kpis, "How are we doing?", 200, loaded.game_data, report
+        )
+        texts.append(system + user)
     blob = "\n".join(texts)
     for planted in (
         "187.6",

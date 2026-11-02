@@ -14,6 +14,14 @@ from typing import Any
 
 import numpy as np
 
+from tst.sim.actions.authority import (
+    AnswerProposal,
+    SetAuthority,
+    close_proposal,
+    pending_proposal,
+    proposal_action,
+    set_authority,
+)
 from tst.sim.actions.events import ChooseEvent, choose_event
 from tst.sim.actions.finance import (
     AcceptBridge,
@@ -51,6 +59,7 @@ from tst.sim.actions.hiring import (
     OpenSearch,
     ReferenceCheck,
     WithdrawOffer,
+    acting_company,
     check_candidate,
     close_search,
     fire,
@@ -136,6 +145,8 @@ type Action = (
     | FinanceAction
     | ChooseEvent
     | ScaleupAction
+    | SetAuthority
+    | AnswerProposal
     | GeoAction
 )
 
@@ -188,6 +199,8 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "launch_in_region": LaunchInRegion,
     "set_regional_price": SetRegionalPrice,
     "set_marketing_split": SetMarketingSplit,
+    "set_authority": SetAuthority,
+    "answer_proposal": AnswerProposal,
 }
 
 __all__ = [
@@ -197,6 +210,7 @@ __all__ = [
     "Action",
     "ActionResult",
     "AddSegment",
+    "AnswerProposal",
     "AppointExecutive",
     "AssignUnit",
     "CancelProduct",
@@ -228,6 +242,7 @@ __all__ = [
     "RepayLoan",
     "Scout",
     "ScoutSearch",
+    "SetAuthority",
     "SetLeader",
     "SetMarketing",
     "SetMarketingSplit",
@@ -280,6 +295,23 @@ def apply_action(
         def draws() -> np.random.Generator:
             return rng.stream(turn, "actions", seq)
 
+    if isinstance(action, AnswerProposal):  # 24.1 (M10c): the proposed action, as the actor
+        company = acting_company(state, action.actor_id)
+        proposal = pending_proposal(state, company, action.proposal_id)
+        if not action.approve:
+            return ActionResult(close_proposal(state, proposal, "declined"), (), ())
+        inner = apply_action(
+            state,
+            proposal_action(proposal, action.actor_id),  # type: ignore[arg-type]
+            rng,
+            balance,
+            data,
+            ledger_balances,
+            seq=seq,
+            draws=draws,
+        )
+        closed = close_proposal(inner.new_state, proposal, "approved")
+        return ActionResult(closed, inner.ledger_entries, inner.log_items)
     match action:
         case OpenSearch():
             out = open_search(state, action, balance, data, ledger_balances)
@@ -383,6 +415,8 @@ def apply_action(
             out = set_regional_price(state, action, balance, data)
         case SetMarketingSplit():
             out = set_marketing_split(state, action, balance, data)
+        case SetAuthority():
+            out = set_authority(state, action, balance, data)
     new_state = out.state
     actor = new_state.employment_of(action.actor_id) or state.employment_of(action.actor_id)
     if actor is not None:  # people live where they work (M9, 19.2)

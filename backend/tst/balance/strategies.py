@@ -78,13 +78,13 @@ SEAT_ROLES: Final = {
 }
 
 
-def appoint_executives(game: Game) -> None:
+def appoint_executives(game: Game, seats: tuple[str, ...] = SEATS) -> None:
     """Fill vacant seats from stage 3 (see SEAT_ROLES)."""
     state = game.state
     b = game.loaded.balance
     if not seats_in_play(state, PLAYER, b):
         return
-    for seat in SEATS:
+    for seat in seats:
         state = game.state
         if state.seat_holder(PLAYER, seat) is not None:
             continue

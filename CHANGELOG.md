@@ -4,6 +4,15 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M10c Executives with authority (formulas.md §24):
+  - Authority per seat (CTO, CRO, CMO, COO, CFO) with guardrails (headcount caps, pay ceiling, protected units, price band, marketing share of revenue, coverage target, runway and repayment thresholds); `set_authority` (energy 2); the Executive team panel's authority dialog; migration `0027_exec_authority`.
+  - Executives act each month in phase 2 through the player's actions with their own energy; the right rule with probability clamp(0.55 + 0.03 s, 0.6, 0.98) from the true seat score, else a plausible worse choice named as a misstep. Decisions show on the panel and in "Your executives this month".
+  - Proposals: the CFO's round or loan, the COO's lease; Approve or Decline on the panel; pending ones block Continue ("Answer N events and M proposals first").
+  - Quarterly reports from every filled seat (template, or the LLM within the budget), executive events (research budget, sales playbook, campaign, runway warning, clash), Ask my COO answered by the named COO from their report.
+  - History entries, glossary terms, `tst authority --seat --on/--off --guard key=value`, `tst reports`.
+  - §24.5 targets: delegated/steady 0.92, score 15/8 1.29, no cap exceeded, mean coverage shortfall 0.009, founder energy 94% unspent (`tools/m10c_targets.py`, nightly). The CRO's default seller cap is 20. Golden snapshots unchanged.
+  - Speed: `GameState.person` by binary search; the tests' `answer_critical` loads the state only when a critical event is open (the product turn-time test 613 to 434 ms locally).
+
 - M10b Feel fixes from Reece's playtest (formulas.md §23):
   - Regional prices show on the product and in a fresh Regions dialog (the engine charged them; nothing showed them).
   - Inbox: answered events archive themselves; read, unbookmarked items three months old archive at month end; a star keeps one (migration `0024_inbox_bookmark`). Open major and critical events block Continue (409 `events_open`; "Answer N events first"); Holiday still answers majors below its stop level.

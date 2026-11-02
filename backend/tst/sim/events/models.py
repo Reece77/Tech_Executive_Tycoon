@@ -159,9 +159,10 @@ class EventRequest:
 @dataclass(frozen=True, slots=True)
 class TextRequest:
     """Read-only LLM text (16.8): monthly headlines, quarterly board minutes, an
-    exit-interview line. `ref_id` is the person for an exit line."""
+    exit-interview line, an executive's quarterly report (M10c, 24.3). `ref_id` is the person
+    for an exit line or a report."""
 
-    kind: Literal["headlines", "minutes", "exit_line"]
+    kind: Literal["headlines", "minutes", "exit_line", "exec_report"]
     company_id: int
     turn: int
     ref_id: int | None = None
