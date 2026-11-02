@@ -34,6 +34,7 @@ from tst.sim.actions import (
     SignContract,
     StaffFacility,
 )
+from tst.sim.facilities import compute
 from tst.sim.state import GameState
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["facilities"])
@@ -90,9 +91,9 @@ def preview_build(
     save_id: str,
     settings: SettingsDep,
     data: DataDep,
-    kind: Annotated[str, Query()],
-    region: Annotated[str, Query()],
-    units: Annotated[int, Query()],
+    kind: Annotated[str | None, Query(description="Default: the first kind")] = None,
+    region: Annotated[str | None, Query(description="Default: the home region")] = None,
+    units: Annotated[int | None, Query(description="Default: the smallest size")] = None,
     contract_id: Annotated[int | None, Query()] = None,
 ) -> BuildPreviewOut:
     """Capex, build time, shortage delay and staff for a build (the Build dialog)."""
@@ -100,6 +101,9 @@ def preview_build(
     with repository.read_session(path) as session:
         state = repository.read_state(session)
         balances = repository.current_balances(session, state.turn)
+    kind = kind or next(iter(data.balance.facility.kinds))
+    region = region or compute.home_region_of(state, data.balance, data.game_data)
+    units = units or data.balance.facility.sizes[0]
     if kind not in data.balance.facility.kinds:
         from tst.sim.errors import FacilityRuleError
 
