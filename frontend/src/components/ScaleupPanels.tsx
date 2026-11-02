@@ -123,6 +123,66 @@ function Body({ saveId, org, s }: { saveId: string; org: Org; s: Scaleup }) {
         <p className="tst-muted" style={{ fontSize: 12 }}>
           {s.note}
         </p>
+        {s.proposals.length > 0 && (
+          <div data-testid="exec-proposals">
+            <h4 style={{ margin: '12px 0 4px' }}>Proposals</h4>
+            {s.proposals.map((p) => (
+              <div className="tst-row" key={p.proposal_id} data-testid="exec-proposal">
+                <span style={{ flex: 1 }}>
+                  <strong>{p.name}</strong> ({p.seat.toUpperCase()}), {p.date_label}: {p.text}
+                </span>
+                {p.status === 'pending' ? (
+                  <span style={{ display: 'flex', gap: 4 }}>
+                    <Button
+                      size="compact-xs"
+                      data-testid="proposal-approve"
+                      loading={act.isPending}
+                      onClick={() =>
+                        act.mutate({
+                          action: 'proposal',
+                          proposal_id: p.proposal_id,
+                          approve: true,
+                        })
+                      }
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="compact-xs"
+                      variant="default"
+                      data-testid="proposal-decline"
+                      loading={act.isPending}
+                      onClick={() =>
+                        act.mutate({
+                          action: 'proposal',
+                          proposal_id: p.proposal_id,
+                          approve: false,
+                        })
+                      }
+                    >
+                      Decline
+                    </Button>
+                  </span>
+                ) : (
+                  <span className="tst-muted">{p.status}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        {s.decisions.length > 0 && (
+          <div data-testid="exec-decisions">
+            <h4 style={{ margin: '12px 0 4px' }}>Recent decisions</h4>
+            {s.decisions.map((d, i) => (
+              <div className="tst-row" key={i} data-testid="exec-decision" style={{ fontSize: 13 }}>
+                <span style={{ flex: 1 }}>
+                  {d.date_label} · {d.name} ({d.seat.toUpperCase()}): {d.text}
+                </span>
+                {d.mistake && <span style={{ color: 'var(--tst-warn)' }}>misstep</span>}
+              </div>
+            ))}
+          </div>
+        )}
       </Panel>
       {seat !== null && <AppointDialog saveId={saveId} seat={seat} onClose={() => setSeat(null)} />}
       {authority && (

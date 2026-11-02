@@ -96,6 +96,7 @@ export type ScaleupAction =
   | { action: 'product_division'; product_id: number; division_id: number | null }
   | { action: 'appoint'; seat: string; person_id: number; salary_cents?: number }
   | { action: 'remove'; seat: string }
+  | { action: 'proposal'; proposal_id: number; approve: boolean } // M10c (24.1)
   | {
       action: 'authority';
       seat: string;
@@ -1540,6 +1541,18 @@ async function applyScaleup(saveId: string, a: ScaleupAction) {
       return unwrap(
         await api.POST('/api/saves/{save_id}/scaleup/seats/{seat}/remove', {
           params: { path: { save_id: saveId, seat: a.seat } },
+        }),
+      );
+    case 'proposal':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/scaleup/proposals/{proposal_id}/{answer}', {
+          params: {
+            path: {
+              save_id: saveId,
+              proposal_id: a.proposal_id,
+              answer: a.approve ? 'approve' : 'decline',
+            },
+          },
         }),
       );
     case 'authority':

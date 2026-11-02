@@ -15,10 +15,12 @@ from tst.api.schemas.scaleup import (
     AppointCandidateOut,
     AuthorityOut,
     CrossDivisionOut,
+    DecisionOut,
     DivisionColumnOut,
     DivisionOut,
     DivisionPeriodOut,
     DivisionStatementsOut,
+    ProposalOut,
     ScaleupOut,
     SeatCandidatesOut,
     SeatOut,
@@ -83,6 +85,9 @@ def effect_pct(seat: str, e: float, b: Balance) -> float:
         return round(-coefficient * e * PCT, 1)
     return round(coefficient * e * PCT, 1)
 
+
+PROPOSALS_SHOWN = 10  # tunable-exempt: the panel's list length
+DECISION_MONTHS = 3  # tunable-exempt: the panel shows the last quarter's decisions
 
 ACTS_ON = {  # 24.1, in words
     "cto": "Moves builders to products below their maintenance line and opens builder hiring plans",
@@ -233,6 +238,33 @@ def scaleup_out(
         cross_division=cross,
         seats=[_seat_out(state, company.id, seat, data) for seat in SEATS],
         note=NOTE,
+        proposals=[
+            ProposalOut(
+                proposal_id=p.id,
+                seat=p.seat,
+                person_id=p.person_id,
+                name=person_name(state.person(p.person_id)),
+                date_label=format_turn(p.turn),
+                kind=p.kind,
+                text=p.text,
+                status=p.status,
+            )
+            for p in sorted(
+                (p for p in state.proposals if p.company_id == company.id),
+                key=lambda p: (p.status != "pending", -p.id),
+            )[:PROPOSALS_SHOWN]
+        ],
+        decisions=[
+            DecisionOut(
+                seat=d.seat,
+                name=person_name(state.person(d.person_id)),
+                date_label=format_turn(d.turn),
+                text=d.text,
+                mistake=d.mistake,
+            )
+            for d in sorted(state.exec_decisions, key=lambda d: -d.id)
+            if d.company_id == company.id and d.turn > state.turn - DECISION_MONTHS
+        ],
     )
 
 

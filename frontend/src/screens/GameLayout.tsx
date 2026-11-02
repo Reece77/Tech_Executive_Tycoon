@@ -24,7 +24,8 @@ export function GameLayout() {
   // Open major and critical events block Continue until answered (23.1, M10b); a critical
   // one also opens as a modal (M6).
   const blocking = events.data?.blocking_event_ids.length ?? 0;
-  const blocked = blocking > 0;
+  const proposals = events.data?.blocking_proposal_ids.length ?? 0; // M10c (24.1)
+  const blocked = blocking + proposals > 0;
   const holiday = useHoliday(saveId);
   const away = holiday.data?.status === 'running';
   const [holidayOpen, setHolidayOpen] = useState(false);
@@ -61,7 +62,8 @@ export function GameLayout() {
         summary={summary.data}
         advancing={advance.isPending}
         blocking={blocking}
-        eventsHref={`/game/${saveId}/inbox`}
+        proposals={proposals}
+        eventsHref={proposals && !blocking ? `/game/${saveId}/org` : `/game/${saveId}/inbox`}
         away={away}
         onContinue={onContinue}
         onHoliday={onHoliday}

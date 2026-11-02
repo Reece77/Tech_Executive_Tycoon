@@ -77,6 +77,29 @@ class SeatOut(BaseModel):
     )
 
 
+class ProposalOut(BaseModel):
+    """An executive's proposal (24.1, M10c): pending ones block Continue."""
+
+    proposal_id: int
+    seat: str
+    person_id: int
+    name: str
+    date_label: str
+    kind: str = Field(description="round | loan | lease")
+    text: str
+    status: str = Field(description="pending | approved | declined | lapsed")
+
+
+class DecisionOut(BaseModel):
+    """Something an executive with authority did this month or lately (24.1-24.2)."""
+
+    seat: str
+    name: str
+    date_label: str
+    text: str
+    mistake: bool = Field(description="A plausible but worse choice (24.2)")
+
+
 class ScaleupOut(BaseModel):
     stage: int
     in_play: bool = Field(description="Stage 3 or later: divisions, seats and support apply")
@@ -88,6 +111,10 @@ class ScaleupOut(BaseModel):
     cross_division: list[CrossDivisionOut]
     seats: list[SeatOut]
     note: str
+    proposals: list[ProposalOut] = Field(description="Pending first, then the latest (M10c)")
+    decisions: list[DecisionOut] = Field(
+        description="Executives' decisions of the last 3 months, newest first (M10c)"
+    )
 
 
 class ScaleupActionOut(BaseModel):

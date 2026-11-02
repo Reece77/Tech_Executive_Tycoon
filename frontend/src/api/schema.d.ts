@@ -2071,6 +2071,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/scaleup/proposals/{proposal_id}/{answer}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Proposal
+         * @description Approve (the proposed round, loan or lease is taken at once) or decline (24.1).
+         */
+        post: operations["answerProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/scaleup/seats/{seat}/remove": {
         parameters: {
             query?: never;
@@ -3374,6 +3394,25 @@ export interface components {
              */
             fix: string;
         };
+        /**
+         * DecisionOut
+         * @description Something an executive with authority did this month or lately (24.1-24.2).
+         */
+        DecisionOut: {
+            /** Seat */
+            seat: string;
+            /** Name */
+            name: string;
+            /** Date Label */
+            date_label: string;
+            /** Text */
+            text: string;
+            /**
+             * Mistake
+             * @description A plausible but worse choice (24.2)
+             */
+            mistake: boolean;
+        };
         /** DilutionLineOut */
         DilutionLineOut: {
             /** Holder */
@@ -3656,6 +3695,11 @@ export interface components {
              */
             event_ids?: number[] | null;
             /**
+             * Proposal Ids
+             * @description events_open: executives' proposals to answer (M10c)
+             */
+            proposal_ids?: number[] | null;
+            /**
              * Retryable
              * @description True: refused before anything was written, so the same request may be sent again (save_busy; M8r). Absent: do not retry automatically.
              */
@@ -3752,6 +3796,11 @@ export interface components {
              * @description Every open major and critical event: each blocks Continue (23.1, M10b)
              */
             blocking_event_ids: number[];
+            /**
+             * Blocking Proposal Ids
+             * @description Executives' proposals waiting for an answer: each blocks Continue (24.1)
+             */
+            blocking_proposal_ids: number[];
             /** Open */
             open: components["schemas"]["EventOut"][];
             /**
@@ -6698,6 +6747,34 @@ export interface components {
             /** Net Result Cents */
             net_result_cents: number;
         };
+        /**
+         * ProposalOut
+         * @description An executive's proposal (24.1, M10c): pending ones block Continue.
+         */
+        ProposalOut: {
+            /** Proposal Id */
+            proposal_id: number;
+            /** Seat */
+            seat: string;
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Kind
+             * @description round | loan | lease
+             */
+            kind: string;
+            /** Text */
+            text: string;
+            /**
+             * Status
+             * @description pending | approved | declined | lapsed
+             */
+            status: string;
+        };
         /** RaiseIn */
         RaiseIn: {
             /** Salary Cents */
@@ -7311,6 +7388,16 @@ export interface components {
             seats: components["schemas"]["SeatOut"][];
             /** Note */
             note: string;
+            /**
+             * Proposals
+             * @description Pending first, then the latest (M10c)
+             */
+            proposals: components["schemas"]["ProposalOut"][];
+            /**
+             * Decisions
+             * @description Executives' decisions of the last 3 months, newest first (M10c)
+             */
+            decisions: components["schemas"]["DecisionOut"][];
         };
         /** ScenarioOut */
         ScenarioOut: {
@@ -14947,6 +15034,66 @@ export interface operations {
                 "application/json": components["schemas"]["AuthorityIn"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    answerProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                proposal_id: number;
+                answer: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

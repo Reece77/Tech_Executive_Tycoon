@@ -9565,6 +9565,97 @@
         }
       }
     },
+    "/api/saves/{save_id}/scaleup/proposals/{proposal_id}/{answer}": {
+      "post": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Answer Proposal",
+        "description": "Approve (the proposed round, loan or lease is taken at once) or decline (24.1).",
+        "operationId": "answerProposal",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Proposal Id"
+            }
+          },
+          {
+            "name": "answer",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Answer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/scaleup/seats/{seat}/remove": {
       "post": {
         "tags": [
@@ -13042,6 +13133,41 @@
         ],
         "title": "CrossDivisionOut"
       },
+      "DecisionOut": {
+        "properties": {
+          "seat": {
+            "type": "string",
+            "title": "Seat"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "mistake": {
+            "type": "boolean",
+            "title": "Mistake",
+            "description": "A plausible but worse choice (24.2)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seat",
+          "name",
+          "date_label",
+          "text",
+          "mistake"
+        ],
+        "title": "DecisionOut",
+        "description": "Something an executive with authority did this month or lately (24.1-24.2)."
+      },
       "DilutionLineOut": {
         "properties": {
           "holder": {
@@ -13696,6 +13822,21 @@
             "title": "Event Ids",
             "description": "events_open: the major and critical events to answer (M10b)"
           },
+          "proposal_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposal Ids",
+            "description": "events_open: executives' proposals to answer (M10c)"
+          },
           "retryable": {
             "anyOf": [
               {
@@ -13930,6 +14071,14 @@
             "title": "Blocking Event Ids",
             "description": "Every open major and critical event: each blocks Continue (23.1, M10b)"
           },
+          "blocking_proposal_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Blocking Proposal Ids",
+            "description": "Executives' proposals waiting for an answer: each blocks Continue (24.1)"
+          },
           "open": {
             "items": {
               "$ref": "#/components/schemas/EventOut"
@@ -13960,6 +14109,7 @@
           "to_answer",
           "blocking_event_id",
           "blocking_event_ids",
+          "blocking_proposal_ids",
           "open",
           "recent",
           "ai_spend_cents",
@@ -21002,6 +21152,57 @@
         ],
         "title": "ProfitAndLossOut"
       },
+      "ProposalOut": {
+        "properties": {
+          "proposal_id": {
+            "type": "integer",
+            "title": "Proposal Id"
+          },
+          "seat": {
+            "type": "string",
+            "title": "Seat"
+          },
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "round | loan | lease"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "pending | approved | declined | lapsed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "proposal_id",
+          "seat",
+          "person_id",
+          "name",
+          "date_label",
+          "kind",
+          "text",
+          "status"
+        ],
+        "title": "ProposalOut",
+        "description": "An executive's proposal (24.1, M10c): pending ones block Continue."
+      },
       "RaiseIn": {
         "properties": {
           "salary_cents": {
@@ -22446,6 +22647,22 @@
           "note": {
             "type": "string",
             "title": "Note"
+          },
+          "proposals": {
+            "items": {
+              "$ref": "#/components/schemas/ProposalOut"
+            },
+            "type": "array",
+            "title": "Proposals",
+            "description": "Pending first, then the latest (M10c)"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionOut"
+            },
+            "type": "array",
+            "title": "Decisions",
+            "description": "Executives' decisions of the last 3 months, newest first (M10c)"
           }
         },
         "type": "object",
@@ -22459,7 +22676,9 @@
           "support_rule",
           "cross_division",
           "seats",
-          "note"
+          "note",
+          "proposals",
+          "decisions"
         ],
         "title": "ScaleupOut"
       },

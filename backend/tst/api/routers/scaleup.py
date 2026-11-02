@@ -35,7 +35,7 @@ from tst.sim.actions import (
     SetProductDivision,
     SetSharedServices,
 )
-from tst.sim.actions.authority import SetAuthority
+from tst.sim.actions.authority import AnswerProposal, SetAuthority
 from tst.sim.errors import InvalidActionError
 from tst.sim.org.models import SEATS
 from tst.sim.state import GameState
@@ -151,6 +151,23 @@ def set_authority(
         sorted((k, tuple(v) if isinstance(v, list) else v) for k, v in body.guardrails.items())
     )
     return _act(path, data, SetAuthority(founder, _seat(seat), body.enabled, guardrails))
+
+
+@router.post(
+    "/scaleup/proposals/{proposal_id}/{answer}",
+    response_model=ScaleupActionOut,
+    responses=ERRORS,
+    operation_id="answerProposal",
+)
+def answer_proposal(
+    save_id: str, proposal_id: int, answer: str, settings: SettingsDep, data: DataDep
+) -> ScaleupActionOut:
+    """Approve (the proposed round, loan or lease is taken at once) or decline (24.1)."""
+    if answer not in ("approve", "decline"):
+        raise InvalidActionError("answer approve or decline")
+    path = _path(settings, save_id)
+    founder = _founder_id(_state(path))
+    return _act(path, data, AnswerProposal(founder, proposal_id, answer == "approve"))
 
 
 @router.post(
