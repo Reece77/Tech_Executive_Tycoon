@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import itertools
+
 import pytest
 
 from tst.loader import LoadedData
@@ -80,7 +82,7 @@ def test_cumulative_depreciation_ends_at_capex() -> None:
     total = [ff.cumulative_depreciation_cents(capex, 500, 200, 10, 16, 48, t) for t in range(80)]
     assert total[9] == 0 and total[10] > 0
     assert total[-1] == capex
-    assert all(b >= a for a, b in zip(total, total[1:], strict=False))
+    assert all(b >= a for a, b in itertools.pairwise(total))
     paid = 0
     for month in range(9):
         paid += ff.capex_payment_cents(1000, 9, paid, month)

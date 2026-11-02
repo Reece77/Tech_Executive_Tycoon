@@ -39,8 +39,8 @@ from tst.sim.data_models import (
     SkillsFile,
     TagsFile,
 )
-from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
+from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.ledger import ENGINE_ACCOUNTS
 
 BALANCE_FILE = "balance.yaml"

@@ -12,6 +12,7 @@ wafer plants and fabs, and commodities.
 
 from __future__ import annotations
 
+import itertools
 import re
 from typing import Final
 
@@ -20,6 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 MONTH_RE: Final = re.compile(r"^(\d{4})-(\d{2})$")
 FIRST_YEAR: Final = 2010  # tunable-exempt: turn 0 is January 2010 (calendar definition)
 MONTHS: Final = 12  # tunable-exempt: calendar
+TOLERANCE: Final = 1e-9  # tunable-exempt: float tolerance
 
 
 class _Frozen(BaseModel):
@@ -95,7 +97,8 @@ class FacilityBalance(_Frozen):
 
     @model_validator(mode="after")
     def _check(self) -> FacilityBalance:
-        if abs(self.reliability_floor + self.reliability_skill - 1) > 1e-9:  # tunable-exempt: float tolerance
+        total = self.reliability_floor + self.reliability_skill
+        if abs(total - 1) > TOLERANCE:
             raise ValueError("reliability_floor + reliability_skill must be 1")
         return self
 
@@ -154,8 +157,8 @@ class ComputeBalance(_Frozen):
         for good in (self.indexed_good, self.plain_good):
             if good not in self.goods:
                 raise ValueError(f"compute good {good!r} is not in compute.goods")
-        for key, good in self.goods.items():
-            if good.spot_index not in ("flat", "ai"):
+        for key, spec in self.goods.items():
+            if spec.spot_index not in ("flat", "ai"):
                 raise ValueError(f"compute.goods.{key}.spot_index must be flat or ai")
         return self
 
@@ -205,7 +208,7 @@ class GoodHistory(_Frozen):
         anchors = sorted((month_to_turn(m), v) for m, v in self.points.items())
         if not 0 <= turn <= anchors[-1][0]:
             raise ValueError(f"turn {turn} is outside {self.key!r}'s history")
-        for (t0, v0), (t1, v1) in zip(anchors, anchors[1:], strict=False):
+        for (t0, v0), (t1, v1) in itertools.pairwise(anchors):
             if t0 <= turn <= t1:
                 return float(v0 * (v1 / v0) ** ((turn - t0) / (t1 - t0)))
         return anchors[-1][1]
