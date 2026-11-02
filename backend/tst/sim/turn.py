@@ -122,6 +122,7 @@ class TurnContext:
 
 type Phase = Callable[[TurnContext], TurnContext]
 
+EXEC_REPORT = "exec_report"  # M10c (24.3): a seat holder's quarterly report
 BOARD_MEETING = "board_meeting"  # inbox templates that ask for read-only text (16.8)
 RESIGNED = "resigned"
 
@@ -401,7 +402,7 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
 
 def text_requests(logs: tuple[LogItem, ...], player: int, turn: int) -> tuple[TextRequest, ...]:
     """16.8: headlines every month; minutes after a quarterly board meeting; an exit line
-    for each resignation, all for the player."""
+    for each resignation; each executive's quarterly report (24.3), all for the player."""
     out = [TextRequest("headlines", player, turn)]
     mine = [i for i in logs if i.company_id == player]
     if any(i.template == BOARD_MEETING for i in mine):
@@ -410,6 +411,11 @@ def text_requests(logs: tuple[LogItem, ...], player: int, turn: int) -> tuple[Te
         TextRequest("exit_line", player, turn, i.link_id)
         for i in mine
         if i.template == RESIGNED and i.link_id is not None
+    ]
+    out += [
+        TextRequest("exec_report", player, turn, i.link_id)
+        for i in mine
+        if i.template == EXEC_REPORT and i.link_id is not None
     ]
     return tuple(out)
 

@@ -100,6 +100,16 @@ class DecisionOut(BaseModel):
     mistake: bool = Field(description="A plausible but worse choice (24.2)")
 
 
+class ReportOut(BaseModel):
+    """A seat holder's latest quarterly report (24.3), as the inbox shows it."""
+
+    seat: str
+    person_id: int
+    name: str
+    date_label: str
+    text: str
+
+
 class ScaleupOut(BaseModel):
     stage: int
     in_play: bool = Field(description="Stage 3 or later: divisions, seats and support apply")
@@ -115,6 +125,7 @@ class ScaleupOut(BaseModel):
     decisions: list[DecisionOut] = Field(
         description="Executives' decisions of the last 3 months, newest first (M10c)"
     )
+    reports: list[ReportOut] = Field(description="Each seat's latest quarterly report (M10c, 24.3)")
 
 
 class ScaleupActionOut(BaseModel):

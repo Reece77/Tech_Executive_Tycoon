@@ -36,6 +36,7 @@ from tst.db.models import (
     CompanyRow,
     DecisionLogRow,
     DivisionMonthRow,
+    InboxItemRow,
     LedgerEntryRow,
     LedgerLineRow,
     LLMTextRow,
@@ -577,6 +578,21 @@ def division_lines(session: Session, company_id: int) -> list[tuple[int, str, Ce
         (int(t), str(a), int(c), None if d is None else int(d))
         for t, a, c, d in session.execute(stmt)
     ]
+
+
+REPORTS_READ = 24  # tunable-exempt: enough recent reports to find each seat's latest
+
+
+def exec_reports(session: Session, company_id: int) -> list[InboxItemRow]:
+    """Executives' quarterly reports (M10c, 24.3), newest first."""
+    return list(
+        session.scalars(
+            select(InboxItemRow)
+            .where(InboxItemRow.company_id == company_id, InboxItemRow.template == "exec_report")
+            .order_by(InboxItemRow.turn.desc(), InboxItemRow.id.desc())
+            .limit(REPORTS_READ)
+        )
+    )
 
 
 def division_months(session: Session, company_id: int) -> list[DivisionMonth]:

@@ -21471,6 +21471,40 @@
         "type": "object",
         "title": "RepayIn"
       },
+      "ReportOut": {
+        "properties": {
+          "seat": {
+            "type": "string",
+            "title": "Seat"
+          },
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seat",
+          "person_id",
+          "name",
+          "date_label",
+          "text"
+        ],
+        "title": "ReportOut",
+        "description": "A seat holder's latest quarterly report (24.3), as the inbox shows it."
+      },
       "RivalMoveOut": {
         "properties": {
           "turn": {
@@ -22663,6 +22697,14 @@
             "type": "array",
             "title": "Decisions",
             "description": "Executives' decisions of the last 3 months, newest first (M10c)"
+          },
+          "reports": {
+            "items": {
+              "$ref": "#/components/schemas/ReportOut"
+            },
+            "type": "array",
+            "title": "Reports",
+            "description": "Each seat's latest quarterly report (M10c, 24.3)"
           }
         },
         "type": "object",
@@ -22678,7 +22720,8 @@
           "seats",
           "note",
           "proposals",
-          "decisions"
+          "decisions",
+          "reports"
         ],
         "title": "ScaleupOut"
       },

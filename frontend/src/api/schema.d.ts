@@ -6894,6 +6894,22 @@ export interface components {
              */
             amount_cents?: number | null;
         };
+        /**
+         * ReportOut
+         * @description A seat holder's latest quarterly report (24.3), as the inbox shows it.
+         */
+        ReportOut: {
+            /** Seat */
+            seat: string;
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Date Label */
+            date_label: string;
+            /** Text */
+            text: string;
+        };
         /** RivalMoveOut */
         RivalMoveOut: {
             /** Turn */
@@ -7398,6 +7414,11 @@ export interface components {
              * @description Executives' decisions of the last 3 months, newest first (M10c)
              */
             decisions: components["schemas"]["DecisionOut"][];
+            /**
+             * Reports
+             * @description Each seat's latest quarterly report (M10c, 24.3)
+             */
+            reports: components["schemas"]["ReportOut"][];
         };
         /** ScenarioOut */
         ScenarioOut: {

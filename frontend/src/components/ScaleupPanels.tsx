@@ -14,6 +14,7 @@ import {
 import { formatMoneyShort, formatMoneyWhole } from '../lib/format';
 import { pct } from '../lib/org';
 import { Panel } from './ScreenState';
+import { Term } from './Term';
 
 /**
  * The Org screen's scale-up panels (M8, from stage 3): divisions with their president,
@@ -125,7 +126,9 @@ function Body({ saveId, org, s }: { saveId: string; org: Org; s: Scaleup }) {
         </p>
         {s.proposals.length > 0 && (
           <div data-testid="exec-proposals">
-            <h4 style={{ margin: '12px 0 4px' }}>Proposals</h4>
+            <h4 style={{ margin: '12px 0 4px' }}>
+              <Term term="exec.proposal">Proposals</Term>
+            </h4>
             {s.proposals.map((p) => (
               <div className="tst-row" key={p.proposal_id} data-testid="exec-proposal">
                 <span style={{ flex: 1 }}>
@@ -170,9 +173,26 @@ function Body({ saveId, org, s }: { saveId: string; org: Org; s: Scaleup }) {
             ))}
           </div>
         )}
+        {s.reports.length > 0 && (
+          <div data-testid="exec-reports">
+            <h4 style={{ margin: '12px 0 4px' }}>
+              <Term term="exec.report">Latest reports</Term>
+            </h4>
+            {s.reports.map((r) => (
+              <details key={r.seat} data-testid="exec-report" style={{ fontSize: 13 }}>
+                <summary>
+                  {r.seat.toUpperCase()} · {r.name} · {r.date_label}
+                </summary>
+                <p style={{ margin: '4px 0 8px' }}>{r.text}</p>
+              </details>
+            ))}
+          </div>
+        )}
         {s.decisions.length > 0 && (
           <div data-testid="exec-decisions">
-            <h4 style={{ margin: '12px 0 4px' }}>Recent decisions</h4>
+            <h4 style={{ margin: '12px 0 4px' }}>
+              <Term term="exec.authority">Recent decisions</Term>
+            </h4>
             {s.decisions.map((d, i) => (
               <div className="tst-row" key={i} data-testid="exec-decision" style={{ fontSize: 13 }}>
                 <span style={{ flex: 1 }}>
@@ -378,7 +398,8 @@ export function AuthorityDialog({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <p className="tst-muted" style={{ margin: 0, fontSize: 13 }}>
           {a.acts_on}. {seat.holder_name} acts each month with their own energy, through the same
-          actions as you; how well depends on how good they are at the job.
+          actions as you; how well depends on how good they are at the job.{' '}
+          <Term term="exec.guardrails">Guardrails</Term> limit what they may do.
         </p>
         {Object.keys(values).map((k) => (
           <NumberInput

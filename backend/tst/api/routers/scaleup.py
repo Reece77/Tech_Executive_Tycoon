@@ -47,8 +47,9 @@ def _scaleup(path: Path, state: GameState, data: LoadedData) -> ScaleupOut:
     with repository.read_session(path) as session:
         lines = repository.division_lines(session, state.player.id)
         months = repository.division_months(session, state.player.id)
+        reports = scaleup_views.reports_out(repository.exec_reports(session, state.player.id))
     profit = scaleup_views.last_month_profit(lines, months, state, data)
-    return scaleup_views.scaleup_out(state, data, profit)
+    return scaleup_views.scaleup_out(state, data, profit, reports)
 
 
 def _act(path: Path, data: LoadedData, action: Action) -> ScaleupActionOut:

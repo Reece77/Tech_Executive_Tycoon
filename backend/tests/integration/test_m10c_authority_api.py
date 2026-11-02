@@ -7,6 +7,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from tests.helpers import answer_events
 from tests.integration.test_api_hiring import Client
 from tests.integration.test_api_scaleup import BASE, api  # noqa: F401
@@ -118,3 +120,58 @@ def test_a_declined_or_unanswered_proposal(
     with open_session(path) as session:
         statuses = [p.status for p in load_state(session).proposals]
     assert statuses[0] == "declined" and "lapsed" in statuses[1:]
+
+
+def test_a_quarterly_report_reaches_the_inbox_and_the_coo_answers_from_it(
+    api: tuple[Client, Path],  # noqa: F811
+    loaded: LoadedData,
+) -> None:
+    """24.3: each filled seat reports at a quarter end; Ask my COO answers as the named COO,
+    from their last report."""
+    client, path = api
+    client.post(f"{BASE}/scaleup/seats/coo/appoint", {"person_id": 21})
+    reports: list[dict] = []  # type: ignore[type-arg]
+    for _ in range(3):
+        answer_events(path, loaded)
+        client.post(f"{BASE}/advance")
+        inbox = client.get(f"{BASE}/inbox?limit=200")
+        items = inbox["items"] if isinstance(inbox, dict) else inbox
+        reports = [i for i in items if i["kind"] == "exec_report"]
+        if reports:
+            break
+    (report,) = reports
+    assert report["title"].startswith("COO report: ") and report["body"].startswith("Q")
+    (shown,) = client.get(f"{BASE}/scaleup")["reports"]
+    assert (shown["seat"], shown["person_id"], shown["text"]) == ("coo", 21, report["body"])
+    coo = client.get(f"{BASE}/coo")
+    assert coo["person_id"] == 21
+    answer = client.post(f"{BASE}/coo/ask", {"question": "How did the quarter go?"})
+    assert "From my last report" in answer["answer"] or answer["source"] != "offline"
+
+
+def test_cli_authority_and_reports(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, loaded: LoadedData
+) -> None:
+    """`tst authority --seat --on` and `tst reports` (M10c sub-task 6)."""
+    from typer.testing import CliRunner
+
+    from tests.integration.test_api_scaleup import SAVE, _build
+    from tst.cli import app
+
+    save_dir = tmp_path / "saves"
+    monkeypatch.setenv("TST_SAVE_DIR", str(save_dir))
+    _build(save_dir, loaded)
+    runner = CliRunner()
+
+    def run(*args: str, code: int = 0) -> str:
+        result = runner.invoke(app, list(args))
+        assert result.exit_code == code, result.output
+        return result.output
+
+    run("authority", "--save", SAVE, "--seat", "cto", code=1)  # vacant
+    run("appoint", "--save", SAVE, "--seat", "cto", "--person", "2")
+    out = run("authority", "--save", SAVE, "--seat", "cto", "--guard", "headcount_cap=12")
+    assert out.startswith("CTO authority on:") and "headcount_cap=12" in out
+    run("authority", "--save", SAVE, "--seat", "cto", "--guard", "headcount_cap=x", code=1)
+    assert "No reports yet" in run("reports", "--save", SAVE)
+    assert "CTO authority off" in run("authority", "--save", SAVE, "--seat", "cto", "--off")

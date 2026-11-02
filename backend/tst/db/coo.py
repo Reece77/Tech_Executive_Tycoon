@@ -14,7 +14,7 @@ from sqlalchemy import delete, select
 
 from tst.db import repository
 from tst.db.events import default_adapter
-from tst.db.models import CooAnswerRow, LLMCallLogRow
+from tst.db.models import CooAnswerRow, InboxItemRow, LLMCallLogRow
 from tst.events.coo import NOTEBOOK, KpiMonth, coo_prompt, offline_reply, speaker
 from tst.events.service import Writer
 from tst.llm.base import CallRecord, LLMAdapter, TextPrompt
@@ -23,6 +23,7 @@ from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.coo import Issue, briefing, coo_of
 from tst.sim.errors import SimError
+from tst.sim.org.reports import EXEC_REPORT
 from tst.sim.state import GameState, company_cash
 
 KPI_MONTHS = 12  # the last 12 months of turn_snapshot KPIs (17.3)
@@ -81,6 +82,19 @@ def _kpis(path: Path, company: int) -> list[KpiMonth]:
     ]
 
 
+def _last_report(path: Path, person_id: int | None) -> str | None:
+    """The named COO's latest quarterly report (24.3), as the inbox shows it."""
+    if person_id is None:
+        return None
+    with repository.open_session(path) as session:
+        row = session.scalars(
+            select(InboxItemRow)
+            .where(InboxItemRow.template == EXEC_REPORT, InboxItemRow.link_id == person_id)
+            .order_by(InboxItemRow.turn.desc(), InboxItemRow.id.desc())
+        ).first()
+    return row.body if row is not None else None
+
+
 def _trim(text: str, words: int) -> str:
     parts = text.split()
     return text.strip() if len(parts) <= words else " ".join(parts[:words]) + "…"
@@ -110,7 +124,8 @@ def ask(
         budget_left=lambda: settings.monthly_budget_cents - spent,
         debug=os.environ.get("TST_LLM_DEBUG") == "1",
     )
-    fallback = offline_reply(issues)
+    report = _last_report(path, pid)
+    fallback = offline_reply(issues, report)
     answer, source, cost = fallback, "offline", 0.0
     if writer.live and writer.can_spend():
         system, user = coo_prompt(
@@ -121,6 +136,7 @@ def ask(
             text,
             keys.max_answer_words,
             data.game_data,
+            report,
         )
         completion = writer.adapter.generate_text(TextPrompt("coo", system, user, fallback))
         reply = completion.content if isinstance(completion.content, str) else None

@@ -21,12 +21,14 @@ from tst.api.schemas.scaleup import (
     DivisionPeriodOut,
     DivisionStatementsOut,
     ProposalOut,
+    ReportOut,
     ScaleupOut,
     SeatCandidatesOut,
     SeatOut,
     SupportPoolOut,
 )
 from tst.api.views import person_name, role_label
+from tst.db.models import InboxItemRow
 from tst.loader import LoadedData
 from tst.sim.actions.authority import default_authority
 from tst.sim.actions.scaleup import appoint_problem, exec_salary_cents
@@ -143,8 +145,31 @@ def _seat_out(state: GameState, company_id: int, seat: str, data: LoadedData) ->
     )
 
 
+def reports_out(rows: Sequence[InboxItemRow]) -> list[ReportOut]:
+    """The newest report of each seat (24.3), in seat order; `rows` newest first."""
+    latest: dict[str, InboxItemRow] = {}
+    for row in rows:
+        seat = row.title.split(" report:", 1)[0].lower()
+        if seat in SEATS and row.link_id is not None:
+            latest.setdefault(seat, row)
+    return [
+        ReportOut(
+            seat=seat,
+            person_id=int(r.link_id or 0),
+            name=r.title.split(": ", 1)[-1],
+            date_label=format_turn(r.turn),
+            text=r.body,
+        )
+        for seat in SEATS
+        if (r := latest.get(seat)) is not None
+    ]
+
+
 def scaleup_out(
-    state: GameState, data: LoadedData, last_profit: dict[int, int] | None = None
+    state: GameState,
+    data: LoadedData,
+    last_profit: dict[int, int] | None = None,
+    reports: list[ReportOut] | None = None,
 ) -> ScaleupOut:
     b = data.balance
     company = state.player
@@ -265,6 +290,7 @@ def scaleup_out(
             for d in sorted(state.exec_decisions, key=lambda d: -d.id)
             if d.company_id == company.id and d.turn > state.turn - DECISION_MONTHS
         ],
+        reports=reports or [],
     )
 
 

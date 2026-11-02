@@ -314,6 +314,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     items += [i for g in games for i in g.action_logs] + finance.extra
     items += _loan_items(loaded)  # M10
     items += _m10b_items(loaded)
+    items += _m10c_items(loaded)
     for item in items:
         if item.template is None:
             continue
@@ -358,6 +359,16 @@ def _m10b_items(loaded: LoadedData) -> list[LogItem]:
     )
     out = snapshot_and_month_end_report(ctx)
     return [*logs, *out.log_items]
+
+
+def _m10c_items(loaded: LoadedData) -> list[LogItem]:
+    """A CTO with authority at a quarter end (decisions and a report), a CFO's proposal."""
+    from tests.unit.test_m10c_executives import _company, _give, _run
+
+    cto = _company(loaded, "cto", "software_engineer")
+    cto = _give(replace(with_product(cto, root=False), turn=2), "cto", loaded.balance)
+    cfo = _give(_company(loaded, "cfo", "finance_manager", staff=10), "cfo", loaded.balance)
+    return [*_run(loaded, cto)[2], *_run(loaded, cfo, cash=10_000_000)[2]]
 
 
 def _stage_3(loaded: LoadedData) -> GameState:

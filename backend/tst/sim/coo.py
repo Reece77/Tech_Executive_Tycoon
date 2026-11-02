@@ -37,9 +37,13 @@ class Issue:
 
 
 def coo_of(state: GameState) -> int | None:
-    """Who answers (17.3): the highest-level active operations manager; else the
-    highest-level non-founder employee; ties go to the longest tenure. None: the founder's
-    notebook."""
+    """Who answers (17.3): the named COO when the seat is filled (M10c, 24.3); else the
+    highest-level active operations manager; else the highest-level non-founder employee;
+    ties go to the longest tenure. None: the founder's notebook."""
+    seat = state.seat_holder(state.player.id, "coo")
+    held = state.employment_of(seat) if seat is not None else None
+    if held is not None and held.company_id == state.player.id and held.status == "active":
+        return seat
     staff = [
         e
         for e in state.staff(state.player.id)

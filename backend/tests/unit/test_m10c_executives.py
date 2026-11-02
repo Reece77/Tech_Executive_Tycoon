@@ -28,6 +28,9 @@ from tst.sim.state import (
     with_exec_seat,
     with_product_segment,
 )
+from tst.sim.state import (
+    with_product as put_product,
+)
 
 LOADED = load_all(DATA_DIR)
 EXEC = 2  # the executive's person id
@@ -184,3 +187,72 @@ def test_hiring_never_exceeds_the_headcount_cap(staff: int, cap: int, seed: int)
     )
     planned = sum(p.target for p in out.plans)
     assert builders + planned <= max(cap, builders)
+
+
+# --- Reports and executive events (24.3) ------------------------------------------------------
+
+
+def test_a_quarterly_report_says_what_the_holder_did(loaded: LoadedData) -> None:
+    from tst.sim.org.reports import EXEC_REPORT
+
+    state = _company(loaded, "cto", "software_engineer")
+    state = _give(replace(with_product(state, root=False), turn=2), "cto", loaded.balance)
+    product = state.company_products(1)[0]
+    state = put_product(state, replace(product, rotting=True))
+    seed = _right_seed(loaded, state, "cto", right=False)
+    _, _, logs, _ = _run(loaded, state, seed)
+    (report,) = [i for i in logs if i.template == EXEC_REPORT]
+    params = dict(report.params)
+    assert report.link_id == EXEC and params["seat"] == "CTO"
+    text = str(params["report"])
+    assert text.startswith("Q1 2010: 1 builder on 1 product (1 live, 0 in development).")
+    assert "I made 1 decision:" in text and "could have been better" in text
+    assert "has nobody working on it" in text  # a concern
+    off = replace(state, turn=3)  # not a quarter end
+    assert not [i for i in _run(loaded, off, seed)[2] if i.template == EXEC_REPORT]
+
+
+def test_a_seat_without_authority_still_reports(loaded: LoadedData) -> None:
+    from tst.sim.org.reports import quarterly_reports
+
+    state = replace(_company(loaded, "cfo", "finance_manager", staff=2), turn=5)
+    (report,) = quarterly_reports(state, 10_000_000, loaded.balance, loaded.game_data)
+    text = str(dict(report.params)["report"])
+    assert "Q2 2010: cash $100,000.00; debt $0.00" in text
+    assert "no authority" in text
+
+
+def _hits(loaded: LoadedData, state: GameState, cash: int) -> dict[str, list[tuple[int, ...]]]:
+    from tst.sim.events.triggers import triggers
+
+    out: dict[str, list[tuple[int, ...]]] = {}
+    for h in triggers(state, state, loaded.balance, loaded.game_data, cash, ()):
+        out.setdefault(h.trigger, []).append(h.person_ids)
+    return out
+
+
+def test_executives_with_authority_raise_their_events(loaded: LoadedData) -> None:
+    from tst.sim.people.relationships import Relationship
+    from tst.sim.state import with_relationship
+
+    state = _company(loaded, "cfo", "finance_manager", staff=10)
+    assert "exec_cfo" not in _hits(loaded, state, 10_000_000)  # no authority yet
+    state = _give(state, "cfo", loaded.balance)
+    assert _hits(loaded, state, 10_000_000)["exec_cfo"] == [(EXEC,)]
+    assert "exec_cfo" not in _hits(loaded, state, 10**12)  # runway above the guardrail
+    state = with_exec_seat(state, ExecSeat(1, "cto", 3, 0))
+    state = with_authority(state, Authority(1, "cto", True, (), 0, ()))
+    hits = _hits(loaded, state, 10**12)
+    assert hits["exec_cto"] == [(3,)]
+    state = with_relationship(state, Relationship(EXEC, 3, -25.0, 0.0, 0))
+    assert _hits(loaded, state, 10**12)["exec_clash"] == [(EXEC, 3)]
+
+
+def test_the_named_coo_answers_ask_my_coo(loaded: LoadedData) -> None:
+    from tst.events.coo import offline_reply
+    from tst.sim.coo import coo_of
+
+    state = _company(loaded, "coo", "software_engineer", staff=2)
+    assert coo_of(state) == EXEC  # the seat holder, not the longest-serving employee
+    reply = offline_reply((), "Q1 2010: 3 staff.")
+    assert "From my last report: Q1 2010: 3 staff." in reply
