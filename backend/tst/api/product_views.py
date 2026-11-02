@@ -418,6 +418,7 @@ def product_out(
             [next(iter(m.values())).quality for m in months],
             pace,
             product.rotting,
+            team.tech,
         ),
         launch=LaunchReadinessOut(
             ready=product.status == "in_development" and not missing,

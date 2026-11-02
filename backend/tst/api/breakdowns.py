@@ -19,6 +19,7 @@ from tst.sim.hiring.phases import monthly_costs
 from tst.sim.ledger import CASH
 from tst.sim.money import Cents, format_money
 from tst.sim.products.models import Product
+from tst.sim.research.levels import IDENTITY, TechFactor
 from tst.sim.state import GameState
 
 EVENT_MEMO = "Event:"  # memo prefix of event cash effects (tst.sim.events.effects)
@@ -27,6 +28,9 @@ PAYROLL = ("6000_salaries", "6010_benefits", "2100_accrued_payroll")
 MARKETING = ("6400_marketing",)
 FINANCING = ("2500_debt", "2600_safes", "3000_common_equity", "3100_preferred_equity")
 CASH_ORDER = ("Revenue", "Payroll", "Marketing", "Other costs", "Financing", "Event effects")
+
+
+PERCENT = 100  # tunable-exempt: a fraction in percent
 
 
 def _money(label: str, cents: float) -> BreakdownItemOut:
@@ -213,9 +217,15 @@ def average_morale(state: GameState, data: LoadedData, cash: Cents) -> Breakdown
 
 
 def product_quality(
-    product: Product, history_quality: list[float], pace: str, rotting: bool
+    product: Product,
+    history_quality: list[float],
+    pace: str,
+    rotting: bool,
+    tech: TechFactor = IDENTITY,
 ) -> BreakdownOut:
-    """Quality as §11 shows it in words: where it stands, last month's change, the pace."""
+    """Quality as §11 shows it in words: where it stands, last month's change, the pace; and
+    the tech factor (M11, 21.2): the company's research lead in the category, the lift it
+    gives the quality cap and features, and a first mover's head start."""
     items = [BreakdownItemOut(label="Quality now", amount=round(product.quality, 1), unit="points")]
     if len(history_quality) >= 2:
         items.append(
@@ -225,12 +235,36 @@ def product_quality(
                 unit="points",
             )
         )
+    if not tech.is_identity:
+        items += [
+            BreakdownItemOut(
+                label="Research lead in this market", amount=round(tech.lead, 1), unit="points"
+            ),
+            BreakdownItemOut(
+                label="Tech factor on what the team can reach",
+                amount=round((tech.cap_mult - 1) * PERCENT, 1),
+                unit="percent",
+            ),
+            BreakdownItemOut(
+                label="Tech factor on features",
+                amount=round((tech.feature_mult - 1) * PERCENT, 1),
+                unit="percent",
+            ),
+        ]
+        if tech.cap_points:
+            items.append(
+                BreakdownItemOut(
+                    label="First-mover head start", amount=tech.cap_points, unit="points"
+                )
+            )
     note = (
         "Nobody works on it, so quality is falling."
         if rotting
         else f"Development pace: {pace}. More and better builders raise quality toward what "
         "the team can reach."
     )
+    if not tech.is_identity:
+        note += " Research raises what the team can reach (see Research)."
     return BreakdownOut(items=items, note=note)
 
 

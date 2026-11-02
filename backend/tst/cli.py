@@ -1924,3 +1924,92 @@ def regions(save: SaveOpt, product: Annotated[int, typer.Option(help="Product id
         )
     spread = ", ".join(f"{t.label} {t.builders}" for t in out.team) or "no builders"
     typer.echo(f"Builders: {spread}; time-zone factor x{out.time_zone_factor:.2f}")
+
+
+# --- Research (M11, formulas.md 21) ----------------------------------------------------------
+
+
+@app.command()
+def research(save: SaveOpt) -> None:
+    """Domain levels (baseline + lead), projects, licences, rivals' leads as ranges and the
+    era timeline (21.7)."""
+    from tst.api.research_views import research_out
+
+    _, data, state = _game(save)
+    out = research_out(state, data)
+    typer.echo("Domain             Baseline   Lead  Level  Next era (threshold)")
+    for d in out.domains:
+        era = f"{d.next_era} ({d.next_threshold:.1f})" if d.next_era else "-"
+        typer.echo(f"{d.label:<18} {d.baseline:8.1f} {d.lead:6.1f} {d.level:6.1f}  {era}")
+    typer.echo(f"Leads decay {out.decay_pct:.1f}% a month.")
+    for p in out.projects:
+        era = (
+            f"; {p.next_era} in ~{p.months_to_era} months"
+            if p.next_era and p.months_to_era is not None
+            else ""
+        )
+        typer.echo(
+            f"Project {p.project_id}: {p.unit_name} on {p.domain_label}, {p.researchers} "
+            f"researchers, {p.funded_pct:.0f}% funded of {format_money(p.needed_cents)}, "
+            f"+{p.gain_per_month:.2f} lead a month{era}"
+        )
+    if out.units:
+        free = ", ".join(f"{u.name} (unit {u.unit_id}, {u.researchers})" for u in out.units)
+        typer.echo(f"Units free for a project: {free}")
+    for x in out.licenses:
+        typer.echo(
+            f"Licence {x.direction} {x.company}: {x.points:.1f} {x.domain_label} points, "
+            f"signed {x.signed}"
+        )
+    for e in out.eras:
+        when = f"arrived {e.arrived}" if e.arrived else f"threshold {e.threshold:.1f}"
+        who = f" ({e.caused_by}, {e.months_early} months early)" if e.caused_by else ""
+        typer.echo(f"Era {e.label:<22} {e.status:<8} {when}{who}")
+
+
+@app.command()
+def project(
+    save: SaveOpt,
+    unit: Annotated[int, typer.Option(help="Org unit id (not on a product)")],
+    domain: Annotated[str, typer.Option(help="Domain key, e.g. ai")],
+    budget: Annotated[
+        str | None, typer.Option(help="Monthly budget in dollars; default full")
+    ] = None,
+) -> None:
+    """Start a research project: a unit researches a domain (21.3); energy 6."""
+    from tst.sim.actions.research import StartProject
+
+    path, data, state = _game(save)
+    amount = cents(budget) if budget is not None else None
+    result = _run(path, data, StartProject(_founder(state), unit, domain, amount))
+    p = result.new_state.unit_project(unit)
+    assert p is not None
+    typer.echo(f"Project {p.id} started: unit {unit} researches {domain}")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command()
+def license(
+    save: SaveOpt,
+    domain: Annotated[str, typer.Option(help="Domain key, e.g. ai")],
+    points: Annotated[float, typer.Option(help="Lead points")],
+    from_: Annotated[
+        int | None, typer.Option("--from", help="Rival company id to license in from")
+    ] = None,
+    to: Annotated[int | None, typer.Option(help="Rival company id to license out to")] = None,
+) -> None:
+    """License research in from a rival (--from) or out to one (--to) (21.5); energy 8."""
+    from tst.sim.actions.research import LicenseIn, LicenseOut
+
+    if (from_ is None) == (to is None):
+        raise typer.BadParameter("give exactly one of --from and --to")
+    path, data, state = _game(save)
+    action = (
+        LicenseIn(_founder(state), from_, domain, points)
+        if from_ is not None
+        else LicenseOut(_founder(state), to or 0, domain, points)
+    )
+    result = _run(path, data, action)
+    level = result.new_state.research_lead(result.new_state.player.id, domain)
+    typer.echo(f"Licensed {points:g} {domain} points; your lead is now {level:.1f}")
+    typer.echo(f"  {_energy(result.new_state, data)}")

@@ -40,7 +40,7 @@ def test_license_in(loaded: LoadedData) -> None:
     game = _lab_game(loaded, staff=1)
     game.state = add_lead(game.state, SALESFORCE, "devices", 40.0)
     energy = game.state.person_state(FOUNDER).energy or 0
-    with pytest.raises(ResearchRuleError, match=r"at most 30\.0"):
+    with pytest.raises(ResearchRuleError, match="ask for fewer points"):
         game.act(LicenseIn(FOUNDER, SALESFORCE, "devices", 31))
     cash = game.cash
     game.act(LicenseIn(FOUNDER, SALESFORCE, "devices", 30))
@@ -72,7 +72,7 @@ def test_a_direct_competitor_says_no(loaded: LoadedData) -> None:
 def test_license_out_earns_royalties(loaded: LoadedData) -> None:
     game = _lab_game(loaded, staff=1)
     game.state = add_lead(game.state, 1, "software_platform", 30.0)
-    with pytest.raises(ResearchRuleError, match=r"at most 20\.0"):
+    with pytest.raises(ResearchRuleError, match="ask for fewer points"):
         game.act(LicenseOut(FOUNDER, SALESFORCE, "software_platform", 25))
     game.act(LicenseOut(FOUNDER, SALESFORCE, "software_platform", 15))
     assert game.state.research_lead(SALESFORCE, "software_platform") == 15

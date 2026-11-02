@@ -152,7 +152,8 @@ def _points(points: float, limit: float) -> float:
     if points <= 0:
         raise ResearchRuleError("license a positive number of points")
     if points > limit + 1e-9:  # tunable-exempt: float tolerance
-        raise ResearchRuleError(f"at most {limit:.1f} points can be licensed")
+        # The limit follows the rival's true lead, which stays hidden (21.7): no number here.
+        raise ResearchRuleError("that is more than the licence allows; ask for fewer points")
     return points
 
 
