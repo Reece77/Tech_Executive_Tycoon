@@ -111,7 +111,7 @@ def test_the_first_mover_window(loaded: LoadedData) -> None:
     state, _ = eras.arrive_eras(_with_ai_lead(state, 20.0, jan_2016), data, balance)
     factor = levels.tech_factor(state, 1, "ai_models", balance, data)
     assert (factor.cap_points, factor.brand_points) == (5.0, 10.0)
-    assert factor.cap(50.0) == pytest.approx(50.0 * (1 + 0.004 * 16.0) + 5.0)
+    assert factor.cap(50.0) == pytest.approx(50.0 * (1 + balance.rnd.cap_per_point * 16.0) + 5.0)
     other = levels.tech_factor(state, 1, "b2b_saas", balance, data)
     assert other.cap_points == 0 and other.brand_points == 0
     assert decay_leads(state, data, balance).research_lead(1, "ai") == 20.0

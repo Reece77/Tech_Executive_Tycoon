@@ -2,7 +2,9 @@
 nightly (tests/balance/test_m11_balance.py). Targets 1 and 4 are unit tests
 (tests/unit/test_research_eras.py, tests/unit/test_formulas_m11_worked_examples.py).
 
-- Target 2: each seed's steady game forks at its first month of stage 2. The `research` arm
+- Target 2: each seed's steady game forks at its first month at stage 2's ARR gate ($1M,
+  11.11; steady reaches stage 2 by its seed round at month 4-6, with no revenue, when a
+  $1M-a-year research unit bankrupts it on every seed). The `research` arm
   adds a 6-person research unit (senior software engineers, generated on stream `misc` as in
   m8.py) researching software platform, B2B SaaS's top domain, fully funded; the `steady` arm
   plays on. Both run to turn 120. ARR is compared net of the research cost (12 x the month's
@@ -86,6 +88,21 @@ def _start_lab(game: Game, domain: str, count: int, role: str, skill: float | No
     return people
 
 
+def _refill_lab(game: Game, people: list[int], domain: str) -> list[int]:
+    """Keep the research unit at RESEARCHERS: a researcher who left is replaced by a new
+    senior hire into the same unit (the target is a 6-person unit throughout)."""
+    projects = [p for p in game.state.active_projects(PLAYER) if p.domain == domain]
+    if not projects or projects[0].unit_id is None:
+        return people
+    unit = projects[0].unit_id
+    staying = [pid for pid in people if game.state.employment_of(pid) is not None]
+    for pid in add_staff(game, "software_engineer", "senior", RESEARCHERS - len(staying)):
+        _energy(game)
+        game.act(MovePerson(game.founder_id, pid, unit))
+        staying.append(pid)
+    return staying
+
+
 def _monthly_cost(game: Game, people: list[int]) -> int:
     """The project's budget this month plus its researchers' employment cost."""
     state, b, data = game.state, game.loaded.balance, game.loaded.game_data
@@ -118,6 +135,8 @@ def _arm(base: Game, arm: str, seed: int) -> ArmRun:
     half_cost = half_licence = None
     while game.state.turn < TURNS and not game.state.ended:
         steady(game)
+        if people:
+            people = _refill_lab(game, people, DOMAIN)
         spent += _monthly_cost(game, people)
         game.turn()
         lead = game.state.research_lead(PLAYER, DOMAIN)
@@ -141,11 +160,13 @@ def _arm(base: Game, arm: str, seed: int) -> ArmRun:
 
 
 def steady_at_stage_2(seed: int) -> Game | None:
+    """Steady at its first month with ARR at stage 2's gate (11.11)."""
     game = start_game(_loaded("data"), seed, SCENARIO)
+    gate = game.loaded.balance.stages.arr_cents[2]  # tunable-exempt: 21.8 target 2's stage
     for _ in range(STAGE_2_BY):
         if game.state.ended:
             return None
-        if game.state.player.stage >= 2:  # tunable-exempt: 21.8 target 2's fork stage
+        if game.snapshots and game.snapshots[-1].arr_cents >= gate:
             return game
         steady(game)
         game.turn()

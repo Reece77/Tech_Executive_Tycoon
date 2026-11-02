@@ -230,7 +230,7 @@ terms:
   research.lead: "What your company knows beyond the baseline. Research raises it; without research it loses 1.5% a month."
   research.level: "Baseline plus lead. When any company's level reaches an era's threshold, the era arrives early."
   research.threshold: "The level that brings an era before its historical date: the baseline it would have by then plus 15 points."
-  research.tech_factor: "Your research lead in a market lifts what product teams can reach (up to 20%) and how fast features grow (up to 10%)."
+  research.tech_factor: "Your research lead in a market lifts what product teams can reach and how fast features grow, more for a bigger lead, up to 50 points of it."
   research.researchers: "Members of the unit in builder roles. Each adds output from their research skills, morale and tags."
   research.budget: "What the project spends each month on compute, equipment and travel. Below full funding, progress scales down."
   research.funded: "The share of the full monthly budget the project gets."

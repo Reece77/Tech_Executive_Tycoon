@@ -741,11 +741,11 @@ geo:
 # --- R&D tree and era milestones (formulas.md 21, M11, lane A) ---------------------------
 rnd:
   decay: 0.015 # fraction of each lead lost a month, after progress (21.1): a lead halves in about 46 months
-  cap_per_point: 0.004 # Q_cap multiplier per point of category lead (21.2)
+  cap_per_point: 0.010 # Q_cap multiplier per point of category lead (21.2 says 0.004; M11 tuning for 21.8 target 2)
   cap_points: 50 # points; the most category lead that lifts Q_cap, so at most x1.20 (21.2)
-  feature_per_point: 0.002 # feature points gained x (1 + this x lead) (21.2)
+  feature_per_point: 0.005 # (21.2 says 0.002; M11 tuning for 21.8 target 2) feature points gained x (1 + this x lead) (21.2)
   feature_points: 50 # points; the most category lead that lifts features (21.2)
-  rate: 0.25 # lead points per point of research output a month at zero lead (21.3)
+  rate: 0.4 # lead points per point of research output a month at zero lead (21.3 says 0.25; M11 tuning for 21.8 target 2)
   half: 30 # points of lead at which progress is half as fast (21.3)
   start_energy: 6 # founder energy to start a research project (21.3)
   stop_energy: 2 # founder energy to stop one (21.3)
@@ -765,7 +765,7 @@ rnd:
   license: # licensing (21.5)
     energy: 8 # founder energy to license in or out
     margin: 10 # points; the licensor keeps this much of its lead over the licensee
-    price_per_point_cents: 15000000 # cents; $150,000 a point, once (no inflation in the game: nominal)
+    price_per_point_cents: 2400000 # cents; $24,000 a point (21.5 says $150,000; M11 tuning for 21.8 target 5), once (no inflation in the game: nominal)
     price_arr_cents: 2000000000 # cents; the licensee's ARR at which the price doubles ($20M)
     royalty_bp: 200 # bp of the licensee's monthly revenue in the domain's categories, licensing out
     royalty_months: 24 # months the royalty runs
@@ -774,8 +774,8 @@ rnd:
     cap: 10 # points; at most this
   rival: # incumbents' research action (21.6)
     rate: 0.8 # lead points a month = rate x builder skill / 10 while it runs
-    need_span: 15 # points of lead gap (best lead in its domains - own) for need 1
-    era_bonus: 0.3 # need added when an era in the domain is within era_window_months of its historical date
+    need_span: 30 # points of lead gap (best lead in its domains - own) for need 1
+    era_bonus: 0.15 # need added when an era in the domain is within era_window_months of its historical date (21.6 says 0.3; M11 tuning: at 0.3 T2 broke, steady 7 of 10)
     era_window_months: 24 # months
     months: 6 # months one research action runs
     pool_cost: 0.10 # builder pool +10% while it runs, returned at the end

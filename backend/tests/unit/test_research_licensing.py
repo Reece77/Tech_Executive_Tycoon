@@ -46,7 +46,7 @@ def test_license_in(loaded: LoadedData) -> None:
     game.act(LicenseIn(FOUNDER, SALESFORCE, "devices", 30))
     assert game.state.research_lead(1, "devices") == 30
     price = license_price_cents(30, 0, loaded.balance)
-    assert price == 450_000_000
+    assert price == 30 * loaded.balance.rnd.license.price_per_point_cents
     assert game.cash == cash - price
     assert game.balances[(SALESFORCE, LICENSE_REVENUE)] == -price
     assert game.state.person_state(FOUNDER).energy == energy - loaded.balance.rnd.license.energy
