@@ -83,8 +83,45 @@ Start an AI-focused game. Build a research unit early, push for Transformers, an
 
 ## Decisions made
 
-_(Agent fills in.)_
+Engineering and design gaps the spec left open (also in `docs/formulas.md` 21.10):
+
+- **Baseline and thresholds.** Baselines accrue monthly (`per_year / 12`); an era's threshold reads the baseline at the end of its historical month, so both 21.9 era examples hold exactly (43.5; 24 in January 2016).
+- **Base growth lives in `eras.yaml`.** The lane rule keeps `categories.yaml` untouched, so `eras.yaml` `base_growth` replaces its growth (for demand, startups' founding rate and the API) for AI models, consumer apps, developer tools and fintech; AI's M8 `growth_by_year` is no longer read. The non-AI categories needed this too: with the 21.4 boosts on unchanged growth, consumer apps' January 2020 demand would be 39% above before M11 (target 1 allows 10%). Their base growth is lowered until the era's boost has run (consumer apps and developer tools to 2020, fintech to 2021), then returns to `categories.yaml`'s rate. Zero trust (2020) and AI agents (2025) arrive after the tuned decade and add growth. Boosts reach every region.
+- **The hook's signature.** `tech_factor(state, company_id, category, balance, data)` in `tst.sim.research.levels` (the sim takes balance and data as arguments everywhere); `lead(state, company_id, domain)` there is M12a's stable read. The package `__init__` stays empty of imports because `data_models` imports `research.data`.
+- **Researchers** are a unit's direct members in builder roles (and the founder); seat, structure, tag and unit event-modifier factors apply as for builders. A unit with an active project cannot be assigned to a product and the reverse; the company root cannot research.
+- **Budget** NULL = full funding; setting a budget is free (`rnd.budget_energy` 0), like a marketing budget.
+- **Licensing.** The licensee can reach at most the licensor's lead minus the margin; the price uses the licensee's ARR and is nominal (no inflation in the game); licensing in is R&D (6500) for the buyer and licence revenue (4100) for the seller. Rivals accept any licence out; royalties post in phase 5 on the licensee's booked revenue in the domain's categories. Rival-initiated licensing from the player is not built (follow-up).
+- **Rivals' research** is one action at a time, a unit-less project for 6 months; candidates come after v1's and M9's so their noise draws are unchanged; personality weights sit in `rnd.rival.weights` (only `rnd.*` may be added). The builder pool's +10% is returned when the action ends.
+- **What the API shows.** A rival's lead range is offset by a seeded draw (stream `reveal`, ADR-0013 row updated) so its midpoint is not the true lead; licence limits on the screen come from the range's low end; refusals for too many points name no number. Projects show estimated lead gained a month from displayed skills, not `output` (the 11.13 hidden-name guard flags it).
+- **Research triggers' strengths** are in `events.trigger` (it must list every trigger), not `rnd.*`.
+- **Existing saves** get past eras recorded as arrived on schedule (migration `0028_research`).
+- **`player_companies(state)`** added to `tst.sim.state` (ADR-0020).
+- **Tuning (2026-11-02), `rnd.*` only:**
+  - `rnd.rival.era_bonus` 0.3 to **0.15**: at 0.3, incumbents researching near era dates moved T2 from steady 6 to steady 7 of 10 (a guard that passes on main); off entirely it returns to 6, at 0.2 it is steady 5, frugal 5.
+  - `rnd.rival.need_span` 15 to **30**: rivals chased each other's noise-started research into early eras on 60% of do-nothing seeds (target 3b, at most 15%).
+  - `rnd.rate` 0.25 to **0.4**, `rnd.cap_per_point` 0.004 to **0.010**, `rnd.feature_per_point` 0.002 to **0.005** (target 2: at 21.2's values research raised quality 6-12 points but median ARR only 1.03-1.04x).
+  - `rnd.license.price_per_point_cents` $150,000 to **$24,000** (target 5: at $150,000 licensing 15 points cost 2.3x researching them).
+  - The 21.9 worked examples test the formulas at 21.9's keys and also at the tuned ones.
+- **Target 2's measure.** The fork is steady's first month at stage 2's ARR gate ($1M): steady reaches stage 2 by its seed round at month 4-6 with no revenue, and a six-person unit then bankrupts it on every seed. The unit is kept at six (a researcher who leaves is replaced). "Net of the research cost" subtracts 12 x the final month's budget and the researchers' employment cost; the ratio is of medians (m8 and m10c's convention).
+- **Target 3b** runs do-nothing games for 200 months (to the AI agents era); "rivals pull an era more than 6 months early" counts any era a rival caused more than 6 months early.
+
+## Values (2026-11-02)
+
+| Target | Value | Band | Result |
+| --- | --- | --- | --- |
+| 21.8 target 1: AI demand January 2024 | 350x January 2010 (M8 359x) | +-10% | pass |
+| 21.8 target 1: other categories, January 2020 | 1.000 (b2b, dev tools, consumer apps, cybersecurity), 0.944 (fintech) | +-10% | pass |
+| 21.8 target 2: research / steady median ARR net; quality | 1.11 (gross 1.13); +18.7 points | >= 1.10; >= 5 | pass |
+| 21.8 target 3: AI lab brings Transformers before 2017 | 10/10 (months 54-58, about 2.5 years early) | >= 5 | pass |
+| 21.8 target 3: rivals pull an era > 6 months early, do-nothing | 0% | <= 15% | pass |
+| 21.8 target 4: a lead of 30 after 46 months | 14.95 | 14-16 | pass |
+| 21.8 target 5: licensing 15 points / researching them | 0.67 | <= 0.7 | pass |
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Research may be too strong for M15.** With the tuned keys a six-person software-platform unit lifts steady's quality by about 19 points and its lead runs past 50; check a research-heavy strategy against T2 in M15 and revisit `rnd.cap_per_point` and `rnd.rate` there.
+- **21.2 and 21.5's numbers in the spec** (0.004, 0.002, 0.25, $150,000) differ from the tuned keys; update the spec text when the design doc is next exported.
+- **Rivals licensing in from the player** ("or the player, for rivals", 21.5) is not built: rivals never ask. Add a rival `license_in` action if the playtest wants it.
+- **Rival startups never research** (21.6, out of scope); M12b's chip and device domains research now but feed nothing.
+- **The `output` hidden-name guard** blocks showing a project's output (21.7 allows it); the screen shows estimated lead gained a month instead. Decide whether research output should be visible.
+- **Long-run growth.** After 2030 every era's boost has ended; AI models grow 25% a year from 2030 as before. A 30-year campaign may want later eras (M15).
