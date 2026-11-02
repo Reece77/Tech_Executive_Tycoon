@@ -59,7 +59,8 @@ TRIGGERS: Final = (
     "quiet_month",
 )
 # M10 (20.3): the debt phase queues these itself (a covenant breach, a called loan).
-ENGINE_QUEUED: Final = ("covenant_breach",)
+# M12a (22.5): a data-centre outage, queued by the facilities phase.
+ENGINE_QUEUED: Final = ("covenant_breach", "facility_outage")
 SCHEDULED: Final = ("storyline", "follow_up", *ENGINE_QUEUED)
 # M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
 # critical template whenever it holds and no critical event came in the last 6 months.
@@ -68,9 +69,10 @@ CRISIS_TRIGGERS: Final = ("key_exit", "security_breach", "outage")
 CRITICAL_TRIGGERS: Final = (
     "runway_short",
     "covenant_breach",
+    "facility_outage",
     *CRISIS_TRIGGERS,
     "storyline",
-)  # 16.2; 20.3; 23.3
+)  # 16.2; 20.3; 23.3; 22.5
 
 EFFECT_TYPES: Final = (
     "morale_delta",
@@ -176,6 +178,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "exec_cfo": _PERSON | {"months"},
     "exec_clash": _PERSON | {"other"},
     "covenant_breach": frozenset({"loan", "lender"}),  # M10
+    "facility_outage": frozenset({"segment"}),  # M12a (22.5): the most-hit hosted product
     "key_exit": _PERSON,  # M10b (23.3)
     "security_breach": frozenset({"segment"}),
     "outage": frozenset({"segment"}),

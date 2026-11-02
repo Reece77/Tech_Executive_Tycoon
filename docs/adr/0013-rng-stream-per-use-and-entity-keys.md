@@ -41,6 +41,8 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `entrants` | 20 | `(entrant_index,)` | A scheduled entrant's people, generated at senior level when it is founded (formulas.md 18.7); founding itself draws nothing | M8 |
 | `macro` | 21 | `(indicator_index,)` (0 base rate, 1 venture climate, 2 consumer confidence, 3 AI compute index); `(99,)` for downturns | Macro indicators after 2025 (formulas.md §20.1); one generator per indicator each month, one standard-normal draw each (the AI index's is used only in January), and one uniform draw for downturns | M10 |
 | `rival_region` | 22 | `(startup_id,)` | A rival startup's founding region, one draw weighted by its category's addressable demand in each region (formulas.md §19.6) | M9 |
+| `supply` | 26 | `(good_index,)` (position in `components_history.yaml`: 0 server, 1 GPU) | Component indexes and supply shocks after 2025 (formulas.md §22.4): one generator per good each month, drawing in a fixed order (the yearly change's standard normal, used only in January; the shock-start uniform; the shock's rise, allocation and length uniforms), every month whether used or not | M12a |
+| `facility` | 27 | `(facility_id,)` | A data centre's monthly outage roll, one uniform (formulas.md §22.5) | M12a |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).
@@ -65,6 +67,4 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | `research` | 23 | `(project_id,)` | Breakthroughs and dead ends (formulas.md §21.3) | M11 (lane A) |
 | `rival_research` | 24 | `(company_id,)` | Rivals' research breakthroughs (formulas.md §21.6) | M11 (lane A) |
 | — | 25 | — | Reserved for lane A | M11 |
-| `supply` | 26 | `(index,)` | Component indexes and supply shocks after 2025 (formulas.md §22.4) | M12a (lane B) |
-| `facility` | 27 | `(facility_id,)` | Data-centre outages (formulas.md §22.5) | M12a (lane B) |
 | — | 28–29 | — | Reserved for lane B | M12a |

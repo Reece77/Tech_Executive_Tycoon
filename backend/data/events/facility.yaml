@@ -1,0 +1,33 @@
+# Data-centre outage templates (M12a, docs/formulas.md 22.5). The facilities phase queues one
+# itself when a data centre has an outage (trigger facility_outage); the director never
+# draws them. By then every product the data centre hosted has lost its share of customers
+# and its cloud customers have churned three times as fast that month; the choices trade
+# cash (overtime and credits) against brand. {product} is the product it hurt most. Shares
+# are fractions of the critical caps (16.3).
+templates:
+  - id: facility_outage
+    category: operations
+    trigger: facility_outage
+    severities: [critical]
+    weight: 1.0
+    title: "A data centre outage took {product} down"
+    body: >-
+      One of {company}'s data centres went dark for most of a day. Everything it hosted,
+      {product} first among them, was down with it, and customers in {segment} have already
+      left. The night shift is still on site, and the ones who stayed want to know what you
+      will do about it.
+    choices:
+      - key: A
+        label: "Pay for overtime and credit every customer"
+        effects:
+          - { type: cash_delta, target: company, share: -0.5 }
+          - { type: brand_delta, target: product, share: -0.1 }
+      - key: B
+        label: "Apologise, fix it and offer no credits"
+        effects:
+          - { type: brand_delta, target: product, share: -0.5 }
+      - key: C
+        label: "Bring in outside engineers and credit the largest customers"
+        effects:
+          - { type: cash_delta, target: company, share: -0.25 }
+          - { type: brand_delta, target: product, share: -0.25 }

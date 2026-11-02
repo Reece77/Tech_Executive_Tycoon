@@ -65,6 +65,14 @@ segments:
     base_churn: 0.008
     adoption: 0.005
     reach: sales
+  # M12a (formulas.md 22.3): cloud buyers at hyperscale, sales-led
+  - key: hyperscalers
+    label: Hyperscalers
+    weights: { quality: 0.40, price: 0.40, brand: 0.05, features: 0.15 }
+    outside_option: 45
+    base_churn: 0.005
+    adoption: 0.003
+    reach: sales
 
 categories:
   - key: b2b_saas
@@ -152,3 +160,25 @@ categories:
       - { segment: smb, addressable: 20000, reference_price_cents: 10000, hosting_cents: 4000 }
       - { segment: mid_market, addressable: 2000, reference_price_cents: 200000, hosting_cents: 60000 }
       - { segment: enterprise, addressable: 300, reference_price_cents: 2500000, hosting_cents: 600000 }
+
+  # --- M12a (formulas.md 22.3): Cloud and GPU hosting, open from January 2010 ---
+  # Sells spare data-centre capacity (compute.capacity_category): a company sells here only
+  # while it owns spare CU, its quality is its data centres' mean reliability and its
+  # features come from its infrastructure lead. Each customer buys units_per_customer CU, so
+  # D0 and p_ref per CU are addressable x units and reference price / units ($1,000 a CU,
+  # x M10's AI index for GPU CU, which sell here at their spot value). Rivals' capacity is
+  # abstract: hosting_cents is their cost of a customer's CU (65% of p_ref).
+  - key: cloud_hosting
+    label: Cloud and GPU hosting
+    growth: 0.30
+    features_at_start: 60
+    features_per_month: 4.0
+    scope: 6
+    brand_constant: 80
+    capacity_market: true
+    dev_weights: { infrastructure: 0.45, software_engineering: 0.25, security: 0.20, data: 0.10 }
+    markets:
+      - { segment: smb, addressable: 40000, reference_price_cents: 200000, hosting_cents: 130000, units_per_customer: 2 }
+      - { segment: mid_market, addressable: 2500, reference_price_cents: 2000000, hosting_cents: 1300000, units_per_customer: 20 }
+      - { segment: enterprise, addressable: 300, reference_price_cents: 20000000, hosting_cents: 13000000, units_per_customer: 200 }
+      - { segment: hyperscalers, addressable: 30, reference_price_cents: 200000000, hosting_cents: 130000000, units_per_customer: 2000 }

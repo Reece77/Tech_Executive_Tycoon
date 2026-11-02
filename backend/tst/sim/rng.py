@@ -41,6 +41,8 @@ STREAM_IDS: Final = MappingProxyType(
         "entrants": 20,  # key (entrant_index,): a scheduled entrant's people (M8, 18.7)
         "macro": 21,  # key (indicator_index,), (99,) for downturns: indicators after 2025 (M10)
         "rival_region": 22,  # key (startup_id,): a rival startup's founding region (M9, 19.6)
+        "supply": 26,  # key (good_index,): component indexes and shocks after 2025 (M12a, 22.4)
+        "facility": 27,  # key (facility_id,): data-centre outages (M12a, 22.5)
         "misc": 99,
     }
 )

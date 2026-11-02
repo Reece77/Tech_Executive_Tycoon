@@ -14,7 +14,7 @@ from typing import Literal
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.hiring.phases import monthly_costs
-from tst.sim.ledger import CASH, COMPUTE, AccountCode
+from tst.sim.ledger import ACCUMULATED_DEPRECIATION, CASH, COMPUTE, DEPRECIATION, AccountCode
 from tst.sim.money import Cents
 from tst.sim.products.phases import projected_revenue
 from tst.sim.snapshot import runway_months
@@ -24,6 +24,11 @@ type Period = Literal["month", "quarter", "year"]
 PERIODS: tuple[Period, ...] = ("month", "quarter", "year")
 QUARTER_MONTHS = 3  # tunable-exempt: calendar definition
 COST_OF_REVENUE_PREFIX = "5"  # 5xxx cost of goods sold (unused in v1), plus hosting 6300
+# M12a (22.2): owned compute replaces hosting, so data centres' depreciation is a cost of
+# revenue too. Depreciation and its contra-asset move no cash: the cash flow counts them with
+# investing, where they cancel (depreciation) or leave the sale proceeds (a sale).
+COMPUTE_ACCOUNTS = (COMPUTE, DEPRECIATION)
+NON_CASH = (DEPRECIATION, ACCUMULATED_DEPRECIATION)
 INTEREST_PREFIX = "7"
 TAX_PREFIX = "8"
 
@@ -83,7 +88,7 @@ class CashFlow:
     first_turn: int
     last_turn: int
     operating: Cents  # the net result: no accruals in v1
-    investing: Cents  # non-cash assets bought (none in v1)
+    investing: Cents  # non-cash assets bought: facilities' capex less sales (M12a)
     financing: Cents  # SAFEs and priced rounds
     change_in_cash: Cents  # the cash account's movement
 
@@ -114,7 +119,7 @@ def profit_and_loss(
                 interest += amount
             elif account.startswith(TAX_PREFIX):
                 tax += amount
-            elif account == COMPUTE or account.startswith(COST_OF_REVENUE_PREFIX):
+            elif account in COMPUTE_ACCOUNTS or account.startswith(COST_OF_REVENUE_PREFIX):
                 cost[account] = cost.get(account, 0) + amount
             else:
                 opex[account] = opex.get(account, 0) + amount
@@ -155,6 +160,8 @@ def cash_flow(
         kind = types[account]
         if account == CASH:
             change += amount
+        elif account in NON_CASH:  # M12a: non-cash, with the asset they belong to
+            investing -= amount
         elif _is_pnl(kind):
             operating -= amount
         elif kind == "asset":

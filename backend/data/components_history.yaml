@@ -1,0 +1,38 @@
+# Component price indexes and allocation to December 2025 (docs/formulas.md 22.4, M12a).
+# Market goods (ADR-0020 3): each good has a key, a unit, an index history and allocation
+# periods. The same on every seed; after the history each index moves by a seeded AR(1) step
+# on its yearly change with shocks (stream `supply`, key (good_index,) in this file's order:
+# append new goods and never reorder).
+#
+# points: index at anchor months (YYYY-MM), 1.0 in January 2010; months between anchors are
+# geometric interpolation (a constant monthly rate). allocation: the share of a build's
+# components delivered on time in those months (100% outside them).
+goods:
+  # Server components (general data centres): -8% a year to the chip shortage, +30% from
+  # Q2 2021 to Q2 2022, back on the -8% trend by January 2023, then -8% a year.
+  - key: server
+    label: Server components
+    unit: index (January 2010 = 1.0)
+    points:
+      "2010-01": 1.0
+      "2021-04": 0.3914 # 0.92 ^ (135 / 12)
+      "2022-04": 0.5088 # x 1.30, the chip shortage
+      "2023-01": 0.3383 # back on the trend, 0.92 ^ 13
+      "2025-12": 0.2652 # 0.92 ^ (191 / 12)
+    allocation:
+      - { start: "2021-01", end: "2022-12", share: 0.70 }
+
+  # GPUs (GPU data centres): -10% a year to 2016, +20% a year in 2017-2018 (crypto), -10% a
+  # year 2019-2022, +60% from Q1 2023 to Q2 2024 (the AI crunch), then -10% a year.
+  - key: gpu
+    label: GPUs
+    unit: index (January 2010 = 1.0)
+    points:
+      "2010-01": 1.0
+      "2017-01": 0.4783 # 0.9 ^ 7
+      "2019-01": 0.6887 # x 1.2 x 1.2, crypto
+      "2023-01": 0.4519 # x 0.9 ^ 4
+      "2024-06": 0.7230 # x 1.60, the AI crunch
+      "2025-12": 0.6173 # x 0.9 ^ 1.5
+    allocation:
+      - { start: "2023-01", end: "2024-12", share: 0.40 }

@@ -30,6 +30,9 @@ OTHER_INCOME: Final = "4900_other_income"  # event cash gains (M6, 16.3)
 DEBT: Final = "2500_debt"  # loans' principal owed (M10, 20.3)
 INTEREST: Final = "7000_interest"  # interest and lenders' fees (M10, 20.3)
 RESEARCH: Final = "6500_research_development"  # localization (M9, 19.5)
+PPE: Final = "1500_ppe"  # facilities' capex as built (M12a, 22.2)
+ACCUMULATED_DEPRECIATION: Final = "1510_accumulated_depreciation"  # contra-asset (M12a)
+DEPRECIATION: Final = "6700_depreciation"  # facilities' depreciation and losses on sale (M12a)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -47,6 +50,9 @@ ENGINE_ACCOUNTS: Final = (
     MARKETING,
     SAFES,
     RESEARCH,
+    PPE,
+    ACCUMULATED_DEPRECIATION,
+    DEPRECIATION,
 )
 
 

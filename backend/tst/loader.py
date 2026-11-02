@@ -39,6 +39,7 @@ from tst.sim.data_models import (
     SkillsFile,
     TagsFile,
 )
+from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
 from tst.sim.ledger import ENGINE_ACCOUNTS
 
@@ -61,6 +62,7 @@ MACRO_HISTORY_FILE = "macro_history.yaml"  # M10 (formulas.md 20.1); folds in cl
 COMPUTE_INDEX_FILE = "compute_index.yaml"  # M8 (formulas.md 18.6)
 ENTRANTS_FILE = "entrants.yaml"  # M8 (formulas.md 18.7)
 CITIES_FILE = "cities.yaml"  # M9 (formulas.md 19.1)
+COMPONENTS_FILE = "components_history.yaml"  # M12a (formulas.md 22.4)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -68,6 +70,7 @@ DATA_FILES = (
     BALANCE_FILE,
     CATEGORIES_FILE,
     CITIES_FILE,
+    COMPONENTS_FILE,
     COMPUTE_INDEX_FILE,
     ENTRANTS_FILE,
     INBOX_FILE,
@@ -245,6 +248,7 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
                 f"{INCUMBENTS_FILE}: {inc.name!r} personality {inc.personality!r} is not one of "
                 f"{sorted(rv.weights)}"
             )
+    _check_facilities(balance, data)
     founder = balance.founder
     for bg in data.backgrounds:
         spent = sum(bg.default_allocation.values())
@@ -264,6 +268,34 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
                     f"{BACKGROUNDS_FILE}: {bg.key!r} puts {skill} at {value}, "
                     f"above founder.skill_cap = {founder.skill_cap}"
                 )
+
+
+def _check_facilities(balance: Balance, data: GameData) -> None:
+    """M12a (formulas.md 22): facility kinds name known goods, roles and skills; the
+    capacity market exists and is marked as one."""
+    goods = {g.key for g in data.components.goods} if data.components else set()
+    roles = {r.key for r in data.roles}
+    for key, kind in balance.facility.kinds.items():
+        where = f"{BALANCE_FILE}: facility.kinds.{key}"
+        if kind.input_good not in goods:
+            raise DataLoadError(
+                f"{where}: input_good {kind.input_good!r} is not in {COMPONENTS_FILE}"
+            )
+        if kind.output_good not in balance.compute.goods:
+            raise DataLoadError(
+                f"{where}: output_good {kind.output_good!r} is not in compute.goods"
+            )
+        if bad := sorted(set(kind.staff_roles) - roles):
+            raise DataLoadError(f"{where}: staff_roles {bad} are not in {ROLES_FILE}")
+        if kind.staff_skill not in data.skill_keys:
+            raise DataLoadError(f"{where}: staff_skill {kind.staff_skill!r} is not a skill")
+    key = balance.compute.capacity_category
+    capacity = [c.key for c in data.categories if c.capacity_market]
+    if capacity != [key]:
+        raise DataLoadError(
+            f"{CATEGORIES_FILE}: the one capacity_market category must be compute.capacity_category"
+            f" {key!r}, found {capacity}"
+        )
 
 
 def load_all(path: Path) -> LoadedData:
@@ -309,6 +341,7 @@ def load_all(path: Path) -> LoadedData:
     compute_index = _validate(ComputeIndexFile, parsed[COMPUTE_INDEX_FILE], COMPUTE_INDEX_FILE)
     entrants = _validate(EntrantsFile, parsed[ENTRANTS_FILE], ENTRANTS_FILE)
     cities = _validate(CitiesFile, parsed[CITIES_FILE], CITIES_FILE)
+    components = _validate(ComponentsHistoryFile, parsed[COMPONENTS_FILE], COMPONENTS_FILE)
     game_data = _validate(
         GameData,
         {
@@ -339,6 +372,7 @@ def load_all(path: Path) -> LoadedData:
             "region_growth": cities.region_growth,
             "home_city_region": cities.home_city_region,
             "region_markets": categories.regions,
+            "components": components,
             "event_templates": tuple(event_templates),
         },
         "seed data cross-check",
