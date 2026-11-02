@@ -12,7 +12,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Outages (stream `facility`, 27) as the critical `facility_outage` event.
   - Infrastructure screen (from Products): component strip, data centres, Cloud hosting panel, contracts, Build / Contract / Sell dialogs; `tst facilities`, `build-dc`, `sell-dc`, `staff-dc`, `contract`, `sell-capacity`.
   - §22.7 targets (`tools/m12a_targets.py`, nightly): T2 0.62 / 1.23 (built Jan 2016), T3 9/10, T4 +30% / +60%, T5 8/10, T6 1.05 / 0.17; T4's own-GPU margin gap -6.0 points against +15 is **not met** (reported). `facility.outage.base` 0.002 -> 0.016 for T6.
-  - Earlier guard: T5 bootstrap-frugal bankrupt 0% (20-50%); the four cloud incumbents renumber later rival startups and so reseed their `rivals` stream. On main the measure is 2/10 on seeds 1-10 but 2/30 on seeds 11-40 on both main and this branch (reported, not tuned).
+  - Earlier guards moved by the cloud incumbents (reported, not tuned): M10 covenants 0.7 (<= 0.6), M8 support 1.056 (>= 1.08), T5 bootstrap-frugal bankrupt 0% (20-50%); the four cloud incumbents renumber later rival startups and so reseed their `rivals` stream. On main the measure is 2/10 on seeds 1-10 but 2/30 on seeds 11-40 on both main and this branch (reported, not tuned).
   - Golden snapshots move with the cloud incumbents (company, product and rival people ids); they are regenerated once, on the combined code, when M12a merges after M11.
 
 - M10d Balance checkpoint (product manager's decisions of 2026-11-02; table in `docs/balance-targets.md`, M10d):
