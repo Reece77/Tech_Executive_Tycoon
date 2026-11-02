@@ -92,6 +92,14 @@ Play 3 years from a new game. Do events feel like they matter, does the inbox st
 - **Former profiles (6).** Job history is rebuilt from the decision log: the candidate's level and the accepted offer's unit at hire, then promotions, moves and appointments; "what they led" lists units led, seats held, products their unit was assigned while they were in it, and storylines they appeared in. Research projects come with M11.
 - **Tests that play turns** call the helpers that answer blocking events first, as a player would; the e2e helper answers them through the API before Continue.
 
+- **A moved guard, recorded for M10d.** T5 "blitzscale (standard) bankrupt by the end" reads 0% (band 10-40%; 10% before M10b). The brief says a guard that moves is reported for M10d, not tuned here, so it is an `xfail(strict=False)` with that reason, outside the aggregate check, like T3 and T7 before it. **It needs the product manager's approval**; M10d re-checks every target.
+- **Verification at close.** Backend lint, types and the non-nightly suite pass, golden snapshots regenerated (above); front-end lint, types and tests pass; the API is in sync; `make e2e` 49 passed. Nightly guards, alone: as tabled in `docs/balance-targets.md` (M10b): 15 passed, the recorded xfails unchanged, §20.5 target 2 now passes, T5 blitzscale moved. S2 17.8 worker-minutes with the balance runner alone (70 inside the parallel nightly). §23.7 target 1: 1.08 critical events per 18 months with 20+ staff, shortest gap 6.
+
 ## Follow-ups
 
-_(Agent fills in.)_
+- **T5 blitzscale bankruptcy** moved to 0% (see above): for M10d.
+- **Crises in practice are mostly key exits** (45 of 49 critical events in the target-1 run, the other 4 press crises; no breach or outage on the steady script, whose products keep quality up). If Reece wants more breaches and outages, the `events.crisis` chances are the keys.
+- **Estimated output:** the team-strength line uses displayed ranges. A team whose skills are barely known reads near the middle of the scale until interviews and time narrow them.
+- **The CLI's `advance`** still answers major events with their first choice (headless); a `--strict` flag could block like the API.
+- **Regional history** (product_month by region) would let the home-only series cover the whole product (carried from M10r).
+- **Research projects** in "what they led" come with M11.

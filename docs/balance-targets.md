@@ -190,3 +190,26 @@ M9 keys tuned to get here: `geo.pay_level` 0.876 (Reece); `geo.region_entry.unse
 | Potential spotting gap (3.0 PA points) | `test_judgment_spots_potential` | 3.04 | 2.83 | the city talent bonus raises candidates' CA and so their PA (hires' mean 141 against 133) |
 
 **Top priority for the next balance pass:** expansion is too strong (7.0x vs 1.4x target; home-only blitzscale fails every seed).
+
+### M10b (2026-11-02)
+
+The nightly guards run alone after M10b's feel fixes (event modifiers, crises, numbers in events, self-serve abroad and marketing by region). No balance key outside `events.*` was tuned.
+
+| Guard | Before M10b | After M10b | Result |
+| --- | --- | --- | --- |
+| T1 do-nothing fails | 10/10 | 10/10 | pass |
+| T2 wins per strategy | steady 8, bootstrap-frugal 2 | steady 7, bootstrap-frugal 3 | recorded xfail (stays) |
+| T3 succeeds: bootstrap-frugal / steady / blitzscale | 8 / 10 / 5 | 8 / 10 / 5 | pass |
+| T4a-c | 4 and 1; 28.5 and 18; 36 on 9/10 | 4 and 1; 27.5 and 18; 36 on 10/10 | pass |
+| **T5 blitzscale (standard) bankrupt by the end (10-40%)** | 10% | **0%** | **moved: reported for M10d** (`xfail(strict=False)`, awaiting the product manager) |
+| T5 others | 0/0/0%; 20% | 0/0/0%; 20% | pass |
+| T6 | 23 months; 11%; 10% | 23 months; 11%; 10% | pass |
+| T7 incumbents; startups alive | 23/23; 62% of 94 | 23/23; 62% of 94 | pass; recorded xfail (stays) |
+| S2 worker-minutes, run alone | 16.9 | 17.8 | pass |
+| §20.5 target 2 (debt saves dilution) | +4.8 (xfail) | passes | recorded xfail, now passes |
+| M8 support; T3 blitzscale | xpass | xpass | recorded xfails, still pass |
+| Other recorded xfails (M8 seats, covenants, executive retention, M5 launches, potential) | xfail | xfail | unchanged |
+| E1, E2 event balance | 1.35 a month; cash −1.35%; morale worst +2.90 | 1.37 a month; cash −1.68% (worst −2.69%); morale worst +1.38 | pass |
+| §23.7 target 1: critical events per 18 months with 20+ staff (steady, 10 seeds) | - | 1.08; shortest gap 6 months | pass |
+| §23.7 target 2: every template choice has an effect or says do nothing; 28 benefit templates carry a modifier | - | data tests | pass |
+| Ten-year run through the API | pass | pass | pass |

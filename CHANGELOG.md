@@ -4,6 +4,17 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M10b Feel fixes from Reece's playtest (formulas.md §23):
+  - Regional prices show on the product and in a fresh Regions dialog (the engine charged them; nothing showed them).
+  - Inbox: answered events archive themselves; read, unbookmarked items three months old archive at month end; a star keeps one (migration `0024_inbox_bookmark`). Open major and critical events block Continue (409 `events_open`; "Answer N events first"); Holiday still answers majors below its stop level.
+  - Events: the `modifier` effect (brand target, quality cap, builder output, seller capacity, awareness, churn, morale target, founder energy; 5/10/20% for up to 6/12/12 months; migration `0025_event_modifiers`), effects shown as numbers, explicit "Do nothing" choices, the active-effects panel on Overview, Product and Person, the month-end "Your choices this month" line, energy effects in the energy tooltip; 28 benefit templates carry a modifier.
+  - Crises: key exits, security breaches, outages and press crises bring critical events (spacing kept); the counter-offer's `retain` effect; `crisis.yaml`.
+  - Explanations: product team strength against its maintenance and full-speed lines, the two slipping messages, sales capacity with numbers (all from displayed ranges, ADR-0007), role summaries and reasons to hire, the Org structure guide, glossary.
+  - Regions: self-serve sells abroad at full awareness without presence; marketing split by region (by revenue unless set; 70% awareness with no spend; migration `0026_marketing_split`).
+  - Former staff profiles: job history and what they led.
+  - §23.7 targets: 1.08 critical events per 18 months with 20+ staff; event balance holds with modifiers. T5 blitzscale bankruptcy moved to 0% (10-40%): recorded `xfail(strict=False)` and reported for M10d.
+  - **Golden snapshots regenerated:** event modifiers, crisis events, the template pass, numbers in inbox notes and the marketing split change events, inbox items and outcomes.
+
 - Docs: Reece's v1 playtest (2026-11-01) turned into M10b (feel fixes), M10c (executives with authority) and M10d (balance checkpoint), with formulas.md §23–§24; M11 and M12a now depend on m10d-done.
 - M10r fixes from Codex review 2 (each with a regression test written first and seen failing; resolution table in `docs/reviews/codex-review-2.md`):
   - 1 (P2) The debt history's monthly operating result (bank-loan gate, profit covenant) classifies the whole month's ledger by account: `advance_turn` takes `prior_operating` beside `prior_flow`, from `repository.month_so_far` and the balance runner. A waiver fee paid before Continue is interest, below operating profit; burn is unchanged (`test_m10r_lender_fee.py`, `test_m10r_month_operating.py`).
