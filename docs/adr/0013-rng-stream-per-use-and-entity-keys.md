@@ -43,6 +43,9 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `rival_region` | 22 | `(startup_id,)` | A rival startup's founding region, one draw weighted by its category's addressable demand in each region (formulas.md §19.6) | M9 |
 | `supply` | 26 | `(good_index,)` (position in `components_history.yaml`: 0 server, 1 GPU) | Component indexes and supply shocks after 2025 (formulas.md §22.4): one generator per good each month, drawing in a fixed order (the yearly change's standard normal, used only in January; the shock-start uniform; the shock's rise, allocation and length uniforms), every month whether used or not | M12a |
 | `facility` | 27 | `(facility_id,)` | A data centre's monthly outage roll, one uniform (formulas.md §22.5) | M12a |
+| `research` | 23 | `(project_id,)` | A research project's breakthrough and dead-end draws, two uniforms a month in project id order: breakthrough, then dead end only without one (formulas.md §21.3) | M11 |
+| `rival_research` | 24 | `(company_id,)` | A researching rival's monthly breakthrough draw, one uniform (formulas.md §21.6) | M11 |
+| `lead_reveal` | 25 | `(observer_company_id, company_id, domain_index)` | The offset of another company's research-lead range, one uniform drawn at turn 0, so the range's midpoint is not the true lead (formulas.md §21.7) | M11 |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).
@@ -69,10 +72,13 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `rival_region` | `(startup_id,)` | `(*rival_key,)` |
 | `people_gen` (a rival's own hires) | `(company_id, n)` | `(*rival_key, n)`; a search's batch stays `(search_id,)` |
 | `poach` | `(approach_id,)`, `(approach_id, 1)` | answer `(*rival_key, 0, month the approach was made)`, target `(*rival_key, 1)` (a rival approaches at most once a month) |
+| `rival_research` (M11) | `(company_id,)` | `(*rival_key,)` |
 
 `rival_key` is stored per company (`company_rival_key`, migration 0028): `(0, i)` for the incumbent at position i of `incumbents.yaml`, `(1, i)` for the entrant at position i of `entrants.yaml`, `(2, c, n)` for the n-th startup founded in the category at position c of `categories.yaml` (counting failed ones). It is never a database id. A company without one (the player; rivals of saves made before M12a) is keyed `(3, company_id)`. The leading tag keeps the kinds apart.
 
 In a new game an incumbent's products take ids from `900,000 + 10 i` and its key people and employments from `5,000,001 + 100 i`, so the player's products (from 1) and startups' people (from 1,000,001) no longer depend on how many incumbents there are; `product_dev` and the person-keyed streams keep their keys. Saves made before M12a keep their ids.
+
+`lead_reveal` (M11) keeps `(observer, company_id, domain_index)`: it only offsets a displayed range and moves no decision.
 
 **Consequences.** Appending a company to the data changes only what it really touches: the rivals of its own category compete with it. A test appends an incumbent and checks every rival outside its category decides exactly as before over 24 turns (`tests/unit/test_rival_keys.py`). Golden snapshots were regenerated once for this (CHANGELOG).
 
@@ -86,4 +92,6 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | `research` | 23 | `(project_id,)` | Breakthroughs and dead ends (formulas.md §21.3) | M11 (lane A) |
 | `rival_research` | 24 | `(company_id,)` | Rivals' research breakthroughs (formulas.md §21.6) | M11 (lane A) |
 | — | 25 | — | Reserved for lane A | M11 |
+| `supply` | 26 | `(index,)` | Component indexes and supply shocks after 2025 (formulas.md §22.4) | M12a (lane B) |
+| `facility` | 27 | `(facility_id,)` | Data-centre outages (formulas.md §22.5) | M12a (lane B) |
 | — | 28–29 | — | Reserved for lane B | M12a |

@@ -29,10 +29,11 @@ SAFES: Final = "2600_safes"  # SAFEs until they convert (M4)
 OTHER_INCOME: Final = "4900_other_income"  # event cash gains (M6, 16.3)
 DEBT: Final = "2500_debt"  # loans' principal owed (M10, 20.3)
 INTEREST: Final = "7000_interest"  # interest and lenders' fees (M10, 20.3)
-RESEARCH: Final = "6500_research_development"  # localization (M9, 19.5)
 PPE: Final = "1500_ppe"  # facilities' capex as built (M12a, 22.2)
 ACCUMULATED_DEPRECIATION: Final = "1510_accumulated_depreciation"  # contra-asset (M12a)
 DEPRECIATION: Final = "6700_depreciation"  # facilities' depreciation and losses on sale (M12a)
+RESEARCH: Final = "6500_research_development"  # localization (M9, 19.5); research (M11, 21.3)
+LICENSE_REVENUE: Final = "4100_revenue_licenses"  # licence prices and royalties (M11, 21.5)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -53,6 +54,7 @@ ENGINE_ACCOUNTS: Final = (
     PPE,
     ACCUMULATED_DEPRECIATION,
     DEPRECIATION,
+    LICENSE_REVENUE,
 )
 
 

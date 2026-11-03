@@ -49,6 +49,10 @@ from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
 from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
+from tst.sim.research.eras import arrive_eras
+from tst.sim.research.licensing import leaks, royalties
+from tst.sim.research.projects import decay_leads, run_projects
+from tst.sim.research.rivals import rival_research_month
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rivals.poaching import answer_approaches, join_rivals
@@ -159,7 +163,9 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     state, event_entries, event_logs = auto_resolve(ctx.state, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*event_entries).log(*event_logs)
     state, ended = phases.end_notices(ctx.state)
+    joining = state
     state = join_rivals(state)  # people who took a rival's offer join it (M5, 15.6)
+    state, leaked = leaks(joining, state, ctx.balance, ctx.data)  # researchers' know-how (21.5)
     state, answered = answer_approaches(state, ctx.rng, ctx.balance)  # M5 (15.6)
     state = settle_leavers(state)  # leavers' unvested options return to the pool (14.2)
     state, detached = detach_departed(state, ctx.data)
@@ -168,7 +174,7 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     state, closing, closed = fundraising.close_rounds(state, ctx.rng, ctx.balance, ctx.data)
     state = settle_home_cities(state, state.player.id, ctx.balance, ctx.data)  # M9 (19.2)
     ctx = replace(ctx, state=state).post(*entries, *closing)
-    return ctx.log(*ended, *answered, *detached, *vacated, *resolved, *closed)
+    return ctx.log(*ended, *leaked, *answered, *detached, *vacated, *resolved, *closed)
 
 
 def rival_decisions(ctx: TurnContext) -> TurnContext:
@@ -192,11 +198,15 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
 
 
 def research_progress(ctx: TurnContext) -> TurnContext:
-    """Product development: quality and features (formulas.md 11.4, ADR-0017). The v2
-    technology tree joins this phase later."""
+    """Product development: quality and features (formulas.md 11.4, ADR-0017); then the R&D
+    tree (M11, 21): research projects spend and progress, leads decay, and eras arrive."""
     state, logs = products.develop(ctx.state, ctx.rng, ctx.balance, ctx.data)
     state = apply_effects(state, ctx.balance, ctx.data)  # rival pushes and drags (M5, 15.2)
-    return replace(ctx, state=state).log(*logs)
+    state, research = run_projects(state, ctx.rng, ctx.balance, ctx.data)
+    state = rival_research_month(state, ctx.rng, ctx.balance)  # 21.6
+    state = decay_leads(state, ctx.data, ctx.balance)
+    state, arrived = arrive_eras(state, ctx.data, ctx.balance)
+    return replace(ctx, state=state).post(*research).log(*logs, *arrived)
 
 
 def production_and_capacity(ctx: TurnContext) -> TurnContext:
@@ -210,7 +220,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     """Appeal, churn, customers won, and revenue for every market segment (11.6-11.8)."""
     out = products.run_markets(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
-    return ctx.post(*out.entries).log(*out.logs)
+    ctx = ctx.post(*out.entries).log(*out.logs)
+    return ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
 
 
 def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:

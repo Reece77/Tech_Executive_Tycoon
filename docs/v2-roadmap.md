@@ -32,6 +32,12 @@ v2 runs in two lanes where the systems are separate (Reece, 2026-10-29). Each la
 
 **Rough effort:** at v1's pace (a v1 milestone took Claude Code about one to two working sessions), v2 is roughly 10–14 sessions. Running two lanes takes off about a third of the calendar time, not the work. Reece's playtests set the real pace: after M9/M10, after M12 and after M15.
 
+## M15 follow-ups carried from M11
+
+- **Research may be too strong.** `rnd.cap_per_point` 0.010 allows up to ×1.50 on the quality cap, and Transformers arrived early on 10/10 seeds (target ≥ 5). Check with the research-heavy strategy and Reece's play before M15 tunes it.
+- **No eras after 2025.** The 30-year campaign needs seeded future eras (2026–2040) so research keeps paying off late.
+- **Rivals never license from the player.** Licensing out only works with rivals that approach you; add rival demand for licences in.
+
 ## Lane rules (for every paired milestone)
 
 - **Files.** Each brief lists the folders its lane owns. Shared files (`balance.yaml`, `CHANGELOG.md`, `docs/formulas.md`, `docs/data-dictionary.md`) keep both sides on merge.

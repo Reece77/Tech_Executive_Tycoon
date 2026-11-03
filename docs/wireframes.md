@@ -231,6 +231,35 @@ Two artboards in the canvas's eleventh row.
 - *M11:* the tech factor in the product quality breakdown; the era timeline also on Market; Start a project and License dialogs; the era-arrival news card.
 - *M12a:* the Contract dialog (index, months, volume, take-or-pay note); depreciation and capex lines in Finance; the outage critical event card; the Cloud hosting market view with a hyperscalers segment.
 
+## M13 screens (v2, lane B)
+
+Two artboards in the canvas's twelfth row.
+
+**IPO** (in Fundraising). Kestrel in May 2019.
+- *Progress strip:* banks hired, S-1 filed (with the choice taken), roadshow (the ambition and share sold), pricing (now), listing day (next month), plus the lead bank and its fee.
+- *Pricing card* (critical): the book described in words ("strong"), the bank's range and suggestion, and four choices with what each raises, before and after fees, and the likely first day: price at the suggestion, raise 10% (only with strong demand), cut 15%, or pull the IPO (fees and board confidence).
+- *Offering panel:* new shares and their percentage, shares after listing, implied market cap, price-to-sales, dual-class shares, and your stake after listing with its value.
+
+**Stock** (a Finance tab once public). Kestrel in July 2020.
+- *Price block:* ticker, price and this month's change, market cap, listing price and date, your stake's value. Beside it, a price chart since listing with earnings beats and misses marked.
+- *Guidance and results:* each quarter's guided and actual revenue, margin guided against actual, and the result with the price reaction. Below it, the next quarter's guidance with the consensus shown, a hint, and energy 4.
+- *Side panel:* analysts (buy, hold and sell counts, average target), capital actions (buyback, dividend, secondary offering), and a line on how the board reacts to earnings.
+
+**Not drawn (text only):** the CEO seat on the Executive team panel (appoint, authority, this month's decisions, override at energy 6); the activist and takeover-bid critical events; the stage-4 board with independents.
+
+## M12b screens (v2, lane A)
+
+One artboard in the canvas's thirteenth row. Kestrel in September 2021, during the chip shortage.
+
+**Hardware** (a new screen, reached from Products).
+- *Header:* counts and actions (sign a manufacturing contract, build a plant, new chip).
+- *Component strip:* device components index with this year's change and allocation, the foundry wafer price with allocation and your contract's allocation, and the plant equipment index.
+- *Unit cost panel* for a device: each line of the unit cost (components as BOM × index, the SoC as your own at cost or bought, assembly with its source and yield), then unit cost and gross margin, and a line comparing the alternatives (a bought chip, the contract instead of the plant).
+- *Manufacturing:* plant capacity and use (yours and sold), contract volume and use with take-or-pay, and demand against what shipped.
+- *Chips panel:* each chip's type, chips per wafer, yield and unit cost; units used in your devices and sold to device makers at a price; the wafer contract; and a note that own chips book no revenue and that an AI accelerator cuts GPU data-centre capex.
+
+**Not drawn (text only):** the plant build dialog (city, capacity, capex, staff, yield estimate); the contract dialogs; the contract-manufacturing market view; chip products in Market.
+
 ## Rules carried from the docs
 
 - Never show CA, PA as a number, hidden traits, or tags the player's company has not noticed (ADR-0007).

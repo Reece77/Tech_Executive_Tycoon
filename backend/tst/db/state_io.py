@@ -79,6 +79,7 @@ from tst.db.models import (
     CompanyRivalKeyRow,
     CompanyRow,
     EmploymentRow,
+    EraArrivalRow,
     EventModifierRow,
     EventQueueRow,
     EventRow,
@@ -93,6 +94,7 @@ from tst.db.models import (
     HiringPlanRow,
     LedgerEntryRow,
     LedgerLineRow,
+    LicenseRow,
     LoanRow,
     MacroMonthRow,
     MarketingSplitRow,
@@ -121,6 +123,8 @@ from tst.db.models import (
     RegionalMarketRow,
     RegionalSegmentRow,
     RelationshipRow,
+    ResearchLeadRow,
+    ResearchProjectRow,
     RivalEffectRow,
     RivalMoveRow,
     RoundNomineeRow,
@@ -162,6 +166,7 @@ from tst.sim.ledger import LedgerEntry
 from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Proposal
 from tst.sim.people.models import Person, RevealState
 from tst.sim.people.relationships import Relationship
+from tst.sim.research.models import EraArrival, License, ResearchLead, ResearchProject
 from tst.sim.rivals.models import (
     FreeAgent,
     PoachApproach,
@@ -458,7 +463,127 @@ def load_state(session: Session) -> GameState:
     state = _load_m10(session, state)
     state = _load_exec(session, state)
     state = _load_facilities(session, state)
+    state = _load_research(session, state)
     return _load_geo(session, state, product_ids)
+
+
+RESEARCH_MEMORY = 24  # months of stopped projects loaded: last events and History (M11)
+
+
+def _load_research(session: Session, state: GameState) -> GameState:
+    """Leads, active and recent projects, arrived eras and licences (M11, 0028)."""
+    if not has_table(session, ResearchLeadRow):
+        return state
+
+    def after(model: Any) -> int:
+        return int(session.scalar(select(func.max(model.id))) or 0) + 1
+
+    since = state.turn - RESEARCH_MEMORY
+    return replace(
+        state,
+        research_leads=tuple(
+            ResearchLead(r.company_id, r.domain, float(r.lead))
+            for r in session.scalars(
+                select(ResearchLeadRow).order_by(ResearchLeadRow.company_id, ResearchLeadRow.domain)
+            )
+        ),
+        research_projects=tuple(
+            ResearchProject(
+                id=r.id,
+                company_id=r.company_id,
+                domain=r.domain,
+                unit_id=r.unit_id,
+                start_turn=r.start_turn,
+                status=r.status,  # type: ignore[arg-type]
+                budget_cents=r.budget_cents,
+                end_turn=r.end_turn,
+                recent=tuple(float(v) for v in r.recent or ()),
+                gained=float(r.gained),
+                last_event=r.last_event,  # type: ignore[arg-type]
+                last_event_turn=r.last_event_turn,
+            )
+            for r in session.scalars(
+                select(ResearchProjectRow)
+                .where(
+                    (ResearchProjectRow.status == "active") | (ResearchProjectRow.end_turn >= since)
+                )
+                .order_by(ResearchProjectRow.id)
+            )
+        ),
+        era_arrivals=tuple(
+            EraArrival(r.key, r.turn, r.company_id, r.months_early)
+            for r in session.scalars(select(EraArrivalRow).order_by(EraArrivalRow.key))
+        ),
+        licenses=tuple(
+            License(
+                id=r.id,
+                licensor_id=r.licensor_id,
+                licensee_id=r.licensee_id,
+                domain=r.domain,
+                points=float(r.points),
+                turn=r.turn,
+                price_cents=r.price_cents,
+                royalty_bp=r.royalty_bp,
+                royalty_end_turn=r.royalty_end_turn,
+            )
+            for r in session.scalars(select(LicenseRow).order_by(LicenseRow.id))
+        ),
+        next_ids=replace(
+            state.next_ids, research_project=after(ResearchProjectRow), license=after(LicenseRow)
+        ),
+    )
+
+
+def _sync_research(session: Session, old: GameState, new: GameState) -> None:
+    """Changed leads, projects, era arrivals and licences (M11). Leads only grow in number;
+    a lead at 0 keeps its row."""
+    if (old.research_leads, old.research_projects, old.era_arrivals, old.licenses) == (
+        new.research_leads,
+        new.research_projects,
+        new.era_arrivals,
+        new.licenses,
+    ) or not has_table(session, ResearchLeadRow):
+        return
+    session.flush()
+    for r in _changed(old.research_leads, new.research_leads, lambda r: (r.company_id, r.domain)):
+        session.merge(ResearchLeadRow(company_id=r.company_id, domain=r.domain, lead=r.lead))
+    for p in _changed(old.research_projects, new.research_projects, lambda p: p.id):
+        session.merge(
+            ResearchProjectRow(
+                id=p.id,
+                company_id=p.company_id,
+                domain=p.domain,
+                unit_id=p.unit_id,
+                start_turn=p.start_turn,
+                status=p.status,
+                budget_cents=p.budget_cents,
+                end_turn=p.end_turn,
+                recent=list(p.recent),
+                gained=p.gained,
+                last_event=p.last_event,
+                last_event_turn=p.last_event_turn,
+            )
+        )
+    for a in _changed(old.era_arrivals, new.era_arrivals, lambda a: a.key):
+        session.merge(
+            EraArrivalRow(
+                key=a.key, turn=a.turn, company_id=a.company_id, months_early=a.months_early
+            )
+        )
+    for x in _changed(old.licenses, new.licenses, lambda x: x.id):
+        session.merge(
+            LicenseRow(
+                id=x.id,
+                licensor_id=x.licensor_id,
+                licensee_id=x.licensee_id,
+                domain=x.domain,
+                points=x.points,
+                turn=x.turn,
+                price_cents=x.price_cents,
+                royalty_bp=x.royalty_bp,
+                royalty_end_turn=x.royalty_end_turn,
+            )
+        )
 
 
 def _load_geo(session: Session, state: GameState, product_ids: list[int]) -> GameState:
@@ -1258,6 +1383,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_marketing(session, old, new)
     _sync_exec(session, old, new)
     _sync_facilities(session, old, new)
+    _sync_research(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()
         for row in former_rows(old, new):  # M7c: what the player knew when they left
@@ -1480,6 +1606,11 @@ def live_view(state: GameState) -> GameState:
             p for p in state.proposals if p.status == "pending" or p.turn > turn - EXEC_MEMORY
         ),
         regional_segments=tuple(s for s in state.regional_segments if s.product_id in product_ids),
+        research_projects=tuple(
+            p
+            for p in state.research_projects
+            if p.is_active or (p.end_turn is not None and p.end_turn >= turn - RESEARCH_MEMORY)
+        ),
         free_agents=free_agents,
         events=tuple(
             e

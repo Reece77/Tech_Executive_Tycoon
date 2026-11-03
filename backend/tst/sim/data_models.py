@@ -27,6 +27,7 @@ from tst.sim.facilities.config import (
     SupplyBalance,
 )
 from tst.sim.money import BP_DENOMINATOR
+from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
 
@@ -1131,6 +1132,7 @@ class Balance(_Frozen):
     facility: FacilityBalance  # M12a (formulas.md 22.2, 22.5)
     supply: SupplyBalance  # M12a (formulas.md 22.4)
     compute: ComputeBalance  # M12a (formulas.md 22.1, 22.3)
+    rnd: RndBalance  # M11 (formulas.md 21)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1724,6 +1726,10 @@ INBOX_TEMPLATE_KEYS = (
     "contract_settled",
     "cloud_started",
     "outage_hit",
+    "era_arrived",  # M11 (21.4, 21.5)
+    "license_in",
+    "license_out",
+    "research_leak",
 )
 
 
@@ -1766,6 +1772,8 @@ class GameData(_Frozen):
     home_city_region: dict[str, str] = Field(default_factory=dict)  # M9: regions without a city
     region_markets: tuple[RegionMarketDef, ...] = ()  # M9 (19.5), categories.yaml regions
     components: ComponentsHistoryFile | None = None  # M12a (22.4): market goods' history
+    tech: TechFrontierFile | None = None  # M11 (21.1-21.3): None = no research domains
+    eras: ErasFile = ErasFile()  # M11 (21.4)
 
     def event_template(self, template_id: str) -> EventTemplate:
         for template in self.event_templates:

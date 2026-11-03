@@ -424,3 +424,20 @@ def test_unstaffed_data_centre_has_outages_as_critical_events(loaded: LoadedData
     assert len(after.outages) == 1 and logs
     template = loaded.game_data.event_template("facility_outage")
     assert template.is_critical
+
+
+def test_cloud_features_follow_the_infrastructure_lead(loaded: LoadedData) -> None:
+    """Features = 50 + 2 x the infrastructure lead from M11 (22.3)."""
+    from tst.sim.facilities.cloud import refresh_product
+    from tst.sim.products.formulas import feature_score
+    from tst.sim.research.models import ResearchLead
+    from tst.sim.state import with_research_lead
+
+    state = _live(fresh_game(loaded), loaded, capacity=100)
+    state = _act(state, SellCapacity(_founder(state)), loaded).new_state
+    state = with_research_lead(state, ResearchLead(1, "infrastructure", 10.0))
+    state = refresh_product(state, 1, loaded.balance, loaded.game_data)
+    cloud = compute.capacity_product(state, 1, loaded.game_data)
+    assert cloud is not None
+    category = loaded.game_data.category("cloud_hosting")
+    assert feature_score(cloud.feature_points, category, state.turn) == pytest.approx(70)

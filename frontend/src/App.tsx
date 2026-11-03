@@ -10,6 +10,7 @@ import { MainMenu } from './screens/MainMenu';
 import { MarketScreen } from './screens/MarketScreen';
 import { NewGameScreen } from './screens/NewGameScreen';
 import { OfficesScreen } from './screens/OfficesScreen';
+import { ResearchScreen } from './screens/ResearchScreen';
 import { OrgScreen } from './screens/OrgScreen';
 import { OverviewScreen } from './screens/OverviewScreen';
 import { PeopleScreen } from './screens/PeopleScreen';
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="org" element={<OrgScreen />} />
           <Route path="org/offices" element={<OfficesScreen />} />
           <Route path="products" element={<ProductsScreen />} />
+          <Route path="products/research" element={<ResearchScreen />} />
           <Route path="products/markets" element={<MarketScreen />} />
           <Route path="products/infrastructure" element={<InfrastructureScreen />} />
           <Route path="products/markets/:category" element={<MarketScreen />} />

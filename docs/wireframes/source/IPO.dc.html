@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>IPO</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+.tab{font-size:14px;padding:8px 14px;border-bottom:2px solid transparent;color:#9BA7B6;text-decoration:none}
+.tab.on{color:#E8ECF1;border-color:#5AA2FF}
+.chip{font-size:12px;color:#C9D1DB;border:1px solid #2A3442;border-radius:12px;padding:3px 10px;background:#11161D}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1B232E;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.btnp{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;color:#9BA7B6;font-size:12px;padding:6px 8px;border-bottom:1px solid #2A3442}
+.tbl td{padding:7px 8px;border-bottom:1px solid #1F2732;vertical-align:top}
+.tip{position:absolute;background:#1F2834;border:1px solid #3A4656;border-radius:8px;padding:12px 14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+.dim{color:#9BA7B6}.pos{color:#5FD08B}.neg{color:#F07C7C}.warn{color:#E8B85A}
+.sev{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 3 · Scale-up</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">May 2019</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">$62,000,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">not burning</span></div>
+      <a href="Coo.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Ask COO</a>
+      <a href="Settings.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <a href="Holiday.dc.html" style="font-size: 14px; color: #E8ECF1; text-decoration: none; border: 1px solid #3A4656; border-radius: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px">Holiday <span class="key">H</span></a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html" aria-current="page" style="background:#1B232E;color:#E8ECF1"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="History.dc.html"><span class="key">9</span>History</a>
+      <a class="navlink" href="Saves.dc.html"><span class="key">0</span>Saves</a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; position: relative">
+<!--H:900-->
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Finance</h1>
+      <nav aria-label="Finance tabs" style="display: flex; gap: 4px; border-bottom: 1px solid #2A3442">
+        <a class="tab" href="Finance.dc.html">Statements</a><a class="tab" href="DivisionPL.dc.html">Divisions</a><a class="tab" href="Debt.dc.html">Debt</a><a class="tab" href="CapTable.dc.html">Cap table</a><a class="tab on" href="#">Fundraising</a><a class="tab" href="Board.dc.html">Board</a>
+      </nav>
+      <section class="panel" aria-label="IPO progress">
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 class="ptitle" style="margin: 0">Initial public offering</h2><span class="dim" style="font-size: 12px">lead bank: Morgan Stanley · fee 6%</span></div>
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 14px; font-size: 13px">
+          <div style="border-top: 3px solid #5FD08B; padding-top: 6px"><b>Banks hired</b><div class="dim">Jan 2019</div></div>
+          <div style="border-top: 3px solid #5FD08B; padding-top: 6px"><b>S-1 filed</b><div class="dim">Feb 2019 · answered regulator</div></div>
+          <div style="border-top: 3px solid #5FD08B; padding-top: 6px"><b>Roadshow</b><div class="dim">Mar–Apr · middle range, 15% sold</div></div>
+          <div style="border-top: 3px solid #E8B85A; padding-top: 6px"><b>Pricing</b><div class="warn">now · decide</div></div>
+          <div style="border-top: 3px solid #2A3442; padding-top: 6px"><b>Listing day</b><div class="dim">next month</div></div>
+        </div>
+      </section>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start">
+        <section class="panel" aria-label="Pricing decision" style="border-color: #A35A1F">
+          <div style="display: flex; gap: 8px; align-items: center"><span class="sev" style="background: #5A2E12; color: #F2A65A">Critical</span><h2 class="ptitle" style="margin: 0">Price the offering</h2></div>
+          <p style="margin: 10px 0; font-size: 14px; line-height: 1.5">The book is <b>strong</b>: investors asked for well over the shares on offer. Morgan Stanley's range is $15.50–$17.00; they suggest $16.22.</p>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <button class="btn" type="button" style="text-align: left; padding: 10px 12px"><b>Price at $16.22</b><div class="dim" style="font-size: 12px">raises $286M ($269M after fees) · likely first-day pop</div></button>
+            <button class="btn" type="button" style="text-align: left; padding: 10px 12px"><b>Raise to $17.84 (+10%)</b><div class="dim" style="font-size: 12px">raises $315M ($296M after fees) · smaller pop, some risk of a flat day</div></button>
+            <button class="btn" type="button" style="text-align: left; padding: 10px 12px"><b>Cut to $13.79 (−15%)</b><div class="dim" style="font-size: 12px">raises $243M · near-certain pop</div></button>
+            <button class="btn" type="button" style="text-align: left; padding: 10px 12px; color: #F07C7C"><b>Pull the IPO</b><div class="dim" style="font-size: 12px">costs $5.1M in fees · board confidence −10</div></button>
+          </div>
+        </section>
+        <aside class="panel" aria-label="Offering summary">
+          <h2 class="ptitle">The offering</h2>
+          <div class="row"><span>New shares</span><span class="num">17.65M (15%)</span></div>
+          <div class="row"><span>Shares after listing</span><span class="num">117.65M</span></div>
+          <div class="row"><span>Implied market cap at $16.22</span><span class="num">$1.91B</span></div>
+          <div class="row"><span>Price-to-sales</span><span class="num">15.9× ARR</span></div>
+          <div class="row"><span>Dual-class shares</span><span>No</span></div>
+          <div class="row" style="border-bottom: 0"><span>Your stake after listing</span><span class="num">14.2% · $271M</span></div>
+          <p class="meta" style="font-size: 12px; margin: 10px 0 0">After listing you're a public company (stage 4): quarterly earnings, analysts, and two independent directors.</p>
+        </aside>
+      </div>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

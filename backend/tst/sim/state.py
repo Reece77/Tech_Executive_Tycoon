@@ -43,6 +43,7 @@ from tst.sim.org.models import (
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
+from tst.sim.research.models import EraArrival, License, ResearchLead, ResearchProject
 from tst.sim.rivals.models import (
     FreeAgent,
     PoachApproach,
@@ -181,6 +182,12 @@ class GameState:
     supply: tuple[GoodMonth, ...] = ()
     contracts: tuple[SupplyContract, ...] = ()
     outages: tuple[Outage, ...] = ()
+    # M11 (21): leads by (company_id, domain); projects (active, and stopped ones of the last
+    # months) and licences by id; arrived eras by key.
+    research_leads: tuple[ResearchLead, ...] = ()
+    research_projects: tuple[ResearchProject, ...] = ()
+    era_arrivals: tuple[EraArrival, ...] = ()
+    licenses: tuple[License, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -474,6 +481,33 @@ class GameState:
     def good_month(self, good: str) -> GoodMonth | None:
         return next((g for g in self.supply if g.good == good), None)
 
+    # --- Research (M11) ---------------------------------------------------------------------
+
+    def research_lead(self, company_id: int, domain: str) -> float:
+        for r in self.research_leads:
+            if r.company_id == company_id and r.domain == domain:
+                return r.lead
+        return 0.0
+
+    def research_project(self, project_id: int) -> ResearchProject | None:
+        return next((p for p in self.research_projects if p.id == project_id), None)
+
+    def active_projects(self, company_id: int | None = None) -> tuple[ResearchProject, ...]:
+        return tuple(
+            p
+            for p in self.research_projects
+            if p.is_active and (company_id is None or p.company_id == company_id)
+        )
+
+    def unit_project(self, unit_id: int) -> ResearchProject | None:
+        """The active project an org unit works on, if any (a unit does one thing, 11.3)."""
+        return next(
+            (p for p in self.research_projects if p.is_active and p.unit_id == unit_id), None
+        )
+
+    def era_arrival(self, key: str) -> EraArrival | None:
+        return next((a for a in self.era_arrivals if a.key == key), None)
+
     @property
     def player(self) -> CompanyState:
         for company in self.companies:
@@ -483,9 +517,9 @@ class GameState:
 
 
 def player_companies(state: GameState) -> tuple[CompanyState, ...]:
-    """The companies the player controls (ADR-0020 1): the one player company until M16,
-    when it becomes the group. Use this wherever "the player" is meant."""
-    return tuple(c for c in state.companies if c.is_player)
+    """The companies the player controls (ADR-0020): the player's single company until M16,
+    when it returns the group. New code uses this wherever "the player" is meant."""
+    return (state.player,)
 
 
 def company_cash(balances: LedgerBalances, company_id: int) -> Cents:
@@ -715,3 +749,24 @@ def with_contract(state: GameState, contract: SupplyContract) -> GameState:
 
 def with_outage(state: GameState, outage: Outage) -> GameState:
     return replace(state, outages=_upsert(state.outages, outage, lambda o: o.id))
+
+
+def with_research_lead(state: GameState, lead: ResearchLead) -> GameState:
+    return replace(
+        state,
+        research_leads=_upsert(state.research_leads, lead, lambda r: (r.company_id, r.domain)),
+    )
+
+
+def with_research_project(state: GameState, project: ResearchProject) -> GameState:
+    return replace(
+        state, research_projects=_upsert(state.research_projects, project, lambda p: p.id)
+    )
+
+
+def with_era_arrival(state: GameState, arrival: EraArrival) -> GameState:
+    return replace(state, era_arrivals=_upsert(state.era_arrivals, arrival, lambda a: a.key))
+
+
+def with_license(state: GameState, licence: License) -> GameState:
+    return replace(state, licenses=_upsert(state.licenses, licence, lambda x: x.id))

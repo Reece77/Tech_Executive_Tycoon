@@ -77,6 +77,9 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "rival_region": 22,
         "supply": 26,
         "facility": 27,
+        "research": 23,  # M11
+        "rival_research": 24,
+        "lead_reveal": 25,
         "misc": 99,
     }
 

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stock</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E1217}
+a{color:#7DB6FF}a:hover{color:#A9CEFF}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.navlink{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:#C9D1DB;text-decoration:none;font-size:14px;min-height:28px}
+.navlink:hover{background:#1B232E;color:#E8ECF1}
+.key{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9BA7B6;border:1px solid #2A3442;border-radius:4px;padding:1px 5px}
+.soon{margin-left:auto;font-size:11px;color:#9BA7B6}
+.panel{background:#151B23;border:1px solid #2A3442;border-radius:10px;padding:18px 20px}
+.ptitle{margin:0 0 12px;font-size:12px;font-weight:600;color:#9BA7B6;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:13px;color:#9BA7B6}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#C9D1DB}
+.input{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8ECF1;background:#0E1217;border:1px solid #2A3442;border-radius:6px;padding:9px 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid #1F2732;font-size:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #2A3442;border-radius:8px;cursor:pointer}
+.tab{font-size:14px;padding:8px 14px;border-bottom:2px solid transparent;color:#9BA7B6;text-decoration:none}
+.tab.on{color:#E8ECF1;border-color:#5AA2FF}
+.chip{font-size:12px;color:#C9D1DB;border:1px solid #2A3442;border-radius:12px;padding:3px 10px;background:#11161D}
+.btn{font-family:inherit;font-size:13px;color:#E8ECF1;background:#1B232E;border:1px solid #2A3442;border-radius:6px;padding:8px 12px;min-height:36px;cursor:pointer}
+.btnp{font-family:inherit;font-size:14px;font-weight:600;color:#0E1217;background:#5AA2FF;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;color:#9BA7B6;font-size:12px;padding:6px 8px;border-bottom:1px solid #2A3442}
+.tbl td{padding:7px 8px;border-bottom:1px solid #1F2732;vertical-align:top}
+.tip{position:absolute;background:#1F2834;border:1px solid #3A4656;border-radius:8px;padding:12px 14px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+.dim{color:#9BA7B6}.pos{color:#5FD08B}.neg{color:#F07C7C}.warn{color:#E8B85A}
+.sev{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #0E1217; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 12px 20px; background: #151B23; border-bottom: 1px solid #2A3442">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700">Kestrel Systems</span>
+      <span style="font-size: 12px; color: #9BA7B6">Stage 4 · Public company</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; margin-left: auto; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Date</span><span class="num" style="font-size: 15px">Jul 2020</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Cash</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">$301,000,000</span></div>
+      <div style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9BA7B6; text-transform: uppercase; letter-spacing: .06em">Runway</span><span class="num" style="font-size: 15px; border-bottom: 1px dotted #6B7889">not burning</span></div>
+      <a href="Coo.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Ask COO</a>
+      <a href="Settings.dc.html" style="font-size: 13px; color: #C9D1DB; text-decoration: none; border: 1px solid #2A3442; border-radius: 6px; padding: 10px 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">Settings</a>
+      <a href="Holiday.dc.html" style="font-size: 14px; color: #E8ECF1; text-decoration: none; border: 1px solid #3A4656; border-radius: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px">Holiday <span class="key">H</span></a>
+      <button type="button" style="font-family: inherit; font-size: 15px; font-weight: 600; color: #0E1217; background: #5AA2FF; border: 0; border-radius: 8px; padding: 12px 28px; min-height: 44px; cursor: pointer">Continue <span style="font-weight: 400; opacity: .75">· Space</span></button>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 240px; padding: 16px 12px; background: #11161D; border-right: 1px solid #222B37; display: flex; flex-direction: column; gap: 2px">
+      <a class="navlink" href="Event.dc.html"><span class="key">1</span>Inbox</a>
+      <a class="navlink" href="Overview.dc.html"><span class="key">2</span>Overview</a>
+      <a class="navlink" href="People.dc.html"><span class="key">3</span>People</a>
+      <a class="navlink" href="RecruitmentPlans.dc.html"><span class="key">4</span>Recruitment</a>
+      <a class="navlink" href="Org.dc.html"><span class="key">5</span>Org</a>
+      <a class="navlink" href="Products.dc.html"><span class="key">6</span>Products</a>
+      <a class="navlink" href="Finance.dc.html" aria-current="page" style="background:#1B232E;color:#E8ECF1"><span class="key">7</span>Finance</a>
+      <a class="navlink" href="Competitors.dc.html"><span class="key">8</span>Competitors</a>
+      <a class="navlink" href="History.dc.html"><span class="key">9</span>History</a>
+      <a class="navlink" href="Saves.dc.html"><span class="key">0</span>Saves</a>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; position: relative">
+<!--H:960-->
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Finance</h1>
+      <nav aria-label="Finance tabs" style="display: flex; gap: 4px; border-bottom: 1px solid #2A3442">
+        <a class="tab" href="Finance.dc.html">Statements</a><a class="tab" href="DivisionPL.dc.html">Divisions</a><a class="tab" href="Debt.dc.html">Debt</a><a class="tab on" href="#">Stock</a><a class="tab" href="CapTable.dc.html">Cap table</a><a class="tab" href="Board.dc.html">Board</a>
+      </nav>
+      <section class="panel" aria-label="Share price" style="display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: center">
+        <div>
+          <div class="meta" style="font-size: 11px; text-transform: uppercase; letter-spacing: .06em">KSTL · share price</div>
+          <div class="num" style="font-size: 30px">$21.40 <span class="neg" style="font-size: 14px">−6.8% this month</span></div>
+          <div class="dim" style="font-size: 13px; margin-top: 4px">Market cap $2.52B · listed at $16.22 (Jun 2019)</div>
+          <div class="dim" style="font-size: 13px">Your stake 14.2% · $358M</div>
+        </div>
+        <svg viewBox="0 0 640 140" width="100%" height="140" role="img" aria-label="Share price since listing, rising from 17.8 to a 26 peak then falling to 21.4"><g stroke="#263040"><line x1="0" y1="20" x2="640" y2="20"/><line x1="0" y1="70" x2="640" y2="70"/><line x1="0" y1="120" x2="640" y2="120"/></g><text x="4" y="16" fill="#6B7889" font-size="10">$26</text><text x="4" y="116" fill="#6B7889" font-size="10">$16</text><polyline fill="none" stroke="#5AA2FF" stroke-width="2" points="20,102 90,92 160,78 230,56 300,30 370,40 440,50 510,58 580,56 630,66"/><circle cx="630" cy="66" r="3.5" fill="#5AA2FF"/><g fill="#9BA7B6" font-size="10"><text x="150" y="134">Q4 2019 beat</text><text x="420" y="134">Q2 2020 miss</text></g></svg>
+      </section>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start">
+        <section class="panel" aria-label="Earnings">
+          <h2 class="ptitle">Guidance and results</h2>
+          <table class="tbl num">
+            <thead><tr><th style="font-family: inherit">Quarter</th><th style="text-align: right">Guided revenue</th><th style="text-align: right">Actual</th><th style="text-align: right">Margin (guided / actual)</th><th style="font-family: inherit">Result</th></tr></thead>
+            <tbody>
+              <tr><td>Q3 2019</td><td style="text-align: right">$31.0M</td><td style="text-align: right">$32.1M</td><td style="text-align: right">−6% / −5%</td><td class="pos" style="font-family: inherit">Beat · +11%</td></tr>
+              <tr><td>Q4 2019</td><td style="text-align: right">$33.5M</td><td style="text-align: right">$35.0M</td><td style="text-align: right">−4% / −2%</td><td class="pos" style="font-family: inherit">Beat · +14%</td></tr>
+              <tr><td>Q1 2020</td><td style="text-align: right">$37.0M</td><td style="text-align: right">$36.6M</td><td style="text-align: right">−3% / −4%</td><td class="dim" style="font-family: inherit">In line</td></tr>
+              <tr><td>Q2 2020</td><td style="text-align: right">$40.0M</td><td style="text-align: right">$37.9M</td><td style="text-align: right">−2% / −6%</td><td class="neg" style="font-family: inherit">Miss · −17%</td></tr>
+            </tbody>
+          </table>
+          <div style="border: 1px solid #3A4656; border-radius: 8px; padding: 12px; margin-top: 12px; background: #11161D">
+            <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px">Set Q3 2020 guidance</div>
+            <div class="row"><span>Revenue</span><span class="num">$39.5M <span class="dim">(consensus $40.2M)</span></span></div>
+            <div class="row" style="border-bottom: 0"><span>Operating margin</span><span class="num">−4%</span></div>
+            <p class="dim" style="font-size: 12px; margin: 6px 0 8px">Guiding below consensus is safer to beat, but the market reacts to the guide too. Energy 4.</p>
+            <button class="btnp" type="button">Set guidance</button>
+          </div>
+        </section>
+        <aside class="panel" aria-label="Analysts and actions" style="display: flex; flex-direction: column; gap: 6px">
+          <h2 class="ptitle" style="margin: 0">Analysts (5)</h2>
+          <div class="row"><span>Buy</span><span class="num">2</span></div>
+          <div class="row"><span>Hold</span><span class="num">3</span></div>
+          <div class="row"><span>Sell</span><span class="num">0</span></div>
+          <div class="row"><span>Average target</span><span class="num">$24.10</span></div>
+          <h2 class="ptitle" style="margin: 12px 0 0">Capital</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px"><button class="btn" type="button">Buy back shares</button><button class="btn" type="button">Pay a dividend</button><button class="btn" type="button">Secondary offering</button></div>
+          <p class="meta" style="font-size: 12px; margin: 8px 0 0">The board reacts to earnings: +4 confidence per beat, −6 per miss. Two misses in a row cost every director 8.</p>
+        </aside>
+      </div>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -183,6 +183,18 @@ templates:
   region_launched:
     title: "{product} is localizing for {region}"
     body: "Localizing {product} for {region} cost {cost_cents}. It goes live there in {live}."
+  era_arrived: # M11 (formulas.md 21.4): an era milestone arrived
+    title: "{era} has arrived"
+    body: "{era} arrived {when}. It accelerates {markets}.{note}"
+  license_in: # M11 (21.5)
+    title: "Licensed {domain} from {rival}"
+    body: "You licensed {points} points of {rival}'s {domain} know-how for {price_cents}, paid once."
+  license_out:
+    title: "Licensed {domain} to {rival}"
+    body: "{rival} licensed {points} points of your {domain} know-how and pays {royalty} of its revenue in {markets} each month for {months} months."
+  research_leak:
+    title: "{rival} gained some of your {domain} know-how"
+    body: "{name} left for {rival} from a {domain} project and took about {points} points of your lead with them."
   region_live:
     title: "{product} is live in {region}"
     body: "{product} now sells in {region}. Check its prices and reach on the product's Regions tab."

@@ -21,6 +21,7 @@ from tst.sim.facilities import formulas as ff
 from tst.sim.facilities.lifecycle import mean_reliability
 from tst.sim.products.formulas import held_feature_points
 from tst.sim.products.models import SELLING
+from tst.sim.research import levels as research_levels
 from tst.sim.state import (
     GameState,
     player_companies,
@@ -30,13 +31,12 @@ from tst.sim.state import (
 )
 
 EPS = 1e-9  # tunable-exempt: float tolerance on CU
+INFRASTRUCTURE = "infrastructure"  # tech_frontier.yaml domain behind Cloud hosting features
 
 
 def infrastructure_lead(state: GameState, company_id: int) -> float:
-    """The company's infrastructure lead from the R&D tree (21.1). M11 provides
-    `research.lead(state, company_id, "infrastructure")`; until it is merged the lead is 0."""
-    del state, company_id
-    return 0.0
+    """The company's infrastructure lead from the R&D tree (21.1), M11's hook."""
+    return research_levels.lead(state, company_id, INFRASTRUCTURE)
 
 
 def refresh_product(

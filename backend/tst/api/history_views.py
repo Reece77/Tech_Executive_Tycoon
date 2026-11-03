@@ -108,6 +108,11 @@ INBOX_CATEGORY: dict[str, str] = {
     "contract_settled": "finance",
     "cloud_started": "products",
     "outage_hit": "products",
+    # M11: era milestones, licences and research leaks (21.4, 21.5)
+    "era_arrived": "products",
+    "license_in": "products",
+    "license_out": "products",
+    "research_leak": "people",
 }
 PRODUCT_KINDS = frozenset(
     {
@@ -126,6 +131,11 @@ PRODUCT_KINDS = frozenset(
         "sell_facility",
         "staff_facility",
         "sell_capacity",
+        "start_project",  # M11
+        "stop_project",
+        "set_project_budget",
+        "license_in",
+        "license_out",
     }
 )
 FINANCE_KINDS = frozenset(
@@ -209,6 +219,16 @@ class _Entry:
     row: HistoryRowOut
 
 
+def _domain(key: Any, data: LoadedData) -> str:
+    """A research domain's label (M11); the key if the data no longer has it."""
+    from tst.sim.research.levels import domain_def
+
+    try:
+        return domain_def(data.game_data, str(key)).label
+    except (KeyError, AssertionError):
+        return str(key)
+
+
 def _describe(
     kind: str, p: dict[str, Any], names: _Names, data: LoadedData
 ) -> tuple[str, str, int | None, int | None]:
@@ -268,6 +288,15 @@ def _describe(
         f"{str(p.get('seat', '')).upper()}'s authority",
         "answer_proposal": f"{'Approved' if p.get('approve') else 'Declined'} an executive's "
         "proposal",
+        # M11 (21.3, 21.5): research projects and licences
+        "start_project": f"Put {names.unit(p.get('unit_id'))} on "
+        f"{_domain(p.get('domain'), data)} research",
+        "stop_project": "Stopped a research project",
+        "set_project_budget": "Changed a research budget"
+        if p.get("budget_cents") is not None
+        else "Funded a research project in full",
+        "license_in": f"Licensed {_domain(p.get('domain'), data)} know-how in",
+        "license_out": f"Licensed {_domain(p.get('domain'), data)} know-how out",
     }
     text = texts.get(kind, kind.replace("_", " ").capitalize())
     category = (

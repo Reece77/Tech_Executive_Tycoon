@@ -60,6 +60,13 @@ export function ProductsScreen() {
               Markets
             </Link>
             <Link
+              to={`/game/${saveId}/products/research`}
+              style={{ fontSize: 13 }}
+              data-testid="research-link"
+            >
+              Research
+            </Link>
+            <Link
               to={`/game/${saveId}/products/infrastructure`}
               style={{ fontSize: 13 }}
               data-testid="infrastructure-link"

@@ -1716,8 +1716,8 @@ Reece's decisions (2026-10-31): domain levels and research projects underneath, 
 
 ### 21.2 What a lead does
 
-- **Quality cap:** `Q_cap × (1 + rnd.cap_per_point × min(R_cat, rnd.cap_points))`, with 0.004 per point and a maximum of 50 points, so at most × 1.20. It applies after the CTO factor (§18.3).
-- **Features:** feature points gained × `(1 + 0.002 × min(R_cat, 50))`.
+- **Quality cap:** `Q_cap × (1 + rnd.cap_per_point × min(R_cat, rnd.cap_points))`, with 0.004 per point and a maximum of 50 points, so at most × 1.20 (tuned in M11 to 0.010, so at most × 1.50; §21.10). It applies after the CTO factor (§18.3).
+- **Features:** feature points gained × `(1 + 0.002 × min(R_cat, 50))` (tuned in M11 to 0.005; §21.10).
 - **Rivals:** a rival's quality target `5 d` (§15.2) uses the same factor with the rival's own lead.
 - All of this sits behind one function, `research.tech_factor(state, company_id, category)`. The product code calls it in one place.
 
@@ -1742,7 +1742,7 @@ Reece's decisions (2026-10-31): domain levels and research projects underneath, 
 \Delta R_d = \frac{rnd.rate \cdot o}{1 + R_d / rnd.half}
 ```
 
-  with `rnd.rate` 0.25 and `rnd.half` 30. Returns diminish: the first 15 points come about twice as fast as the next 15. Decay (§21.1) applies after progress.
+  with `rnd.rate` 0.25 (tuned in M11 to 0.4; §21.10) and `rnd.half` 30. Returns diminish: the first 15 points come about twice as fast as the next 15. Decay (§21.1) applies after progress.
 - **Breakthroughs and dead ends** (phase 3, stream `research`, id 23, key `(project_id,)`): each active project each month draws:
   - **breakthrough** with probability `0.02 × q`, where `q = clamp(mean research skill / 12, 0.5, 1.5)`: +5 lead at once;
   - **dead end** with probability `0.015 / q`: −50% of the last 3 months' progress.
@@ -1772,7 +1772,7 @@ Reece's decisions (2026-10-31): domain levels and research projects underneath, 
 
 - **License in** (immediate action, energy 8): from a rival (or the player, for rivals) whose lead in a domain exceeds yours by more than 10.
   - **Gain:** up to their lead − 10.
-  - **Price:** `rnd.license_price_per_point` ($150,000 in 2010 dollars) × points × `(1 + ARR / $20M)`, once.
+  - **Price:** `rnd.license_price_per_point` ($150,000 in 2010 dollars; tuned in M11 to $24,000, §21.10) × points × `(1 + ARR / $20M)`, once.
   - **Answer:** the licensor says yes unless they're a direct competitor in a category the domain feeds (a rival you share a segment with). Rivals answer by a rule, not a draw.
 - **License out** (energy 8): grant a rival up to your lead − 10. It pays 2% of its revenue in the categories that domain feeds, monthly for 24 months (`4100_revenue_licenses`).
 - **Leaks:** when a researcher on a project leaves for a rival, that rival gains `min(10, 0.1 × your lead)` in the project's domain.
@@ -1810,7 +1810,23 @@ Incumbents gain a `research` action. Its need is `(best lead in their categories
 
 **Era threshold.** Transformers (AI, Jun 2017): `D_AI(2017.5) = 10 + 1.5 × 6 + 3 × 1.5 = 23.5` (before the Deep learning +5, which makes it 28.5), so the threshold is 28.5 + 15 = **43.5**. In Jan 2016 the AI baseline is 10 + 9 + 5 = 24, so a company needs a lead of 19.5 to cause it then.
 
-**Licence price.** 12 points with ARR $10M: `$150,000 × 12 × 1.5` = **$2.7M**.
+**Licence price.** 12 points with ARR $10M: `$150,000 × 12 × 1.5` = **$2.7M** (spec value, pinned by the test; at the tuned $24,000 it is $432,000).
+
+### 21.10 As built (M11 notes)
+
+- **Baseline accrual.** `D_d(t)` accrues month by month: `start` plus `per_year / 12` for each month before `t`, the rate of the month's calendar year. An era's **threshold** reads the baseline at the end of its historical month (`t_hist + 1`), plus `rnd.era_baseline` for each era of the domain historically before it, plus `rnd.era_lead`. Both 21.9 era examples hold exactly: Transformers 23.5 + 5 + 15 = 43.5; the AI baseline in January 2016 is 24.
+- **The hook.** `tst.sim.research.levels.tech_factor(state, company_id, category, balance, data)` (the balance and data follow the brief's three arguments) returns the cap multiplier, the first mover's cap and brand points and the feature multiplier; identity for a company with no lead and no window. `product_team` calls it once, so the quality cap (after the CTO), features gained (after the CPO) and the brand target (first mover, at most 100) all read the same factor; rivals' quality target calls it once. M12a reads `tst.sim.research.levels.lead(state, company_id, domain)` (the package's `__init__` stays import-light because `data_models` imports `research.data`).
+- **Base growth.** `eras.yaml` `base_growth` replaces `categories.yaml`'s growth for demand (phase 9, home and other regions), for startups' founding rate and for the growth the API shows, for the categories whose eras are in the tuned curves; `categories.yaml` is unchanged (lane rule) and its AI `growth_by_year` is no longer read. AI models: 0.28 from 2010, 0.35 from 2016, 0.40 from 2020, 0.50 from 2025, 0.25 from 2030, with Deep learning +5 points for 60 months, Transformers +20 for 60 and Large language models +180 for 24 (consumer adoption x1.5 for 24): January 2024 demand 350x January 2010 (M8: 359x). Consumer apps 0.2568 until 2020 (Mobile-first's +15 for 36 months), developer tools 0.2208 until 2020 (Cloud-native's +10), fintech 0.2235 until 2021 (Open banking's +10), each then its `categories.yaml` rate: January 2020 demand is 1.000, 1.000 and 0.944 of before M11. Zero trust (2020) and AI agents (2025) arrive after the tuned decade and add growth. Boosts reach every region (x the region's growth multiplier, 19.5); adoption boosts multiply the segment's adoption with the macro factor (20.1).
+- **Researchers** are the project unit's direct members in builder roles (and the founder), as on a product team; `lambda_i` is the tag multiplier x the seat and structure factor (CTO, 18.5) x event modifiers on the unit's builder output (23.2). Researchers cost the budget; their salaries are payroll as before.
+- **Budget.** NULL means full funding (`n x budget`, x the AI compute index for AI); a set budget spends at most the need. Setting it costs `rnd.budget_energy` (0, like a marketing budget).
+- **Draws.** Stream `research`, key `(project_id,)`: a uniform for a breakthrough (below `0.02 q`), then, only without one, a uniform for a dead end (below `0.015 / q`), each month a project has funded output. A dead end removes `rnd.dead_end_share` of the last `rnd.progress_window` months' progress, this month's included, never below 0. A project whose unit is dissolved stops in phase 3.
+- **Arrival order.** Phase 3: development, rival effects, projects, rivals' research months, decay, then eras in `eras.yaml` order (an earlier era's +5 counts for a later one's level the same month). Ties between companies reaching a threshold in the same month go to the higher level, then the lower company id. Existing saves (migration `0028_research`) record past eras as arrived on schedule.
+- **Licensing.** The licensee may come within `rnd.license.margin` of the licensor's lead, never closer: at most `their lead - margin - yours` points. The price uses the licensee's ARR (last month's MRR x 12) and posts to 6500 (licensee) and 4100 (licensor). There is no inflation in the game, so "$150,000 in 2010 dollars" is nominal. A direct competitor is a company selling in a segment the licensee sells in, at home or abroad, in a category the domain feeds. Rivals accept any licence out that raises their level. Royalties post in phase 5 on the licensee's booked revenue (home and abroad) in the domain's categories, for 24 months including the signing month.
+- **Leaks** apply when a builder-role member of a unit with an active project joins a rival (phase 1), at `min(rnd.leak.cap, rnd.leak.share x the company's lead)`.
+- **Rivals' research.** One candidate per domain feeding the rival's live categories, scored after v1's and M9's candidates (their draws are unchanged), weighted by `rnd.rival.weights`; one research action at a time. While it runs the builder pool is `rnd.rival.pool_cost` larger, returned when it ends; breakthroughs on stream `rival_research` with `q` from the rival's builder skill.
+- **What the API shows.** A rival's lead is a range of whole points, `+-rnd.reveal.range` (`licensed_range` with a licence) around the true value offset by a seeded draw (stream `lead_reveal`, id 25, key `(observer, company id, domain index)`), so the midpoint is not the true lead. Licence limits on the screen use the range's low end; an action refused for too many points names no number. A project shows researchers, budget, funded share and estimated lead gained a month from displayed skill ranges (23.4); the output itself stays hidden (11.13's guard on `output`). The era timeline shows thresholds and no historical date of an era still to come.
+- **Tuned keys (21.8; M11 brief).** `rnd.rate` 0.4, `rnd.cap_per_point` 0.010, `rnd.feature_per_point` 0.005, `rnd.license.price_per_point_cents` $24,000, `rnd.rival.era_bonus` 0.15, `rnd.rival.need_span` 30. The 21.9 examples keep 21.2-21.5's values and their tests pin them.
+- **Events.** The research triggers' strengths sit in `events.trigger` (`research_breakthrough` 0.7, `research_dead_end` 0.6), which must list every trigger.
 
 ## 22. Cloud, data centres and supply shocks (M12a, lane B)
 
@@ -2017,3 +2033,165 @@ Each seat's authority, guardrails, decisions this month (with outcomes), proposa
 2. **Quality matters.** The same run with every seat holder at score 8 against score 15 differs by at least 15% median ARR.
 3. **No runaway hiring:** headcount never exceeds the guardrail caps, and support coverage stays within 0.1 of the target.
 4. **Founder energy:** delegated runs leave the founder at least 60% of their monthly energy unspent on average.
+
+## 25. IPO, public company, and Chair and CEO (M13, lane B)
+
+Reece's decisions (2026-10-31, ADR-0019 §10–§12): the IPO is an event chain; public life runs on quarterly earnings that the player guides; when the founder steps up to Chair, the CEO runs day-to-day operations. ADR-0020 §7: listings, shares and prices belong to a `company_id`, so a subsidiary can list in v3. Stage 4 begins at the listing.
+
+### 25.1 Eligibility
+
+- **Stage 3,** ARR ≥ `ipo.min_arr` ($80M, 2010 dollars), and the last 4 quarters either profitable at the operating line or growing revenue ≥ 40% a year.
+- **Board approval:** average director confidence ≥ 50 at the decision.
+
+### 25.2 The IPO chain (an event chain; templates and LLM within §16)
+
+1. **Hire banks** (immediate action, energy 10): choose a lead underwriter from `banks.yaml` (Goldman Sachs, Morgan Stanley, J.P. Morgan; each with a fee of 5.5–7% and a quality from 0.9 to 1.1).
+2. **File (S-1),** month 1: a major event (regulator questions, restating a metric). Choices carry delay, cost and brand modifiers.
+3. **Roadshow,** months 2–3: three major events whose choices set the ambition (price range high, middle or low), the share sold (10–25% of post-IPO fully diluted shares, new shares), and dual-class shares, which keep the founder's voting control but price 5% lower.
+4. **Pricing** (month 4, a critical event):
+   - **Fundamental value** `V_f` (§25.3) × bank quality × the ambition factor (high 1.15, middle 1.0, low 0.9) gives the offer price.
+   - **Book demand** `d = clamp(N(1.0 + 0.6 × (v − 1), 0.2), 0.3, 3.0)`, where `v` is the venture climate (§20.1); stream `ipo` (id 33), key `(company_id,)`.
+   - The player chooses to price at the range, raise it 10% (only if `d ≥ 1.3`), cut it 15%, or pull the IPO. Pulling costs the bank fee × 0.3 and damages board confidence (−10).
+5. **Listing day:** first-day return `r = clamp(0.25 × (d − 1) − 0.15 × (ambition − 1)/0.15, −0.3, +0.8)`. The company raises `price × new shares` minus the bank fee (posted to `3000_common_equity`, net of fees). The closing share price after day one is `price × (1 + r)`.
+
+### 25.3 Share price each month (phase 7; stream `market_sentiment` id 34, key `(company_id,)`)
+
+- **Fundamental value:**
+
+```latex
+V_f = ARR \times m, \qquad m = clamp\big(2 + 25\,g + 15\,margin - 1.5\,(r_{base} - 2)\big,\ 1,\ 30) \times v
+```
+
+  with `g` the trailing annual revenue growth, `margin` the trailing operating margin, `r_base` the base rate in percent (§20.1), and `v` the venture climate.
+- **Price:** `P = V_f / shares × S`. Sentiment `S` follows an AR(1) toward 1.0 (φ 0.9, shock sd 0.06), clamped to [0.5, 1.8], plus earnings jumps (§25.4).
+- **Analysts:** 3–8, more as market cap grows. Each holds a rating (buy, hold or sell) and a target price, `V_f × (1 + N(0, 0.1))`, refreshed after each earnings report. Ratings follow `target / P`: above 1.15 buy, below 0.9 sell, otherwise hold.
+
+### 25.4 Quarterly earnings and guidance
+
+- **Guidance:** at each quarter start the player sets revenue and operating-margin guidance for the quarter (immediate action, energy 4). The default is the analysts' consensus, the trailing trend.
+- **Report** at quarter end. With surprise `s = (actual revenue / guided revenue − 1)` and margin surprise `sm = actual margin − guided margin` (points):
+  - sentiment jumps `S × (1 + clamp(3 s + 0.02 sm, −0.25, +0.20))`;
+  - two consecutive misses (`s < −0.02`) cut every director's confidence by 8;
+  - beating three quarters in a row adds +5 sentiment points.
+- **Activists:** when `P` is below 0.7 × `V_f / shares` for 6 months, or after 3 misses in 4 quarters, an activist investor builds a stake. That starts a critical event chain: board seats demanded, a buyback or spin-off demanded, or a proxy fight.
+- **Takeover interest:** when market cap stays below 0.6 × `V_f` for 6 months, a takeover-bid event can arrive. Accepting or fighting is handled as an event in M13; acquisitions themselves are M14.
+
+### 25.5 Capital actions once public
+
+- **Buyback** (energy 6): buy shares at `P × 1.02`. Cash leaves to `3000_common_equity` (treasury); shares outstanding fall.
+- **Dividend** (energy 4): a cash amount per share, paid next month.
+- **Secondary offering** (energy 10): new shares at `P × 0.95`, less a 3% fee.
+- **Founder's stake:** shown as shares × `P` (personal wealth, read-only until v3's trading).
+
+### 25.6 Chair and CEO
+
+- **Appoint a CEO** (stage 4, energy 10): an employee at exec level, or an exec-level search. The founder becomes **Chair**.
+- **What the CEO does.** Each month in phase 2, as a super-delegate (ADR-0015, §24), the CEO uses every authority the player allows: all five seats' functions (§24.1) plus product priorities (assigning teams, launching ready products, setting prices within ±10% of the player's last price) and hiring plans within headcount guardrails. CEO decision quality follows §24.2 with the CEO's score (weights: leadership 0.3, strategy 0.3, communication 0.2, product 0.1, finance 0.1).
+- **The Chair keeps** capital decisions (rounds, debt, buybacks, dividends, the IPO and later M&A), executive appointments, guidance and strategy. An **override** of a CEO decision costs 6 energy.
+- **The board and the CEO:** with confidence below 30 for 3 months, directors may vote to replace the CEO (an event). The founder as Chair can only be removed under §14.6's rules, with public-company seats.
+- The founder's monthly energy as Chair is `ceo.chair_energy` (40). A Chair's job is fewer, larger decisions.
+
+### 25.7 Stage 4 and the board
+
+- Listing sets stage 4.
+- **The board** gains two independent directors (generated people) and moves to a public mix: founder, two common seats, investor seats (lapsing one per year after listing as funds sell), and independents. Patience follows the analysts' consensus.
+- **Board confidence** adds an earnings term: +4 per beat, −6 per miss, in the month of the report.
+
+### 25.8 What the API may show
+
+The IPO chain's status and choices; the price range and book demand as words ("strong demand", from `d`), never the draw; the share price and its history; market cap; analysts' ratings and targets; guidance against actuals; the founder's stake; the CEO's decisions and overrides. Never `V_f`'s components beyond what the analysts publish, future sentiment, or the takeover threshold.
+
+### 25.9 Balance targets (M13 acceptance, printed)
+
+1. All earlier targets pass as before (no new xfails).
+2. **IPOs happen.** blitzscale and steady reach an IPO on at least 4 of 10 seeds each by turn 180 (15 years), with median first-day return 0–30%.
+3. **Guidance matters.** A company that guides 10% above trend misses in at least 60% of quarters, and its median share price after 3 years is at least 15% below a company that guides at trend.
+4. **Prices are believable.** The median price-to-sales multiple at listing is 4–15× in 2012–2019 and 8–25× in 2020–2021, falling at least 30% between Jan 2022 and Dec 2022.
+5. **The CEO runs things.** A CEO with score 14 and full authority keeps a stage-4 company within 15% of the scripted strategy's median ARR over 36 months, with the founder spending at most 40% of the Chair's energy.
+
+### 25.10 Worked examples
+
+**Fundamental value.** ARR $120M, growth 45%, operating margin −5%, base rate 1.5%, climate 1.2: `m = (2 + 11.25 − 0.75 + 0.75) × 1.2 = 13.25 × 1.2` = **15.9**, so `V_f` = **$1.908B**.
+
+**Listing.** With 100M fully diluted shares before the IPO and 15% sold as new shares: 17.65M new shares. A middle-ambition offer at `V_f / 117.65M` = $16.22 raises 17.65M × $16.22 = $286M before a 6% fee ($269M net). Book demand 1.4 gives `r = 0.25 × 0.4` = **+10%**, so the stock closes day one at $17.84.
+
+**Earnings.** Guidance $32M; actual $33M (`s = +3.1%`); margin on guidance: sentiment × `(1 + 0.094)`, a +9.4% jump.
+
+## 26. Hardware, devices and fabless chips (M12b, lane A)
+
+Reece's decisions (ADR-0019 §8, §13): factories are allowed from the start, alongside contract manufacturing; an early factory is likely unprofitable, and its spare capacity can be sold to others. Fabless chips sell to a chip market and go into the player's own devices and data centres. ADR-0020: assembly plants are a **kind** in M12a's facility model (`balance.facility.kinds`), components and foundry wafers are **goods** in `components_history.yaml`, and chips used in-house are internal supply at cost. Principle: **a company that never enters hardware plays as before.** M12b merges after M13.
+
+### 26.1 Unit-sale categories (appended to `categories.yaml`, `revenue_model: units`)
+
+| Category | Segments | Replacement cycle (base churn) | Development skill |
+| --- | --- | --- | --- |
+| Devices (`devices`: phones, laptops, wearables) | consumer, SMB, enterprise | 1/30 a month consumer, 1/40 SMB and enterprise | hardware design 0.40, manufacturing 0.20, design 0.20, software engineering 0.10, chip design 0.10 |
+| Servers (`servers`) | enterprise, hyperscalers | 1/48 | hardware design 0.40, infrastructure 0.25, manufacturing 0.20, chip design 0.15 |
+| Chips (`chips`) | device OEMs (new, sales-led), hyperscalers | 1/24 (design wins renew) | chip design 0.60, hardware design 0.20, software engineering 0.10, manufacturing 0.10 |
+
+- **The market rules of §11.7 apply** with one change. A customer in play who chooses a product **buys one unit** (revenue `price × units`, once, to `4000_revenue_subscriptions`, renamed "Product revenue" in statements). The replacement cycle brings customers back into play.
+- **Units are capped by manufacturing capacity** (§26.2). Demand above the cap is lost to the next-best product that month.
+- **Launch** needs quality ≥ 30 and a manufacturing source (a contract or a live plant).
+- **Expected features** move fast: ΔF of 8 for devices and servers, and 10 for chips. A hardware team must keep designing or the product ages.
+- **Quality cap** uses M11's devices domain (devices and servers) and chip-design domain (chips) through `research.tech_factor`.
+
+### 26.2 Cost of a unit and manufacturing
+
+- **Bill of materials:** `bom = bom_base × good index` (goods `device_bom` and `server_bom`, appended to `components_history.yaml` with the 2021 shortage), plus the chip (§26.3: bought at the chip market price, or own at cost), plus assembly. It posts to `5000_cogs` when sold.
+- **Contract manufacturing** (immediate action, energy 6): a contract with a contract manufacturer (Foxconn, Pegatron; data) for `V` units a month for 12–24 months, at a fee per unit (Shenzhen cheaper). Take-or-pay: 50% of the fee on unused volume each month. A contract signed before a shortage keeps 100% allocation.
+- **Own assembly plant** (facility kind `assembly_plant`; unit `units/month`):
+  - capex `$300 × equipment index` per unit a month of capacity; build 12 months; life 96 months;
+  - operating cost `$20,000` a month fixed plus `$3` a unit;
+  - staff: one manufacturing-role person per 1,000 units a month;
+  - **yield** `0.85 + 0.10 × mean manufacturing skill / 20`, so assembly cost per good unit = (fixed + variable) / (units × yield).
+
+  Building in a city uses M9's city (Shenzhen's manufacturing bonus applies to its hires).
+- **Selling spare plant capacity:** category `contract_manufacturing` (segment device OEMs; customers buy units a month), like M12a's Cloud hosting. Quality is yield × reliability. Capped at spare capacity, sold against Foxconn and Pegatron as incumbents.
+
+### 26.3 Fabless chips
+
+- **Chip product types:** `mobile_soc`, `server_cpu` and `ai_accelerator` (a product attribute), with chips per wafer 600, 150 and 60.
+- **Foundry wafers:** a good, `foundry_wafer`, with an index and allocation history: tight in 2021–2022, advanced nodes tight in 2023–2024. A wafer contract (as §22.4) secures wafer starts a month from TSMC or Samsung Foundry (abstract suppliers, not rivals).
+- **Unit cost:** `wafer price / (chips per wafer × yield) + $8` for packaging and test, with yield `0.70 + 0.003 × chip-design lead` (M11), at most 0.92.
+- **Chip demand:**
+  - device OEM demand grows with the devices and servers markets;
+  - hyperscaler `ai_accelerator` demand grows with the AI models market (§18.6, M11's AI eras);
+  - `server_cpu` demand grows with general cloud capacity.
+- **Internal use** (ADR-0020 §4): the company's own devices and servers can use its own chip of the matching type at unit cost (no revenue). Its own GPU data centres using its own `ai_accelerator` cut GPU capex per CU to `capex × (0.4 + 0.6 × own unit cost / market chip price)`.
+- **Rivals** (appended to `incumbents.yaml`):
+  - chips: NVIDIA (aggressive; AI accelerators), Intel (premium; server CPUs), AMD (fast_follower; server CPUs and accelerators), Qualcomm (premium; mobile SoCs);
+  - devices: Apple (premium), Samsung (fast_follower), Lenovo (cost_leader);
+  - servers: Dell (fast_follower), HPE (premium), Supermicro (cost_leader);
+  - contract manufacturing: Foxconn and Pegatron.
+- **Entrants** (appended to `entrants.yaml`): Cerebras (Jan 2016, AI accelerators) and Groq (Sep 2016, AI accelerators).
+
+### 26.4 Eras (appended to M11's `eras.yaml`)
+
+| Era | Domain | Historical arrival | What it accelerates |
+| --- | --- | --- | --- |
+| Smartphone ubiquity | devices | Jan 2012 | devices: consumer growth +15 points for 36 months |
+| AI accelerators | chip design | May 2016 | chips: `ai_accelerator` demand growth +40 points for 36 months |
+| Custom silicon | chip design | Nov 2020 | devices with their own SoC: +5 quality cap for 24 months (everyone, not first-mover only) |
+
+### 26.5 What the API may show
+
+Bill of materials and unit cost by line; contracts with volume, use and take-or-pay; plants with capacity, utilization (own and sold), yield and staff coverage; chips with type, yield, unit cost, internal use and market sales; wafer and component indexes with history only.
+
+### 26.6 Balance targets (M12b acceptance, printed)
+
+1. **Without hardware, nothing moves.** All earlier targets pass as before (no new xfails).
+2. **Devices can work.** A 15-person devices company on contract manufacturing reaches a gross margin of 30–45% by year 3 on at least 6 of 10 seeds.
+3. **Plants need volume.** An assembly plant's cost per good unit is at most 0.7 times the contract fee at ≥ 75% utilization, and at least 1.3 times at 30%.
+4. **Own chips pay off.**
+   - A devices company using its own mobile SoC has a device gross margin at least 8 points higher after 3 years than one buying chips.
+   - An AI company using its own accelerators cuts GPU capex per CU by at least 20%.
+5. **History bites.** A contract-manufacturing-reliant company with no contract signed before the 2021 shortage ships 15–35% fewer units in 2021–2022 than one with a contract.
+6. **Incumbents hold.** NVIDIA holds at least 50% of hyperscaler `ai_accelerator` units in 2023 on at least 7 of 10 do-nothing seeds.
+
+### 26.7 Worked examples
+
+**Unit cost (device).** BOM $180 at index 1.0, a bought SoC at $40 and a contract fee of $13: **$233** a unit.
+
+**Plant cost.** A 20,000 units-a-month plant at 80% use (16,000 units), yield 0.92: `($20,000 + 16,000 × $3) / (16,000 × 0.92)` = $4.62 per good unit, plus depreciation `20,000 × $300 / 96` = $62,500 a month, or $4.25 per good unit. Total **$8.87**, or 0.68 times a $13 contract fee. At 30% use (6,000 units, 5,520 good): `($20,000 + $18,000) / 5,520 + $62,500 / 5,520` = **$18.21**, or 1.40 times the fee.
+
+**Chip cost.** An AI accelerator at a wafer price of $9,000, 60 chips per wafer and a chip-design lead of 20 (yield 0.76): `$9,000 / 45.6 + $8` = **$205.37**.

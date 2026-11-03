@@ -32,6 +32,7 @@ from tst.sim.products.estimates import shown_team
 from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegment
 from tst.sim.products.setup import regional_monthly_growth
 from tst.sim.products.team import Team, product_team
+from tst.sim.research import eras
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -185,7 +186,7 @@ def develop(
             logs.append(
                 _slipping(turn, product, shown, shown.base_output(balance), category.scope, pb)
             )
-        gained = output * team.feature_mult  # CPO (18.3)
+        gained = output * team.gain_mult  # CPO (18.3), tech factor (21.2)
         if localizing(state, product.id):  # 10% slower while localizing (M9, 19.5)
             gained *= 1 - balance.markets.localize_slowdown
         updated = replace(
@@ -383,6 +384,8 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     gen = rng.stream(turn, "market", *key)
     noise = max(0.0, 1 + float(gen.normal(0, mb.demand_noise_sd)))
     adoption = seg_def.adoption * macro.adoption_factor(state, seg_def.key, balance)  # 20.1
+    category_key = products[entries[0].product_id].category
+    adoption *= eras.adoption_factor(state, data, category_key, seg_key)  # M11 (21.4)
     pool = sum(churned.values()) + adoption * unserved
     # In-play customers come from those who churned and the unserved, never more.
     in_play = min(pool * noise, sum(churned.values()) + unserved)
@@ -663,13 +666,17 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
         target = f.target_brand(mk, category.brand_constant)
         if team.brand_mult != 1:  # CMO (18.3), at most 100
             target = min(float(SCORE_MAX), target * team.brand_mult)
+        if team.tech.brand_points:  # the first mover's head start (M11, 21.4), at most 100
+            target = min(float(SCORE_MAX), target + team.tech.brand_points)
         state = with_product(state, replace(product, brand=f.next_brand(product.brand, target, pb)))
     year = turn_to_ym(state.turn)[0]
-    for market in state.markets:
-        growth = f.monthly_growth(data.category(market.category), year)
+    for market in state.markets:  # base growth plus era boosts (M11, 21.4)
+        g = eras.annual_growth(state, data, market.category, market.segment)
+        growth = float((1 + g) ** (1 / MONTHS_PER_YEAR))
         state = with_market(state, replace(market, addressable=market.addressable * growth))
     for rmarket in state.regional_markets:  # the category's growth x the region's (M9, 19.5)
-        growth = regional_monthly_growth(data, rmarket.category, rmarket.region, year)
+        g = eras.annual_growth(state, data, rmarket.category, rmarket.segment)
+        growth = regional_monthly_growth(data, rmarket.category, rmarket.region, year, g)
         state = with_regional_market(
             state, replace(rmarket, addressable=rmarket.addressable * growth)
         )

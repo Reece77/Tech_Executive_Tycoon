@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 28
+SCHEMA_VERSION = 29
 
 
 class Base(DeclarativeBase):
@@ -1240,3 +1240,62 @@ class CompanyRivalKeyRow(Base):
 
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
     rival_key: Mapped[list[int]] = mapped_column(JSON, nullable=False)
+
+
+# --- Research (M11, formulas.md 21; 0028) ---------------------------------------------------
+
+
+class ResearchLeadRow(Base):
+    """A company's lead in one research domain beyond the world's baseline (21.1)."""
+
+    __tablename__ = "research_lead"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    domain: Mapped[str] = mapped_column(String(32), primary_key=True)
+    lead: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class ResearchProjectRow(Base):
+    """A research project (21.3), or a rival's research action without a unit (21.6)."""
+
+    __tablename__ = "research_project"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    domain: Mapped[str] = mapped_column(String(32), nullable=False)
+    unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    start_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(8), nullable=False)
+    budget_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    end_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    recent: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+    gained: Mapped[float] = mapped_column(Float, nullable=False)
+    last_event: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    last_event_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class EraArrivalRow(Base):
+    """An era milestone that has arrived (21.4); company_id NULL on its historical date."""
+
+    __tablename__ = "era_arrival"
+
+    key: Mapped[str] = mapped_column(String(32), primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    company_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    months_early: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class LicenseRow(Base):
+    """A licence of research lead between two companies (21.5)."""
+
+    __tablename__ = "research_license"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    licensor_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    licensee_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    domain: Mapped[str] = mapped_column(String(32), nullable=False)
+    points: Mapped[float] = mapped_column(Float, nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    price_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    royalty_bp: Mapped[int] = mapped_column(Integer, nullable=False)
+    royalty_end_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)

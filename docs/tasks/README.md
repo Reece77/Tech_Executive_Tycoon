@@ -36,6 +36,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M10b-feel-fixes.md](M10b-feel-fixes.md) | Reece's playtest: the inbox archives and blocks on major events, event modifiers shown as numbers, critical crises, explanations that say what to do, self-serve abroad and marketing by region, former staff stories | M10r |
 | [M10c-executive-authority.md](M10c-executive-authority.md) | Executives with authority: guardrails per seat, executives acting each month through the player's actions with decision quality from their true score, CFO and COO proposals that block Continue, quarterly reports, executive events, Ask my COO from the COO's report | M10b |
 | [M12a-cloud-and-data-centres.md](M12a-cloud-and-data-centres.md) | Data centres as the first kind of a generic facility model, compute units on spot or own capacity, component goods with history then seeded shocks and contracts, Cloud and GPU hosting selling spare capacity, outages as critical events, the Infrastructure screen (lane B, merges after M11) | M10d |
+| [M11-rnd-tree.md](M11-rnd-tree.md) | R&D tree and era milestones: domain levels, research projects, the tech factor on quality and features, eight eras on their dates or early by threshold with a first-mover window, licensing, leaks and rivals' research, the Research screen (lane A, merges before M12a) | M10d |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

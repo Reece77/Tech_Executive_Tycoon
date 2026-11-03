@@ -25,6 +25,7 @@ CATEGORIES: Final = (
     "founder",  # M7a: the founder's own early days (16.1 "founder templates")
     "lender",  # M10: covenant breaches (20.3), queued by the engine, never drawn
     "executive",  # M10c: executives with authority ask and clash (24.3)
+    "research",  # M11: research projects' breakthroughs and dead ends (21.3)
 )
 # Templates a company with no employees may draw (16.1: founder, market and finance).
 NO_STAFF_CATEGORIES: Final = ("market", "finance", "founder")
@@ -56,6 +57,8 @@ TRIGGERS: Final = (
     "exec_cmo",
     "exec_cfo",
     "exec_clash",
+    "research_breakthrough",  # M11 (21.3): a project's breakthrough or dead end this month
+    "research_dead_end",
     "quiet_month",
 )
 # M10 (20.3): the debt phase queues these itself (a covenant breach, a called loan).
@@ -177,6 +180,8 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "exec_cmo": _PERSON,
     "exec_cfo": _PERSON | {"months"},
     "exec_clash": _PERSON | {"other"},
+    "research_breakthrough": frozenset({"unit"}),  # M11: the project's unit
+    "research_dead_end": frozenset({"unit"}),
     "covenant_breach": frozenset({"loan", "lender"}),  # M10
     "facility_outage": frozenset({"segment"}),  # M12a (22.5): the most-hit hosted product
     "key_exit": _PERSON,  # M10b (23.3)

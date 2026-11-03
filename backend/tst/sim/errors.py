@@ -252,3 +252,13 @@ class FacilityRuleError(SimError):
 
 class UnknownFacilityError(NotFoundError):  # M12a
     code = "unknown_facility"
+
+
+class ResearchRuleError(SimError):
+    """A research project or licence that the rules do not allow (M11, 21.3, 21.5)."""
+
+    code = "research_rule"
+
+
+class UnknownProjectError(NotFoundError):
+    code = "unknown_project"

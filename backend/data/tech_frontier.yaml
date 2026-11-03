@@ -1,0 +1,49 @@
+# The technology frontier (docs/formulas.md 21.1-21.3, M11). Domains are data: v3 adds process
+# and materials domains (fabs, refining) here without code changes (ADR-0020).
+#
+# Each domain:
+# - baseline: the world's diffused know-how, free to everyone (D_d(t), 21.1). `start` points in
+#   January 2010; `per_year` maps a calendar year to the points gained a year from it on (the
+#   latest year at or before the month applies), accrued monthly (per_year / 12 a month).
+#   Each era that arrives adds rnd.era_baseline to its domain's baseline (21.4).
+# - research_skill: the skill weights of a researcher's research skill r_i (21.3); sum to 1.
+# - budget_cents: a project's monthly budget per researcher, cents (21.3), posted to
+#   6500_research_development. compute_indexed: x the AI compute index (20.1).
+# - feeds: label only; which categories a domain feeds is `tech_weights` below.
+domains:
+  - key: software_platform
+    label: Software platform
+    baseline: { start: 20, per_year: { 2010: 2.0 } }
+    research_skill: { software_engineering: 0.5, data: 0.3, product: 0.2 }
+    budget_cents: 200000 # $2,000 a researcher a month
+  - key: ai
+    label: AI
+    baseline: { start: 10, per_year: { 2010: 1.5, 2016: 3.0 } } # +1.5 a year through 2015, then +3
+    research_skill: { ml_research: 0.6, data: 0.25, software_engineering: 0.15 }
+    budget_cents: 600000 # $6,000 a researcher a month, x the AI compute index
+    compute_indexed: true
+  - key: infrastructure
+    label: Infrastructure
+    baseline: { start: 20, per_year: { 2010: 2.0 } }
+    research_skill: { infrastructure: 0.6, software_engineering: 0.25, security: 0.15 }
+    budget_cents: 300000 # $3,000
+  - key: chip_design
+    label: Chip design
+    baseline: { start: 30, per_year: { 2010: 1.5 } }
+    research_skill: { chip_design: 0.7, hardware_design: 0.3 }
+    budget_cents: 1200000 # $12,000; chip products come in M12b, the level counts for nothing yet
+  - key: devices
+    label: Devices
+    baseline: { start: 25, per_year: { 2010: 1.5 } }
+    research_skill: { hardware_design: 0.6, manufacturing: 0.2, design: 0.2 }
+    budget_cents: 800000 # $8,000; device products come in M12b
+
+# Which domains count for a category, and how much (21.1): a company's lead for a category is
+# sum of weight x its lead in each domain. Weights sum to 1. A category not listed has no lead.
+tech_weights:
+  b2b_saas: { software_platform: 0.7, infrastructure: 0.3 }
+  dev_tools: { software_platform: 0.5, infrastructure: 0.5 }
+  consumer_apps: { software_platform: 0.8, ai: 0.2 }
+  cybersecurity: { software_platform: 0.5, infrastructure: 0.5 }
+  fintech: { software_platform: 0.7, infrastructure: 0.3 }
+  ai_models: { ai: 0.8, infrastructure: 0.2 }

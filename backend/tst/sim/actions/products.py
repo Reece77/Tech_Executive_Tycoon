@@ -278,6 +278,8 @@ def assign_unit(state: GameState, action: AssignUnit, balance: Balance) -> Outco
         other = state.product(current)
         other_name = other.name if other is not None else f"product {current}"
         raise ProductRuleError(f"{where} already works on {other_name}; unassign it first")
+    if action.unit_id is not None and state.unit_project(action.unit_id) is not None:
+        raise ProductRuleError(f"{where} works on a research project; stop it first (21.3)")
     state = spend_energy(state, action.actor_id, "assign_unit", balance)
     if action.unit_id is None:
         return Outcome(

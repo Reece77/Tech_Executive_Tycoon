@@ -316,6 +316,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     items += _m10b_items(loaded)
     items += _m10c_items(loaded)
     items += _m12a_items(loaded)
+    items += _m11_items(loaded)
     for item in items:
         if item.template is None:
             continue
@@ -367,6 +368,32 @@ def _m12a_items(loaded: LoadedData) -> list[LogItem]:
     items += logs
     out = apply_action(state, SellFacility(1, facility.id), rng, b, d, rich, seq=0)
     return items + list(out.log_items)
+
+
+def _m11_items(loaded: LoadedData) -> list[LogItem]:
+    """Licences in and out and a researcher's leak (M11, 21.5); eras arrive in the 60-month
+    game above."""
+    from tests.unit.test_research import _lab_game, _unit
+    from tst.sim.actions.research import LicenseIn, LicenseOut, StartProject
+    from tst.sim.research import licensing
+    from tst.sim.research.projects import add_lead
+    from tst.sim.rivals.models import PoachApproach
+    from tst.sim.state import with_employment
+
+    game = _lab_game(loaded, staff=2)
+    game.state = add_lead(add_lead(game.state, 2, "devices", 40.0), 1, "ai", 40.0)
+    game.act(LicenseIn(1, 2, "devices", 5))
+    game.act(LicenseOut(1, 2, "ai", 5))
+    game.act(StartProject(1, _unit(game), "ai"))
+    state = game.state
+    employment = state.employment_of(2)
+    assert employment is not None
+    state = with_employment(state, replace(employment, status="ended", end_reason="poached"))
+    approach = PoachApproach(1, 17, 2, 10_000_000, state.turn, status="accepted")
+    before = replace(state, approaches=(approach,))
+    after = replace(state, approaches=(replace(approach, status="joined"),))
+    _, leaked = licensing.leaks(before, after, loaded.balance, loaded.game_data)
+    return [*game.action_logs, *leaked]
 
 
 def _m10b_items(loaded: LoadedData) -> list[LogItem]:

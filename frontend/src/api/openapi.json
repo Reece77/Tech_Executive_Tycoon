@@ -10718,29 +10718,56 @@
           {
             "name": "kind",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the first kind",
               "title": "Kind"
-            }
+            },
+            "description": "Default: the first kind"
           },
           {
             "name": "region",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the home region",
               "title": "Region"
-            }
+            },
+            "description": "Default: the home region"
           },
           {
             "name": "units",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "integer",
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the smallest size",
               "title": "Units"
-            }
+            },
+            "description": "Default: the smallest size"
           },
           {
             "name": "contract_id",
@@ -11175,6 +11202,574 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InfrastructureActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/research": {
+      "get": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Get Research",
+        "description": "The Research screen: levels, projects, rivals' levels as ranges, licences and eras.",
+        "operationId": "getResearch",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/eras": {
+      "get": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Get Eras",
+        "description": "The era timeline (the Market screen shows it too, 21.4).",
+        "operationId": "getEras",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EraOut"
+                  },
+                  "title": "Response Geteras"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/research/projects": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Start Project",
+        "operationId": "startProject",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartProjectIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/research/projects/{project_id}/stop": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Stop Project",
+        "operationId": "stopProject",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/research/projects/{project_id}/budget": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Set Project Budget",
+        "operationId": "setProjectBudget",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectBudgetIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/research/licenses/in": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "License In",
+        "operationId": "licenseIn",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LicenseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/research/licenses/out": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "License Out",
+        "operationId": "licenseOut",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LicenseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchActionOut"
                 }
               }
             }
@@ -12954,6 +13549,48 @@
         ],
         "title": "CategorySegmentOut"
       },
+      "CategoryTechOut": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "lead": {
+            "type": "number",
+            "title": "Lead",
+            "description": "Your research lead for the market (weighted domains)"
+          },
+          "cap_lift_pct": {
+            "type": "number",
+            "title": "Cap Lift Pct",
+            "description": "Percent added to what product teams can reach"
+          },
+          "feature_lift_pct": {
+            "type": "number",
+            "title": "Feature Lift Pct",
+            "description": "Percent added to feature progress"
+          },
+          "first_mover": {
+            "type": "boolean",
+            "title": "First Mover",
+            "description": "A first-mover head start is running"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "label",
+          "lead",
+          "cap_lift_pct",
+          "feature_lift_pct",
+          "first_mover"
+        ],
+        "title": "CategoryTechOut"
+      },
       "ChangePreviewOut": {
         "properties": {
           "allowed": {
@@ -14677,6 +15314,103 @@
         ],
         "title": "DivisionStatementsOut"
       },
+      "DomainOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "baseline": {
+            "type": "number",
+            "title": "Baseline",
+            "description": "The world's level, free to everyone (D)"
+          },
+          "lead": {
+            "type": "number",
+            "title": "Lead",
+            "description": "Your lead beyond the baseline (R)"
+          },
+          "level": {
+            "type": "number",
+            "title": "Level",
+            "description": "baseline + lead"
+          },
+          "feeds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Feeds",
+            "description": "Market labels this domain counts for"
+          },
+          "next_era": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Era",
+            "description": "The domain's next era, if any"
+          },
+          "next_threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Threshold",
+            "description": "The level that brings it early"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "baseline",
+          "lead",
+          "level",
+          "feeds",
+          "next_era",
+          "next_threshold"
+        ],
+        "title": "DomainOut"
+      },
+      "DomainRivalsOut": {
+        "properties": {
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "domain_label": {
+            "type": "string",
+            "title": "Domain Label"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalLeadOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "domain",
+          "domain_label",
+          "rivals"
+        ],
+        "title": "DomainRivalsOut"
+      },
       "EmploymentOut": {
         "properties": {
           "employment_id": {
@@ -14858,6 +15592,109 @@
           "adjustments"
         ],
         "title": "EnergyOut"
+      },
+      "EraOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "domain_label": {
+            "type": "string",
+            "title": "Domain Label"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "arrived",
+              "next",
+              "later"
+            ],
+            "title": "Status"
+          },
+          "arrived": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arrived",
+            "description": "Month it arrived"
+          },
+          "on_schedule": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "On Schedule"
+          },
+          "months_early": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months Early"
+          },
+          "caused_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caused By",
+            "description": "Company that caused it early ('You' for yours)"
+          },
+          "threshold": {
+            "type": "number",
+            "title": "Threshold"
+          },
+          "your_level": {
+            "type": "number",
+            "title": "Your Level"
+          },
+          "accelerates": {
+            "type": "string",
+            "title": "Accelerates"
+          },
+          "first_mover_reward": {
+            "type": "string",
+            "title": "First Mover Reward"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "domain_label",
+          "status",
+          "arrived",
+          "on_schedule",
+          "months_early",
+          "caused_by",
+          "threshold",
+          "your_level",
+          "accelerates",
+          "first_mover_reward"
+        ],
+        "title": "EraOut"
       },
       "ErrorOut": {
         "properties": {
@@ -18407,6 +19244,88 @@
         ],
         "title": "LedOut",
         "description": "Something a former employee led or was part of (23.6, M10b)."
+      },
+      "LicenseIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id",
+            "description": "The rival licensing to you, or from you"
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "points": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "domain",
+          "points"
+        ],
+        "title": "LicenseIn"
+      },
+      "LicenseOut": {
+        "properties": {
+          "license_id": {
+            "type": "integer",
+            "title": "License Id"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "in",
+              "out"
+            ],
+            "title": "Direction"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "domain_label": {
+            "type": "string",
+            "title": "Domain Label"
+          },
+          "points": {
+            "type": "number",
+            "title": "Points"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "royalty_pct": {
+            "type": "number",
+            "title": "Royalty Pct"
+          },
+          "royalty_months_left": {
+            "type": "integer",
+            "title": "Royalty Months Left"
+          },
+          "signed": {
+            "type": "string",
+            "title": "Signed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "license_id",
+          "direction",
+          "company",
+          "domain_label",
+          "points",
+          "price_cents",
+          "royalty_pct",
+          "royalty_months_left",
+          "signed"
+        ],
+        "title": "LicenseOut"
       },
       "LoanIn": {
         "properties": {
@@ -22707,6 +23626,162 @@
         ],
         "title": "ProfitAndLossOut"
       },
+      "ProjectBudgetIn": {
+        "properties": {
+          "budget_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Cents",
+            "description": "Null = full funding"
+          }
+        },
+        "type": "object",
+        "title": "ProjectBudgetIn"
+      },
+      "ProjectOut": {
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "title": "Project Id"
+          },
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "unit_name": {
+            "type": "string",
+            "title": "Unit Name"
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "domain_label": {
+            "type": "string",
+            "title": "Domain Label"
+          },
+          "researchers": {
+            "type": "integer",
+            "title": "Researchers"
+          },
+          "budget_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Cents",
+            "description": "Monthly budget; null = full funding"
+          },
+          "needed_cents": {
+            "type": "integer",
+            "title": "Needed Cents",
+            "description": "Full funding this month"
+          },
+          "funded_pct": {
+            "type": "number",
+            "title": "Funded Pct"
+          },
+          "gain_per_month": {
+            "type": "number",
+            "title": "Gain Per Month",
+            "description": "Estimated lead gained a month, before decay"
+          },
+          "last_month_gain": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Month Gain",
+            "description": "Lead gained last month"
+          },
+          "next_era": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Era"
+          },
+          "months_to_era": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months To Era",
+            "description": "At this pace; null if not within 10 years"
+          },
+          "months_before_history": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months Before History",
+            "description": "How early that would be; null if the era is not yet visible by date"
+          },
+          "last_event": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Event",
+            "description": "'Breakthrough, June 2016' or a dead end"
+          },
+          "started": {
+            "type": "string",
+            "title": "Started"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "unit_id",
+          "unit_name",
+          "domain",
+          "domain_label",
+          "researchers",
+          "budget_cents",
+          "needed_cents",
+          "funded_pct",
+          "gain_per_month",
+          "last_month_gain",
+          "next_era",
+          "months_to_era",
+          "months_before_history",
+          "last_event",
+          "started"
+        ],
+        "title": "ProjectOut"
+      },
       "ProposalOut": {
         "properties": {
           "proposal_id": {
@@ -23035,6 +24110,224 @@
         ],
         "title": "ReportOut",
         "description": "A seat holder's latest quarterly report (24.3), as the inbox shows it."
+      },
+      "ResearchActionOut": {
+        "properties": {
+          "research": {
+            "$ref": "#/components/schemas/ResearchOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "research",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "ResearchActionOut"
+      },
+      "ResearchOut": {
+        "properties": {
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/DomainOut"
+            },
+            "type": "array",
+            "title": "Domains"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryTechOut"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectOut"
+            },
+            "type": "array",
+            "title": "Projects"
+          },
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/UnitChoiceOut"
+            },
+            "type": "array",
+            "title": "Units",
+            "description": "Units free to start a project"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/DomainRivalsOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "licenses": {
+            "items": {
+              "$ref": "#/components/schemas/LicenseOut"
+            },
+            "type": "array",
+            "title": "Licenses"
+          },
+          "eras": {
+            "items": {
+              "$ref": "#/components/schemas/EraOut"
+            },
+            "type": "array",
+            "title": "Eras"
+          },
+          "decay_pct": {
+            "type": "number",
+            "title": "Decay Pct",
+            "description": "Percent of every lead lost each month"
+          },
+          "price_per_point_cents": {
+            "type": "integer",
+            "title": "Price Per Point Cents",
+            "description": "Licensing in, a point, at your ARR"
+          },
+          "margin": {
+            "type": "number",
+            "title": "Margin",
+            "description": "Points a licensor keeps ahead of the licensee"
+          },
+          "royalty_pct": {
+            "type": "number",
+            "title": "Royalty Pct"
+          },
+          "royalty_months": {
+            "type": "integer",
+            "title": "Royalty Months"
+          },
+          "start_energy": {
+            "type": "integer",
+            "title": "Start Energy"
+          },
+          "stop_energy": {
+            "type": "integer",
+            "title": "Stop Energy"
+          },
+          "license_energy": {
+            "type": "integer",
+            "title": "License Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "domains",
+          "categories",
+          "projects",
+          "units",
+          "rivals",
+          "licenses",
+          "eras",
+          "decay_pct",
+          "price_per_point_cents",
+          "margin",
+          "royalty_pct",
+          "royalty_months",
+          "start_energy",
+          "stop_energy",
+          "license_energy"
+        ],
+        "title": "ResearchOut"
+      },
+      "RivalLeadOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "is_startup": {
+            "type": "boolean",
+            "title": "Is Startup"
+          },
+          "founded": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Founded",
+            "description": "A startup's founding month"
+          },
+          "low": {
+            "type": "integer",
+            "title": "Low",
+            "description": "Lead range, low"
+          },
+          "high": {
+            "type": "integer",
+            "title": "High",
+            "description": "Lead range, high"
+          },
+          "licensed": {
+            "type": "boolean",
+            "title": "Licensed",
+            "description": "You have a licence with them (narrower range)"
+          },
+          "can_license_in": {
+            "type": "boolean",
+            "title": "Can License In"
+          },
+          "why_not": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Why Not",
+            "description": "Why licensing in from them is not possible"
+          },
+          "max_points": {
+            "type": "integer",
+            "title": "Max Points",
+            "description": "Points you can safely ask for (from the range)"
+          },
+          "can_license_out": {
+            "type": "boolean",
+            "title": "Can License Out"
+          },
+          "max_out_points": {
+            "type": "integer",
+            "title": "Max Out Points",
+            "description": "Points you can grant them (from the range)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "is_startup",
+          "founded",
+          "low",
+          "high",
+          "licensed",
+          "can_license_in",
+          "why_not",
+          "max_points",
+          "can_license_out",
+          "max_out_points"
+        ],
+        "title": "RivalLeadOut"
       },
       "RivalMoveOut": {
         "properties": {
@@ -25053,6 +26346,37 @@
         ],
         "title": "StageReachedOut"
       },
+      "StartProjectIn": {
+        "properties": {
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "budget_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Cents",
+            "description": "Null = full funding"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "domain"
+        ],
+        "title": "StartProjectIn"
+      },
       "StatementLineOut": {
         "properties": {
           "account": {
@@ -25842,6 +27166,30 @@
         },
         "type": "object",
         "title": "UISettings"
+      },
+      "UnitChoiceOut": {
+        "properties": {
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "researchers": {
+            "type": "integer",
+            "title": "Researchers",
+            "description": "Members in builder roles who would research"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "name",
+          "researchers"
+        ],
+        "title": "UnitChoiceOut"
       },
       "UnitOfficeIn": {
         "properties": {
