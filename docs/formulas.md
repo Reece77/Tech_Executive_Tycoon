@@ -2164,6 +2164,20 @@ Reece's decisions (ADR-0019 §8, §13): factories are allowed from the start, al
 | AI accelerators | chip design | May 2016 | chips: `ai_accelerator` demand growth +40 points for 36 months |
 | Custom silicon | chip design | Nov 2020 | devices with their own SoC: +5 quality cap for 24 months (everyone, not first-mover only) |
 
+**Future eras (seeded windows; Reece, 2026-11-02, ADR-0019 §15).** The first eras after 2025. Each has a public **window** instead of a historical date; its scheduled month is drawn from the seed and never shown.
+
+| Era | Domain | Window | What it accelerates |
+| --- | --- | --- | --- |
+| Chiplets and advanced packaging | chip design | Jan 2026 – Dec 2028 | chips: the yield cap rises from 0.92 to 0.95 for everyone from arrival; `server_cpu` and `ai_accelerator` demand growth +15 points for 36 months |
+| Edge AI | devices | Jan 2027 – Dec 2030 | devices: consumer and SMB demand growth +20 points for 36 months; `mobile_soc` demand growth +20 points for 36 months |
+
+- **Data.** In `eras.yaml` a future era has `window: [[y1, m1], [y2, m2]]` in place of `arrival`. The loader rejects an era with both or neither, and a window that starts before 2026.
+- **Scheduled month.** `t_sched = t_start + floor(u × n)`, where `n` is the number of months in the window and `u` is one uniform from stream `era_window` (id 31) at turn 0, key `(era_index,)`, with `era_index` its position in `eras.yaml`. It is a pure function of the seed, so nothing is stored and a save made before M12b gets the same months. Eras are only appended, so adding one never moves another's month.
+- **Threshold.** It is computed from the window's **midpoint** `t_mid = t_start + floor(n / 2)`, not `t_sched`: `D_d(t_mid + 1)`, plus `rnd.era_baseline` for each era of the domain scheduled before it, plus `rnd.era_lead`. The threshold is shown, so it must not reveal the drawn month. "Scheduled before" uses historical months, or windowed eras' midpoints, never `t_sched`.
+- **Arrival.** At `t_sched`, or earlier when a company's level reaches the threshold, exactly as in §21.4 (baseline +5, boosts, first-mover window, History).
+- **API.** The Market era timeline shows a future era's window ("expected 2026–2028") and threshold. `t_sched` never appears in a response or an LLM prompt until the era has arrived; extend the hidden-value test to it.
+- **Example.** Chiplets: window 36 months, `u = 0.40`, so `t_sched` = Jan 2026 + 14 = **March 2027**. The midpoint is `t_start + floor(n / 2)` = July 2027, so the threshold reads the chip-design baseline at the end of July 2027: 211 months from January 2010 at 1.5 a year, 30 + 26.375 = 56.375. With AI accelerators and custom silicon before it (+10) and `rnd.era_lead` (+15), the threshold is **81.375**.
+
 ### 26.5 What the API may show
 
 Bill of materials and unit cost by line; contracts with volume, use and take-or-pay; plants with capacity, utilization (own and sold), yield and staff coverage; chips with type, yield, unit cost, internal use and market sales; wafer and component indexes with history only.

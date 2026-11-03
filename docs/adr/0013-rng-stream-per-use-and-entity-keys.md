@@ -68,3 +68,6 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | `supply` | 26 | `(index,)` | Component indexes and supply shocks after 2025 (formulas.md §22.4) | M12a (lane B) |
 | `facility` | 27 | `(facility_id,)` | Data-centre outages (formulas.md §22.5) | M12a (lane B) |
 | — | 28–29 | — | Reserved for lane B | M12a |
+| `manufacturing` | 30 | `(facility_id,)` | Assembly-plant yield noise (formulas.md §26.2) | M12b (lane A) |
+| `era_window` | 31 | `(era_index,)` | Future eras' scheduled months, drawn at turn 0 (formulas.md §26.4) | M12b (lane A) |
+| — | 32 | — | Reserved for lane A | M12b |

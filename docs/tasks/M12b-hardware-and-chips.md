@@ -19,14 +19,14 @@
   - new `backend/tst/sim/hardware/` (unit-sale markets, bills of materials, contract manufacturing, the contract-manufacturing market) and `backend/tst/sim/chips/` (chip products, wafers, yield, internal use);
   - the `assembly_plant` kind in `balance.facility.kinds` and its per-kind rules in `tst/sim/facilities/`;
   - goods `device_bom`, `server_bom`, `equipment` and `foundry_wafer` appended to `components_history.yaml`;
-  - the categories and the `device_oems` segment appended to `categories.yaml`; incumbents and entrants appended; the three eras appended to `eras.yaml`;
+  - the categories and the `device_oems` segment appended to `categories.yaml`; incumbents and entrants appended; the three historical eras and the two future (windowed) eras appended to `eras.yaml`, and windowed eras in M11's era code and loader (`tst/sim/research/`, era functions only);
   - screens: product BOM and manufacturing panels, the Hardware screen, and chip products.
 - **M12b must not edit:** `tst/sim/markets_public/`, `tst/sim/org/ceo.py`, `banks.yaml`, or the Finance Stock tab (M13's).
 - **Shared files:**
   - `balance.yaml`: add only `hardware.*`, `chips.*` and the new facility kind;
   - `docs/formulas.md`: notes in §26 only;
   - `CHANGELOG.md`, `docs/data-dictionary.md`: keep both sides.
-- **RNG:** stream `manufacturing` (30), key `(facility_id,)`, for monthly yield noise, with 31–32 reserved for lane A. Add it to ADR-0013's main table with stable keys. New incumbents and entrants use the stable-key scheme from M12a's ADR-0013 amendment, so adding them must not move existing rivals; the M12a test for that must still pass.
+- **RNG:** stream `manufacturing` (30), key `(facility_id,)`, for monthly yield noise; stream `era_window` (31), key `(era_index,)`, drawn at turn 0, for future eras' scheduled months (§26.4); 32 reserved for lane A. Add it to ADR-0013's main table with stable keys. New incumbents and entrants use the stable-key scheme from M12a's ADR-0013 amendment, so adding them must not move existing rivals; the M12a test for that must still pass.
 
 ## Design for v3 (ADR-0020)
 
@@ -51,7 +51,11 @@ Owning a fab, wafers or refining (v3). Inventory and build-ahead: M12b is build-
    - **Tests:** the cost at 80% and 30% use against §26.7, and selling spare capacity.
 5. **Fabless chips** (§26.3): chip products by type, wafer contracts and allocation, yield from the chip-design lead, unit cost, chip demand by segment, internal use in own devices and servers, and the GPU capex reduction in own data centres. Rivals and entrants.
    - **Tests:** internal use books no revenue; the capex reduction applies.
-6. **Eras** (§26.4): appended to M11's era system with their effects. Tests for historical arrival and effects.
+6. **Eras** (§26.4): appended to M11's era system with their effects.
+   - **Historical eras:** tests for arrival and effects.
+   - **Future eras (windowed):** the `window` field and its loader checks; the scheduled month on stream `era_window`; the threshold from the window's midpoint; the §26.4 example as a test.
+   - **Seeded tests:** the scheduled month is the same for the same seed and inside the window on every seed (30 seeds); across 30 seeds both halves of each window occur; appending an era leaves other eras' months unchanged.
+   - **Hidden values:** extend the hidden-value test so no API response or LLM prompt contains a future era's scheduled month before it arrives (the window and threshold are public).
 7. **API, CLI and screens** (per the wireframes):
    - **Product BOM panel:** lines and unit cost.
    - **Manufacturing panel:** source, contract use, plant yield.
@@ -73,6 +77,7 @@ Owning a fab, wafers or refining (v3). Inventory and build-ahead: M12b is build-
 - [ ] Every §26.7 worked example passes as a test.
 - [ ] A company that never enters hardware plays exactly as before.
 - [ ] Unit-sale markets, bills of materials, contracts, plants and chips work as specified; the ledger balances (property tests); internal use books no revenue.
+- [ ] Future eras arrive inside their windows, are reproducible from the seed, and their scheduled month never appears in the API before arrival.
 - [ ] Adding the new incumbents and entrants leaves existing rivals' decisions unchanged (the M12a stable-key test).
 - [ ] §26.6 targets 2–6 met (printed, values recorded); no new xfails.
 - [ ] Merged after M13 with migrations re-parented, golden snapshots regenerated on the combined code and both milestones' guards passing; merged per CLAUDE.md §6 with the trailer `Milestone-Tag: m12b-done`.

@@ -35,7 +35,7 @@ v2 runs in two lanes where the systems are separate (Reece, 2026-10-29). Each la
 ## M15 follow-ups carried from M11
 
 - **Research may be too strong.** `rnd.cap_per_point` 0.010 allows up to ×1.50 on the quality cap, and Transformers arrived early on 10/10 seeds (target ≥ 5). Check with the research-heavy strategy and Reece's play before M15 tunes it.
-- **No eras after 2025.** The 30-year campaign needs seeded future eras (2026–2040) so research keeps paying off late.
+- **Eras after 2025.** M12b adds the first two seeded-window eras (chiplets 2026–2028, edge AI 2027–2030; ADR-0019 §15). M15 extends the list to 2039, for example post-quantum security (2028–2031), AR glasses (2028–2032), humanoid robotics (2030–2035), photonic interconnect (2031–2035) and practical quantum computing (2034–2039).
 - **Rivals never license from the player.** Licensing out only works with rivals that approach you; add rival demand for licences in.
 
 ## Lane rules (for every paired milestone)
