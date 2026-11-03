@@ -64,6 +64,7 @@ from tst.sim.rivals.poaching import leave_rival, poach_batch
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
+    ceo_of,
     reach_stage,
     with_candidate,
     with_company,
@@ -756,14 +757,14 @@ def reset_energy(state: GameState, balance: Balance, data: GameData | None = Non
     founders = {p.id for p in state.people if p.is_founder}
     player = state.player
     executives = exec_energy_holders(state)  # with authority: their own energy (M10c, 24.1)
+    ceo = ceo_of(state, player.id)  # M13 (25.6): the CEO acts with an executive's energy,
+    if ceo is not None:  # and the founder as Chair has ceo.chair_energy
+        executives = {*executives, ceo.person_id}
+    founder_cap = balance.ceo.chair_energy if ceo is not None else balance.founder.energy_per_month
     view = org_view(state, player.id) if data and is_scaleup(player, balance) else None
     for ps in state.person_states:
         if ps.energy is not None:
-            cap = (
-                balance.founder.energy_per_month
-                if ps.person_id in founders
-                else balance.delegates.energy_per_month
-            )
+            cap = founder_cap if ps.person_id in founders else balance.delegates.energy_per_month
             delegate = ps.person_id not in founders
             if ps.person_id in executives:
                 cap = balance.exec_authority.energy_per_month

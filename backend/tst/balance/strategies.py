@@ -20,6 +20,7 @@ from tst.sim.actions import (
     CloseSearch,
     CreateProduct,
     CreateUnit,
+    HireBanks,
     Interview,
     LaunchProduct,
     MakeOffer,
@@ -35,6 +36,7 @@ from tst.sim.finance.captable import open_round
 from tst.sim.finance.fundraising import arr_cents, next_series, series_problem
 from tst.sim.finance.statements import projected_runway
 from tst.sim.hiring.phases import monthly_costs
+from tst.sim.markets_public.ipo import eligibility_problem
 from tst.sim.org.executives import displayed_score, seats_in_play
 from tst.sim.org.models import SEATS
 from tst.sim.products.models import Product
@@ -267,6 +269,16 @@ def fundraise(game: Game, targets: dict[str, int], pick: str, seed_ok: bool = Tr
         game.act(StartRound(game.founder_id, series, targets[series]))
 
 
+IPO_BANK = "morgan_stanley"  # M13 (25.9): the scripts' lead underwriter
+
+
+def go_public(game: Game) -> None:
+    """M13 (25.9): hire the banks as soon as the company is eligible (25.1); the chain's
+    events take their first choice (Continue and the critical answer in Game.turn)."""
+    if eligibility_problem(game.state, PLAYER, game.loaded.balance) is None:
+        game.act(HireBanks(game.founder_id, IPO_BANK))
+
+
 def closed_series(game: Game) -> set[str]:
     return {r.series for r in game.state.company_rounds(PLAYER) if r.status == "closed"}
 
@@ -341,6 +353,7 @@ def steady(game: Game, appoint: bool = True) -> None:
         wanted = headcount(game) + 1
     hire(game, wanted, per_month=2)
     set_marketing(game, max(STEADY_MARKETING_MIN, round(STEADY_MARKETING * last_revenue(game))))
+    go_public(game)  # M13 (25.9)
     if appoint:  # M8 target 2's vacant arm turns this off
         appoint_executives(game)  # from stage 3
 
@@ -376,6 +389,7 @@ def blitzscale(game: Game, second: tuple[str, str, tuple[str, ...]] = SECOND_PRO
         grow = months is None or months > BLITZ_RUNWAY
         hire(game, headcount(game) + (2 if grow else 0), per_month=2)
     set_marketing(game, max(BLITZ_MARKETING_MIN, round(BLITZ_MARKETING * last_revenue(game))))
+    go_public(game)  # M13 (25.9)
     appoint_executives(game)  # M8: from stage 3
 
 

@@ -579,7 +579,8 @@ def offer_reasons(
         )
     lo, hi = revealed_range(person, reveal, "risk_appetite")
     reasons.append(f"Their risk appetite looks like {_range_text(lo, hi)} out of 20.")
-    appeal = hiring.offer.stage_appeal.get(company.stage, 0.0)
+    stage = min(company.stage, max(hiring.offer.stage_appeal))  # M13: stage 4 as 3
+    appeal = hiring.offer.stage_appeal.get(stage, 0.0)
     if appeal < 0:
         reasons.append(f"A {STAGE_LABELS[company.stage].lower()} company is a harder sell.")
     elif appeal > 0:

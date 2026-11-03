@@ -14,10 +14,12 @@ export function formatMoney(cents: number): string {
   return `${sign}$${groupFormat.format(dollars)}.${String(rest).padStart(2, '0')}`;
 }
 
-/** Compact form for chart axes: 4800000 -> "$48k", 150000000 -> "$1.5M". */
+/** Compact form for chart axes: 4800000 -> "$48k", 150000000 -> "$1.5M", 191000000000 ->
+ * "$1.9B". */
 export function formatMoneyShort(cents: number): string {
   const sign = cents < 0 ? '-' : '';
   const dollars = Math.abs(cents) / 100;
+  if (dollars >= 1_000_000_000) return `${sign}$${trim(dollars / 1_000_000_000)}B`;
   if (dollars >= 1_000_000) return `${sign}$${trim(dollars / 1_000_000)}M`;
   if (dollars >= 1_000) return `${sign}$${trim(dollars / 1_000)}k`;
   return `${sign}$${trim(dollars)}`;

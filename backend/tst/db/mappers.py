@@ -873,6 +873,8 @@ def _effect_json(e: Effect) -> dict[str, Any]:
     out: dict[str, Any] = {"type": e.type, "target": e.target, "value": e.value}
     if e.type == "modifier":
         out |= {"stat": e.stat, "months": e.months}
+    elif e.type == "public_step":  # M13 (25)
+        out |= {"stat": e.stat}
     return out
 
 

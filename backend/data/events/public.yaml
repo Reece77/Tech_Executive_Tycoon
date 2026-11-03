@@ -1,0 +1,230 @@
+# The IPO chain and public life (M13, docs/formulas.md 25). The engine queues each of these by
+# id (trigger public); the director never draws them. Each choice carries a public_step that
+# the engine applies (25.2, 25.4, 25.6); the LLM may write a public event's words, never its
+# choices. The first choice is what Holiday and scripts take. Shares are fractions of the
+# severity's caps (16.3). {demand} is the book in words only (25.8).
+templates:
+  - id: ipo_filing
+    category: public
+    trigger: public
+    severities: [major]
+    weight: 1.0
+    title: "The regulator has questions about {company}'s S-1"
+    body: >-
+      {bank}'s lawyers filed the draft S-1 and the regulator came back with a page of
+      questions, most of them about how {company} counts recurring revenue. You can answer
+      them as the metric stands, or restate it more conservatively and file a month later.
+    choices:
+      - key: A
+        label: "Answer every question and file on time"
+        effects:
+          - { type: public_step, target: company, stat: file }
+          - { type: cash_delta, target: company, share: -0.2 }
+      - key: B
+        label: "Restate the metric and file a month later"
+        effects:
+          - { type: public_step, target: company, stat: file_late }
+          - { type: board_confidence, target: board, share: 0.3 }
+      - key: C
+        label: "Push back hard on the questions"
+        effects:
+          - { type: public_step, target: company, stat: file }
+          - { type: board_confidence, target: board, share: -0.3 }
+
+  - id: ipo_roadshow_ambition
+    category: public
+    trigger: public
+    severities: [major]
+    weight: 1.0
+    title: "Roadshow: how hard should {bank} push the price?"
+    body: >-
+      The roadshow starts in earnest. {bank} wants to know how ambitious to be when it
+      talks price with the big funds. Aim high and the first day may disappoint; aim low and
+      you leave money on the table, but the stock should pop.
+    choices:
+      - key: A
+        label: "Middle of the range"
+        effects: [{ type: public_step, target: company, stat: ambition_middle }]
+      - key: B
+        label: "Push for the top of the range"
+        effects: [{ type: public_step, target: company, stat: ambition_high }]
+      - key: C
+        label: "Price it to pop"
+        effects: [{ type: public_step, target: company, stat: ambition_low }]
+
+  - id: ipo_roadshow_share
+    category: public
+    trigger: public
+    severities: [major]
+    weight: 1.0
+    title: "Roadshow: how much of {company} to sell?"
+    body: >-
+      Investors are asking how big the float will be. Every share sold is a new share: more
+      cash for {company}, and a smaller stake for everyone who owns it now.
+    choices:
+      - key: A
+        label: "Sell 15% of the company"
+        effects: [{ type: public_step, target: company, stat: sell_middle }]
+      - key: B
+        label: "Sell 10%: keep more of it"
+        effects: [{ type: public_step, target: company, stat: sell_low }]
+      - key: C
+        label: "Sell 25%: raise as much as we can"
+        effects: [{ type: public_step, target: company, stat: sell_high }]
+
+  - id: ipo_roadshow_class
+    category: public
+    trigger: public
+    severities: [major]
+    weight: 1.0
+    title: "Roadshow: one class of shares, or two?"
+    body: >-
+      {bank} raises the question of dual-class shares. Super-voting shares would keep
+      control of {company} with you whatever the board thinks, but governance-minded funds
+      will pay about 5% less for the stock.
+    choices:
+      - key: A
+        label: "One class: one share, one vote"
+        effects: [{ type: public_step, target: company, stat: single_class }]
+      - key: B
+        label: "Dual-class shares: keep control"
+        effects:
+          - { type: public_step, target: company, stat: dual_class }
+          - { type: board_confidence, target: board, share: -0.2 }
+
+  - id: ipo_pricing
+    category: public
+    trigger: public
+    severities: [critical]
+    weight: 1.0
+    title: "Pricing night: the book is {demand}"
+    body: >-
+      The roadshow is over and the order book is {demand}. {bank} suggests pricing at
+      {price} a share. You can take the suggestion, cut the price to make sure the deal
+      clears, or pull the IPO and pay part of the banks' fees.
+    choices:
+      - key: A
+        label: "Price at {price} as suggested"
+        effects: [{ type: public_step, target: company, stat: price_range }]
+      - key: B
+        label: "Cut the price 15% to clear the book"
+        effects: [{ type: public_step, target: company, stat: price_cut }]
+      - key: C
+        label: "Pull the IPO"
+        effects: [{ type: public_step, target: company, stat: pull }]
+
+  - id: ipo_pricing_strong
+    category: public
+    trigger: public
+    severities: [critical]
+    weight: 1.0
+    title: "Pricing night: the book is {demand}"
+    body: >-
+      The roadshow is over and the order book is {demand}, many times covered. {bank}
+      suggests {price} a share, and thinks the funds would take a higher price. You can
+      take the suggestion, raise the price 10%, or still pull the IPO.
+    choices:
+      - key: A
+        label: "Price at {price} as suggested"
+        effects: [{ type: public_step, target: company, stat: price_range }]
+      - key: B
+        label: "Raise the price 10%"
+        effects: [{ type: public_step, target: company, stat: price_raise }]
+      - key: C
+        label: "Pull the IPO"
+        effects: [{ type: public_step, target: company, stat: pull }]
+
+  - id: earnings_miss
+    category: public
+    trigger: public
+    severities: [major]
+    weight: 1.0
+    title: "{company} missed its guidance"
+    body: >-
+      The quarter came in short of what {company} told the market, and {ticker} fell. The
+      analysts want to know what changes now, and so does the board.
+    choices:
+      - key: A
+        label: "Reaffirm the plan on the call"
+        effects: [{ type: board_confidence, target: board, share: -0.2 }]
+      - key: B
+        label: "Announce a cost review"
+        effects:
+          - { type: board_confidence, target: board, share: 0.2 }
+          - { type: morale_delta, target: company, share: -0.3 }
+      - key: C
+        label: "Say nothing beyond the numbers"
+        do_nothing: true
+
+  - id: activist_stake
+    category: public
+    trigger: public
+    severities: [critical]
+    weight: 1.0
+    title: "An activist fund has built a stake in {company}"
+    body: >-
+      A well-known activist fund has disclosed a large stake in {ticker} and sent the board a
+      public letter: the shares at {price} are far below what the business is worth. It
+      wants a seat on the board, a buyback, or it will take its case to the shareholders.
+    choices:
+      - key: A
+        label: "Give the fund a board seat"
+        effects: [{ type: public_step, target: company, stat: activist_seat }]
+      - key: B
+        label: "Announce a buyback"
+        effects:
+          - { type: public_step, target: company, stat: activist_buyback }
+          - { type: board_confidence, target: board, share: 0.2 }
+      - key: C
+        label: "Fight them in a proxy contest"
+        effects:
+          - { type: public_step, target: company, stat: activist_fight }
+          - { type: board_confidence, target: board, share: -0.4 }
+
+  - id: takeover_bid
+    category: public
+    trigger: public
+    severities: [critical]
+    weight: 1.0
+    title: "A buyer has approached {company}"
+    body: >-
+      With {ticker} at {price}, a larger company has sent the board an unsolicited approach
+      at a sizeable premium. Bankers expect the news to leak within days.
+    choices:
+      - key: A
+        label: "Reject the approach"
+        effects:
+          - { type: public_step, target: company, stat: takeover_reject }
+          - { type: board_confidence, target: board, share: -0.3 }
+      - key: B
+        label: "Open talks and let the market know"
+        effects:
+          - { type: public_step, target: company, stat: takeover_talks }
+          - { type: board_confidence, target: board, share: 0.3 }
+      - key: C
+        label: "Adopt a shareholder rights plan"
+        effects:
+          - { type: public_step, target: company, stat: takeover_reject }
+          - { type: board_confidence, target: board, share: -0.6 }
+
+  - id: ceo_vote
+    category: public
+    trigger: public
+    severities: [critical]
+    weight: 1.0
+    title: "The board wants to replace {ceo}"
+    body: >-
+      Directors have lost patience with {ceo} as chief executive of {company} and have
+      called a vote. As Chair you can let it pass and run the company yourself again, or
+      spend your own standing with the board to keep your CEO.
+    choices:
+      - key: A
+        label: "Let the board replace {ceo}"
+        effects:
+          - { type: public_step, target: company, stat: ceo_replace }
+          - { type: board_confidence, target: board, share: 0.3 }
+      - key: B
+        label: "Back {ceo} against the board"
+        effects:
+          - { type: public_step, target: company, stat: ceo_keep }
+          - { type: board_confidence, target: board, share: -0.5 }

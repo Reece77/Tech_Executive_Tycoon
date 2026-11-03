@@ -77,6 +77,20 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   exec_report: { label: 'Delegate', group: 'company' },
   exec_decisions: { label: 'Delegate', group: 'company' },
   exec_proposal: { label: 'Delegate', group: 'company' },
+  // M13: the IPO, the public company and the CEO (25)
+  banks_hired: { label: 'Finance', group: 'finance' },
+  ipo_listed: { label: 'Finance', group: 'finance' },
+  ipo_pulled: { label: 'Finance', group: 'finance' },
+  earnings_report: { label: 'Finance', group: 'finance' },
+  guidance_set: { label: 'Finance', group: 'finance' },
+  dividend_declared: { label: 'Finance', group: 'finance' },
+  dividend_paid: { label: 'Finance', group: 'finance' },
+  buyback_done: { label: 'Finance', group: 'finance' },
+  secondary_done: { label: 'Finance', group: 'finance' },
+  ceo_appointed: { label: 'Delegate', group: 'company' },
+  ceo_left: { label: 'Delegate', group: 'company' },
+  ceo_replaced: { label: 'Delegate', group: 'company' },
+  ceo_decisions: { label: 'Delegate', group: 'company' },
 };
 
 /** The Finance tab a finance message opens (M4b). */
@@ -89,6 +103,13 @@ const FINANCE_TAB: Record<string, string> = {
   round_closed: 'captable',
   stage_from_funding: 'captable',
   bankrupt: 'statements',
+  ipo_listed: 'stock', // M13
+  earnings_report: 'stock',
+  guidance_set: 'stock',
+  dividend_declared: 'stock',
+  dividend_paid: 'stock',
+  buyback_done: 'stock',
+  secondary_done: 'stock',
 };
 
 export function financeTab(kind: string): string {

@@ -113,6 +113,17 @@ INBOX_CATEGORY: dict[str, str] = {
     "license_in": "products",
     "license_out": "products",
     "research_leak": "people",
+    # M13: the IPO, earnings, capital actions and the CEO (25)
+    "banks_hired": "finance",
+    "ipo_listed": "finance",
+    "ipo_pulled": "finance",
+    "earnings_report": "finance",
+    "dividend_paid": "finance",
+    "buyback_done": "finance",
+    "secondary_done": "finance",
+    "ceo_appointed": "people",
+    "ceo_left": "people",
+    "ceo_replaced": "people",
 }
 PRODUCT_KINDS = frozenset(
     {
@@ -148,6 +159,11 @@ FINANCE_KINDS = frozenset(
         "take_loan",  # M10
         "repay_loan",
         "sign_contract",  # M12a
+        "hire_banks",  # M13
+        "set_guidance",
+        "buyback",
+        "declare_dividend",
+        "secondary_offering",
     }
 )
 END_REASONS = {
@@ -229,6 +245,13 @@ def _domain(key: Any, data: LoadedData) -> str:
         return str(key)
 
 
+def _bank(key: Any, data: LoadedData) -> str:
+    try:
+        return data.game_data.bank(str(key)).name
+    except KeyError:
+        return "the banks"
+
+
 def _describe(
     kind: str, p: dict[str, Any], names: _Names, data: LoadedData
 ) -> tuple[str, str, int | None, int | None]:
@@ -297,6 +320,18 @@ def _describe(
         else "Funded a research project in full",
         "license_in": f"Licensed {_domain(p.get('domain'), data)} know-how in",
         "license_out": f"Licensed {_domain(p.get('domain'), data)} know-how out",
+        # M13 (25): the IPO, guidance, capital actions and the CEO
+        "hire_banks": f"Hired {_bank(p.get('bank'), data)} for the IPO",
+        "set_guidance": f"Guided quarterly revenue of "
+        f"{format_money(int(p.get('revenue_cents', 0)))}",
+        "buyback": f"Bought back shares for {format_money(int(p.get('amount_cents', 0)))}",
+        "declare_dividend": f"Declared a dividend of "
+        f"{format_money(int(p.get('per_share_cents', 0)))} a share",
+        "secondary_offering": f"Sold {int(p.get('shares', 0)):,} new shares",
+        "appoint_ceo": f"Appointed {who} CEO and stepped up to Chair",
+        "dismiss_ceo": "Dismissed the CEO",
+        "set_ceo_authority": "Changed the CEO's authority",
+        "override_ceo": "Overrode a CEO decision",
     }
     text = texts.get(kind, kind.replace("_", " ").capitalize())
     category = (

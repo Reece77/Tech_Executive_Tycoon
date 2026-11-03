@@ -14,11 +14,18 @@ from dataclasses import dataclass, replace
 import numpy as np
 
 from tst.sim.data_models import Balance, GameData
-from tst.sim.events.data import NO_STAFF_CATEGORIES, TRIGGERS, EventTemplate, Severity
+from tst.sim.events.data import (
+    NO_STAFF_CATEGORIES,
+    PUBLIC_TRIGGER,
+    TRIGGERS,
+    EventTemplate,
+    Severity,
+)
 from tst.sim.events.formulas import candidate_weight, cash_base_cents, severity_for
 from tst.sim.events.models import EventRequest, GameEvent, QueuedEvent, Storyline, Tone
 from tst.sim.events.render import loan_names, placeholder_names, render
 from tst.sim.events.triggers import TriggerHit, crisis_hits, triggers
+from tst.sim.markets_public.describe import public_names
 from tst.sim.money import Cents
 from tst.sim.org.rules import org_view
 from tst.sim.rivals.models import RivalMove
@@ -415,6 +422,8 @@ def direct(
             rival_id=targets.rival_id,
             months=targets.months,
         ) | loan_names(state, data, targets.loan_id)
+        if template.trigger == PUBLIC_TRIGGER:  # M13 (25)
+            names |= public_names(state, data, balance, cid)
         storyline_id = None
         spec = template.storyline
         if spec is not None and thread is None:  # step 1 opens a storyline

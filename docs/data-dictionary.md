@@ -1219,3 +1219,126 @@ New games number incumbents' products from 900,000 (10 per incumbent) and their 
 | `price_cents` | BIGINT | no | Paid once by the licensee (licensing in); 0 for a royalty licence. |
 | `royalty_bp` | INTEGER | no | Basis points of the licensee's monthly revenue in the domain's categories (licensing out); 0 if none. |
 | `royalty_end_turn` | INTEGER | yes | The last month the royalty is paid. |
+
+## Going public and the Chair (migration `0030_public_company`, M13)
+
+A company's IPO chain, its life as a listed company and its appointed CEO (formulas.md 25). Every row belongs to a company (ADR-0020 7), so a v3 subsidiary can list on its own. Existing saves start with no rows: every company is private and founder-led. `save_meta.schema_version` becomes 30.
+
+### listing
+
+A company's IPO chain (25.2), from hiring the banks to the listing or a pull. Primary key `company_id`: hiring banks again after a pull replaces the row. The state holds every row.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key. |
+| `bank` | VARCHAR(32) | no | `banks.yaml` key. |
+| `hired_turn` | INTEGER | no | The month the banks were hired. |
+| `status` | VARCHAR(16) | no | `hired`, `filing`, `roadshow`, `pricing`, `priced`, `listed` or `pulled`. |
+| `filed_late` | BOOLEAN | yes | The S-1 choice restated a metric (a month's delay); null before the choice. |
+| `roadshow_turn` | INTEGER | yes | The month the roadshow's events are due. |
+| `ambition` | VARCHAR(8) | yes | `high`, `middle` or `low`. |
+| `share_choice` | VARCHAR(8) | yes | `low`, `middle` or `high` (`ipo.share_sold`). |
+| `dual_class` | BOOLEAN | yes | The listing gives the founder a dual-class structure. |
+| `demand` | FLOAT | yes | Hidden (25.8): the book's draw; the API shows only its word. |
+| `price_choice` | VARCHAR(8) | yes | `range`, `raise`, `cut` or `pull`. |
+| `shares_before` | BIGINT | no | Fully diluted shares at the pricing. |
+| `new_shares` | BIGINT | no | Shares issued in the offering. |
+| `price_cents` | BIGINT | no | Per share: the bank's suggestion at pricing, then the final price. |
+| `gross_cents` | BIGINT | no | Gross proceeds. |
+| `fee_cents` | BIGINT | no | The banks' fee. |
+| `first_day_return` | FLOAT | yes | The first day's return (fraction). |
+| `close_cents` | BIGINT | no | The first day's closing price. |
+| `listed_turn` | INTEGER | yes | The month it listed. |
+| `pulled_turn` | INTEGER | yes | The month it was pulled. |
+| `ticker` | VARCHAR(16) | no | The ticker ('' until set). |
+
+### public_company
+
+A listed company's market state (25.3-25.5). Primary key `company_id`. The state holds every row.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key. |
+| `listed_turn` | INTEGER | no | The month it listed. |
+| `ticker` | VARCHAR(16) | no | The ticker. |
+| `dual_class` | BOOLEAN | no | Dual-class shares. |
+| `listing_price_cents` | BIGINT | no | The IPO price per share. |
+| `price_cents` | BIGINT | no | The share price at the last month end. |
+| `sentiment` | FLOAT | no | Hidden (25.8): S, which also carries the future's drift. |
+| `value_cents` | BIGINT | no | Hidden (25.8): V_f at the last month end. |
+| `analysts` | JSON | no | `[[index, target_cents, rating], ...]`: position in `public.analysts.firms`, price target, `buy`/`hold`/`sell`. |
+| `below_value_months` | INTEGER | no | Months the price was below the activist share of V_f per share (25.4). |
+| `below_takeover_months` | INTEGER | no | Months market cap was below the takeover share of V_f (25.4). |
+| `last_activist_turn` | INTEGER | yes | The last activist event. |
+| `last_takeover_turn` | INTEGER | yes | The last takeover approach. |
+| `beat_streak` | INTEGER | no | Consecutive beats. |
+| `miss_streak` | INTEGER | no | Consecutive misses. |
+| `results` | JSON | no | Each report's result (`beat`, `inline`, `miss`), oldest first, the last 8. |
+| `quarter_revenue_cents` | BIGINT | no | The running quarter's revenue so far. |
+| `quarter_op_cents` | BIGINT | no | The running quarter's operating result so far. |
+| `dividend_cents` | BIGINT | no | Declared dividend per share, paid at the next month end. |
+| `lapsed_seats` | INTEGER | no | Investor board seats lapsed since listing (25.7). |
+| `pending` | JSON | no | Event choices done at the next phase 7: `activist_seat`, `activist_buyback`, `activist_fight` (25.4). |
+
+### guidance
+
+One quarter's guidance and, once reported, its result (25.4). Primary key `(company_id, quarter_turn)`. The state holds every row.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | The company. |
+| `quarter_turn` | INTEGER | no | The quarter's first month. |
+| `revenue_cents` | BIGINT | no | Guided revenue. |
+| `margin_bp` | INTEGER | no | Guided operating margin, basis points. |
+| `consensus_revenue_cents` | BIGINT | no | The analysts' consensus revenue. |
+| `consensus_margin_bp` | INTEGER | no | The consensus margin, basis points. |
+| `by_player` | BOOLEAN | no | The player set it (false: the default guidance). |
+| `actual_revenue_cents` | BIGINT | yes | Reported revenue. |
+| `actual_margin_bp` | INTEGER | yes | Reported margin, basis points. |
+| `result` | VARCHAR(8) | yes | `beat`, `inline` or `miss`; null until reported. |
+| `price_before_cents` | BIGINT | yes | The share price before the report. |
+| `price_after_cents` | BIGINT | yes | The share price after it. |
+
+### share_month
+
+A listed company's month end (25.3): the chart's data. Primary key `(company_id, turn)`. Every month is kept; the state holds the last `public.history_months` (36). Rows are only appended.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | The company. |
+| `turn` | INTEGER | no | The month. |
+| `price_cents` | BIGINT | no | The month-end share price. |
+| `shares` | BIGINT | no | Shares outstanding; market cap is price x shares. |
+| `mark` | VARCHAR(16) | no | `listing`, a report's result (`beat`, `inline`, `miss`) or '' for the chart. |
+
+### ceo
+
+An appointed CEO (25.6); the founder is Chair while one serves. The state holds serving CEOs and those ended in the last `ceo.memory_months` (12); an ended one keeps its row.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The company. |
+| `person_id` | INTEGER | no | The CEO (no FK). |
+| `since_turn` | INTEGER | no | The month appointed. |
+| `scopes` | JSON | no | The authority the Chair allows (`config.CEO_SCOPES` keys), a list. |
+| `ended_turn` | INTEGER | yes | When the tenure ended; null while serving. |
+| `end_reason` | VARCHAR(16) | yes | `replaced` (the board), `dismissed` (the Chair) or `left`. |
+| `low_months` | INTEGER | no | Months of board confidence below `ceo.replace.below`. |
+| `price_anchors` | JSON | no | `[[product_id, segment, cents], ...]`: the player's last prices; the CEO moves a price only within `ceo.price_band_pct` of these. |
+
+### ceo_decision
+
+One decision a CEO took (25.6). The state holds the last `ceo.memory_months` (12); indexed on `turn`.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The company. |
+| `person_id` | INTEGER | no | The CEO (no FK). |
+| `turn` | INTEGER | no | The month (indexed). |
+| `scope` | VARCHAR(32) | no | The scope it fell under. |
+| `text` | TEXT | no | What they did, in words. |
+| `mistake` | BOOLEAN | no | A plausible but worse option. |
+| `undo` | JSON | no | `[[key, value], ...]`: the action kind and fields that reverse it; `[]` when it cannot be overridden. |
+| `overridden_turn` | INTEGER | yes | When the Chair overrode it. |
