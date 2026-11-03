@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 28
+SCHEMA_VERSION = 29
 
 
 class Base(DeclarativeBase):
@@ -1152,6 +1152,94 @@ class RegionalSegmentRow(Base):
     customers: Mapped[float] = mapped_column(Float, nullable=False)
     capacity_limited: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
     added_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+# --- Facilities, market goods and contracts (M12a, formulas.md 22) --------------------------
+
+
+class FacilityRow(Base):
+    """A facility (22.2; ADR-0020 2): a data centre now, more kinds later. Closed ones keep
+    their row."""
+
+    __tablename__ = "facility"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    region: Mapped[str] = mapped_column(String(32), nullable=False)
+    city: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    capacity: Mapped[int] = mapped_column(Integer, nullable=False)
+    on_time: Mapped[int] = mapped_column(Integer, nullable=False)
+    ordered_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    ready_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    late_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    capex_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    input_index: Mapped[float] = mapped_column(Float, nullable=False)
+    capex_paid_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    depreciated_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    contract_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class SupplyMonthRow(Base):
+    """One market good's month (22.4): index, allocation, trend and the latest shock. Rows
+    exist only for months already played."""
+
+    __tablename__ = "supply_month"
+
+    good: Mapped[str] = mapped_column(String(32), primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    price_index: Mapped[float] = mapped_column(Float, nullable=False)
+    allocation: Mapped[float] = mapped_column(Float, nullable=False)
+    base: Mapped[float] = mapped_column(Float, nullable=False)
+    change: Mapped[float] = mapped_column(Float, nullable=False)
+    shock_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    shock_months: Mapped[int] = mapped_column(Integer, nullable=False)
+    shock_rise: Mapped[float] = mapped_column(Float, nullable=False)
+    shock_allocation: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class SupplyContractRow(Base):
+    """A component contract (22.4): a locked index on a volume of builds, take-or-pay."""
+
+    __tablename__ = "supply_contract"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    good: Mapped[str] = mapped_column(String(32), nullable=False)
+    price_index: Mapped[float] = mapped_column(Float, nullable=False)
+    signed_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    volume: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit_value_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    used: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    settled_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+
+class FacilityOutageRow(Base):
+    """A data-centre outage (22.5), kept as history."""
+
+    __tablename__ = "facility_outage"
+    __table_args__ = (Index("ix_facility_outage_turn", "turn"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    facility_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    customers_lost: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class CompanyRivalKeyRow(Base):
+    """A rival's stable identity for its RNG keys (ADR-0013 amendment, M12a; 0028). Companies
+    without a row (the player, rivals of older saves) are keyed by their id."""
+
+    __tablename__ = "company_rival_key"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    rival_key: Mapped[list[int]] = mapped_column(JSON, nullable=False)
 
 
 # --- Research (M11, formulas.md 21; 0028) ---------------------------------------------------

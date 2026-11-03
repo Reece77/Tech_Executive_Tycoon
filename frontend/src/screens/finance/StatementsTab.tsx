@@ -92,7 +92,9 @@ function CashFlow({ period: p }: { period: StatementPeriod }) {
   return (
     <Panel title={`Cash flow · ${p.label}`} style={{ flex: '1 1 300px' }}>
       <Row label="Operating" cents={f.operating_cents} />
-      {f.investing_cents !== 0 && <Row label="Investing" cents={f.investing_cents} />}
+      {f.investing_cents !== 0 && (
+        <Row label="Investing (data centre capex less sales)" cents={f.investing_cents} />
+      )}
       <Row label="Financing (SAFEs and rounds)" cents={f.financing_cents} />
       <Row label="Change in cash" cents={f.change_in_cash_cents} strong />
       <div className="tst-row" style={{ borderBottom: 0 }}>

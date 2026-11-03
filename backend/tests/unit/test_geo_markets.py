@@ -222,9 +222,10 @@ def test_startup_founding_region_is_seeded(loaded: LoadedData) -> None:
     b, data = loaded.balance, loaded.game_data
     state = fresh_game(loaded)
     category = data.category("consumer_apps")
-    picks = [founding_region(state, RngFactory(s), 99, category, b, data) for s in range(300)]
+    startup = replace(state.companies[-1], id=99, rival_key=(2, 2, 0))
+    picks = [founding_region(state, RngFactory(s), startup, category, b, data) for s in range(300)]
     assert picks == [
-        founding_region(state, RngFactory(s), 99, category, b, data) for s in range(300)
+        founding_region(state, RngFactory(s), startup, category, b, data) for s in range(300)
     ]
     share = picks.count("north_america") / len(picks)
     assert 0.2 < share < 0.4  # 1.00 of 3.31 regional size

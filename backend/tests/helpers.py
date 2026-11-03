@@ -82,9 +82,10 @@ def last_hire(state: GameState, company_id: int = 1) -> Employment:
 
 
 DIRECTOR_IDS_FROM = 900  # test fixtures put employees at ids 2.., so directors move out of the way
-FIRST_PRODUCT = 24  # the first product id after the 23 incumbent products (M8 added five,
-# M9 six regional ones)
-INCUMBENTS = 23  # incumbent companies (ids 2..24)
+FIRST_PRODUCT = 1  # a new game's first player product: since M12a (ADR-0013 amendment)
+# incumbents' products take id blocks from 900,000 by their place in incumbents.yaml
+SALES_CLOUD = 900_000  # Salesforce's Sales Cloud: the first incumbent's first product
+INCUMBENTS = 27  # incumbent companies (ids 2..28)
 
 
 def move_directors(state: GameState) -> GameState:

@@ -244,6 +244,16 @@ class GeoRuleError(SimError):
     code = "geo_rule"
 
 
+class FacilityRuleError(SimError):
+    """A data-centre build, sale, staffing or contract the rules do not allow (M12a, 22)."""
+
+    code = "facility_rule"
+
+
+class UnknownFacilityError(NotFoundError):  # M12a
+    code = "unknown_facility"
+
+
 class ResearchRuleError(SimError):
     """A research project or licence that the rules do not allow (M11, 21.3, 21.5)."""
 

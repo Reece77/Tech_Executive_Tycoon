@@ -298,7 +298,9 @@ def evaluate(results: Sequence[RunResult]) -> list[Row]:
         ("steady", "standard", 0.0, 0.25),  # Reece, C2
         ("steady", "hard", 0.0, 0.70),  # Reece, C2
         ("blitzscale", "standard", 0.0, 0.40),  # Reece, B3; re-banded in M10d (2026-11-02)
-        ("bootstrap-frugal", "standard", 0.20, 0.50),  # Reece, C3 (a)
+        # Reece, C3 (a); re-banded from 20-50% in M12a (product manager, 2026-11-02): 7% on
+        # seeds 11-40 on both main and the combined M11 + M12a code
+        ("bootstrap-frugal", "standard", 0.0, 0.50),
     )
     for s, d, lo, hi in bands:
         runs = _runs(results, s, d)

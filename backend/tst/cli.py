@@ -1362,6 +1362,139 @@ def board(save: SaveOpt) -> None:
         typer.echo(f"Game over: {state.save_meta.game_state.replace('_', ' ')}")
 
 
+# --- Infrastructure (M12a, formulas.md 22) -------------------------------------------------
+
+
+def _infrastructure(path: Path, state: GameState, data: LoadedData) -> Any:
+    from tst.api.facility_views import infrastructure_out
+    from tst.api.routers.facilities import _stored
+
+    return infrastructure_out(state, data, _stored(path, state, data))
+
+
+@app.command()
+def facilities(save: SaveOpt) -> None:
+    """Component indexes, your data centres, contracts and Cloud hosting (22.6)."""
+    path, data, state = _game(save)
+    out = _infrastructure(path, state, data)
+    for c in out.components:
+        typer.echo(
+            f"{c.label:<18} index {c.index:.2f} ({c.change_12m:+.0%} in 12 months), "
+            f"allocation {c.allocation:.0%}: {c.note}"
+        )
+    for s in out.spot:
+        typer.echo(f"Spot {s.label:<16} {format_money(s.cents_per_unit)} a CU a month")
+    if not out.facilities:
+        typer.echo("No data centres. Build one with tst build-dc.")
+    for f in out.facilities:
+        if f.status == "building":
+            state_text = f"building, ready {f.ready}"
+        else:
+            rel = "-" if f.reliability is None else f"{f.reliability:.0f}"
+            per = "-" if f.cost_per_used_cents is None else format_money(f.cost_per_used_cents)
+            state_text = (
+                f"own {f.own_use:,.0f} sold {f.sold_use:,.0f} free {f.free:,.0f} "
+                f"({f.utilization:.0%}); reliability {rel}; {per} per used CU "
+                f"(spot {format_money(f.spot_cents)})"
+            )
+        typer.echo(
+            f"{f.facility_id:>4} {f.name:<44} {f.units:>6,} {f.unit}  staff {f.staff}/"
+            f"{f.staff_needed}  book {format_money(f.book_value_cents)}; {state_text}"
+        )
+    for k in out.contracts:
+        typer.echo(
+            f"Contract {k.contract_id}: {k.good_label} at {k.index:.2f}, {k.used}/{k.volume} "
+            f"used, until {k.ends} ({k.status})"
+        )
+    cloud = out.cloud
+    if cloud.selling:
+        typer.echo(
+            f"Cloud hosting: {cloud.customers:,.0f} customers, {cloud.units_sold:,.0f} CU, "
+            f"{format_money(cloud.revenue_cents)} a month; {cloud.outages_12m} outages in 12 months"
+        )
+
+
+@app.command("build-dc")
+def build_dc(
+    save: SaveOpt,
+    region: Annotated[str, typer.Option(help="Region key, e.g. north_america")],
+    kind: Annotated[str, typer.Option(help="general or gpu")] = "general",
+    cu: Annotated[int, typer.Option(help="100, 500, 2000 or 10000")] = 500,
+    contract: Annotated[int | None, typer.Option(help="Component contract id")] = None,
+) -> None:
+    """Build a data centre: capex paid over the build; energy 12 (22.2)."""
+    from tst.sim.actions.facilities import BuildFacility
+
+    path, data, state = _game(save)
+    key = kind if kind in data.balance.facility.kinds else f"data_centre_{kind}"
+    result = _run(path, data, BuildFacility(_founder(state), key, region, cu, contract))
+    facility = max(result.new_state.company_facilities(state.player.id), key=lambda f: f.id)
+    late = facility.capacity - facility.on_time
+    typer.echo(
+        f"Ordered data centre {facility.id}: {cu:,} CU for {format_money(facility.capex_cents)}"
+        f", live {format_turn(facility.ready_turn)}"
+        + (f" ({late:,} CU late, {format_turn(facility.late_turn)})" if late else "")
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("sell-dc")
+def sell_dc(save: SaveOpt, facility: Annotated[int, typer.Option(help="Data centre id")]) -> None:
+    """Sell a data centre for half its book value; energy 12 (22.2)."""
+    from tst.sim.actions.facilities import SellFacility
+
+    path, data, state = _game(save)
+    result = _run(path, data, SellFacility(_founder(state), facility))
+    typer.echo(f"Sold data centre {facility}")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("staff-dc")
+def staff_dc(
+    save: SaveOpt,
+    facility: Annotated[int, typer.Option(help="Data centre id")],
+    unit: Annotated[int | None, typer.Option(help="Unit id; omit for nobody")] = None,
+) -> None:
+    """The unit whose DevOps and security engineers staff a data centre; energy 2."""
+    from tst.sim.actions.facilities import StaffFacility
+
+    path, data, state = _game(save)
+    result = _run(path, data, StaffFacility(_founder(state), facility, unit))
+    typer.echo(f"Data centre {facility} is staffed by unit {unit}")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command()
+def contract(
+    save: SaveOpt,
+    index: Annotated[str, typer.Option(help="Component: server or gpu")],
+    months: Annotated[int, typer.Option(help="12 to 36")],
+    cu: Annotated[int, typer.Option(help="CU of builds it covers")],
+) -> None:
+    """Lock a component price for builds, with full allocation; take-or-pay; energy 6."""
+    from tst.sim.actions.facilities import SignContract
+
+    path, data, state = _game(save)
+    result = _run(path, data, SignContract(_founder(state), index, months, cu))
+    signed = max(result.new_state.company_contracts(state.player.id), key=lambda c: c.id)
+    typer.echo(
+        f"Contract {signed.id}: {cu:,} CU of {index} builds at index {signed.index:.2f} "
+        f"until {format_turn(signed.end_turn)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("sell-capacity")
+def sell_capacity(save: SaveOpt) -> None:
+    """Start selling spare data-centre capacity as Cloud hosting (22.3)."""
+    from tst.sim.actions.facilities import SellCapacity
+
+    path, data, state = _game(save)
+    result = _run(path, data, SellCapacity(_founder(state)))
+    typer.echo("Selling spare capacity as Cloud hosting")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
 if __name__ == "__main__":
     app()
 

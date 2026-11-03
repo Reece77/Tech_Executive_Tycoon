@@ -72,7 +72,10 @@ test('(c) license in from a rival and see the level change', async ({ page }) =>
   await page.goto(`/game/${save}/products/research`);
   await page.getByTestId('rival-domain').click();
   await page.getByRole('option', { name: 'Devices' }).click();
-  const ibm = page.getByTestId('rival-lead-row').filter({ hasText: 'IBM' });
+  // exactly IBM, not M12a's IBM SoftLayer
+  const ibm = page
+    .getByTestId('rival-lead-row')
+    .filter({ has: page.getByRole('cell', { name: 'IBM', exact: true }) });
   await expect(ibm).toBeVisible();
   const devices = page.getByTestId('domain-row').filter({ hasText: /^Devices/ });
   await expect(devices.getByRole('cell').nth(2)).toHaveText('0.0');

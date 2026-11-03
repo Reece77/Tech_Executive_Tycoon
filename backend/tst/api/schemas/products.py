@@ -42,6 +42,10 @@ class CategoryOut(BaseModel):
     segments: list[CategorySegmentOut]
     note: str | None = Field(default=None, description="e.g. compute costs follow the market (M8)")
     launch_quality: float | None = Field(default=None, description="Quality a launch needs (M8)")
+    capacity_market: bool = Field(
+        default=False,
+        description="Sells spare data-centre capacity; not a product to create (M12a)",
+    )
 
 
 class MarketProductOut(BaseModel):

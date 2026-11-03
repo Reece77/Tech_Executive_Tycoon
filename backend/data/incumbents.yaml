@@ -427,3 +427,81 @@ companies:
         brand: 60
         segments:
           enterprise: { price_cents: 450000, share_bp: 4500 }
+
+  # --- Cloud and GPU hosting (M12a, formulas.md 22.3) -------------------------------------
+  # Rivals' capacity is abstract: they always have enough, and their hosting_cents in
+  # categories.yaml is the cost of the CU they sell. Starting shares approximate 2010's IaaS
+  # market (AWS far ahead); not fitted by the M3a steady-state method (M12a decision).
+  - name: Amazon Web Services
+    stage: 4
+    founded_year: 2006
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 2500
+    cash_months: 120 # Amazon's balance sheet behind it (M12a: 24 went bankrupt in price wars)
+    products:
+      - name: AWS EC2
+        category: cloud_hosting
+        quality: 72
+        features: 75
+        brand: 70
+        segments:
+          smb: { price_cents: 360000, share_bp: 3000 }
+          mid_market: { price_cents: 1800000, share_bp: 2500 }
+          enterprise: { price_cents: 18000000, share_bp: 1500 }
+          hyperscalers: { price_cents: 180000000, share_bp: 1500 }
+
+  - name: Microsoft Azure
+    stage: 4
+    founded_year: 2010
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 36
+    products:
+      - name: Windows Azure
+        category: cloud_hosting
+        quality: 55
+        features: 55
+        brand: 60
+        segments:
+          smb: { price_cents: 400000, share_bp: 500 }
+          mid_market: { price_cents: 2000000, share_bp: 800 }
+          enterprise: { price_cents: 20000000, share_bp: 1000 }
+          hyperscalers: { price_cents: 200000000, share_bp: 500 }
+
+  - name: Rackspace
+    stage: 4
+    founded_year: 1998
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 60 # M12a: 12 went bankrupt in AWS's price wars
+    products:
+      - name: Rackspace Cloud
+        category: cloud_hosting
+        quality: 62
+        features: 50
+        brand: 55
+        segments:
+          smb: { price_cents: 340000, share_bp: 1500 }
+          mid_market: { price_cents: 1700000, share_bp: 1500 }
+          enterprise: { price_cents: 18000000, share_bp: 500 }
+
+  - name: IBM SoftLayer
+    stage: 4
+    founded_year: 2005
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 24
+    products:
+      - name: SoftLayer
+        category: cloud_hosting
+        quality: 66
+        features: 55
+        brand: 65
+        segments:
+          mid_market: { price_cents: 2300000, share_bp: 500 }
+          enterprise: { price_cents: 23000000, share_bp: 2000 }
+          hyperscalers: { price_cents: 230000000, share_bp: 1000 }

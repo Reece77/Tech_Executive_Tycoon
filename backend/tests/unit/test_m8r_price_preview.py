@@ -21,7 +21,7 @@ def test_an_unchanged_price_previews_the_current_appeal(loaded: LoadedData, cro:
     state = with_product(game(loaded, staff=2), prices={"mid_market": PRICE}, quality=50.0)
     if cro:
         state = run(loaded, skilled(state, 2, 14.0), AppointExecutive(FOUNDER, "cro", 2))
-    product = state.products[-1]
+    product = state.company_products(1)[-1]
     out = price_preview(state, product, "mid_market", PRICE, loaded)
     assert out.price_score == out.current_price_score
     assert out.appeal == out.current_appeal

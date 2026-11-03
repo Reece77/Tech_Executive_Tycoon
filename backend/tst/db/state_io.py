@@ -76,6 +76,7 @@ from tst.db.models import (
     CandidateRow,
     CapTableEntryRow,
     CompanyHqRow,
+    CompanyRivalKeyRow,
     CompanyRow,
     EmploymentRow,
     EraArrivalRow,
@@ -84,6 +85,8 @@ from tst.db.models import (
     EventRow,
     ExecDecisionRow,
     ExecSeatRow,
+    FacilityOutageRow,
+    FacilityRow,
     FinanceHistoryRow,
     FormerStaffRow,
     FreeAgentRow,
@@ -132,12 +135,15 @@ from tst.db.models import (
     SearchRow,
     SegmentShareRow,
     StorylineRow,
+    SupplyContractRow,
+    SupplyMonthRow,
     TermSheetRow,
     UnitOfficeRow,
     UnitServicesRow,
     WorkforcePoolRow,
 )
 from tst.sim.errors import SaveNotFoundError
+from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
 from tst.sim.finance.macro import MacroMonth
 from tst.sim.finance.models import (
     BoardSeat,
@@ -456,6 +462,7 @@ def load_state(session: Session) -> GameState:
     )
     state = _load_m10(session, state)
     state = _load_exec(session, state)
+    state = _load_facilities(session, state)
     state = _load_research(session, state)
     return _load_geo(session, state, product_ids)
 
@@ -771,6 +778,174 @@ def _sync_exec(session: Session, old: GameState, new: GameState) -> None:
                 resolved_turn=p.resolved_turn,
             )
         )
+
+
+# --- Facilities (M12a, 0028) -------------------------------------------------------------------
+
+FACILITY_MEMORY = 24  # months of outages and settled contracts kept in the live state
+
+
+def facility_from_row(r: FacilityRow) -> Facility:
+    return Facility(
+        id=r.id,
+        company_id=r.company_id,
+        kind=r.kind,
+        region=r.region,
+        capacity=r.capacity,
+        on_time=r.on_time,
+        ordered_turn=r.ordered_turn,
+        ready_turn=r.ready_turn,
+        late_turn=r.late_turn,
+        capex_cents=r.capex_cents,
+        input_index=r.input_index,
+        capex_paid_cents=r.capex_paid_cents,
+        depreciated_cents=r.depreciated_cents,
+        status=r.status,  # type: ignore[arg-type]
+        city=r.city,
+        unit_id=r.unit_id,
+        contract_id=r.contract_id,
+        closed_turn=r.closed_turn,
+    )
+
+
+def facility_to_row(f: Facility) -> FacilityRow:
+    return FacilityRow(**asdict(f))
+
+
+def good_month_from_row(r: SupplyMonthRow) -> GoodMonth:
+    return GoodMonth(
+        good=r.good,
+        turn=r.turn,
+        index=r.price_index,
+        allocation=r.allocation,
+        base=r.base,
+        change=r.change,
+        shock_turn=r.shock_turn,
+        shock_months=r.shock_months,
+        shock_rise=r.shock_rise,
+        shock_allocation=r.shock_allocation,
+    )
+
+
+def good_month_to_row(g: GoodMonth) -> SupplyMonthRow:
+    fields = asdict(g)
+    fields["price_index"] = fields.pop("index")
+    return SupplyMonthRow(**fields)
+
+
+def contract_from_row(r: SupplyContractRow) -> SupplyContract:
+    return SupplyContract(
+        id=r.id,
+        company_id=r.company_id,
+        good=r.good,
+        index=r.price_index,
+        signed_turn=r.signed_turn,
+        end_turn=r.end_turn,
+        volume=r.volume,
+        unit_value_cents=r.unit_value_cents,
+        used=r.used,
+        status=r.status,  # type: ignore[arg-type]
+        settled_cents=r.settled_cents,
+    )
+
+
+def contract_to_row(c: SupplyContract) -> SupplyContractRow:
+    fields = asdict(c)
+    fields["price_index"] = fields.pop("index")
+    return SupplyContractRow(**fields)
+
+
+def _load_facilities(session: Session, state: GameState) -> GameState:
+    """Facilities that are not closed, each good's latest month, contracts active or settled
+    lately and recent outages (M12a, 0028)."""
+    if not has_table(session, FacilityRow):
+        return state
+    keys = {r.company_id: tuple(r.rival_key) for r in session.scalars(select(CompanyRivalKeyRow))}
+    if keys:
+        state = replace(
+            state,
+            companies=tuple(
+                replace(c, rival_key=keys[c.id]) if c.id in keys else c for c in state.companies
+            ),
+        )
+    turn = state.turn
+    facilities = tuple(
+        facility_from_row(r)
+        for r in session.scalars(
+            select(FacilityRow).where(FacilityRow.status != "closed").order_by(FacilityRow.id)
+        )
+    )
+    latest: dict[str, GoodMonth] = {}
+    last_turn = session.scalar(select(func.max(SupplyMonthRow.turn)))
+    if last_turn is not None:
+        for r in session.scalars(select(SupplyMonthRow).where(SupplyMonthRow.turn == last_turn)):
+            latest[r.good] = good_month_from_row(r)
+    contracts = tuple(
+        contract_from_row(r)
+        for r in session.scalars(
+            select(SupplyContractRow)
+            .where(
+                (SupplyContractRow.status == "active")
+                | (SupplyContractRow.end_turn >= turn - FACILITY_MEMORY)
+            )
+            .order_by(SupplyContractRow.id)
+        )
+    )
+    outages = tuple(
+        Outage(r.id, r.facility_id, r.company_id, r.turn, r.customers_lost)
+        for r in session.scalars(
+            select(FacilityOutageRow)
+            .where(FacilityOutageRow.turn > turn - FACILITY_MEMORY)
+            .order_by(FacilityOutageRow.id)
+        )
+    )
+
+    def next_id(model: Any) -> int:
+        return int(session.scalar(select(func.max(model.id))) or 0) + 1
+
+    return replace(
+        state,
+        facilities=facilities,
+        supply=tuple(latest[g] for g in sorted(latest, key=lambda g: _good_order(g))),
+        contracts=contracts,
+        outages=outages,
+        next_ids=replace(
+            state.next_ids,
+            facility=next_id(FacilityRow),
+            contract=next_id(SupplyContractRow),
+            outage=next_id(FacilityOutageRow),
+        ),
+    )
+
+
+def _good_order(good: str) -> tuple[int, str]:
+    """Goods in components_history.yaml order (server, then GPU), others after by key."""
+    known = ("server", "gpu")
+    return (known.index(good), good) if good in known else (len(known), good)
+
+
+def _sync_facilities(session: Session, old: GameState, new: GameState) -> None:
+    """Facilities, each good's month, contracts and outages (M12a)."""
+    if not has_table(session, FacilityRow):
+        return
+    session.flush()
+    before_keys = {c.id: c.rival_key for c in old.companies}
+    for company in new.companies:
+        if company.rival_key and before_keys.get(company.id) != company.rival_key:
+            row = CompanyRivalKeyRow(company_id=company.id, rival_key=list(company.rival_key))
+            session.merge(row)
+    for f in _changed(old.facilities, new.facilities, lambda f: f.id):
+        session.merge(facility_to_row(f))
+    before = {(g.good, g.turn): g for g in old.supply}
+    for g in new.supply:
+        if before.get((g.good, g.turn)) != g:
+            session.merge(good_month_to_row(g))
+    for c in _changed(old.contracts, new.contracts, lambda c: c.id):
+        session.merge(contract_to_row(c))
+    seen = {o.id for o in old.outages}
+    for o in new.outages:
+        if o.id not in seen:
+            session.merge(FacilityOutageRow(**asdict(o)))
 
 
 def _load_m10(session: Session, state: GameState) -> GameState:
@@ -1207,6 +1382,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_geo(session, old, new)
     _sync_marketing(session, old, new)
     _sync_exec(session, old, new)
+    _sync_facilities(session, old, new)
     _sync_research(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()
@@ -1444,4 +1620,11 @@ def live_view(state: GameState) -> GameState:
         storylines=tuple(s for s in state.storylines if s.status == "active"),
         queued=tuple(q for q in state.queued if not q.done),
         modifiers=tuple(m for m in state.modifiers if m.end_turn > state.turn),
+        facilities=tuple(f for f in state.facilities if f.status != "closed"),  # M12a
+        contracts=tuple(
+            c
+            for c in state.contracts
+            if c.status == "active" or c.end_turn >= turn - FACILITY_MEMORY
+        ),
+        outages=tuple(o for o in state.outages if o.turn > turn - FACILITY_MEMORY),
     )

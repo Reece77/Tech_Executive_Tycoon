@@ -20,6 +20,12 @@ from tst.sim.events.data import (
     VALUELESS,
     EventTemplate,
 )
+from tst.sim.facilities.config import (
+    ComponentsHistoryFile,
+    ComputeBalance,
+    FacilityBalance,
+    SupplyBalance,
+)
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
 
@@ -1123,6 +1129,9 @@ class Balance(_Frozen):
     office: OfficeBalance  # M9 (formulas.md 19.2)
     markets: RegionalMarketsBalance  # M9 (formulas.md 19.4-19.5)
     geo: GeoBalance  # M9 (formulas.md 19.1, 19.3, 19.6)
+    facility: FacilityBalance  # M12a (formulas.md 22.2, 22.5)
+    supply: SupplyBalance  # M12a (formulas.md 22.4)
+    compute: ComputeBalance  # M12a (formulas.md 22.1, 22.3)
     rnd: RndBalance  # M11 (formulas.md 21)
 
     @model_validator(mode="after")
@@ -1390,6 +1399,8 @@ class MarketDef(_Frozen):
     addressable: float = Field(gt=0)  # D0: customers in January 2010
     reference_price_cents: int = Field(gt=0)
     hosting_cents: int = Field(ge=0)
+    # M12a (22.3): capacity units (CU) each customer buys, in a capacity market only
+    units_per_customer: float = Field(default=1.0, gt=0)
 
 
 class CategoryDef(_Frozen):
@@ -1406,6 +1417,7 @@ class CategoryDef(_Frozen):
     # M8 (18.6): annual growth from each listed year on, instead of `growth`
     growth_by_year: dict[int, float] | None = None
     compute_indexed: bool = False  # M8: hosting x compute_index(year)
+    capacity_market: bool = False  # M12a (22.3): sells spare data-centre capacity
 
     def growth_in(self, year: int) -> float:
         """Annual demand growth in a calendar year: the latest growth_by_year entry at or
@@ -1707,6 +1719,13 @@ INBOX_TEMPLATE_KEYS = (
     "office_closed",
     "region_launched",
     "region_live",
+    "facility_ordered",  # M12a (formulas.md 22)
+    "facility_live",
+    "facility_sold",
+    "contract_signed",
+    "contract_settled",
+    "cloud_started",
+    "outage_hit",
     "era_arrived",  # M11 (21.4, 21.5)
     "license_in",
     "license_out",
@@ -1752,6 +1771,7 @@ class GameData(_Frozen):
     region_growth: dict[str, float] = Field(default_factory=dict)  # M9 (19.5)
     home_city_region: dict[str, str] = Field(default_factory=dict)  # M9: regions without a city
     region_markets: tuple[RegionMarketDef, ...] = ()  # M9 (19.5), categories.yaml regions
+    components: ComponentsHistoryFile | None = None  # M12a (22.4): market goods' history
     tech: TechFrontierFile | None = None  # M11 (21.1-21.3): None = no research domains
     eras: ErasFile = ErasFile()  # M11 (21.4)
 

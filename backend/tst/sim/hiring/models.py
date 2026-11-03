@@ -77,6 +77,13 @@ class PersonState:
 
 
 RIVAL_IDS_FROM = 1_000_001  # tunable-exempt: first id of rivals' own people and employments
+# New games (ADR-0013 amendment, M12a): an incumbent's products and key people take ids in a
+# block set by its position in incumbents.yaml, so appending an incumbent moves no one else's
+# ids (product and person ids key streams such as product_dev and growth).
+INCUMBENT_PRODUCT_IDS_FROM = 900_000  # tunable-exempt: id block base, above any player product
+INCUMBENT_PRODUCT_BLOCK = 10  # tunable-exempt: product ids per incumbent
+INCUMBENT_PEOPLE_IDS_FROM = 5_000_001  # tunable-exempt: id block base for incumbents' people
+INCUMBENT_PEOPLE_BLOCK = 100  # tunable-exempt: person and employment ids per incumbent
 
 
 @dataclass(frozen=True, slots=True)
@@ -113,6 +120,10 @@ class NextIds:
     modifier: int = 1  # M10b: loaded as max(id) + 1 of the event_modifier table
     exec_decision: int = 1  # M10c: loaded as max(id) + 1 of the exec_decision table
     proposal: int = 1  # M10c: loaded as max(id) + 1 of the exec_proposal table
+    # M12a: loaded as max(id) + 1 of the facility, supply_contract and facility_outage tables
+    facility: int = 1
+    contract: int = 1
+    outage: int = 1
     research_project: int = 1  # M11: loaded as max(id) + 1 of the research_project table
     license: int = 1  # M11: loaded as max(id) + 1 of the research_license table
 
@@ -145,6 +156,9 @@ class NextIds:
             "modifier",
             "exec_decision",
             "proposal",
+            "facility",
+            "contract",
+            "outage",
             "research_project",
             "license",
         ],

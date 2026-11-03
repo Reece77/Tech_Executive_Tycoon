@@ -34,7 +34,8 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
     names = [c.name for c in state.companies if not c.is_player]
     assert names == [c.name for c in loaded.game_data.incumbents]
     assert [c.id for c in state.companies] == list(range(1, INCUMBENTS + 2))
-    assert len(state.products) == FIRST_PRODUCT - 1 and all(
+    incumbent_products = sum(len(c.products) for c in loaded.game_data.incumbents)
+    assert len(state.products) == incumbent_products and all(
         p.status == "live" for p in state.products
     )
     assert len(state.markets) == sum(len(c.markets) for c in loaded.game_data.categories)

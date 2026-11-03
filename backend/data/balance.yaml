@@ -330,6 +330,7 @@ products:
   seller_rate: # new customers a month per seller at sell 10 and morale factor 1, sales segments only (11.3)
     mid_market: 2
     enterprise: 0.3
+    hyperscalers: 0.03 # M12a (22.3): the hyperscalers segment is sales-led
   marketer_mk: 5 # marketing points per unit of marketer contribution mu (11.5)
   budget_mk_unit_cents: 100000 # cents of monthly budget per marketing point ($1,000) (11.5)
   qcap_per_skill: 5 # quality points of Q_cap per point of output-weighted development skill (11.4)
@@ -501,6 +502,7 @@ rivals:
     consumer_apps: { builder: 0.75, seller: 0.0, marketer: 0.25 }
     fintech: { builder: 0.50, seller: 0.30, marketer: 0.20 } # M8 (18.6)
     ai_models: { builder: 0.75, seller: 0.10, marketer: 0.15 } # M8 (18.6)
+    cloud_hosting: { builder: 0.45, seller: 0.40, marketer: 0.15 } # M12a (22.3)
   function_roles: { builder: software_engineer, seller: account_executive, marketer: marketer } # roles.yaml key whose mid-level pay prices each pool (15.1)
   pool_morale: 60 # morale points of every pool (15.1)
   pool_skill_other: 12 # attribute points; seller and marketer pool skill (15.1)
@@ -738,6 +740,70 @@ geo:
     cash_months: 12 # months of costs in cash needed to enter a region
     cooldown_turns: 6 # turns; a rival enters at most one region in this many (M9 pacing, so entries do not crowd out 15.3's other actions)
 
+# --- Facilities: data centres (formulas.md 22.2, 22.5, M12a) -------------------------------
+facility:
+  kinds: # one generic facility model (ADR-0020 2); M12b adds assembly plants as another kind
+    data_centre_general:
+      label: General data centre
+      unit: CU # compute units: what $1,000 a month buys on spot at index 1.0 (22.1)
+      input_good: server # components_history.yaml good whose index prices capex (22.4)
+      output_good: compute_general # compute.goods key it produces (22.1)
+      capex_per_unit_cents: 2400000 # cents per CU in 2010 dollars, x the server index at the build (22.2)
+      build_months: 12 # months from the build order to completion (22.2)
+      opex_per_unit_cents: 25000 # cents per live CU a month (22.2)
+      life_months: 60 # months of straight-line depreciation from completion (22.2)
+      staff_per: 200 # CU per infrastructure person needed (22.2)
+      staff_roles: [devops_engineer, security_engineer] # roles.yaml keys that staff it (22.2)
+      staff_skill: infrastructure # skills.yaml key whose mean sets reliability (22.2)
+    data_centre_gpu:
+      label: GPU data centre
+      unit: CU
+      input_good: gpu
+      output_good: compute_gpu
+      capex_per_unit_cents: 2000000 # cents per CU in 2010 dollars, x the GPU index at the build (22.2; M12a tuning from $40,000 for 22.7 target 4, Reece 2026-11-02; with opex $200 the dearest month still costs 1.22x spot per used CU at 40% use)
+      build_months: 9 # months, plus any allocation delay (22.2, 22.4)
+      opex_per_unit_cents: 20000 # cents per live CU a month, mostly power (22.2; M12a tuning from $500, as capex above)
+      life_months: 48 # months of depreciation (22.2)
+      staff_per: 200 # CU per infrastructure person needed (22.2)
+      staff_roles: [devops_engineer, security_engineer]
+      staff_skill: infrastructure
+  sizes: [100, 500, 2000, 10000] # CU a build may choose (22.2)
+  build_energy: 12 # founder energy to order a build (22.2)
+  close_energy: 12 # founder energy to close or sell one (22.2)
+  assign_energy: 2 # energy to assign a unit to staff one (M12a decision; as assign_unit)
+  sale_share: 0.5 # fraction of book value a sale brings (22.2)
+  reliability_floor: 0.7 # reliability = 100 x coverage x (floor + skill share x mean skill / 20) (22.2)
+  reliability_skill: 0.3 # the skill share of that formula; floor + skill = 1 (22.2)
+  outage:
+    base: 0.016 # chance a month x (100 - reliability) / 10 (22.5; M12a tuning from 0.002, 22.7 target 6: 0.002 gave 0.13 outages a year at coverage 0.5, not >= 1)
+    customers_share: 0.5 # share of the critical customers_pct cap every hosted product loses in an outage (22.5)
+    cloud_churn_mult: 3 # cloud customers' churn x this in the outage month (22.5)
+
+# --- Components and supply shocks (formulas.md 22.4, M12a) ---------------------------------
+supply:
+  change: { mean: -0.08, phi: 0.6, shock_sd: 0.06, bounds: [-0.4, 0.4] } # fraction a year; each good's yearly change after 2025, an AR(1) step each January (22.4)
+  shock:
+    monthly: 0.01 # chance a shock starts in a month, per good, after 2025 (22.4)
+    gap_months: 30 # months since the last shock began before another can start (22.4)
+    rise: [0.25, 0.60] # fraction the index rises while a shock runs (22.4)
+    allocation: [0.40, 0.80] # allocation while a shock runs (22.4)
+    months: [6, 18] # months a shock runs; the rise then fades over as many months (22.4; M12a decision)
+  delay_step: 0.10 # allocation shortfall per month of delay: 1 month late for each 10 points (22.4)
+  contract_energy: 6 # founder energy to sign a component contract (22.4)
+  contract_months: [12, 36] # months a contract may run (22.4)
+  take_or_pay: 0.30 # fraction of an unused contracted volume's value charged at the end (22.4)
+  history_months: 36 # months of index history the API shows behind the current one (22.6)
+
+# --- Compute and cloud hosting (formulas.md 22.1, 22.3, M12a) ------------------------------
+compute:
+  goods:
+    compute_general: { label: General compute, spot_cents: 100000, spot_index: flat } # one CU = $1,000 a month on spot; the index stays 1.0 (22.1)
+    compute_gpu: { label: GPU compute, spot_cents: 100000, spot_index: ai } # $1,000 x M10's AI compute index (22.1, 20.1)
+  indexed_good: compute_gpu # what a compute_indexed category (AI) needs (22.1)
+  plain_good: compute_general # what every other category needs (22.1)
+  feature_base: 50 # cloud hosting features = base + per_lead x infrastructure lead, at most 100 (22.3)
+  feature_per_lead: 2 # feature points per point of infrastructure lead (22.3)
+  capacity_category: cloud_hosting # categories.yaml key of the market that sells spare capacity (22.3)
 # --- R&D tree and era milestones (formulas.md 21, M11, lane A) ---------------------------
 rnd:
   decay: 0.015 # fraction of each lead lost a month, after progress (21.1): a lead halves in about 46 months

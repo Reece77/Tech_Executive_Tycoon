@@ -72,9 +72,10 @@ def test_new_game_mission_invalid(
 def test_new_game_energy_and_counters(loaded: LoadedData) -> None:
     state = fresh(loaded)
     assert state.person_state(1) == PersonState(person_id=1, energy=60)
-    # The 23 incumbent products (M3, ADR-0017; five in M8, six regional in M9) take ids 1..23;
-    # the founder, pool and former colleagues take cap-table entries 1..3 (M4, 14.2). The
-    # incumbents' 184 key people count from 1,000,001 (M5, 15.1).
+    # Since M12a (ADR-0013 amendment) the incumbents' products and key people take id blocks
+    # by their place in incumbents.yaml (900,000+ and 5,000,001+), so the player's products
+    # start at 1 and startups' people at 1,000,001; the founder, pool and former colleagues
+    # take cap-table entries 1..3 (M4, 14.2).
     assert state.next_ids == NextIds(
         person=2,
         search=1,
@@ -82,8 +83,9 @@ def test_new_game_energy_and_counters(loaded: LoadedData) -> None:
         employment=2,
         product=FIRST_PRODUCT,
         cap_entry=4,
-        rival_person=1_000_185,
-        rival_employment=1_000_185,
+        # M12a (ADR-0013 amendment): incumbents' key people take id blocks from 5,000,001
+        rival_person=1_000_001,
+        rival_employment=1_000_001,
     )
 
 
@@ -187,9 +189,9 @@ def test_upgrade_from_0002_sets_counters_mission_and_energy(
         search=1,
         offer=1,
         employment=2,
-        product=FIRST_PRODUCT - 6,  # M9's regional incumbents come with new games only
+        product=22,  # 0008 numbers the 21 v1 incumbent products 1..21 (no id blocks)
         cap_entry=3,
-        rival_person=1_000_137,
-        rival_employment=1_000_137,
+        rival_person=1_000_169,  # M12a: the four cloud hosts' 32 key people too
+        rival_employment=1_000_169,
     )
     assert state.person_state(1).energy == 100  # 0003_hiring's M1b value; reset to 60 next turn

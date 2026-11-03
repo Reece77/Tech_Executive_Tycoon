@@ -13,6 +13,7 @@ from dataclasses import replace
 
 from tst.sim.data_models import LEVELS, Balance, GameData
 from tst.sim.events.modifiers import founder_factor
+from tst.sim.facilities.lifecycle import operating_lines
 from tst.sim.finance.options import grant_on_hire, retention
 from tst.sim.geo.cities import home_city, office_city
 from tst.sim.geo.models import ANYWHERE
@@ -328,7 +329,7 @@ def monthly_cost_lines(
         benefits[None] += round(pool.headcount * benefits_cents(pay, balance.payroll))
         office[None] += round(pool.headcount * balance.payroll.office_cost_per_head_cents)
         employees[None] += pool.headcount
-    hosting, marketing = product_costs_by_division(state, company_id, data)
+    hosting, marketing = product_costs_by_division(state, company_id, data, balance)
     tools = balance.costs.tools_per_head_cents
     lines: list[tuple[str, AccountCode, Cents, int | None]] = []
     for memo, account, by_division in (
@@ -344,6 +345,7 @@ def monthly_cost_lines(
         ("Job posts", RECRUITING, balance.hiring.job_post_cost_cents * len(job_posts), None)
     )
     lines += [("Hosting", COMPUTE, hosting.get(d, 0), d) for d in divisions]  # M3 (11.8)
+    lines += operating_lines(state, company_id, balance)  # data centres (M12a, 22.2)
     lines += [("Marketing", MARKETING, marketing.get(d, 0), d) for d in divisions]
     if len(divisions) > 1:
         lines = [(m, a, x, d) for m, a, x, d in lines if x or d is None]

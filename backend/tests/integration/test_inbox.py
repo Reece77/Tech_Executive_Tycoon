@@ -315,6 +315,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     items += _loan_items(loaded)  # M10
     items += _m10b_items(loaded)
     items += _m10c_items(loaded)
+    items += _m12a_items(loaded)
     items += _m11_items(loaded)
     for item in items:
         if item.template is None:
@@ -324,6 +325,49 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
         seen.add(item.template)
     print(f"templates exercised: {sorted(seen)}")
     assert seen == set(INBOX_TEMPLATE_KEYS)
+
+
+def _m12a_items(loaded: LoadedData) -> list[LogItem]:
+    """A contract, a build that goes live, Cloud hosting, an outage, a sale and a settled
+    contract (M12a, formulas.md 22)."""
+    from tst.sim.actions import (
+        BuildFacility,
+        SellCapacity,
+        SellFacility,
+        SignContract,
+        apply_action,
+    )
+    from tst.sim.facilities import lifecycle
+    from tst.sim.facilities.outages import outages_month
+    from tst.sim.ledger import CASH
+    from tst.sim.rng import RngFactory
+
+    b, d = loaded.balance, loaded.game_data
+    state = with_product(fresh_game(loaded), customers={"smb": 30_000.0})
+    rich = {(1, CASH): 10**13}
+    items: list[LogItem] = []
+    for action in (
+        SignContract(1, "server", 12, 500),
+        BuildFacility(1, "data_centre_general", "north_america", 100, 1),
+        SellCapacity(1),
+    ):
+        out = apply_action(state, action, RngFactory(1), b, d, rich, seq=0)
+        state = out.new_state
+        items += out.log_items
+    facility = state.facilities[0]
+    state = replace(state, turn=facility.ready_turn)
+    state, _, logs = lifecycle.facility_month(state, facility, b, d)
+    items += logs
+    rng = RngFactory(1)
+    for turn in range(facility.ready_turn, facility.ready_turn + 600):
+        state, logs = outages_month(replace(state, turn=turn), rng, b, d)
+        if logs:
+            items += logs
+            break
+    state, _, logs = lifecycle.settle_contracts(replace(state, turn=state.turn + 13), b, d)
+    items += logs
+    out = apply_action(state, SellFacility(1, facility.id), rng, b, d, rich, seq=0)
+    return items + list(out.log_items)
 
 
 def _m11_items(loaded: LoadedData) -> list[LogItem]:

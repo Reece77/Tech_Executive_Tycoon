@@ -18,7 +18,8 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
         "consumer_apps",
         "cybersecurity",
     ]
-    assert [s.key for s in data.segments] == ["consumer", "smb", "mid_market", "enterprise"]
+    assert [s.key for s in data.segments][:4] == ["consumer", "smb", "mid_market", "enterprise"]
+    assert [s.key for s in data.segments][4:] == ["hyperscalers"]  # M12a: appended
     b2b = data.category(B2B)
     assert b2b.market("smb").addressable == 400_000
     assert b2b.market("smb").reference_price_cents == 5000
@@ -28,7 +29,7 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
     for cat in data.categories:
         assert sum(cat.dev_weights.values()) == pytest.approx(1)
     sales = [s.key for s in data.segments if s.reach == "sales"]
-    assert sales == ["mid_market", "enterprise"]
+    assert sales == ["mid_market", "enterprise", "hyperscalers"]  # M12a: hyperscalers
     assert data.segment("smb").weights.price == 0.35
 
 

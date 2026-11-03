@@ -2,7 +2,8 @@
 the table; the M5 brief's Decisions made records it.
 
 1. Living market: with no player product, over 120 turns, no incumbent's share of a segment's
-   served customers falls below half or rises above double its starting share, and on average
+   served customers falls below half or rises above double its starting share (on at most 1
+   of 10 seeds since M12a, product manager 2026-11-02), and on average
    at least one rival startup per category launches a product. Judged on the four v1
    categories; new-market disruption in fintech and AI models is intended (M8, M7c).
 2. Rivals respond: in the M3a earn-and-burn script, an incumbent cuts a price or starts a push
@@ -95,7 +96,9 @@ def living(loaded: LoadedData) -> tuple[int, float]:
 
 @pytest.mark.nightly  # statistical balance target (M7a: nightly, D4a)
 def test_1_living_market(living: tuple[int, float]) -> None:
-    assert living[0] == 0
+    # At most 1 of 10 seeds with a share breach (product manager, 2026-11-02, M12a: 1/10 on the
+    # combined M11 + M12a code, 0/30 on seeds 11-40 on both main and the combined code).
+    assert living[0] <= 1
 
 
 @pytest.mark.nightly

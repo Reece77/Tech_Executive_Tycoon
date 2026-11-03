@@ -25,7 +25,7 @@ from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.research.eras import annual_growth
-from tst.sim.rivals.models import RivalMove
+from tst.sim.rivals.models import ENTRANT_KEY, STARTUP_KEY, RivalMove, stream_key
 from tst.sim.rivals.setup import hire_key_people, key_people_split
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -82,6 +82,8 @@ def found_startups(
     for index, category in enumerate(data.categories):
         if len(alive_startups(state, data)) >= sb.max_alive:  # entrants do not count (18.7)
             break
+        if category.capacity_market:  # M12a (22.3): selling capacity needs data centres
+            continue
         gen = rng.stream(state.turn, "rival_spawn", index)
         growth = annual_growth(state, data, category.key)  # with era boosts (M11, 21.4)
         chance = sb.found_rate * mood * (1 + growth)
@@ -112,10 +114,11 @@ def found_startups(
             rng,
             balance,
             data,
+            rival_key=startup_key(state, index),
         )
         product_id = state.company_products(company.id)[0].id
         entries.append(entry)
-        region = founding_region(state, rng, company.id, category, balance, data)
+        region = founding_region(state, rng, company, category, balance, data)
         state = sell_first_in(state, company, product_id, region, balance, data)
         where = f" in {data.region(region).label}" if region != _home(state, balance, data) else ""
         state, move = _record(
@@ -125,6 +128,13 @@ def found_startups(
     return state, tuple(entries), tuple(moves)
 
 
+def startup_key(state: GameState, category_index: int) -> tuple[int, ...]:
+    """(STARTUP_KEY, category index, n): the nth startup founded in the category, counting
+    every one ever founded (failed ones stay in the state) (ADR-0013 amendment, M12a)."""
+    n = sum(1 for c in state.companies if c.rival_key[:2] == (STARTUP_KEY, category_index))
+    return (STARTUP_KEY, category_index, n)
+
+
 def _home(state: GameState, balance: Balance, data: GameData) -> str | None:
     return home_region(state, balance, data) if data.cities and data.region_markets else None
 
@@ -132,13 +142,14 @@ def _home(state: GameState, balance: Balance, data: GameData) -> str | None:
 def founding_region(
     state: GameState,
     rng: RngFactory,
-    company_id: int,
+    company: CompanyState,
     category: CategoryDef,
     balance: Balance,
     data: GameData,
 ) -> str:
     """A startup's region, drawn by its category's addressable demand in each region (19.6):
-    one uniform from stream `rival_region`, key (startup_id,), in regions.yaml order."""
+    one uniform from stream `rival_region`, key the startup's rival key (ADR-0013 amendment,
+    M12a; its company id before), in regions.yaml order."""
     home = _home(state, balance, data)
     if home is None:
         return ""
@@ -153,7 +164,8 @@ def founding_region(
                 rmarket = state.regional_market(category.key, seg, region)
                 total += rmarket.addressable if rmarket is not None else 0.0
         weights.append(total)
-    u = float(rng.stream(state.turn, "rival_region", company_id).random()) * sum(weights)
+    key = stream_key(company.id, company.rival_key)
+    u = float(rng.stream(state.turn, "rival_region", *key).random()) * sum(weights)
     acc = 0.0
     for region, w in zip(data.region_keys, weights, strict=True):
         acc += w
@@ -282,6 +294,7 @@ def found_company(
     balance: Balance,
     data: GameData,
     gen: np.random.Generator | None = None,
+    rival_key: tuple[int, ...] = (),
 ) -> tuple[GameState, CompanyState, LedgerEntry]:
     """A rival startup with one product in development, its people and its opening cash
     (15.4). People come from `gen`, else stream people_gen keyed (company_id, 1)."""
@@ -297,6 +310,7 @@ def found_company(
         root_product_id=product_id,
         personality=personality,
         is_startup=True,
+        rival_key=rival_key,
     )
     state = with_company(state, company)
     state = with_product(
@@ -383,6 +397,7 @@ def found_entrants(
             balance,
             data,
             gen=rng.stream(state.turn, "entrants", index),
+            rival_key=(ENTRANT_KEY, index),  # ADR-0013 amendment (M12a)
         )
         entries.append(entry)
         product_id = state.company_products(company.id)[0].id

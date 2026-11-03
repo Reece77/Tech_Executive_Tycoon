@@ -175,7 +175,14 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
             key=cat.key,
             label=cat.label,
             annual_growth=annual_growth(state, data.game_data, cat.key),  # M11 (21.4)
-            note="Compute costs follow the market" if cat.compute_indexed else None,
+            note=(
+                "Sells your spare data-centre capacity: start it from Infrastructure"
+                if cat.capacity_market
+                else "Compute costs follow the market"
+                if cat.compute_indexed
+                else None
+            ),
+            capacity_market=cat.capacity_market,
             launch_quality=max(data.balance.products.launch_min_quality, cat.launch_quality or 0),
             segments=[
                 CategorySegmentOut(
@@ -608,7 +615,7 @@ def portfolio_out(
                 users += seg.customers
             else:
                 business += seg.customers
-    hosting, marketing = product_costs(state, company.id, data.game_data)
+    hosting, marketing = product_costs(state, company.id, data.game_data, data.balance)
     return PortfolioOut(
         mrr_cents=mrr,
         mrr_change=change,

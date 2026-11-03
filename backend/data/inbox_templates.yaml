@@ -198,3 +198,26 @@ templates:
   region_live:
     title: "{product} is live in {region}"
     body: "{product} now sells in {region}. Check its prices and reach on the product's Regions tab."
+  # M12a (formulas.md 22)
+  facility_ordered:
+    title: "{facility} ordered"
+    body: "You ordered {units} in {region}. Capex of {capex_cents} is paid in equal parts over {months} months; it goes live in {ready}.{later} It needs {staff} infrastructure people from a unit you assign to it."
+  facility_live:
+    title: "{facility} is live"
+    body: "{units} are working. Your own products use it first; sell the spare as Cloud hosting from Infrastructure.{later}"
+  facility_sold:
+    title: "{facility} sold"
+    body: "You sold it for {proceeds_cents}, half its book value of {book_cents}. Its staff stay in their unit."
+  contract_signed:
+    title: "{good} contract signed"
+    body: "{units} of builds are locked at index {index} until {end}, with full allocation. Any volume unused by then is charged at {take_or_pay} of its value."
+  contract_settled:
+    title: "{good} contract ended"
+    body: "{used} of {volume} contracted units were built. Take-or-pay on the rest cost {charge_cents}."
+  cloud_started:
+    title: "{product} is selling your spare capacity"
+    body: "Cloud hosting customers can now buy the compute your own products leave free. Its quality is your data centres' reliability; customers are capped by the spare capacity in each region and its neighbour."
+  outage_hit:
+    title: "Outage at {facility}"
+    body: "{facility} went down. Hosted products lost {lost} customers and cloud customers churned three times as fast this month."
+

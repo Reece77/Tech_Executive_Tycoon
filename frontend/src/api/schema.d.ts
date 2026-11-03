@@ -2278,6 +2278,135 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/infrastructure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Infrastructure
+         * @description The Infrastructure screen: component indexes, data centres, contracts and Cloud
+         *     hosting (22.6).
+         */
+        get: operations["getInfrastructure"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/infrastructure/build-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Build
+         * @description Capex, build time, shortage delay and staff for a build (the Build dialog).
+         */
+        get: operations["previewBuild"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/infrastructure/facilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Facility */
+        post: operations["buildFacility"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/infrastructure/facilities/{facility_id}/sell": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sell Facility */
+        post: operations["sellFacility"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/infrastructure/facilities/{facility_id}/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Staff Facility */
+        post: operations["staffFacility"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/infrastructure/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign Contract */
+        post: operations["signContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/infrastructure/cloud": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sell Capacity
+         * @description Start selling spare capacity as Cloud hosting (22.3).
+         */
+        post: operations["sellCapacity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/research": {
         parameters: {
             query?: never;
@@ -3004,6 +3133,66 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** BuildIn */
+        BuildIn: {
+            /** Kind */
+            kind: string;
+            /** Region */
+            region: string;
+            /** Units */
+            units: number;
+            /** Contract Id */
+            contract_id?: number | null;
+        };
+        /** BuildPreviewOut */
+        BuildPreviewOut: {
+            /** Kind */
+            kind: string;
+            /** Region */
+            region: string;
+            /** Units */
+            units: number;
+            /** Index */
+            index: number;
+            /** Capex Cents */
+            capex_cents: number;
+            /** Monthly Capex Cents */
+            monthly_capex_cents: number;
+            /** Build Months */
+            build_months: number;
+            /** Ready */
+            ready: string;
+            /** Allocation */
+            allocation: number;
+            /** On Time */
+            on_time: number;
+            /** Late */
+            late: number;
+            /** Late Months */
+            late_months: number;
+            /** Staff Needed */
+            staff_needed: number;
+            /** Contract Id */
+            contract_id: number | null;
+            /** Contracted */
+            contracted: number;
+            /**
+             * Monthly Cost Full Cents
+             * @description Depreciation and operating cost at full use
+             */
+            monthly_cost_full_cents: number;
+            /** Cost Per Unit Full Cents */
+            cost_per_unit_full_cents: number;
+            /** Spot Cents */
+            spot_cents: number;
+            /** Energy */
+            energy: number;
+            /**
+             * Can Afford
+             * @description Cash covers the first capex payment
+             */
+            can_afford: boolean;
+        };
         /** CandidacyOut */
         CandidacyOut: {
             /** Search Id */
@@ -3124,6 +3313,12 @@ export interface components {
              * @description Quality a launch needs (M8)
              */
             launch_quality?: number | null;
+            /**
+             * Capacity Market
+             * @description Sells spare data-centre capacity; not a product to create (M12a)
+             * @default false
+             */
+            capacity_market?: boolean;
         };
         /** CategorySegmentOut */
         CategorySegmentOut: {
@@ -3364,6 +3559,148 @@ export interface components {
              * @description A senior software engineer's market rate there
              */
             example_rate_cents: number;
+        };
+        /** CloudOut */
+        CloudOut: {
+            /**
+             * Product Id
+             * @description Your Cloud hosting product; null if not selling
+             */
+            product_id: number | null;
+            /** Product Name */
+            product_name: string | null;
+            /** Selling */
+            selling: boolean;
+            /**
+             * Can Start
+             * @description True when you own a data centre and do not sell yet
+             */
+            can_start: boolean;
+            /** Segments */
+            segments: components["schemas"]["CloudSegmentOut"][];
+            /** Customers */
+            customers: number;
+            /** Units Sold */
+            units_sold: number;
+            /**
+             * Revenue Cents
+             * @description This month's revenue at current customers
+             */
+            revenue_cents: number;
+            /**
+             * Spare Units
+             * @description General-CU equivalents still free for customers
+             */
+            spare_units: number;
+            /**
+             * Price Per Unit Cents
+             * @description Average price per CU you charge
+             */
+            price_per_unit_cents: number | null;
+            /**
+             * Leader Name
+             * @description The market leader (most customers)
+             */
+            leader_name: string | null;
+            /** Leader Price Per Unit Cents */
+            leader_price_per_unit_cents: number | null;
+            /** Outages 12M */
+            outages_12m: number;
+            /** Outages */
+            outages: components["schemas"]["OutageOut"][];
+        };
+        /** CloudSegmentOut */
+        CloudSegmentOut: {
+            /** Segment */
+            segment: string;
+            /** Label */
+            label: string;
+            /** Customers */
+            customers: number;
+            /**
+             * Units
+             * @description CU these customers buy
+             */
+            units: number;
+            /**
+             * Price Cents
+             * @description Your price per customer a month
+             */
+            price_cents: number | null;
+            /**
+             * Price Per Unit Cents
+             * @description Your price per CU a month
+             */
+            price_per_unit_cents: number | null;
+        };
+        /** ComponentOut */
+        ComponentOut: {
+            /** Good */
+            good: string;
+            /** Label */
+            label: string;
+            /**
+             * Index
+             * @description This month's index (January 2010 = 1.0)
+             */
+            index: number;
+            /**
+             * Change 12M
+             * @description Change over the last 12 months (fraction)
+             */
+            change_12m: number;
+            /**
+             * Allocation
+             * @description Share of a build delivered on time (1.0 = full)
+             */
+            allocation: number;
+            /**
+             * Note
+             * @description One line of context: a shortage, a shock, or full supply
+             */
+            note: string;
+            /**
+             * History
+             * @description Past months up to this one, oldest first
+             */
+            history: components["schemas"]["IndexPointOut"][];
+        };
+        /** ContractIn */
+        ContractIn: {
+            /** Good */
+            good: string;
+            /** Months */
+            months: number;
+            /** Volume */
+            volume: number;
+        };
+        /** ContractOut */
+        ContractOut: {
+            /** Contract Id */
+            contract_id: number;
+            /** Good */
+            good: string;
+            /** Good Label */
+            good_label: string;
+            /** Index */
+            index: number;
+            /** Signed */
+            signed: string;
+            /** Ends */
+            ends: string;
+            /** Volume */
+            volume: number;
+            /** Used */
+            used: number;
+            /** Status */
+            status: string;
+            /**
+             * Take Or Pay Cents
+             * @description What the unused volume would cost at the end
+             */
+            take_or_pay_cents: number;
+            /** Settled Cents */
+            settled_cents: number;
         };
         /** CooAnswerOut */
         CooAnswerOut: {
@@ -4049,6 +4386,124 @@ export interface components {
             ai_spend_cents: number;
             /** Ai Budget Cents */
             ai_budget_cents: number;
+        };
+        /** FacilityOut */
+        FacilityOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Kind Label */
+            kind_label: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /**
+             * Unit
+             * @description Unit of size, e.g. CU
+             */
+            unit: string;
+            /**
+             * Status
+             * @description building, live or closed
+             */
+            status: string;
+            /**
+             * Since
+             * @description Ordered (building) or live since (Mon YYYY)
+             */
+            since: string;
+            /**
+             * Units
+             * @description Units it is built for
+             */
+            units: number;
+            /** Live Units */
+            live_units: number;
+            /**
+             * Own Use
+             * @description Units your own products use this month
+             */
+            own_use: number;
+            /**
+             * Sold Use
+             * @description Units sold as Cloud hosting this month
+             */
+            sold_use: number;
+            /** Free */
+            free: number;
+            /**
+             * Utilization
+             * @description Used / live units (0-1)
+             */
+            utilization: number;
+            /**
+             * Reliability
+             * @description 0-100; null while building
+             */
+            reliability: number | null;
+            /** Staff */
+            staff: number;
+            /** Staff Needed */
+            staff_needed: number;
+            /** Coverage */
+            coverage: number;
+            /**
+             * Unit Id
+             * @description The unit that staffs it
+             */
+            unit_id: number | null;
+            /** Unit Name */
+            unit_name: string | null;
+            /**
+             * Monthly Cost Cents
+             * @description Depreciation plus operating cost a month
+             */
+            monthly_cost_cents: number;
+            /**
+             * Cost Per Used Cents
+             * @description Monthly cost / units used; null if none
+             */
+            cost_per_used_cents: number | null;
+            /**
+             * Spot Cents
+             * @description Spot price of a unit of its output
+             */
+            spot_cents: number;
+            /** Book Value Cents */
+            book_value_cents: number;
+            /** Capex Cents */
+            capex_cents: number;
+            /** Capex Paid Cents */
+            capex_paid_cents: number;
+            /**
+             * Build Progress
+             * @description Share of the build months done; null live
+             */
+            build_progress: number | null;
+            /**
+             * Ready
+             * @description Mon YYYY it goes (or went) live
+             */
+            ready: string;
+            /**
+             * Late Units
+             * @description Units arriving late from a shortage
+             */
+            late_units: number;
+            /**
+             * Late Ready
+             * @description Mon YYYY the late units arrive
+             */
+            late_ready: string | null;
+            /**
+             * Sale Value Cents
+             * @description What selling it now brings
+             */
+            sale_value_cents: number;
         };
         /** FinanceActionOut */
         FinanceActionOut: {
@@ -4863,6 +5318,73 @@ export interface components {
             /** Items */
             items: components["schemas"]["InboxItemOut"][];
         };
+        /** IndexPointOut */
+        IndexPointOut: {
+            /** Turn */
+            turn: number;
+            /**
+             * Label
+             * @description Mon YYYY
+             */
+            label: string;
+            /** Index */
+            index: number;
+            /** Allocation */
+            allocation: number;
+        };
+        /** InfrastructureActionOut */
+        InfrastructureActionOut: {
+            infrastructure: components["schemas"]["InfrastructureOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** InfrastructureOut */
+        InfrastructureOut: {
+            /** Turn Label */
+            turn_label: string;
+            /** Components */
+            components: components["schemas"]["ComponentOut"][];
+            /** Spot */
+            spot: components["schemas"]["SpotOut"][];
+            /** Facilities */
+            facilities: components["schemas"]["FacilityOut"][];
+            /** Total Live Units */
+            total_live_units: number;
+            /** Total Building Units */
+            total_building_units: number;
+            /** Contracts */
+            contracts: components["schemas"]["ContractOut"][];
+            cloud: components["schemas"]["CloudOut"];
+            /** Kinds */
+            kinds: components["schemas"]["KindOut"][];
+            /** Sizes */
+            sizes: number[];
+            /** Regions */
+            regions: components["schemas"]["tst__api__schemas__facilities__RegionOptionOut"][];
+            /** Build Energy */
+            build_energy: number;
+            /** Sell Energy */
+            sell_energy: number;
+            /** Contract Energy */
+            contract_energy: number;
+            /** Staff Energy */
+            staff_energy: number;
+            /**
+             * Contract Months
+             * @description [shortest, longest]
+             */
+            contract_months: number[];
+            /** Take Or Pay */
+            take_or_pay: number;
+            /** Sale Share */
+            sale_share: number;
+            /**
+             * Break Even Utilization
+             * @description Use at which a general CU costs spot
+             */
+            break_even_utilization: number;
+        };
         /**
          * JobPeriodOut
          * @description One stretch of a former employee's time at the company (23.6, M10b).
@@ -4903,6 +5425,28 @@ export interface components {
             top_skills: components["schemas"]["AttributeOut"][];
             /** Potential Phrase */
             potential_phrase: string;
+        };
+        /** KindOut */
+        KindOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /** Input Good */
+            input_good: string;
+            /** Build Months */
+            build_months: number;
+            /** Life Months */
+            life_months: number;
+            /** Opex Per Unit Cents */
+            opex_per_unit_cents: number;
+            /**
+             * Capex Per Unit Cents
+             * @description At this month's index
+             */
+            capex_per_unit_cents: number;
         };
         /**
          * KnowledgeOut
@@ -5427,7 +5971,7 @@ export interface components {
              * Regions
              * @description Region picker
              */
-            regions?: components["schemas"]["RegionOptionOut"][];
+            regions?: components["schemas"]["tst__api__schemas__products__RegionOptionOut"][];
         };
         /** MarketProductOut */
         MarketProductOut: {
@@ -5940,6 +6484,17 @@ export interface components {
              * @description strong | fine | stretched for the average manager morale term; null if none
              */
             manager_label: string | null;
+        };
+        /** OutageOut */
+        OutageOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /** Facility */
+            facility: string;
+            /** Customers Lost */
+            customers_lost: number;
         };
         /**
          * OverviewBreakdownsOut
@@ -7135,18 +7690,6 @@ export interface components {
             /** Max */
             max: number;
         };
-        /** RegionOptionOut */
-        RegionOptionOut: {
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
-            /**
-             * Home
-             * @description The HQ's region, whose markets are v1's (19.5)
-             */
-            home: boolean;
-        };
         /** RegionSegmentOut */
         RegionSegmentOut: {
             /** Segment */
@@ -8125,6 +8668,28 @@ export interface components {
              */
             desc?: boolean;
         };
+        /** SpotOut */
+        SpotOut: {
+            /** Good */
+            good: string;
+            /** Label */
+            label: string;
+            /**
+             * Cents Per Unit
+             * @description A CU a month on spot
+             */
+            cents_per_unit: number;
+            /**
+             * Index
+             * @description 1.0 for general; the AI compute index for GPU
+             */
+            index: number;
+        };
+        /** StaffIn */
+        StaffIn: {
+            /** Unit Id */
+            unit_id: number | null;
+        };
         /** StageReachedOut */
         StageReachedOut: {
             /** Stage */
@@ -8611,6 +9176,15 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** RegionOptionOut */
+        tst__api__schemas__facilities__RegionOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Is Home */
+            is_home: boolean;
+        };
         /** NamedOut */
         tst__api__schemas__history__NamedOut: {
             /** Id */
@@ -8624,6 +9198,18 @@ export interface components {
             person_id: number;
             /** Name */
             name: string;
+        };
+        /** RegionOptionOut */
+        tst__api__schemas__products__RegionOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Home
+             * @description The HQ's region, whose markets are v1's (19.5)
+             */
+            home: boolean;
         };
     };
     responses: never;
@@ -16254,6 +16840,434 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProductRegionsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getInfrastructure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InfrastructureOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewBuild: {
+        parameters: {
+            query?: {
+                /** @description Default: the first kind */
+                kind?: string | null;
+                /** @description Default: the home region */
+                region?: string | null;
+                /** @description Default: the smallest size */
+                units?: number | null;
+                contract_id?: number | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuildPreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildFacility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuildIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InfrastructureActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sellFacility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InfrastructureActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    staffFacility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InfrastructureActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InfrastructureActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sellCapacity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InfrastructureActionOut"];
                 };
             };
             /** @description Bad Request */

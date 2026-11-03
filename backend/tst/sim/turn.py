@@ -21,6 +21,8 @@ from tst.sim.events.director import direct
 from tst.sim.events.effects import auto_resolve, blocking_events, energy_next_month
 from tst.sim.events.models import EventRequest, TextRequest
 from tst.sim.events.modifiers import expire as expire_modifiers
+from tst.sim.facilities.outages import outages_month
+from tst.sim.facilities.phase import production_month
 from tst.sim.finance import debt, fundraising, insolvency, macro
 from tst.sim.finance.board import average_confidence, board_month, vacate_departed
 from tst.sim.finance.captable import founder_bp
@@ -207,8 +209,11 @@ def research_progress(ctx: TurnContext) -> TurnContext:
     return replace(ctx, state=state).post(*research).log(*logs, *arrived)
 
 
-def production_and_capacity(ctx: TurnContext) -> TurnContext:  # v2
-    return ctx
+def production_and_capacity(ctx: TurnContext) -> TurnContext:
+    """Phase 4 (M12a, 22): component indexes, contracts, facilities' capex, completion and
+    depreciation, and the Cloud hosting product's quality and features."""
+    state, entries, logs = production_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    return replace(ctx, state=state).post(*entries).log(*logs)
 
 
 def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
@@ -224,7 +229,9 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
     (formulas.md sections 8 and 11.8)."""
     entries, payroll = phases.payroll(ctx.state, ctx.balance, ctx.data)
     months = division_months(ctx.state)  # headcounts for the division statements (M8)
-    return replace(ctx, payroll=payroll, division_months=months).post(*entries)
+    ctx = replace(ctx, payroll=payroll, division_months=months).post(*entries)
+    state, outage_logs = outages_month(ctx.state, ctx.rng, ctx.balance, ctx.data)  # M12a (22.5)
+    return replace(ctx, state=state).log(*outage_logs)
 
 
 def financing(ctx: TurnContext) -> TurnContext:

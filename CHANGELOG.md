@@ -4,6 +4,18 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M12a Cloud, data centres and supply shocks (formulas.md §22, lane B):
+  - One generic facility model (ADR-0020): general and GPU data centres are its first kinds (`facility.kinds`); build (energy 12), capex paid as built to `1500_ppe`, depreciation from completion to `6700_depreciation` / `1510_accumulated_depreciation` (new accounts; depreciation counts with compute in cost of revenue, non-cash in the cash flow), operating cost in phase 6, staff coverage and reliability from a unit of DevOps or security engineers, sale at half book value. Migration `0028_facilities`.
+  - Compute units: a product's hosting at index 1.0 / $1,000; own products served first from capacity in their region or its neighbour, cheapest first; their spot hosting falls by the share served. A company that never builds posts exactly the same costs.
+  - Market goods: server and GPU indexes and allocation from `components_history.yaml` to 2025, then a seeded AR(1) on the yearly change with shocks (stream `supply`, 26); shortage delays; component contracts with full allocation and take-or-pay (energy 6).
+  - Cloud and GPU hosting (`cloud_hosting`, new `hyperscalers` segment): sell spare capacity with customers capped by spare CU; quality is reliability, features 50 + 2 x the infrastructure lead (0 until M11's `research.lead` is wired at merge). Rivals AWS, Azure, Rackspace and IBM SoftLayer; entrants Google Cloud (Apr 2012) and CoreWeave (Jan 2019). Not a product the New product dialog offers; rival startups are not founded in it.
+  - Outages (stream `facility`, 27) as the critical `facility_outage` event.
+  - Infrastructure screen (from Products): component strip, data centres, Cloud hosting panel, contracts, Build / Contract / Sell dialogs; `tst facilities`, `build-dc`, `sell-dc`, `staff-dc`, `contract`, `sell-capacity`.
+  - §22.7 targets (`tools/m12a_targets.py`, nightly): T2 0.62 / 1.23 (built Jan 2016), T3 10/10, T4 +30% / +60% and a +15.7-point margin gap at 0.45 x reference price (+7.0 at reference), T5 8/10, T6 1.05 / 0.17. `facility.outage.base` 0.002 -> 0.016 for T6.
+  - Guards on the combined code (table in docs/balance-targets.md, M12a): product manager's ruling 2026-11-02: M5 living market at most 1/10 seeds with a share breach; T5 bootstrap-frugal standard re-banded 0-50%; T2 xfail(strict=False) until M15's v2 strategies (the one permitted xfail).
+  - GPU data-centre table tuned for target 4 (Reece): capex $20,000 a CU (was $40,000) and power $200 a month (was $500); at 40% use it still costs at least 1.22x spot per used CU for a build in any month to 2025.
+  - ADR-0013 amendment (Reece, 2026-11-02): rivals' streams (`rivals`, `rival_region`, their `people_gen`, `poach`) are keyed by a stable identity (incumbent and entrant by position in their data file, startup by category and founding order), and a new game's incumbents take product and people id blocks by position, so adding a company reseeds no one outside its category (test: `tests/unit/test_rival_keys.py`). The player's first product is now id 1; incumbents' products start at 900,000.
+  - **Golden snapshots regenerated once**, on the combined code when M12a merges after M11, for: the cloud incumbents and entrants, the new stream keys and id layout above, and M11's own changes.
 - Docs: M12b brief (hardware, devices and fabless chips; lane A, merges after M13) and formulas.md §26, written against M12a's facility model on its branch.
 - Docs: M13 brief (IPO, public company, Chair and CEO; lane B, merges before M12b) and formulas.md §25.
 - M11 R&D tree and era milestones (lane A; formulas.md 21):

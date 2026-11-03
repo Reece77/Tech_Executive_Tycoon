@@ -51,7 +51,7 @@ Every strategy answers critical events with the first choice, sets prices at the
 | T4b | Median months to a closed Series A (steady; blitzscale) | steady 24–60; blitzscale 12–36 |
 | T4c | Median months to a closed Series B (blitzscale) | 30–72, reached on at least 4/10 seeds |
 | T4d | Median months to IPO | not in v1 (IPO is v2); printed as "–" |
-| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 0–25%, hard 0–70% (Reece, M7a C2: a cautious strategy that keeps 18 months of runway and retries its seed should survive); blitzscale standard 0–40% (Reece, M7a B3: reached by round gates and investor appetite, so it fails when traction lags, not by its script; 10–40% until M10d, re-banded by the product manager on 2026-11-02 once blitzscale raises Series C and D); bootstrap-frugal standard 20–50% (Reece, M7a C3: today's launch gates kept; bootstrappers win whenever they survive) |
+| T5 | Bankruptcy rate by 120 turns | steady: easy ≤ 10%, standard 0–25%, hard 0–70% (Reece, M7a C2: a cautious strategy that keeps 18 months of runway and retries its seed should survive); blitzscale standard 0–40% (Reece, M7a B3: reached by round gates and investor appetite, so it fails when traction lags, not by its script; 10–40% until M10d, re-banded by the product manager on 2026-11-02 once blitzscale raises Series C and D); bootstrap-frugal standard 0–50% (Reece, M7a C3: today's launch gates kept; bootstrappers win whenever they survive; 20–50% until M12a, re-banded by the product manager on 2026-11-02: 7% on seeds 11–40 on both main and the combined code; M15 decides whether bootstrapping should carry more risk) |
 | T6 | Employee tenure (player staff, all strategies pooled) | median tenure of leavers 18–48 months; 10–25% of staff leave each year; at most 25% of hires leave in their first 12 months |
 | T7 | Rival survival at turn 120 (do-nothing runs, so the player doesn't distort it) | incumbents: at least 10 of 12 in business on average; rival startups: 20–65% of those founded are alive 5 years later (20–60% until M10d; re-banded by the product manager on 2026-11-02: most startups are founded abroad, where markets are less served) |
 | T8 | ARR at turn 120 (median per strategy) | printed only: bootstrap-frugal, steady and blitzscale should rank in that order on the median |
@@ -287,3 +287,18 @@ Keys and data tuned: `morale.target_base` 50 to 56; `resign.morale_floor` 40 to 
 | 21.8 target 5: licence / research for 15 points | - | 0.67 | pass |
 
 Tuned (`rnd.*` only; the M11 brief's Decisions): `rival.era_bonus` 0.15, `rival.need_span` 30, `rate` 0.4, `cap_per_point` 0.010, `feature_per_point` 0.005, `license.price_per_point_cents` $24,000. Golden snapshots unchanged.
+
+### M12a Cloud, data centres and supply shocks (2026-11-03, lane B, merged after M11)
+
+The full nightly suite on the combined M11 + M12a code (golden snapshots regenerated once). M12a adds four cloud incumbents and two entrants, and amends ADR-0013 so rivals' streams are keyed by stable identity (appending a company reseeds no one outside its category); that change reseeds every game once against main. Every guard passes except three, measured on 10 seeds and, to separate seed luck from an M12a effect, on seeds 11–40 on both the combined code and main (with M11). T2's cap scales to 18/30 on 30 seeds.
+
+| Guard | Band before | Combined, seeds 1–10 | Combined, seeds 11–40 | main, seeds 1–10 | main, seeds 11–40 | Ruling (product manager, 2026-11-02) |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 wins per strategy | each ≤ 6/10 (18/30) | steady 8, frugal 2 | steady 22, frugal 8 | steady 6, frugal 4 | steady 21, frugal 9 | xfail(strict=False): "steady wins 21–22/30 on main and combined; M15's v2 strategies should split wins" (the one permitted exception to no new xfails) |
+| T5 bootstrap-frugal (standard) bankrupt | 20–50% | 10% | 7% | 20% | 7% | re-banded to 0–50%; M15 decides whether bootstrapping should carry more risk |
+| M5 living market: seeds with a share breach | 0 | 1 | 0/30 | 0 | 0/30 | seed variance: at most 1 of 10 |
+
+Launches per v1 category (M5 living market, ≥ 1.0): combined 1.0 (1–10) and 1.17 (11–40); main 1.08 and 1.12.
+
+M12a's own §22.7 targets (`tools/m12a_targets.py`, nightly): T2 0.62 at 80% use and 1.23 at 40% (general data centre built January 2016); T3 10/10; T4 server +30%, GPU +60%, AI margin gap +15.7 points at 0.45× reference price (+7.0 at reference) with the GPU table tuned to $20,000 capex and $200 power, a GPU data centre at 40% use costing at least 1.22× spot in every build month; T5 8/10; T6 1.05 and 0.17 outages a year.
+

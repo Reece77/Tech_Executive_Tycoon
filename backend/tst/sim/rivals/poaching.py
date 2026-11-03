@@ -22,7 +22,7 @@ from tst.sim.hiring.models import Candidate, Search
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.people.models import Employment
 from tst.sim.rivals import formulas as f
-from tst.sim.rivals.models import PoachApproach, RivalEffect
+from tst.sim.rivals.models import PoachApproach, RivalEffect, stream_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -36,13 +36,21 @@ from tst.sim.state import (
 POACH_CHANNEL = "poach"
 
 
-TARGET_KEY = 1  # tunable-exempt: sub-key of the target draw (M10d), apart from the answer's
+TARGET_KEY = 1  # tunable-exempt: tag of the target draw (M10d), apart from the answer's
+ANSWER_KEY = 0  # tunable-exempt: tag of the employee's answer
 
 
-def poach_draw(rng: RngFactory, turn: int, approach_id: int, *sub: int) -> float:
-    """The `poach` stream's one call site (ADR-0013): an employee's answer to an approach,
-    key (approach id,); with sub-key TARGET_KEY, whom a new approach targets (M10d)."""
-    return float(rng.stream(turn, "poach", approach_id, *sub).random())
+def poach_draw(rng: RngFactory, turn: int, *key: int) -> float:
+    """The `poach` stream's one call site (ADR-0013, amended in M12a): keyed by the rival's
+    stable identity, never an approach id that more rivals would shift. Whom a new approach
+    targets: (*rival key, TARGET_KEY), at most one approach a rival a month; an employee's
+    answer: (*rival key, ANSWER_KEY, month the approach was made)."""
+    return float(rng.stream(turn, "poach", *key).random())
+
+
+def answer_key(state: GameState, approach: PoachApproach) -> tuple[int, ...]:
+    rival = state.company(approach.rival_id)
+    return (*stream_key(rival.id, rival.rival_key), ANSWER_KEY, approach.made_turn)
 
 
 def unvested_ratio(state: GameState, person_id: int) -> float:
@@ -106,7 +114,7 @@ def answer_approaches(
             )
             continue
         p = approach_probability(state, approach, balance)
-        draw = poach_draw(rng, state.turn, approach.id)
+        draw = poach_draw(rng, state.turn, *answer_key(state, approach))
         accepted = draw < p
         state = with_approach(
             state,

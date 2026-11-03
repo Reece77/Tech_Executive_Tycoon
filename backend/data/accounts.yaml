@@ -7,6 +7,7 @@ accounts:
   - { code: 1100_receivables, name: Accounts receivable, type: asset }
   - { code: 1200_prepaid, name: Prepaid expenses, type: asset }
   - { code: 1500_ppe, name: "Property, plant and equipment", type: asset }
+  - { code: 1510_accumulated_depreciation, name: Accumulated depreciation, type: asset } # M12a: contra-asset, credit balance
   # Liabilities
   - { code: 2000_payables, name: Accounts payable, type: liability }
   - { code: 2100_accrued_payroll, name: Accrued payroll, type: liability }
@@ -29,6 +30,7 @@ accounts:
   - { code: 6300_compute, name: Compute and hosting, type: expense }
   - { code: 6400_marketing, name: Marketing, type: expense }
   - { code: 6500_research_development, name: Research and development, type: expense }
+  - { code: 6700_depreciation, name: Depreciation, type: expense } # M12a: data centres (22.2)
   - { code: 6900_general_admin, name: General and administrative, type: expense }
   - { code: 7000_interest, name: Interest expense, type: expense }
   - { code: 8000_income_tax, name: Income tax, type: expense }

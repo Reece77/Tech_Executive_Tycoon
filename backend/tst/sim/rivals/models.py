@@ -85,3 +85,13 @@ class SegmentShare:
     product_id: int
     segment: str
     history: tuple[float, ...] = ()
+
+
+LEGACY_KEY = 3  # tunable-exempt: rival_key tag of a company without a stored identity
+INCUMBENT_KEY, ENTRANT_KEY, STARTUP_KEY = 0, 1, 2  # tunable-exempt: rival_key tags
+
+
+def stream_key(company_id: int, rival_key: tuple[int, ...]) -> tuple[int, ...]:
+    """The key a rival's own streams use (ADR-0013 amendment, M12a): its stable identity,
+    never its database id; a company without one (a save from before M12a) by its id."""
+    return rival_key if rival_key else (LEGACY_KEY, company_id)

@@ -201,6 +201,10 @@ def create_product(
     if action.category not in {c.key for c in data.categories}:
         raise ProductRuleError(f"unknown category {action.category!r}")
     category = data.category(action.category)
+    if category.capacity_market:  # M12a (22.3)
+        raise ProductRuleError(
+            f"{category.label} sells spare data-centre capacity: start it from Infrastructure"
+        )
     if not action.segments:
         raise ProductRuleError("a product needs at least one segment")
     if len(set(action.segments)) != len(action.segments):

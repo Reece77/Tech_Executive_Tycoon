@@ -10624,6 +10624,631 @@
         }
       }
     },
+    "/api/saves/{save_id}/infrastructure": {
+      "get": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Get Infrastructure",
+        "description": "The Infrastructure screen: component indexes, data centres, contracts and Cloud\nhosting (22.6).",
+        "operationId": "getInfrastructure",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfrastructureOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/infrastructure/build-preview": {
+      "get": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Preview Build",
+        "description": "Capex, build time, shortage delay and staff for a build (the Build dialog).",
+        "operationId": "previewBuild",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the first kind",
+              "title": "Kind"
+            },
+            "description": "Default: the first kind"
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the home region",
+              "title": "Region"
+            },
+            "description": "Default: the home region"
+          },
+          {
+            "name": "units",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the smallest size",
+              "title": "Units"
+            },
+            "description": "Default: the smallest size"
+          },
+          {
+            "name": "contract_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildPreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/infrastructure/facilities": {
+      "post": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Build Facility",
+        "operationId": "buildFacility",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfrastructureActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/infrastructure/facilities/{facility_id}/sell": {
+      "post": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Sell Facility",
+        "operationId": "sellFacility",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfrastructureActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/infrastructure/facilities/{facility_id}/staff": {
+      "post": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Staff Facility",
+        "operationId": "staffFacility",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfrastructureActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/infrastructure/contracts": {
+      "post": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Sign Contract",
+        "operationId": "signContract",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContractIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfrastructureActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/infrastructure/cloud": {
+      "post": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Sell Capacity",
+        "description": "Start selling spare capacity as Cloud hosting (22.3).",
+        "operationId": "sellCapacity",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfrastructureActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/research": {
       "get": {
         "tags": [
@@ -12442,6 +13067,157 @@
         "title": "BreakdownOut",
         "description": "Why a number is what it is: its drivers and an optional note, built by the backend;\nthe front end only displays them (M7b; spec 13)."
       },
+      "BuildIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "units": {
+            "type": "integer",
+            "title": "Units"
+          },
+          "contract_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "region",
+          "units"
+        ],
+        "title": "BuildIn"
+      },
+      "BuildPreviewOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "units": {
+            "type": "integer",
+            "title": "Units"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "monthly_capex_cents": {
+            "type": "integer",
+            "title": "Monthly Capex Cents"
+          },
+          "build_months": {
+            "type": "integer",
+            "title": "Build Months"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          },
+          "allocation": {
+            "type": "number",
+            "title": "Allocation"
+          },
+          "on_time": {
+            "type": "integer",
+            "title": "On Time"
+          },
+          "late": {
+            "type": "integer",
+            "title": "Late"
+          },
+          "late_months": {
+            "type": "integer",
+            "title": "Late Months"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          },
+          "contract_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Id"
+          },
+          "contracted": {
+            "type": "integer",
+            "title": "Contracted"
+          },
+          "monthly_cost_full_cents": {
+            "type": "integer",
+            "title": "Monthly Cost Full Cents",
+            "description": "Depreciation and operating cost at full use"
+          },
+          "cost_per_unit_full_cents": {
+            "type": "integer",
+            "title": "Cost Per Unit Full Cents"
+          },
+          "spot_cents": {
+            "type": "integer",
+            "title": "Spot Cents"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          },
+          "can_afford": {
+            "type": "boolean",
+            "title": "Can Afford",
+            "description": "Cash covers the first capex payment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "region",
+          "units",
+          "index",
+          "capex_cents",
+          "monthly_capex_cents",
+          "build_months",
+          "ready",
+          "allocation",
+          "on_time",
+          "late",
+          "late_months",
+          "staff_needed",
+          "contract_id",
+          "contracted",
+          "monthly_cost_full_cents",
+          "cost_per_unit_full_cents",
+          "spot_cents",
+          "energy",
+          "can_afford"
+        ],
+        "title": "BuildPreviewOut"
+      },
       "CandidacyOut": {
         "properties": {
           "search_id": {
@@ -12705,6 +13481,12 @@
             ],
             "title": "Launch Quality",
             "description": "Quality a launch needs (M8)"
+          },
+          "capacity_market": {
+            "type": "boolean",
+            "title": "Capacity Market",
+            "description": "Sells spare data-centre capacity; not a product to create (M12a)",
+            "default": false
           }
         },
         "type": "object",
@@ -13295,6 +14077,324 @@
           "example_rate_cents"
         ],
         "title": "CityOut"
+      },
+      "CloudOut": {
+        "properties": {
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id",
+            "description": "Your Cloud hosting product; null if not selling"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
+          "selling": {
+            "type": "boolean",
+            "title": "Selling"
+          },
+          "can_start": {
+            "type": "boolean",
+            "title": "Can Start",
+            "description": "True when you own a data centre and do not sell yet"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/CloudSegmentOut"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "units_sold": {
+            "type": "number",
+            "title": "Units Sold"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "This month's revenue at current customers"
+          },
+          "spare_units": {
+            "type": "number",
+            "title": "Spare Units",
+            "description": "General-CU equivalents still free for customers"
+          },
+          "price_per_unit_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Per Unit Cents",
+            "description": "Average price per CU you charge"
+          },
+          "leader_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leader Name",
+            "description": "The market leader (most customers)"
+          },
+          "leader_price_per_unit_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leader Price Per Unit Cents"
+          },
+          "outages_12m": {
+            "type": "integer",
+            "title": "Outages 12M"
+          },
+          "outages": {
+            "items": {
+              "$ref": "#/components/schemas/OutageOut"
+            },
+            "type": "array",
+            "title": "Outages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product_name",
+          "selling",
+          "can_start",
+          "segments",
+          "customers",
+          "units_sold",
+          "revenue_cents",
+          "spare_units",
+          "price_per_unit_cents",
+          "leader_name",
+          "leader_price_per_unit_cents",
+          "outages_12m",
+          "outages"
+        ],
+        "title": "CloudOut"
+      },
+      "CloudSegmentOut": {
+        "properties": {
+          "segment": {
+            "type": "string",
+            "title": "Segment"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "units": {
+            "type": "number",
+            "title": "Units",
+            "description": "CU these customers buy"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents",
+            "description": "Your price per customer a month"
+          },
+          "price_per_unit_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Per Unit Cents",
+            "description": "Your price per CU a month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment",
+          "label",
+          "customers",
+          "units",
+          "price_cents",
+          "price_per_unit_cents"
+        ],
+        "title": "CloudSegmentOut"
+      },
+      "ComponentOut": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index",
+            "description": "This month's index (January 2010 = 1.0)"
+          },
+          "change_12m": {
+            "type": "number",
+            "title": "Change 12M",
+            "description": "Change over the last 12 months (fraction)"
+          },
+          "allocation": {
+            "type": "number",
+            "title": "Allocation",
+            "description": "Share of a build delivered on time (1.0 = full)"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "One line of context: a shortage, a shock, or full supply"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/IndexPointOut"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "Past months up to this one, oldest first"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "label",
+          "index",
+          "change_12m",
+          "allocation",
+          "note",
+          "history"
+        ],
+        "title": "ComponentOut"
+      },
+      "ContractIn": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "volume": {
+            "type": "integer",
+            "title": "Volume"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "months",
+          "volume"
+        ],
+        "title": "ContractIn"
+      },
+      "ContractOut": {
+        "properties": {
+          "contract_id": {
+            "type": "integer",
+            "title": "Contract Id"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "good_label": {
+            "type": "string",
+            "title": "Good Label"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index"
+          },
+          "signed": {
+            "type": "string",
+            "title": "Signed"
+          },
+          "ends": {
+            "type": "string",
+            "title": "Ends"
+          },
+          "volume": {
+            "type": "integer",
+            "title": "Volume"
+          },
+          "used": {
+            "type": "integer",
+            "title": "Used"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "take_or_pay_cents": {
+            "type": "integer",
+            "title": "Take Or Pay Cents",
+            "description": "What the unused volume would cost at the end"
+          },
+          "settled_cents": {
+            "type": "integer",
+            "title": "Settled Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contract_id",
+          "good",
+          "good_label",
+          "index",
+          "signed",
+          "ends",
+          "volume",
+          "used",
+          "status",
+          "take_or_pay_cents",
+          "settled_cents"
+        ],
+        "title": "ContractOut"
       },
       "CooAnswerOut": {
         "properties": {
@@ -14926,6 +16026,233 @@
           "ai_budget_cents"
         ],
         "title": "EventsOut"
+      },
+      "FacilityOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "kind_label": {
+            "type": "string",
+            "title": "Kind Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "description": "Unit of size, e.g. CU"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "building, live or closed"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since",
+            "description": "Ordered (building) or live since (Mon YYYY)"
+          },
+          "units": {
+            "type": "integer",
+            "title": "Units",
+            "description": "Units it is built for"
+          },
+          "live_units": {
+            "type": "integer",
+            "title": "Live Units"
+          },
+          "own_use": {
+            "type": "number",
+            "title": "Own Use",
+            "description": "Units your own products use this month"
+          },
+          "sold_use": {
+            "type": "number",
+            "title": "Sold Use",
+            "description": "Units sold as Cloud hosting this month"
+          },
+          "free": {
+            "type": "number",
+            "title": "Free"
+          },
+          "utilization": {
+            "type": "number",
+            "title": "Utilization",
+            "description": "Used / live units (0-1)"
+          },
+          "reliability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reliability",
+            "description": "0-100; null while building"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          },
+          "coverage": {
+            "type": "number",
+            "title": "Coverage"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id",
+            "description": "The unit that staffs it"
+          },
+          "unit_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Name"
+          },
+          "monthly_cost_cents": {
+            "type": "integer",
+            "title": "Monthly Cost Cents",
+            "description": "Depreciation plus operating cost a month"
+          },
+          "cost_per_used_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Used Cents",
+            "description": "Monthly cost / units used; null if none"
+          },
+          "spot_cents": {
+            "type": "integer",
+            "title": "Spot Cents",
+            "description": "Spot price of a unit of its output"
+          },
+          "book_value_cents": {
+            "type": "integer",
+            "title": "Book Value Cents"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "capex_paid_cents": {
+            "type": "integer",
+            "title": "Capex Paid Cents"
+          },
+          "build_progress": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Progress",
+            "description": "Share of the build months done; null live"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready",
+            "description": "Mon YYYY it goes (or went) live"
+          },
+          "late_units": {
+            "type": "integer",
+            "title": "Late Units",
+            "description": "Units arriving late from a shortage"
+          },
+          "late_ready": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Late Ready",
+            "description": "Mon YYYY the late units arrive"
+          },
+          "sale_value_cents": {
+            "type": "integer",
+            "title": "Sale Value Cents",
+            "description": "What selling it now brings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "kind",
+          "kind_label",
+          "region",
+          "region_label",
+          "unit",
+          "status",
+          "since",
+          "units",
+          "live_units",
+          "own_use",
+          "sold_use",
+          "free",
+          "utilization",
+          "reliability",
+          "staff",
+          "staff_needed",
+          "coverage",
+          "unit_id",
+          "unit_name",
+          "monthly_cost_cents",
+          "cost_per_used_cents",
+          "spot_cents",
+          "book_value_cents",
+          "capex_cents",
+          "capex_paid_cents",
+          "build_progress",
+          "ready",
+          "late_units",
+          "late_ready",
+          "sale_value_cents"
+        ],
+        "title": "FacilityOut"
       },
       "FinanceActionOut": {
         "properties": {
@@ -17060,6 +18387,184 @@
         ],
         "title": "InboxOut"
       },
+      "IndexPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Mon YYYY"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index"
+          },
+          "allocation": {
+            "type": "number",
+            "title": "Allocation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "index",
+          "allocation"
+        ],
+        "title": "IndexPointOut"
+      },
+      "InfrastructureActionOut": {
+        "properties": {
+          "infrastructure": {
+            "$ref": "#/components/schemas/InfrastructureOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "infrastructure",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "InfrastructureActionOut"
+      },
+      "InfrastructureOut": {
+        "properties": {
+          "turn_label": {
+            "type": "string",
+            "title": "Turn Label"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentOut"
+            },
+            "type": "array",
+            "title": "Components"
+          },
+          "spot": {
+            "items": {
+              "$ref": "#/components/schemas/SpotOut"
+            },
+            "type": "array",
+            "title": "Spot"
+          },
+          "facilities": {
+            "items": {
+              "$ref": "#/components/schemas/FacilityOut"
+            },
+            "type": "array",
+            "title": "Facilities"
+          },
+          "total_live_units": {
+            "type": "integer",
+            "title": "Total Live Units"
+          },
+          "total_building_units": {
+            "type": "integer",
+            "title": "Total Building Units"
+          },
+          "contracts": {
+            "items": {
+              "$ref": "#/components/schemas/ContractOut"
+            },
+            "type": "array",
+            "title": "Contracts"
+          },
+          "cloud": {
+            "$ref": "#/components/schemas/CloudOut"
+          },
+          "kinds": {
+            "items": {
+              "$ref": "#/components/schemas/KindOut"
+            },
+            "type": "array",
+            "title": "Kinds"
+          },
+          "sizes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Sizes"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__facilities__RegionOptionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "build_energy": {
+            "type": "integer",
+            "title": "Build Energy"
+          },
+          "sell_energy": {
+            "type": "integer",
+            "title": "Sell Energy"
+          },
+          "contract_energy": {
+            "type": "integer",
+            "title": "Contract Energy"
+          },
+          "staff_energy": {
+            "type": "integer",
+            "title": "Staff Energy"
+          },
+          "contract_months": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Contract Months",
+            "description": "[shortest, longest]"
+          },
+          "take_or_pay": {
+            "type": "number",
+            "title": "Take Or Pay"
+          },
+          "sale_share": {
+            "type": "number",
+            "title": "Sale Share"
+          },
+          "break_even_utilization": {
+            "type": "number",
+            "title": "Break Even Utilization",
+            "description": "Use at which a general CU costs spot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn_label",
+          "components",
+          "spot",
+          "facilities",
+          "total_live_units",
+          "total_building_units",
+          "contracts",
+          "cloud",
+          "kinds",
+          "sizes",
+          "regions",
+          "build_energy",
+          "sell_energy",
+          "contract_energy",
+          "staff_energy",
+          "contract_months",
+          "take_or_pay",
+          "sale_share",
+          "break_even_utilization"
+        ],
+        "title": "InfrastructureOut"
+      },
       "JobPeriodOut": {
         "properties": {
           "role_label": {
@@ -17153,6 +18658,55 @@
           "potential_phrase"
         ],
         "title": "KeyPersonOut"
+      },
+      "KindOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "input_good": {
+            "type": "string",
+            "title": "Input Good"
+          },
+          "build_months": {
+            "type": "integer",
+            "title": "Build Months"
+          },
+          "life_months": {
+            "type": "integer",
+            "title": "Life Months"
+          },
+          "opex_per_unit_cents": {
+            "type": "integer",
+            "title": "Opex Per Unit Cents"
+          },
+          "capex_per_unit_cents": {
+            "type": "integer",
+            "title": "Capex Per Unit Cents",
+            "description": "At this month's index"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "unit",
+          "input_good",
+          "build_months",
+          "life_months",
+          "opex_per_unit_cents",
+          "capex_per_unit_cents"
+        ],
+        "title": "KindOut"
       },
       "KnowledgeOut": {
         "properties": {
@@ -18350,7 +19904,7 @@
           },
           "regions": {
             "items": {
-              "$ref": "#/components/schemas/RegionOptionOut"
+              "$ref": "#/components/schemas/tst__api__schemas__products__RegionOptionOut"
             },
             "type": "array",
             "title": "Regions",
@@ -19581,6 +21135,34 @@
         ],
         "title": "OrgTileOut",
         "description": "The Overview's Org tile (M2b)."
+      },
+      "OutageOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "facility": {
+            "type": "string",
+            "title": "Facility"
+          },
+          "customers_lost": {
+            "type": "number",
+            "title": "Customers Lost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "facility",
+          "customers_lost"
+        ],
+        "title": "OutageOut"
       },
       "OverviewBreakdownsOut": {
         "properties": {
@@ -22315,30 +23897,6 @@
         ],
         "title": "RangeOut"
       },
-      "RegionOptionOut": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          },
-          "home": {
-            "type": "boolean",
-            "title": "Home",
-            "description": "The HQ's region, whose markets are v1's (19.5)"
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "label",
-          "home"
-        ],
-        "title": "RegionOptionOut"
-      },
       "RegionSegmentOut": {
         "properties": {
           "segment": {
@@ -24710,6 +26268,56 @@
         ],
         "title": "SortKey"
       },
+      "SpotOut": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "cents_per_unit": {
+            "type": "integer",
+            "title": "Cents Per Unit",
+            "description": "A CU a month on spot"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index",
+            "description": "1.0 for general; the AI compute index for GPU"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "label",
+          "cents_per_unit",
+          "index"
+        ],
+        "title": "SpotOut"
+      },
+      "StaffIn": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id"
+        ],
+        "title": "StaffIn"
+      },
       "StageReachedOut": {
         "properties": {
           "stage": {
@@ -25792,6 +27400,29 @@
         ],
         "title": "ValidationError"
       },
+      "tst__api__schemas__facilities__RegionOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "is_home": {
+            "type": "boolean",
+            "title": "Is Home"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "is_home"
+        ],
+        "title": "RegionOptionOut"
+      },
       "tst__api__schemas__history__NamedOut": {
         "properties": {
           "id": {
@@ -25827,6 +27458,30 @@
           "name"
         ],
         "title": "NamedOut"
+      },
+      "tst__api__schemas__products__RegionOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "home": {
+            "type": "boolean",
+            "title": "Home",
+            "description": "The HQ's region, whose markets are v1's (19.5)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "home"
+        ],
+        "title": "RegionOptionOut"
       }
     }
   }

@@ -15,6 +15,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.research import levels
 from tst.sim.research.models import ResearchProject
 from tst.sim.research.projects import add_lead, quality
+from tst.sim.rivals.models import stream_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import CompanyState, GameState, with_pool, with_research_project
 
@@ -99,7 +100,8 @@ def rival_research_month(state: GameState, rng: RngFactory, balance: Balance) ->
             continue
         skill = company.builder_skill or 0.0
         gained = rnd.rival.rate * skill / 10  # tunable-exempt: d / 10, as for builders (11.3)
-        gen = rng.stream(state.turn, "rival_research", company.id)
+        key = stream_key(company.id, company.rival_key)  # ADR-0013 amendment (M12a)
+        gen = rng.stream(state.turn, "rival_research", *key)
         event = None
         if float(gen.random()) < rnd.breakthrough_chance * quality(skill, balance):
             gained += rnd.breakthrough_points

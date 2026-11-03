@@ -84,7 +84,7 @@ def test_seat_weights_cover_six_seats(loaded: LoadedData) -> None:
 def test_new_categories(loaded: LoadedData) -> None:
     data = loaded.game_data
     keys = [c.key for c in data.categories]
-    assert keys[-2:] == ["fintech", "ai_models"]  # appended: market stream keys unchanged
+    assert keys[-3:-1] == ["fintech", "ai_models"]  # appended: market stream keys unchanged
     fintech = data.category("fintech")
     assert fintech.launch_quality == 30
     assert fintech.growth_in(2015) == pytest.approx(0.25)
@@ -130,6 +130,8 @@ def test_entrants(loaded: LoadedData) -> None:
         ("Plaid", 2013, 5),
         ("OpenAI", 2015, 12),
         ("Anthropic", 2021, 1),
+        ("Google Cloud", 2012, 4),  # M12a (22.3)
+        ("CoreWeave", 2019, 1),
     ]
     assert turn_to_ym(ym_to_turn(2011, 9)) == (2011, 9)
     assert STREAM_IDS["entrants"] == 20
