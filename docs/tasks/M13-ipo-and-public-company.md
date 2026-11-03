@@ -88,7 +88,15 @@ Engineering and design details the spec and ADRs left open, decided while buildi
 12. **The player's operating history is kept for 12 months** (was 6), for 25.1's four quarters; no migration (it is JSON in `finance_history`).
 13. **Persistence:** migration `0030_public_company` (six tables); the live state keeps 36 months of share prices and 12 months of CEO decisions, while the database keeps every row and the Stock chart reads all of them.
 14. **Balance scripts:** steady and blitzscale hire Morgan Stanley as soon as eligible and take each event's first choice.
+15. **Tuning (`public.*` and `ipo.*` only):** `public.multiple` growth 25 → 18 and margin 15 → 5 (target 4: P/S was 20× in 2012–2019 because scripted IPOs list at +30–40% margins); `ipo.min_growth` 0.40 → 0.20 (target 2: blitzscale reached $80M ARR loss-making and growing 20–25% a year, so it never listed). The 25.10 worked example is tested with 25.3's own coefficients.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Preferred shares convert to common at the IPO** (they stay preferred on the cap table now); M14 or M15.
+- **Accepting a takeover bid** (selling the company, an exit ending) needs M14's acquisitions; M13's bid can only be rejected, fought with a rights plan or answered with talks.
+- **API: name the event behind each pricing option.** `PriceOptionOut` has no event choice key and `IpoOut` no event id; the front end matches the open `public` event's choices by order. An `event_id` and `event_choice` would make that explicit.
+- **`CeoOut` could carry the scope-change energy** (the front end reads `exec_authority.change_energy` from the org meta).
+- **Hiring's stage tables stop at 3** (`hiring.offer.stage_appeal`, `stage_equity_mult`): a public company's appeal and liquid equity could earn their own stage-4 values (lane rules kept this lane off `hiring.*`).
+- **Exec-level search for a CEO from outside:** the seat appoints an employee at senior level or above; an outside CEO is hired first through the existing exec-level search.
+- **The S-1, roadshow and pricing are fixed choices;** a richer S-1 (cost, delay and brand) and roadshow events that move the book could come with M15's balance pass.
+- **25.9 targets with the CEO:** target 5 compares a CEO with the steady script on the e2e scale-up; M15 could add a CEO arm to the v2 strategies.

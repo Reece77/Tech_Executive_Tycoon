@@ -2131,6 +2131,7 @@ The IPO chain's status and choices; the price range and book demand as words ("s
 - **Chair and CEO.** The CEO runs each function in its scopes that no seat holder with authority covers, under that seat's guardrails, with `ceo.price_band_pct` around the player's last price. It acts only through operating actions (plans, moves, prices, marketing, launches); debt repayment and every capital, guidance, strategy or appointment action is the Chair's. An override applies the decision's reverse as the Chair at exactly `ceo.override_energy`, and the CEO's price anchor follows the Chair's price. Launches cannot be overridden. The Chair's energy (40) applies from the month after the appointment.
 - **Stage 4 elsewhere.** Hiring's stage-keyed appeal and equity values treat a public company as stage 3 (no `hiring.*` key changes in this lane).
 - **Trailing history.** The player's monthly operating result is kept for 12 months (was 6), for 25.1's four quarters.
+- **Tuned for 25.9 (M13).** `public.multiple`: growth 25 → 18 and margin 15 → 5. The scripted companies list at +30–40% margins, which gave P/S 20× at listing in 2012–2019; the 25.10 worked example keeps 25.3's coefficients. `ipo.min_growth` 0.40 → 0.20: blitzscale passes $80M ARR loss-making and growing 20–25% a year, and never listed at 40%.
 
 ## 26. Hardware, devices and fabless chips (M12b, lane A)
 
