@@ -52,7 +52,7 @@ def test_build_serve_sell_capacity_and_sell(
     api, path, _ = setup
     out = api.get(f"{BASE}/infrastructure")
     assert out["facilities"] == [] and not out["cloud"]["can_start"]
-    assert [c["good"] for c in out["components"]] == ["server", "gpu"]
+    assert [c["good"] for c in out["components"]][:2] == ["server", "gpu"]
     assert out["components"][0]["index"] == 1.0 and out["components"][0]["allocation"] == 1.0
     assert {s["good"]: s["cents_per_unit"] for s in out["spot"]}["compute_general"] == 100_000
     assert out["break_even_utilization"] == pytest.approx(0.65)

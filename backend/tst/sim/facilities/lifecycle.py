@@ -13,6 +13,7 @@ from dataclasses import dataclass, replace
 from fractions import Fraction
 
 from tst.sim.calendar import format_turn
+from tst.sim.chips.chips import gpu_capex_factor
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities import formulas as ff
 from tst.sim.facilities import goods
@@ -21,6 +22,7 @@ from tst.sim.facilities.models import Facility, SupplyContract
 from tst.sim.ledger import (
     ACCUMULATED_DEPRECIATION,
     CASH,
+    COGS,
     COMPUTE,
     DEPRECIATION,
     GENERAL_ADMIN,
@@ -107,6 +109,9 @@ def quote(
     capex = ff.capex_cents(rest, kind.capex_per_unit_cents, month.index)
     if contract is not None:
         capex += ff.capex_cents(contracted, kind.capex_per_unit_cents, contract.index)
+    if kind.output_good == balance.chips.gpu_capex.compute_good:
+        # M12b (26.3): own accelerators cut a GPU data centre's capex
+        capex = round(exact(capex) * exact(gpu_capex_factor(state, company_id, balance, data)))
     rest_on_time, late, months = ff.allocation_split(
         rest, month.allocation, balance.supply.delay_step
     )
@@ -200,6 +205,7 @@ def mean_reliability(state: GameState, company_id: int, balance: Balance) -> flo
         (f.live_capacity(state.turn), staffing(state, f, balance).reliability)
         for f in state.company_facilities(company_id)
         if f.live_capacity(state.turn) > 0
+        and kind_of(f, balance).output_good in balance.compute.goods
     ]
     total = sum(c for c, _ in live)
     return sum(c * r for c, r in live) / total if total else None
@@ -288,19 +294,31 @@ def facility_month(
 
 
 def operating_cents(facility: Facility, turn: int, balance: Balance) -> Cents:
-    """Live units x the kind's operating cost per unit a month (22.2)."""
-    return facility.live_capacity(turn) * kind_of(facility, balance).opex_per_unit_cents
+    """Live units x the kind's operating cost per unit a month (22.2), plus a live plant's
+    fixed cost (26.2; its cost per unit run posts with the cost of goods at sale)."""
+    kind = kind_of(facility, balance)
+    live = facility.live_capacity(turn)
+    return live * kind.opex_per_unit_cents + (kind.fixed_opex_cents if live > 0 else 0)
 
 
 def operating_lines(
     state: GameState, company_id: int, balance: Balance
 ) -> list[tuple[str, str, Cents, int | None]]:
-    """Phase 6's line for facilities' operating costs (memo, account, amount, division):
-    corporate, with compute (22.2)."""
-    total = sum(
-        operating_cents(f, state.turn, balance) for f in state.company_facilities(company_id)
-    )
-    return [("Data centre operations", COMPUTE, total, None)] if total else []
+    """Phase 6's lines for facilities' operating costs (memo, account, amount, division):
+    corporate; data centres with compute (22.2), assembly plants with the cost of goods
+    (26.2)."""
+    centres = plants = 0
+    for f in state.company_facilities(company_id):
+        if kind_of(f, balance).output_good in balance.compute.goods:
+            centres += operating_cents(f, state.turn, balance)
+        else:
+            plants += operating_cents(f, state.turn, balance)
+    lines: list[tuple[str, str, Cents, int | None]] = []
+    if centres:
+        lines.append(("Data centre operations", COMPUTE, centres, None))
+    if plants:
+        lines.append(("Assembly plant operations", COGS, plants, None))
+    return lines
 
 
 # --- Contracts (22.4) ------------------------------------------------------------------------

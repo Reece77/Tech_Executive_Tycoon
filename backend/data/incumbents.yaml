@@ -505,3 +505,220 @@ companies:
           mid_market: { price_cents: 2300000, share_bp: 500 }
           enterprise: { price_cents: 23000000, share_bp: 2000 }
           hyperscalers: { price_cents: 230000000, share_bp: 1000 }
+
+  # --- M12b (formulas.md 26.3), appended: hardware and chips. Prices are per unit (devices,
+  # servers, chips) or per customer of 10,000 units a month (contract manufacturing). Each
+  # appended company is keyed by its position (ADR-0013 amendment), so existing rivals'
+  # draws do not move. Rivals' manufacturing is abstract: their cost of goods is the
+  # market's hosting_cents a unit.
+
+  - name: NVIDIA
+    stage: 4
+    founded_year: 1993
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 2500
+    cash_months: 36
+    products:
+      - name: NVIDIA Tesla
+        category: chips_ai_accelerator
+        quality: 80
+        features: 80
+        brand: 80
+        segments:
+          device_oems: { price_cents: 150000, share_bp: 6000 }
+          hyperscalers: { price_cents: 150000, share_bp: 6500 }
+
+  - name: Intel
+    stage: 4
+    founded_year: 1968
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 48
+    products:
+      - name: Intel Xeon
+        category: chips_server_cpu
+        quality: 78
+        features: 75
+        brand: 85
+        segments:
+          device_oems: { price_cents: 42000, share_bp: 7000 }
+          hyperscalers: { price_cents: 38000, share_bp: 7000 }
+
+  - name: AMD
+    stage: 4
+    founded_year: 1969
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    products:
+      - name: AMD Opteron
+        category: chips_server_cpu
+        quality: 60
+        features: 60
+        brand: 55
+        segments:
+          device_oems: { price_cents: 33000, share_bp: 1500 }
+          hyperscalers: { price_cents: 30000, share_bp: 1500 }
+      - name: AMD FireStream
+        category: chips_ai_accelerator
+        quality: 55
+        features: 55
+        brand: 50
+        segments:
+          device_oems: { price_cents: 110000, share_bp: 1500 }
+          hyperscalers: { price_cents: 110000, share_bp: 1000 }
+
+  - name: Qualcomm
+    stage: 4
+    founded_year: 1985
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 36
+    products:
+      - name: Snapdragon
+        category: chips_mobile_soc
+        quality: 75
+        features: 75
+        brand: 75
+        segments:
+          device_oems: { price_cents: 4500, share_bp: 4500 }
+
+  - name: Apple
+    stage: 4
+    founded_year: 1976
+    personality: premium
+    builder_skill: 16
+    target_margin_bp: 2500
+    cash_months: 48
+    products:
+      - name: iPhone
+        category: devices
+        quality: 78
+        features: 80
+        brand: 88
+        segments:
+          consumer: { price_cents: 65000, share_bp: 2000 }
+          smb: { price_cents: 70000, share_bp: 1200 }
+
+  - name: Samsung
+    stage: 4
+    founded_year: 1938
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1500
+    cash_months: 36
+    products:
+      - name: Galaxy
+        category: devices
+        quality: 66
+        features: 70
+        brand: 68
+        segments:
+          consumer: { price_cents: 38000, share_bp: 2500 }
+          smb: { price_cents: 45000, share_bp: 1500 }
+          enterprise: { price_cents: 55000, share_bp: 1000 }
+
+  - name: Lenovo
+    stage: 4
+    founded_year: 1984
+    personality: cost_leader
+    builder_skill: 11
+    target_margin_bp: 1000
+    cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    products:
+      - name: ThinkPad
+        category: devices
+        quality: 56
+        features: 55
+        brand: 48
+        segments:
+          consumer: { price_cents: 30000, share_bp: 1500 }
+          smb: { price_cents: 38000, share_bp: 2500 }
+          enterprise: { price_cents: 50000, share_bp: 3000 }
+
+  - name: Dell
+    stage: 4
+    founded_year: 1984
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 24
+    products:
+      - name: PowerEdge
+        category: servers
+        quality: 65
+        features: 65
+        brand: 65
+        segments:
+          enterprise: { price_cents: 480000, share_bp: 2500 }
+          hyperscalers: { price_cents: 390000, share_bp: 2000 }
+
+  - name: HPE
+    stage: 4
+    founded_year: 1939
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 24
+    products:
+      - name: ProLiant
+        category: servers
+        quality: 70
+        features: 68
+        brand: 70
+        segments:
+          enterprise: { price_cents: 560000, share_bp: 2500 }
+          hyperscalers: { price_cents: 450000, share_bp: 1000 }
+
+  - name: Supermicro
+    stage: 3
+    founded_year: 1993
+    personality: cost_leader
+    builder_skill: 11
+    target_margin_bp: 1000
+    cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    products:
+      - name: SuperServer
+        category: servers
+        quality: 58
+        features: 58
+        brand: 40
+        segments:
+          enterprise: { price_cents: 420000, share_bp: 1000 }
+          hyperscalers: { price_cents: 350000, share_bp: 2500 }
+
+  - name: Foxconn
+    stage: 4
+    founded_year: 1974
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 1000
+    cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    products:
+      - name: Foxconn EMS
+        category: contract_manufacturing
+        quality: 70
+        features: 60
+        brand: 65
+        segments:
+          device_oems: { price_cents: 12500000, share_bp: 4000 }
+
+  - name: Pegatron
+    stage: 4
+    founded_year: 2008
+    personality: fast_follower
+    builder_skill: 11
+    target_margin_bp: 1000
+    cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    products:
+      - name: Pegatron EMS
+        category: contract_manufacturing
+        quality: 62
+        features: 55
+        brand: 50
+        segments:
+          device_oems: { price_cents: 12800000, share_bp: 2000 }

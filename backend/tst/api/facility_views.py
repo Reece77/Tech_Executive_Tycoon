@@ -314,6 +314,7 @@ def infrastructure_out(state: GameState, data: LoadedData, stored: Stored) -> In
     facilities = [
         facility_out(state, f, alloc, data)
         for f in sorted(state.company_facilities(company), key=lambda f: f.id)
+        if compute.is_compute(f, b)  # M12b: plants are on the Hardware screen
     ]
     general = b.facility.kinds[next(iter(b.facility.kinds))]
     full = general.capex_per_unit_cents / general.life_months + general.opex_per_unit_cents
@@ -341,6 +342,7 @@ def infrastructure_out(state: GameState, data: LoadedData, stored: Stored) -> In
                 ),
             )
             for key, k in b.facility.kinds.items()
+            if k.output_good in b.compute.goods  # data centres only (M12b)
         ],
         sizes=list(b.facility.sizes),
         regions=[

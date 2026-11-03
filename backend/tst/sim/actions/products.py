@@ -21,6 +21,7 @@ from tst.sim.errors import (
     UnknownProductError,
     UnknownSearchError,
 )
+from tst.sim.hardware import production
 from tst.sim.log import inbox_item
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.products.phases import (
@@ -187,6 +188,12 @@ def launch_problems(
     for seg in state.segments_of(product.id):
         if seg.price_cents is None:
             problems.append(f"a price for {data.segment(seg.segment).label}")
+    category = data.category(product.category)
+    if category.sells_units and not production.has_source(state, product, balance, data):
+        # M12b (26.1): a manufacturing source
+        problems.append(
+            "a wafer contract" if category.chip_type else "a manufacturing contract or a live plant"
+        )
     return problems
 
 
@@ -204,6 +211,10 @@ def create_product(
     if category.capacity_market:  # M12a (22.3)
         raise ProductRuleError(
             f"{category.label} sells spare data-centre capacity: start it from Infrastructure"
+        )
+    if category.assembly_market:  # M12b (26.2)
+        raise ProductRuleError(
+            f"{category.label} sells spare assembly-plant capacity: start it from Hardware"
         )
     if not action.segments:
         raise ProductRuleError("a product needs at least one segment")

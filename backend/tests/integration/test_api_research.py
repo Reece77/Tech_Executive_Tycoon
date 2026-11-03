@@ -151,3 +151,35 @@ def test_no_response_shows_a_rivals_exact_lead(api: tuple[Client, Path]) -> None
     ibm = next(r for r in ai["rivals"] if r["company_id"] == IBM)
     assert ibm["low"] <= 23.4567 <= ibm["high"]
     assert ibm["low"] + ibm["high"] != round(2 * 23.4567)
+
+
+def test_no_response_shows_a_future_eras_scheduled_month(api: tuple[Client, Path]) -> None:
+    """M12b (26.4): the era timeline shows a future era's window and threshold; its
+    scheduled month (drawn from the seed) appears in no response before it arrives."""
+    from tst.sim.calendar import format_turn
+    from tst.sim.research.levels import scheduled_turn
+    from tst.sim.rng import RngFactory
+
+    client, path = api
+    eras = client.get(f"{BASE}/eras")
+    chiplets = next(e for e in eras if e["key"] == "chiplets")
+    assert chiplets["expected"] == "expected 2026\u20132028"
+    assert chiplets["threshold"] == pytest.approx(81.4, abs=0.05)
+    blob = "\n".join(
+        json.dumps(client.get(f"{BASE}/{route}"))
+        for route in ("eras", "research", "overview", "rivals", "history/timeline", "hardware")
+    )
+    with open_session(path) as session:
+        state = load_state(session)
+    rng = RngFactory(state.save_meta.master_seed)
+    for index, era in enumerate(state_eras()):
+        if era.windowed:
+            month = format_turn(scheduled_turn(era, index, rng))
+            assert month not in blob, (era.key, month)
+
+
+def state_eras():  # type: ignore[no-untyped-def]
+    from tst.config import Settings
+    from tst.loader import load_all
+
+    return load_all(Settings().data_dir).game_data.eras.eras

@@ -62,6 +62,15 @@ from tst.sim.actions.geo import (
     set_regional_price,
     set_unit_office,
 )
+from tst.sim.actions.hardware import (
+    HardwareAction,
+    SellPlantCapacity,
+    SignManufacturingContract,
+    SignWaferContract,
+    sell_plant_capacity,
+    sign_manufacturing_contract,
+    sign_wafer_contract,
+)
 from tst.sim.actions.hiring import (
     CloseSearch,
     Draws,
@@ -176,6 +185,7 @@ type Action = (
     | GeoAction
     | FacilityAction
     | ResearchAction
+    | HardwareAction
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -234,6 +244,9 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "staff_facility": StaffFacility,
     "sign_contract": SignContract,
     "sell_capacity": SellCapacity,
+    "sign_manufacturing_contract": SignManufacturingContract,  # M12b
+    "sign_wafer_contract": SignWaferContract,
+    "sell_plant_capacity": SellPlantCapacity,
     "start_project": StartProject,  # M11
     "stop_project": StopProject,
     "set_project_budget": SetProjectBudget,
@@ -285,6 +298,7 @@ __all__ = [
     "ScoutSearch",
     "SellCapacity",
     "SellFacility",
+    "SellPlantCapacity",
     "SetAuthority",
     "SetLeader",
     "SetMarketing",
@@ -297,6 +311,8 @@ __all__ = [
     "SetSharedServices",
     "SetUnitOffice",
     "SignContract",
+    "SignManufacturingContract",
+    "SignWaferContract",
     "StaffFacility",
     "StartProject",
     "StartRound",
@@ -475,6 +491,12 @@ def apply_action(
             out = sign_contract(state, action, balance, data)
         case SellCapacity():
             out = sell_capacity(state, action, balance, data)
+        case SignManufacturingContract():  # M12b
+            out = sign_manufacturing_contract(state, action, balance, data)
+        case SignWaferContract():
+            out = sign_wafer_contract(state, action, balance, data)
+        case SellPlantCapacity():
+            out = sell_plant_capacity(state, action, balance, data)
         case StartProject():
             out = start_project(state, action, balance, data)
         case StopProject():

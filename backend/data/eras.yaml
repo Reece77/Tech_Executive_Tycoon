@@ -61,6 +61,45 @@ eras:
       - { category: ai_models, segments: [enterprise], growth: 0.40, months: 36 }
       - { category: b2b_saas, segments: [mid_market, enterprise], growth: 0.05, months: 24 }
 
+  # --- M12b (formulas.md 26.4), appended: hardware and chips ---
+  - key: smartphone_ubiquity
+    label: Smartphone ubiquity
+    domain: devices
+    arrival: [2012, 1]
+    boosts:
+      - { category: devices, segments: [consumer], growth: 0.15, months: 36 }
+  - key: ai_accelerators
+    label: AI accelerators
+    domain: chip_design
+    arrival: [2016, 5]
+    boosts:
+      - { category: chips_ai_accelerator, growth: 0.40, months: 36 }
+  - key: custom_silicon
+    label: Custom silicon
+    domain: chip_design
+    arrival: [2020, 11]
+    boosts:
+      # devices with their own SoC: +5 on the quality cap for everyone, not first movers only
+      - { category: devices, cap_points: 5, own_chip: true, months: 24 }
+  # Future eras (26.4; Reece, 2026-11-02, ADR-0019 15): a public window instead of an
+  # arrival; the scheduled month is drawn from the seed (stream era_window, key (era_index,))
+  # and never shown. The threshold reads the window's midpoint.
+  - key: chiplets
+    label: Chiplets and advanced packaging
+    domain: chip_design
+    window: [[2026, 1], [2028, 12]]
+    yield_cap: 0.95 # chips' yield cap from arrival, for everyone
+    boosts:
+      - { category: chips_server_cpu, growth: 0.15, months: 36 }
+      - { category: chips_ai_accelerator, growth: 0.15, months: 36 }
+  - key: edge_ai
+    label: Edge AI
+    domain: devices
+    window: [[2027, 1], [2030, 12]]
+    boosts:
+      - { category: devices, segments: [consumer, smb], growth: 0.20, months: 36 }
+      - { category: chips_mobile_soc, growth: 0.20, months: 36 }
+
 # Base demand growth (fraction a year) for categories whose eras' boosts are already in the
 # curves M8-M10 were tuned on (21.4, 21.8 target 1): it replaces categories.yaml's `growth`
 # and `growth_by_year` for demand. By calendar year, the latest year at or before the month.

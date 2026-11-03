@@ -28,6 +28,7 @@ from tst.sim.geo.models import (
     RegionalMarket,
     RegionalSegment,
 )
+from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.money import Cents
@@ -188,6 +189,10 @@ class GameState:
     research_projects: tuple[ResearchProject, ...] = ()
     era_arrivals: tuple[EraArrival, ...] = ()
     licenses: tuple[License, ...] = ()
+    # M12b (26.2, 26.3): contract-manufacturing and wafer contracts (active, and ended ones of
+    # the last 24 months) by id; the last phase 5's production by product id.
+    production_contracts: tuple[ProductionContract, ...] = ()
+    production: tuple[ProductionMonth, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -478,6 +483,15 @@ class GameState:
     def company_contracts(self, company_id: int) -> tuple[SupplyContract, ...]:
         return tuple(c for c in self.contracts if c.company_id == company_id)
 
+    def production_contract(self, contract_id: int) -> ProductionContract | None:
+        return next((c for c in self.production_contracts if c.id == contract_id), None)
+
+    def product_contracts(self, product_id: int) -> tuple[ProductionContract, ...]:
+        return tuple(c for c in self.production_contracts if c.product_id == product_id)
+
+    def production_of(self, product_id: int) -> ProductionMonth | None:
+        return next((p for p in self.production if p.product_id == product_id), None)
+
     def good_month(self, good: str) -> GoodMonth | None:
         return next((g for g in self.supply if g.good == good), None)
 
@@ -745,6 +759,13 @@ def with_facility(state: GameState, facility: Facility) -> GameState:
 
 def with_contract(state: GameState, contract: SupplyContract) -> GameState:
     return replace(state, contracts=_upsert(state.contracts, contract, lambda c: c.id))
+
+
+def with_production_contract(state: GameState, contract: ProductionContract) -> GameState:
+    return replace(
+        state,
+        production_contracts=_upsert(state.production_contracts, contract, lambda c: c.id),
+    )
 
 
 def with_outage(state: GameState, outage: Outage) -> GameState:

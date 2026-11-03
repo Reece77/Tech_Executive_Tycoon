@@ -189,9 +189,9 @@ def test_upgrade_from_0002_sets_counters_mission_and_energy(
         search=1,
         offer=1,
         employment=2,
-        product=22,  # 0008 numbers the 21 v1 incumbent products 1..21 (no id blocks)
+        product=35,  # 0008 numbers the 34 incumbent products 1..34 (no id blocks); M12b +13
         cap_entry=3,
-        rival_person=1_000_169,  # M12a: the four cloud hosts' 32 key people too
-        rival_employment=1_000_169,
+        rival_person=1_000_265,  # M12a: the four cloud hosts' 32 key people; M12b: 12 x 8 more
+        rival_employment=1_000_265,
     )
     assert state.person_state(1).energy == 100  # 0003_hiring's M1b value; reset to 60 next turn

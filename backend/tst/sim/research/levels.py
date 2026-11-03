@@ -8,11 +8,13 @@ rivals call (21.2): a company that never researches has a factor of exactly 1.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 from tst.sim.calendar import MONTHS_PER_YEAR, ym_to_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.research.data import DomainDef, EraDef, rate_in
+from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
 START_YEAR = 2010  # tunable-exempt: turn 0 is January 2010 (ADR-0006)
@@ -45,7 +47,37 @@ def accrued(domain: DomainDef, turn: int) -> float:
 
 
 def historical_turn(era: EraDef) -> int:
-    return ym_to_turn(*era.arrival)
+    """The era's public reference month: its historical arrival, or for a future era its
+    window's midpoint `t_start + floor(n / 2)` (26.4). Never the drawn scheduled month."""
+    if era.window is None:
+        return ym_to_turn(*era.arrival)
+    start, n = window_span(era)
+    return start + n // 2
+
+
+def window_span(era: EraDef) -> tuple[int, int]:
+    """(t_start, n): a future era's first month and its number of months (26.4)."""
+    assert era.window is not None
+    start, end = era.window
+    t0 = ym_to_turn(*start)
+    return t0, ym_to_turn(*end) - t0 + 1
+
+
+def scheduled_month(t_start: int, months: int, u: float) -> int:
+    """t_sched = t_start + floor(u x n) (26.4)."""
+    return t_start + min(months - 1, math.floor(u * months))
+
+
+def scheduled_turn(era: EraDef, era_index: int, rng: RngFactory) -> int:
+    """When an era is due: its historical month, or for a future era one uniform from stream
+    `era_window` at turn 0, key (era_index,) with era_index its position in eras.yaml (26.4).
+    A pure function of the seed: nothing is stored. Engine only: never sent to the API or a
+    prompt before the era arrives (ADR-0007)."""
+    if era.window is None:
+        return historical_turn(era)
+    start, n = window_span(era)
+    u = float(rng.stream(0, "era_window", era_index).random())
+    return scheduled_month(start, n, u)
 
 
 def eras_in(data: GameData, domain: str) -> tuple[EraDef, ...]:
@@ -72,7 +104,8 @@ def level(
 def threshold(data: GameData, balance: Balance, era: EraDef) -> float:
     """The level that causes an era early (21.4): the domain's baseline at the end of the
     era's historical month, with the eras of its domain historically before it, plus
-    rnd.era_lead. Transformers: 23.5 + 5 + 15 = 43.5 (21.9)."""
+    rnd.era_lead. Transformers: 23.5 + 5 + 15 = 43.5 (21.9). A future era reads its window's
+    midpoint, so the threshold never reveals the drawn month (26.4): chiplets 81.375."""
     hist = historical_turn(era)
     before = sum(1 for e in eras_in(data, era.domain) if historical_turn(e) < hist)
     base = accrued(domain_def(data, era.domain), hist + 1)
@@ -156,9 +189,53 @@ def tech_factor(
     )
     factor = TechFactor(
         cap_mult=cap_mult,
-        cap_points=rnd.first_mover_cap if window else 0.0,
+        cap_points=(rnd.first_mover_cap if window else 0.0)
+        + era_cap_points(state, data, balance, company_id, category),
         feature_mult=feature_mult,
         brand_points=rnd.first_mover_brand if window else 0.0,
         lead=r_cat,
     )
     return IDENTITY if factor == TechFactor(lead=0.0) else factor
+
+
+def uses_own_chip(
+    state: GameState, data: GameData, balance: Balance, company_id: int, category: str
+) -> bool:
+    """The company sells a live chip of the type the category's products use (26.2, 26.4)."""
+    bom = balance.hardware.bom.get(category)
+    if bom is None:
+        return False
+    return any(
+        p.status == "live" and data.category(p.category).chip_type == bom.chip_type
+        for p in state.company_products(company_id)
+    )
+
+
+def era_cap_points(
+    state: GameState, data: GameData, balance: Balance, company_id: int, category: str
+) -> float:
+    """Quality-cap points from running era boosts for everyone (M12b, 26.4: Custom silicon's
+    +5 for devices with their own SoC)."""
+    total = 0.0
+    for era in data.eras.eras:
+        a = state.era_arrival(era.key)
+        if a is None:
+            continue
+        for b in era.boosts:
+            if (
+                b.cap_points
+                and b.category == category
+                and a.turn <= state.turn < a.turn + b.months
+                and (not b.own_chip or uses_own_chip(state, data, balance, company_id, category))
+            ):
+                total += b.cap_points
+    return total
+
+
+def yield_cap(state: GameState, data: GameData, base_cap: float) -> float:
+    """Chips' yield cap: chips.chip_yield.cap, raised by arrived eras' yield_cap (26.4)."""
+    cap = base_cap
+    for era in data.eras.eras:
+        if era.yield_cap is not None and state.era_arrival(era.key) is not None:
+            cap = max(cap, era.yield_cap)
+    return cap

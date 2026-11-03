@@ -134,7 +134,7 @@ def test_people_seed_data_loads(loaded: LoadedData) -> None:
     assert data.work_style_keys == ["builder", "operator", "researcher", "seller"]
     assert len(data.interests) == 13
     assert len(data.regions) == 7
-    assert len(data.roles) == 12
+    assert len(data.roles) == 15  # M12b: hardware engineer, chip designer, manufacturing engineer
     assert len(data.tags) == 9
     assert [b.key for b in data.backgrounds if b.selectable] == [
         "engineer",

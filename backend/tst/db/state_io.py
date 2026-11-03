@@ -116,6 +116,8 @@ from tst.db.models import (
     PersonTagRow,
     PoachApproachRow,
     ProductDivisionRow,
+    ProductionContractRow,
+    ProductionMonthRow,
     ProductRegionRow,
     ProductRow,
     ProductSegmentRow,
@@ -161,6 +163,7 @@ from tst.sim.geo.models import (
     RegionalMarket,
     RegionalSegment,
 )
+from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import NextIds
 from tst.sim.ledger import LedgerEntry
 from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Proposal
@@ -463,6 +466,7 @@ def load_state(session: Session) -> GameState:
     state = _load_m10(session, state)
     state = _load_exec(session, state)
     state = _load_facilities(session, state)
+    state = _load_hardware(session, state)
     state = _load_research(session, state)
     return _load_geo(session, state, product_ids)
 
@@ -805,6 +809,9 @@ def facility_from_row(r: FacilityRow) -> Facility:
         unit_id=r.unit_id,
         contract_id=r.contract_id,
         closed_turn=r.closed_turn,
+        yield_rate=r.yield_rate,
+        run_units=r.run_units,
+        sold_units=r.sold_units,
     )
 
 
@@ -918,9 +925,80 @@ def _load_facilities(session: Session, state: GameState) -> GameState:
     )
 
 
+def _load_hardware(session: Session, state: GameState) -> GameState:
+    """Production contracts (active, and ended ones of the last months) and the last
+    month's production (M12b, 0030)."""
+    if not has_table(session, ProductionContractRow):
+        return state
+    turn = state.turn
+    contracts = tuple(
+        ProductionContract(
+            id=r.id,
+            company_id=r.company_id,
+            product_id=r.product_id,
+            kind=r.kind,  # type: ignore[arg-type]
+            supplier=r.supplier,
+            units=r.units,
+            price_cents=r.price_cents,
+            signed_turn=r.signed_turn,
+            end_turn=r.end_turn,
+            city=r.city,
+            delivered=r.delivered,
+            used=r.used,
+            charged_cents=r.charged_cents,
+            status=r.status,  # type: ignore[arg-type]
+        )
+        for r in session.scalars(
+            select(ProductionContractRow)
+            .where(
+                (ProductionContractRow.status == "active")
+                | (ProductionContractRow.end_turn >= turn - FACILITY_MEMORY)
+            )
+            .order_by(ProductionContractRow.id)
+        )
+    )
+    last = session.scalar(select(func.max(ProductionMonthRow.turn)))
+    production: tuple[ProductionMonth, ...] = ()
+    if last is not None and last == turn - 1:
+        production = tuple(
+            ProductionMonth(
+                **{
+                    k: getattr(r, k)
+                    for k in ProductionMonth.__dataclass_fields__  # same names as the columns
+                }
+            )
+            for r in session.scalars(
+                select(ProductionMonthRow)
+                .where(ProductionMonthRow.turn == last)
+                .order_by(ProductionMonthRow.product_id)
+            )
+        )
+    nxt = int(session.scalar(select(func.max(ProductionContractRow.id))) or 0) + 1
+    return replace(
+        state,
+        production_contracts=contracts,
+        production=production,
+        next_ids=replace(state.next_ids, production_contract=nxt),
+    )
+
+
+def _sync_hardware(session: Session, old: GameState, new: GameState) -> None:
+    """Production contracts and the month's production rows (M12b)."""
+    if not has_table(session, ProductionContractRow):
+        return
+    session.flush()
+    for c in _changed(old.production_contracts, new.production_contracts, lambda c: c.id):
+        session.merge(ProductionContractRow(**asdict(c)))
+    before = set(old.production)
+    for p in new.production:
+        if p not in before:
+            session.merge(ProductionMonthRow(**asdict(p)))
+
+
 def _good_order(good: str) -> tuple[int, str]:
-    """Goods in components_history.yaml order (server, then GPU), others after by key."""
-    known = ("server", "gpu")
+    """Goods in components_history.yaml order (server, GPU, then M12b's device and server
+    BOMs, equipment and foundry wafers), others after by key."""
+    known = ("server", "gpu", "device_bom", "server_bom", "equipment", "foundry_wafer")
     return (known.index(good), good) if good in known else (len(known), good)
 
 
@@ -1383,6 +1461,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_marketing(session, old, new)
     _sync_exec(session, old, new)
     _sync_facilities(session, old, new)
+    _sync_hardware(session, old, new)
     _sync_research(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()

@@ -367,3 +367,11 @@ def test_no_prompt_contains_a_hidden_value(loaded: LoadedData) -> None:
     ):
         assert planted not in blob, planted
     assert priya.first_name in blob  # people are named
+    # M12b (26.4): no prompt names a future era's scheduled month before it arrives
+    from tst.sim.calendar import format_turn
+    from tst.sim.research.levels import scheduled_turn
+
+    rng = RngFactory(state.save_meta.master_seed)
+    for index, era in enumerate(loaded.game_data.eras.eras):
+        if era.windowed:
+            assert format_turn(scheduled_turn(era, index, rng)) not in blob, era.key

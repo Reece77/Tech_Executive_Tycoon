@@ -41,6 +41,8 @@ def roll(state: GameState, rng: RngFactory, balance: Balance) -> list[int]:
     for facility in state.facilities:
         if facility.live_capacity(state.turn) <= 0:
             continue
+        if not balance.facility.kinds[facility.kind].outages:  # M12b: plants have none
+            continue
         rel = staffing(state, facility, balance).reliability
         chance = ff.outage_chance(rel, balance.facility.outage.base)
         u = float(rng.stream(state.turn, "facility", facility.id).random())

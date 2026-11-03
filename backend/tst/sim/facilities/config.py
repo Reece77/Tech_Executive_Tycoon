@@ -76,6 +76,12 @@ class FacilityKindDef(_Frozen):
     staff_per: float = Field(gt=0)  # capacity units per staff member needed
     staff_roles: tuple[str, ...] = Field(min_length=1)  # roles.yaml keys that count as staff
     staff_skill: str  # skills.yaml key whose mean sets reliability
+    # M12b (26.2): an assembly plant's fixed cost a live month and cost per unit run; the
+    # capacities a build may choose (None: facility.sizes); whether it has outages (22.5)
+    fixed_opex_cents: int = Field(default=0, ge=0)
+    variable_cents: int = Field(default=0, ge=0)
+    sizes: tuple[int, ...] | None = None
+    outages: bool = True
 
 
 class OutageBalance(_Frozen):
@@ -170,6 +176,8 @@ class AllocationPeriod(_Frozen):
     start: str  # YYYY-MM, first month
     end: str  # YYYY-MM, last month
     share: float = Field(gt=0, le=1)
+    # M12b (26.3): only advanced-node buyers (chips.types advanced_node) are short
+    advanced_only: bool = False
 
     @model_validator(mode="after")
     def _check(self) -> AllocationPeriod:
@@ -213,11 +221,24 @@ class GoodHistory(_Frozen):
                 return float(v0 * (v1 / v0) ** ((turn - t0) / (t1 - t0)))
         return anchors[-1][1]
 
-    def allocation_at(self, turn: int) -> float:
+    def allocation_at(self, turn: int, *, advanced: bool = False) -> float:
+        """The share delivered on time in `turn`; periods marked advanced_only bind only
+        advanced-node buyers (M12b, 26.3)."""
         for period in self.allocation:
+            if period.advanced_only and not advanced:
+                continue
             if month_to_turn(period.start) <= turn <= month_to_turn(period.end):
                 return period.share
         return 1.0
+
+    def shortage_start(self, turn: int, *, advanced: bool = False) -> int | None:
+        """The first month of the shortage running in `turn`, if any (M12b, 26.2)."""
+        for period in self.allocation:
+            if period.advanced_only and not advanced:
+                continue
+            if month_to_turn(period.start) <= turn <= month_to_turn(period.end):
+                return month_to_turn(period.start)
+        return None
 
 
 class ComponentsHistoryFile(_Frozen):

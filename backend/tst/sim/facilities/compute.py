@@ -167,8 +167,18 @@ def unit_cost_cents(facility: Facility, balance: Balance) -> Fraction:
     )
 
 
-def live_facilities(state: GameState, company_id: int) -> list[Facility]:
-    return [f for f in state.company_facilities(company_id) if f.live_capacity(state.turn) > 0]
+def is_compute(facility: Facility, balance: Balance) -> bool:
+    """A data centre: its kind makes a compute good (M12b: not an assembly plant)."""
+    return balance.facility.kinds[facility.kind].output_good in balance.compute.goods
+
+
+def live_facilities(state: GameState, company_id: int, balance: Balance) -> list[Facility]:
+    """The company's live data centres (compute kinds only)."""
+    return [
+        f
+        for f in state.company_facilities(company_id)
+        if f.live_capacity(state.turn) > 0 and is_compute(f, balance)
+    ]
 
 
 def _ranked(
@@ -188,7 +198,7 @@ def allocate(
 ) -> Allocation:
     """Own products first, then the Cloud hosting product's customers (22.2, 22.3). A
     company with no live capacity gets an empty allocation."""
-    facilities = live_facilities(state, company_id)
+    facilities = live_facilities(state, company_id, balance)
     if not facilities:
         return Allocation()
     alloc = Allocation(capacity={f.id: f.live_capacity(state.turn) for f in facilities})
@@ -268,7 +278,7 @@ def spare_by_region(
     """The general-CU equivalents the company can sell in each region after its own products:
     regions take their turn (home first, then regions.yaml order), each capped by what its
     data centres and its neighbour's still have free, so no CU counts twice (22.3)."""
-    facilities = live_facilities(state, company_id)
+    facilities = live_facilities(state, company_id, balance)
     alloc = allocate(state, company_id, balance, data, sold=False)
     home = home_region_of(state, balance, data)
     sold = dict(sold_units(state, company_id, balance, data))
