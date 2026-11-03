@@ -30,7 +30,7 @@ test('(a) open Competitors and a rival profile', async ({ page, request }) => {
   await expect(page).toHaveURL(/\/competitors$/);
   await expect(page.getByTestId('rival-counts')).toContainText('27 established'); // 17 + M9's six regional + M12a's four cloud incumbents
   const rows = page.getByTestId('rival-row');
-  await expect(rows).toHaveCount(23);
+  await expect(rows).toHaveCount(27);
   await expect(page.getByTestId('news-line').first()).toBeVisible();
   await page.getByRole('link', { name: 'Salesforce' }).click();
   await expect(page).toHaveURL(/\/competitors\/\d+$/);
