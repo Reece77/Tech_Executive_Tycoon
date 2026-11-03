@@ -108,6 +108,11 @@ INBOX_CATEGORY: dict[str, str] = {
     "contract_settled": "finance",
     "cloud_started": "products",
     "outage_hit": "products",
+    # M12b: manufacturing and wafer contracts, sell-outs, contract manufacturing (26.5)
+    "production_contract_signed": "products",
+    "production_contract_ended": "products",
+    "manufacturing_capacity_limited": "products",
+    "cm_started": "products",
     # M11: era milestones, licences and research leaks (21.4, 21.5)
     "era_arrived": "products",
     "license_in": "products",
@@ -131,6 +136,9 @@ PRODUCT_KINDS = frozenset(
         "sell_facility",
         "staff_facility",
         "sell_capacity",
+        "sign_manufacturing_contract",  # M12b
+        "sign_wafer_contract",
+        "sell_plant_capacity",
         "start_project",  # M11
         "stop_project",
         "set_project_budget",

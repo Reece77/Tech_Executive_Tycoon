@@ -88,8 +88,23 @@ Launch a device on a Foxconn contract. Then build a plant in Shenzhen and see wh
 
 ## Decisions made
 
-_(Agent fills in.)_
+- **Chips are three categories** (`chips_mobile_soc`, `chips_server_cpu`, `chips_ai_accelerator`; `family: chips`, `chip_type` on the category), so each type has its own demand and incumbents; the type is still the product's attribute (from its category). Their demand follows other markets per segment (`growth_follows`).
+- **Units per customer.** A unit-sale customer buys `units_per_customer` units (consumer 1, an enterprise account 50 devices, a hyperscaler 5,000 servers); sales-led segments' seller capacity stays per customer. The installed base is the customers; the replacement cycle is the base churn.
+- **Rivals' cost of goods** is the market's `hosting_cents` a unit (40-45% of reference): at 55%, as Cloud hosting's, Lenovo and Supermicro went bankrupt in price wars. AMD still fails around 2020 on seed 1 (its two products' feature pushes grow its builders); see Follow-ups.
+- **The capacity cap** and production apply to the player's companies only; rivals' manufacturing is abstract. Lost demand goes to the next-best product that can make it.
+- **Take-or-pay** runs from signing (before launch too), monthly, on volume delivered but unused: 50% for contract manufacturing, 30% for wafers (22.4's share; 26.3 says "as 22.4"), to G&A as M12a's.
+- **Shortages**: a contract signed before the running shortage began keeps 100%; history's allocation periods give the start, a seeded shock its first month. Advanced-node wafer shortages (2023-2024) bind server CPUs and AI accelerators only (`advanced_only`).
+- **Plants.** `fixed_opex_cents` posts in phase 6 to `5000_cogs` ("Assembly plant operations"), $3 a unit run at sale; staff coverage scales runnable units; a server takes 6 units of plant capacity; sizes 5,000-100,000 a month; no outages; Infrastructure ignores plants. Build in a city (`BuildFacility.city`).
+- **New roles** (appended to `roles.yaml`): hardware engineer, chip designer, manufacturing engineer (all builders). No role had hardware, chip-design or manufacturing skills as primary.
+- **Mobile SoC wafers $2,000** (mature node), so an own SoC costs about $13 against $40 bought: target 4's 8 points need about $26 saved on a $320 device.
+- **GPU capex cut** applies at the quote while the company has a live own AI accelerator; the build does not consume its chips.
+- **Future eras.** `EraDef.arrival` (YAML `arrival`) is now `historical`; the `arrival` property returns the historical month or a window's midpoint, so M11's applied migration 0028 runs unchanged on the new data. Custom silicon's +5 is an era boost with `cap_points` and `own_chip` in `tech_factor`. Migration 0030 records M12b's eras a save is past (future ones at their seeded month).
+- **Outside my namespaces in balance.yaml** (needed by the loader): `products.seller_rate.device_oems` (0.1) and `rivals.function_mix` for the six new categories. `tech_frontier.yaml` gains tech weights for the new categories (devices and servers on devices, chips on chip design).
+- **Sub-tasks 1-6 landed in one commit** (they share the data and the phase-5 plumbing), 7-8 in another.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- AMD goes bankrupt around 2020 on seed 1: rivals' feature pushes grow builder pools by 10% each with fast feature expectations (8-10 a month) and two products. Rival tuning is outside this lane; M15 should look at pushes in fast categories.
+- Rival device makers do not buy chips from the chip market or contract manufacturing from Foxconn: those markets' demand is abstract (D0 and growth), not derived from rivals' sales.
+- Inventory and build-ahead (out of scope), plant refurbishment after its life, and chips consumed by GPU data-centre builds.
+- Old saves (before M12b) get no hardware markets or incumbents, as M12a's Cloud hosting.
