@@ -12,7 +12,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Eras appended: Smartphone ubiquity (Jan 2012), AI accelerators (May 2016), Custom silicon (Nov 2020), and the first future eras with seeded windows, Chiplets (2026-2028) and Edge AI (2027-2030): scheduled month on stream `era_window` (31) at turn 0, threshold from the window's midpoint, never shown before arrival (hidden-value tests extended).
   - Hardware screen (from Products), BOM and manufacturing panel on hardware products, `GET /hardware`, `GET /products/{id}/manufacturing` and five actions; `tst hardware`, `cm-contract`, `wafer-contract`, `build-plant`, `sell-plant-capacity`. Migration `0030_hardware`.
   - §26.6 targets (`tools/m12b_targets.py`, nightly): values in docs/balance-targets.md (M12b).
-  - **Golden snapshots regenerated** for M12b: the appended incumbents, entrants, categories, eras and roles change every new game's state.
+  - Golden snapshots unchanged on this branch (they cover the player's B2B SaaS KPIs; the appended rivals use M12a's stable keys). They are regenerated once at the merge with M13 if the combined code moves them.
 
 - M12a Cloud, data centres and supply shocks (formulas.md §22, lane B):
   - One generic facility model (ADR-0020): general and GPU data centres are its first kinds (`facility.kinds`); build (energy 12), capex paid as built to `1500_ppe`, depreciation from completion to `6700_depreciation` / `1510_accumulated_depreciation` (new accounts; depreciation counts with compute in cost of revenue, non-cash in the cash flow), operating cost in phase 6, staff coverage and reliability from a unit of DevOps or security engineers, sale at half book value. Migration `0028_facilities`.
