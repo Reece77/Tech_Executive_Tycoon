@@ -744,6 +744,41 @@ def with_product_region(state: GameState, region: ProductRegion) -> GameState:
     )
 
 
+def _upsert_many[T](items: tuple[T, ...], new: list[T], key: Callable[[T], Any]) -> tuple[T, ...]:
+    """`items` (sorted by key, keys unique) with every item of `new` upserted: one rebuild."""
+    if not new:
+        return items
+    out = list(items)
+    for item in new:
+        k = key(item)
+        i = bisect_left(out, k, key=key)
+        if i < len(out) and key(out[i]) == k:
+            out[i] = item
+        else:
+            out.insert(i, item)
+    return tuple(out)
+
+
+def with_segments(
+    state: GameState,
+    home: list[ProductSegment],
+    regional: list[RegionalSegment],
+) -> GameState:
+    """Many product segments (home and other regions) in one state update (M12b: the market
+    phase writes a whole market segment at once)."""
+    if not home and not regional:
+        return state
+    return replace(
+        state,
+        product_segments=_upsert_many(
+            state.product_segments, home, lambda s: (s.product_id, s.segment)
+        ),
+        regional_segments=_upsert_many(
+            state.regional_segments, regional, lambda s: (s.product_id, s.region, s.segment)
+        ),
+    )
+
+
 def with_regional_segment(state: GameState, seg: RegionalSegment) -> GameState:
     return replace(
         state,

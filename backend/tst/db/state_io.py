@@ -226,8 +226,8 @@ def load_people(
             interests[row.id],
             tags[row.id],
         )
-        for row in session.scalars(
-            select(PersonRow).where(in_live(PersonRow.id)).order_by(PersonRow.id)
+        for row in _plain(  # plain rows (M12b, speed)
+            session, select(PersonRow.__table__).where(in_live(PersonRow.id)).order_by(PersonRow.id)
         )
     )
     if has_table(session, PersonCityRow):  # M9 (19.1)
@@ -267,10 +267,11 @@ def load_state(session: Session) -> GameState:
 
     employments = [
         employment_from_row(r)
-        for r in session.scalars(
-            select(EmploymentRow)
+        for r in _plain(  # plain rows: no ORM object per row (M12b, speed)
+            session,
+            select(EmploymentRow.__table__)
             .where(EmploymentRow.status.in_(STAFF_STATUSES))
-            .order_by(EmploymentRow.id)
+            .order_by(EmploymentRow.id),
         )
     ]
     candidates = [
@@ -382,10 +383,11 @@ def load_state(session: Session) -> GameState:
         ),
         person_states=tuple(
             person_state_from_row(r)
-            for r in session.scalars(
-                select(PersonStateRow)
+            for r in _plain(  # plain rows (M12b, speed)
+                session,
+                select(PersonStateRow.__table__)
                 .where(in_live(PersonStateRow.person_id))
-                .order_by(PersonStateRow.person_id)
+                .order_by(PersonStateRow.person_id),
             )
         ),
         cap_entries=_all(session, CapEntry, CapTableEntryRow),
@@ -990,9 +992,7 @@ def _sync_hardware(session: Session, old: GameState, new: GameState) -> None:
     for c in _changed(old.production_contracts, new.production_contracts, lambda c: c.id):
         session.merge(ProductionContractRow(**asdict(c)))
     before = set(old.production)
-    for p in new.production:
-        if p not in before:
-            session.merge(ProductionMonthRow(**asdict(p)))
+    _insert(session, (ProductionMonthRow(**asdict(p)) for p in new.production if p not in before))
 
 
 def _good_order(good: str) -> tuple[int, str]:
@@ -1015,9 +1015,13 @@ def _sync_facilities(session: Session, old: GameState, new: GameState) -> None:
     for f in _changed(old.facilities, new.facilities, lambda f: f.id):
         session.merge(facility_to_row(f))
     before = {(g.good, g.turn): g for g in old.supply}
+    fresh = []
     for g in new.supply:
-        if before.get((g.good, g.turn)) != g:
+        if (g.good, g.turn) not in before:
+            fresh.append(good_month_to_row(g))  # a new month: no row yet (M12b: bulk insert)
+        elif before[(g.good, g.turn)] != g:
             session.merge(good_month_to_row(g))
+    _insert(session, fresh)
     for c in _changed(old.contracts, new.contracts, lambda c: c.id):
         session.merge(contract_to_row(c))
     seen = {o.id for o in old.outages}
@@ -1163,6 +1167,12 @@ def has_table(session: Session, model: Any) -> bool:
         return False
     have = {c["name"] for c in insp.get_columns(model.__tablename__)}
     return {c.name for c in model.__table__.columns} <= have
+
+
+def _plain(session: Session, statement: Any) -> list[Any]:
+    """A statement's plain rows (column attributes only): rows read like the ORM objects the
+    mappers take, without building one per row (M12b: more rivals' people)."""
+    return list(session.execute(statement).all())
 
 
 def _rows(session: Session, model: Any, where: Any) -> list[Any]:
@@ -1578,14 +1588,11 @@ def _sync_geo(session: Session, old: GameState, new: GameState) -> None:
         for s in new.searches
         if s.city is not None and old_cities.get(s.id) != s.city
     ]
-    rows += [
-        RegionalMarketRow(
-            category=m.category, segment=m.segment, region=m.region, addressable=m.addressable
-        )
-        for m in _changed(
+    markets_changed = bool(
+        _changed(
             old.regional_markets, new.regional_markets, lambda m: (m.category, m.segment, m.region)
         )
-    ]
+    )
     rows += [
         ProductRegionRow(
             product_id=r.product_id,
@@ -1600,11 +1607,22 @@ def _sync_geo(session: Session, old: GameState, new: GameState) -> None:
     segs = _changed(
         old.regional_segments, new.regional_segments, lambda s: (s.product_id, s.region, s.segment)
     )
-    if not (rows or segs) or not has_table(session, RegionalSegmentRow):
+    if not (rows or segs or markets_changed) or not has_table(session, RegionalSegmentRow):
         return
     session.flush()
     for row in rows:
         session.merge(row)
+    # Every regional market grows every month: one bulk UPDATE, not a merge (a SELECT) per
+    # row (M12b: six more categories made this most of a turn's write).
+    _write(
+        session,
+        old.regional_markets,
+        new.regional_markets,
+        lambda m: (m.category, m.segment, m.region),
+        lambda m: RegionalMarketRow(
+            category=m.category, segment=m.segment, region=m.region, addressable=m.addressable
+        ),
+    )
     known = {(s.product_id, s.region, s.segment) for s in old.regional_segments}
     fresh = [s for s in segs if (s.product_id, s.region, s.segment) not in known]
     updates = [s for s in segs if (s.product_id, s.region, s.segment) in known]

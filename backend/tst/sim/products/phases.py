@@ -44,6 +44,7 @@ from tst.sim.state import (
     with_product_segment,
     with_regional_market,
     with_regional_segment,
+    with_segments,
     with_unit,
 )
 
@@ -459,6 +460,8 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     if plan is not None and category_def.sells_units:
         won = _cap_units(live, appeals, won, upc, plan)
     done: dict[S, Flow] = {}
+    home_rows: list[ProductSegment] = []
+    regional_rows: list[RegionalSegment] = []
     for s in entries:
         product = products[s.product_id]
         customers = max(0.0, s.customers - churned[s.product_id] + won[s.product_id])
@@ -482,13 +485,13 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             )
         updated = replace(s, customers=customers, capacity_limited=capacity_limited)
         if isinstance(updated, ProductSegment):
-            state = with_product_segment(state, updated)
+            home_rows.append(updated)
         else:
-            state = with_regional_segment(state, updated)
+            regional_rows.append(updated)
         done[s] = Flow(
             new=won[s.product_id], churned=churned[s.product_id], units=won[s.product_id] * upc
         )
-    return state, done, logs
+    return with_segments(state, home_rows, regional_rows), done, logs
 
 
 def _cap_units[S: (ProductSegment, RegionalSegment)](
