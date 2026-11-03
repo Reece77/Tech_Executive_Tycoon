@@ -855,7 +855,7 @@ ipo:
   min_stage: 3 # stage a company must have reached to hire banks (25.1)
   min_arr_cents: 8000000000 # cents; $80M ARR (2010 dollars; the game has no inflation) (25.1)
   trailing_months: 12 # months behind the profitability or growth test: the last 4 quarters (25.1)
-  min_growth: 0.40 # fraction a year of revenue growth that qualifies a loss-making company (25.1)
+  min_growth: 0.20 # fraction a year of revenue growth that qualifies a loss-making company (25.1 says 40%; M13 tuning for 25.9 target 2: blitzscale passes $80M ARR growing 20-25% a year and loss-making, so it never listed)
   board_min_confidence: 50 # average director confidence needed when the banks are hired (25.1)
   hire_energy: 10 # founder energy to hire the banks (25.2 step 1)
   retry_months: 12 # months after a pulled IPO before banks can be hired again (M13 decision)
@@ -881,7 +881,7 @@ ipo:
 
 # --- Public company (formulas.md 25.3-25.5, 25.7, M13 lane B) ------------------------------
 public:
-  multiple: { base: 2, growth: 25, margin: 15, rate: 1.5, rate_pivot: 2, bounds: [1, 30] } # ARR multiple m = clamp(base + growth g + margin x margin - rate x (r_base % - pivot), bounds) x v (25.3)
+  multiple: { base: 2, growth: 18, margin: 5, rate: 1.5, rate_pivot: 2, bounds: [1, 30] } # ARR multiple m = clamp(base + growth g + margin x margin - rate x (r_base % - pivot), bounds) x v (25.3; M13 tuning from 25.3's growth 25 and margin 15 for 25.9 target 4: scripted IPOs list at +30-40% margins, which gave P/S 20x in 2012-2019)
   sentiment: { phi: 0.9, sd: 0.06, bounds: [0.5, 1.8] } # S' = 1 + phi (S - 1) + N(0, sd), clamped; stream market_sentiment (25.3)
   analysts:
     min: 3 # analysts covering a newly listed company (25.3)

@@ -12,10 +12,13 @@ from tst.sim.rng import STREAM_IDS
 def test_fundamental_value_example(loaded: LoadedData) -> None:
     """ARR $120M, growth 45%, operating margin -5%, base rate 1.5%, climate 1.2:
     m = (2 + 11.25 - 0.75 + 0.75) x 1.2 = 13.25 x 1.2 = 15.9, so V_f = $1.908B."""
-    mb = loaded.balance.public.multiple
+    # 25.3's coefficients (balance.yaml tunes growth to 18 and margin to 5 for 25.9 target 4)
+    mb = loaded.balance.public.multiple.model_copy(update={"growth": 25, "margin": 15})
     m = pf.multiple(0.45, -0.05, 1.5, 1.2, mb)
     assert m == pytest.approx(15.9)
     assert pf.fundamental_value_cents(120_000_000_00, m) == 1_908_000_000_00
+    tuned = pf.multiple(0.45, -0.05, 1.5, 1.2, loaded.balance.public.multiple)
+    assert tuned == pytest.approx((2 + 18 * 0.45 - 5 * 0.05 + 0.75) * 1.2)
 
 
 def test_multiple_clamps_before_the_climate(loaded: LoadedData) -> None:
