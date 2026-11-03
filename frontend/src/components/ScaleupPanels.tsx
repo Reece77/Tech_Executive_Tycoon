@@ -13,6 +13,7 @@ import {
 } from '../hooks/api';
 import { formatMoneyShort, formatMoneyWhole } from '../lib/format';
 import { pct } from '../lib/org';
+import { CeoSeat } from './CeoSeat';
 import { Panel } from './ScreenState';
 import { Term } from './Term';
 
@@ -106,10 +107,7 @@ function Body({ saveId, org, s }: { saveId: string; org: Org; s: Scaleup }) {
         )}
       </section>
       <Panel title="Executive team" testId="exec-team" style={{ flex: '2 1 380px' }}>
-        <div className="tst-row">
-          <span style={{ width: 48, fontWeight: 600 }}>CEO</span>
-          <span style={{ flex: 1 }}>You (until the IPO)</span>
-        </div>
+        <CeoSeat saveId={saveId} authorityEnergy={costs.set_authority ?? 0} />
         {s.seats.map((x) => (
           <SeatRow
             key={x.seat}

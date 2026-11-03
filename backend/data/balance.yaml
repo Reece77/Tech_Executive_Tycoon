@@ -849,3 +849,94 @@ rnd:
   reveal: # how exactly the player sees a rival's lead (21.7)
     range: 5 # points either side of the true lead
     licensed_range: 2 # points either side once the two companies have a licence
+
+# --- IPO (formulas.md 25.1-25.2, M13 lane B) ---------------------------------------------------
+ipo:
+  min_stage: 3 # stage a company must have reached to hire banks (25.1)
+  min_arr_cents: 8000000000 # cents; $80M ARR (2010 dollars; the game has no inflation) (25.1)
+  trailing_months: 12 # months behind the profitability or growth test: the last 4 quarters (25.1)
+  min_growth: 0.20 # fraction a year of revenue growth that qualifies a loss-making company (25.1 says 40%; M13 tuning for 25.9 target 2: blitzscale passes $80M ARR growing 20-25% a year and loss-making, so it never listed)
+  board_min_confidence: 50 # average director confidence needed when the banks are hired (25.1)
+  hire_energy: 10 # founder energy to hire the banks (25.2 step 1)
+  retry_months: 12 # months after a pulled IPO before banks can be hired again (M13 decision)
+  filing_delay_months: 1 # months an S-1 choice that restates a metric adds to the chain (25.2 step 2)
+  ambition: { high: 1.15, middle: 1.0, low: 0.9 } # offer price multiplier by the roadshow's ambition (25.2 step 4)
+  share_sold: { low: 0.10, middle: 0.15, high: 0.25 } # fraction of post-IPO fully diluted shares sold as new shares (25.2 step 3)
+  dual_class_discount: 0.05 # fraction off the offer price with dual-class shares (25.2 step 3)
+  demand: { mean: 1.0, climate: 0.6, sd: 0.2, bounds: [0.3, 3.0] } # book demand d = clamp(N(mean + climate x (v - 1), sd), bounds) (25.2 step 4)
+  demand_words: # the book in words (25.8): d below `below` reads as `word`; never the draw
+    - { below: 0.8, word: weak }
+    - { below: 1.1, word: steady }
+    - { below: 1.3, word: healthy }
+    - { below: 2.0, word: strong }
+  demand_top_word: very strong # d at or above the last `below`
+  raise_min_demand: 1.3 # d needed to raise the price (25.2 step 4)
+  raise_pct: 0.10 # fraction a raise adds to the offer price (25.2 step 4)
+  cut_pct: 0.15 # fraction a cut takes off it (25.2 step 4)
+  pull_fee_share: 0.3 # share of the bank fee owed when the IPO is pulled (25.2 step 4)
+  pull_confidence: -10 # points every director loses when the IPO is pulled (25.2 step 4)
+  first_day: { demand: 0.25, ambition: 0.15, step: 0.15, bounds: [-0.3, 0.8] } # r = clamp(demand x (d - 1) - ambition x (a - 1) / step, bounds), a the price over V_f per share (25.2 step 5)
+  independents: 2 # independent directors added at the listing (25.7)
+  ticker_len: 4 # letters in the generated ticker (M13 decision)
+
+# --- Public company (formulas.md 25.3-25.5, 25.7, M13 lane B) ------------------------------
+public:
+  multiple: { base: 2, growth: 18, margin: 5, rate: 1.5, rate_pivot: 2, bounds: [1, 30] } # ARR multiple m = clamp(base + growth g + margin x margin - rate x (r_base % - pivot), bounds) x v (25.3; M13 tuning from 25.3's growth 25 and margin 15 for 25.9 target 4: scripted IPOs list at +30-40% margins, which gave P/S 20x in 2012-2019)
+  sentiment: { phi: 0.9, sd: 0.06, bounds: [0.5, 1.8] } # S' = 1 + phi (S - 1) + N(0, sd), clamped; stream market_sentiment (25.3)
+  analysts:
+    min: 3 # analysts covering a newly listed company (25.3)
+    max: 8 # at most (25.3)
+    base_cap_cents: 100000000000 # cents; one more analyst for each doubling of market cap above $1B (M13 decision for 25.3's "more as market cap grows")
+    target_sd: 0.1 # each target = V_f per share x (1 + N(0, sd)), refreshed after each report (25.3)
+    buy_above: 1.15 # target / P above this: buy (25.3)
+    sell_below: 0.9 # below this: sell; otherwise hold (25.3)
+    firms: [Goldman Sachs Research, Morgan Stanley Research, J.P. Morgan Research, Bank of America Securities, Citi Research, UBS, Barclays, Jefferies] # covering firms, in the order coverage adds them
+  earnings:
+    revenue_weight: 3 # sentiment jump = clamp(3 s + 0.02 sm, jump) (25.4)
+    margin_weight: 0.02 # per point of margin surprise (25.4)
+    jump: [-0.25, 0.20] # bounds of the jump fraction (25.4)
+    miss_below: -0.02 # a revenue surprise below this is a miss (25.4)
+    beat_from: 0.0 # a surprise at or above this is a beat; between the two, in line (M13 decision)
+    misses_in_row: 2 # consecutive misses that cut every director's confidence (25.4)
+    misses_in_row_confidence: -8 # points (25.4)
+    beat_streak: 3 # beats in a row that add sentiment (25.4)
+    beat_streak_sentiment: 0.05 # sentiment points added (25.4)
+    beat_board: 4 # director confidence per beat, in the report month (25.7)
+    miss_board: -6 # per miss (25.7)
+    guidance_energy: 4 # founder energy to set a quarter's guidance (25.4)
+    guidance_band: 0.5 # guided revenue must lie within consensus x (1 +- this) (M13 decision: a guard against typos)
+  activist_trigger: { value_share: 0.7, months: 6, misses: 3, window_quarters: 4, gap_months: 24 } # P below 0.7 x V_f per share for 6 months, or 3 misses in 4 quarters; then no new activist for 24 months (25.4; the gap is an M13 decision)
+  takeover_trigger: { value_share: 0.6, months: 6, gap_months: 24 } # market cap below 0.6 x V_f for 6 months; gap as above (25.4)
+  activist:
+    buyback_cash_share: 0.10 # share of cash a demanded buyback spends (M13 decision)
+    settle_cash_share: 0.01 # share of cash a proxy fight costs (M13 decision)
+    board_seats: 1 # seats the activist takes when the board gives them (M13 decision)
+  takeover:
+    premium: 0.35 # the bid over the share price (M13 decision)
+    talks_share: 0.5 # share of the premium sentiment prices in when talks open (M13 decision)
+  capital:
+    buyback_energy: 6 # founder energy (25.5)
+    buyback_premium: 0.02 # buy at P x (1 + this) (25.5)
+    buyback_max_share: 0.10 # at most this fraction of shares in one buyback (M13 decision)
+    dividend_energy: 4 # founder energy (25.5)
+    secondary_energy: 10 # founder energy (25.5)
+    secondary_discount: 0.05 # new shares at P x (1 - this) (25.5)
+    secondary_fee: 0.03 # fraction of the gross paid in fees (25.5)
+    secondary_max_share: 0.20 # at most this fraction of shares outstanding in one offering (M13 decision)
+  board:
+    investor_lapse_months: 12 # one investor seat lapses every this many months after the listing (25.7)
+    patience: { buy: 5, hold: 0, sell: -5 } # patience points from the analysts' consensus (25.7)
+  history_months: 36 # months of share prices kept in the live state (the database keeps all)
+
+# --- Chair and CEO (formulas.md 25.6, M13 lane B) -------------------------------------------
+ceo:
+  appoint_energy: 10 # founder energy to appoint a CEO (25.6)
+  override_energy: 6 # founder energy to override one CEO decision (25.6)
+  chair_energy: 40 # the founder's monthly energy as Chair (25.6)
+  min_stage: 4 # stage needed to appoint a CEO (25.6)
+  weights: { leadership: 0.3, strategy: 0.3, communication: 0.2, product: 0.1, finance: 0.1 } # the CEO's score (25.6)
+  price_band_pct: 10 # % the CEO may move a price from the player's last (25.6)
+  headcount_cap: 40 # a function's headcount the CEO's hiring plans stop at, when no seat guardrail sets one (M13 decision)
+  max_salary_ratio_bp: 11000 # offer x ask in bp for the CEO's plans (as exec_authority.defaults)
+  replace: { below: 30, months: 3 } # board confidence below this for this many months: the board may vote to replace the CEO (25.6)
+  memory_months: 12 # months of CEO decisions kept for the panel

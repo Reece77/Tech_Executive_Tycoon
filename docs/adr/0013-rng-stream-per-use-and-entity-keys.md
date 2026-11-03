@@ -46,6 +46,8 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `research` | 23 | `(project_id,)` | A research project's breakthrough and dead-end draws, two uniforms a month in project id order: breakthrough, then dead end only without one (formulas.md §21.3) | M11 |
 | `rival_research` | 24 | `(company_id,)` | A researching rival's monthly breakthrough draw, one uniform (formulas.md §21.6) | M11 |
 | `lead_reveal` | 25 | `(observer_company_id, company_id, domain_index)` | The offset of another company's research-lead range, one uniform drawn at turn 0, so the range's midpoint is not the true lead (formulas.md §21.7) | M11 |
+| `ipo` | 33 | `(company_id,)` | An IPO's book demand at pricing, one standard normal (formulas.md §25.2 step 4). Hidden: the API shows only its word | M13 |
+| `market_sentiment` | 34 | `(company_id,)` | A listed company's month: one generator a month per listing, drawing in a fixed order: the sentiment shock's standard normal first, then the analysts' target noises (one standard normal each, in analyst order) at the listing and after each quarterly report (formulas.md §25.3) | M13 |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).
@@ -98,3 +100,6 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | `manufacturing` | 30 | `(facility_id,)` | Assembly-plant yield noise (formulas.md §26.2) | M12b (lane A) |
 | `era_window` | 31 | `(era_index,)` | Future eras' scheduled months, drawn at turn 0 (formulas.md §26.4) | M12b (lane A) |
 | — | 32 | — | Reserved for lane A | M12b |
+| `ipo` | 33 | `(company_id,)` | An IPO's book demand (formulas.md §25.2) | M13 (lane B) |
+| `market_sentiment` | 34 | `(company_id,)` | Sentiment and analysts' targets (formulas.md §25.3) | M13 (lane B) |
+| — | 35 | — | Reserved for lane B | M13 |

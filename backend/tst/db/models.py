@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 29
+SCHEMA_VERSION = 30
 
 
 class Base(DeclarativeBase):
@@ -1299,3 +1299,129 @@ class LicenseRow(Base):
     price_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     royalty_bp: Mapped[int] = mapped_column(Integer, nullable=False)
     royalty_end_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+# --- Going public and the Chair (M13, formulas.md 25; 0030) ---------------------------------
+
+
+class ListingRow(Base):
+    """A company's IPO chain (25.2), from hiring the banks to the listing or a pull. One per
+    company: hiring banks again after a pull replaces it."""
+
+    __tablename__ = "listing"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    bank: Mapped[str] = mapped_column(String(32), nullable=False)
+    hired_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    filed_late: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    roadshow_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ambition: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    share_choice: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    dual_class: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    demand: Mapped[float | None] = mapped_column(Float, nullable=True)  # hidden (25.8)
+    price_choice: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    shares_before: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    new_shares: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    price_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    gross_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    fee_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    first_day_return: Mapped[float | None] = mapped_column(Float, nullable=True)
+    close_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    listed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    pulled_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ticker: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class PublicCompanyRow(Base):
+    """A listed company's market state (25.3-25.5). `sentiment` and `value_cents` are hidden
+    (25.8)."""
+
+    __tablename__ = "public_company"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    listed_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    ticker: Mapped[str] = mapped_column(String(16), nullable=False)
+    dual_class: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    listing_price_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    price_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    sentiment: Mapped[float] = mapped_column(Float, nullable=False)
+    value_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    analysts: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+    below_value_months: Mapped[int] = mapped_column(Integer, nullable=False)
+    below_takeover_months: Mapped[int] = mapped_column(Integer, nullable=False)
+    last_activist_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    last_takeover_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    beat_streak: Mapped[int] = mapped_column(Integer, nullable=False)
+    miss_streak: Mapped[int] = mapped_column(Integer, nullable=False)
+    results: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    quarter_revenue_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    quarter_op_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    dividend_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    lapsed_seats: Mapped[int] = mapped_column(Integer, nullable=False)
+    pending: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+
+
+class GuidanceRow(Base):
+    """One quarter's guidance and, once reported, its result (25.4)."""
+
+    __tablename__ = "guidance"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    quarter_turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    revenue_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    margin_bp: Mapped[int] = mapped_column(Integer, nullable=False)
+    consensus_revenue_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    consensus_margin_bp: Mapped[int] = mapped_column(Integer, nullable=False)
+    by_player: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    actual_revenue_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    actual_margin_bp: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    result: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    price_before_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    price_after_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+
+class ShareMonthRow(Base):
+    """A listed company's month end (25.3). Every month is kept; the state holds the last
+    `public.history_months`."""
+
+    __tablename__ = "share_month"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    price_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    shares: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    mark: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class CeoRow(Base):
+    """An appointed CEO (25.6); ended ones keep their row."""
+
+    __tablename__ = "ceo"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    person_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    since_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    scopes: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    ended_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    end_reason: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    low_months: Mapped[int] = mapped_column(Integer, nullable=False)
+    price_anchors: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+
+
+class CeoDecisionRow(Base):
+    """One decision a CEO took (25.6). The state holds the last `ceo.memory_months`."""
+
+    __tablename__ = "ceo_decision"
+    __table_args__ = (Index("ix_ceo_decision_turn", "turn"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    person_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    scope: Mapped[str] = mapped_column(String(32), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    mistake: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    undo: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+    overridden_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)

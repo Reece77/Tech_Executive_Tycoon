@@ -1,11 +1,13 @@
 import { Link, Navigate, useParams } from 'react-router';
 import { ScreenTitle } from '../components/ScreenState';
+import { usePublic } from '../hooks/api';
 import { BoardTab } from './finance/BoardTab';
 import { CapTableTab } from './finance/CapTableTab';
 import { DebtTab } from './finance/DebtTab';
 import { DivisionsTab } from './finance/DivisionsTab';
 import { FundraisingTab } from './finance/FundraisingTab';
 import { StatementsTab } from './finance/StatementsTab';
+import { StockTab } from './finance/StockTab';
 
 const FINANCE_TABS = [
   { key: 'statements', label: 'Statements' },
@@ -13,21 +15,25 @@ const FINANCE_TABS = [
   { key: 'captable', label: 'Cap table' },
   { key: 'fundraising', label: 'Fundraising' },
   { key: 'debt', label: 'Debt' }, // M10
+  { key: 'stock', label: 'Stock' }, // M13: once public
   { key: 'board', label: 'Board' },
 ] as const;
 type TabKey = (typeof FINANCE_TABS)[number]['key'];
 
 /** Finance (nav key 7, M4b): statements, divisions (M8), the cap table, fundraising, debt
- * (M10) and the board. */
+ * (M10), the stock once public (M13) and the board. */
 export function FinanceScreen() {
   const { saveId = '', tab = 'statements' } = useParams();
+  const listed = Boolean(usePublic(saveId).data?.stock);
   const current = FINANCE_TABS.find((t) => t.key === tab);
   if (!current) return <Navigate to={`/game/${saveId}/finance/statements`} replace />;
+  // The Stock tab shows once public; its route still answers (a short note) before then.
+  const tabs = FINANCE_TABS.filter((t) => t.key !== 'stock' || listed || t.key === current.key);
   return (
     <>
       <ScreenTitle>Finance</ScreenTitle>
       <div role="tablist" aria-label="Finance" className="tst-tabs">
-        {FINANCE_TABS.map((t) => (
+        {tabs.map((t) => (
           <Link
             key={t.key}
             role="tab"
@@ -57,6 +63,8 @@ function TabBody({ tab, saveId }: { tab: TabKey; saveId: string }) {
       return <FundraisingTab saveId={saveId} />;
     case 'debt':
       return <DebtTab saveId={saveId} />;
+    case 'stock':
+      return <StockTab saveId={saveId} />;
     case 'board':
       return <BoardTab saveId={saveId} />;
   }

@@ -26,6 +26,7 @@ from tst.sim.facilities.config import (
     FacilityBalance,
     SupplyBalance,
 )
+from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
 
@@ -1133,6 +1134,9 @@ class Balance(_Frozen):
     supply: SupplyBalance  # M12a (formulas.md 22.4)
     compute: ComputeBalance  # M12a (formulas.md 22.1, 22.3)
     rnd: RndBalance  # M11 (formulas.md 21)
+    ipo: IpoBalance  # M13 (formulas.md 25.1-25.2)
+    public: PublicBalance  # M13 (formulas.md 25.3-25.5, 25.7)
+    ceo: CeoBalance  # M13 (formulas.md 25.6)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1774,6 +1778,13 @@ class GameData(_Frozen):
     components: ComponentsHistoryFile | None = None  # M12a (22.4): market goods' history
     tech: TechFrontierFile | None = None  # M11 (21.1-21.3): None = no research domains
     eras: ErasFile = ErasFile()  # M11 (21.4)
+    banks: tuple[Bank, ...] = ()  # M13 (25.2): lead underwriters
+
+    def bank(self, key: str) -> Bank:
+        for bank in self.banks:
+            if bank.key == key:
+                return bank
+        raise KeyError(key)
 
     def event_template(self, template_id: str) -> EventTemplate:
         for template in self.event_templates:

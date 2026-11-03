@@ -2532,6 +2532,185 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/public": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Public
+         * @description The IPO flow, the Stock tab and the CEO seat (25.8).
+         */
+        get: operations["getPublic"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/public/banks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hire Banks
+         * @description 25.2 step 1: hire the lead underwriter (energy ipo.hire_energy).
+         */
+        post: operations["hireBanks"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/public/guidance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Guidance */
+        post: operations["setGuidance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/public/buyback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Buyback */
+        post: operations["buyback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/public/dividend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Declare Dividend */
+        post: operations["declareDividend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/public/secondary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Secondary Offering */
+        post: operations["secondaryOffering"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/public/ceo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Appoint Ceo */
+        post: operations["appointCeo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/public/ceo/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss Ceo */
+        post: operations["dismissCeo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/public/ceo/authority": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Ceo Authority */
+        put: operations["setCeoAuthority"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/public/ceo/decisions/{decision_id}/override": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Override Ceo
+         * @description 25.6: reverse one CEO decision (energy ceo.override_energy).
+         */
+        post: operations["overrideCeo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -2777,6 +2956,15 @@ export interface components {
             /** Months Left */
             months_left: number;
         };
+        /** AnalystOut */
+        AnalystOut: {
+            /** Firm */
+            firm: string;
+            /** Rating */
+            rating: string;
+            /** Target Cents */
+            target_cents: number;
+        };
         /**
          * AppealWeightsOut
          * @description How a segment's buyers weigh the four scores (formulas.md 11.6); they sum to 1.
@@ -2820,6 +3008,11 @@ export interface components {
              * @description The default salary on appointment: the exec market rate, never below their current pay (18.3)
              */
             exec_salary_cents: number;
+        };
+        /** AppointCeoIn */
+        AppointCeoIn: {
+            /** Person Id */
+            person_id: number;
         };
         /** AppointIn */
         AppointIn: {
@@ -2998,6 +3191,23 @@ export interface components {
             accumulated_result_cents: number;
             /** Total Liabilities And Equity Cents */
             total_liabilities_and_equity_cents: number;
+        };
+        /** BankOut */
+        BankOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /**
+             * Fee Pct
+             * @description Percent of the money raised
+             */
+            fee_pct: number;
+            /**
+             * Reputation
+             * @description How the bank's name helps the price, in words
+             */
+            reputation: string;
         };
         /** BiggestRoundOut */
         BiggestRoundOut: {
@@ -3193,6 +3403,11 @@ export interface components {
              */
             can_afford: boolean;
         };
+        /** BuybackIn */
+        BuybackIn: {
+            /** Amount Cents */
+            amount_cents: number;
+        };
         /** CandidacyOut */
         CandidacyOut: {
             /** Search Id */
@@ -3267,6 +3482,29 @@ export interface components {
              * @description Oldest first
              */
             ownership_history: components["schemas"]["OwnershipEventOut"][];
+        };
+        /** CapitalOut */
+        CapitalOut: {
+            /** Buyback Price Cents */
+            buyback_price_cents: number;
+            /** Buyback Max Shares */
+            buyback_max_shares: number;
+            /** Buyback Energy */
+            buyback_energy: number;
+            /** Dividend Declared Cents */
+            dividend_declared_cents: number;
+            /** Dividend Energy */
+            dividend_energy: number;
+            /** Shares Outstanding */
+            shares_outstanding: number;
+            /** Secondary Price Cents */
+            secondary_price_cents: number;
+            /** Secondary Max Shares */
+            secondary_max_shares: number;
+            /** Secondary Fee Pct */
+            secondary_fee_pct: number;
+            /** Secondary Energy */
+            secondary_energy: number;
         };
         /** CashFlowOut */
         CashFlowOut: {
@@ -3376,6 +3614,71 @@ export interface components {
              * @description A first-mover head start is running
              */
             first_mover: boolean;
+        };
+        /** CeoAuthorityIn */
+        CeoAuthorityIn: {
+            /** Scopes */
+            scopes: string[];
+        };
+        /** CeoCandidateOut */
+        CeoCandidateOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /** Level */
+            level: string;
+        };
+        /** CeoDecisionOut */
+        CeoDecisionOut: {
+            /** Id */
+            id: number;
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /** Scope */
+            scope: string;
+            /** Text */
+            text: string;
+            /** Mistake */
+            mistake: boolean;
+            /** Can Override */
+            can_override: boolean;
+            /** Overridden */
+            overridden: boolean;
+        };
+        /** CeoOut */
+        CeoOut: {
+            /**
+             * Seat Open
+             * @description Stage 4: the founder may appoint a CEO
+             */
+            seat_open: boolean;
+            /** Problem */
+            problem: string | null;
+            /** Person Id */
+            person_id: number | null;
+            /** Name */
+            name: string | null;
+            /** Since */
+            since: string | null;
+            /** Scopes */
+            scopes: string[];
+            /** All Scopes */
+            all_scopes: string[];
+            /** Decisions */
+            decisions: components["schemas"]["CeoDecisionOut"][];
+            /** Candidates */
+            candidates: components["schemas"]["CeoCandidateOut"][];
+            /** Appoint Energy */
+            appoint_energy: number;
+            /** Override Energy */
+            override_energy: number;
+            /** Chair Energy */
+            chair_energy: number;
         };
         /** ChangePreviewOut */
         ChangePreviewOut: {
@@ -3988,6 +4291,11 @@ export interface components {
              */
             history: number[];
         };
+        /** DividendIn */
+        DividendIn: {
+            /** Per Share Cents */
+            per_share_cents: number;
+        };
         /** DivisionColumnOut */
         DivisionColumnOut: {
             /**
@@ -4136,6 +4444,18 @@ export interface components {
             domain_label: string;
             /** Rivals */
             rivals: components["schemas"]["RivalLeadOut"][];
+        };
+        /** DriverOut */
+        DriverOut: {
+            /** Label */
+            label: string;
+            /**
+             * Effect
+             * @description Words only: lifts, weighs on, neutral
+             */
+            effect: string;
+            /** Detail */
+            detail: string;
         };
         /** EmploymentOut */
         EmploymentOut: {
@@ -4935,6 +5255,37 @@ export interface components {
              */
             next_vest_is_cliff?: boolean;
         };
+        /** GuidanceIn */
+        GuidanceIn: {
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Margin Bp */
+            margin_bp: number;
+        };
+        /** GuidanceRowOut */
+        GuidanceRowOut: {
+            /**
+             * Quarter
+             * @description Q1 2016
+             */
+            quarter: string;
+            /** By Player */
+            by_player: boolean;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Margin Pct */
+            margin_pct: number;
+            /** Actual Revenue Cents */
+            actual_revenue_cents: number | null;
+            /** Actual Margin Pct */
+            actual_margin_pct: number | null;
+            /** Result */
+            result: string | null;
+            /** Price Before Cents */
+            price_before_cents: number | null;
+            /** Price After Cents */
+            price_after_cents: number | null;
+        };
         /**
          * GuideSectionOut
          * @description One part of the Org structure guide (23.4, M10b).
@@ -4980,6 +5331,11 @@ export interface components {
             best_product_quality: components["schemas"]["ProductRecordOut"] | null;
             /** Rivals Outlasted */
             rivals_outlasted: components["schemas"]["RivalOutlastedOut"][];
+        };
+        /** HireBanksIn */
+        HireBanksIn: {
+            /** Bank */
+            bank: string;
         };
         /**
          * HiringMetaOut
@@ -5384,6 +5740,75 @@ export interface components {
              * @description Use at which a general CU costs spot
              */
             break_even_utilization: number;
+        };
+        /** IpoOut */
+        IpoOut: {
+            /** Status */
+            status: string;
+            /** Bank */
+            bank: string;
+            /** Fee Pct */
+            fee_pct: number;
+            /**
+             * Hired
+             * @description Mon YYYY
+             */
+            hired: string;
+            /** Steps */
+            steps: components["schemas"]["IpoStepOut"][];
+            /** Ambition */
+            ambition: string | null;
+            /** Share Sold Pct */
+            share_sold_pct: number | null;
+            /** Dual Class */
+            dual_class: boolean | null;
+            /**
+             * Demand
+             * @description The book in words (strong, weak...), from pricing
+             */
+            demand: string | null;
+            /**
+             * Price Cents
+             * @description The bank's suggested price a share
+             */
+            price_cents: number | null;
+            /** New Shares */
+            new_shares: number;
+            /** Shares After */
+            shares_after: number;
+            /** Implied Cap Cents */
+            implied_cap_cents: number;
+            /** Price To Sales */
+            price_to_sales: number | null;
+            /** Stake Pct After */
+            stake_pct_after: number;
+            /** Stake Value Cents */
+            stake_value_cents: number;
+            /** Options */
+            options: components["schemas"]["PriceOptionOut"][];
+            /** Listed */
+            listed: string | null;
+            /** First Day Pct */
+            first_day_pct: number | null;
+            /** Pulled */
+            pulled: string | null;
+        };
+        /** IpoStepOut */
+        IpoStepOut: {
+            /**
+             * Key
+             * @description banks, filing, roadshow, pricing, listing
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * State
+             * @description done, now or next
+             */
+            state: string;
+            /** Detail */
+            detail: string;
         };
         /**
          * JobPeriodOut
@@ -6191,6 +6616,32 @@ export interface components {
             headlines?: string[];
             /** Months */
             months: components["schemas"]["NewsMonthOut"][];
+        };
+        /** NextGuidanceOut */
+        NextGuidanceOut: {
+            /** Quarter */
+            quarter: string;
+            /** Can Set */
+            can_set: boolean;
+            /** Problem */
+            problem: string | null;
+            /** Consensus Revenue Cents */
+            consensus_revenue_cents: number;
+            /** Consensus Margin Pct */
+            consensus_margin_pct: number;
+            /** Set Revenue Cents */
+            set_revenue_cents: number | null;
+            /** Set Margin Pct */
+            set_margin_pct: number | null;
+            /**
+             * Band Pct
+             * @description Guidance must lie within this % of the consensus
+             */
+            band_pct: number;
+            /** Energy */
+            energy: number;
+            /** Hint */
+            hint: string;
         };
         /**
          * NomineeChoiceOut
@@ -7078,6 +7529,37 @@ export interface components {
             /** Price Cents */
             price_cents: number;
         };
+        /** PriceOptionOut */
+        PriceOptionOut: {
+            /**
+             * Choice
+             * @description range, raise, cut or pull
+             */
+            choice: string;
+            /** Label */
+            label: string;
+            /**
+             * Price Cents
+             * @description A share; 0 for pull
+             */
+            price_cents: number;
+            /** Gross Cents */
+            gross_cents: number;
+            /**
+             * Net Cents
+             * @description After the bank's fee; for pull, minus the fees owed
+             */
+            net_cents: number;
+            /**
+             * First Day
+             * @description The likely first day, in words (est.)
+             */
+            first_day: string;
+            /** Available */
+            available: boolean;
+            /** Note */
+            note: string;
+        };
         /**
          * PricePreviewOut
          * @description Appeal and share* at a price against the current competitors; no customer numbers.
@@ -7663,6 +8145,32 @@ export interface components {
              * @description pending | approved | declined | lapsed
              */
             status: string;
+        };
+        /** PublicActionOut */
+        PublicActionOut: {
+            public: components["schemas"]["PublicOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** PublicOut */
+        PublicOut: {
+            /** Stage */
+            stage: number;
+            /** Eligible */
+            eligible: boolean;
+            /**
+             * Problem
+             * @description Why the company cannot hire banks now
+             */
+            problem: string | null;
+            /** Banks */
+            banks: components["schemas"]["BankOut"][];
+            /** Hire Energy */
+            hire_energy: number;
+            ipo: components["schemas"]["IpoOut"] | null;
+            stock: components["schemas"]["StockOut"] | null;
+            ceo: components["schemas"]["CeoOut"];
         };
         /** RaiseIn */
         RaiseIn: {
@@ -8547,6 +9055,11 @@ export interface components {
             /** @description Authority over the seat's function (M10c, 24.1); null for the CPO */
             authority: components["schemas"]["AuthorityOut"] | null;
         };
+        /** SecondaryIn */
+        SecondaryIn: {
+            /** Shares */
+            shares: number;
+        };
         /** SegmentIn */
         SegmentIn: {
             /** Segment */
@@ -8607,6 +9120,22 @@ export interface components {
              * @description office | remote; null inherits (units only)
              */
             policy: string | null;
+        };
+        /** SharePointOut */
+        SharePointOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /** Price Cents */
+            price_cents: number;
+            /** Market Cap Cents */
+            market_cap_cents: number;
+            /**
+             * Mark
+             * @description listing, beat, miss, inline or empty
+             */
+            mark: string;
         };
         /** SharedServicesIn */
         SharedServicesIn: {
@@ -8755,6 +9284,54 @@ export interface components {
              * @description Oldest first
              */
             periods: components["schemas"]["StatementPeriodOut"][];
+        };
+        /** StockOut */
+        StockOut: {
+            /** Ticker */
+            ticker: string;
+            /** Price Cents */
+            price_cents: number;
+            /**
+             * Change Pct
+             * @description Since last month end
+             */
+            change_pct: number | null;
+            /** Market Cap Cents */
+            market_cap_cents: number;
+            /** Shares */
+            shares: number;
+            /** Listing Price Cents */
+            listing_price_cents: number;
+            /** Listed */
+            listed: string;
+            /** Dual Class */
+            dual_class: boolean;
+            /** Stake Shares */
+            stake_shares: number;
+            /** Stake Pct */
+            stake_pct: number;
+            /** Stake Value Cents */
+            stake_value_cents: number;
+            /** History */
+            history: components["schemas"]["SharePointOut"][];
+            /** Analysts */
+            analysts: components["schemas"]["AnalystOut"][];
+            /** Buys */
+            buys: number;
+            /** Holds */
+            holds: number;
+            /** Sells */
+            sells: number;
+            /** Average Target Cents */
+            average_target_cents: number | null;
+            /** Guidance */
+            guidance: components["schemas"]["GuidanceRowOut"][];
+            next_guidance: components["schemas"]["NextGuidanceOut"];
+            capital: components["schemas"]["CapitalOut"];
+            /** Board Line */
+            board_line: string;
+            /** Drivers */
+            drivers: components["schemas"]["DriverOut"][];
         };
         /** StoryStepOut */
         StoryStepOut: {
@@ -17692,6 +18269,615 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResearchActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getPublic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    hireBanks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HireBanksIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setGuidance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuidanceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buyback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuybackIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    declareDividend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DividendIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    secondaryOffering: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SecondaryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    appointCeo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppointCeoIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    dismissCeo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setCeoAuthority: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CeoAuthorityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    overrideCeo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                decision_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicActionOut"];
                 };
             };
             /** @description Bad Request */

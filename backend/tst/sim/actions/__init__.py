@@ -132,6 +132,21 @@ from tst.sim.actions.products import (
     sunset_product,
     unassign_unit,
 )
+from tst.sim.actions.public import (
+    AppointCeo,
+    Buyback,
+    DeclareDividend,
+    DismissCeo,
+    HireBanks,
+    OverrideCeo,
+    PublicAction,
+    SecondaryOffering,
+    SetCeoAuthority,
+    SetGuidance,
+    apply_public,
+    mark_overridden,
+    override_target,
+)
 from tst.sim.actions.research import (
     LicenseIn,
     LicenseOut,
@@ -161,6 +176,7 @@ from tst.sim.errors import GameOverError, InvalidActionError
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
+from tst.sim.org import ceo_rules
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -176,9 +192,19 @@ type Action = (
     | GeoAction
     | FacilityAction
     | ResearchAction
+    | PublicAction
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
+    "hire_banks": HireBanks,  # M13
+    "set_guidance": SetGuidance,
+    "buyback": Buyback,
+    "declare_dividend": DeclareDividend,
+    "secondary_offering": SecondaryOffering,
+    "appoint_ceo": AppointCeo,
+    "set_ceo_authority": SetCeoAuthority,
+    "dismiss_ceo": DismissCeo,
+    "override_ceo": OverrideCeo,
     "open_search": OpenSearch,
     "close_search": CloseSearch,
     "interview": Interview,
@@ -249,9 +275,11 @@ __all__ = [
     "ActionResult",
     "AddSegment",
     "AnswerProposal",
+    "AppointCeo",
     "AppointExecutive",
     "AssignUnit",
     "BuildFacility",
+    "Buyback",
     "CancelProduct",
     "ChooseEvent",
     "CloseOffice",
@@ -260,10 +288,13 @@ __all__ = [
     "CreatePlan",
     "CreateProduct",
     "CreateUnit",
+    "DeclareDividend",
+    "DismissCeo",
     "DissolveUnit",
     "Draws",
     "Fire",
     "GiveRaise",
+    "HireBanks",
     "Interview",
     "LaunchInRegion",
     "LaunchProduct",
@@ -275,6 +306,7 @@ __all__ = [
     "MoveUnit",
     "NameNominee",
     "OpenSearch",
+    "OverrideCeo",
     "Promote",
     "RaiseSafe",
     "ReferenceCheck",
@@ -283,9 +315,12 @@ __all__ = [
     "RepayLoan",
     "Scout",
     "ScoutSearch",
+    "SecondaryOffering",
     "SellCapacity",
     "SellFacility",
     "SetAuthority",
+    "SetCeoAuthority",
+    "SetGuidance",
     "SetLeader",
     "SetMarketing",
     "SetMarketingSplit",
@@ -360,6 +395,23 @@ def apply_action(
         )
         closed = close_proposal(inner.new_state, proposal, "approved")
         return ActionResult(closed, inner.ledger_entries, inner.log_items)
+    if isinstance(action, OverrideCeo):  # 25.6 (M13): the decision's undo, as the Chair
+        _, undo = override_target(state, action.actor_id, action.decision_id, balance)
+        before = state.person_state(action.actor_id).energy
+        inner = apply_action(
+            state,
+            ceo_rules.undo_action(undo, action.actor_id),
+            rng,
+            balance,
+            data,
+            ledger_balances,
+            seq=seq,
+            draws=draws,
+        )
+        done = mark_overridden(
+            inner.new_state, action.decision_id, action.actor_id, before, balance
+        )
+        return ActionResult(done, inner.ledger_entries, inner.log_items)
     match action:
         case OpenSearch():
             out = open_search(state, action, balance, data, ledger_balances)
@@ -443,6 +495,17 @@ def apply_action(
             out = apply_finance(state, action, balance, data, ledger_balances)
         case ChooseEvent():
             out = choose_event(state, action, balance, data)
+        case (
+            HireBanks()
+            | SetGuidance()
+            | Buyback()
+            | DeclareDividend()
+            | SecondaryOffering()
+            | AppointCeo()
+            | SetCeoAuthority()
+            | DismissCeo()
+        ):
+            out = apply_public(state, action, balance, data, ledger_balances)
         case SetProductDivision():
             out = set_product_division(state, action, balance)
         case SetSharedServices():

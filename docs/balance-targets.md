@@ -302,3 +302,34 @@ Launches per v1 category (M5 living market, ≥ 1.0): combined 1.0 (1–10) and 
 
 M12a's own §22.7 targets (`tools/m12a_targets.py`, nightly): T2 0.62 at 80% use and 1.23 at 40% (general data centre built January 2016); T3 10/10; T4 server +30%, GPU +60%, AI margin gap +15.7 points at 0.45× reference price (+7.0 at reference) with the GPU table tuned to $20,000 capex and $200 power, a GPU data centre at 40% use costing at least 1.22× spot in every build month; T5 8/10; T6 1.05 and 0.17 outages a year.
 
+
+### M13 IPO, public company, and Chair and CEO (2026-11-03, lane B, merges before M12b)
+
+The full nightly suite on the M13 branch (main at `m12a-done` plus M13): 29 passed and 1 xfailed, the existing T2 xfail (product manager, M12a); **no xfail added**. `make balance` (10 seeds, 120 turns) gives the same table on `main` and on M13. Steady and blitzscale now hire banks when eligible, but no 120-turn guard moved: blitzscale's earliest listings fall in months 108–121.
+
+| Target | main | M13 | Result |
+| --- | --- | --- | --- |
+| T1 do-nothing fails | 10/10 | 10/10 | pass |
+| T2 wins per strategy (each ≤ 6) | steady 8, frugal 2 | steady 8, frugal 2 | xfail as before (M12a ruling) |
+| T3 succeeds: frugal / steady / blitzscale | 9 / 10 / 9 | 9 / 10 / 9 | pass |
+| T4a-c | 4 and 1; 27.5 and 17.5; 36 on 9/10 | same | pass |
+| T5 steady easy / standard / hard; blitzscale; frugal | 0 / 0 / 0%; 10%; 10% | same | pass |
+| T6 tenure; leaving a year; first-year leavers | 22; 12%; 11% | same | pass |
+| T7 incumbents; startups alive 5 years | 27/27; 55% of 98 | same | pass |
+| T8 median ARR: frugal / steady / blitzscale | $22.0M / $74.6M / $92.2M | same | printed |
+| E3, S2 | pass; 26.4 worker-minutes | pass; 26.7 | pass |
+
+M13's own §25.9 targets (`tools/m13_targets.py`, nightly), 10 seeds:
+
+| Target | Value | Band | Result |
+| --- | --- | --- | --- |
+| T2 IPOs by turn 180: steady / blitzscale | 6/10 (2020–2021) / 5/10 (2019–2020) | ≥ 4 each | pass |
+| T2 median first-day return | +6.6% | 0–30% | pass |
+| T3 guiding 10% above trend: quarters missed | 100% | ≥ 60% | pass |
+| T3 median price after 3 years, above / at trend | 0.51 | ≤ 0.85 | pass |
+| T4 reference listing P/S (growth 27%, margin +38%): 2012–2019 / 2020–2021 | 11.6× / 18.1× | 4–15 / 8–25 | pass |
+| T4 Jan → Dec 2022 | 10.4× → 5.0× (−52%) | ≥ 30% fall | pass |
+| T5 CEO (score 14, full authority) / steady script, median ARR over 36 months | 1.01 | 0.85–1.15 | pass |
+| T5 the Chair's energy spent | 0% | ≤ 40% | pass |
+
+Actual listings' P/S: steady 14.7–22.1× (2020–2021), blitzscale 5.5–7.2× (2019–2020, loss-making). Tuned (`public.*` and `ipo.*` only): `public.multiple` growth 25 → 18 and margin 15 → 5; `ipo.min_growth` 0.40 → 0.20. Golden snapshots unchanged.
