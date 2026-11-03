@@ -510,7 +510,9 @@ companies:
   # servers, chips) or per customer of 10,000 units a month (contract manufacturing). Each
   # appended company is keyed by its position (ADR-0013 amendment), so existing rivals'
   # draws do not move. Rivals' manufacturing is abstract: their cost of goods is the
-  # market's hosting_cents a unit.
+  # market's hosting_cents a unit. Each has 4 named key people (key_people), not
+  # rivals.key_people's 8: twelve more incumbents' people kept the turn over its time budget
+  # (product manager, 2026-11-03; their pools keep the headcount).
 
   - name: NVIDIA
     stage: 4
@@ -519,6 +521,7 @@ companies:
     builder_skill: 15
     target_margin_bp: 2500
     cash_months: 36
+    key_people: 4
     products:
       - name: NVIDIA Tesla
         category: chips_ai_accelerator
@@ -536,6 +539,7 @@ companies:
     builder_skill: 14
     target_margin_bp: 2500
     cash_months: 48
+    key_people: 4
     products:
       - name: Intel Xeon
         category: chips_server_cpu
@@ -553,6 +557,7 @@ companies:
     builder_skill: 12
     target_margin_bp: 1500
     cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    key_people: 4
     products:
       - name: AMD Opteron
         category: chips_server_cpu
@@ -578,6 +583,7 @@ companies:
     builder_skill: 14
     target_margin_bp: 2500
     cash_months: 36
+    key_people: 4
     products:
       - name: Snapdragon
         category: chips_mobile_soc
@@ -594,6 +600,7 @@ companies:
     builder_skill: 16
     target_margin_bp: 2500
     cash_months: 48
+    key_people: 4
     products:
       - name: iPhone
         category: devices
@@ -611,6 +618,7 @@ companies:
     builder_skill: 13
     target_margin_bp: 1500
     cash_months: 36
+    key_people: 4
     products:
       - name: Galaxy
         category: devices
@@ -629,6 +637,7 @@ companies:
     builder_skill: 11
     target_margin_bp: 1000
     cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    key_people: 4
     products:
       - name: ThinkPad
         category: devices
@@ -647,6 +656,7 @@ companies:
     builder_skill: 12
     target_margin_bp: 1500
     cash_months: 24
+    key_people: 4
     products:
       - name: PowerEdge
         category: servers
@@ -664,6 +674,7 @@ companies:
     builder_skill: 13
     target_margin_bp: 2000
     cash_months: 24
+    key_people: 4
     products:
       - name: ProLiant
         category: servers
@@ -681,6 +692,7 @@ companies:
     builder_skill: 11
     target_margin_bp: 1000
     cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    key_people: 4
     products:
       - name: SuperServer
         category: servers
@@ -698,6 +710,7 @@ companies:
     builder_skill: 12
     target_margin_bp: 1000
     cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    key_people: 4
     products:
       - name: Foxconn EMS
         category: contract_manufacturing
@@ -714,6 +727,7 @@ companies:
     builder_skill: 11
     target_margin_bp: 1000
     cash_months: 60 # M12b: cost leaders and AMD need a cushion in price wars (as M12a's Rackspace)
+    key_people: 4
     products:
       - name: Pegatron EMS
         category: contract_manufacturing

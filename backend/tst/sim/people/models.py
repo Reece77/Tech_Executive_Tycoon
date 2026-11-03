@@ -13,7 +13,7 @@ from typing import Literal, Self
 from tst.sim.calendar import age_at
 from tst.sim.data_models import GameData, Role
 from tst.sim.people.formulas import current_ability as _ca
-from tst.sim.scale import clamp_attr
+from tst.sim.scale import ATTR_MAX, ATTR_MIN
 
 PA_KEY = "potential_ability"  # reveal record key for potential ability
 FOUNDER_ROLE = "founder"  # employment role of the founder (not a hireable role)
@@ -33,7 +33,13 @@ class AttrSet:
     items: tuple[tuple[str, float], ...]
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "items", tuple((k, clamp_attr(v)) for k, v in self.items))
+        # clamp_attr inline (one call per value made it a hot spot; M12b, speed)
+        lo, hi = ATTR_MIN, ATTR_MAX
+        object.__setattr__(
+            self,
+            "items",
+            tuple((k, hi if v > hi else lo if v < lo else v) for k, v in self.items),
+        )
 
     @classmethod
     def build(cls, keys: Iterable[str], values: Mapping[str, float]) -> Self:

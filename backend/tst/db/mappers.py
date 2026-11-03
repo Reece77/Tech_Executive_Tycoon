@@ -323,15 +323,16 @@ def person_to_rows(person: Person) -> list[Base]:
 
 
 def person_from_rows(
-    row: PersonRow,
-    skills: list[PersonSkillRow],
-    personality: list[PersonPersonalityRow],
-    hidden: list[PersonHiddenRow],
-    interests: list[PersonInterestRow],
-    tags: list[PersonTagRow],
+    row: Any,
+    skills: list[tuple[str, float]],
+    personality: list[tuple[str, float]],
+    hidden: list[tuple[str, float]],
+    interests: list[str],
+    tags: list[str],
 ) -> Person:
-    hidden_items = [(h.trait, h.value) for h in sorted(hidden, key=lambda h: h.position)]
-    pa = next(v for k, v in hidden_items if k == PA_KEY)
+    """A person from its row and its child rows as (key, value) pairs already in position
+    order (`state_io.load_people` orders them in SQL; M12b, speed)."""
+    pa = next(v for k, v in hidden if k == PA_KEY)
     return Person(
         id=row.id,
         first_name=row.first_name,
@@ -340,15 +341,13 @@ def person_from_rows(
         birth_turn=row.birth_turn,
         role=row.role,
         level=row.level,
-        skills=Skills(tuple((s.skill, s.value) for s in sorted(skills, key=lambda s: s.position))),
-        personality=Personality(
-            tuple((p.trait, p.value) for p in sorted(personality, key=lambda p: p.position))
-        ),
-        hidden=HiddenTraits(tuple((k, v) for k, v in hidden_items if k != PA_KEY)),
+        skills=Skills(tuple(skills)),
+        personality=Personality(tuple(personality)),
+        hidden=HiddenTraits(tuple((k, v) for k, v in hidden if k != PA_KEY)),
         potential_ability=pa,
-        interests=tuple(i.interest for i in sorted(interests, key=lambda i: i.position)),
+        interests=tuple(interests),
         work_style=row.work_style,
-        tags=tuple(t.tag for t in sorted(tags, key=lambda t: t.position)),
+        tags=tuple(tags),
         salary_expectation_cents=row.salary_expectation_cents,
         is_founder=row.is_founder,
     )

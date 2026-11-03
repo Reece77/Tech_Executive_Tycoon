@@ -246,7 +246,8 @@ def setup_incumbents(
                 hosting += seg.customers * hosting_cents(category, seg.segment, ai) * rate
         marketing = sum(p.marketing_budget_cents for p in state.company_products(company.id))
         mix = function_mix(state, company.id, balance)
-        functions = key_people_split(rv.key_people, mix)
+        count = spec.key_people if spec.key_people is not None else rv.key_people  # M12b
+        functions = key_people_split(count, mix)
         block = None
         if company.rival_key[:1] == (INCUMBENT_KEY,):  # a new game: ids by data position
             block = INCUMBENT_PEOPLE_IDS_FROM + company.rival_key[1] * INCUMBENT_PEOPLE_BLOCK

@@ -214,16 +214,24 @@ def _by_person[R](rows: Iterable[R]) -> dict[int, list[R]]:
     return grouped
 
 
-def _ordered_skills(session: Session, where: Any) -> dict[int, list[Any]]:
-    """Skill rows by person, already in position order (one SQL ORDER BY instead of a sort
-    per person; M12b, speed)."""
+def _ordered_pairs(session: Session, model: Any, key: Any, value: Any, where: Any) -> Any:
+    """A person child table as person id -> [(key, value)] in position order: one SQL ORDER
+    BY instead of Row objects and a sort per person (M12b, speed)."""
     out: dict[int, list[Any]] = defaultdict(list)
-    for row in session.execute(
-        select(PersonSkillRow.__table__)
-        .where(where)
-        .order_by(PersonSkillRow.person_id, PersonSkillRow.position)
+    for pid, k, v in session.execute(
+        select(model.person_id, key, value).where(where).order_by(model.person_id, model.position)
     ):
-        out[row.person_id].append(row)
+        out[pid].append((k, v))
+    return out
+
+
+def _ordered_keys(session: Session, model: Any, key: Any, where: Any) -> Any:
+    """A person child table as person id -> [key] in position order (interests, tags)."""
+    out: dict[int, list[Any]] = defaultdict(list)
+    for pid, k in session.execute(
+        select(model.person_id, key).where(where).order_by(model.person_id, model.position)
+    ):
+        out[pid].append(k)
     return out
 
 
@@ -237,13 +245,14 @@ def load_people(
     def in_live(column: Any) -> Any:
         return column.in_(live_ids)
 
-    skills = _ordered_skills(session, in_live(PersonSkillRow.person_id))
-    personality = _by_person(
-        _rows(session, PersonPersonalityRow, in_live(PersonPersonalityRow.person_id))
+    sk, pe, hi = PersonSkillRow, PersonPersonalityRow, PersonHiddenRow
+    skills = _ordered_pairs(session, sk, sk.skill, sk.value, in_live(sk.person_id))
+    personality = _ordered_pairs(session, pe, pe.trait, pe.value, in_live(pe.person_id))
+    hidden = _ordered_pairs(session, hi, hi.trait, hi.value, in_live(hi.person_id))
+    interests = _ordered_keys(
+        session, PersonInterestRow, PersonInterestRow.interest, in_live(PersonInterestRow.person_id)
     )
-    hidden = _by_person(_rows(session, PersonHiddenRow, in_live(PersonHiddenRow.person_id)))
-    interests = _by_person(_rows(session, PersonInterestRow, in_live(PersonInterestRow.person_id)))
-    tags = _by_person(_rows(session, PersonTagRow, in_live(PersonTagRow.person_id)))
+    tags = _ordered_keys(session, PersonTagRow, PersonTagRow.tag, in_live(PersonTagRow.person_id))
     people = tuple(
         person_from_rows(
             row,
@@ -283,7 +292,7 @@ def load_people(
         )
         .where(in_live(r_.person_id))
         .order_by(r_.observer_company_id, r_.person_id, r_.position)
-    ).tuples():
+    ):
         attributes[(o, pid)].append((attribute, RevealRecord(hw, offset, updated)))
     profiles = {
         key(r): r

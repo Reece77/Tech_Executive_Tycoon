@@ -1521,6 +1521,8 @@ class IncumbentCompany(_Frozen):
     target_margin_bp: int = Field(ge=0, lt=BP_DENOMINATOR)  # margin its pools are sized for
     cash_months: float = Field(ge=0)  # starting cash in months of revenue (15.1)
     products: tuple[IncumbentProduct, ...] = Field(min_length=1)
+    # M12b: named key people for this incumbent; None = rivals.key_people (15.1)
+    key_people: int | None = Field(default=None, ge=1)
 
 
 DEFAULT_INCUMBENT_REGIONS = ("north_america", "europe")  # 19.5: v1 incumbents' regions
