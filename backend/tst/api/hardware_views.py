@@ -146,6 +146,27 @@ def _assembly_cents(state: GameState, product: Product, data: LoadedData) -> tup
 def manufacturing_out(state: GameState, product: Product, data: LoadedData) -> ManufacturingOut:
     b, d = data.balance, data.game_data
     category = d.category(product.category)
+    if not category.sells_units:  # software: nothing to make, an empty panel
+        return ManufacturingOut(
+            product_id=product.id,
+            name=product.name,
+            category=product.category,
+            category_label=category.label,
+            chip_type=None,
+            chip_label=None,
+            lines=[],
+            unit_cost_cents=0,
+            price_cents=None,
+            gross_margin=None,
+            chip_source=None,
+            sources=[],
+            units_sold=0.0,
+            units_lost=0.0,
+            internal_units=0.0,
+            cogs_cents=0,
+            can_launch_source=True,
+            sells_units=False,
+        )
     row = state.production_of(product.id)
     lines: list[BomLineOut] = []
     chip_source = None

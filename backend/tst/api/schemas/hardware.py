@@ -49,6 +49,9 @@ class ManufacturingOut(BaseModel):
     internal_units: float = Field(description="A chip product: chips your own devices used")
     cogs_cents: int = Field(description="Last month's cost of goods")
     can_launch_source: bool = Field(description="It has a manufacturing source to launch")
+    sells_units: bool = Field(
+        default=True, description="False for a software product: no bill of materials (empty)"
+    )
 
 
 class PlantOut(BaseModel):

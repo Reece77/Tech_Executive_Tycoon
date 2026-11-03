@@ -11328,7 +11328,7 @@
           "hardware"
         ],
         "summary": "Get Manufacturing",
-        "description": "A device, server or chip product's bill of materials and manufacturing panel.",
+        "description": "A device, server or chip product's bill of materials and manufacturing panel; empty\n(`sells_units` false) for a software product.",
         "operationId": "getProductManufacturing",
         "parameters": [
           {
@@ -21042,6 +21042,12 @@
             "type": "boolean",
             "title": "Can Launch Source",
             "description": "It has a manufacturing source to launch"
+          },
+          "sells_units": {
+            "type": "boolean",
+            "title": "Sells Units",
+            "description": "False for a software product: no bill of materials (empty)",
+            "default": true
           }
         },
         "type": "object",

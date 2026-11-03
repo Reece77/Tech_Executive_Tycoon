@@ -2437,7 +2437,8 @@ export interface paths {
         };
         /**
          * Get Manufacturing
-         * @description A device, server or chip product's bill of materials and manufacturing panel.
+         * @description A device, server or chip product's bill of materials and manufacturing panel; empty
+         *     (`sells_units` false) for a software product.
          */
         get: operations["getProductManufacturing"];
         put?: never;
@@ -6367,6 +6368,12 @@ export interface components {
              * @description It has a manufacturing source to launch
              */
             can_launch_source: boolean;
+            /**
+             * Sells Units
+             * @description False for a software product: no bill of materials (empty)
+             * @default true
+             */
+            sells_units?: boolean;
         };
         /** MarketOut */
         MarketOut: {

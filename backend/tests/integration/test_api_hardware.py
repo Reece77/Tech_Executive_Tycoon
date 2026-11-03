@@ -148,3 +148,13 @@ def test_cli_hardware(setup: tuple[Client, Path, Path], monkeypatch: pytest.Monk
     )
     out = run("hardware", "--save", SAVE)
     assert "Pebble Phone" in out and "Assembly plant" in out and "Pebble TPU" in out
+
+
+def test_a_software_product_has_an_empty_panel(setup: tuple[Client, Path, Path]) -> None:
+    """Every GET route answers for any of the player's products (the ten-year crawl)."""
+    api, path, _ = setup
+    with open_session(path) as session, session.begin():
+        before = load_state(session)
+        sync_state(session, before, with_product(before, name="Pipeline", root=False))
+    panel = api.get(f"{BASE}/products/{_pid(path, 'Pipeline')}/manufacturing")
+    assert not panel["sells_units"] and panel["lines"] == [] and panel["sources"] == []

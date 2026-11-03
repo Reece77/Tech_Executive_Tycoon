@@ -70,13 +70,12 @@ def get_hardware(save_id: str, settings: SettingsDep, data: DataDep) -> Hardware
 def get_manufacturing(
     save_id: str, product_id: int, settings: SettingsDep, data: DataDep
 ) -> ManufacturingOut:
-    """A device, server or chip product's bill of materials and manufacturing panel."""
+    """A device, server or chip product's bill of materials and manufacturing panel; empty
+    (`sells_units` false) for a software product."""
     state = _state(_path(settings, save_id))
     product = state.product(product_id)
     if product is None or product.company_id != state.player.id:
         raise ProductRuleError(f"no product {product_id}")
-    if not data.game_data.category(product.category).sells_units:
-        raise ProductRuleError(f"{product.name} is not a hardware product")
     return hardware_views.manufacturing_out(state, product, data)
 
 
