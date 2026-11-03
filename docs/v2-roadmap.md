@@ -35,7 +35,9 @@ v2 runs in two lanes where the systems are separate (Reece, 2026-10-29). Each la
 ## M15 follow-ups carried from M11
 
 - **Research may be too strong.** `rnd.cap_per_point` 0.010 allows up to ×1.50 on the quality cap, and Transformers arrived early on 10/10 seeds (target ≥ 5). Check with the research-heavy strategy and Reece's play before M15 tunes it.
-- **No eras after 2025.** The 30-year campaign needs seeded future eras (2026–2040) so research keeps paying off late.
+- **Eras after 2025.** M12b adds the first two seeded-window eras (chiplets 2026–2028, edge AI 2027–2030; ADR-0019 §15). M15 extends the list to 2039, for example post-quantum security (2028–2031), AR glasses (2028–2032), humanoid robotics (2030–2035), photonic interconnect (2031–2035) and practical quantum computing (2034–2039).
+- **T2: steady wins too often** (M12a, 2026-11-02): steady wins 22/30 seeds on the combined code and 21/30 on `main` (band ≤ 6/10). It is `xfail(strict=False)` until M15, whose new v2 strategies (research-heavy, acquirer, integrator) should split the wins; if they don't, steady's script or the game's rewards need tuning.
+- **T5: bootstrap-frugal rarely goes bankrupt** (M12a): 7% on seeds 11–40 on both `main` and the combined code; re-banded to 0–50% for now. M15 decides whether bootstrapping should carry more risk again (Reece's M7a band was 20–50%).
 - **Rivals never license from the player.** Licensing out only works with rivals that approach you; add rival demand for licences in.
 
 ## Lane rules (for every paired milestone)
