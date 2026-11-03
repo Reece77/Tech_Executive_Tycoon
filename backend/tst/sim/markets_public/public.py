@@ -125,19 +125,20 @@ def public_month(
         if public is None and (listing is None or not listing.active):
             continue
         f = fundamentals(state, cid, revenue.get(cid, 0), op.get(cid, 0), balance, data)
+        # One generator a month per listed company: the sentiment shock and the analysts'
+        # targets, at the listing and after each report (stream market_sentiment, 25.3).
+        gen = rng.stream(state.turn, "market_sentiment", cid)
         if public is None and listing is not None:
             if ipo.roadshow_done(listing) and listing.demand is None:
                 climate = macro.venture_climate(state, data)
                 d = ipo.draw_demand(rng, state.turn, cid, climate, balance)
                 state = ipo.open_pricing(state, cid, f, d, balance, data)
             elif listing.status == "priced":
-                gen = rng.stream(state.turn, "market_sentiment", cid)
                 state, posted, logged = ipo.list_company(state, cid, f, gen, rng, balance, data)
                 entries += posted
                 logs += logged
             continue
         assert public is not None
-        gen = rng.stream(state.turn, "market_sentiment", cid)
         state, public, posted, logged = _pending(
             state, public, cash.get(cid, 0), rng, balance, data
         )

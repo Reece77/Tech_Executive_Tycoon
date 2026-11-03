@@ -41,6 +41,7 @@ from tst.sim.state import (
 )
 
 PUBLIC_HOLDERS = "Public shareholders"
+MILLION = 1_000_000  # tunable-exempt: unit for words
 LISTED_STAGE = 4  # tunable-exempt: the spec's stage 4, public company (3)
 QUARTERS = 4  # tunable-exempt: quarters in the trailing year (25.1)
 QUARTER_MONTHS = 3  # tunable-exempt: calendar
@@ -78,7 +79,7 @@ def eligibility_problem(state: GameState, company_id: int, balance: Balance) -> 
         return f"an IPO needs stage {ib.min_stage} (scale-up)"
     mrr = company.mrr_history[-1] if company.mrr_history else 0
     if mrr * MONTHS_A_YEAR < ib.min_arr_cents:
-        return f"an IPO needs ${ib.min_arr_cents // pf.PCT // 1_000_000}M of ARR"
+        return f"an IPO needs ${ib.min_arr_cents / pf.PCT / MILLION:,.0f}M of ARR"
     if not (
         profitable_quarters(company.op_history, ib.trailing_months)
         or trailing_growth(company) >= ib.min_growth
