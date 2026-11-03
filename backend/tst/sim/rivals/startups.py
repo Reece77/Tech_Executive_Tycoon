@@ -84,6 +84,8 @@ def found_startups(
             break
         if category.capacity_market:  # M12a (22.3): selling capacity needs data centres
             continue
+        if category.sells_units or category.assembly_market:  # M12b (26): scheduled only
+            continue
         gen = rng.stream(state.turn, "rival_spawn", index)
         growth = annual_growth(state, data, category.key)  # with era boosts (M11, 21.4)
         chance = sb.found_rate * mood * (1 + growth)

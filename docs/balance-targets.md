@@ -333,3 +333,32 @@ M13's own §25.9 targets (`tools/m13_targets.py`, nightly), 10 seeds:
 | T5 the Chair's energy spent | 0% | ≤ 40% | pass |
 
 Actual listings' P/S: steady 14.7–22.1× (2020–2021), blitzscale 5.5–7.2× (2019–2020, loss-making). Tuned (`public.*` and `ipo.*` only): `public.multiple` growth 25 → 18 and margin 15 → 5; `ipo.min_growth` 0.40 → 0.20. Golden snapshots unchanged.
+
+### M12b Hardware, devices and fabless chips (2026-11-03, lane A, merged after M13)
+
+The full nightly suite on the combined M13 + M12b code (`main` at `m13-done` plus M12b; CI nightly run 41689697846): every test shard passes; `make balance` fails only on T2, the existing xfail (product manager, M12a). **No xfail added**, no guard tuned and no M13 key touched. Golden snapshots unchanged. No guard other than the ruled T2 misses on seeds 1–10, so no 11–40 measurement was needed.
+
+| Target | main (M13's record) | M13 + M12b | Result |
+| --- | --- | --- | --- |
+| T1 do-nothing fails | 10/10 | 10/10 | pass |
+| T2 wins per strategy (each ≤ 6) | steady 8, frugal 2 | steady 8, frugal 2 | xfail as before (M12a ruling) |
+| T3 succeeds: frugal / steady / blitzscale | 9 / 10 / 9 | 9 / 10 / 9 | pass |
+| T4a-c | 4 and 1; 27.5 and 17.5; 36 on 9/10 | same | pass |
+| T5 steady easy / standard / hard; blitzscale; frugal | 0 / 0 / 0%; 10%; 10% | same | pass |
+| T6 tenure; leaving a year; first-year leavers | 22; 12%; 11% | same | pass |
+| T7 incumbents; startups alive 5 years | 27/27; 55% of 98 | 39/39 (twelve hardware and chip incumbents added); 55% of 98 | pass |
+| T8 median ARR: frugal / steady / blitzscale | $22.0M / $74.6M / $92.2M | same | printed |
+| E3, S2 | pass; 26.4 worker-minutes | pass; 37.1 | pass (S2 < 43 on CI; the twelve rivals cost about 40% more run time) |
+
+M12b's own §26.6 targets (`tools/m12b_targets.py`, nightly `tests/balance/test_m12b_balance.py`), 10 seeds, combined code:
+
+| Target | Value | Band | Result |
+| --- | --- | --- | --- |
+| T2 15-person devices company on contract, gross margin in year 3 (price 0.8 x reference) | 32.6% on 10/10 | 30–45% on ≥ 6/10 | pass |
+| T3 plant (20,000 a month, Jan 2013, yield 0.92): cost per good unit / $13 fee | 0.69 at 75%, 0.66 at 80%; 1.35 at 30% | ≤ 0.70 at ≥ 75%; ≥ 1.30 at 30% | pass |
+| T4a own mobile SoC: device margin points after 3 years | +8.5 on 10/10 | ≥ +8 | pass |
+| T4b own AI accelerators: GPU capex per CU | −49% | ≥ 20% cut | pass |
+| T5 no contract before the 2021 shortage: fewer units in 2021–2022 | 30% on 10/10 | 15–35% | pass |
+| T6 NVIDIA share of hyperscaler AI-accelerator units in 2023 (do-nothing) | 100% on 10/10 | ≥ 50% on ≥ 7/10 | pass |
+
+Notes: T2–T5 are scripted (demand above capacity; price, cost and allocation fix the outcome), so they barely vary by seed. T6's 100% is because AMD goes bankrupt around 2020 (feature pushes grow its builder pools in the fast hardware markets) and Cerebras and Groq sell almost nothing; listed as an M15 follow-up. Tuned (M12b's own data only): rivals' hardware cost of goods 40–45% of reference, the mobile SoC wafer $2,000, cost leaders' and AMD's cash cushion 60 months.

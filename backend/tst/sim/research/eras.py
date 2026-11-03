@@ -11,6 +11,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.research import levels
 from tst.sim.research.data import EraDef, rate_in
 from tst.sim.research.models import EraArrival
+from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_era_arrival
 
 
@@ -48,9 +49,16 @@ def growth_boost(state: GameState, data: GameData, category: str, segment: str |
 def annual_growth(
     state: GameState, data: GameData, category: str, segment: str | None = None
 ) -> float:
-    """Base growth plus the era boosts running this month (21.4)."""
+    """Base growth plus the era boosts running this month (21.4). A segment whose demand
+    follows other markets (M12b, 26.3: chips' `growth_follows`) takes their mean growth, era
+    boosts included, as its base."""
     year = turn_to_ym(state.turn)[0]
-    return base_growth(data, category, year) + growth_boost(state, data, category, segment)
+    follows = (data.category(category).growth_follows or {}).get(segment) if segment else None
+    if follows:
+        base = sum(annual_growth(state, data, c) for c in follows) / len(follows)
+    else:
+        base = base_growth(data, category, year)
+    return base + growth_boost(state, data, category, segment)
 
 
 def adoption_factor(state: GameState, data: GameData, category: str, segment: str) -> float:
@@ -88,16 +96,17 @@ def causer(
 
 
 def arrive_eras(
-    state: GameState, data: GameData, balance: Balance
+    state: GameState, data: GameData, balance: Balance, rng: RngFactory
 ) -> tuple[GameState, tuple[LogItem, ...]]:
     """Phase 3, after research progress: each era not yet arrived arrives on its
-    historical month, or this month if a company's level reaches its threshold (21.4).
-    In eras.yaml order, so an earlier era's +5 counts toward a later one's level."""
+    historical month (a future era: its seeded scheduled month, 26.4), or this month if a
+    company's level reaches its threshold (21.4). In eras.yaml order, so an earlier era's +5
+    counts toward a later one's level."""
     logs: list[LogItem] = []
-    for era in data.eras.eras:
+    for index, era in enumerate(data.eras.eras):
         if state.era_arrival(era.key) is not None:
             continue
-        hist = levels.historical_turn(era)
+        hist = levels.scheduled_turn(era, index, rng)
         found = causer(state, data, balance, era) if state.turn < hist else None
         if state.turn < hist and found is None:
             continue

@@ -22,6 +22,7 @@ import { ActiveEffects } from '../components/ActiveEffects';
 import { SegmentTable } from '../components/SegmentTable';
 import {
   useCategories,
+  useManufacturing,
   useMarket,
   useOrg,
   usePricePreview,
@@ -36,6 +37,7 @@ import {
   type ProductSegment,
   type ProductsMeta,
 } from '../hooks/api';
+import { ManufacturingPanel } from './HardwareScreen';
 import { formatMoneyShort, formatMoneyWhole, parseDollars } from '../lib/format';
 import {
   BRAND_TREND_TEXT,
@@ -137,6 +139,7 @@ function ProductBody({
         </Alert>
       )}
       <Tiles p={p} />
+      {p.sells_units && <ProductManufacturing saveId={saveId} productId={p.product_id} />}
       {p.team_strength && (
         <p
           className={
@@ -1046,5 +1049,19 @@ function RegionalPrices({ p }: { p: Product }) {
         </div>
       ))}
     </div>
+  );
+}
+
+/** M12b (26.5): a device, server or chip's unit cost by line and its manufacturing. */
+function ProductManufacturing({ saveId, productId }: { saveId: string; productId: number }) {
+  const m = useManufacturing(saveId, productId);
+  if (!m.data) return null;
+  return (
+    <>
+      <ManufacturingPanel m={m.data} />
+      <Link to={`/game/${saveId}/products/hardware`} style={{ fontSize: 13 }}>
+        Contracts and plants on Hardware
+      </Link>
+    </>
   );
 }

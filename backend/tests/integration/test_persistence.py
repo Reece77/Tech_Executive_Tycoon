@@ -80,8 +80,8 @@ def test_create_save(save: Path, loaded: LoadedData) -> None:
         assert meta.master_seed == 42
         assert meta.data_hashes == loaded.hashes
         # M10b: 0024-0026; M10c: 0027_exec_authority; M11: 0028_research; M12a: 0029_facilities;
-        # M13: 0030_public_company
-        assert meta.schema_version == SCHEMA_VERSION == 30
+        # M13: 0030_public_company; M12b: 0031_hardware (re-parented after M13)
+        assert meta.schema_version == SCHEMA_VERSION == 31
         assert company_cash(ledger_balances(session), state.player.id) == GARAGE_CASH
 
 

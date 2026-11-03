@@ -289,7 +289,9 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             raise DataLoadError(
                 f"{where}: input_good {kind.input_good!r} is not in {COMPONENTS_FILE}"
             )
-        if kind.output_good not in balance.compute.goods:
+        if kind.output_good not in balance.compute.goods and (
+            kind.output_good != balance.hardware.output_good
+        ):
             raise DataLoadError(
                 f"{where}: output_good {kind.output_good!r} is not in compute.goods"
             )
@@ -297,6 +299,7 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             raise DataLoadError(f"{where}: staff_roles {bad} are not in {ROLES_FILE}")
         if kind.staff_skill not in data.skill_keys:
             raise DataLoadError(f"{where}: staff_skill {kind.staff_skill!r} is not a skill")
+    _check_hardware(balance, data, goods)
     key = balance.compute.capacity_category
     capacity = [c.key for c in data.categories if c.capacity_market]
     if capacity != [key]:
@@ -304,6 +307,51 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             f"{CATEGORIES_FILE}: the one capacity_market category must be compute.capacity_category"
             f" {key!r}, found {capacity}"
         )
+
+
+def _check_hardware(balance: Balance, data: GameData, goods: set[str]) -> None:
+    """M12b (formulas.md 26): hardware and chips name known goods, categories, chip types,
+    cities and segments."""
+    hw, ch = balance.hardware, balance.chips
+    categories = {c.key: c for c in data.categories}
+    where = f"{BALANCE_FILE}: hardware"
+    if hw.plant_kind not in balance.facility.kinds:
+        raise DataLoadError(f"{where}.plant_kind {hw.plant_kind!r} is not a facility kind")
+    if balance.facility.kinds[hw.plant_kind].output_good != hw.output_good:
+        raise DataLoadError(f"{where}.plant_kind must make hardware.output_good")
+    market = categories.get(hw.capacity_category)
+    if market is None or not market.assembly_market:
+        raise DataLoadError(f"{where}.capacity_category must be an assembly_market category")
+    if [c.key for c in data.categories if c.assembly_market] != [hw.capacity_category]:
+        raise DataLoadError(f"{CATEGORIES_FILE}: one assembly_market category, {where}'s")
+    for key, bom in hw.bom.items():
+        cat = categories.get(key)
+        if cat is None or not cat.sells_units or cat.family is not None:
+            raise DataLoadError(f"{where}.bom.{key}: not a unit-sale category (chips excluded)")
+        if bom.good not in goods:
+            raise DataLoadError(f"{where}.bom.{key}: good {bom.good!r} not in {COMPONENTS_FILE}")
+        if bom.chip_type not in ch.types:
+            raise DataLoadError(
+                f"{where}.bom.{key}: chip_type {bom.chip_type!r} not in chips.types"
+            )
+    for cat in data.categories:
+        if cat.sells_units and cat.family is None and cat.key not in hw.bom:
+            raise DataLoadError(f"{where}.bom: no bill of materials for {cat.key!r}")
+        if cat.chip_type is not None and cat.chip_type not in ch.types:
+            raise DataLoadError(f"{CATEGORIES_FILE}: {cat.key!r} chip_type not in chips.types")
+        for seg, follows in (cat.growth_follows or {}).items():
+            if bad := sorted(set(follows) - set(categories)):
+                raise DataLoadError(f"{CATEGORIES_FILE}: {cat.key}.growth_follows.{seg} {bad}")
+    if data.cities and hw.contract.cheap_city not in {c.key for c in data.cities}:
+        raise DataLoadError(f"{where}.contract.cheap_city is not in {CITIES_FILE}")
+    if ch.good not in goods:
+        raise DataLoadError(f"{BALANCE_FILE}: chips.good {ch.good!r} not in {COMPONENTS_FILE}")
+    chip_types = {c.chip_type for c in data.categories if c.chip_type is not None}
+    if chip_types != set(ch.types):
+        raise DataLoadError(f"{BALANCE_FILE}: chips.types must each have one chip category")
+    for c in data.categories:
+        if c.family == "chips" and ch.price_segment not in c.segment_keys:
+            raise DataLoadError(f"{CATEGORIES_FILE}: {c.key!r} lacks chips.price_segment")
 
 
 def research_problems(balance: Balance, data: GameData) -> list[str]:

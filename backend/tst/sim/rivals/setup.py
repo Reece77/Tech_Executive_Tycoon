@@ -19,7 +19,7 @@ from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment
 from tst.sim.people.reveal import new_reveal_state
-from tst.sim.products.formulas import hosting_cents
+from tst.sim.products.formulas import hosting_cents, sale_rate
 from tst.sim.products.models import SELLING
 from tst.sim.rivals import formulas as f
 from tst.sim.rivals.models import INCUMBENT_KEY, Function, WorkforcePool, stream_key
@@ -40,16 +40,20 @@ KEY_PEOPLE_STREAM_PART = 0  # tunable-exempt: second key part for incumbent key 
 HALF = 0.5  # tunable-exempt: midpoint of each key person's slot in the level spread
 
 
-def monthly_revenue_cents(state: GameState, company_id: int) -> float:
-    """Customers x price over every selling product of the company, this month."""
+def monthly_revenue_cents(state: GameState, company_id: int, data: GameData | None = None) -> float:
+    """Customers x price over every selling product of the company, this month; with `data`,
+    a unit-sale market's customers buy at its steady-state rate (M12b, 26.1)."""
     total = 0.0
     for product in state.company_products(company_id):
         if product.status not in SELLING:
             continue
+        category = data.category(product.category) if data is not None else None
         for seg in state.segments_of(product.id):
-            total += seg.customers * (seg.price_cents or 0)
+            rate = sale_rate(category, seg.segment) if category else 1.0
+            total += seg.customers * (seg.price_cents or 0) * rate
         for rseg in state.regional_segments_of(product.id):  # other regions (M9, 19.5)
-            total += rseg.customers * (rseg.price_cents or 0)
+            rate = sale_rate(category, rseg.segment) if category else 1.0
+            total += rseg.customers * (rseg.price_cents or 0) * rate
     return total
 
 
@@ -189,7 +193,7 @@ def opening_cash_cents(state: GameState, company_id: int, data: GameData) -> int
     spec = next((i for i in data.incumbents if i.name == company.name), None)
     if spec is None or company.is_player or company.is_startup:
         return 0
-    return round(monthly_revenue_cents(state, company_id) * spec.cash_months)
+    return round(monthly_revenue_cents(state, company_id, data) * spec.cash_months)
 
 
 def key_people_monthly_cents(state: GameState, company_id: int, balance: Balance) -> int:
@@ -225,8 +229,10 @@ def setup_incumbents(
         state = with_company(state, company)
         revenue = 0.0
         for product in state.company_products(company.id):
+            cat = data.category(product.category)
             product_revenue = sum(
-                s.customers * (s.price_cents or 0) for s in state.segments_of(product.id)
+                s.customers * (s.price_cents or 0) * sale_rate(cat, s.segment)
+                for s in state.segments_of(product.id)
             )
             revenue += product_revenue
             budget = round(product_revenue * rv.start_marketing_share)
@@ -235,11 +241,13 @@ def setup_incumbents(
         for product in state.company_products(company.id):
             category = data.category(product.category)
             ai = data.compute_index.of(turn_to_ym(state.turn)[0])  # game start: history
-            for seg in state.segments_of(product.id):
-                hosting += seg.customers * hosting_cents(category, seg.segment, ai)
+            for seg in state.segments_of(product.id):  # a unit's cost of goods (M12b)
+                rate = sale_rate(category, seg.segment)
+                hosting += seg.customers * hosting_cents(category, seg.segment, ai) * rate
         marketing = sum(p.marketing_budget_cents for p in state.company_products(company.id))
         mix = function_mix(state, company.id, balance)
-        functions = key_people_split(rv.key_people, mix)
+        count = spec.key_people if spec.key_people is not None else rv.key_people  # M12b
+        functions = key_people_split(count, mix)
         block = None
         if company.rival_key[:1] == (INCUMBENT_KEY,):  # a new game: ids by data position
             block = INCUMBENT_PEOPLE_IDS_FROM + company.rival_key[1] * INCUMBENT_PEOPLE_BLOCK

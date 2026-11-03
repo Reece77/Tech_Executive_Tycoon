@@ -18,7 +18,7 @@ from tst.sim.events.models import QueuedEvent
 from tst.sim.facilities import compute
 from tst.sim.facilities import formulas as ff
 from tst.sim.facilities.lifecycle import facility_name, staffing
-from tst.sim.facilities.models import Outage
+from tst.sim.facilities.models import Facility, Outage
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -35,11 +35,21 @@ CRITICAL = 2  # tunable-exempt: index of the critical severity in balance.events
 PERCENT = 100  # tunable-exempt: customers_pct is in percent
 
 
+def has_outages(facility: Facility, balance: Balance) -> bool:
+    """Outages belong to compute kinds whose data says so: an outage takes down the products
+    a data centre hosts (22.5). A kind with no compute output (an assembly plant, v3's mines
+    and fabs) never rolls one, whatever its `outages` flag."""
+    kind = balance.facility.kinds[facility.kind]
+    return kind.outages and compute.is_compute(facility, balance)
+
+
 def roll(state: GameState, rng: RngFactory, balance: Balance) -> list[int]:
     """Ids of the live facilities that have an outage this month, by id (22.5)."""
     hit: list[int] = []
     for facility in state.facilities:
         if facility.live_capacity(state.turn) <= 0:
+            continue
+        if not has_outages(facility, balance):  # by kind (M12b; Codex review 3 finding 7)
             continue
         rel = staffing(state, facility, balance).reliability
         chance = ff.outage_chance(rel, balance.facility.outage.base)

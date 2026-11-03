@@ -36,3 +36,55 @@ goods:
       "2025-12": 0.6173 # x 0.9 ^ 1.5
     allocation:
       - { start: "2023-01", end: "2024-12", share: 0.40 }
+
+  # --- M12b (formulas.md 26.2, 26.3), appended (the supply stream key is the position) ---
+  # Device bills of materials: -4% a year to the 2021 shortage, +25% from January 2021 to
+  # Q2 2022, back on the trend by mid-2023.
+  - key: device_bom
+    label: Device components
+    unit: index (January 2010 = 1.0)
+    points:
+      "2010-01": 1.0
+      "2021-01": 0.6382 # 0.96 ^ 11
+      "2022-04": 0.7978 # x 1.25, the chip shortage
+      "2023-06": 0.5783 # back on the trend, 0.96 ^ (161 / 12)
+      "2025-12": 0.5222 # 0.96 ^ (191 / 12)
+    allocation:
+      - { start: "2021-01", end: "2022-12", share: 0.70 }
+
+  # Server bills of materials: -5% a year, +30% in the shortage.
+  - key: server_bom
+    label: Server components
+    unit: index (January 2010 = 1.0)
+    points:
+      "2010-01": 1.0
+      "2021-01": 0.5688 # 0.95 ^ 11
+      "2022-04": 0.7395 # x 1.30
+      "2023-06": 0.5025 # 0.95 ^ (161 / 12)
+      "2025-12": 0.4420 # 0.95 ^ (191 / 12)
+    allocation:
+      - { start: "2021-01", end: "2022-12", share: 0.70 }
+
+  # Assembly equipment (prices assembly-plant capex): -2% a year.
+  - key: equipment
+    label: Assembly equipment
+    unit: index (January 2010 = 1.0)
+    points:
+      "2010-01": 1.0
+      "2025-12": 0.7250 # 0.98 ^ (191 / 12)
+
+  # Foundry wafers: +3% a year as nodes advance, +20% in the 2021-2022 shortage, the
+  # advanced-node crunch of 2023-2024 (AI accelerators and server CPUs only).
+  - key: foundry_wafer
+    label: Foundry wafers
+    unit: index (January 2010 = 1.0)
+    points:
+      "2010-01": 1.0
+      "2021-01": 1.3842 # 1.03 ^ 11
+      "2022-06": 1.6900 # x 1.2 on the trend
+      "2023-01": 1.4600
+      "2024-06": 1.7500 # the advanced-node crunch
+      "2025-12": 1.5900
+    allocation:
+      - { start: "2021-01", end: "2022-12", share: 0.70 }
+      - { start: "2023-01", end: "2024-12", share: 0.60, advanced_only: true }

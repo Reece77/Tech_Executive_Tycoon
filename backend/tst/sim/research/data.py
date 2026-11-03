@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 _KEY = r"^[a-z][a-z0-9_]*$"
 _WEIGHT_TOLERANCE = 1e-6  # tunable-exempt: float tolerance for weights that sum to 1
 JANUARY, DECEMBER = 1, 12  # tunable-exempt: calendar months
+FIRST_WINDOW_YEAR = 2026  # tunable-exempt: future eras follow the 2010-2025 history (26.4)
 
 
 class _Frozen(BaseModel):
@@ -154,6 +155,10 @@ class EraBoost(_Frozen):
     growth: float = 0.0  # annual growth points added
     adoption: float = Field(default=1.0, gt=0)  # multiplier on adoption
     months: int = Field(gt=0)
+    # M12b (26.4): quality-cap points for the category's products while it runs; with
+    # own_chip only for companies using their own chip of the category's type
+    cap_points: float = Field(default=0.0, ge=0)
+    own_chip: bool = False
 
     def covers(self, category: str, segment: str) -> bool:
         return self.category == category and (self.segments is None or segment in self.segments)
@@ -163,14 +168,44 @@ class EraDef(_Frozen):
     key: str = Field(pattern=_KEY)
     label: str = Field(min_length=1)
     domain: str
-    arrival: tuple[int, int]  # (year, month 1-12)
+    # (year, month 1-12): a historical era's arrival (YAML `arrival`; read it as `arrival`)
+    historical: tuple[int, int] | None = Field(default=None, alias="arrival")
+    # M12b (26.4): a future era's public window, ((y1, m1), (y2, m2)), instead of arrival
+    window: tuple[tuple[int, int], tuple[int, int]] | None = None
+    yield_cap: float | None = Field(default=None, gt=0, le=1)  # M12b: chips' yield cap
     boosts: tuple[EraBoost, ...] = ()
 
     @model_validator(mode="after")
     def _check(self) -> EraDef:
-        if not JANUARY <= self.arrival[1] <= DECEMBER:
-            raise ValueError(f"era {self.key!r}: arrival month must be 1-12")
+        if (self.historical is None) == (self.window is None):
+            raise ValueError(f"era {self.key!r}: needs exactly one of arrival and window")
+        months = [self.historical] if self.historical is not None else list(self.window or ())
+        if any(not JANUARY <= m[1] <= DECEMBER for m in months):
+            raise ValueError(f"era {self.key!r}: months must be 1-12")
+        if self.window is not None:
+            start, end = self.window
+            if start[0] < FIRST_WINDOW_YEAR:
+                raise ValueError(f"era {self.key!r}: a window may not start before 2026")
+            if (end[0], end[1]) < (start[0], start[1]):
+                raise ValueError(f"era {self.key!r}: a window must end after it starts")
         return self
+
+    @property
+    def windowed(self) -> bool:
+        return self.window is not None
+
+    @property
+    def arrival(self) -> tuple[int, int]:
+        """The public reference month as (year, month): the historical arrival, or a future
+        era's window midpoint (26.4). Migration 0028 reads this for saves made before M11."""
+        if self.historical is not None:
+            return self.historical
+        assert self.window is not None
+        (y1, m1), (y2, m2) = self.window
+        start = y1 * DECEMBER + m1 - 1
+        n = y2 * DECEMBER + m2 - 1 - start + 1
+        mid = start + n // 2
+        return (mid // DECEMBER, mid % DECEMBER + 1)
 
     @property
     def categories(self) -> tuple[str, ...]:

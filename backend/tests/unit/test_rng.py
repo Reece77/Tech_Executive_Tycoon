@@ -80,6 +80,8 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "research": 23,  # M11
         "rival_research": 24,
         "lead_reveal": 25,
+        "manufacturing": 30,  # M12b
+        "era_window": 31,
         "ipo": 33,  # M13 (25.2)
         "market_sentiment": 34,  # M13 (25.3)
         "misc": 99,

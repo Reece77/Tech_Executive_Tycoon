@@ -28,6 +28,7 @@ from tst.sim.geo.models import (
     RegionalMarket,
     RegionalSegment,
 )
+from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.markets_public.models import (
@@ -196,6 +197,10 @@ class GameState:
     research_projects: tuple[ResearchProject, ...] = ()
     era_arrivals: tuple[EraArrival, ...] = ()
     licenses: tuple[License, ...] = ()
+    # M12b (26.2, 26.3): contract-manufacturing and wafer contracts (active, and ended ones of
+    # the last 24 months) by id; the last phase 5's production by product id.
+    production_contracts: tuple[ProductionContract, ...] = ()
+    production: tuple[ProductionMonth, ...] = ()
     # M13 (25): each company's IPO chain and its listed state, by company id; guidance by
     # (company_id, quarter_turn); month-end share prices of the last public.history_months, by
     # (company_id, turn); CEOs serving or ended lately, and their recent decisions, by id.
@@ -495,6 +500,15 @@ class GameState:
     def company_contracts(self, company_id: int) -> tuple[SupplyContract, ...]:
         return tuple(c for c in self.contracts if c.company_id == company_id)
 
+    def production_contract(self, contract_id: int) -> ProductionContract | None:
+        return next((c for c in self.production_contracts if c.id == contract_id), None)
+
+    def product_contracts(self, product_id: int) -> tuple[ProductionContract, ...]:
+        return tuple(c for c in self.production_contracts if c.product_id == product_id)
+
+    def production_of(self, product_id: int) -> ProductionMonth | None:
+        return next((p for p in self.production if p.product_id == product_id), None)
+
     def good_month(self, good: str) -> GoodMonth | None:
         return next((g for g in self.supply if g.good == good), None)
 
@@ -747,6 +761,41 @@ def with_product_region(state: GameState, region: ProductRegion) -> GameState:
     )
 
 
+def _upsert_many[T](items: tuple[T, ...], new: list[T], key: Callable[[T], Any]) -> tuple[T, ...]:
+    """`items` (sorted by key, keys unique) with every item of `new` upserted: one rebuild."""
+    if not new:
+        return items
+    out = list(items)
+    for item in new:
+        k = key(item)
+        i = bisect_left(out, k, key=key)
+        if i < len(out) and key(out[i]) == k:
+            out[i] = item
+        else:
+            out.insert(i, item)
+    return tuple(out)
+
+
+def with_segments(
+    state: GameState,
+    home: list[ProductSegment],
+    regional: list[RegionalSegment],
+) -> GameState:
+    """Many product segments (home and other regions) in one state update (M12b: the market
+    phase writes a whole market segment at once)."""
+    if not home and not regional:
+        return state
+    return replace(
+        state,
+        product_segments=_upsert_many(
+            state.product_segments, home, lambda s: (s.product_id, s.segment)
+        ),
+        regional_segments=_upsert_many(
+            state.regional_segments, regional, lambda s: (s.product_id, s.region, s.segment)
+        ),
+    )
+
+
 def with_regional_segment(state: GameState, seg: RegionalSegment) -> GameState:
     return replace(
         state,
@@ -762,6 +811,13 @@ def with_facility(state: GameState, facility: Facility) -> GameState:
 
 def with_contract(state: GameState, contract: SupplyContract) -> GameState:
     return replace(state, contracts=_upsert(state.contracts, contract, lambda c: c.id))
+
+
+def with_production_contract(state: GameState, contract: ProductionContract) -> GameState:
+    return replace(
+        state,
+        production_contracts=_upsert(state.production_contracts, contract, lambda c: c.id),
+    )
 
 
 def with_outage(state: GameState, outage: Outage) -> GameState:

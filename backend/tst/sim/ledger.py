@@ -34,6 +34,7 @@ ACCUMULATED_DEPRECIATION: Final = "1510_accumulated_depreciation"  # contra-asse
 DEPRECIATION: Final = "6700_depreciation"  # facilities' depreciation and losses on sale (M12a)
 RESEARCH: Final = "6500_research_development"  # localization (M9, 19.5); research (M11, 21.3)
 LICENSE_REVENUE: Final = "4100_revenue_licenses"  # licence prices and royalties (M11, 21.5)
+COGS: Final = "5000_cogs"  # hardware: bills of materials, chips and assembly at sale (M12b, 26.2)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,

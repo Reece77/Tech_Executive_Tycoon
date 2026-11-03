@@ -151,7 +151,11 @@ def test_startups_are_founded_seeded_and_capped(loaded: LoadedData) -> None:
         runs.append([(m.detail, e.lines[0].amount) for m, e in zip(moves, entries, strict=True)])
     assert runs[0] == runs[1]  # same seed, same startups
     # one per category this month, except the capacity market (M12a: needs data centres)
-    founding = [c for c in eager.game_data.categories if not c.capacity_market]
+    founding = [
+        c
+        for c in eager.game_data.categories
+        if not (c.capacity_market or c.sells_units or c.assembly_market)  # M12a, M12b
+    ]
     assert len(runs[0]) == len(founding)
     state = fresh_game(eager)
     for turn in range(3):

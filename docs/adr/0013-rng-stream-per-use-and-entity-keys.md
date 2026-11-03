@@ -46,6 +46,8 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `research` | 23 | `(project_id,)` | A research project's breakthrough and dead-end draws, two uniforms a month in project id order: breakthrough, then dead end only without one (formulas.md §21.3) | M11 |
 | `rival_research` | 24 | `(company_id,)` | A researching rival's monthly breakthrough draw, one uniform (formulas.md §21.6) | M11 |
 | `lead_reveal` | 25 | `(observer_company_id, company_id, domain_index)` | The offset of another company's research-lead range, one uniform drawn at turn 0, so the range's midpoint is not the true lead (formulas.md §21.7) | M11 |
+| `manufacturing` | 30 | `(facility_id,)` | An assembly plant's monthly yield noise, one standard-normal draw for each live plant in phase 4 (formulas.md §26.2) | M12b |
+| `era_window` | 31 | `(era_index,)` (position in `eras.yaml`) | A future era's scheduled month, one uniform drawn at turn 0 (formulas.md §26.4); a pure function of the seed, so nothing is stored and appending an era moves no other era's month | M12b |
 | `ipo` | 33 | `(company_id,)` | An IPO's book demand at pricing, one standard normal (formulas.md §25.2 step 4). Hidden: the API shows only its word | M13 |
 | `market_sentiment` | 34 | `(company_id,)` | A listed company's month: one generator a month per listing, drawing in a fixed order: the sentiment shock's standard normal first, then the analysts' target noises (one standard normal each, in analyst order) at the listing and after each quarterly report (formulas.md §25.3) | M13 |
 | `misc` | 99 | any | Tests only | — |

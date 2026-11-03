@@ -277,7 +277,9 @@ def cloud_out(state: GameState, alloc: compute.Allocation, data: LoadedData) -> 
     outages = [o for o in state.outages if o.company_id == company]
     recent = [o for o in outages if o.turn > state.turn - 1 - OUTAGE_WINDOW]
     spare = (
-        compute.spare_by_region(state, company, b, d) if state.company_facilities(company) else {}
+        compute.spare_by_region(state, company, b, d)
+        if any(compute.is_compute(f, b) for f in state.company_facilities(company))
+        else {}
     )
     home = compute.home_region_of(state, b, d)
     names = {f.id: lifecycle.facility_name(f, b, d) for f in state.facilities}
@@ -285,7 +287,8 @@ def cloud_out(state: GameState, alloc: compute.Allocation, data: LoadedData) -> 
         product_id=product.id if product else None,
         product_name=product.name if product else None,
         selling=product is not None and product.status in SELLING,
-        can_start=product is None and bool(state.company_facilities(company)),
+        can_start=product is None
+        and any(compute.is_compute(f, b) for f in state.company_facilities(company)),
         segments=segments,
         customers=sum(s.customers for s in segments),
         units_sold=sum(s.units for s in segments),
@@ -314,6 +317,7 @@ def infrastructure_out(state: GameState, data: LoadedData, stored: Stored) -> In
     facilities = [
         facility_out(state, f, alloc, data)
         for f in sorted(state.company_facilities(company), key=lambda f: f.id)
+        if compute.is_compute(f, b)  # M12b: plants are on the Hardware screen
     ]
     general = b.facility.kinds[next(iter(b.facility.kinds))]
     full = general.capex_per_unit_cents / general.life_months + general.opex_per_unit_cents
@@ -341,6 +345,7 @@ def infrastructure_out(state: GameState, data: LoadedData, stored: Stored) -> In
                 ),
             )
             for key, k in b.facility.kinds.items()
+            if k.output_good in b.compute.goods  # data centres only (M12b)
         ],
         sizes=list(b.facility.sizes),
         regions=[

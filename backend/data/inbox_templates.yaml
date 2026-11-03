@@ -260,3 +260,16 @@ templates:
     title: "Outage at {facility}"
     body: "{facility} went down. Hosted products lost {lost} customers and cloud customers churned three times as fast this month."
 
+  # --- M12b (formulas.md 26.2, 26.3) ---
+  production_contract_ended:
+    title: "A {what} contract for {product} ended"
+    body: "The contract for {units} a month has run its term. Sign a new one to keep making {product}."
+  production_contract_signed:
+    title: "{what} contract signed for {product}"
+    body: "{supplier} will make {units} a month for {months} months at {price}. Unused volume is charged {take_or_pay} of the price each month."
+  manufacturing_capacity_limited:
+    title: "{product} sold out"
+    body: "Demand was {wanted} units but {product} could make only {made}. The rest went to rivals. Sign a bigger contract or build a plant."
+  cm_started:
+    title: "Selling spare plant capacity"
+    body: "{product} now sells your assembly plants' spare capacity to other device makers."

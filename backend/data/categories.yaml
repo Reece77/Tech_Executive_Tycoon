@@ -73,6 +73,15 @@ segments:
     base_churn: 0.005
     adoption: 0.003
     reach: sales
+  # M12b (formulas.md 26.1, 26.2): makers of devices and servers buying chips or contract
+  # manufacturing, sales-led
+  - key: device_oems
+    label: Device OEMs
+    weights: { quality: 0.35, price: 0.35, brand: 0.10, features: 0.20 }
+    outside_option: 45
+    base_churn: 0.04 # contract manufacturing customers; chip markets use replacement_months
+    adoption: 0.01
+    reach: sales
 
 categories:
   - key: b2b_saas
@@ -182,3 +191,111 @@ categories:
       - { segment: mid_market, addressable: 2500, reference_price_cents: 2000000, hosting_cents: 1100000, units_per_customer: 20 }
       - { segment: enterprise, addressable: 300, reference_price_cents: 20000000, hosting_cents: 11000000, units_per_customer: 200 }
       - { segment: hyperscalers, addressable: 30, reference_price_cents: 200000000, hosting_cents: 110000000, units_per_customer: 2000 }
+
+  # --- M12b (formulas.md 26.1-26.3): hardware, devices and fabless chips ---
+  # revenue_model units: a customer in play who chooses a product buys units_per_customer
+  # units once (revenue price x units, cost of goods at sale); replacement_months is the
+  # replacement cycle (base churn 1 / months), which brings customers back into play. The
+  # installed base is the product's customers. hosting_cents is a rival's cost of goods per
+  # unit (rivals' manufacturing is abstract; 40-45% of the reference price: at 55%, as Cloud
+  # hosting's, cost leaders went bankrupt in price wars); the player's comes from its bill
+  # of materials,
+  # chip and assembly (hardware.*, chips.*). Rival startups are not founded in these markets.
+  - key: devices
+    label: Devices
+    growth: 0.12
+    features_at_start: 50
+    features_per_month: 8.0 # 26.1: hardware ages fast
+    scope: 6
+    brand_constant: 150
+    launch_quality: 30 # 26.1
+    revenue_model: units
+    dev_weights: { hardware_design: 0.40, manufacturing: 0.20, design: 0.20, software_engineering: 0.10, chip_design: 0.10 }
+    markets:
+      - { segment: consumer, addressable: 20000000, reference_price_cents: 40000, hosting_cents: 18000, replacement_months: 30 }
+      - { segment: smb, addressable: 400000, reference_price_cents: 50000, hosting_cents: 22000, units_per_customer: 5, replacement_months: 40 }
+      - { segment: enterprise, addressable: 20000, reference_price_cents: 60000, hosting_cents: 27000, units_per_customer: 50, replacement_months: 40 }
+
+  - key: servers
+    label: Servers
+    growth: 0.10
+    features_at_start: 50
+    features_per_month: 8.0
+    scope: 6
+    brand_constant: 100
+    launch_quality: 30
+    revenue_model: units
+    dev_weights: { hardware_design: 0.40, infrastructure: 0.25, manufacturing: 0.20, chip_design: 0.15 }
+    markets:
+      - { segment: enterprise, addressable: 30000, reference_price_cents: 500000, hosting_cents: 225000, units_per_customer: 20, replacement_months: 48 }
+      - { segment: hyperscalers, addressable: 30, reference_price_cents: 400000, hosting_cents: 180000, units_per_customer: 5000, replacement_months: 48 }
+
+  # Chips (26.3): one category per chip type (family chips, chip_type the product's type),
+  # so each type has its own demand. Device OEM demand grows with the devices and servers
+  # markets, hyperscaler accelerators with AI models, server CPUs with cloud hosting
+  # (growth_follows). Design wins renew every 24 months.
+  - key: chips_mobile_soc
+    label: "Chips: mobile SoCs"
+    family: chips
+    chip_type: mobile_soc
+    growth: 0.12
+    features_at_start: 50
+    features_per_month: 10.0 # 26.1
+    scope: 6
+    brand_constant: 80
+    launch_quality: 30
+    revenue_model: units
+    growth_follows: { device_oems: [devices] }
+    dev_weights: { chip_design: 0.60, hardware_design: 0.20, software_engineering: 0.10, manufacturing: 0.10 }
+    markets:
+      - { segment: device_oems, addressable: 400, reference_price_cents: 4000, hosting_cents: 1800, units_per_customer: 50000, replacement_months: 24 }
+
+  - key: chips_server_cpu
+    label: "Chips: server CPUs"
+    family: chips
+    chip_type: server_cpu
+    growth: 0.10
+    features_at_start: 50
+    features_per_month: 10.0
+    scope: 6
+    brand_constant: 80
+    launch_quality: 30
+    revenue_model: units
+    growth_follows: { device_oems: [servers], hyperscalers: [cloud_hosting] }
+    dev_weights: { chip_design: 0.60, hardware_design: 0.20, software_engineering: 0.10, manufacturing: 0.10 }
+    markets:
+      - { segment: device_oems, addressable: 200, reference_price_cents: 40000, hosting_cents: 16000, units_per_customer: 2000, replacement_months: 24 }
+      - { segment: hyperscalers, addressable: 30, reference_price_cents: 36000, hosting_cents: 15000, units_per_customer: 20000, replacement_months: 24 }
+
+  - key: chips_ai_accelerator
+    label: "Chips: AI accelerators"
+    family: chips
+    chip_type: ai_accelerator
+    growth: 0.28
+    features_at_start: 50
+    features_per_month: 10.0
+    scope: 6
+    brand_constant: 80
+    launch_quality: 30
+    revenue_model: units
+    growth_follows: { device_oems: [servers], hyperscalers: [ai_models] }
+    dev_weights: { chip_design: 0.60, hardware_design: 0.20, software_engineering: 0.10, manufacturing: 0.10 }
+    markets:
+      - { segment: device_oems, addressable: 100, reference_price_cents: 150000, hosting_cents: 60000, units_per_customer: 500, replacement_months: 24 }
+      - { segment: hyperscalers, addressable: 30, reference_price_cents: 150000, hosting_cents: 60000, units_per_customer: 2000, replacement_months: 24 }
+
+  # Contract manufacturing (26.2): sells a company's spare assembly-plant capacity, like
+  # Cloud hosting sells spare compute. A customer buys units_per_customer units a month at
+  # the reference price per customer ($13 a unit); a company sells only while it owns spare
+  # plant capacity. hosting_cents is a rival's cost per customer.
+  - key: contract_manufacturing
+    label: Contract manufacturing
+    growth: 0.10
+    features_at_start: 50
+    features_per_month: 4.0
+    scope: 6
+    brand_constant: 40
+    assembly_market: true
+    dev_weights: { manufacturing: 0.50, hardware_design: 0.30, operations: 0.20 }
+    markets:
+      - { segment: device_oems, addressable: 200, reference_price_cents: 13000000, hosting_cents: 6000000, units_per_customer: 10000 }

@@ -104,10 +104,12 @@ def preview_build(
     kind = kind or next(iter(data.balance.facility.kinds))
     region = region or compute.home_region_of(state, data.balance, data.game_data)
     units = units or data.balance.facility.sizes[0]
-    if kind not in data.balance.facility.kinds:
+    b = data.balance
+    if kind not in b.facility.kinds or b.facility.kinds[kind].output_good not in b.compute.goods:
         from tst.sim.errors import FacilityRuleError
 
-        raise FacilityRuleError(f"unknown facility kind {kind!r}")
+        # Infrastructure previews data centres only; plants are built from Hardware (M12b)
+        raise FacilityRuleError(f"{kind!r} is not a data-centre kind")
     return facility_views.build_preview(state, kind, region, units, contract_id, balances, data)
 
 

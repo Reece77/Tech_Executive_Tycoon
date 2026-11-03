@@ -178,11 +178,17 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
             note=(
                 "Sells your spare data-centre capacity: start it from Infrastructure"
                 if cat.capacity_market
+                else "Sells your spare assembly-plant capacity: start it from Hardware"
+                if cat.assembly_market
+                else "Needs a manufacturing contract or a plant (a wafer contract for a chip)"
+                if cat.sells_units
                 else "Compute costs follow the market"
                 if cat.compute_indexed
                 else None
             ),
             capacity_market=cat.capacity_market,
+            assembly_market=cat.assembly_market,
+            sells_units=cat.sells_units,
             launch_quality=max(data.balance.products.launch_min_quality, cat.launch_quality or 0),
             segments=[
                 CategorySegmentOut(
@@ -391,6 +397,7 @@ def product_out(
         launched_label=None
         if product.launched_turn is None
         else format_turn(product.launched_turn),
+        sells_units=category.sells_units,
         # Now: home and other regions, as phase 5 books them (M10r finding 4).
         mrr_cents=sum(s.mrr_cents for s in segments) + sum(_mrr(r) for r in abroad),
         mrr_change=_change(months, lambda m: sum(r.revenue_cents for r in m.values())),

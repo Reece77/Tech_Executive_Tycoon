@@ -38,6 +38,7 @@ class BuildFacility:
     region: str
     capacity: int
     contract_id: int | None = None
+    city: str | None = None  # M12b (26.2): a cities.yaml key in `region` (a plant's city)
     kind: Literal["build_facility"] = "build_facility"
 
 
@@ -96,10 +97,15 @@ def build_facility(
         raise FacilityRuleError(f"unknown facility kind {action.facility_kind!r}")
     if action.region not in data.region_keys:
         raise FacilityRuleError(f"unknown region {action.region!r}")
-    if action.capacity not in fb.sizes:
-        sizes = ", ".join(f"{s:,}" for s in fb.sizes)
-        raise FacilityRuleError(f"a data centre has {sizes} units")
     kind = fb.kinds[action.facility_kind]
+    allowed = kind.sizes or fb.sizes  # M12b: plants have their own sizes
+    if action.capacity not in allowed:
+        sizes = ", ".join(f"{s:,}" for s in allowed)
+        raise FacilityRuleError(f"a {kind.label.lower()} has {sizes} {kind.unit}")
+    if action.city is not None and (
+        not data.has_city(action.city) or data.city(action.city).region != action.region
+    ):
+        raise FacilityRuleError(f"{action.city!r} is not a city in that region")
     if action.contract_id is not None and (
         lifecycle.usable_contract(state, company, kind.input_good, action.contract_id) is None
     ):
@@ -118,6 +124,9 @@ def build_facility(
         raise InsufficientCashError(f"the first capex payment needs {q.monthly_capex_cents} cents")
     state = spend_energy(state, action.actor_id, "build_facility", balance, cost=fb.build_energy)
     state, facility = lifecycle.order_build(state, company, q)
+    if action.city is not None:  # M12b (26.2): its city's hires get the city's talent
+        facility = replace(facility, city=action.city)
+        state = with_facility(state, facility)
     name = lifecycle.facility_name(facility, balance, data)
     later = (
         f" Components are short: {q.late:,} {kind.unit} arrive {q.late_months} months late."
@@ -235,7 +244,7 @@ def sell_capacity(
     company's spare capacity (22.3), priced at the reference price in every segment. Needs a
     data centre (building or live) and no Cloud hosting product yet."""
     company = acting_company(state, action.actor_id)
-    if not state.company_facilities(company):
+    if not any(compute.is_compute(f, balance) for f in state.company_facilities(company)):
         raise FacilityRuleError("build a data centre before selling capacity")
     if compute.capacity_product(state, company, data) is not None:
         raise FacilityRuleError("the company already sells its spare capacity")

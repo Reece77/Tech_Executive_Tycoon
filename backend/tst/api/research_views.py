@@ -259,9 +259,18 @@ def eras_out(state: GameState, data: LoadedData) -> list[EraOut]:
                 your_level=_r1(levels.level(state, g, b, me, era.domain)),
                 accelerates=_accelerates(data, era),
                 first_mover_reward=reward,
+                expected=_window(era) if a is None else None,
             )
         )
     return out
+
+
+def _window(era: EraDef) -> str | None:
+    """'expected 2026-2028' for a future era (26.4): the public window, never t_sched."""
+    if era.window is None:
+        return None
+    (y1, _), (y2, _) = era.window
+    return f"expected {y1}\u2013{y2}"
 
 
 def research_out(state: GameState, data: LoadedData) -> ResearchOut:

@@ -12,6 +12,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from tst.sim.calendar import MONTHS_PER_YEAR
+from tst.sim.chips.config import ChipsBalance
 from tst.sim.events.data import (
     EFFECT_TYPES,
     LOAN_EFFECTS,
@@ -26,6 +27,7 @@ from tst.sim.facilities.config import (
     FacilityBalance,
     SupplyBalance,
 )
+from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
@@ -1133,6 +1135,8 @@ class Balance(_Frozen):
     facility: FacilityBalance  # M12a (formulas.md 22.2, 22.5)
     supply: SupplyBalance  # M12a (formulas.md 22.4)
     compute: ComputeBalance  # M12a (formulas.md 22.1, 22.3)
+    hardware: HardwareBalance  # M12b (formulas.md 26.1-26.2)
+    chips: ChipsBalance  # M12b (formulas.md 26.3)
     rnd: RndBalance  # M11 (formulas.md 21)
     ipo: IpoBalance  # M13 (formulas.md 25.1-25.2)
     public: PublicBalance  # M13 (formulas.md 25.3-25.5, 25.7)
@@ -1368,6 +1372,7 @@ class NamesFile(_Frozen):
 # --- Products and markets (M3): categories.yaml and incumbents.yaml -------------------------
 
 type Reach = Literal["self_serve", "sales"]
+type RevenueModel = Literal["subscription", "units"]  # M12b (26.1)
 WEIGHT_TOLERANCE = 1e-9  # tunable-exempt: float tolerance when checking that weights sum to 1
 
 
@@ -1403,8 +1408,11 @@ class MarketDef(_Frozen):
     addressable: float = Field(gt=0)  # D0: customers in January 2010
     reference_price_cents: int = Field(gt=0)
     hosting_cents: int = Field(ge=0)
-    # M12a (22.3): capacity units (CU) each customer buys, in a capacity market only
+    # M12a (22.3): capacity units (CU) each customer buys, in a capacity market only; M12b
+    # (26.1): units each customer buys in a unit-sale market
     units_per_customer: float = Field(default=1.0, gt=0)
+    # M12b (26.1): a unit-sale market's replacement cycle in months (base churn 1 / months)
+    replacement_months: float | None = Field(default=None, gt=0)
 
 
 class CategoryDef(_Frozen):
@@ -1422,6 +1430,17 @@ class CategoryDef(_Frozen):
     growth_by_year: dict[int, float] | None = None
     compute_indexed: bool = False  # M8: hosting x compute_index(year)
     capacity_market: bool = False  # M12a (22.3): sells spare data-centre capacity
+    # M12b (26.1-26.3): `units` sells units once per customer in play (subscription: monthly)
+    revenue_model: RevenueModel = "subscription"
+    family: str | None = None  # "chips" for the chip categories (one per chip type)
+    chip_type: str | None = None  # chips.types key a chip category's products are
+    # segment -> categories whose demand growth this segment's demand follows (26.3)
+    growth_follows: dict[str, tuple[str, ...]] | None = None
+    assembly_market: bool = False  # M12b (26.2): sells spare assembly-plant capacity
+
+    @property
+    def sells_units(self) -> bool:
+        return self.revenue_model == "units"
 
     def growth_in(self, year: int) -> float:
         """Annual demand growth in a calendar year: the latest growth_by_year entry at or
@@ -1442,6 +1461,12 @@ class CategoryDef(_Frozen):
             self.dev_weights.values()
         ):
             raise ValueError(f"category {self.key!r}: dev_weights must be >= 0 and sum to 1")
+        if self.sells_units and any(m.replacement_months is None for m in self.markets):
+            raise ValueError(f"category {self.key!r}: unit-sale markets need replacement_months")
+        if (self.family == "chips") != (self.chip_type is not None):
+            raise ValueError(f"category {self.key!r}: a chip category needs family and chip_type")
+        if self.growth_follows and set(self.growth_follows) - {m.segment for m in self.markets}:
+            raise ValueError(f"category {self.key!r}: growth_follows names unknown segments")
         if dupes := _dupes([m.segment for m in self.markets]):
             raise ValueError(f"category {self.key!r}: segments listed twice {dupes}")
         return self
@@ -1496,6 +1521,8 @@ class IncumbentCompany(_Frozen):
     target_margin_bp: int = Field(ge=0, lt=BP_DENOMINATOR)  # margin its pools are sized for
     cash_months: float = Field(ge=0)  # starting cash in months of revenue (15.1)
     products: tuple[IncumbentProduct, ...] = Field(min_length=1)
+    # M12b: named key people for this incumbent; None = rivals.key_people (15.1)
+    key_people: int | None = Field(default=None, ge=1)
 
 
 DEFAULT_INCUMBENT_REGIONS = ("north_america", "europe")  # 19.5: v1 incumbents' regions

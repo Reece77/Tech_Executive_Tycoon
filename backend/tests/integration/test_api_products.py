@@ -72,10 +72,17 @@ def test_categories_and_markets(setup: tuple[Client, Path]) -> None:
         "fintech",  # M8
         "ai_models",
         "cloud_hosting",  # M12a
+        "devices",  # M12b
+        "servers",
+        "chips_mobile_soc",
+        "chips_server_cpu",
+        "chips_ai_accelerator",
+        "contract_manufacturing",
     ]
-    assert categories[-2]["note"] == "Compute costs follow the market"
-    assert categories[-3]["launch_quality"] == 30
-    assert categories[-1]["capacity_market"]
+    by_key = {c["key"]: c for c in categories}
+    assert by_key["ai_models"]["note"] == "Compute costs follow the market"
+    assert by_key["fintech"]["launch_quality"] == 30
+    assert by_key["cloud_hosting"]["capacity_market"]
     smb = categories[0]["segments"][0]
     assert (smb["segment"], smb["addressable"], smb["reach"]) == ("smb", 400_000, "self_serve")
     market = api.get(f"{BASE}/markets/b2b_saas")

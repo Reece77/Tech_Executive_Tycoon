@@ -34,7 +34,14 @@ def test_facilities_round_trip(
     assert facility.capex_paid_cents == 3 * facility.capex_cents // 12
     (contract,) = state.contracts
     assert contract.used == 100
-    assert {g.good for g in state.supply} == {"server", "gpu"}
+    assert {g.good for g in state.supply} == {
+        "server",
+        "gpu",
+        "device_bom",  # M12b (26.2, 26.3)
+        "server_bom",
+        "equipment",
+        "foundry_wafer",
+    }
     assert all(g.turn == 2 for g in state.supply)
     cloud = [p for p in state.products if p.category == "cloud_hosting" and p.company_id == 1]
     assert len(cloud) == 1
