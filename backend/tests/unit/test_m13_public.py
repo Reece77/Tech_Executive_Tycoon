@@ -211,7 +211,7 @@ def test_buyback_and_secondary_ledger_property(amount: int, share: float) -> Non
     before = fd_shares(state, CID)
     try:
         after, entry, bought, cost = capital.buyback(state, CID, amount, cash, LOADED.balance)
-    except Exception:  # noqa: BLE001 - amounts too small or too large are refused
+    except Exception:  # amounts too small or too large are refused
         bought = 0
     else:
         assert sum(line.amount for line in entry.lines) == 0
@@ -236,7 +236,7 @@ def test_dividend_is_paid_next_month() -> None:
     with pytest.raises(Exception):  # noqa: B017 - one declaration a month
         capital.declare_dividend(state, CID, 10, 10**15, outstanding)
     state = replace(state, turn=state.turn + 1)
-    state, entries, logs = month(state)
+    state, entries, _ = month(state)
     paid = [e for e in entries if "Dividend" in e.memo]
     assert len(paid) == 1
     lines = {line.account: line.amount for line in paid[0].lines}
