@@ -106,13 +106,14 @@ make dev       # run API and front end together
 - [ ] Any design decision the spec and ADRs did not cover is written down (a new ADR, or the brief's "Decisions made" section).
 - [ ] Final message: summary, files touched, how each criterion was verified, follow-ups.
 
-### Merging (from 2026-10-27, Reece's decision)
+### Merging (from 2026-10-27, Reece's decision; pull-request route from 2026-11-03)
 
-When every box above is ticked, `make e2e` passes, and the GitHub Actions `check` run on your pushed branch is green:
+`main` is protected: changes arrive only through a pull request whose `check` shards pass on a branch that is up to date with `main`. When every box above is ticked, `make e2e` passes, and the `check` run on your pushed branch is green:
 
-1. Merge the branch into `main` with `git merge --no-ff` (resolve `CHANGELOG.md` conflicts by keeping both sides' lines), ending the merge commit's message with the trailer `Milestone-Tag: mX-done` (the milestone id), push `main`, and wait for the `check` run on `main` to go green. If it fails, fix it on `main` at once (that fix commit carries the trailer instead).
-2. The `tag-milestone` workflow tags the commit: when `check` succeeds on `main` and the head commit has a `Milestone-Tag:` trailer whose tag doesn't exist yet, it creates and pushes that tag. Confirm the tag appeared (`git ls-remote --tags origin mX-done`). Cloud sessions cannot push tags themselves (HTTP 403).
-3. If the instructions name a next brief, start it on a new branch from the updated `main`; otherwise stop and report.
+1. Merge `main` into your branch if it has moved (resolve `CHANGELOG.md` conflicts by keeping both sides' lines), push, and wait for `check` to go green again.
+2. Open a pull request into `main` and merge it with a **merge commit** (not squash or rebase). The merge commit's message ends with the trailer `Milestone-Tag: mX-done` (the milestone id). Wait for the `check` run on `main` to go green. If it fails, fix it at once through another pull request (that fix's merge commit carries the trailer instead).
+3. The `tag-milestone` workflow tags the commit: when `check` succeeds on `main` and the head commit has a `Milestone-Tag:` trailer whose tag doesn't exist yet, it creates and pushes that tag. Confirm the tag appeared (`git ls-remote --tags origin mX-done`). Cloud sessions cannot push tags themselves (HTTP 403).
+4. If the instructions name a next brief, start it on a new branch from the updated `main`; otherwise stop and report.
 
 Never force-push, rewrite `main`'s history, or merge with a red check. The product manager reviews after the merge and sends any fixes as a follow-up brief.
 
