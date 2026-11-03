@@ -99,6 +99,16 @@ On a stage-3 save, build a 500-CU general data centre in your home region and wa
 - **22.7 values** (tools/m12a_targets.py, 10 seeds): T2 at 80% 0.62, at 40% 1.23 (build in January 2016, server index 0.61; 2010 prices give 0.81 at 80%). T3 9/10 (staffed 2,000 CU, $50,000 a month of marketing, prices 0.9 x reference). T4 server +30%, GPU +60%; AI margin gap +15.7 points at 0.45 x reference price (own 76.7%, spot 61.1%; own compute $432 a CU, spot $723) after tuning the GPU table to $20,000 capex and $200 power (Reece, 2026-11-02); +7.0 at reference prices, the most any table allows while a GPU data centre at 40% use costs at least 1.2 x spot (worst build month 1.22). T3 10/10 after the key change. T5 8/10. T6 1.05 a year at coverage 0.5, 0.17 at full coverage (base 0.016).
 - **Earlier guards (reported, not tuned).** Before the ADR-0013 amendment the cloud incumbents moved M10 covenants (0.7, <= 0.6), M8 support (1.056, >= 1.08) and T5. With stable keys those two pass; still failing: T2 wins (steady 9/10, <= 6; main 6), T5 bootstrap-frugal bankrupt 10% (20-50%; main 20%), and the M5 living market (1 category without a launch and 0.95 launches, want 0 and >= 1.0; main passes). The same values come out with main's incumbents.yaml and entrants.yaml, so they are the one-time reseed of the key change, not the cloud rivals or facilities. The cloud incumbents shift later rival startups' company ids, which key stream `rivals`. With the main data files on this code the value is main's 20%; seeds 11-40 give 2/30 on both main and this branch.
 
+- **Guards on the combined code (M11 + M12a), 2026-11-03.** All other nightly guards pass. The three that miss at 10 seeds, against main (with M11) on the same seeds (T2's cap scales to 18/30 on 30 seeds):
+
+  | Guard | Band | Combined, seeds 1-10 | Combined, seeds 11-40 | main, seeds 1-10 | main, seeds 11-40 | Verdict |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | T2 wins per strategy | each <= 6/10 (18/30) | steady 8, frugal 2 | steady 22, frugal 8 | steady 6, frugal 4 | steady 21, frugal 9 | seed variance (main misses on 30) |
+  | T5 bootstrap-frugal bankrupt | 20-50% | 10% | 7% | 20% | 7% | seed variance (main misses on 30) |
+  | M5 living market: seeds with a share breach | 0 | 1 | 0/30 | 0 | 0/30 | seed variance (passes on 30) |
+
+  Launches per v1 category: combined 1.0 (1-10) and 1.17 (11-40); main 1.08 and 1.12 (>= 1.0).
+
 ## Follow-ups
 
 - Reece: target 4's margin gap needs a design decision (the AI index's 2023 level, the GPU table's power cost, or the target).
