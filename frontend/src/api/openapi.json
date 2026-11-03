@@ -11249,6 +11249,653 @@
         }
       }
     },
+    "/api/saves/{save_id}/hardware": {
+      "get": {
+        "tags": [
+          "hardware"
+        ],
+        "summary": "Get Hardware",
+        "description": "The Hardware screen: plants, contracts, contract-manufacturing sales, chips, and the\nwafer and component indexes (26.5).",
+        "operationId": "getHardware",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HardwareOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/products/{product_id}/manufacturing": {
+      "get": {
+        "tags": [
+          "hardware"
+        ],
+        "summary": "Get Manufacturing",
+        "description": "A device, server or chip product's bill of materials and manufacturing panel; empty\n(`sells_units` false) for a software product.",
+        "operationId": "getProductManufacturing",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturingOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/hardware/contracts": {
+      "post": {
+        "tags": [
+          "hardware"
+        ],
+        "summary": "Sign Cm",
+        "operationId": "signManufacturingContract",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CmContractIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HardwareActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/hardware/wafer-contracts": {
+      "post": {
+        "tags": [
+          "hardware"
+        ],
+        "summary": "Sign Wafer",
+        "operationId": "signWaferContract",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaferContractIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HardwareActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/hardware/plants": {
+      "post": {
+        "tags": [
+          "hardware"
+        ],
+        "summary": "Build Plant",
+        "description": "Order an assembly plant in a city (26.2).",
+        "operationId": "buildPlant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlantIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HardwareActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/hardware/plants/{facility_id}/staff": {
+      "post": {
+        "tags": [
+          "hardware"
+        ],
+        "summary": "Staff Plant",
+        "operationId": "staffPlant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlantStaffIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HardwareActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/hardware/plants/{facility_id}/sell": {
+      "post": {
+        "tags": [
+          "hardware"
+        ],
+        "summary": "Sell Plant",
+        "operationId": "sellPlant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HardwareActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/hardware/contract-manufacturing": {
+      "post": {
+        "tags": [
+          "hardware"
+        ],
+        "summary": "Sell Plant Capacity",
+        "description": "Start selling spare plant capacity as contract manufacturing (26.2).",
+        "operationId": "sellPlantCapacity",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HardwareActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/research": {
       "get": {
         "tags": [
@@ -13876,6 +14523,32 @@
         ],
         "title": "BoardOut"
       },
+      "BomLineOut": {
+        "properties": {
+          "line": {
+            "type": "string",
+            "title": "Line",
+            "description": "Bill of materials, chip, assembly or packaging"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Where the number comes from, in words"
+          },
+          "cents": {
+            "type": "integer",
+            "title": "Cents",
+            "description": "A unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "line",
+          "detail",
+          "cents"
+        ],
+        "title": "BomLineOut"
+      },
       "BreakdownItemOut": {
         "properties": {
           "label": {
@@ -14426,6 +15099,18 @@
             "type": "boolean",
             "title": "Capacity Market",
             "description": "Sells spare data-centre capacity; not a product to create (M12a)",
+            "default": false
+          },
+          "assembly_market": {
+            "type": "boolean",
+            "title": "Assembly Market",
+            "description": "Sells spare assembly-plant capacity; not a product to create (M12b)",
+            "default": false
+          },
+          "sells_units": {
+            "type": "boolean",
+            "title": "Sells Units",
+            "description": "Sells units once per customer; needs manufacturing (M12b)",
             "default": false
           }
         },
@@ -15112,6 +15797,98 @@
         "title": "CheckOut",
         "description": "An interview or reference check: the candidate's profile now, and what it taught."
       },
+      "ChipOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "chip_type": {
+            "type": "string",
+            "title": "Chip Type"
+          },
+          "chip_label": {
+            "type": "string",
+            "title": "Chip Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "chip_yield": {
+            "type": "number",
+            "title": "Chip Yield",
+            "description": "Good chips per chip on a wafer (0-1)"
+          },
+          "unit_cost_cents": {
+            "type": "integer",
+            "title": "Unit Cost Cents"
+          },
+          "market_price_cents": {
+            "type": "integer",
+            "title": "Market Price Cents",
+            "description": "The device OEM reference price"
+          },
+          "per_wafer": {
+            "type": "integer",
+            "title": "Per Wafer"
+          },
+          "wafers": {
+            "type": "integer",
+            "title": "Wafers",
+            "description": "Wafer starts a month under contract"
+          },
+          "made": {
+            "type": "number",
+            "title": "Made",
+            "description": "Good chips last month"
+          },
+          "internal_units": {
+            "type": "number",
+            "title": "Internal Units",
+            "description": "Used by your own devices and servers, at cost"
+          },
+          "market_units": {
+            "type": "number",
+            "title": "Market Units",
+            "description": "Sold to the chip market"
+          },
+          "gpu_capex_factor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gpu Capex Factor",
+            "description": "AI accelerators: GPU data-centre capex x this while it is live"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "chip_type",
+          "chip_label",
+          "status",
+          "chip_yield",
+          "unit_cost_cents",
+          "market_price_cents",
+          "per_wafer",
+          "wafers",
+          "made",
+          "internal_units",
+          "market_units",
+          "gpu_capex_factor"
+        ],
+        "title": "ChipOut"
+      },
       "ChooseEventIn": {
         "properties": {
           "choice": {
@@ -15398,6 +16175,106 @@
           "price_per_unit_cents"
         ],
         "title": "CloudSegmentOut"
+      },
+      "CmContractIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "manufacturer": {
+            "type": "string",
+            "title": "Manufacturer"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "units": {
+            "type": "integer",
+            "title": "Units"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "manufacturer",
+          "city",
+          "units",
+          "months"
+        ],
+        "title": "CmContractIn"
+      },
+      "CmOut": {
+        "properties": {
+          "started": {
+            "type": "boolean",
+            "title": "Started"
+          },
+          "can_start": {
+            "type": "boolean",
+            "title": "Can Start"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "units_sold": {
+            "type": "number",
+            "title": "Units Sold",
+            "description": "Units a month sold to device makers"
+          },
+          "spare_units": {
+            "type": "number",
+            "title": "Spare Units",
+            "description": "Run units left after your own products"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "A month at current customers and prices"
+          },
+          "quality": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality",
+            "description": "Yield x reliability"
+          }
+        },
+        "type": "object",
+        "required": [
+          "started",
+          "can_start",
+          "product_id",
+          "customers",
+          "units_sold",
+          "spare_units",
+          "revenue_cents",
+          "quality"
+        ],
+        "title": "CmOut",
+        "description": "Selling spare plant capacity (26.2)."
       },
       "ComponentOut": {
         "properties": {
@@ -16856,6 +17733,18 @@
           "first_mover_reward": {
             "type": "string",
             "title": "First Mover Reward"
+          },
+          "expected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected",
+            "description": "A future era's public window until it arrives, e.g. 'expected 2026-2028' (M12b, 26.4); its scheduled month is never shown"
           }
         },
         "type": "object",
@@ -18805,6 +19694,182 @@
         ],
         "title": "HallOfFameOut",
         "description": "The records of 17.2. Ratings are shown ratings: the midpoint of the ranges you see."
+      },
+      "HardwareActionOut": {
+        "properties": {
+          "hardware": {
+            "$ref": "#/components/schemas/HardwareOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hardware",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "HardwareActionOut"
+      },
+      "HardwareOut": {
+        "properties": {
+          "turn_label": {
+            "type": "string",
+            "title": "Turn Label"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ManufacturingOut"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "plants": {
+            "items": {
+              "$ref": "#/components/schemas/PlantOut"
+            },
+            "type": "array",
+            "title": "Plants"
+          },
+          "contracts": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionContractOut"
+            },
+            "type": "array",
+            "title": "Contracts"
+          },
+          "chips": {
+            "items": {
+              "$ref": "#/components/schemas/ChipOut"
+            },
+            "type": "array",
+            "title": "Chips"
+          },
+          "cm": {
+            "$ref": "#/components/schemas/CmOut"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentOut"
+            },
+            "type": "array",
+            "title": "Components",
+            "description": "Device, server, equipment and wafer indexes"
+          },
+          "manufacturers": {
+            "items": {
+              "$ref": "#/components/schemas/OptionOut"
+            },
+            "type": "array",
+            "title": "Manufacturers"
+          },
+          "foundries": {
+            "items": {
+              "$ref": "#/components/schemas/OptionOut"
+            },
+            "type": "array",
+            "title": "Foundries"
+          },
+          "cities": {
+            "items": {
+              "$ref": "#/components/schemas/OptionOut"
+            },
+            "type": "array",
+            "title": "Cities"
+          },
+          "cheap_city": {
+            "type": "string",
+            "title": "Cheap City"
+          },
+          "plant_sizes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Plant Sizes"
+          },
+          "contract_months": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Contract Months",
+            "description": "[min, max] for contract manufacturing"
+          },
+          "wafer_months": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Wafer Months",
+            "description": "[min, max] for wafer contracts"
+          },
+          "contract_take_or_pay": {
+            "type": "number",
+            "title": "Contract Take Or Pay"
+          },
+          "wafer_take_or_pay": {
+            "type": "number",
+            "title": "Wafer Take Or Pay"
+          },
+          "contract_energy": {
+            "type": "integer",
+            "title": "Contract Energy"
+          },
+          "wafer_energy": {
+            "type": "integer",
+            "title": "Wafer Energy"
+          },
+          "build_energy": {
+            "type": "integer",
+            "title": "Build Energy"
+          },
+          "plant_capex_per_unit_cents": {
+            "type": "integer",
+            "title": "Plant Capex Per Unit Cents",
+            "description": "At this month's equipment index"
+          },
+          "plant_build_months": {
+            "type": "integer",
+            "title": "Plant Build Months"
+          },
+          "plant_staff_per": {
+            "type": "integer",
+            "title": "Plant Staff Per",
+            "description": "Units a month per manufacturing engineer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn_label",
+          "products",
+          "plants",
+          "contracts",
+          "chips",
+          "cm",
+          "components",
+          "manufacturers",
+          "foundries",
+          "cities",
+          "cheap_city",
+          "plant_sizes",
+          "contract_months",
+          "wafer_months",
+          "contract_take_or_pay",
+          "wafer_take_or_pay",
+          "contract_energy",
+          "wafer_energy",
+          "build_energy",
+          "plant_capex_per_unit_cents",
+          "plant_build_months",
+          "plant_staff_per"
+        ],
+        "title": "HardwareOut"
       },
       "HireBanksIn": {
         "properties": {
@@ -21369,6 +22434,157 @@
         ],
         "title": "ManagerOut"
       },
+      "ManufacturingOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "category_label": {
+            "type": "string",
+            "title": "Category Label"
+          },
+          "chip_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chip Type",
+            "description": "The product's chip type (chips) or the chip it uses"
+          },
+          "chip_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chip Label"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/BomLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "unit_cost_cents": {
+            "type": "integer",
+            "title": "Unit Cost Cents",
+            "description": "The sum of the lines"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents",
+            "description": "Its price in its first segment"
+          },
+          "gross_margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Margin",
+            "description": "(price - unit cost) / price, 0-1"
+          },
+          "chip_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chip Source",
+            "description": "Own chip (at cost) or bought at market price"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceOut"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "units_sold": {
+            "type": "number",
+            "title": "Units Sold",
+            "description": "Units sold last month"
+          },
+          "units_lost": {
+            "type": "number",
+            "title": "Units Lost",
+            "description": "Demand last month above what it could make"
+          },
+          "internal_units": {
+            "type": "number",
+            "title": "Internal Units",
+            "description": "A chip product: chips your own devices used"
+          },
+          "cogs_cents": {
+            "type": "integer",
+            "title": "Cogs Cents",
+            "description": "Last month's cost of goods"
+          },
+          "can_launch_source": {
+            "type": "boolean",
+            "title": "Can Launch Source",
+            "description": "It has a manufacturing source to launch"
+          },
+          "sells_units": {
+            "type": "boolean",
+            "title": "Sells Units",
+            "description": "False for a software product: no bill of materials (empty)",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category",
+          "category_label",
+          "chip_type",
+          "chip_label",
+          "lines",
+          "unit_cost_cents",
+          "price_cents",
+          "gross_margin",
+          "chip_source",
+          "sources",
+          "units_sold",
+          "units_lost",
+          "internal_units",
+          "cogs_cents",
+          "can_launch_source"
+        ],
+        "title": "ManufacturingOut",
+        "description": "A device, server or chip product's bill of materials and manufacturing panel."
+      },
       "MarketOut": {
         "properties": {
           "category": {
@@ -22325,6 +23541,24 @@
           "crowded_morale"
         ],
         "title": "OfficeOut"
+      },
+      "OptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "OptionOut"
       },
       "OptionsOut": {
         "properties": {
@@ -23970,6 +25204,235 @@
         ],
         "title": "PlanActivityOut"
       },
+      "PlantIn": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "units": {
+            "type": "integer",
+            "title": "Units"
+          }
+        },
+        "type": "object",
+        "required": [
+          "city",
+          "units"
+        ],
+        "title": "PlantIn"
+      },
+      "PlantOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "city_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "building, live or closed"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since"
+          },
+          "units": {
+            "type": "integer",
+            "title": "Units",
+            "description": "Units a month it is built for"
+          },
+          "live_units": {
+            "type": "integer",
+            "title": "Live Units"
+          },
+          "own_use": {
+            "type": "number",
+            "title": "Own Use",
+            "description": "Units run last month for your own products"
+          },
+          "sold_use": {
+            "type": "number",
+            "title": "Sold Use",
+            "description": "Units run last month for contract-manufacturing customers"
+          },
+          "utilization": {
+            "type": "number",
+            "title": "Utilization",
+            "description": "Used / live units (0-1)"
+          },
+          "plant_yield": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant Yield",
+            "description": "Share of units run that are good (0-1)"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          },
+          "coverage": {
+            "type": "number",
+            "title": "Coverage"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          },
+          "unit_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Name"
+          },
+          "monthly_cost_cents": {
+            "type": "integer",
+            "title": "Monthly Cost Cents",
+            "description": "Fixed cost and depreciation a month"
+          },
+          "cost_per_good_unit_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Good Unit Cents",
+            "description": "Last month's fixed, variable and depreciation per good unit"
+          },
+          "contract_fee_cents": {
+            "type": "integer",
+            "title": "Contract Fee Cents",
+            "description": "A Shenzhen contract manufacturer's fee, to compare"
+          },
+          "book_value_cents": {
+            "type": "integer",
+            "title": "Book Value Cents"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "build_progress": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Progress"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          },
+          "sale_value_cents": {
+            "type": "integer",
+            "title": "Sale Value Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "city",
+          "city_label",
+          "status",
+          "since",
+          "units",
+          "live_units",
+          "own_use",
+          "sold_use",
+          "utilization",
+          "plant_yield",
+          "staff",
+          "staff_needed",
+          "coverage",
+          "unit_id",
+          "unit_name",
+          "monthly_cost_cents",
+          "cost_per_good_unit_cents",
+          "contract_fee_cents",
+          "book_value_cents",
+          "capex_cents",
+          "build_progress",
+          "ready",
+          "sale_value_cents"
+        ],
+        "title": "PlantOut"
+      },
+      "PlantStaffIn": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id"
+        ],
+        "title": "PlantStaffIn"
+      },
       "PortfolioOut": {
         "properties": {
           "mrr_cents": {
@@ -24457,6 +25920,12 @@
             ],
             "title": "Launched Label",
             "description": "Launch month, e.g. 'Sep 2010'"
+          },
+          "sells_units": {
+            "type": "boolean",
+            "title": "Sells Units",
+            "description": "A device, server or chip: it has a manufacturing panel (M12b)",
+            "default": false
           },
           "mrr_cents": {
             "type": "integer",
@@ -25162,6 +26631,101 @@
         ],
         "title": "ProductTotalMonthOut",
         "description": "One month end across every segment of a product (the 12-month chart)."
+      },
+      "ProductionContractOut": {
+        "properties": {
+          "contract_id": {
+            "type": "integer",
+            "title": "Contract Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "assembly (contract manufacturing) or wafer"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "supplier": {
+            "type": "string",
+            "title": "Supplier"
+          },
+          "supplier_label": {
+            "type": "string",
+            "title": "Supplier Label"
+          },
+          "city_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City Label"
+          },
+          "units": {
+            "type": "integer",
+            "title": "Units",
+            "description": "A month: units, or wafer starts"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents",
+            "description": "A unit's fee, or a wafer's locked price"
+          },
+          "signed": {
+            "type": "string",
+            "title": "Signed"
+          },
+          "ends": {
+            "type": "string",
+            "title": "Ends"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "delivered": {
+            "type": "number",
+            "title": "Delivered",
+            "description": "Delivered last month after allocation"
+          },
+          "used": {
+            "type": "number",
+            "title": "Used"
+          },
+          "take_or_pay_cents": {
+            "type": "integer",
+            "title": "Take Or Pay Cents",
+            "description": "Last month's charge on unused volume"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contract_id",
+          "kind",
+          "product_id",
+          "product_name",
+          "supplier",
+          "supplier_label",
+          "city_label",
+          "units",
+          "price_cents",
+          "signed",
+          "ends",
+          "status",
+          "delivered",
+          "used",
+          "take_or_pay_cents"
+        ],
+        "title": "ProductionContractOut"
       },
       "ProductsMetaOut": {
         "properties": {
@@ -28051,6 +29615,37 @@
         ],
         "title": "SortKey"
       },
+      "SourceOut": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "plant or contract"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "units": {
+            "type": "number",
+            "title": "Units",
+            "description": "Units made last month"
+          },
+          "available": {
+            "type": "number",
+            "title": "Available",
+            "description": "Units it could make last month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "label",
+          "units",
+          "available"
+        ],
+        "title": "SourceOut"
+      },
       "SpotOut": {
         "properties": {
           "good": {
@@ -29325,6 +30920,34 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WaferContractIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "foundry": {
+            "type": "string",
+            "title": "Foundry"
+          },
+          "wafers": {
+            "type": "integer",
+            "title": "Wafers"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "foundry",
+          "wafers",
+          "months"
+        ],
+        "title": "WaferContractIn"
       },
       "tst__api__schemas__facilities__RegionOptionOut": {
         "properties": {

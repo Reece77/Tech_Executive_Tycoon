@@ -40,6 +40,11 @@ class Facility:
     unit_id: int | None = None  # the org unit that staffs it
     contract_id: int | None = None
     closed_turn: int | None = None
+    # M12b (26.2), assembly plants: this month's yield (after noise), and last month's units
+    # run for the company's own products and sold as contract manufacturing
+    yield_rate: float = 0.0
+    run_units: float = 0.0
+    sold_units: float = 0.0
 
     def live_capacity(self, turn: int) -> int:
         """Units working in `turn`."""

@@ -55,7 +55,6 @@ from tst.db.mappers import (
     product_to_row,
     queued_from_row,
     queued_to_row,
-    reveal_from_rows,
     reveal_to_rows,
     rival_from_row,
     rival_to_row,
@@ -120,6 +119,8 @@ from tst.db.models import (
     PersonTagRow,
     PoachApproachRow,
     ProductDivisionRow,
+    ProductionContractRow,
+    ProductionMonthRow,
     ProductRegionRow,
     ProductRow,
     ProductSegmentRow,
@@ -167,6 +168,7 @@ from tst.sim.geo.models import (
     RegionalMarket,
     RegionalSegment,
 )
+from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import NextIds
 from tst.sim.ledger import LedgerEntry
 from tst.sim.markets_public.models import (
@@ -179,7 +181,7 @@ from tst.sim.markets_public.models import (
     ShareMonth,
 )
 from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Proposal
-from tst.sim.people.models import Person, RevealState
+from tst.sim.people.models import Person, RevealRecord, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.research.models import EraArrival, License, ResearchLead, ResearchProject
 from tst.sim.rivals.models import (
@@ -212,6 +214,27 @@ def _by_person[R](rows: Iterable[R]) -> dict[int, list[R]]:
     return grouped
 
 
+def _ordered_pairs(session: Session, model: Any, key: Any, value: Any, where: Any) -> Any:
+    """A person child table as person id -> [(key, value)] in position order: one SQL ORDER
+    BY instead of Row objects and a sort per person (M12b, speed)."""
+    out: dict[int, list[Any]] = defaultdict(list)
+    for pid, k, v in session.execute(
+        select(model.person_id, key, value).where(where).order_by(model.person_id, model.position)
+    ):
+        out[pid].append((k, v))
+    return out
+
+
+def _ordered_keys(session: Session, model: Any, key: Any, where: Any) -> Any:
+    """A person child table as person id -> [key] in position order (interests, tags)."""
+    out: dict[int, list[Any]] = defaultdict(list)
+    for pid, k in session.execute(
+        select(model.person_id, key).where(where).order_by(model.person_id, model.position)
+    ):
+        out[pid].append(k)
+    return out
+
+
 def load_people(
     session: Session, ids: Iterable[int]
 ) -> tuple[tuple[Person, ...], tuple[RevealState, ...]]:
@@ -222,13 +245,14 @@ def load_people(
     def in_live(column: Any) -> Any:
         return column.in_(live_ids)
 
-    skills = _by_person(_rows(session, PersonSkillRow, in_live(PersonSkillRow.person_id)))
-    personality = _by_person(
-        _rows(session, PersonPersonalityRow, in_live(PersonPersonalityRow.person_id))
+    sk, pe, hi = PersonSkillRow, PersonPersonalityRow, PersonHiddenRow
+    skills = _ordered_pairs(session, sk, sk.skill, sk.value, in_live(sk.person_id))
+    personality = _ordered_pairs(session, pe, pe.trait, pe.value, in_live(pe.person_id))
+    hidden = _ordered_pairs(session, hi, hi.trait, hi.value, in_live(hi.person_id))
+    interests = _ordered_keys(
+        session, PersonInterestRow, PersonInterestRow.interest, in_live(PersonInterestRow.person_id)
     )
-    hidden = _by_person(_rows(session, PersonHiddenRow, in_live(PersonHiddenRow.person_id)))
-    interests = _by_person(_rows(session, PersonInterestRow, in_live(PersonInterestRow.person_id)))
-    tags = _by_person(_rows(session, PersonTagRow, in_live(PersonTagRow.person_id)))
+    tags = _ordered_keys(session, PersonTagRow, PersonTagRow.tag, in_live(PersonTagRow.person_id))
     people = tuple(
         person_from_rows(
             row,
@@ -238,8 +262,8 @@ def load_people(
             interests[row.id],
             tags[row.id],
         )
-        for row in session.scalars(
-            select(PersonRow).where(in_live(PersonRow.id)).order_by(PersonRow.id)
+        for row in _plain(  # plain rows (M12b, speed)
+            session, select(PersonRow.__table__).where(in_live(PersonRow.id)).order_by(PersonRow.id)
         )
     )
     if has_table(session, PersonCityRow):  # M9 (19.1)
@@ -252,9 +276,24 @@ def load_people(
     def key(row: Any) -> tuple[int, int]:
         return (row.observer_company_id, row.person_id)
 
-    records: dict[tuple[int, int], list[PersonRevealRow]] = defaultdict(list)
-    for r in _rows(session, PersonRevealRow, in_live(PersonRevealRow.person_id)):
-        records[key(r)].append(r)
+    # Knowledge records as ordered tuples, built straight into RevealRecords: the largest
+    # child table (about 35 rows a person a company), so no Row objects or per-person sorts
+    # (M12b, speed; the same RevealStates as `reveal_from_rows`).
+    r_ = PersonRevealRow
+    attributes: dict[tuple[int, int], list[tuple[str, RevealRecord]]] = defaultdict(list)
+    for o, pid, attribute, hw, offset, updated in session.execute(
+        select(
+            r_.observer_company_id,
+            r_.person_id,
+            r_.attribute,
+            r_.hw,
+            r_.center_offset,
+            r_.last_updated_turn,
+        )
+        .where(in_live(r_.person_id))
+        .order_by(r_.observer_company_id, r_.person_id, r_.position)
+    ):
+        attributes[(o, pid)].append((attribute, RevealRecord(hw, offset, updated)))
     profiles = {
         key(r): r
         for r in session.scalars(
@@ -267,8 +306,19 @@ def load_people(
     ):
         tag_reveals[key(t)].append(t)
     reveals = tuple(
-        reveal_from_rows(o, p, records[(o, p)], profiles.get((o, p)), tag_reveals[(o, p)])
-        for o, p in sorted(records)
+        RevealState(
+            observer_company_id=o,
+            person_id=p,
+            attributes=tuple(attributes[(o, p)]),
+            profile_revealed_turn=None
+            if (pr := profiles.get((o, p))) is None
+            else pr.revealed_turn,
+            revealed_tags=tuple(
+                (t.tag, t.revealed_turn)
+                for t in sorted(tag_reveals[(o, p)], key=lambda t: (t.revealed_turn, t.tag))
+            ),
+        )
+        for o, p in sorted(attributes)
     )
     return people, reveals
 
@@ -279,10 +329,11 @@ def load_state(session: Session) -> GameState:
 
     employments = [
         employment_from_row(r)
-        for r in session.scalars(
-            select(EmploymentRow)
+        for r in _plain(  # plain rows: no ORM object per row (M12b, speed)
+            session,
+            select(EmploymentRow.__table__)
             .where(EmploymentRow.status.in_(STAFF_STATUSES))
-            .order_by(EmploymentRow.id)
+            .order_by(EmploymentRow.id),
         )
     ]
     candidates = [
@@ -394,10 +445,11 @@ def load_state(session: Session) -> GameState:
         ),
         person_states=tuple(
             person_state_from_row(r)
-            for r in session.scalars(
-                select(PersonStateRow)
+            for r in _plain(  # plain rows (M12b, speed)
+                session,
+                select(PersonStateRow.__table__)
                 .where(in_live(PersonStateRow.person_id))
-                .order_by(PersonStateRow.person_id)
+                .order_by(PersonStateRow.person_id),
             )
         ),
         cap_entries=_all(session, CapEntry, CapTableEntryRow),
@@ -478,6 +530,7 @@ def load_state(session: Session) -> GameState:
     state = _load_m10(session, state)
     state = _load_exec(session, state)
     state = _load_facilities(session, state)
+    state = _load_hardware(session, state)
     state = _load_public(session, state)
     state = _load_research(session, state)
     return _load_geo(session, state, product_ids)
@@ -821,6 +874,9 @@ def facility_from_row(r: FacilityRow) -> Facility:
         unit_id=r.unit_id,
         contract_id=r.contract_id,
         closed_turn=r.closed_turn,
+        yield_rate=r.yield_rate,
+        run_units=r.run_units,
+        sold_units=r.sold_units,
     )
 
 
@@ -934,9 +990,78 @@ def _load_facilities(session: Session, state: GameState) -> GameState:
     )
 
 
+def _load_hardware(session: Session, state: GameState) -> GameState:
+    """Production contracts (active, and ended ones of the last months) and the last
+    month's production (M12b, 0031)."""
+    if not has_table(session, ProductionContractRow):
+        return state
+    turn = state.turn
+    contracts = tuple(
+        ProductionContract(
+            id=r.id,
+            company_id=r.company_id,
+            product_id=r.product_id,
+            kind=r.kind,  # type: ignore[arg-type]
+            supplier=r.supplier,
+            units=r.units,
+            price_cents=r.price_cents,
+            signed_turn=r.signed_turn,
+            end_turn=r.end_turn,
+            city=r.city,
+            delivered=r.delivered,
+            used=r.used,
+            charged_cents=r.charged_cents,
+            status=r.status,  # type: ignore[arg-type]
+        )
+        for r in session.scalars(
+            select(ProductionContractRow)
+            .where(
+                (ProductionContractRow.status == "active")
+                | (ProductionContractRow.end_turn >= turn - FACILITY_MEMORY)
+            )
+            .order_by(ProductionContractRow.id)
+        )
+    )
+    last = session.scalar(select(func.max(ProductionMonthRow.turn)))
+    production: tuple[ProductionMonth, ...] = ()
+    if last is not None and last == turn - 1:
+        production = tuple(
+            ProductionMonth(
+                **{
+                    k: getattr(r, k)
+                    for k in ProductionMonth.__dataclass_fields__  # same names as the columns
+                }
+            )
+            for r in session.scalars(
+                select(ProductionMonthRow)
+                .where(ProductionMonthRow.turn == last)
+                .order_by(ProductionMonthRow.product_id)
+            )
+        )
+    nxt = int(session.scalar(select(func.max(ProductionContractRow.id))) or 0) + 1
+    return replace(
+        state,
+        production_contracts=contracts,
+        production=production,
+        next_ids=replace(state.next_ids, production_contract=nxt),
+    )
+
+
+def _sync_hardware(session: Session, old: GameState, new: GameState) -> None:
+    """Production contracts and the month's production rows (M12b)."""
+    if not has_table(session, ProductionContractRow):
+        return
+    session.flush()
+    for c in _changed(old.production_contracts, new.production_contracts, lambda c: c.id):
+        session.merge(ProductionContractRow(**asdict(c)))
+    before = set(old.production)
+    _insert(session, (ProductionMonthRow(**asdict(p)) for p in new.production if p not in before))
+
+
 def _good_order(good: str) -> tuple[int, str]:
-    """Goods in components_history.yaml order (server, then GPU), others after by key."""
-    known = ("server", "gpu")
+    """Goods in components_history.yaml order (server, GPU, then M12b's device and server
+    BOMs, equipment and foundry wafers), others after by key."""
+    known = ("server", "gpu", "device_bom", "server_bom", "equipment", "foundry_wafer")
     return (known.index(good), good) if good in known else (len(known), good)
 
 
@@ -953,9 +1078,13 @@ def _sync_facilities(session: Session, old: GameState, new: GameState) -> None:
     for f in _changed(old.facilities, new.facilities, lambda f: f.id):
         session.merge(facility_to_row(f))
     before = {(g.good, g.turn): g for g in old.supply}
+    fresh = []
     for g in new.supply:
-        if before.get((g.good, g.turn)) != g:
+        if (g.good, g.turn) not in before:
+            fresh.append(good_month_to_row(g))  # a new month: no row yet (M12b: bulk insert)
+        elif before[(g.good, g.turn)] != g:
             session.merge(good_month_to_row(g))
+    _insert(session, fresh)
     for c in _changed(old.contracts, new.contracts, lambda c: c.id):
         session.merge(contract_to_row(c))
     seen = {o.id for o in old.outages}
@@ -1305,6 +1434,12 @@ def has_table(session: Session, model: Any) -> bool:
     return {c.name for c in model.__table__.columns} <= have
 
 
+def _plain(session: Session, statement: Any) -> list[Any]:
+    """A statement's plain rows (column attributes only): rows read like the ORM objects the
+    mappers take, without building one per row (M12b: more rivals' people)."""
+    return list(session.execute(statement).all())
+
+
 def _rows(session: Session, model: Any, where: Any) -> list[Any]:
     """Plain rows (column attributes only) for a large child table: building ORM objects
     for every skill and knowledge record was most of a load's time once rivals had people
@@ -1601,6 +1736,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_marketing(session, old, new)
     _sync_exec(session, old, new)
     _sync_facilities(session, old, new)
+    _sync_hardware(session, old, new)
     _sync_public(session, old, new)
     _sync_research(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
@@ -1718,14 +1854,11 @@ def _sync_geo(session: Session, old: GameState, new: GameState) -> None:
         for s in new.searches
         if s.city is not None and old_cities.get(s.id) != s.city
     ]
-    rows += [
-        RegionalMarketRow(
-            category=m.category, segment=m.segment, region=m.region, addressable=m.addressable
-        )
-        for m in _changed(
+    markets_changed = bool(
+        _changed(
             old.regional_markets, new.regional_markets, lambda m: (m.category, m.segment, m.region)
         )
-    ]
+    )
     rows += [
         ProductRegionRow(
             product_id=r.product_id,
@@ -1740,11 +1873,22 @@ def _sync_geo(session: Session, old: GameState, new: GameState) -> None:
     segs = _changed(
         old.regional_segments, new.regional_segments, lambda s: (s.product_id, s.region, s.segment)
     )
-    if not (rows or segs) or not has_table(session, RegionalSegmentRow):
+    if not (rows or segs or markets_changed) or not has_table(session, RegionalSegmentRow):
         return
     session.flush()
     for row in rows:
         session.merge(row)
+    # Every regional market grows every month: one bulk UPDATE, not a merge (a SELECT) per
+    # row (M12b: six more categories made this most of a turn's write).
+    _write(
+        session,
+        old.regional_markets,
+        new.regional_markets,
+        lambda m: (m.category, m.segment, m.region),
+        lambda m: RegionalMarketRow(
+            category=m.category, segment=m.segment, region=m.region, addressable=m.addressable
+        ),
+    )
     known = {(s.product_id, s.region, s.segment) for s in old.regional_segments}
     fresh = [s for s in segs if (s.product_id, s.region, s.segment) not in known]
     updates = [s for s in segs if (s.product_id, s.region, s.segment) in known]

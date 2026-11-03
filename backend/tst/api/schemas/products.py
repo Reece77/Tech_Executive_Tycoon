@@ -46,6 +46,13 @@ class CategoryOut(BaseModel):
         default=False,
         description="Sells spare data-centre capacity; not a product to create (M12a)",
     )
+    assembly_market: bool = Field(
+        default=False,
+        description="Sells spare assembly-plant capacity; not a product to create (M12b)",
+    )
+    sells_units: bool = Field(
+        default=False, description="Sells units once per customer; needs manufacturing (M12b)"
+    )
 
 
 class MarketProductOut(BaseModel):
@@ -198,6 +205,9 @@ class ProductOut(BaseModel):
     created_turn: int
     launched_turn: int | None
     launched_label: str | None = Field(description="Launch month, e.g. 'Sep 2010'")
+    sells_units: bool = Field(
+        default=False, description="A device, server or chip: it has a manufacturing panel (M12b)"
+    )
     mrr_cents: int = Field(description="MRR now, in every region")
     mrr_change: float | None = Field(
         description="Home-region revenue in the last closed month against the month before, "

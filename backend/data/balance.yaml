@@ -331,6 +331,7 @@ products:
     mid_market: 2
     enterprise: 0.3
     hyperscalers: 0.03 # M12a (22.3): the hyperscalers segment is sales-led
+    device_oems: 0.1 # M12b (26.2, 26.3): device OEMs are sales-led
   marketer_mk: 5 # marketing points per unit of marketer contribution mu (11.5)
   budget_mk_unit_cents: 100000 # cents of monthly budget per marketing point ($1,000) (11.5)
   qcap_per_skill: 5 # quality points of Q_cap per point of output-weighted development skill (11.4)
@@ -503,6 +504,12 @@ rivals:
     fintech: { builder: 0.50, seller: 0.30, marketer: 0.20 } # M8 (18.6)
     ai_models: { builder: 0.75, seller: 0.10, marketer: 0.15 } # M8 (18.6)
     cloud_hosting: { builder: 0.45, seller: 0.40, marketer: 0.15 } # M12a (22.3)
+    devices: { builder: 0.65, seller: 0.15, marketer: 0.20 } # M12b (26.1)
+    servers: { builder: 0.60, seller: 0.30, marketer: 0.10 } # M12b (26.1)
+    chips_mobile_soc: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M12b (26.3)
+    chips_server_cpu: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M12b (26.3)
+    chips_ai_accelerator: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M12b (26.3)
+    contract_manufacturing: { builder: 0.70, seller: 0.25, marketer: 0.05 } # M12b (26.2)
   function_roles: { builder: software_engineer, seller: account_executive, marketer: marketer } # roles.yaml key whose mid-level pay prices each pool (15.1)
   pool_morale: 60 # morale points of every pool (15.1)
   pool_skill_other: 12 # attribute points; seller and marketer pool skill (15.1)
@@ -767,6 +774,22 @@ facility:
       staff_per: 200 # CU per infrastructure person needed (22.2)
       staff_roles: [devops_engineer, security_engineer]
       staff_skill: infrastructure
+    assembly_plant: # M12b (26.2): own device and server assembly
+      label: Assembly plant
+      unit: units/month # units of assembly a month (a server takes hardware.bom.servers.plant_slots)
+      input_good: equipment # components_history.yaml good whose index prices capex (26.2)
+      output_good: assembly # hardware.output_good: not a compute good
+      capex_per_unit_cents: 30000 # cents per unit a month of capacity in 2010 dollars, x the equipment index (26.2)
+      build_months: 12 # months from the order to completion (26.2)
+      opex_per_unit_cents: 0 # cost is fixed_opex plus variable a unit run instead (26.2)
+      life_months: 96 # months of straight-line depreciation (26.2)
+      staff_per: 1000 # units a month per manufacturing engineer needed (26.2)
+      staff_roles: [manufacturing_engineer]
+      staff_skill: manufacturing # sets yield, and reliability for contract-manufacturing quality (26.2)
+      fixed_opex_cents: 2000000 # cents a live month (26.2)
+      variable_cents: 300 # cents a unit run (26.2)
+      sizes: [5000, 20000, 50000, 100000] # units a month a build may choose (M12b decision)
+      outages: false # plants have no outages (22.5 is data centres only)
   sizes: [100, 500, 2000, 10000] # CU a build may choose (22.2)
   build_energy: 12 # founder energy to order a build (22.2)
   close_energy: 12 # founder energy to close or sell one (22.2)
@@ -804,6 +827,59 @@ compute:
   feature_base: 50 # cloud hosting features = base + per_lead x infrastructure lead, at most 100 (22.3)
   feature_per_lead: 2 # feature points per point of infrastructure lead (22.3)
   capacity_category: cloud_hosting # categories.yaml key of the market that sells spare capacity (22.3)
+
+# --- Hardware and devices (formulas.md 26.1-26.2, M12b, lane A) ----------------------------
+hardware:
+  plant_kind: assembly_plant # facility.kinds key of own assembly plants (26.2)
+  output_good: assembly # a plant's output: units of assembly (not a compute good)
+  capacity_category: contract_manufacturing # categories.yaml market that sells spare plant capacity (26.2)
+  bom: # per unit-sale category (26.2): base cents x the good's index, plus the chip, plus assembly
+    devices: { good: device_bom, base_cents: 18000, chip_type: mobile_soc, contract_fee_cents: 1300, plant_slots: 1 } # $180 BOM, a mobile SoC, $13 a unit at a contract manufacturer in Shenzhen (26.7)
+    servers: { good: server_bom, base_cents: 280000, chip_type: server_cpu, contract_fee_cents: 8000, plant_slots: 6 } # $2,800 BOM, a server CPU, $80 a unit; a server takes 6 units of plant capacity (M12b decision)
+  contract:
+    energy: 6 # founder energy to sign a contract-manufacturing contract (26.2)
+    months: [12, 24] # whole months a contract may run (26.2)
+    take_or_pay: 0.5 # fraction of the fee charged on unused volume each month (26.2)
+    cheap_city: shenzhen # cities.yaml key where the fee is the base fee (26.2)
+    city_fee_mult: 1.3 # the fee in any other city, x the base (M12b decision: "Shenzhen cheaper")
+    manufacturers:
+      foxconn: { label: Foxconn, fee_mult: 1.0 }
+      pegatron: { label: Pegatron, fee_mult: 1.03 }
+    max_units: 1000000 # the most units a month one contract may cover (M12b decision)
+  plant_yield:
+    base: 0.85 # yield = base + skill_share x mean manufacturing skill / 20 (26.2)
+    skill_share: 0.10
+    noise_sd: 0.01 # monthly yield noise (fraction), stream manufacturing, key (facility_id,) (26.2)
+    bounds: [0.5, 0.99] # yield after noise stays within these fractions
+
+# --- Fabless chips (formulas.md 26.3, M12b, lane A) ----------------------------------------
+chips:
+  good: foundry_wafer # components_history.yaml key of foundry wafers (26.3)
+  types: # chips per wafer and a wafer's 2010 price at index 1.0 (26.3)
+    mobile_soc: { label: Mobile SoC, per_wafer: 600, wafer_cents: 200000, advanced_node: false } # $2,000 a mature-node wafer: an own SoC at about $13 against $40 bought (26.6 target 4)
+    server_cpu: { label: Server CPU, per_wafer: 150, wafer_cents: 800000, advanced_node: true }
+    ai_accelerator: { label: AI accelerator, per_wafer: 60, wafer_cents: 900000, advanced_node: true } # $9,000 a wafer (26.7)
+  packaging_cents: 800 # packaging and test, cents a chip (26.3)
+  chip_yield:
+    base: 0.70 # yield = base + per_lead x chip-design lead, at most cap (26.3)
+    per_lead: 0.003
+    cap: 0.92 # 0.95 from the Chiplets era (26.4, eras.yaml yield_cap)
+    domain: chip_design
+  contract:
+    energy: 6 # founder energy to sign a wafer contract (26.3)
+    months: [12, 36] # whole months a wafer contract may run (26.3, as 22.4)
+    take_or_pay: 0.3 # fraction of unused wafer starts' value charged each month (M12b decision; 22.4's share)
+    foundries:
+      tsmc: { label: TSMC, price_mult: 1.0 }
+      samsung: { label: Samsung Foundry, price_mult: 0.95 }
+    max_wafers: 100000 # the most wafer starts a month one contract may cover (M12b decision)
+  gpu_capex: # own accelerators in own GPU data centres (26.3)
+    floor: 0.4 # capex x (floor + share x own unit cost / market chip price)
+    share: 0.6
+    chip_type: ai_accelerator
+    segment: hyperscalers # the market price is this segment's reference price
+    compute_good: compute_gpu # data centres making this compute good get the cut (GPU data centres)
+  price_segment: device_oems # a bought chip costs this segment's reference price (26.2)
 # --- R&D tree and era milestones (formulas.md 21, M11, lane A) ---------------------------
 rnd:
   decay: 0.015 # fraction of each lead lost a month, after progress (21.1): a lead halves in about 46 months

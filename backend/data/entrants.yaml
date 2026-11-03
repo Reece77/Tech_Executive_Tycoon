@@ -13,3 +13,6 @@ entrants:
   # CoreWeave's "GPU only" is its segments (large GPU buyers), not a separate market.
   - { name: Google Cloud, year: 2012, month: 4, personality: fast_follower, cash_cents: 20000000000, staff: 12, category: cloud_hosting, segments: [smb, mid_market, enterprise] }
   - { name: CoreWeave, year: 2019, month: 1, personality: cost_leader, cash_cents: 5000000000, staff: 10, category: cloud_hosting, segments: [enterprise, hyperscalers] }
+  # M12b (formulas.md 26.3): AI accelerator entrants
+  - { name: Cerebras, year: 2016, month: 1, personality: premium, cash_cents: 10000000000, staff: 12, category: chips_ai_accelerator, segments: [hyperscalers] }
+  - { name: Groq, year: 2016, month: 9, personality: aggressive, cash_cents: 6000000000, staff: 10, category: chips_ai_accelerator, segments: [hyperscalers] }

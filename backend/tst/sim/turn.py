@@ -217,7 +217,7 @@ def research_progress(ctx: TurnContext) -> TurnContext:
     state, research = run_projects(state, ctx.rng, ctx.balance, ctx.data)
     state = rival_research_month(state, ctx.rng, ctx.balance)  # 21.6
     state = decay_leads(state, ctx.data, ctx.balance)
-    state, arrived = arrive_eras(state, ctx.data, ctx.balance)
+    state, arrived = arrive_eras(state, ctx.data, ctx.balance, ctx.rng)
     return replace(ctx, state=state).post(*research).log(*logs, *arrived)
 
 

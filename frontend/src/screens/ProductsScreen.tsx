@@ -73,6 +73,13 @@ export function ProductsScreen() {
             >
               Infrastructure
             </Link>
+            <Link
+              to={`/game/${saveId}/products/hardware`}
+              style={{ fontSize: 13 }}
+              data-testid="hardware-link"
+            >
+              Hardware
+            </Link>
             <Button
               variant="default"
               style={{ marginLeft: 'auto' }}
@@ -312,7 +319,7 @@ function NewProductDialog({
   const [categoryKey, setCategoryKey] = useState('');
   const [chosen, setChosen] = useState<string[]>([]);
 
-  const list = (categories.data ?? []).filter((c) => !c.capacity_market); // M12a
+  const list = (categories.data ?? []).filter((c) => !c.capacity_market && !c.assembly_market); // M12a, M12b
   const category: Category | undefined = list.find((c) => c.key === categoryKey) ?? list[0];
   const cost = meta.energy_costs.create_product;
   const ready = name.trim() !== '' && chosen.length > 0 && category !== undefined;

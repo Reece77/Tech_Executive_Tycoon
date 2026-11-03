@@ -19,7 +19,7 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
         "cybersecurity",
     ]
     assert [s.key for s in data.segments][:4] == ["consumer", "smb", "mid_market", "enterprise"]
-    assert [s.key for s in data.segments][4:] == ["hyperscalers"]  # M12a: appended
+    assert [s.key for s in data.segments][4:] == ["hyperscalers", "device_oems"]  # M12a, M12b
     b2b = data.category(B2B)
     assert b2b.market("smb").addressable == 400_000
     assert b2b.market("smb").reference_price_cents == 5000
@@ -29,7 +29,7 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
     for cat in data.categories:
         assert sum(cat.dev_weights.values()) == pytest.approx(1)
     sales = [s.key for s in data.segments if s.reach == "sales"]
-    assert sales == ["mid_market", "enterprise", "hyperscalers"]  # M12a: hyperscalers
+    assert sales == ["mid_market", "enterprise", "hyperscalers", "device_oems"]  # M12a, M12b
     assert data.segment("smb").weights.price == 0.35
 
 
@@ -45,6 +45,9 @@ def test_every_role_has_a_product_function(loaded: LoadedData) -> None:
             "security_engineer",
             "product_manager",
             "designer",
+            "hardware_engineer",  # M12b
+            "chip_designer",
+            "manufacturing_engineer",
         ]
     )
     assert sorted(by_function["seller"]) == ["account_executive", "sales_representative"]

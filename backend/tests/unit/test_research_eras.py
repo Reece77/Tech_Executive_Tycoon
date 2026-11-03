@@ -13,6 +13,7 @@ from tst.sim.products.formulas import monthly_growth
 from tst.sim.research import eras, levels
 from tst.sim.research.models import ResearchLead
 from tst.sim.research.projects import decay_leads
+from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
 
@@ -20,7 +21,7 @@ def _months(loaded: LoadedData, state: GameState, months: int) -> GameState:
     """Phase 3's era check and phase 9's demand growth, month by month (no other phases)."""
     data, balance = loaded.game_data, loaded.balance
     for _ in range(months):
-        state, _ = eras.arrive_eras(state, data, balance)
+        state, _ = eras.arrive_eras(state, data, balance, RngFactory(1))
         markets = tuple(
             replace(
                 m,
@@ -71,6 +72,8 @@ def test_target_1_demand_is_unchanged(loaded: LoadedData) -> None:
     for cat in data.categories:
         if cat.key == "ai_models":
             continue
+        if cat.sells_units or cat.assembly_market:  # M12b's markets: their eras boost them
+            continue
         for m in cat.markets:
             now = at_2020.market(cat.key, m.segment)
             assert now is not None
@@ -90,9 +93,11 @@ def test_a_lead_past_the_threshold_brings_an_era_early(loaded: LoadedData) -> No
     jan_2016 = ym_to_turn(2016, 1)
     state = _months(loaded, fresh_game(loaded), jan_2016)
     assert state.era_arrival("deep_learning") is not None
-    short, _ = eras.arrive_eras(_with_ai_lead(state, 19.4, jan_2016), data, balance)
+    short, _ = eras.arrive_eras(_with_ai_lead(state, 19.4, jan_2016), data, balance, RngFactory(1))
     assert short.era_arrival("transformers") is None
-    after, logs = eras.arrive_eras(_with_ai_lead(state, 19.5, jan_2016), data, balance)
+    after, logs = eras.arrive_eras(
+        _with_ai_lead(state, 19.5, jan_2016), data, balance, RngFactory(1)
+    )
     arrival = after.era_arrival("transformers")
     assert arrival is not None
     assert (arrival.turn, arrival.company_id, arrival.months_early) == (jan_2016, 1, 17)
@@ -108,7 +113,7 @@ def test_the_first_mover_window(loaded: LoadedData) -> None:
     data, balance = loaded.game_data, loaded.balance
     jan_2016 = ym_to_turn(2016, 1)
     state = _months(loaded, fresh_game(loaded), jan_2016)
-    state, _ = eras.arrive_eras(_with_ai_lead(state, 20.0, jan_2016), data, balance)
+    state, _ = eras.arrive_eras(_with_ai_lead(state, 20.0, jan_2016), data, balance, RngFactory(1))
     factor = levels.tech_factor(state, 1, "ai_models", balance, data)
     assert (factor.cap_points, factor.brand_points) == (5.0, 10.0)
     assert factor.cap(50.0) == pytest.approx(50.0 * (1 + balance.rnd.cap_per_point * 16.0) + 5.0)
@@ -128,7 +133,7 @@ def test_boosts_follow_the_arrival(loaded: LoadedData) -> None:
         turn=3,
         research_leads=(ResearchLead(1, "software_platform", 60.0),),
     )
-    state, _ = eras.arrive_eras(state, data, balance)
+    state, _ = eras.arrive_eras(state, data, balance, RngFactory(1))
     assert state.era_arrival("mobile_first") is not None
     base = eras.base_growth(data, "consumer_apps", 2010)
     assert eras.annual_growth(state, data, "consumer_apps", "consumer") == pytest.approx(

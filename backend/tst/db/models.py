@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 30
+SCHEMA_VERSION = 31
 
 
 class Base(DeclarativeBase):
@@ -1181,6 +1181,10 @@ class FacilityRow(Base):
     unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     contract_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # M12b (26.2; 0031): an assembly plant's yield this month and last month's units run
+    yield_rate: Mapped[float] = mapped_column(Float, nullable=False, server_default="0")
+    run_units: Mapped[float] = mapped_column(Float, nullable=False, server_default="0")
+    sold_units: Mapped[float] = mapped_column(Float, nullable=False, server_default="0")
 
 
 class SupplyMonthRow(Base):
@@ -1230,6 +1234,49 @@ class FacilityOutageRow(Base):
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
     turn: Mapped[int] = mapped_column(Integer, nullable=False)
     customers_lost: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class ProductionContractRow(Base):
+    """A contract-manufacturing or wafer contract (26.2, 26.3; 0031)."""
+
+    __tablename__ = "production_contract"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    product_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    supplier: Mapped[str] = mapped_column(String(32), nullable=False)
+    units: Mapped[int] = mapped_column(Integer, nullable=False)
+    price_cents: Mapped[float] = mapped_column(Float, nullable=False)
+    signed_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    city: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    delivered: Mapped[float] = mapped_column(Float, nullable=False)
+    used: Mapped[float] = mapped_column(Float, nullable=False)
+    charged_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class ProductionMonthRow(Base):
+    """One unit-sale product's month of production and cost of goods (26.2, 26.3; 0031),
+    append-only history."""
+
+    __tablename__ = "production_month"
+
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    capacity: Mapped[float] = mapped_column(Float, nullable=False)
+    units: Mapped[float] = mapped_column(Float, nullable=False)
+    plant_units: Mapped[float] = mapped_column(Float, nullable=False)
+    contract_units: Mapped[float] = mapped_column(Float, nullable=False)
+    own_chips: Mapped[float] = mapped_column(Float, nullable=False)
+    bought_chips: Mapped[float] = mapped_column(Float, nullable=False)
+    internal_units: Mapped[float] = mapped_column(Float, nullable=False)
+    bom_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    chip_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    assembly_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    lost_units: Mapped[float] = mapped_column(Float, nullable=False)
 
 
 class CompanyRivalKeyRow(Base):

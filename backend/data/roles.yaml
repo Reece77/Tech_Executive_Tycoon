@@ -154,3 +154,40 @@ roles:
     work_style_weights: { builder: 1, operator: 7, researcher: 0, seller: 2 }
     interest_weights: { ai: 1, hardware: 2, crypto: 0, climate: 2, security: 1, gaming: 0, mining: 1, policy: 2, design: 0, fintech: 1, consumer: 1, enterprise: 3, open_source: 0 }
     salary_band_mid_cents: { junior: 5500000, mid: 7200000, senior: 9200000, staff: 11200000, principal: 13200000, exec: 15500000 }
+
+  # --- M12b (formulas.md 26): hardware, chips and manufacturing roles, appended ---
+  - key: hardware_engineer
+    label: Hardware engineer
+    product_function: builder
+    summary: "Designs devices and servers: boards, enclosures and the parts list. A builder on hardware products; hardware design matters most."
+    why_hire: "Hire one for a device or server product: hardware design is the biggest part of its development skill."
+    primary: [hardware_design, manufacturing]
+    secondary: [chip_design, software_engineering, design, procurement]
+    work_style: builder
+    work_style_weights: { builder: 6, operator: 2, researcher: 2, seller: 0 }
+    interest_weights: { ai: 1, hardware: 6, crypto: 1, climate: 1, security: 1, gaming: 2, mining: 0, policy: 0, design: 2, fintech: 0, consumer: 3, enterprise: 2, open_source: 1 }
+    salary_band_mid_cents: { junior: 6800000, mid: 9200000, senior: 11800000, staff: 14200000, principal: 16800000, exec: 19500000 }
+
+  - key: chip_designer
+    label: Chip designer
+    product_function: builder
+    summary: "Designs chips: architecture, logic and verification before the wafers are ordered. A builder on chip products; chip design matters most."
+    why_hire: "Hire one for a chip product or chip-design research: chip design is most of a chip's development skill and its yield."
+    primary: [chip_design, hardware_design]
+    secondary: [software_engineering, manufacturing, data, ml_research]
+    work_style: researcher
+    work_style_weights: { builder: 4, operator: 1, researcher: 5, seller: 0 }
+    interest_weights: { ai: 4, hardware: 6, crypto: 1, climate: 0, security: 1, gaming: 1, mining: 0, policy: 0, design: 0, fintech: 0, consumer: 1, enterprise: 2, open_source: 1 }
+    salary_band_mid_cents: { junior: 7500000, mid: 10200000, senior: 13000000, staff: 15800000, principal: 18500000, exec: 21500000 }
+
+  - key: manufacturing_engineer
+    label: Manufacturing engineer
+    product_function: builder
+    summary: "Runs production lines: process, quality and yield. Staffs an assembly plant (one per 1,000 units a month) and builds alongside hardware engineers."
+    why_hire: "Hire one to staff your own assembly plant: their manufacturing skill sets its yield."
+    primary: [manufacturing, operations]
+    secondary: [hardware_design, procurement, data, leadership]
+    work_style: operator
+    work_style_weights: { builder: 3, operator: 6, researcher: 1, seller: 0 }
+    interest_weights: { ai: 0, hardware: 5, crypto: 0, climate: 2, security: 0, gaming: 0, mining: 1, policy: 1, design: 1, fintech: 0, consumer: 1, enterprise: 2, open_source: 0 }
+    salary_band_mid_cents: { junior: 5200000, mid: 7000000, senior: 9000000, staff: 11000000, principal: 13000000, exec: 15200000 }

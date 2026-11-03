@@ -108,6 +108,11 @@ class EraOut(BaseModel):
     your_level: float
     accelerates: str
     first_mover_reward: str
+    expected: str | None = Field(
+        default=None,
+        description="A future era's public window until it arrives, e.g. 'expected 2026-2028'"
+        " (M12b, 26.4); its scheduled month is never shown",
+    )
 
 
 class ResearchOut(BaseModel):

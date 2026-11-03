@@ -1106,6 +1106,9 @@ A facility (22.2): a general or GPU data centre in M12a, more kinds later. The s
 | `unit_id` | INTEGER | yes | The org unit whose infrastructure people staff it (no FK). |
 | `contract_id` | INTEGER | yes | The component contract it drew on. |
 | `closed_turn` | INTEGER | yes | When it was sold. |
+| `yield_rate` | FLOAT | no | M12b (0030), assembly plants: this month's yield after noise (stream `manufacturing`); 0 for data centres and before a plant's first live month. |
+| `run_units` | FLOAT | no | M12b: units a plant ran last month for its company's own products. |
+| `sold_units` | FLOAT | no | M12b: units a plant ran last month for contract-manufacturing customers. |
 
 ### supply_month
 
@@ -1220,6 +1223,13 @@ New games number incumbents' products from 900,000 (10 per incumbent) and their 
 | `royalty_bp` | INTEGER | no | Basis points of the licensee's monthly revenue in the domain's categories (licensing out); 0 if none. |
 | `royalty_end_turn` | INTEGER | yes | The last month the royalty is paid. |
 
+## Hardware, devices and fabless chips (migration `0031_hardware`, M12b; re-parented after M13's `0030_public_company`)
+
+Assembly plants are the `assembly_plant` kind of `facility` (the three columns above); device, server, equipment and wafer goods are rows of `supply_month` after 2025. Existing saves start with no contracts and no production; M12b's eras the save is past are recorded in `era_arrival` on schedule (future eras at their seeded month).
+
+### production_contract
+
+A contract-manufacturing contract (kind `assembly`, 26.2) or a wafer contract (kind `wafer`, 26.3). The state holds active ones and those ended in the last 24 months.
 ## Going public and the Chair (migration `0030_public_company`, M13)
 
 A company's IPO chain, its life as a listed company and its appointed CEO (formulas.md 25). Every row belongs to a company (ADR-0020 7), so a v3 subsidiary can list on its own. Existing saves start with no rows: every company is private and founder-led. `save_meta.schema_version` becomes 30.
@@ -1318,6 +1328,43 @@ An appointed CEO (25.6); the founder is Chair while one serves. The state holds 
 | Column | Type | Null | Meaning |
 | --- | --- | --- | --- |
 | `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The company that signed it. |
+| `product_id` | INTEGER | no | The device, server or chip product it makes (no FK). |
+| `kind` | VARCHAR(16) | no | `assembly` or `wafer`. |
+| `supplier` | VARCHAR(32) | no | `hardware.contract.manufacturers` or `chips.contract.foundries` key. |
+| `units` | INTEGER | no | A month: units assembled, or wafer starts. |
+| `price_cents` | FLOAT | no | A unit's fee (base x manufacturer x city), or a wafer's price at the foundry_wafer index locked at signing. Fractional cents; rounded when a month posts. |
+| `signed_turn` | INTEGER | no | The month it was signed; a contract signed before a shortage began keeps full allocation. |
+| `end_turn` | INTEGER | no | The last month it covers. |
+| `city` | VARCHAR(32) | yes | cities.yaml key where it is made (assembly). |
+| `delivered` | FLOAT | no | Units (or wafers) delivered last month after allocation. |
+| `used` | FLOAT | no | Units (or wafers) used last month. |
+| `charged_cents` | BIGINT | no | Last month's take-or-pay on unused volume (to `6900_general_admin`). |
+| `status` | VARCHAR(16) | no | `active` or `ended`. |
+
+### production_month
+
+One unit-sale product's month of production (26.2, 26.3), append-only. Primary key (`turn`, `product_id`). The state holds the last month's rows.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `turn` | INTEGER | no | The month. |
+| `product_id` | INTEGER | no | The product (no FK). |
+| `company_id` | INTEGER FK company | no | Its company. |
+| `capacity` | FLOAT | no | Units (chips) it could make this month. Engine and history only; the API shows sources' availability. |
+| `units` | FLOAT | no | Units sold (and made: build to order); a chip product's chips sold to the market. |
+| `plant_units` | FLOAT | no | Good units from the company's plants. |
+| `contract_units` | FLOAT | no | Units from its contracts. |
+| `own_chips` | FLOAT | no | The company's own chips used (internal supply at cost, no revenue). |
+| `bought_chips` | FLOAT | no | Chips bought at the market price. |
+| `internal_units` | FLOAT | no | A chip product: chips its company's devices and servers used. |
+| `bom_cents` | BIGINT | no | Bill of materials at the good's index, to `5000_cogs`. |
+| `chip_cents` | BIGINT | no | Chips (own at cost, bought at market), to `5000_cogs`; a chip product: its market chips' cost. |
+| `assembly_cents` | BIGINT | no | Contract fees and plants' cost per unit run, to `5000_cogs`. Plants' fixed cost posts in phase 6 ("Assembly plant operations", `5000_cogs`). |
+| `lost_units` | FLOAT | no | Demand above what it could make, lost to the next-best product. |
+
+`5000_cogs` (existing) now carries hardware's cost of goods: the player's from `production_month`, a rival's at its market's `hosting_cents` a unit.
+
 | `company_id` | INTEGER FK company | no | The company. |
 | `person_id` | INTEGER | no | The CEO (no FK). |
 | `since_turn` | INTEGER | no | The month appointed. |

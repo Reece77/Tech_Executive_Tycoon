@@ -47,3 +47,9 @@ tech_weights:
   cybersecurity: { software_platform: 0.5, infrastructure: 0.5 }
   fintech: { software_platform: 0.7, infrastructure: 0.3 }
   ai_models: { ai: 0.8, infrastructure: 0.2 }
+  # M12b (26.1): devices and servers use the devices domain, chips the chip-design domain
+  devices: { devices: 1.0 }
+  servers: { devices: 1.0 }
+  chips_mobile_soc: { chip_design: 1.0 }
+  chips_server_cpu: { chip_design: 1.0 }
+  chips_ai_accelerator: { chip_design: 1.0 }

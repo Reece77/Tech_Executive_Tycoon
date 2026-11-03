@@ -2407,6 +2407,156 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/hardware": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Hardware
+         * @description The Hardware screen: plants, contracts, contract-manufacturing sales, chips, and the
+         *     wafer and component indexes (26.5).
+         */
+        get: operations["getHardware"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/products/{product_id}/manufacturing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Manufacturing
+         * @description A device, server or chip product's bill of materials and manufacturing panel; empty
+         *     (`sells_units` false) for a software product.
+         */
+        get: operations["getProductManufacturing"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/hardware/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign Cm */
+        post: operations["signManufacturingContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/hardware/wafer-contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign Wafer */
+        post: operations["signWaferContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/hardware/plants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Build Plant
+         * @description Order an assembly plant in a city (26.2).
+         */
+        post: operations["buildPlant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/hardware/plants/{facility_id}/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Staff Plant */
+        post: operations["staffPlant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/hardware/plants/{facility_id}/sell": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sell Plant */
+        post: operations["sellPlant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/hardware/contract-manufacturing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sell Plant Capacity
+         * @description Start selling spare plant capacity as contract manufacturing (26.2).
+         */
+        post: operations["sellPlantCapacity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/research": {
         parameters: {
             query?: never;
@@ -3317,6 +3467,24 @@ export interface components {
              */
             nominee_choices: components["schemas"]["NomineeChoiceOut"][];
         };
+        /** BomLineOut */
+        BomLineOut: {
+            /**
+             * Line
+             * @description Bill of materials, chip, assembly or packaging
+             */
+            line: string;
+            /**
+             * Detail
+             * @description Where the number comes from, in words
+             */
+            detail: string;
+            /**
+             * Cents
+             * @description A unit
+             */
+            cents: number;
+        };
         /**
          * BreakdownItemOut
          * @description One driver of a number (M7b tooltips).
@@ -3557,6 +3725,18 @@ export interface components {
              * @default false
              */
             capacity_market?: boolean;
+            /**
+             * Assembly Market
+             * @description Sells spare assembly-plant capacity; not a product to create (M12b)
+             * @default false
+             */
+            assembly_market?: boolean;
+            /**
+             * Sells Units
+             * @description Sells units once per customer; needs manufacturing (M12b)
+             * @default false
+             */
+            sells_units?: boolean;
         };
         /** CategorySegmentOut */
         CategorySegmentOut: {
@@ -3810,6 +3990,58 @@ export interface components {
             active_effects: components["schemas"]["ActiveEffectOut"][];
             learned: components["schemas"]["LearnedOut"];
         };
+        /** ChipOut */
+        ChipOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Chip Type */
+            chip_type: string;
+            /** Chip Label */
+            chip_label: string;
+            /** Status */
+            status: string;
+            /**
+             * Chip Yield
+             * @description Good chips per chip on a wafer (0-1)
+             */
+            chip_yield: number;
+            /** Unit Cost Cents */
+            unit_cost_cents: number;
+            /**
+             * Market Price Cents
+             * @description The device OEM reference price
+             */
+            market_price_cents: number;
+            /** Per Wafer */
+            per_wafer: number;
+            /**
+             * Wafers
+             * @description Wafer starts a month under contract
+             */
+            wafers: number;
+            /**
+             * Made
+             * @description Good chips last month
+             */
+            made: number;
+            /**
+             * Internal Units
+             * @description Used by your own devices and servers, at cost
+             */
+            internal_units: number;
+            /**
+             * Market Units
+             * @description Sold to the chip market
+             */
+            market_units: number;
+            /**
+             * Gpu Capex Factor
+             * @description AI accelerators: GPU data-centre capex x this while it is live
+             */
+            gpu_capex_factor: number | null;
+        };
         /** ChooseEventIn */
         ChooseEventIn: {
             /** Choice */
@@ -3935,6 +4167,53 @@ export interface components {
              * @description Your price per CU a month
              */
             price_per_unit_cents: number | null;
+        };
+        /** CmContractIn */
+        CmContractIn: {
+            /** Product Id */
+            product_id: number;
+            /** Manufacturer */
+            manufacturer: string;
+            /** City */
+            city: string;
+            /** Units */
+            units: number;
+            /** Months */
+            months: number;
+        };
+        /**
+         * CmOut
+         * @description Selling spare plant capacity (26.2).
+         */
+        CmOut: {
+            /** Started */
+            started: boolean;
+            /** Can Start */
+            can_start: boolean;
+            /** Product Id */
+            product_id: number | null;
+            /** Customers */
+            customers: number;
+            /**
+             * Units Sold
+             * @description Units a month sold to device makers
+             */
+            units_sold: number;
+            /**
+             * Spare Units
+             * @description Run units left after your own products
+             */
+            spare_units: number;
+            /**
+             * Revenue Cents
+             * @description A month at current customers and prices
+             */
+            revenue_cents: number;
+            /**
+             * Quality
+             * @description Yield x reliability
+             */
+            quality: number | null;
         };
         /** ComponentOut */
         ComponentOut: {
@@ -4568,6 +4847,11 @@ export interface components {
             accelerates: string;
             /** First Mover Reward */
             first_mover_reward: string;
+            /**
+             * Expected
+             * @description A future era's public window until it arrives, e.g. 'expected 2026-2028' (M12b, 26.4); its scheduled month is never shown
+             */
+            expected?: string | null;
         };
         /**
          * ErrorOut
@@ -5331,6 +5615,74 @@ export interface components {
             best_product_quality: components["schemas"]["ProductRecordOut"] | null;
             /** Rivals Outlasted */
             rivals_outlasted: components["schemas"]["RivalOutlastedOut"][];
+        };
+        /** HardwareActionOut */
+        HardwareActionOut: {
+            hardware: components["schemas"]["HardwareOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** HardwareOut */
+        HardwareOut: {
+            /** Turn Label */
+            turn_label: string;
+            /** Products */
+            products: components["schemas"]["ManufacturingOut"][];
+            /** Plants */
+            plants: components["schemas"]["PlantOut"][];
+            /** Contracts */
+            contracts: components["schemas"]["ProductionContractOut"][];
+            /** Chips */
+            chips: components["schemas"]["ChipOut"][];
+            cm: components["schemas"]["CmOut"];
+            /**
+             * Components
+             * @description Device, server, equipment and wafer indexes
+             */
+            components: components["schemas"]["ComponentOut"][];
+            /** Manufacturers */
+            manufacturers: components["schemas"]["OptionOut"][];
+            /** Foundries */
+            foundries: components["schemas"]["OptionOut"][];
+            /** Cities */
+            cities: components["schemas"]["OptionOut"][];
+            /** Cheap City */
+            cheap_city: string;
+            /** Plant Sizes */
+            plant_sizes: number[];
+            /**
+             * Contract Months
+             * @description [min, max] for contract manufacturing
+             */
+            contract_months: number[];
+            /**
+             * Wafer Months
+             * @description [min, max] for wafer contracts
+             */
+            wafer_months: number[];
+            /** Contract Take Or Pay */
+            contract_take_or_pay: number;
+            /** Wafer Take Or Pay */
+            wafer_take_or_pay: number;
+            /** Contract Energy */
+            contract_energy: number;
+            /** Wafer Energy */
+            wafer_energy: number;
+            /** Build Energy */
+            build_energy: number;
+            /**
+             * Plant Capex Per Unit Cents
+             * @description At this month's equipment index
+             */
+            plant_capex_per_unit_cents: number;
+            /** Plant Build Months */
+            plant_build_months: number;
+            /**
+             * Plant Staff Per
+             * @description Units a month per manufacturing engineer
+             */
+            plant_staff_per: number;
         };
         /** HireBanksIn */
         HireBanksIn: {
@@ -6372,6 +6724,82 @@ export interface components {
              */
             label: string;
         };
+        /**
+         * ManufacturingOut
+         * @description A device, server or chip product's bill of materials and manufacturing panel.
+         */
+        ManufacturingOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Category Label */
+            category_label: string;
+            /**
+             * Chip Type
+             * @description The product's chip type (chips) or the chip it uses
+             */
+            chip_type: string | null;
+            /** Chip Label */
+            chip_label: string | null;
+            /** Lines */
+            lines: components["schemas"]["BomLineOut"][];
+            /**
+             * Unit Cost Cents
+             * @description The sum of the lines
+             */
+            unit_cost_cents: number;
+            /**
+             * Price Cents
+             * @description Its price in its first segment
+             */
+            price_cents: number | null;
+            /**
+             * Gross Margin
+             * @description (price - unit cost) / price, 0-1
+             */
+            gross_margin: number | null;
+            /**
+             * Chip Source
+             * @description Own chip (at cost) or bought at market price
+             */
+            chip_source: string | null;
+            /** Sources */
+            sources: components["schemas"]["SourceOut"][];
+            /**
+             * Units Sold
+             * @description Units sold last month
+             */
+            units_sold: number;
+            /**
+             * Units Lost
+             * @description Demand last month above what it could make
+             */
+            units_lost: number;
+            /**
+             * Internal Units
+             * @description A chip product: chips your own devices used
+             */
+            internal_units: number;
+            /**
+             * Cogs Cents
+             * @description Last month's cost of goods
+             */
+            cogs_cents: number;
+            /**
+             * Can Launch Source
+             * @description It has a manufacturing source to launch
+             */
+            can_launch_source: boolean;
+            /**
+             * Sells Units
+             * @description False for a software product: no bill of materials (empty)
+             * @default true
+             */
+            sells_units?: boolean;
+        };
         /** MarketOut */
         MarketOut: {
             /** Category */
@@ -6773,6 +7201,13 @@ export interface components {
              * @description What closing the lease now costs; null for flexible space
              */
             close_penalty_cents?: number | null;
+        };
+        /** OptionOut */
+        OptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
         };
         /**
          * OptionsOut
@@ -7457,6 +7892,98 @@ export interface components {
             /** Summary */
             summary: string;
         };
+        /** PlantIn */
+        PlantIn: {
+            /** City */
+            city: string;
+            /** Units */
+            units: number;
+        };
+        /** PlantOut */
+        PlantOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** City */
+            city: string | null;
+            /** City Label */
+            city_label: string | null;
+            /**
+             * Status
+             * @description building, live or closed
+             */
+            status: string;
+            /** Since */
+            since: string;
+            /**
+             * Units
+             * @description Units a month it is built for
+             */
+            units: number;
+            /** Live Units */
+            live_units: number;
+            /**
+             * Own Use
+             * @description Units run last month for your own products
+             */
+            own_use: number;
+            /**
+             * Sold Use
+             * @description Units run last month for contract-manufacturing customers
+             */
+            sold_use: number;
+            /**
+             * Utilization
+             * @description Used / live units (0-1)
+             */
+            utilization: number;
+            /**
+             * Plant Yield
+             * @description Share of units run that are good (0-1)
+             */
+            plant_yield: number | null;
+            /** Staff */
+            staff: number;
+            /** Staff Needed */
+            staff_needed: number;
+            /** Coverage */
+            coverage: number;
+            /** Unit Id */
+            unit_id: number | null;
+            /** Unit Name */
+            unit_name: string | null;
+            /**
+             * Monthly Cost Cents
+             * @description Fixed cost and depreciation a month
+             */
+            monthly_cost_cents: number;
+            /**
+             * Cost Per Good Unit Cents
+             * @description Last month's fixed, variable and depreciation per good unit
+             */
+            cost_per_good_unit_cents: number | null;
+            /**
+             * Contract Fee Cents
+             * @description A Shenzhen contract manufacturer's fee, to compare
+             */
+            contract_fee_cents: number;
+            /** Book Value Cents */
+            book_value_cents: number;
+            /** Capex Cents */
+            capex_cents: number;
+            /** Build Progress */
+            build_progress: number | null;
+            /** Ready */
+            ready: string;
+            /** Sale Value Cents */
+            sale_value_cents: number;
+        };
+        /** PlantStaffIn */
+        PlantStaffIn: {
+            /** Unit Id */
+            unit_id: number | null;
+        };
         /**
          * PortfolioOut
          * @description The Products screen's tiles: the company's revenue and product costs.
@@ -7673,6 +8200,12 @@ export interface components {
              * @description Launch month, e.g. 'Sep 2010'
              */
             launched_label: string | null;
+            /**
+             * Sells Units
+             * @description A device, server or chip: it has a manufacturing panel (M12b)
+             * @default false
+             */
+            sells_units?: boolean;
             /**
              * Mrr Cents
              * @description MRR now, in every region
@@ -8003,6 +8536,54 @@ export interface components {
             customers: number;
             /** Revenue Cents */
             revenue_cents: number;
+        };
+        /** ProductionContractOut */
+        ProductionContractOut: {
+            /** Contract Id */
+            contract_id: number;
+            /**
+             * Kind
+             * @description assembly (contract manufacturing) or wafer
+             */
+            kind: string;
+            /** Product Id */
+            product_id: number;
+            /** Product Name */
+            product_name: string;
+            /** Supplier */
+            supplier: string;
+            /** Supplier Label */
+            supplier_label: string;
+            /** City Label */
+            city_label: string | null;
+            /**
+             * Units
+             * @description A month: units, or wafer starts
+             */
+            units: number;
+            /**
+             * Price Cents
+             * @description A unit's fee, or a wafer's locked price
+             */
+            price_cents: number;
+            /** Signed */
+            signed: string;
+            /** Ends */
+            ends: string;
+            /** Status */
+            status: string;
+            /**
+             * Delivered
+             * @description Delivered last month after allocation
+             */
+            delivered: number;
+            /** Used */
+            used: number;
+            /**
+             * Take Or Pay Cents
+             * @description Last month's charge on unused volume
+             */
+            take_or_pay_cents: number;
         };
         /**
          * ProductsMetaOut
@@ -9197,6 +9778,26 @@ export interface components {
              */
             desc?: boolean;
         };
+        /** SourceOut */
+        SourceOut: {
+            /**
+             * Source
+             * @description plant or contract
+             */
+            source: string;
+            /** Label */
+            label: string;
+            /**
+             * Units
+             * @description Units made last month
+             */
+            units: number;
+            /**
+             * Available
+             * @description Units it could make last month
+             */
+            available: number;
+        };
         /** SpotOut */
         SpotOut: {
             /** Good */
@@ -9752,6 +10353,17 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** WaferContractIn */
+        WaferContractIn: {
+            /** Product Id */
+            product_id: number;
+            /** Foundry */
+            foundry: string;
+            /** Wafers */
+            wafers: number;
+            /** Months */
+            months: number;
         };
         /** RegionOptionOut */
         tst__api__schemas__facilities__RegionOptionOut: {
@@ -17845,6 +18457,489 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InfrastructureActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getHardware: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HardwareOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getProductManufacturing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManufacturingOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signManufacturingContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CmContractIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HardwareActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signWaferContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaferContractIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HardwareActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildPlant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlantIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HardwareActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    staffPlant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlantStaffIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HardwareActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sellPlant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HardwareActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sellPlantCapacity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HardwareActionOut"];
                 };
             };
             /** @description Bad Request */

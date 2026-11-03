@@ -22,7 +22,8 @@ from tst.sim.facilities import cloud, compute
 from tst.sim.finance import macro
 from tst.sim.geo.markets import ReachContext, reach_context
 from tst.sim.geo.models import RegionalSegment
-from tst.sim.ledger import CASH, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
+from tst.sim.hardware import cm_market, production
+from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
 from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.money import Cents, exact
 from tst.sim.org.executives import CRO, side_factor
@@ -43,6 +44,7 @@ from tst.sim.state import (
     with_product_segment,
     with_regional_market,
     with_regional_segment,
+    with_segments,
     with_unit,
 )
 
@@ -54,11 +56,13 @@ type FlowKey = tuple[int, str]  # (product_id, segment)
 
 @dataclass(frozen=True, slots=True)
 class Flow:
-    """What phase 5 did for one product in one segment."""
+    """What phase 5 did for one product in one segment. `units`: units sold in a unit-sale
+    market (M12b, 26.1), new customers x units per customer."""
 
     new: float = 0.0
     churned: float = 0.0
     revenue_cents: Cents = 0
+    units: float = 0.0
 
 
 def _views(state: GameState) -> dict[int, OrgView]:
@@ -234,6 +238,8 @@ def run_markets(
             teams[product.id] = team_of(state, view, product, balance, data)
         return teams[product.id]
 
+    plan = production.build_plan(state, balance, data)  # M12b (26.2): the capacity cap
+    regional_units: dict[tuple[int, str, str], float] = {}
     by_market: dict[tuple[str, str], list[ProductSegment]] = {}
     for seg in state.product_segments:
         product = products.get(seg.product_id)
@@ -263,6 +269,7 @@ def run_markets(
                 entries,
                 market.addressable,
                 key,
+                plan,
             )
             for s in done:
                 flows[(s.product_id, s.segment)] = done[s]
@@ -294,7 +301,7 @@ def run_markets(
                         data.segment_index(market_def.segment),
                         data.region_index(region),
                     )
-                    state, _, more = _run_segment(
+                    state, rdone, more = _run_segment(
                         state,
                         rng,
                         balance,
@@ -306,7 +313,11 @@ def run_markets(
                         rentries,
                         rmarket.addressable,
                         key,
+                        plan,
                     )
+                    for rs, rflow in rdone.items():
+                        if rflow.units:
+                            regional_units[(rs.product_id, region, rs.segment)] = rflow.units
                     logs += more
 
     # M12a (22.3): the player's Cloud hosting customers fit its spare capacity.
@@ -314,7 +325,20 @@ def run_markets(
     for trimmed, gone in removed.items():
         if trimmed in flows:
             flows[trimmed] = replace(flows[trimmed], new=max(0.0, flows[trimmed].new - gone))
-    state, entries_out, revenue, flows, more_logs = _revenue(state, flows, data)
+    # M12b (26.2): contract-manufacturing customers fit the spare plant capacity.
+    state, removed, cm_sold = cm_market.trim_to_capacity(state, plan, balance, data)
+    for trimmed, gone in removed.items():
+        if trimmed in flows:
+            flows[trimmed] = replace(flows[trimmed], new=max(0.0, flows[trimmed].new - gone))
+    state, entries_out, revenue, flows, more_logs = _revenue(
+        state, flows, data, regional_units, plan
+    )
+    running = any(c.running(state.turn) for c in state.production_contracts)
+    if plan is not None or cm_sold or state.production or running:  # M12b (26.2)
+        before = {row.product_id: row.lost_units for row in state.production}
+        state, made = production.settle(state, plan, cm_sold, balance, data)
+        entries_out = (*entries_out, *made)
+        more_logs += production_notes(state, plan, before)
     return MarketOutcome(
         state=state,
         entries=entries_out,
@@ -336,15 +360,21 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     entries: list[S],
     addressable: float,
     key: tuple[int, ...],
+    plan: production.ProductionPlan | None = None,
 ) -> tuple[GameState, dict[S, Flow], list[LogItem]]:
     """One market segment's month (11.6-11.7): churn, in play, choice and new customers.
     `region` None or the home region: v1's market; another region: its prices, awareness
-    and sellers (19.5). `key` is the `market` stream key."""
+    and sellers (19.5). `key` is the `market` stream key. In a unit-sale market (M12b,
+    26.1) the base churn is the replacement cycle, each new customer buys its units, and the
+    player's products sell at most what `plan` lets them make; the rest goes to the next-best
+    product."""
     mb = balance.market
     turn = state.turn
     logs: list[LogItem] = []
     seg_key = entries[0].segment
     seg_def = data.segment(seg_key)
+    category_def = data.category(products[entries[0].product_id].category)
+    base_churn = f.unit_base_churn(category_def, seg_def.base_churn, seg_key)
     index = geo.price_index(region) if geo is not None and region is not None else 1.0
 
     def power(product: Product) -> float:
@@ -372,7 +402,7 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     churned = {
         s.product_id: s.customers
         * f.churn_rate(
-            seg_def.base_churn * churn_mult(products[s.product_id]),  # 18.3, 18.4
+            base_churn * churn_mult(products[s.product_id]),  # 18.3, 18.4; 26.1
             best,
             appeals[s.product_id] or 0.0,
             products[s.product_id].quality,
@@ -426,7 +456,12 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
                 rate = balance.products.seller_rate.get(seg_key, 0.0)
                 per = seen / sellers if sellers else f.seller_capacity(rate, (1.0,))
                 capacity_notes[s.product_id] = (sellers, seen, wanted, per)
+    upc = category_def.market(seg_key).units_per_customer if category_def.sells_units else 0.0
+    if plan is not None and category_def.sells_units:
+        won = _cap_units(live, appeals, won, upc, plan)
     done: dict[S, Flow] = {}
+    home_rows: list[ProductSegment] = []
+    regional_rows: list[RegionalSegment] = []
     for s in entries:
         product = products[s.product_id]
         customers = max(0.0, s.customers - churned[s.product_id] + won[s.product_id])
@@ -450,11 +485,41 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             )
         updated = replace(s, customers=customers, capacity_limited=capacity_limited)
         if isinstance(updated, ProductSegment):
-            state = with_product_segment(state, updated)
+            home_rows.append(updated)
         else:
-            state = with_regional_segment(state, updated)
-        done[s] = Flow(new=won[s.product_id], churned=churned[s.product_id])
-    return state, done, logs
+            regional_rows.append(updated)
+        done[s] = Flow(
+            new=won[s.product_id], churned=churned[s.product_id], units=won[s.product_id] * upc
+        )
+    return with_segments(state, home_rows, regional_rows), done, logs
+
+
+def _cap_units[S: (ProductSegment, RegionalSegment)](
+    live: list[S],
+    appeals: Mapping[int, float | None],
+    won: dict[int, float],
+    upc: float,
+    plan: production.ProductionPlan,
+) -> dict[int, float]:
+    """The capacity cap (26.1): best appeal first, each capped product makes what it can;
+    customers it cannot serve go to the next-best product that still can (uncapped rivals
+    always can). Customers nobody can serve stay unserved."""
+    out = dict(won)
+    order = sorted(live, key=lambda s: (-(appeals[s.product_id] or 0.0), s.product_id))
+    spill = 0.0
+    for s in order:
+        pid = s.product_id
+        want = out[pid] + spill
+        spill = 0.0
+        if not plan.is_capped(pid):
+            out[pid] = want
+            continue
+        made = plan.take(pid, want * upc) / upc if upc > 0 else 0.0
+        if made < want:
+            plan.lose(pid, (want - made) * upc)
+            spill = want - made
+        out[pid] = made
+    return out
 
 
 TYPICAL_BUILDER_OUTPUT = 1.0  # tunable-exempt: d = 10, m = 1, t = 1 (11.4)
@@ -499,12 +564,19 @@ def _slipping(
 
 
 def _revenue(
-    state: GameState, flows: dict[FlowKey, Flow], data: GameData
+    state: GameState,
+    flows: dict[FlowKey, Flow],
+    data: GameData,
+    regional_units: Mapping[tuple[int, str, str], float] | None = None,
+    plan: production.ProductionPlan | None = None,
 ) -> tuple[
     GameState, tuple[LedgerEntry, ...], dict[int, Cents], dict[FlowKey, Flow], list[LogItem]
 ]:
-    """round(C x price) per segment for companies with books; sunset products whose last
+    """round(C x price) per segment for companies with books; in a unit-sale market (M12b,
+    26.1) round(units sold x price), and a rival's abstract cost of goods (the market's
+    hosting_cents a unit; the player's is `production.settle`'s). Sunset products whose last
     customers left retire (11.2, 11.8)."""
+    regional_units = regional_units or {}
     turn = state.turn
     entries: list[LedgerEntry] = []
     revenue: dict[int, Cents] = {c.id: 0 for c in state.ledger_companies()}
@@ -515,14 +587,50 @@ def _revenue(
         segments = state.segments_of(product.id)
         abroad = state.regional_segments_of(product.id)
         booked = 0
+        category = data.category(product.category)
+        units_sold = 0.0
         if product.company_id in revenue:
             for seg in segments:
-                amount = round(seg.customers * (seg.price_cents or 0))
-                booked += amount
                 key = (product.id, seg.segment)
+                if category.sells_units:
+                    sold = flows.get(key, Flow()).units
+                    units_sold += sold
+                    amount = round(sold * (seg.price_cents or 0))
+                else:
+                    amount = round(seg.customers * (seg.price_cents or 0))
+                booked += amount
                 flows[key] = replace(flows.get(key, Flow()), revenue_cents=amount)
             for rseg in abroad:  # other regions (M9, 19.5)
-                booked += round(rseg.customers * (rseg.price_cents or 0))
+                if category.sells_units:
+                    sold = regional_units.get((product.id, rseg.region, rseg.segment), 0.0)
+                    units_sold += sold
+                    booked += round(sold * (rseg.price_cents or 0))
+                else:
+                    booked += round(rseg.customers * (rseg.price_cents or 0))
+            if category.sells_units and units_sold and not (plan and plan.is_capped(product.id)):
+                cogs = round(
+                    sum(
+                        flows.get((product.id, seg.segment), Flow()).units
+                        * category.market(seg.segment).hosting_cents
+                        for seg in segments
+                    )
+                    + sum(
+                        regional_units.get((product.id, r.region, r.segment), 0.0)
+                        * category.market(r.segment).hosting_cents
+                        for r in abroad
+                    )
+                )
+                if cogs:  # a rival's abstract cost of goods (M12b, 26.3)
+                    entries.append(
+                        LedgerEntry.transfer(
+                            turn=turn,
+                            company_id=product.company_id,
+                            memo=f"Cost of goods: {product.name}",
+                            debit=COGS,
+                            credit=CASH,
+                            amount=cogs,
+                        )
+                    )
             if booked:
                 d = product.division_id  # the product's division (M8, 18.1)
                 entries.append(
@@ -621,6 +729,8 @@ def product_costs_by_division(
         if product.status not in SELLING:
             continue
         category = data.category(product.category)
+        if category.sells_units:  # M12b (26.1): goods cost at sale, no hosting
+            continue
         by_region: dict[str | None, Cents] = {None: 0}
         for seg in state.segments_of(product.id):
             h = f.hosting_cents(category, seg.segment, ai)
@@ -784,3 +894,34 @@ def month_history(
             )
         )
     return tuple(rows)
+
+
+def production_notes(
+    state: GameState, plan: production.ProductionPlan | None, before: Mapping[int, float]
+) -> list[LogItem]:
+    """M12b (26.1): an inbox note when one of the player's products first sells out (demand
+    above its capacity lost to rivals), not again while it stays sold out."""
+    if plan is None:
+        return []
+    out: list[LogItem] = []
+    for row in state.production:
+        if row.lost_units <= CUSTOMER_ROUNDING or row.company_id != state.player.id:
+            continue
+        if before.get(row.product_id, 0.0) > CUSTOMER_ROUNDING:  # still sold out
+            continue
+        product = state.product(row.product_id)
+        if product is None:
+            continue
+        out.append(
+            inbox_item(
+                state.turn,
+                product.company_id,
+                "manufacturing_capacity_limited",
+                link_kind=PRODUCT_LINK,
+                link_id=product.id,
+                product=product.name,
+                wanted=f"{row.units + row.lost_units:,.0f}",
+                made=f"{row.units:,.0f}",
+            )
+        )
+    return out

@@ -241,3 +241,22 @@ def hosting_cents(category: CategoryDef, segment: str, ai_index: float) -> float
     macro layer's `ai` (20.1), which is compute_index.yaml through 2025."""
     h = float(category.market(segment).hosting_cents)
     return h * ai_index if category.compute_indexed else h
+
+
+def sale_rate(category: CategoryDef, segment: str) -> float:
+    """Revenue a month per customer, in units of the price: 1 for a subscription; for a
+    unit-sale market (M12b, 26.1) the units an installed customer buys a month in steady
+    state, units_per_customer / replacement_months. For projections and rivals' sizing; the
+    market phase books the units actually sold."""
+    if not category.sells_units:
+        return 1.0
+    m = category.market(segment)
+    assert m.replacement_months is not None
+    return m.units_per_customer / m.replacement_months
+
+
+def unit_base_churn(category: CategoryDef, segment_churn: float, segment: str) -> float:
+    """A segment's base churn: the replacement cycle 1 / months in a unit-sale market (26.1),
+    else the segment's base churn (11.7)."""
+    months = category.market(segment).replacement_months if category.sells_units else None
+    return 1 / months if months else segment_churn

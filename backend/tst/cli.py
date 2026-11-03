@@ -1495,6 +1495,139 @@ def sell_capacity(save: SaveOpt) -> None:
     typer.echo(f"  {_energy(result.new_state, data)}")
 
 
+# --- Hardware and chips (M12b, formulas.md 26) ---------------------------------------------
+
+
+@app.command()
+def hardware(save: SaveOpt) -> None:
+    """Plants, contracts, chips, contract-manufacturing sales and the hardware indexes (26.5)."""
+    from tst.api.hardware_views import hardware_out
+    from tst.api.routers.facilities import _stored
+
+    path, data, state = _game(save)
+    out = hardware_out(state, data, _stored(path, state, data))
+    for c in out.components:
+        typer.echo(
+            f"{c.label:<20} index {c.index:.2f} ({c.change_12m:+.0%} in 12 months), "
+            f"allocation {c.allocation:.0%}: {c.note}"
+        )
+    for prod in out.products:
+        margin = "-" if prod.gross_margin is None else f"{prod.gross_margin:.0%}"
+        lines = ", ".join(f"{line.line} {format_money(line.cents)}" for line in prod.lines)
+        typer.echo(
+            f"{prod.product_id:>4} {prod.name:<28} unit cost "
+            f"{format_money(prod.unit_cost_cents)} ({lines}); margin {margin}; sold "
+            f"{prod.units_sold:,.0f}, lost {prod.units_lost:,.0f}"
+        )
+    if not out.plants:
+        typer.echo("No assembly plants. Build one with tst build-plant.")
+    for f in out.plants:
+        per = (
+            "-" if f.cost_per_good_unit_cents is None else format_money(f.cost_per_good_unit_cents)
+        )
+        y = "-" if f.plant_yield is None else f"{f.plant_yield:.1%}"
+        typer.echo(
+            f"{f.facility_id:>4} {f.name:<36} {f.units:>7,} units/month {f.status}; own "
+            f"{f.own_use:,.0f} sold {f.sold_use:,.0f} ({f.utilization:.0%}); yield {y}; staff "
+            f"{f.staff}/{f.staff_needed}; {per} a good unit (contract fee "
+            f"{format_money(f.contract_fee_cents)})"
+        )
+    for k in out.contracts:
+        typer.echo(
+            f"Contract {k.contract_id} ({k.kind}): {k.product_name} with {k.supplier_label}, "
+            f"{k.units:,} a month at {format_money(k.price_cents)}, used {k.used:,.0f} of "
+            f"{k.delivered:,.0f}, take-or-pay {format_money(k.take_or_pay_cents)}, until {k.ends}"
+        )
+    for chip in out.chips:
+        typer.echo(
+            f"Chip {chip.name} ({chip.chip_label}): yield {chip.chip_yield:.0%}, unit cost "
+            f"{format_money(chip.unit_cost_cents)} vs market "
+            f"{format_money(chip.market_price_cents)}; internal {chip.internal_units:,.0f}, "
+            f"market {chip.market_units:,.0f}"
+        )
+    if out.cm.started:
+        typer.echo(
+            f"Contract manufacturing: {out.cm.units_sold:,.0f} units a month sold, "
+            f"{format_money(out.cm.revenue_cents)} a month"
+        )
+
+
+@app.command("cm-contract")
+def cm_contract(
+    save: SaveOpt,
+    product: Annotated[int, typer.Option(help="Device or server product id")],
+    units: Annotated[int, typer.Option(help="Units a month")],
+    months: Annotated[int, typer.Option(help="12 to 24")],
+    manufacturer: Annotated[str, typer.Option(help="foxconn or pegatron")] = "foxconn",
+    city: Annotated[str, typer.Option(help="City key; Shenzhen is cheapest")] = "shenzhen",
+) -> None:
+    """Sign a contract-manufacturing contract; take-or-pay 50% a month; energy 6 (26.2)."""
+    from tst.sim.actions.hardware import SignManufacturingContract
+
+    path, data, state = _game(save)
+    action = SignManufacturingContract(_founder(state), product, manufacturer, city, units, months)
+    result = _run(path, data, action)
+    signed = max(result.new_state.production_contracts, key=lambda c: c.id)
+    typer.echo(
+        f"Contract {signed.id}: {units:,} units a month at "
+        f"{format_money(round(signed.price_cents))} until {format_turn(signed.end_turn)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("wafer-contract")
+def wafer_contract(
+    save: SaveOpt,
+    product: Annotated[int, typer.Option(help="Chip product id")],
+    wafers: Annotated[int, typer.Option(help="Wafer starts a month")],
+    months: Annotated[int, typer.Option(help="12 to 36")],
+    foundry: Annotated[str, typer.Option(help="tsmc or samsung")] = "tsmc",
+) -> None:
+    """Sign a wafer contract at this month's wafer price; take-or-pay; energy 6 (26.3)."""
+    from tst.sim.actions.hardware import SignWaferContract
+
+    path, data, state = _game(save)
+    result = _run(path, data, SignWaferContract(_founder(state), product, foundry, wafers, months))
+    signed = max(result.new_state.production_contracts, key=lambda c: c.id)
+    typer.echo(
+        f"Wafer contract {signed.id}: {wafers:,} wafers a month at "
+        f"{format_money(round(signed.price_cents))} until {format_turn(signed.end_turn)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("build-plant")
+def build_plant(
+    save: SaveOpt,
+    city: Annotated[str, typer.Option(help="City key, e.g. shenzhen")],
+    units: Annotated[int, typer.Option(help="5000, 20000, 50000 or 100000 units a month")],
+) -> None:
+    """Build an assembly plant: capex over 12 months; energy 12 (26.2)."""
+    from tst.sim.actions.facilities import BuildFacility
+
+    path, data, state = _game(save)
+    region = data.game_data.city(city).region if data.game_data.has_city(city) else ""
+    kind = data.balance.hardware.plant_kind
+    result = _run(path, data, BuildFacility(_founder(state), kind, region, units, None, city))
+    plant = max(result.new_state.company_facilities(state.player.id), key=lambda f: f.id)
+    typer.echo(
+        f"Ordered assembly plant {plant.id}: {units:,} units a month for "
+        f"{format_money(plant.capex_cents)}, live {format_turn(plant.ready_turn)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("sell-plant-capacity")
+def sell_plant_capacity(save: SaveOpt) -> None:
+    """Start selling spare plant capacity as contract manufacturing (26.2)."""
+    from tst.sim.actions.hardware import SellPlantCapacity
+
+    path, data, state = _game(save)
+    result = _run(path, data, SellPlantCapacity(_founder(state)))
+    typer.echo("Selling spare plant capacity as contract manufacturing")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
 if __name__ == "__main__":
     app()
 
