@@ -1716,8 +1716,8 @@ Reece's decisions (2026-10-31): domain levels and research projects underneath, 
 
 ### 21.2 What a lead does
 
-- **Quality cap:** `Q_cap × (1 + rnd.cap_per_point × min(R_cat, rnd.cap_points))`, with 0.004 per point and a maximum of 50 points, so at most × 1.20. It applies after the CTO factor (§18.3).
-- **Features:** feature points gained × `(1 + 0.002 × min(R_cat, 50))`.
+- **Quality cap:** `Q_cap × (1 + rnd.cap_per_point × min(R_cat, rnd.cap_points))`, with 0.004 per point and a maximum of 50 points, so at most × 1.20 (tuned in M11 to 0.010, so at most × 1.50; §21.10). It applies after the CTO factor (§18.3).
+- **Features:** feature points gained × `(1 + 0.002 × min(R_cat, 50))` (tuned in M11 to 0.005; §21.10).
 - **Rivals:** a rival's quality target `5 d` (§15.2) uses the same factor with the rival's own lead.
 - All of this sits behind one function, `research.tech_factor(state, company_id, category)`. The product code calls it in one place.
 
@@ -1742,7 +1742,7 @@ Reece's decisions (2026-10-31): domain levels and research projects underneath, 
 \Delta R_d = \frac{rnd.rate \cdot o}{1 + R_d / rnd.half}
 ```
 
-  with `rnd.rate` 0.25 and `rnd.half` 30. Returns diminish: the first 15 points come about twice as fast as the next 15. Decay (§21.1) applies after progress.
+  with `rnd.rate` 0.25 (tuned in M11 to 0.4; §21.10) and `rnd.half` 30. Returns diminish: the first 15 points come about twice as fast as the next 15. Decay (§21.1) applies after progress.
 - **Breakthroughs and dead ends** (phase 3, stream `research`, id 23, key `(project_id,)`): each active project each month draws:
   - **breakthrough** with probability `0.02 × q`, where `q = clamp(mean research skill / 12, 0.5, 1.5)`: +5 lead at once;
   - **dead end** with probability `0.015 / q`: −50% of the last 3 months' progress.
@@ -1772,7 +1772,7 @@ Reece's decisions (2026-10-31): domain levels and research projects underneath, 
 
 - **License in** (immediate action, energy 8): from a rival (or the player, for rivals) whose lead in a domain exceeds yours by more than 10.
   - **Gain:** up to their lead − 10.
-  - **Price:** `rnd.license_price_per_point` ($150,000 in 2010 dollars) × points × `(1 + ARR / $20M)`, once.
+  - **Price:** `rnd.license_price_per_point` ($150,000 in 2010 dollars; tuned in M11 to $24,000, §21.10) × points × `(1 + ARR / $20M)`, once.
   - **Answer:** the licensor says yes unless they're a direct competitor in a category the domain feeds (a rival you share a segment with). Rivals answer by a rule, not a draw.
 - **License out** (energy 8): grant a rival up to your lead − 10. It pays 2% of its revenue in the categories that domain feeds, monthly for 24 months (`4100_revenue_licenses`).
 - **Leaks:** when a researcher on a project leaves for a rival, that rival gains `min(10, 0.1 × your lead)` in the project's domain.
@@ -1810,7 +1810,7 @@ Incumbents gain a `research` action. Its need is `(best lead in their categories
 
 **Era threshold.** Transformers (AI, Jun 2017): `D_AI(2017.5) = 10 + 1.5 × 6 + 3 × 1.5 = 23.5` (before the Deep learning +5, which makes it 28.5), so the threshold is 28.5 + 15 = **43.5**. In Jan 2016 the AI baseline is 10 + 9 + 5 = 24, so a company needs a lead of 19.5 to cause it then.
 
-**Licence price.** 12 points with ARR $10M: `$150,000 × 12 × 1.5` = **$2.7M**.
+**Licence price.** 12 points with ARR $10M: `$150,000 × 12 × 1.5` = **$2.7M** (spec value, pinned by the test; at the tuned $24,000 it is $432,000).
 
 ### 21.10 As built (M11 notes)
 

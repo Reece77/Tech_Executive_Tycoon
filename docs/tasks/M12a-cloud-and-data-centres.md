@@ -10,7 +10,7 @@
 - **Merge order: M11 merges first.** Before merging M12a:
   1. merge `main` (with M11) into this branch;
   2. re-parent M12a's unmerged migrations onto `main`'s head;
-  3. wire Cloud hosting features to `research.lead(state, company_id, "infrastructure")` from M11 (until then, use a lead of 0);
+  3. wire Cloud hosting features to `tst.sim.research.levels.lead(state, company_id, "infrastructure")` from M11 (until then, use a lead of 0);
   4. regenerate golden snapshots, with both milestones' reasons in CHANGELOG;
   5. re-run all guards on the combined code. If an M11 target moves, report it rather than tune M11's keys.
 - **M12a owns:**
