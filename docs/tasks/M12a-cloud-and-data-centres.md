@@ -109,6 +109,8 @@ On a stage-3 save, build a 500-CU general data centre in your home region and wa
 
   Launches per v1 category: combined 1.0 (1-10) and 1.17 (11-40); main 1.08 and 1.12 (>= 1.0).
 
+- **Product manager's ruling on those three (2026-11-02):** the M5 living market allows at most 1 of 10 seeds with a share breach (seed variance); T5 bootstrap-frugal standard is re-banded to 0-50% (7% on seeds 11-40 on both main and combined; M15 decides whether bootstrapping should carry more risk); T2 is xfail(strict=False), "steady wins 21-22/30 on main and combined; M15's v2 strategies should split wins", the one permitted exception to no new xfails. Recorded in docs/balance-targets.md (M12a section).
+
 ## Follow-ups
 
 - Reece: target 4's margin gap needs a design decision (the AI index's 2023 level, the GPU table's power cost, or the target).

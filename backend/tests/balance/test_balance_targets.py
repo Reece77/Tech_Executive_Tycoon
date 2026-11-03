@@ -4,7 +4,9 @@ target with a band must hold; printed-only rows (T4d, T8) are not checked.
 
 Since M10d (product manager, 2026-11-02) every target is a hard check: T2 and T3 pass with
 blitzscale raising Series C and D and the growth-weighted ARR multiple; T5's blitzscale band
-is 0-40% and T7's startup band 20-65%, with the reasons in docs/balance-targets.md.
+is 0-40% and T7's startup band 20-65%, with the reasons in docs/balance-targets.md. From M12a
+(product manager, 2026-11-02) T2 is checked in its own xfail test and T5's bootstrap-frugal
+band is 0-50%.
 """
 
 from __future__ import annotations
@@ -32,6 +34,17 @@ def test_balance_targets(results: list[RunResult]) -> None:
     failed = [
         f"{r.target} {r.measure}: {r.value} ({r.band})"
         for r in rows
-        if r.ok is False and r.target != "S2"
+        if r.ok is False and r.target not in ("S2", "T2")
     ]
     assert not failed, "\n".join(failed)
+
+
+@pytest.mark.nightly
+@pytest.mark.xfail(
+    strict=False,
+    reason="steady wins 21-22/30 on main and combined; M15's v2 strategies should split wins",
+)
+def test_t2_wins_per_strategy(results: list[RunResult]) -> None:
+    """T2 on its own (product manager, 2026-11-02, M12a): the one permitted xfail."""
+    t2 = [r for r in evaluate(results) if r.target == "T2"]
+    assert t2 and all(r.ok for r in t2), [f"{r.measure}: {r.value} ({r.band})" for r in t2]
