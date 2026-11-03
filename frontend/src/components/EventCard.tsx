@@ -1,6 +1,7 @@
 import { Button, Modal } from '@mantine/core';
 import { Link } from 'react-router';
 import { useChooseEvent, useEvents, type GameEventOut } from '../hooks/api';
+import { IpoEventPricing } from './IpoPanel';
 
 const SEVERITY_STYLE: Record<string, { color: string; background: string; label: string }> = {
   minor: { color: 'var(--tst-tier-4)', background: 'var(--tst-gold-bg)', label: 'Minor' },
@@ -119,6 +120,11 @@ export function CriticalEventModal({ saveId }: { saveId: string }) {
       data-testid="critical-modal"
     >
       {blocking && <EventCard saveId={saveId} event={blocking} />}
+      {blocking?.category === 'public' && (
+        <div style={{ marginTop: 16 }}>
+          <IpoEventPricing saveId={saveId} />
+        </div>
+      )}
     </Modal>
   );
 }

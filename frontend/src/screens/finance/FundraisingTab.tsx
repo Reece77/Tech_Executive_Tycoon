@@ -4,6 +4,7 @@ import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState, type ReactNode } from 'react';
 import { DataTable } from '../../components/DataTable';
 import { DilutionPreview } from '../../components/DilutionPreview';
+import { IpoPanel } from '../../components/IpoPanel';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import {
   useAcceptBridge,
@@ -510,6 +511,7 @@ export function FundraisingTab({ saveId }: { saveId: string }) {
   return (
     <>
       <Bridge saveId={saveId} summary={summary.data} />
+      <IpoPanel saveId={saveId} />
       {open && <OpenRound round={open} next={rounds.data.next} />}
       {open && open.term_sheets.length > 0 && (
         <TermSheets round={open} selected={sheetId} onSelect={setSelected} />

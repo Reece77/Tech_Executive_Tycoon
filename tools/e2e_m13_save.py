@@ -37,6 +37,7 @@ from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.markets_public.public import consensus
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Employment
+from tst.sim.people.reveal import new_reveal_state
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -50,6 +51,7 @@ from tst.sim.state import (
     with_person_state,
     with_product,
     with_product_segment,
+    with_reveal,
 )
 
 SEED = 5
@@ -102,6 +104,16 @@ def _scaleup(state: GameState, data: LoadedData) -> GameState:
         person_id=person_id,
     )
     state = with_person(state, person)
+    # the company's knowledge of its employee, as a hire has (the People screen needs it)
+    reveal = new_reveal_state(
+        observer_company_id=1,
+        person=person,
+        turn=state.turn,
+        rng=RngFactory(SEED),
+        data=data.game_data,
+        balance=data.balance,
+    )
+    state = with_reveal(state, reveal)
     state = with_employment(
         state,
         Employment(
@@ -136,7 +148,12 @@ def eligible(save_dir: Path, name: str, data: LoadedData) -> Path:
         name, SEED, "funded_spinout", company_name="Kestrel", data=data, save_dir=save_dir
     )
     entry = LedgerEntry.transfer(
-        turn=0, company_id=1, memo="E2E funding", debit=CASH, credit=COMMON_EQUITY, amount=EXTRA_CASH
+        turn=0,
+        company_id=1,
+        memo="E2E funding",
+        debit=CASH,
+        credit=COMMON_EQUITY,
+        amount=EXTRA_CASH,
     )
     with open_session(path) as session, session.begin():
         session.add(entry_to_row(entry))
