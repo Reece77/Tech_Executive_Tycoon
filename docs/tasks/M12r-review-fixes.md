@@ -38,7 +38,11 @@ Balance tuning, new features, refactors beyond what a fix needs. Subsidiary game
 8. **Data dictionary interleaved on merge** (finding 9, P3).
    - **Fix:** one unbroken column table per heading for `research_project`, `research_license`, `facility_outage`, `supply_contract` and the rest of the M11 and M12a tables; the facility migration heading reads `0029_facilities`.
    - **Check:** every column, type and nullability listed against migrations 0028 and 0029 and the ORM models (a short script is fine; note it in Decisions made).
-9. **Close-out:**
+9. **Turn-time headroom** (product manager, 2026-11-03; not a Codex finding). `test_product_perf` sat at the 1.0 s limit on CI after M13 and M12b (1,069 ms on one run, a pass on the next), and M12b cut `load_people` from 206 to 160 ms to get under it. Keep the 1.0 s budget; do not loosen it.
+   - **Measure:** profile a turn on the combined code and record where the time goes (load, phases, save) in Decisions made.
+   - **Cut:** take the largest cost that keeps the output identical (for example loading only what changed since the cached state, or batching reveal and skill rows), proven by the state-cache check and the golden snapshots.
+   - **Stabilize the measurement, not the limit:** time the turns as the median of three timed blocks after a warm-up, so one noisy stretch on a shared runner can't decide it. Target at least 25% headroom on CI (≤ 750 ms per turn).
+10. **Close-out:**
    - CHANGELOG and durations.
    - A "Resolution" section appended to `docs/reviews/codex-review-3.md`, listing each finding, its fix commit and its test (finding 7 points to M12b's commit).
    - Golden snapshots regenerated only if a fix moves them, with the reason in CHANGELOG.
@@ -49,6 +53,7 @@ Balance tuning, new features, refactors beyond what a fix needs. Subsidiary game
 - [ ] Each finding has a regression test that failed before its fix and passes after (finding 7: M12b's, confirmed on `main`).
 - [ ] No API response distinguishes two rivals with the same displayed lead range, or two executives with the same displayed skills, on `/research` (differential tests).
 - [ ] No API response, quote or contract uses a supply row after the last played month (planted-row test).
+- [ ] `test_product_perf` at or under 750 ms per turn on CI (median of three blocks), with the 1.0 s limit unchanged.
 - [ ] No guard that passed at `m12b-done` fails.
 - [ ] `make check` green; `make e2e` passes; merged through a pull request per CLAUDE.md §6 with the trailer `Milestone-Tag: m12r-done`.
 
