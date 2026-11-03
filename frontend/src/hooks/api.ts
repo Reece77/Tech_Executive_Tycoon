@@ -97,6 +97,11 @@ export type ProductRegions = Schemas['ProductRegionsOut'];
 export type ProductRegion = Schemas['ProductRegionOut'];
 export type Infrastructure = Schemas['InfrastructureOut']; // M12a
 export type Facility = Schemas['FacilityOut'];
+export type Hardware = Schemas['HardwareOut']; // M12b
+export type Manufacturing = Schemas['ManufacturingOut'];
+export type Plant = Schemas['PlantOut'];
+export type HardwareChip = Schemas['ChipOut'];
+export type ProductionContract = Schemas['ProductionContractOut'];
 export type BuildPreview = Schemas['BuildPreviewOut'];
 export type SupplyContract = Schemas['ContractOut'];
 
@@ -201,6 +206,9 @@ export const keys = {
     ['saves', saveId, 'market', category, region] as const,
   geo: (saveId: string) => ['saves', saveId, 'geo'] as const,
   infrastructure: (saveId: string) => ['saves', saveId, 'infrastructure'] as const,
+  hardware: (saveId: string) => ['saves', saveId, 'hardware'] as const,
+  manufacturing: (saveId: string, productId: number) =>
+    ['saves', saveId, 'manufacturing', productId] as const,
   buildPreview: (
     saveId: string,
     kind: string,
@@ -1956,6 +1964,100 @@ export function useInfraAction(saveId: string) {
   const invalidate = useInvalidateSave(saveId);
   return useMutation({
     mutationFn: (a: InfraAction) => applyInfra(saveId, a),
+    onSuccess: invalidate,
+  });
+}
+
+// --- Hardware (M12b, formulas.md 26.5) ------------------------------------------------------
+
+export function useHardware(saveId: string) {
+  return useQuery({
+    queryKey: keys.hardware(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/hardware', path(saveId))),
+  });
+}
+
+export function useManufacturing(saveId: string, productId: number, enabled = true) {
+  return useQuery({
+    queryKey: keys.manufacturing(saveId, productId),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/products/{product_id}/manufacturing', {
+          params: { path: { save_id: saveId, product_id: productId } },
+        }),
+      ),
+    enabled,
+  });
+}
+
+export type HardwareAction =
+  | {
+      kind: 'cm';
+      productId: number;
+      manufacturer: string;
+      city: string;
+      units: number;
+      months: number;
+    }
+  | { kind: 'wafer'; productId: number; foundry: string; wafers: number; months: number }
+  | { kind: 'plant'; city: string; units: number }
+  | { kind: 'staff'; facilityId: number; unitId: number | null }
+  | { kind: 'sell'; facilityId: number }
+  | { kind: 'sell_capacity' };
+
+async function applyHardware(saveId: string, a: HardwareAction) {
+  switch (a.kind) {
+    case 'cm':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/hardware/contracts', {
+          ...path(saveId),
+          body: {
+            product_id: a.productId,
+            manufacturer: a.manufacturer,
+            city: a.city,
+            units: a.units,
+            months: a.months,
+          },
+        }),
+      );
+    case 'wafer':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/hardware/wafer-contracts', {
+          ...path(saveId),
+          body: { product_id: a.productId, foundry: a.foundry, wafers: a.wafers, months: a.months },
+        }),
+      );
+    case 'plant':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/hardware/plants', {
+          ...path(saveId),
+          body: { city: a.city, units: a.units },
+        }),
+      );
+    case 'staff':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/hardware/plants/{facility_id}/staff', {
+          params: { path: { save_id: saveId, facility_id: a.facilityId } },
+          body: { unit_id: a.unitId },
+        }),
+      );
+    case 'sell':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/hardware/plants/{facility_id}/sell', {
+          params: { path: { save_id: saveId, facility_id: a.facilityId } },
+        }),
+      );
+    case 'sell_capacity':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/hardware/contract-manufacturing', path(saveId)),
+      );
+  }
+}
+
+export function useHardwareAction(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: (a: HardwareAction) => applyHardware(saveId, a),
     onSuccess: invalidate,
   });
 }

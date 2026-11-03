@@ -21,6 +21,7 @@ from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.fundraising import arr_cents, base_value, climate, company_growth
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
 from tst.sim.ledger import CASH, apply_entries
+from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot
@@ -47,6 +48,7 @@ class Game:
     refused: Counter[str] = field(default_factory=Counter)  # action kind -> refusals
     event_requests: int = 0
     month_lines: list[tuple[int, str, int]] = field(default_factory=list)  # actions this month
+    last_product_months: tuple[ProductMonth, ...] = ()  # the last turn's history rows (M12b)
     _writer: Writer = field(
         default_factory=lambda: Writer(MockLLMAdapter(), LLMSettings(), lambda: 1_000_000.0)
     )
@@ -112,6 +114,7 @@ class Game:
             },
         )
         self.month_lines = []
+        self.last_product_months = result.product_months
         self.state = result.new_state
         self.balances = apply_entries(self.balances, result.ledger_entries)
         snap = result.snapshot.for_company(PLAYER)

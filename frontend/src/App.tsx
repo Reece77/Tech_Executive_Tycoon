@@ -5,6 +5,7 @@ import { GameLayout } from './screens/GameLayout';
 import { GameOverScreen } from './screens/GameOverScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { EventRedirect, InboxScreen } from './screens/InboxScreen';
+import { HardwareScreen } from './screens/HardwareScreen';
 import { InfrastructureScreen } from './screens/InfrastructureScreen';
 import { MainMenu } from './screens/MainMenu';
 import { MarketScreen } from './screens/MarketScreen';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="products/research" element={<ResearchScreen />} />
           <Route path="products/markets" element={<MarketScreen />} />
           <Route path="products/infrastructure" element={<InfrastructureScreen />} />
+          <Route path="products/hardware" element={<HardwareScreen />} />
           <Route path="products/markets/:category" element={<MarketScreen />} />
           <Route path="products/:productId" element={<ProductScreen />} />
           <Route path="finance" element={<FinanceScreen />} />

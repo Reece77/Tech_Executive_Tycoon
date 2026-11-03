@@ -856,7 +856,7 @@ hardware:
 chips:
   good: foundry_wafer # components_history.yaml key of foundry wafers (26.3)
   types: # chips per wafer and a wafer's 2010 price at index 1.0 (26.3)
-    mobile_soc: { label: Mobile SoC, per_wafer: 600, wafer_cents: 600000, advanced_node: false }
+    mobile_soc: { label: Mobile SoC, per_wafer: 600, wafer_cents: 200000, advanced_node: false } # $2,000 a mature-node wafer: an own SoC at about $13 against $40 bought (26.6 target 4)
     server_cpu: { label: Server CPU, per_wafer: 150, wafer_cents: 800000, advanced_node: true }
     ai_accelerator: { label: AI accelerator, per_wafer: 60, wafer_cents: 900000, advanced_node: true } # $9,000 a wafer (26.7)
   packaging_cents: 800 # packaging and test, cents a chip (26.3)
