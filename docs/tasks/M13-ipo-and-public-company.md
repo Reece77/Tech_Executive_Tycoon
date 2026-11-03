@@ -58,13 +58,13 @@ Acquisitions (M14; M13 only raises takeover-bid events). Personal stock trading 
 
 ## Acceptance criteria
 
-- [ ] Every §25.10 worked example passes as a test.
-- [ ] The IPO chain runs end to end; the listing posts correctly and the cap table reconciles (property test).
-- [ ] The share price follows fundamentals, sentiment and earnings; analysts publish ratings; activists and takeover interest trigger as specified.
-- [ ] The CEO acts within guardrails and never takes Chair-only actions (property test); overrides cost energy.
-- [ ] No API response shows the demand draw, future sentiment or hidden thresholds (planted-value test).
-- [ ] §25.9 targets met (printed, values recorded); no new xfails.
-- [ ] `make check` green; `make e2e` passes; merged first in the pair per CLAUDE.md §6 with the trailer `Milestone-Tag: m13-done`.
+- [x] Every §25.10 worked example passes as a test.
+- [x] The IPO chain runs end to end; the listing posts correctly and the cap table reconciles (property test).
+- [x] The share price follows fundamentals, sentiment and earnings; analysts publish ratings; activists and takeover interest trigger as specified.
+- [x] The CEO acts within guardrails and never takes Chair-only actions (property test); overrides cost energy.
+- [x] No API response shows the demand draw, future sentiment or hidden thresholds (planted-value test).
+- [x] §25.9 targets met (printed, values recorded); no new xfails.
+- [x] `make check` green; `make e2e` passes; merged first in the pair per CLAUDE.md §6 with the trailer `Milestone-Tag: m13-done`.
 
 ## Manual check (Reece, after merge)
 
