@@ -12,6 +12,7 @@ from tst.sim.events.data import EventTemplate
 from tst.sim.events.formulas import share_value
 from tst.sim.events.models import GameEvent
 from tst.sim.events.render import loan_names, placeholder_names, render
+from tst.sim.markets_public.describe import public_names
 from tst.sim.state import GameState
 
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
@@ -50,8 +51,10 @@ def target_string(state: GameState, event: GameEvent, word: str) -> str | None:
     return ""  # follow_up
 
 
-def event_names(state: GameState, event: GameEvent, data: GameData) -> dict[str, str]:
-    return placeholder_names(
+def event_names(
+    state: GameState, event: GameEvent, data: GameData, balance: Balance | None = None
+) -> dict[str, str]:
+    names = placeholder_names(
         state,
         data,
         event.company_id,
@@ -62,12 +65,15 @@ def event_names(state: GameState, event: GameEvent, data: GameData) -> dict[str,
         rival_id=event.rival_id,
         months=event.months,
     ) | loan_names(state, data, event.loan_id)
+    if event.category == "public" and balance is not None:  # M13 (25)
+        names |= public_names(state, data, balance, event.company_id)
+    return names
 
 
 def template_draft(
     state: GameState, event: GameEvent, template: EventTemplate, balance: Balance, data: GameData
 ) -> dict[str, Any]:
-    names = event_names(state, event, data)
+    names = event_names(state, event, data, balance)
     first_cost = next(
         (
             share_value(
@@ -96,6 +102,8 @@ def template_draft(
             effect: dict[str, Any] = {"type": spec.type, "target": target, "value": value}
             if spec.type == "modifier":  # M10b (23.2)
                 effect |= {"stat": spec.stat, "months": spec.months}
+            elif spec.type == "public_step":  # M13 (25)
+                effect |= {"stat": spec.stat}
             effects.append(effect)
         choices.append(
             {

@@ -4,8 +4,8 @@ wafer contracts (`production_contract`), each unit-sale product's month of produ
 with none. M12b's eras that a save is already past arrive on schedule: historical ones at
 their month, future ones at their seeded month (stream era_window, 26.4).
 
-Revision ID: 0030_hardware
-Revises: 0029_facilities
+Revision ID: 0031_hardware
+Revises: 0030_public_company
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0030_hardware"
-down_revision: str | None = "0029_facilities"
+revision: str = "0031_hardware"
+down_revision: str | None = "0030_public_company"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -61,7 +61,7 @@ def upgrade() -> None:
         batch.add_column(sa.Column("run_units", sa.Float(), nullable=False, server_default="0"))
         batch.add_column(sa.Column("sold_units", sa.Float(), nullable=False, server_default="0"))
     _past_eras()
-    op.execute("UPDATE save_meta SET schema_version = 30")
+    op.execute("UPDATE save_meta SET schema_version = 31")
 
 
 def _past_eras() -> None:
@@ -91,7 +91,7 @@ def _past_eras() -> None:
 
 
 def downgrade() -> None:
-    op.execute("UPDATE save_meta SET schema_version = 29")
+    op.execute("UPDATE save_meta SET schema_version = 30")
     with op.batch_alter_table("facility") as batch:
         batch.drop_column("sold_units")
         batch.drop_column("run_units")

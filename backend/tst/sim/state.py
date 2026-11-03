@@ -31,6 +31,14 @@ from tst.sim.geo.models import (
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
+from tst.sim.markets_public.models import (
+    Ceo,
+    CeoDecision,
+    Guidance,
+    Listing,
+    PublicCompany,
+    ShareMonth,
+)
 from tst.sim.money import Cents
 from tst.sim.org.models import (
     Authority,
@@ -193,6 +201,15 @@ class GameState:
     # the last 24 months) by id; the last phase 5's production by product id.
     production_contracts: tuple[ProductionContract, ...] = ()
     production: tuple[ProductionMonth, ...] = ()
+    # M13 (25): each company's IPO chain and its listed state, by company id; guidance by
+    # (company_id, quarter_turn); month-end share prices of the last public.history_months, by
+    # (company_id, turn); CEOs serving or ended lately, and their recent decisions, by id.
+    listings: tuple[Listing, ...] = ()
+    public_companies: tuple[PublicCompany, ...] = ()
+    guidance: tuple[Guidance, ...] = ()
+    share_months: tuple[ShareMonth, ...] = ()
+    ceos: tuple[Ceo, ...] = ()
+    ceo_decisions: tuple[CeoDecision, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -826,3 +843,61 @@ def with_era_arrival(state: GameState, arrival: EraArrival) -> GameState:
 
 def with_license(state: GameState, licence: License) -> GameState:
     return replace(state, licenses=_upsert(state.licenses, licence, lambda x: x.id))
+
+
+# --- M13 (formulas.md 25) ----------------------------------------------------------------------
+
+
+def listing_of(state: GameState, company_id: int) -> Listing | None:
+    return next((x for x in state.listings if x.company_id == company_id), None)
+
+
+def public_of(state: GameState, company_id: int) -> PublicCompany | None:
+    return next((x for x in state.public_companies if x.company_id == company_id), None)
+
+
+def ceo_of(state: GameState, company_id: int) -> Ceo | None:
+    """The company's serving CEO, if one was appointed (25.6)."""
+    return next((c for c in state.ceos if c.company_id == company_id and c.active), None)
+
+
+def guidance_for(state: GameState, company_id: int, quarter_turn: int) -> Guidance | None:
+    return next(
+        (
+            g
+            for g in state.guidance
+            if g.company_id == company_id and g.quarter_turn == quarter_turn
+        ),
+        None,
+    )
+
+
+def with_listing(state: GameState, listing: Listing) -> GameState:
+    return replace(state, listings=_upsert(state.listings, listing, lambda x: x.company_id))
+
+
+def with_public(state: GameState, public: PublicCompany) -> GameState:
+    return replace(
+        state, public_companies=_upsert(state.public_companies, public, lambda x: x.company_id)
+    )
+
+
+def with_guidance(state: GameState, guidance: Guidance) -> GameState:
+    return replace(
+        state,
+        guidance=_upsert(state.guidance, guidance, lambda g: (g.company_id, g.quarter_turn)),
+    )
+
+
+def with_share_month(state: GameState, month: ShareMonth) -> GameState:
+    return replace(
+        state, share_months=_upsert(state.share_months, month, lambda m: (m.company_id, m.turn))
+    )
+
+
+def with_ceo(state: GameState, ceo: Ceo) -> GameState:
+    return replace(state, ceos=_upsert(state.ceos, ceo, lambda c: c.id))
+
+
+def with_ceo_decision(state: GameState, decision: CeoDecision) -> GameState:
+    return replace(state, ceo_decisions=_upsert(state.ceo_decisions, decision, lambda d: d.id))

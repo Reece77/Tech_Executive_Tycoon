@@ -1868,7 +1868,14 @@ def execs(save: SaveOpt) -> None:
     """The executive team: holders, fit and estimated effects, and vacancy penalties (18.3)."""
     path, data, state = _game(save)
     out = _scaleup(path, state, data)
-    typer.echo("CEO      you (until the IPO)")
+    from tst.sim.state import ceo_of
+
+    ceo = ceo_of(state, state.player.id)  # M13 (25.6)
+    if ceo is None:
+        typer.echo("CEO      you" + ("" if state.player.stage >= 4 else " (until the IPO)"))
+    else:
+        holder = state.person(ceo.person_id)
+        typer.echo(f"CEO      {holder.first_name} {holder.last_name} (you are Chair)")
     for s in out.seats:
         if s.holder_name:
             est = "" if s.estimated_effect_pct is None else f", {s.estimated_effect_pct:+.1f}%"
@@ -2279,3 +2286,127 @@ def license(
     level = result.new_state.research_lead(result.new_state.player.id, domain)
     typer.echo(f"Licensed {points:g} {domain} points; your lead is now {level:.1f}")
     typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+# --- M13: IPO, public company, Chair and CEO (formulas.md 25) --------------------------------
+
+
+@app.command("ipo")
+def ipo_cmd(
+    save: SaveOpt,
+    bank: Annotated[
+        str | None, typer.Option(help="Hire this bank (goldman_sachs, morgan_stanley, jp_morgan)")
+    ] = None,
+) -> None:
+    """The IPO: eligibility and the chain's status; --bank hires the banks (energy 10, 25.2)."""
+    from tst.api.public_views import ipo_out
+    from tst.sim.actions.public import HireBanks
+    from tst.sim.markets_public.ipo import eligibility_problem
+
+    path, data, state = _game(save)
+    if bank is not None:
+        state = _run(path, data, HireBanks(_founder(state), bank)).new_state
+        typer.echo(f"Hired {data.game_data.bank(bank).name}; {_energy(state, data)}")
+    out = ipo_out(state, state.player.id, data)
+    if out is None:
+        problem = eligibility_problem(state, state.player.id, data.balance)
+        typer.echo("Eligible for an IPO." if problem is None else f"Not eligible: {problem}.")
+        for b in data.game_data.banks:
+            typer.echo(f"  {b.key:<16}{b.name:<16}fee {b.fee:.1%}")
+        return
+    typer.echo(f"IPO with {out.bank} (fee {out.fee_pct:.1f}%), hired {out.hired}: {out.status}")
+    for s in out.steps:
+        typer.echo(f"  [{s.state:<4}] {s.label}: {s.detail}")
+    if out.demand:
+        typer.echo(f"  The book is {out.demand}.")
+    if out.price_cents:
+        typer.echo(
+            f"  Price {format_money(out.price_cents)} a share; {out.new_shares:,} new shares; "
+            f"implied market cap {format_money(out.implied_cap_cents)}"
+        )
+    if out.listed:
+        typer.echo(f"  Listed {out.listed}; first day {out.first_day_pct or 0:+.1f}%")
+
+
+@app.command()
+def guidance(
+    save: SaveOpt,
+    revenue: Annotated[
+        str | None, typer.Option(help="The quarter's revenue in dollars; omit to see consensus")
+    ] = None,
+    margin: Annotated[float, typer.Option(help="Operating margin in percent")] = 0.0,
+) -> None:
+    """Quarterly guidance (energy 4, 25.4): set it in a quarter's first month."""
+    from tst.sim.actions.public import SetGuidance
+    from tst.sim.markets_public.public import consensus, guidance_problem
+
+    path, data, state = _game(save)
+    rev, margin_bp = consensus(state, state.player.id)
+    if revenue is None:
+        problem = guidance_problem(state, state.player.id, rev, data.balance)
+        typer.echo(
+            f"Consensus: revenue {format_money(rev)}, operating margin {margin_bp / 100:.1f}%"
+            + (f" ({problem})" if problem else "")
+        )
+        return
+    try:
+        amount = cents(revenue)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    result = _run(path, data, SetGuidance(_founder(state), amount, round(margin * 100)))
+    typer.echo(
+        f"Guided {format_money(amount)} at {margin:.1f}% (consensus {format_money(rev)}); "
+        f"{_energy(result.new_state, data)}"
+    )
+
+
+@app.command()
+def buyback(
+    save: SaveOpt,
+    amount: Annotated[str, typer.Option(help="Dollars to spend, e.g. 5000000")],
+) -> None:
+    """Buy back shares at the price + 2% (energy 6, 25.5)."""
+    from tst.sim.actions.public import Buyback
+
+    path, data, state = _game(save)
+    try:
+        amount_cents = cents(amount)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    before = state.player.id
+    result = _run(path, data, Buyback(_founder(state), amount_cents))
+    from tst.sim.finance.captable import fd_shares
+
+    bought = fd_shares(state, before) - fd_shares(result.new_state, before)
+    typer.echo(f"Bought back {bought:,} shares; {_energy(result.new_state, data)}")
+
+
+@app.command("appoint-ceo")
+def appoint_ceo(
+    save: SaveOpt,
+    person: Annotated[int | None, typer.Option(help="Person id; omit to list candidates")] = None,
+) -> None:
+    """Appoint a CEO and step up to Chair (stage 4, energy 10, 25.6)."""
+    from tst.api.public_views import ceo_out
+    from tst.sim.actions.public import AppointCeo
+
+    path, data, state = _game(save)
+    if person is None:
+        out = ceo_out(state, state.player.id, data)
+        if out.name:
+            typer.echo(f"CEO: {out.name} since {out.since}")
+            for d in out.decisions[:10]:
+                flag = " (overridden)" if d.overridden else " (a misstep)" if d.mistake else ""
+                typer.echo(f"  {d.label} [{d.id}] {d.scope}: {d.text}{flag}")
+            return
+        if out.problem:
+            typer.echo(out.problem)
+        for c in out.candidates:
+            typer.echo(f"  {c.person_id:>5}  {c.name:<24}{c.role} ({c.level})")
+        return
+    result = _run(path, data, AppointCeo(_founder(state), person))
+    name = result.new_state.person(person)
+    typer.echo(
+        f"{name.first_name} {name.last_name} is CEO; you are Chair. "
+        f"{_energy(result.new_state, data)}"
+    )

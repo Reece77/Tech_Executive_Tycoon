@@ -119,7 +119,35 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return _loan_text(state, effect, balance)
         case "modifier":
             return modifier_text(state, effect.stat, effect.target, v, effect.months)
+        case "public_step":  # M13 (25)
+            return PUBLIC_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
     return effect.type.replace("_", " ")
+
+
+# M13 (25): what each IPO or public-company step does, in words (never a hidden number).
+PUBLIC_STEP_TEXT: dict[str, str] = {
+    "file": "the S-1 is filed; the roadshow starts next month",
+    "file_late": "the S-1 is filed a month later",
+    "ambition_high": "the bank aims high: a higher price, a weaker first day",
+    "ambition_middle": "the bank aims for the middle of the range",
+    "ambition_low": "the bank prices to pop: a lower price, a stronger first day",
+    "sell_low": "sell 10% of the company as new shares",
+    "sell_middle": "sell 15% of the company as new shares",
+    "sell_high": "sell 25% of the company as new shares",
+    "single_class": "one class of shares",
+    "dual_class": "you keep voting control; the shares price 5% lower",
+    "price_range": "list at the suggested price next",
+    "price_raise": "list 10% above the suggested price",
+    "price_cut": "list 15% below the suggested price",
+    "pull": "no listing; part of the banks' fees is owed and the board is unhappy",
+    "activist_seat": "the fund's nominee joins the board",
+    "activist_buyback": "a buyback of 10% of cash next month",
+    "activist_fight": "a proxy fight costs 1% of cash",
+    "takeover_reject": "the approach is turned down",
+    "takeover_talks": "talks lift the share price",
+    "ceo_replace": "the CEO goes; you run the company again",
+    "ceo_keep": "the CEO stays",
+}
 
 
 def _loan_text(state: GameState, effect: Effect, balance: Balance) -> str:

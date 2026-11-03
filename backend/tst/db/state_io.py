@@ -75,6 +75,8 @@ from tst.db.models import (
     CandidateRelocationRow,
     CandidateRow,
     CapTableEntryRow,
+    CeoDecisionRow,
+    CeoRow,
     CompanyHqRow,
     CompanyRivalKeyRow,
     CompanyRow,
@@ -91,10 +93,12 @@ from tst.db.models import (
     FormerStaffRow,
     FreeAgentRow,
     FundingRoundRow,
+    GuidanceRow,
     HiringPlanRow,
     LedgerEntryRow,
     LedgerLineRow,
     LicenseRow,
+    ListingRow,
     LoanRow,
     MacroMonthRow,
     MarketingSplitRow,
@@ -122,6 +126,7 @@ from tst.db.models import (
     ProductRow,
     ProductSegmentRow,
     ProposalRow,
+    PublicCompanyRow,
     RegionalMarketRow,
     RegionalSegmentRow,
     RelationshipRow,
@@ -136,6 +141,7 @@ from tst.db.models import (
     SearchLevelRow,
     SearchRow,
     SegmentShareRow,
+    ShareMonthRow,
     StorylineRow,
     SupplyContractRow,
     SupplyMonthRow,
@@ -166,6 +172,15 @@ from tst.sim.geo.models import (
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import NextIds
 from tst.sim.ledger import LedgerEntry
+from tst.sim.markets_public.models import (
+    Analyst,
+    Ceo,
+    CeoDecision,
+    Guidance,
+    Listing,
+    PublicCompany,
+    ShareMonth,
+)
 from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Proposal
 from tst.sim.people.models import Person, RevealState
 from tst.sim.people.relationships import Relationship
@@ -469,6 +484,7 @@ def load_state(session: Session) -> GameState:
     state = _load_exec(session, state)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
+    state = _load_public(session, state)
     state = _load_research(session, state)
     return _load_geo(session, state, product_ids)
 
@@ -929,7 +945,7 @@ def _load_facilities(session: Session, state: GameState) -> GameState:
 
 def _load_hardware(session: Session, state: GameState) -> GameState:
     """Production contracts (active, and ended ones of the last months) and the last
-    month's production (M12b, 0030)."""
+    month's production (M12b, 0031)."""
     if not has_table(session, ProductionContractRow):
         return state
     turn = state.turn
@@ -1028,6 +1044,208 @@ def _sync_facilities(session: Session, old: GameState, new: GameState) -> None:
     for o in new.outages:
         if o.id not in seen:
             session.merge(FacilityOutageRow(**asdict(o)))
+
+
+# --- Going public and the Chair (M13, 0030) ----------------------------------------------------
+
+SHARE_HISTORY = 36  # month ends of share prices kept in the live state (public.history_months)
+CEO_MEMORY = 12  # months of CEO decisions, and of ended CEOs, the state holds (ceo.memory_months)
+
+
+def _ceo_live(ceo: Ceo, turn: int) -> bool:
+    """Serving, or ended within the last CEO_MEMORY months."""
+    return ceo.ended_turn is None or ceo.ended_turn > turn - CEO_MEMORY
+
+
+def listing_from_row(r: ListingRow) -> Listing:
+    return Listing(
+        company_id=r.company_id,
+        bank=r.bank,
+        hired_turn=r.hired_turn,
+        status=r.status,  # type: ignore[arg-type]
+        filed_late=r.filed_late,
+        roadshow_turn=r.roadshow_turn,
+        ambition=r.ambition,
+        share_choice=r.share_choice,
+        dual_class=r.dual_class,
+        demand=r.demand,
+        price_choice=r.price_choice,  # type: ignore[arg-type]
+        shares_before=r.shares_before,
+        new_shares=r.new_shares,
+        price_cents=r.price_cents,
+        gross_cents=r.gross_cents,
+        fee_cents=r.fee_cents,
+        first_day_return=r.first_day_return,
+        close_cents=r.close_cents,
+        listed_turn=r.listed_turn,
+        pulled_turn=r.pulled_turn,
+        ticker=r.ticker,
+    )
+
+
+def public_from_row(r: PublicCompanyRow) -> PublicCompany:
+    return PublicCompany(
+        company_id=r.company_id,
+        listed_turn=r.listed_turn,
+        ticker=r.ticker,
+        dual_class=r.dual_class,
+        listing_price_cents=r.listing_price_cents,
+        price_cents=r.price_cents,
+        sentiment=r.sentiment,
+        value_cents=r.value_cents,
+        analysts=tuple(Analyst(int(i), int(t), rating) for i, t, rating in r.analysts),
+        below_value_months=r.below_value_months,
+        below_takeover_months=r.below_takeover_months,
+        last_activist_turn=r.last_activist_turn,
+        last_takeover_turn=r.last_takeover_turn,
+        beat_streak=r.beat_streak,
+        miss_streak=r.miss_streak,
+        results=tuple(r.results),  # type: ignore[arg-type]
+        quarter_revenue_cents=r.quarter_revenue_cents,
+        quarter_op_cents=r.quarter_op_cents,
+        dividend_cents=r.dividend_cents,
+        lapsed_seats=r.lapsed_seats,
+        pending=tuple(r.pending),
+    )
+
+
+def public_to_row(p: PublicCompany) -> PublicCompanyRow:
+    fields = asdict(p)
+    fields["analysts"] = [[a.index, a.target_cents, a.rating] for a in p.analysts]
+    fields["results"] = list(p.results)
+    fields["pending"] = list(p.pending)
+    return PublicCompanyRow(**fields)
+
+
+def guidance_from_row(r: GuidanceRow) -> Guidance:
+    return Guidance(
+        company_id=r.company_id,
+        quarter_turn=r.quarter_turn,
+        revenue_cents=r.revenue_cents,
+        margin_bp=r.margin_bp,
+        consensus_revenue_cents=r.consensus_revenue_cents,
+        consensus_margin_bp=r.consensus_margin_bp,
+        by_player=r.by_player,
+        actual_revenue_cents=r.actual_revenue_cents,
+        actual_margin_bp=r.actual_margin_bp,
+        result=r.result,  # type: ignore[arg-type]
+        price_before_cents=r.price_before_cents,
+        price_after_cents=r.price_after_cents,
+    )
+
+
+def ceo_from_row(r: CeoRow) -> Ceo:
+    return Ceo(
+        id=r.id,
+        company_id=r.company_id,
+        person_id=r.person_id,
+        since_turn=r.since_turn,
+        scopes=tuple(r.scopes),
+        ended_turn=r.ended_turn,
+        end_reason=r.end_reason,
+        low_months=r.low_months,
+        price_anchors=tuple((int(p), str(s), int(c)) for p, s, c in r.price_anchors),
+    )
+
+
+def ceo_to_row(c: Ceo) -> CeoRow:
+    fields = asdict(c)
+    fields["scopes"] = list(c.scopes)
+    fields["price_anchors"] = [list(a) for a in c.price_anchors]
+    return CeoRow(**fields)
+
+
+def ceo_decision_from_row(r: CeoDecisionRow) -> CeoDecision:
+    return CeoDecision(
+        id=r.id,
+        company_id=r.company_id,
+        person_id=r.person_id,
+        turn=r.turn,
+        scope=r.scope,
+        text=r.text,
+        mistake=r.mistake,
+        undo=tuple((str(k), v) for k, v in r.undo),
+        overridden_turn=r.overridden_turn,
+    )
+
+
+def ceo_decision_to_row(d: CeoDecision) -> CeoDecisionRow:
+    fields = asdict(d)
+    fields["undo"] = [[k, v] for k, v in d.undo]
+    return CeoDecisionRow(**fields)
+
+
+def _load_public(session: Session, state: GameState) -> GameState:
+    """Listings, listed companies and all their guidance, the last SHARE_HISTORY month ends,
+    CEOs serving or ended lately and their recent decisions (M13, 0030)."""
+    if not has_table(session, ListingRow):
+        return state
+    turn = state.turn
+
+    def next_id(model: Any) -> int:
+        return int(session.scalar(select(func.max(model.id))) or 0) + 1
+
+    return replace(
+        state,
+        listings=tuple(
+            listing_from_row(r)
+            for r in session.scalars(select(ListingRow).order_by(ListingRow.company_id))
+        ),
+        public_companies=tuple(
+            public_from_row(r)
+            for r in session.scalars(select(PublicCompanyRow).order_by(PublicCompanyRow.company_id))
+        ),
+        guidance=tuple(
+            guidance_from_row(r)
+            for r in session.scalars(
+                select(GuidanceRow).order_by(GuidanceRow.company_id, GuidanceRow.quarter_turn)
+            )
+        ),
+        share_months=tuple(
+            ShareMonth(r.company_id, r.turn, r.price_cents, r.shares, r.mark)
+            for r in session.scalars(
+                select(ShareMonthRow)
+                .where(ShareMonthRow.turn > turn - SHARE_HISTORY)
+                .order_by(ShareMonthRow.company_id, ShareMonthRow.turn)
+            )
+        ),
+        ceos=tuple(
+            ceo_from_row(r)
+            for r in session.scalars(
+                select(CeoRow)
+                .where(CeoRow.ended_turn.is_(None) | (CeoRow.ended_turn > turn - CEO_MEMORY))
+                .order_by(CeoRow.id)
+            )
+        ),
+        ceo_decisions=tuple(
+            ceo_decision_from_row(r)
+            for r in session.scalars(
+                select(CeoDecisionRow)
+                .where(CeoDecisionRow.turn > turn - CEO_MEMORY)
+                .order_by(CeoDecisionRow.id)
+            )
+        ),
+        next_ids=replace(state.next_ids, ceo=next_id(CeoRow), ceo_decision=next_id(CeoDecisionRow)),
+    )
+
+
+def _sync_public(session: Session, old: GameState, new: GameState) -> None:
+    """Listings, listed companies, guidance, month ends, CEOs and their decisions (M13)."""
+    if not has_table(session, ListingRow):
+        return
+    session.flush()
+    for x in _changed(old.listings, new.listings, lambda x: x.company_id):
+        session.merge(ListingRow(**asdict(x)))
+    for p in _changed(old.public_companies, new.public_companies, lambda p: p.company_id):
+        session.merge(public_to_row(p))
+    for g in _changed(old.guidance, new.guidance, lambda g: (g.company_id, g.quarter_turn)):
+        session.merge(GuidanceRow(**asdict(g)))
+    for m in _changed(old.share_months, new.share_months, lambda m: (m.company_id, m.turn)):
+        session.merge(ShareMonthRow(**asdict(m)))
+    for c in _changed(old.ceos, new.ceos, lambda c: c.id):
+        session.merge(ceo_to_row(c))
+    for d in _changed(old.ceo_decisions, new.ceo_decisions, lambda d: d.id):
+        session.merge(ceo_decision_to_row(d))
 
 
 def _load_m10(session: Session, state: GameState) -> GameState:
@@ -1472,6 +1690,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_exec(session, old, new)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
+    _sync_public(session, old, new)
     _sync_research(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()
@@ -1724,4 +1943,7 @@ def live_view(state: GameState) -> GameState:
             if c.status == "active" or c.end_turn >= turn - FACILITY_MEMORY
         ),
         outages=tuple(o for o in state.outages if o.turn > turn - FACILITY_MEMORY),
+        share_months=tuple(m for m in state.share_months if m.turn > turn - SHARE_HISTORY),  # M13
+        ceos=tuple(c for c in state.ceos if _ceo_live(c, turn)),
+        ceo_decisions=tuple(d for d in state.ceo_decisions if d.turn > turn - CEO_MEMORY),
     )

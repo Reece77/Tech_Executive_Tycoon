@@ -39,8 +39,10 @@ from tst.sim.ledger import (
     apply_entries,
 )
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.markets_public.public import public_month
 from tst.sim.money import Cents
 from tst.sim.org.authority import run_executives
+from tst.sim.org.ceo import run_ceo
 from tst.sim.org.delegates import run_delegates
 from tst.sim.org.divisions import division_months
 from tst.sim.org.relationships import relationships_month
@@ -64,7 +66,13 @@ from tst.sim.rivals.startups import (
 )
 from tst.sim.rng import RngFactory
 from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
-from tst.sim.state import GameState, with_company, with_person_state, with_proposal
+from tst.sim.state import (
+    GameState,
+    player_companies,
+    with_company,
+    with_person_state,
+    with_proposal,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -190,6 +198,10 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
     )
     ctx = replace(ctx, state=state, delegate_actions=ctx.delegate_actions + acted)
     ctx = ctx.post(*entries).log(*logs)
+    # The CEO runs what no seat with authority covers (M13, 25.6).
+    state, entries, logs, acted = run_ceo(ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances)
+    ctx = replace(ctx, state=state, delegate_actions=ctx.delegate_actions + acted)
+    ctx = ctx.post(*entries).log(*logs)
     state, moves, approached, raised = rival_month(
         ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
     )
@@ -247,6 +259,16 @@ def financing(ctx: TurnContext) -> TurnContext:
     # M10 (20.3): loans' interest and principal, then covenants, before insolvency.
     state, debt_entries, debt_logs = debt.debt_month(ctx.state, ctx.balances, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*debt_entries).log(*debt_logs)
+    # M13 (25.2-25.5): the IPO chain's demand and listing, then listed companies' month.
+    if ctx.state.listings or ctx.state.public_companies:
+        types = {a.code: a.type for a in ctx.data.accounts}
+        players = player_companies(ctx.state)
+        op = {c.id: _month_operating(ctx, c.id, types) for c in players}
+        cash = {c.id: account_balance(ctx.balances, c.id, CASH) for c in players}
+        state, public_entries, public_logs = public_month(
+            ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.revenue, op, cash
+        )
+        ctx = replace(ctx, state=state).post(*public_entries).log(*public_logs)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
     state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
     ctx = replace(ctx, rival_moves=ctx.rival_moves + failed)
@@ -371,6 +393,19 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     return ctx.log(*items, *market_news(state, ctx.rival_moves))  # M5 (15.5)
 
 
+def _month_operating(ctx: TurnContext, company_id: int, types: Mapping[str, AccountType]) -> int:
+    """The month's operating result so far: the turn's entries plus actions before Continue
+    (as `_debt_history`)."""
+    lines = [
+        (e.turn, line.account, line.amount)
+        for e in ctx.entries
+        if e.company_id == company_id
+        for line in e.lines
+    ]
+    prior = ctx.prior_operating.get(company_id, 0)
+    return profit_and_loss(lines, types, ctx.turn, ctx.turn).operating_result + prior
+
+
 def _debt_history(
     state: GameState, ctx: TurnContext, types: Mapping[str, AccountType]
 ) -> GameState:
@@ -389,6 +424,7 @@ def _debt_history(
     result = profit_and_loss(lines, types, ctx.turn, ctx.turn).operating_result + prior
     burn = max(-(ctx.prior_flow.get(company.id, 0) + cash_before_financing(lines, types)), 0)
     keep = ctx.balance.debt.bank.profit_months + ctx.balance.debt.bank.covenant_profit_months
+    keep = max(keep, ctx.balance.ipo.trailing_months)  # M13 (25.1): four quarters
     company = replace(
         company,
         op_history=(*company.op_history, result)[-keep:],

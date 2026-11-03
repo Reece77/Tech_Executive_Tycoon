@@ -104,6 +104,13 @@ export type HardwareChip = Schemas['ChipOut'];
 export type ProductionContract = Schemas['ProductionContractOut'];
 export type BuildPreview = Schemas['BuildPreviewOut'];
 export type SupplyContract = Schemas['ContractOut'];
+export type PublicCompany = Schemas['PublicOut']; // M13
+export type Ipo = Schemas['IpoOut'];
+export type PriceOption = Schemas['PriceOptionOut'];
+export type Stock = Schemas['StockOut'];
+export type GuidanceRow = Schemas['GuidanceRowOut'];
+export type Ceo = Schemas['CeoOut'];
+export type CeoDecision = Schemas['CeoDecisionOut'];
 
 /** One scale-up action (M8): shared services, a product's division, a seat. */
 export type ScaleupAction =
@@ -209,6 +216,7 @@ export const keys = {
   hardware: (saveId: string) => ['saves', saveId, 'hardware'] as const,
   manufacturing: (saveId: string, productId: number) =>
     ['saves', saveId, 'manufacturing', productId] as const,
+  public: (saveId: string) => ['saves', saveId, 'public'] as const, // M13
   buildPreview: (
     saveId: string,
     kind: string,
@@ -1965,6 +1973,102 @@ export function useInfraAction(saveId: string) {
   return useMutation({
     mutationFn: (a: InfraAction) => applyInfra(saveId, a),
     onSuccess: invalidate,
+  });
+}
+
+// --- IPO, the public company and the CEO seat (M13, formulas.md 25) -------------------------
+
+export function usePublic(saveId: string) {
+  return useQuery({
+    queryKey: keys.public(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/public', path(saveId))),
+    enabled: saveId !== '',
+  });
+}
+
+export type PublicAction =
+  | { kind: 'banks'; bank: string }
+  | { kind: 'guidance'; revenueCents: number; marginBp: number }
+  | { kind: 'buyback'; amountCents: number }
+  | { kind: 'dividend'; perShareCents: number }
+  | { kind: 'secondary'; shares: number }
+  | { kind: 'appointCeo'; personId: number }
+  | { kind: 'dismissCeo' }
+  | { kind: 'authority'; scopes: string[] }
+  | { kind: 'override'; decisionId: number };
+
+async function applyPublic(saveId: string, a: PublicAction) {
+  switch (a.kind) {
+    case 'banks':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/public/banks', {
+          ...path(saveId),
+          body: { bank: a.bank },
+        }),
+      );
+    case 'guidance':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/public/guidance', {
+          ...path(saveId),
+          body: { revenue_cents: a.revenueCents, margin_bp: a.marginBp },
+        }),
+      );
+    case 'buyback':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/public/buyback', {
+          ...path(saveId),
+          body: { amount_cents: a.amountCents },
+        }),
+      );
+    case 'dividend':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/public/dividend', {
+          ...path(saveId),
+          body: { per_share_cents: a.perShareCents },
+        }),
+      );
+    case 'secondary':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/public/secondary', {
+          ...path(saveId),
+          body: { shares: a.shares },
+        }),
+      );
+    case 'appointCeo':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/public/ceo', {
+          ...path(saveId),
+          body: { person_id: a.personId },
+        }),
+      );
+    case 'dismissCeo':
+      return unwrap(await api.POST('/api/saves/{save_id}/public/ceo/dismiss', path(saveId)));
+    case 'authority':
+      return unwrap(
+        await api.PUT('/api/saves/{save_id}/public/ceo/authority', {
+          ...path(saveId),
+          body: { scopes: a.scopes },
+        }),
+      );
+    case 'override':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/public/ceo/decisions/{decision_id}/override', {
+          params: { path: { save_id: saveId, decision_id: a.decisionId } },
+        }),
+      );
+  }
+}
+
+/** One public-company action: it applies at once and spends energy (ADR-0014). */
+export function usePublicAction(saveId: string) {
+  const client = useQueryClient();
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: (a: PublicAction) => applyPublic(saveId, a),
+    onSuccess: (data) => {
+      client.setQueryData(keys.public(saveId), data.public);
+      void invalidate();
+    },
   });
 }
 

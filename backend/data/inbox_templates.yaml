@@ -3,6 +3,45 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  banks_hired: # M13 (25.2 step 1): the IPO chain starts
+    title: "{bank} will lead your IPO"
+    body: "{bank} is hired as lead underwriter for a fee of {fee} of the money raised. The S-1 filing comes next month, then a roadshow and pricing."
+  ipo_listed: # M13 (25.2 step 5): listing day
+    title: "{ticker} is listed: {pop} on the first day"
+    body: "Your shares priced at {price_cents} with {bank} and closed the first day at {close_cents} ({pop}). The IPO raised {gross_cents}, {net_cents} after fees. Your stake is worth {stake_cents}. Two independent directors join the board."
+  ipo_pulled: # M13 (25.2 step 4)
+    title: "IPO pulled"
+    body: "You pulled the IPO on pricing night. {bank} is owed {fee_cents} in fees, and the board is not pleased."
+  earnings_report: # M13 (25.4): a quarter's results against guidance
+    title: "Quarterly results: a {result}"
+    body: "Revenue came in at {actual_cents} against guidance of {guided_cents} ({surprise}); operating margin {margin} against {guided_margin} guided."
+  guidance_set: # M13 (25.4)
+    title: "Guidance for the quarter"
+    body: "You guided revenue of {revenue_cents} and an operating margin of {margin} for the quarter; the consensus was {consensus_cents}."
+  dividend_declared: # M13 (25.5)
+    title: "Dividend declared"
+    body: "The board declared a dividend of {per_share_cents} a share, {amount_cents} in all, paid at the month end."
+  dividend_paid: # M13 (25.5)
+    title: "Dividend paid"
+    body: "{amount_cents} went to shareholders as this month's dividend."
+  buyback_done: # M13 (25.5)
+    title: "Shares bought back"
+    body: "The company bought back {shares} shares for {amount_cents}."
+  secondary_done: # M13 (25.5)
+    title: "Secondary offering closed"
+    body: "The company sold {shares} new shares and raised {net_cents} after fees."
+  ceo_appointed: # M13 (25.6)
+    title: "{name} is your CEO"
+    body: "{name} takes over day-to-day operations as chief executive. You are Chair: capital, strategy, guidance and executive appointments stay with you, and you can override any decision the CEO takes."
+  ceo_left: # M13 (25.6): the Chair dismissed the CEO, or the CEO left the company
+    title: "{name} is no longer CEO"
+    body: "You run the company day to day again."
+  ceo_replaced: # M13 (25.6): the board's vote
+    title: "The board replaced {name} as CEO"
+    body: "The directors voted {name} out. You run the company day to day again."
+  ceo_decisions: # M13 (25.6): what the CEO did this month
+    title: "Your CEO this month"
+    body: "{summary}"
   retained: # M10b (23.3): a counter-offer kept someone serving notice
     title: "{name} is staying"
     body: "{name} has accepted your counter-offer and withdrawn their notice."

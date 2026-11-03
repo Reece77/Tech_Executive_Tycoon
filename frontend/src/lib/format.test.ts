@@ -54,6 +54,7 @@ describe('formatMoneyShort', () => {
     [150_000_000, '$1.5M'],
     [5_000, '$50'],
     [-4_850_000, '-$48.5k'],
+    [191_000_000_000, '$1.9B'],
   ])('%i cents -> %s', (cents, text) => {
     expect(formatMoneyShort(cents)).toBe(text);
   });

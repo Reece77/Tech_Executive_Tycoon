@@ -16,6 +16,7 @@ from tst.sim.finance.captable import last_round, mrr_now_and_then
 from tst.sim.finance.models import BoardSeat, SeatKind
 from tst.sim.finance.statements import projected_runway
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.markets_public.describe import founder_protected, public_patience
 from tst.sim.org.executives import cfo_confidence
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Person
@@ -243,10 +244,11 @@ def board_month(
         growth = growth_term(state, company.id, balance)
         runway_pts = f.runway_points(runway, bb)
         cfo = cfo_confidence(state, company.id, balance)  # M8 (18.3): 0 before stage 3
+        listed = public_patience(state, company.id, balance)  # M13 (25.7): 0 until listed
         for seat in seats:
             if seat.confidence is None:
                 continue
-            patience = data.firm(seat.firm).patience if seat.firm else 0.0
+            patience = (data.firm(seat.firm).patience if seat.firm else 0.0) + listed
             target = f.confidence_target(growth, runway_pts, patience, bb)
             b = f.next_confidence(seat.confidence, target, bb)
             if cfo:
@@ -284,7 +286,8 @@ def board_month(
                 )
         seats = state.board(company.id)
         votes = sum(1 for s in seats if s.votes and s.months_below >= bb.removal_months)
-        if 2 * votes > len(seats):  # a majority of all seats; a tie keeps the founder
+        # a majority of all seats; a tie keeps the founder, and so do dual-class shares (M13)
+        if 2 * votes > len(seats) and not founder_protected(state, company.id):
             state = replace(
                 state,
                 save_meta=replace(

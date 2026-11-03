@@ -12464,6 +12464,808 @@
         }
       }
     },
+    "/api/saves/{save_id}/public": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Public",
+        "description": "The IPO flow, the Stock tab and the CEO seat (25.8).",
+        "operationId": "getPublic",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/public/banks": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Hire Banks",
+        "description": "25.2 step 1: hire the lead underwriter (energy ipo.hire_energy).",
+        "operationId": "hireBanks",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HireBanksIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/public/guidance": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Set Guidance",
+        "operationId": "setGuidance",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuidanceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/public/buyback": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Buyback",
+        "operationId": "buyback",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuybackIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/public/dividend": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Declare Dividend",
+        "operationId": "declareDividend",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DividendIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/public/secondary": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Secondary Offering",
+        "operationId": "secondaryOffering",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecondaryIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/public/ceo": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Appoint Ceo",
+        "operationId": "appointCeo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointCeoIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/public/ceo/dismiss": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Dismiss Ceo",
+        "operationId": "dismissCeo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/public/ceo/authority": {
+      "put": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Set Ceo Authority",
+        "operationId": "setCeoAuthority",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CeoAuthorityIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/public/ceo/decisions/{decision_id}/override": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Override Ceo",
+        "description": "25.6: reverse one CEO decision (energy ceo.override_energy).",
+        "operationId": "overrideCeo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "decision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Decision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -12870,6 +13672,29 @@
         "title": "ActiveEffectOut",
         "description": "A running event modifier (23.2, M10b): what it does, where from, how long is left."
       },
+      "AnalystOut": {
+        "properties": {
+          "firm": {
+            "type": "string",
+            "title": "Firm"
+          },
+          "rating": {
+            "type": "string",
+            "title": "Rating"
+          },
+          "target_cents": {
+            "type": "integer",
+            "title": "Target Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "firm",
+          "rating",
+          "target_cents"
+        ],
+        "title": "AnalystOut"
+      },
       "AppealWeightsOut": {
         "properties": {
           "quality": {
@@ -12961,6 +13786,19 @@
           "exec_salary_cents"
         ],
         "title": "AppointCandidateOut"
+      },
+      "AppointCeoIn": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "title": "AppointCeoIn"
       },
       "AppointIn": {
         "properties": {
@@ -13365,6 +14203,36 @@
           "total_liabilities_and_equity_cents"
         ],
         "title": "BalanceSheetOut"
+      },
+      "BankOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "fee_pct": {
+            "type": "number",
+            "title": "Fee Pct",
+            "description": "Percent of the money raised"
+          },
+          "reputation": {
+            "type": "string",
+            "title": "Reputation",
+            "description": "How the bank's name helps the price, in words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "fee_pct",
+          "reputation"
+        ],
+        "title": "BankOut"
       },
       "BiggestRoundOut": {
         "properties": {
@@ -13891,6 +14759,20 @@
         ],
         "title": "BuildPreviewOut"
       },
+      "BuybackIn": {
+        "properties": {
+          "amount_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount_cents"
+        ],
+        "title": "BuybackIn"
+      },
       "CandidacyOut": {
         "properties": {
           "search_id": {
@@ -14072,6 +14954,64 @@
           "ownership_history"
         ],
         "title": "CapTableOut"
+      },
+      "CapitalOut": {
+        "properties": {
+          "buyback_price_cents": {
+            "type": "integer",
+            "title": "Buyback Price Cents"
+          },
+          "buyback_max_shares": {
+            "type": "integer",
+            "title": "Buyback Max Shares"
+          },
+          "buyback_energy": {
+            "type": "integer",
+            "title": "Buyback Energy"
+          },
+          "dividend_declared_cents": {
+            "type": "integer",
+            "title": "Dividend Declared Cents"
+          },
+          "dividend_energy": {
+            "type": "integer",
+            "title": "Dividend Energy"
+          },
+          "shares_outstanding": {
+            "type": "integer",
+            "title": "Shares Outstanding"
+          },
+          "secondary_price_cents": {
+            "type": "integer",
+            "title": "Secondary Price Cents"
+          },
+          "secondary_max_shares": {
+            "type": "integer",
+            "title": "Secondary Max Shares"
+          },
+          "secondary_fee_pct": {
+            "type": "number",
+            "title": "Secondary Fee Pct"
+          },
+          "secondary_energy": {
+            "type": "integer",
+            "title": "Secondary Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "buyback_price_cents",
+          "buyback_max_shares",
+          "buyback_energy",
+          "dividend_declared_cents",
+          "dividend_energy",
+          "shares_outstanding",
+          "secondary_price_cents",
+          "secondary_max_shares",
+          "secondary_fee_pct",
+          "secondary_energy"
+        ],
+        "title": "CapitalOut"
       },
       "CashFlowOut": {
         "properties": {
@@ -14275,6 +15215,207 @@
           "first_mover"
         ],
         "title": "CategoryTechOut"
+      },
+      "CeoAuthorityIn": {
+        "properties": {
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scopes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scopes"
+        ],
+        "title": "CeoAuthorityIn"
+      },
+      "CeoCandidateOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role",
+          "level"
+        ],
+        "title": "CeoCandidateOut"
+      },
+      "CeoDecisionOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "mistake": {
+            "type": "boolean",
+            "title": "Mistake"
+          },
+          "can_override": {
+            "type": "boolean",
+            "title": "Can Override"
+          },
+          "overridden": {
+            "type": "boolean",
+            "title": "Overridden"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "turn",
+          "label",
+          "scope",
+          "text",
+          "mistake",
+          "can_override",
+          "overridden"
+        ],
+        "title": "CeoDecisionOut"
+      },
+      "CeoOut": {
+        "properties": {
+          "seat_open": {
+            "type": "boolean",
+            "title": "Seat Open",
+            "description": "Stage 4: the founder may appoint a CEO"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scopes"
+          },
+          "all_scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "All Scopes"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/CeoDecisionOut"
+            },
+            "type": "array",
+            "title": "Decisions"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CeoCandidateOut"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "appoint_energy": {
+            "type": "integer",
+            "title": "Appoint Energy"
+          },
+          "override_energy": {
+            "type": "integer",
+            "title": "Override Energy"
+          },
+          "chair_energy": {
+            "type": "integer",
+            "title": "Chair Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seat_open",
+          "problem",
+          "person_id",
+          "name",
+          "since",
+          "scopes",
+          "all_scopes",
+          "decisions",
+          "candidates",
+          "appoint_energy",
+          "override_energy",
+          "chair_energy"
+        ],
+        "title": "CeoOut"
       },
       "ChangePreviewOut": {
         "properties": {
@@ -15933,6 +17074,20 @@
         ],
         "title": "DirectorOut"
       },
+      "DividendIn": {
+        "properties": {
+          "per_share_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Per Share Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "per_share_cents"
+        ],
+        "title": "DividendIn"
+      },
       "DivisionColumnOut": {
         "properties": {
           "division_id": {
@@ -16287,6 +17442,30 @@
           "rivals"
         ],
         "title": "DomainRivalsOut"
+      },
+      "DriverOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "effect": {
+            "type": "string",
+            "title": "Effect",
+            "description": "Words only: lifts, weighs on, neutral"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "effect",
+          "detail"
+        ],
+        "title": "DriverOut"
       },
       "EmploymentOut": {
         "properties": {
@@ -18255,6 +19434,116 @@
         ],
         "title": "GrantOut"
       },
+      "GuidanceIn": {
+        "properties": {
+          "revenue_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Revenue Cents"
+          },
+          "margin_bp": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": -10000.0,
+            "title": "Margin Bp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revenue_cents",
+          "margin_bp"
+        ],
+        "title": "GuidanceIn"
+      },
+      "GuidanceRowOut": {
+        "properties": {
+          "quarter": {
+            "type": "string",
+            "title": "Quarter",
+            "description": "Q1 2016"
+          },
+          "by_player": {
+            "type": "boolean",
+            "title": "By Player"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "margin_pct": {
+            "type": "number",
+            "title": "Margin Pct"
+          },
+          "actual_revenue_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Revenue Cents"
+          },
+          "actual_margin_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Margin Pct"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "price_before_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Before Cents"
+          },
+          "price_after_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price After Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quarter",
+          "by_player",
+          "revenue_cents",
+          "margin_pct",
+          "actual_revenue_cents",
+          "actual_margin_pct",
+          "result",
+          "price_before_cents",
+          "price_after_cents"
+        ],
+        "title": "GuidanceRowOut"
+      },
       "GuideSectionOut": {
         "properties": {
           "key": {
@@ -18581,6 +19870,19 @@
           "plant_staff_per"
         ],
         "title": "HardwareOut"
+      },
+      "HireBanksIn": {
+        "properties": {
+          "bank": {
+            "type": "string",
+            "title": "Bank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bank"
+        ],
+        "title": "HireBanksIn"
       },
       "HiringMetaOut": {
         "properties": {
@@ -19629,6 +20931,216 @@
           "break_even_utilization"
         ],
         "title": "InfrastructureOut"
+      },
+      "IpoOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "bank": {
+            "type": "string",
+            "title": "Bank"
+          },
+          "fee_pct": {
+            "type": "number",
+            "title": "Fee Pct"
+          },
+          "hired": {
+            "type": "string",
+            "title": "Hired",
+            "description": "Mon YYYY"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/IpoStepOut"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "ambition": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ambition"
+          },
+          "share_sold_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Sold Pct"
+          },
+          "dual_class": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dual Class"
+          },
+          "demand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demand",
+            "description": "The book in words (strong, weak...), from pricing"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents",
+            "description": "The bank's suggested price a share"
+          },
+          "new_shares": {
+            "type": "integer",
+            "title": "New Shares"
+          },
+          "shares_after": {
+            "type": "integer",
+            "title": "Shares After"
+          },
+          "implied_cap_cents": {
+            "type": "integer",
+            "title": "Implied Cap Cents"
+          },
+          "price_to_sales": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price To Sales"
+          },
+          "stake_pct_after": {
+            "type": "number",
+            "title": "Stake Pct After"
+          },
+          "stake_value_cents": {
+            "type": "integer",
+            "title": "Stake Value Cents"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/PriceOptionOut"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "listed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listed"
+          },
+          "first_day_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Day Pct"
+          },
+          "pulled": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pulled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "bank",
+          "fee_pct",
+          "hired",
+          "steps",
+          "ambition",
+          "share_sold_pct",
+          "dual_class",
+          "demand",
+          "price_cents",
+          "new_shares",
+          "shares_after",
+          "implied_cap_cents",
+          "price_to_sales",
+          "stake_pct_after",
+          "stake_value_cents",
+          "options",
+          "listed",
+          "first_day_pct",
+          "pulled"
+        ],
+        "title": "IpoOut"
+      },
+      "IpoStepOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "banks, filing, roadshow, pricing, listing"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "state": {
+            "type": "string",
+            "title": "State",
+            "description": "done, now or next"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "state",
+          "detail"
+        ],
+        "title": "IpoStepOut"
       },
       "JobPeriodOut": {
         "properties": {
@@ -21653,6 +23165,86 @@
           "months"
         ],
         "title": "NewsOut"
+      },
+      "NextGuidanceOut": {
+        "properties": {
+          "quarter": {
+            "type": "string",
+            "title": "Quarter"
+          },
+          "can_set": {
+            "type": "boolean",
+            "title": "Can Set"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem"
+          },
+          "consensus_revenue_cents": {
+            "type": "integer",
+            "title": "Consensus Revenue Cents"
+          },
+          "consensus_margin_pct": {
+            "type": "number",
+            "title": "Consensus Margin Pct"
+          },
+          "set_revenue_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Set Revenue Cents"
+          },
+          "set_margin_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Set Margin Pct"
+          },
+          "band_pct": {
+            "type": "number",
+            "title": "Band Pct",
+            "description": "Guidance must lie within this % of the consensus"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          },
+          "hint": {
+            "type": "string",
+            "title": "Hint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quarter",
+          "can_set",
+          "problem",
+          "consensus_revenue_cents",
+          "consensus_margin_pct",
+          "set_revenue_cents",
+          "set_margin_pct",
+          "band_pct",
+          "energy",
+          "hint"
+        ],
+        "title": "NextGuidanceOut"
       },
       "NomineeChoiceOut": {
         "properties": {
@@ -23976,6 +25568,58 @@
         ],
         "title": "PriceIn"
       },
+      "PriceOptionOut": {
+        "properties": {
+          "choice": {
+            "type": "string",
+            "title": "Choice",
+            "description": "range, raise, cut or pull"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents",
+            "description": "A share; 0 for pull"
+          },
+          "gross_cents": {
+            "type": "integer",
+            "title": "Gross Cents"
+          },
+          "net_cents": {
+            "type": "integer",
+            "title": "Net Cents",
+            "description": "After the bank's fee; for pull, minus the fees owed"
+          },
+          "first_day": {
+            "type": "string",
+            "title": "First Day",
+            "description": "The likely first day, in words (est.)"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "choice",
+          "label",
+          "price_cents",
+          "gross_cents",
+          "net_cents",
+          "first_day",
+          "available",
+          "note"
+        ],
+        "title": "PriceOptionOut"
+      },
       "PricePreviewOut": {
         "properties": {
           "segment": {
@@ -25396,6 +27040,97 @@
         ],
         "title": "ProposalOut",
         "description": "An executive's proposal (24.1, M10c): pending ones block Continue."
+      },
+      "PublicActionOut": {
+        "properties": {
+          "public": {
+            "$ref": "#/components/schemas/PublicOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "public",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "PublicActionOut"
+      },
+      "PublicOut": {
+        "properties": {
+          "stage": {
+            "type": "integer",
+            "title": "Stage"
+          },
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem",
+            "description": "Why the company cannot hire banks now"
+          },
+          "banks": {
+            "items": {
+              "$ref": "#/components/schemas/BankOut"
+            },
+            "type": "array",
+            "title": "Banks"
+          },
+          "hire_energy": {
+            "type": "integer",
+            "title": "Hire Energy"
+          },
+          "ipo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IpoOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stock": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StockOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ceo": {
+            "$ref": "#/components/schemas/CeoOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "eligible",
+          "problem",
+          "banks",
+          "hire_energy",
+          "ipo",
+          "stock",
+          "ceo"
+        ],
+        "title": "PublicOut"
       },
       "RaiseIn": {
         "properties": {
@@ -27519,6 +29254,20 @@
         ],
         "title": "SeatOut"
       },
+      "SecondaryIn": {
+        "properties": {
+          "shares": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shares"
+        ],
+        "title": "SecondaryIn"
+      },
       "SegmentIn": {
         "properties": {
           "segment": {
@@ -27690,6 +29439,40 @@
           "policy"
         ],
         "title": "SetPolicyIn"
+      },
+      "SharePointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "market_cap_cents": {
+            "type": "integer",
+            "title": "Market Cap Cents"
+          },
+          "mark": {
+            "type": "string",
+            "title": "Mark",
+            "description": "listing, beat, miss, inline or empty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "price_cents",
+          "market_cap_cents",
+          "mark"
+        ],
+        "title": "SharePointOut"
       },
       "SharedServicesIn": {
         "properties": {
@@ -28060,6 +29843,149 @@
           "periods"
         ],
         "title": "StatementsOut"
+      },
+      "StockOut": {
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "title": "Ticker"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "change_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct",
+            "description": "Since last month end"
+          },
+          "market_cap_cents": {
+            "type": "integer",
+            "title": "Market Cap Cents"
+          },
+          "shares": {
+            "type": "integer",
+            "title": "Shares"
+          },
+          "listing_price_cents": {
+            "type": "integer",
+            "title": "Listing Price Cents"
+          },
+          "listed": {
+            "type": "string",
+            "title": "Listed"
+          },
+          "dual_class": {
+            "type": "boolean",
+            "title": "Dual Class"
+          },
+          "stake_shares": {
+            "type": "integer",
+            "title": "Stake Shares"
+          },
+          "stake_pct": {
+            "type": "number",
+            "title": "Stake Pct"
+          },
+          "stake_value_cents": {
+            "type": "integer",
+            "title": "Stake Value Cents"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/SharePointOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "analysts": {
+            "items": {
+              "$ref": "#/components/schemas/AnalystOut"
+            },
+            "type": "array",
+            "title": "Analysts"
+          },
+          "buys": {
+            "type": "integer",
+            "title": "Buys"
+          },
+          "holds": {
+            "type": "integer",
+            "title": "Holds"
+          },
+          "sells": {
+            "type": "integer",
+            "title": "Sells"
+          },
+          "average_target_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Target Cents"
+          },
+          "guidance": {
+            "items": {
+              "$ref": "#/components/schemas/GuidanceRowOut"
+            },
+            "type": "array",
+            "title": "Guidance"
+          },
+          "next_guidance": {
+            "$ref": "#/components/schemas/NextGuidanceOut"
+          },
+          "capital": {
+            "$ref": "#/components/schemas/CapitalOut"
+          },
+          "board_line": {
+            "type": "string",
+            "title": "Board Line"
+          },
+          "drivers": {
+            "items": {
+              "$ref": "#/components/schemas/DriverOut"
+            },
+            "type": "array",
+            "title": "Drivers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ticker",
+          "price_cents",
+          "change_pct",
+          "market_cap_cents",
+          "shares",
+          "listing_price_cents",
+          "listed",
+          "dual_class",
+          "stake_shares",
+          "stake_pct",
+          "stake_value_cents",
+          "history",
+          "analysts",
+          "buys",
+          "holds",
+          "sells",
+          "average_target_cents",
+          "guidance",
+          "next_guidance",
+          "capital",
+          "board_line",
+          "drivers"
+        ],
+        "title": "StockOut"
       },
       "StoryStepOut": {
         "properties": {

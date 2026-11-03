@@ -42,6 +42,7 @@ from tst.sim.data_models import (
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
 from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.ledger import ENGINE_ACCOUNTS
+from tst.sim.markets_public.config import BanksFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 
 BALANCE_FILE = "balance.yaml"
@@ -66,9 +67,11 @@ CITIES_FILE = "cities.yaml"  # M9 (formulas.md 19.1)
 COMPONENTS_FILE = "components_history.yaml"  # M12a (formulas.md 22.4)
 TECH_FILE = "tech_frontier.yaml"  # M11 (formulas.md 21.1-21.3)
 ERAS_FILE = "eras.yaml"  # M11 (formulas.md 21.4)
+BANKS_FILE = "banks.yaml"  # M13 (formulas.md 25.2)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
+    BANKS_FILE,
     BACKGROUNDS_FILE,
     BALANCE_FILE,
     CATEGORIES_FILE,
@@ -428,6 +431,7 @@ def load_all(path: Path) -> LoadedData:
     components = _validate(ComponentsHistoryFile, parsed[COMPONENTS_FILE], COMPONENTS_FILE)
     tech = _validate(TechFrontierFile, parsed[TECH_FILE], TECH_FILE)
     eras = _validate(ErasFile, parsed[ERAS_FILE], ERAS_FILE)
+    banks = _validate(BanksFile, parsed[BANKS_FILE], BANKS_FILE)
     game_data = _validate(
         GameData,
         {
@@ -462,6 +466,7 @@ def load_all(path: Path) -> LoadedData:
             "event_templates": tuple(event_templates),
             "tech": tech,
             "eras": eras,
+            "banks": banks.banks,
         },
         "seed data cross-check",
     )

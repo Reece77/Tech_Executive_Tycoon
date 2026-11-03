@@ -53,6 +53,7 @@ def offer_score(
     w_eq = offer.w_equity * (
         offer.ambition_equity_boost if ambition > offer.ambition_boost_above else 1
     )
+    stage = min(stage, max(offer.stage_appeal))  # M13: a public company (4) hires as stage 3
     return (
         offer.w_salary * (ratio - 1)
         + w_eq * equity_bp * offer.equity_value_per_bp * offer.stage_equity_mult[stage]
