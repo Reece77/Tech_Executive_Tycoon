@@ -99,7 +99,7 @@ def _listed(api: tuple[Client, Path], loaded: LoadedData) -> tuple[Client, Path]
 
 
 def test_stock_tab_capital_actions_and_ceo(api: tuple[Client, Path], loaded: LoadedData) -> None:
-    client, path = _listed(api, loaded)
+    client, _ = _listed(api, loaded)
     stock = client.get(f"{BASE}/public")["stock"]
     nxt = stock["next_guidance"]
     assert nxt["can_set"], nxt
