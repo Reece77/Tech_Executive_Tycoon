@@ -126,6 +126,8 @@ class NextIds:
     outage: int = 1
     research_project: int = 1  # M11: loaded as max(id) + 1 of the research_project table
     license: int = 1  # M11: loaded as max(id) + 1 of the research_license table
+    ceo: int = 1  # M13: loaded as max(id) + 1 of the ceo table
+    ceo_decision: int = 1  # M13: loaded as max(id) + 1 of the ceo_decision table
 
     def take(
         self,
@@ -161,6 +163,8 @@ class NextIds:
             "outage",
             "research_project",
             "license",
+            "ceo",
+            "ceo_decision",
         ],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)

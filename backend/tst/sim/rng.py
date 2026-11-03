@@ -46,6 +46,10 @@ STREAM_IDS: Final = MappingProxyType(
         "research": 23,  # key (project_id,): breakthroughs and dead ends (M11, 21.3)
         "rival_research": 24,  # key (*rival key,): a researching rival's breakthroughs (M11, 21.6)
         "lead_reveal": 25,  # key (observer, company_id, domain_index): a lead range's offset (M11)
+        "ipo": 33,  # key (company_id,): an IPO's book demand at pricing (M13, 25.2)
+        # key (company_id,): a listed company's sentiment shock and analysts' targets (M13, 25.3)
+        "market_sentiment": 34,
+        # 35: reserved for lane B (M13)
         "misc": 99,
     }
 )

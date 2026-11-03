@@ -26,6 +26,7 @@ CATEGORIES: Final = (
     "lender",  # M10: covenant breaches (20.3), queued by the engine, never drawn
     "executive",  # M10c: executives with authority ask and clash (24.3)
     "research",  # M11: research projects' breakthroughs and dead ends (21.3)
+    "public",  # M13: the IPO chain and public life (25), queued by the engine, never drawn
 )
 # Templates a company with no employees may draw (16.1: founder, market and finance).
 NO_STAFF_CATEGORIES: Final = ("market", "finance", "founder")
@@ -64,7 +65,10 @@ TRIGGERS: Final = (
 # M10 (20.3): the debt phase queues these itself (a covenant breach, a called loan).
 # M12a (22.5): a data-centre outage, queued by the facilities phase.
 ENGINE_QUEUED: Final = ("covenant_breach", "facility_outage")
-SCHEDULED: Final = ("storyline", "follow_up", *ENGINE_QUEUED)
+# M13 (25): the IPO chain, earnings, activists, takeover bids and the board's CEO vote. The
+# engine queues each by template id; any severity, and no template is required.
+PUBLIC_TRIGGER: Final = "public"
+SCHEDULED: Final = ("storyline", "follow_up", *ENGINE_QUEUED, PUBLIC_TRIGGER)
 # M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
 # critical template whenever it holds and no critical event came in the last 6 months.
 CRISIS_TRIGGERS: Final = ("key_exit", "security_breach", "outage")
@@ -75,7 +79,8 @@ CRITICAL_TRIGGERS: Final = (
     "facility_outage",
     *CRISIS_TRIGGERS,
     "storyline",
-)  # 16.2; 20.3; 23.3; 22.5
+    PUBLIC_TRIGGER,
+)  # 16.2; 20.3; 23.3; 22.5; 25
 
 EFFECT_TYPES: Final = (
     "morale_delta",
@@ -100,9 +105,41 @@ EFFECT_TYPES: Final = (
     "modifier",
     # M10b (23.3): a counter-offer that keeps someone who resigned or was poached.
     "retain",
+    # M13 (25): a step of the IPO chain or of public life, named by its stat (PUBLIC_STEPS);
+    # the engine applies it, and only templates carry it (never the LLM).
+    "public_step",
+)
+PUBLIC_STEPS: Final = (
+    "file",  # 25.2 step 2: the S-1 goes in on time
+    "file_late",  # a metric is restated: ipo.filing_delay_months later
+    "ambition_high",  # 25.2 step 3
+    "ambition_middle",
+    "ambition_low",
+    "sell_low",  # ipo.share_sold
+    "sell_middle",
+    "sell_high",
+    "single_class",
+    "dual_class",
+    "price_range",  # 25.2 step 4
+    "price_raise",
+    "price_cut",
+    "pull",
+    "activist_seat",  # 25.4: an activist's demands
+    "activist_buyback",
+    "activist_fight",
+    "takeover_reject",  # 25.4: a takeover bid
+    "takeover_talks",
+    "ceo_replace",  # 25.6: the board's vote on the CEO
+    "ceo_keep",
 )
 LOAN_EFFECTS: Final = ("loan_fee", "loan_rate", "loan_repay")
-VALUELESS: Final = ("reveal_tag", "resign", "follow_up", "retain")  # no size: happen or not
+VALUELESS: Final = (
+    "reveal_tag",
+    "resign",
+    "follow_up",
+    "retain",
+    "public_step",
+)  # no size: happen or not
 NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
 
 # Template target words and the effects that may use each (16.3 "Target" column).
@@ -125,6 +162,7 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "loan_repay": ("loan",),
     "modifier": ("product", "unit", "person", "other", "company", "founder"),
     "retain": ("person",),
+    "public_step": ("company",),
 }
 
 # M10b (23.2): what a modifier can change, and the target words each stat accepts. A company
@@ -187,6 +225,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "key_exit": _PERSON,  # M10b (23.3)
     "security_breach": frozenset({"segment"}),
     "outage": frozenset({"segment"}),
+    PUBLIC_TRIGGER: frozenset({"bank", "price", "demand", "ticker", "ceo"}),  # M13
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
 PLACEHOLDERS: Final = (
@@ -201,6 +240,11 @@ PLACEHOLDERS: Final = (
     "founder",
     "company",
     "lender",  # M10
+    "bank",  # M13 (25): the lead underwriter
+    "price",  # the offer price a share at pricing; the share price once listed
+    "demand",  # the book in words (25.8)
+    "ticker",
+    "ceo",  # the CEO's name
 )
 
 
@@ -215,7 +259,7 @@ class EffectSpec(_Frozen):
     type: str
     target: str = ""
     share: float = Field(default=0.0, ge=-1.0, le=1.0)
-    stat: str | None = None  # modifier only (23.2)
+    stat: str | None = None  # modifier (23.2) and public_step (25) only
     months: int | None = Field(default=None, ge=1)  # modifier only, held to the severity's
 
     @model_validator(mode="after")
@@ -229,6 +273,9 @@ class EffectSpec(_Frozen):
                 raise ValueError(
                     f"a {self.stat} modifier may target {list(MODIFIER_STATS[self.stat])}"
                 )
+        elif self.type == "public_step":
+            if self.stat not in PUBLIC_STEPS or self.months is not None:
+                raise ValueError(f"a public_step needs a stat in {list(PUBLIC_STEPS)}")
         elif self.stat is not None or self.months is not None:
             raise ValueError("only a modifier has a stat and months")
         if self.target not in EFFECT_TARGETS[self.type]:
@@ -384,7 +431,7 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
             if missing:
                 problems.append(f"{t.id}: trigger {t.trigger!r} cannot supply {missing}")
             continue
-        if t.trigger in ENGINE_QUEUED:
+        if t.trigger in (*ENGINE_QUEUED, PUBLIC_TRIGGER):
             missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
             if missing:
                 problems.append(f"{t.id}: trigger {t.trigger!r} cannot supply {missing}")
