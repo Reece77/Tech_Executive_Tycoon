@@ -55,7 +55,6 @@ from tst.db.mappers import (
     product_to_row,
     queued_from_row,
     queued_to_row,
-    reveal_from_rows,
     reveal_to_rows,
     rival_from_row,
     rival_to_row,
@@ -182,7 +181,7 @@ from tst.sim.markets_public.models import (
     ShareMonth,
 )
 from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Proposal
-from tst.sim.people.models import Person, RevealState
+from tst.sim.people.models import Person, RevealRecord, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.research.models import EraArrival, License, ResearchLead, ResearchProject
 from tst.sim.rivals.models import (
@@ -215,6 +214,19 @@ def _by_person[R](rows: Iterable[R]) -> dict[int, list[R]]:
     return grouped
 
 
+def _ordered_skills(session: Session, where: Any) -> dict[int, list[Any]]:
+    """Skill rows by person, already in position order (one SQL ORDER BY instead of a sort
+    per person; M12b, speed)."""
+    out: dict[int, list[Any]] = defaultdict(list)
+    for row in session.execute(
+        select(PersonSkillRow.__table__)
+        .where(where)
+        .order_by(PersonSkillRow.person_id, PersonSkillRow.position)
+    ):
+        out[row.person_id].append(row)
+    return out
+
+
 def load_people(
     session: Session, ids: Iterable[int]
 ) -> tuple[tuple[Person, ...], tuple[RevealState, ...]]:
@@ -225,7 +237,7 @@ def load_people(
     def in_live(column: Any) -> Any:
         return column.in_(live_ids)
 
-    skills = _by_person(_rows(session, PersonSkillRow, in_live(PersonSkillRow.person_id)))
+    skills = _ordered_skills(session, in_live(PersonSkillRow.person_id))
     personality = _by_person(
         _rows(session, PersonPersonalityRow, in_live(PersonPersonalityRow.person_id))
     )
@@ -255,9 +267,24 @@ def load_people(
     def key(row: Any) -> tuple[int, int]:
         return (row.observer_company_id, row.person_id)
 
-    records: dict[tuple[int, int], list[PersonRevealRow]] = defaultdict(list)
-    for r in _rows(session, PersonRevealRow, in_live(PersonRevealRow.person_id)):
-        records[key(r)].append(r)
+    # Knowledge records as ordered tuples, built straight into RevealRecords: the largest
+    # child table (about 35 rows a person a company), so no Row objects or per-person sorts
+    # (M12b, speed; the same RevealStates as `reveal_from_rows`).
+    r_ = PersonRevealRow
+    attributes: dict[tuple[int, int], list[tuple[str, RevealRecord]]] = defaultdict(list)
+    for o, pid, attribute, hw, offset, updated in session.execute(
+        select(
+            r_.observer_company_id,
+            r_.person_id,
+            r_.attribute,
+            r_.hw,
+            r_.center_offset,
+            r_.last_updated_turn,
+        )
+        .where(in_live(r_.person_id))
+        .order_by(r_.observer_company_id, r_.person_id, r_.position)
+    ).tuples():
+        attributes[(o, pid)].append((attribute, RevealRecord(hw, offset, updated)))
     profiles = {
         key(r): r
         for r in session.scalars(
@@ -270,8 +297,19 @@ def load_people(
     ):
         tag_reveals[key(t)].append(t)
     reveals = tuple(
-        reveal_from_rows(o, p, records[(o, p)], profiles.get((o, p)), tag_reveals[(o, p)])
-        for o, p in sorted(records)
+        RevealState(
+            observer_company_id=o,
+            person_id=p,
+            attributes=tuple(attributes[(o, p)]),
+            profile_revealed_turn=None
+            if (pr := profiles.get((o, p))) is None
+            else pr.revealed_turn,
+            revealed_tags=tuple(
+                (t.tag, t.revealed_turn)
+                for t in sorted(tag_reveals[(o, p)], key=lambda t: (t.revealed_turn, t.tag))
+            ),
+        )
+        for o, p in sorted(attributes)
     )
     return people, reveals
 
