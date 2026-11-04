@@ -18,7 +18,7 @@ Approving runs the move through the normal actions with the executive as actor (
 the seat's guardrails), or the founder for a Chair's decision (a buyback). On Holiday a pitch
 whose cost over pitch.cost_months is under the spend limit goes ahead in phase 2. A pitch
 still pending at its executive's next quarterly draw lapses. Approved pitches are scored
-against their low case pitch.record_months after approval: hit, miss, or too early when
+against their central case pitch.record_months after approval: hit, miss, or too early when
 what they created is not yet operating.
 """
 
@@ -686,6 +686,7 @@ def make_pitch(
         low=max(0, low),
         high=max(0, high),
         risk=c.risk,
+        central=max(0, round(c.central)),
     )
 
 
@@ -959,7 +960,7 @@ def measure(state: GameState, pitch: Pitch, b: Balance, data: GameData) -> int |
         case "campaign":
             return max(0, round(_customers(state, int(p["product_id"])) - pitch.baseline))
         case "buyback":
-            return pitch.low
+            return pitch.central
     return None
 
 
@@ -986,20 +987,21 @@ def baseline_of(state: GameState, pitch: Pitch) -> int:
         case "campaign":
             return round(_customers(state, int(p["product_id"])))
         case "sunset":
-            return pitch.low  # the saving it promised; met once the product is sunset
+            return pitch.central  # the saving it promised; met once the product is sunset
     return 0
 
 
 def follow_through(state: GameState, b: Balance, data: GameData) -> GameState:
     """Phase 2: approved pitches pitch.record_months after approval are scored hit (at or
-    above their low case), miss, or too early (27.1)."""
+    above their central case, from displayed estimates and the same for every executive;
+    product manager's ruling 2026-11-04), miss, or too early (27.1)."""
     for pitch in state.pitches:
         if not pitch.approved or pitch.outcome is not None or pitch.resolved_turn is None:
             continue
         if state.turn < pitch.resolved_turn + b.pitch.record_months:
             continue
         value = measure(state, pitch, b, data)
-        outcome = "too_early" if value is None else ("hit" if value >= pitch.low else "miss")
+        outcome = "too_early" if value is None else ("hit" if value >= pitch.central else "miss")
         state = with_pitch(
             state,
             replace(pitch, outcome=outcome, outcome_turn=state.turn, measured=value),  # type: ignore[arg-type]

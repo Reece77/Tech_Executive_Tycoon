@@ -27,6 +27,7 @@ from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, Ledge
 from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.money import Cents, exact
 from tst.sim.org.executives import CRO, side_factor
+from tst.sim.org.pitch_execution import execution_factor
 from tst.sim.org.rules import OrgView, org_view
 from tst.sim.products import formulas as f
 from tst.sim.products.estimates import shown_team
@@ -444,6 +445,7 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             aware = f.awareness(product.brand, mb) * team(product).awareness_mult  # CMO (18.3)
             if geo is not None and region is not None:
                 aware *= geo.awareness_factor(product.company_id, region, product.id)  # 19.5, 23.5
+                aware *= execution_factor(state, "region", product.id, balance, region)  # 27.1
             won[s.product_id] = wanted * min(1.0, aware)
         else:
             t = team(product)
@@ -453,6 +455,8 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
                 )
             else:
                 cap = t.capacity(seg_key, balance)
+            if geo is not None and region is not None:  # a region pitch's ramp (27.1, M13b)
+                cap *= execution_factor(state, "region", product.id, balance, region)
             won[s.product_id] = min(wanted, cap)
             if wanted > cap:
                 limited.add(s.product_id)

@@ -40,6 +40,7 @@ def upgrade() -> None:
         sa.Column("low", sa.BigInteger(), nullable=False),
         sa.Column("high", sa.BigInteger(), nullable=False),
         sa.Column("risk", sa.Text(), nullable=False),
+        sa.Column("central", sa.BigInteger(), nullable=False),
         sa.Column("status", sa.String(16), nullable=False),
         sa.Column("resolved_turn", sa.Integer(), nullable=True),
         sa.Column("target_id", sa.Integer(), nullable=True),

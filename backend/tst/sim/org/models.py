@@ -193,6 +193,9 @@ class Pitch:
     low: int
     high: int
     risk: str
+    # the central case from displayed estimates, the same for every executive: a pitch is a
+    # hit when it reaches it (27.1; product manager's ruling 2026-11-04)
+    central: int = 0
     status: PitchStatus = "pending"
     resolved_turn: int | None = None
     target_id: int | None = None  # what approving created: a product, unit, facility, office

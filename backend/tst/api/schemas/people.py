@@ -153,7 +153,7 @@ class PitchRecordOut(BaseModel):
 
     pitches: int = Field(description="Pitches made")
     approved: int
-    hits: int = Field(description="At or above their low case after 24 months")
+    hits: int = Field(description="At or above their central case after 24 months")
     misses: int
     too_early: int = Field(description="What they created was not yet operating")
     tracking: int = Field(description="Approved and still within their 24 months")

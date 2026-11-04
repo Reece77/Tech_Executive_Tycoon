@@ -1426,11 +1426,12 @@ A big move an executive proposes (formulas.md 27.1). Every pitch stays: executiv
 | `low` | BIGINT | no | The low case at 24 months, in `unit`. |
 | `high` | BIGINT | no | The high case. |
 | `risk` | TEXT | no | The risk, in words. |
+| `central` | BIGINT | no | The central case from displayed estimates: a hit reaches it, the same yardstick for every executive. |
 | `status` | VARCHAR(16) | no | `pending`, `approved`, `auto_approved` (on Holiday, under the limit), `declined`, `modified` or `lapsed` (still pending at the executive's next quarterly draw). |
 | `resolved_turn` | INTEGER | yes | When it was answered. |
 | `target_id` | INTEGER | yes | What approving created: a product, unit, facility or office. |
 | `baseline` | BIGINT | no | The tracked measure when approved, in `unit`. |
-| `outcome` | VARCHAR(16) | yes | `hit`, `miss` or `too_early`, `pitch.record_months` after approval. |
+| `outcome` | VARCHAR(16) | yes | `hit` (at or above `central`), `miss` or `too_early`, `pitch.record_months` after approval. |
 | `outcome_turn` | INTEGER | yes | When it was scored. |
 | `measured` | BIGINT | yes | The tracked measure when scored, in `unit`. |
 

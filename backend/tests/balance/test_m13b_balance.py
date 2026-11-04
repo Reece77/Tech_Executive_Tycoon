@@ -19,7 +19,8 @@ def test_27_5_targets() -> None:
     assert m13b.target_1(results) >= 7  # a new product and a new region
     assert m13b.target_2(results) >= 1.10  # and it pays
     good, weak = m13b.target_3(results)
-    assert good - weak >= 0.15  # good executives pitch better
+    assert good - weak >= m13b.T3_POINTS  # good executives pitch better (+10 points)
     assert m13b.target_4(results) <= 8  # the inbox stays calm
     n, _ = m13b.target_5(results)
-    assert n >= 7  # eras pay the first mover
+    assert n >= 7  # the first-mover window adds 25-60% customers
+    assert m13b.target_7(results) <= m13b.T7_RATIO  # pitches don't outplay the founder by far

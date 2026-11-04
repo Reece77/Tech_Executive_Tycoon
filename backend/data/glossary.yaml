@@ -225,7 +225,7 @@ terms:
   exec.proposal: "Something an executive wants you to approve: a funding round, a loan or an office lease. Pending proposals block Continue until you approve or decline them; approving takes the action as you."
   exec.pitch: "A big move an executive with authority proposes, at most once a quarter, with why, the cost and a low and high case at 24 months. Approve runs it as the executive, with their energy; Modify opens its own screen; Decline costs them a little morale. Pending pitches block Continue."
   exec.auto_approve: "On holiday, a pitch that costs less than this over 12 months goes ahead and is reported; bigger ones wait for you. The default is 5% of cash; 0 means always ask."
-  exec.pitch_record: "An executive's pitches and how the approved ones turned out after 24 months: a hit reached its low case, a miss did not, too early means what it created was not yet running."
+  exec.pitch_record: "An executive's pitches and how the approved ones turned out after 24 months: a hit reached its central case (the same yardstick for every executive), a miss did not, too early means what it created was not yet running."
   era.first_mover: "Pull an era forward and for 24 months your products in its markets get +8 quality cap, +15 brand target and 15% more appeal, and your lead does not decay. An era report at the end shows what it added."
   market.size: "Customers who could buy, times the typical monthly price, times 12: what a market is worth a year if every possible customer paid the reference price."
   exec.report: "Each seat holder's quarterly report: their function's numbers, what they did with their authority, and one or two concerns."

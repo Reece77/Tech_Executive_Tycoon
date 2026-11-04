@@ -273,3 +273,48 @@ def test_the_ceo_pitches_across_the_functions_it_runs(loaded: LoadedData) -> Non
         assert not any(a.kind in ("create_product", "build_facility") for _, a in taken)
     else:  # no candidate in any function this month: nothing pending, nothing done
         assert out.pending_pitches(1) == ()
+
+
+def test_a_hit_reaches_the_central_case(loaded: LoadedData) -> None:
+    """Scored against the central case from displayed estimates, the same for every
+    executive, not its own low case (product manager's ruling, 2026-11-04)."""
+    from tst.sim.research.models import ResearchLead
+
+    state = _cpo(loaded)
+    out, _, _, _ = _run(loaded, state, _pitching_seed(loaded, state), at_controls=False)
+    (pitch,) = out.pitches
+    assert pitch.low < pitch.central < pitch.high
+    research = replace(
+        pitch, kind="research", params=(("domain", "ai"),), baseline=0, low=2, central=10
+    )
+    later = replace(out, turn=out.turn + loaded.balance.pitch.record_months, pitches=(research,))
+    for lead, outcome in ((10.0, "hit"), (9.0, "miss")):  # 9 is above the low case: a miss
+        at = replace(later, research_leads=(ResearchLead(1, "ai", lead),))
+        scored = pitches.follow_through(at, loaded.balance, loaded.game_data)
+        assert scored.pitches[0].outcome == outcome
+
+
+def test_execution_follows_the_executives_seat_factor(loaded: LoadedData) -> None:
+    """A new product's team pace and a region's sales ramp follow the executing executive's
+    true seat factor (18.3) for the record window; the API's estimate uses the displayed
+    score (product manager's ruling, 2026-11-04)."""
+    from tst.sim.org.executives import true_score
+    from tst.sim.org.formulas import seat_effect, seat_multiplier
+    from tst.sim.org.pitch_execution import execution_factor
+
+    state = _cpo(loaded)
+    out, _, _, _ = _run(loaded, state, _pitching_seed(loaded, state), at_controls=False)
+    (pitch,) = out.pitches
+    b = loaded.balance
+    expected = seat_multiplier(
+        seat_effect(true_score(out, EXEC, "cpo", b), b.exec_seats), b.exec_seats.seats["cpo"].effect
+    )
+    product = pitch.target_id
+    assert product is not None
+    assert execution_factor(out, "new_product", product, b) == pytest.approx(expected)
+    assert execution_factor(out, "new_product", product + 1, b) == 1.0
+    assert execution_factor(out, "region", product, b, "europe") == 1.0
+    late = replace(out, turn=out.turn + b.pitch.record_months)
+    assert execution_factor(late, "new_product", product, b) == 1.0
+    shown = execution_factor(out, "new_product", product, b, estimate=True)
+    assert shown > 0

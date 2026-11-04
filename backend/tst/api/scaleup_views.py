@@ -194,6 +194,7 @@ def pitch_out(state: GameState, p: Pitch) -> PitchOut:
         unit=p.unit,
         low=p.low,
         high=p.high,
+        central=p.central,
         case_label=f"{case_text(p.unit, p.low)} to {case_text(p.unit, p.high)}",
         risk=p.risk,
         params=dict(p.params),

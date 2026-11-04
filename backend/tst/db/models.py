@@ -1141,6 +1141,7 @@ class PitchRow(Base):
     low: Mapped[int] = mapped_column(BigInteger, nullable=False)
     high: Mapped[int] = mapped_column(BigInteger, nullable=False)
     risk: Mapped[str] = mapped_column(Text, nullable=False)
+    central: Mapped[int] = mapped_column(BigInteger, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
     target_id: Mapped[int | None] = mapped_column(Integer, nullable=True)

@@ -30,7 +30,13 @@ from typing import Final
 from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.m8 import add_staff, fork, steady_at_stage_3
 from tst.balance.report import SCENARIO, _loaded
-from tst.balance.strategies import SEAT_ROLES, appoint_executives, do_nothing, launch_ready
+from tst.balance.strategies import (
+    SEAT_ROLES,
+    appoint_executives,
+    do_nothing,
+    launch_ready,
+    steady,
+)
 from tst.loader import LoadedData
 from tst.sim.actions import (
     AppointExecutive,
@@ -54,7 +60,7 @@ MONTHS: Final = 36
 SEATS_GIVEN: Final = ("cto", "cro", "cmo", "coo", "cfo", "cpo")
 GOOD: Final = 15.0
 WEAK: Final = 8.0
-ARMS: Final = ("pitches", "off", "pitches_8")
+ARMS: Final = ("pitches", "off", "pitches_8", "steady")
 ERA: Final = "transformers"
 LAB_FROM: Final = ym_to_turn(2014, 1)
 LAB_SIZE: Final = 10
@@ -104,6 +110,8 @@ def _refill(game: Game) -> None:
 
 def _arm(base: Game, arm: str) -> Run:
     game = fork(base)
+    if arm == "steady":  # target 7: the founder plays the steady script, seats filled
+        return _steady(game, base)
     _seat(game, WEAK if arm == "pitches_8" else GOOD, 0 if arm == "off" else None)
     products = {p.id for p in game.state.company_products(PLAYER) if p.status in SELLING}
     regions = {(r.product_id, r.region) for r in game.state.product_regions}
@@ -141,6 +149,22 @@ def _arm(base: Game, arm: str) -> Run:
     )
 
 
+def _steady(game: Game, base: Game) -> Run:
+    """M10c's steady arm: senior holders at score 15 without authority, the steady script."""
+    for seat in SEATS_GIVEN:
+        (pid,) = add_staff(game, SEAT_ROLES[seat], "senior", 1, skill=GOOD)
+        _energy(game)
+        game.act(AppointExecutive(game.founder_id, seat, pid))
+    _energy(game)
+    for _ in range(MONTHS):
+        if game.state.ended:
+            break
+        steady(game)
+        game.turn()
+    arr = game.snapshots[-1].arr_cents if game.snapshots and not game.state.ended else 0
+    return Run(0, "steady", base.state.turn, arr, 0, 0, 0, 0, 0)
+
+
 def play(seed: int) -> list[Run]:
     base = steady_at_stage_3(seed)
     if base is None:
@@ -155,8 +179,17 @@ def play(seed: int) -> list[Run]:
 class EraRun:
     seed: int
     arrived: int | None  # the early arm's arrival; None if it never came early
-    early: float  # the player's AI customers at the window's end, early arm
-    schedule: float  # the same month, the era on schedule
+    early: float  # the player's AI customers at the window's end, early arm (with the window)
+    no_window: float  # the same month, the era forced to the same early month, no window
+    schedule: float  # the same month, the era on schedule (information only)
+
+
+def _no_window(loaded: LoadedData) -> LoadedData:
+    """No first-mover window: the era arrives in the same early month (the window changes
+    nothing before arrival) and gives its causer no head start."""
+    b = loaded.balance
+    rnd = b.rnd.model_copy(update={"first_mover_months": 0})
+    return replace(loaded, balance=b.model_copy(update={"rnd": rnd}))
 
 
 def _no_early(loaded: LoadedData) -> LoadedData:
@@ -225,6 +258,8 @@ def play_era(seed: int) -> EraRun:
     _ai_company(early)
     calm = fork(early)
     calm.loaded = _no_early(calm.loaded)
+    bare = fork(early)
+    bare.loaded = _no_window(bare.loaded)
     arrived = None
     while early.state.turn < LATEST and not early.state.ended:
         launch_ready(early)
@@ -235,11 +270,14 @@ def play_era(seed: int) -> EraRun:
             arrived = a.turn if a.company_id == PLAYER else None
             break
     if arrived is None:
-        return EraRun(seed, None, 0.0, 0.0)
+        return EraRun(seed, None, 0.0, 0.0, 0.0)
     end = arrived + early.loaded.balance.rnd.first_mover_months
     _until(early, end)
+    _until(bare, end)
+    same = bare.state.era_arrival(ERA)
+    assert same is not None and same.turn == arrived  # forced to the same early month
     _until(calm, end)
-    return EraRun(seed, arrived, _ai_customers(early), _ai_customers(calm))
+    return EraRun(seed, arrived, _ai_customers(early), _ai_customers(bare), _ai_customers(calm))
 
 
 # --- Run and report -------------------------------------------------------------------------------
@@ -290,11 +328,29 @@ def target_4(results: Results) -> float:
     return median(r.pitches / (MONTHS / 12) for r in runs) if runs else 0.0  # tunable-exempt
 
 
+T5_BAND: Final = (0.25, 0.60)  # 27.5 target 5 (product manager, 2026-11-04)
+T3_POINTS: Final = 0.10  # 27.5 target 3: at least +10 points (product manager, 2026-11-04)
+T7_RATIO: Final = 1.2  # 27.5 target 7: at most 1.2 x the steady script (2026-11-04)
+
+
 def target_5(results: Results) -> tuple[int, list[float]]:
-    """(seeds with 15-35% more customers, every seed's lift)."""
-    lifts = [e.early / e.schedule - 1 for e in results.eras if e.arrived and e.schedule > 0]
-    lo, hi = 0.15, 0.35  # tunable-exempt: 27.5 target 5's band
+    """(seeds whose first-mover window adds 25-60% customers, every seed's lift): the era
+    forced to the same early month, with against without the window."""
+    lifts = [e.early / e.no_window - 1 for e in results.eras if e.arrived and e.no_window > 0]
+    lo, hi = T5_BAND
     return sum(1 for x in lifts if lo <= x <= hi), lifts
+
+
+def era_effect(results: Results) -> list[float]:
+    """Information only: the whole early era (with its window) against the era on schedule."""
+    return [e.early / e.schedule - 1 for e in results.eras if e.arrived and e.schedule > 0]
+
+
+def target_7(results: Results) -> float:
+    """Target 1's run (pitches) median ARR / the steady script's, same seeds."""
+    on, base = arm(results, "pitches"), arm(results, "steady")
+    under = median(r.arr for r in base) if base else 0
+    return median(r.arr for r in on) / under if on and under else 0.0
 
 
 def report(results: Results) -> str:
@@ -309,10 +365,10 @@ def report(results: Results) -> str:
             f"hits {r.hits} of {r.scored} scored"
         )
     for e in results.eras:
-        lift = f"{e.early / e.schedule - 1:+.1%}" if e.arrived and e.schedule else "-"
+        lift = f"{e.early / e.no_window - 1:+.1%}" if e.arrived and e.no_window else "-"
         lines.append(
-            f"seed {e.seed:2d} era: arrived {e.arrived}; AI customers {e.early:,.0f} early, "
-            f"{e.schedule:,.0f} on schedule ({lift})"
+            f"seed {e.seed:2d} era: arrived {e.arrived}; AI customers {e.early:,.0f} with the "
+            f"window, {e.no_window:,.0f} without ({lift}); {e.schedule:,.0f} on schedule"
         )
     on = arm(results, "pitches")
     one = target_1(results)
@@ -321,10 +377,15 @@ def report(results: Results) -> str:
     good, weak = target_3(results)
     lines.append(
         f"27.5 target 3: hit rate score 15 {good:.0%}, score 8 {weak:.0%}: "
-        f"{(good - weak) * 100:+.0f} points (>= +15)"
+        f"{(good - weak) * 100:+.0f} points (>= +10)"
     )
     lines.append(f"27.5 target 4: {target_4(results):.1f} pitches a year on median (<= 8)")
     n, lifts = target_5(results)
     shown = ", ".join(f"{x:+.0%}" for x in lifts)
-    lines.append(f"27.5 target 5: 15-35% more customers on {n} seeds (>= 7): {shown}")
+    lines.append(f"27.5 target 5: the window adds 25-60% customers on {n} seeds (>= 7): {shown}")
+    info = ", ".join(f"{x:+.0%}" for x in era_effect(results))
+    lines.append(f"27.5 information: the early era against the era on schedule: {info}")
+    lines.append(
+        f"27.5 target 7: pitches / steady script median ARR {target_7(results):.2f} (<= 1.2)"
+    )
     return "\n".join(lines)

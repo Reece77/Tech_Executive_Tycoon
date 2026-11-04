@@ -114,6 +114,7 @@ class PitchOut(BaseModel):
     hires: int
     unit: str = Field(description="cents_month | cents | points | people | customers")
     low: int = Field(description="The low case at 24 months, in `unit`")
+    central: int = Field(default=0, description="The central case: a hit reaches it")
     high: int
     case_label: str = Field(description="The low and high case in words")
     risk: str
