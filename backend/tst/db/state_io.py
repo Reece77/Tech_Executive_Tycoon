@@ -81,6 +81,7 @@ from tst.db.models import (
     CompanyRow,
     EmploymentRow,
     EraArrivalRow,
+    EraWindowRow,
     EventModifierRow,
     EventQueueRow,
     EventRow,
@@ -185,7 +186,13 @@ from tst.sim.markets_public.models import (
 from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Pitch, PitchPolicy, Proposal
 from tst.sim.people.models import Person, RevealRecord, RevealState
 from tst.sim.people.relationships import Relationship
-from tst.sim.research.models import EraArrival, License, ResearchLead, ResearchProject
+from tst.sim.research.models import (
+    EraArrival,
+    EraWindow,
+    License,
+    ResearchLead,
+    ResearchProject,
+)
 from tst.sim.rivals.models import (
     FreeAgent,
     PoachApproach,
@@ -822,19 +829,48 @@ def _load_pitches(session: Session, state: GameState) -> GameState:
         for r in session.scalars(select(PitchPolicyRow).order_by(PitchPolicyRow.company_id))
     )
     last = int(session.scalar(select(func.max(PitchRow.id))) or 0)
+    windows = tuple(
+        EraWindow(
+            r.era_key,
+            r.company_id,
+            r.start_turn,
+            tuple((int(p[0]), float(p[1]), int(p[2])) for p in r.products),
+            float(r.trend),
+            tuple((str(d[0]), float(d[1])) for d in r.demand),
+            bool(r.reported),
+        )
+        for r in session.scalars(
+            select(EraWindowRow).order_by(EraWindowRow.era_key, EraWindowRow.company_id)
+        )
+    )
     return replace(
         state,
         pitches=pitches,
         pitch_policies=policies,
+        era_windows=windows,
         next_ids=replace(state.next_ids, pitch=last + 1),
     )
 
 
 def _sync_pitches(session: Session, old: GameState, new: GameState) -> None:
-    if (old.pitches, old.pitch_policies) == (new.pitches, new.pitch_policies) or not has_table(
-        session, PitchRow
-    ):
+    if (old.pitches, old.pitch_policies, old.era_windows) == (
+        new.pitches,
+        new.pitch_policies,
+        new.era_windows,
+    ) or not has_table(session, PitchRow):
         return
+    for w in _changed(old.era_windows, new.era_windows, lambda w: (w.era_key, w.company_id)):
+        session.merge(
+            EraWindowRow(
+                era_key=w.era_key,
+                company_id=w.company_id,
+                start_turn=w.start_turn,
+                products=[list(p) for p in w.products],
+                trend=w.trend,
+                demand=[list(d) for d in w.demand],
+                reported=w.reported,
+            )
+        )
     for p in _changed(old.pitches, new.pitches, lambda p: p.id):
         session.merge(PitchRow(params=dict(p.params), **{f: getattr(p, f) for f in PITCH_FIELDS}))
     for pol in _changed(old.pitch_policies, new.pitch_policies, lambda p: p.company_id):

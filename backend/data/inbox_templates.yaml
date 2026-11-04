@@ -228,6 +228,9 @@ templates:
   region_launched:
     title: "{product} is localizing for {region}"
     body: "Localizing {product} for {region} cost {cost_cents}. It goes live there in {live}."
+  era_report: # M13b (27.3): at the end of a first-mover window
+    title: "{era}: what the head start added"
+    body: "Your {months}-month head start in {era} is over. {lines}. Against the pre-era trend, your products gained {added_cents} a month."
   era_arrived: # M11 (formulas.md 21.4): an era milestone arrived
     title: "{era} has arrived"
     body: "{era} arrived {when}. It accelerates {markets}.{note}"

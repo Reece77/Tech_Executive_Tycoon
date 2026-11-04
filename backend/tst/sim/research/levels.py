@@ -172,6 +172,19 @@ def first_mover_eras(
     return tuple(out)
 
 
+def first_mover_appeal(
+    state: GameState, data: GameData, balance: Balance, company_id: int, category: str
+) -> float:
+    """The first mover's appeal bonus (27.3, M13b): rnd.first_mover_appeal on its products in
+    an era's categories during the window; 1 otherwise."""
+    if not state.era_arrivals or not any(a.company_id == company_id for a in state.era_arrivals):
+        return 1.0
+    window = any(
+        category in e.categories for e in first_mover_eras(state, data, balance, company_id)
+    )
+    return balance.rnd.first_mover_appeal if window else 1.0
+
+
 def tech_factor(
     state: GameState, company_id: int, category: str, balance: Balance, data: GameData
 ) -> TechFactor:

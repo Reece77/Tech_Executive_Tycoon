@@ -71,3 +71,19 @@ class License:
 
     def involves(self, a: int, b: int) -> bool:
         return {self.licensor_id, self.licensee_id} == {a, b}
+
+
+@dataclass(frozen=True, slots=True)
+class EraWindow:
+    """A first mover's window that a player company holds (27.3, M13b), with what the era
+    report compares against at its end: each affected product's customers and MRR when the
+    era arrived, the company's monthly MRR growth over the 12 months before, and each
+    affected category's addressable customers at arrival."""
+
+    era_key: str
+    company_id: int
+    start_turn: int
+    products: tuple[tuple[int, float, int], ...]  # (product id, customers, MRR cents)
+    trend: float  # the company's monthly MRR growth before the era, as a fraction
+    demand: tuple[tuple[str, float], ...]  # (category, addressable customers at arrival)
+    reported: bool = False

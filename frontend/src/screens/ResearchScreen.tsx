@@ -49,7 +49,8 @@ function Body({ saveId, r }: { saveId: string; r: Research }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>Research</h1>
         <span className="tst-muted" style={{ fontSize: 13 }}>
-          <Term term="research.lead">Leads</Term> decay {r.decay_pct.toFixed(1)}% a month without
+          A <Term term="research.lead">lead</Term> is points ahead of the industry in this field;
+          start a project to build one. Leads decay {r.decay_pct.toFixed(1)}% a month without
           research
         </span>
         <Button
@@ -70,7 +71,7 @@ function Body({ saveId, r }: { saveId: string; r: Research }) {
         <DomainsTable domains={r.domains} />
         <p className="tst-muted" style={{ fontSize: 12 }} data-testid="tech-lift">
           {lifts.length === 0
-            ? 'No research lead yet: product teams reach what their skills allow.'
+            ? 'No research lead yet (points ahead of the industry; start a project to build one): product teams reach what their skills allow.'
             : lifts
                 .map(
                   (c) =>

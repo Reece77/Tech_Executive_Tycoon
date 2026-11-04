@@ -386,6 +386,19 @@ function NewProductDialog({
             <legend style={{ fontSize: 13, color: 'var(--tst-text-2)', padding: '0 0 8px' }}>
               Sell to
             </legend>
+            <p
+              className="tst-muted"
+              style={{ margin: 0, fontSize: 13 }}
+              data-testid="category-size"
+            >
+              Market size {formatMoneyShort(category.size_cents_year ?? 0)} a year at home, growing
+              about {Math.round(category.annual_growth * 100)}% a year
+              {(category.region_sizes ?? []).length > 0 &&
+                `; elsewhere ${(category.region_sizes ?? [])
+                  .map((r) => `${r.label} ${formatMoneyShort(r.size_cents_year)}`)
+                  .join(', ')}`}
+              .
+            </p>
             {category.segments.map((s) => (
               <label
                 key={s.segment}
@@ -418,7 +431,8 @@ function NewProductDialog({
                 </span>
                 <span className="tst-num tst-muted" style={{ marginLeft: 'auto', fontSize: 13 }}>
                   {formatCount(s.addressable)} {s.counts_users ? 'users' : 'businesses'} · ~
-                  {formatMoneyWhole(s.reference_price_cents)} a month
+                  {formatMoneyWhole(s.reference_price_cents)} a month ·{' '}
+                  {formatMoneyShort(s.size_cents_year ?? 0)} a year
                 </span>
               </label>
             ))}

@@ -104,7 +104,36 @@ def get_market(
 ) -> MarketOut:
     """Every product selling in the category: owner, public scores, appeal, customers and
     share of served customers, per segment; in the home region, or another (19.7)."""
-    return product_views.market_out(_state(_path(settings, save_id)), category, data, region)
+    path = _path(settings, save_id)
+    state = _state(path)
+    return product_views.market_out(
+        state, category, data, region, market_history(path, state, category)
+    )
+
+
+MARKET_HISTORY_MONTHS = 24  # months of customers the Market chart shows (27.3, M13b)
+
+
+def market_history(path: Path, state: GameState, category: str) -> list[tuple[int, float]]:
+    """(turn, customers of every product in the category) by month, home region (27.3)."""
+    from sqlalchemy import func, select
+
+    from tst.db.models import ProductMonthRow
+
+    ids = [p.id for p in state.products if p.category == category]
+    if not ids:
+        return []
+    with repository.read_session(path) as session:
+        rows = session.execute(
+            select(ProductMonthRow.turn, func.sum(ProductMonthRow.customers))
+            .where(
+                ProductMonthRow.product_id.in_(ids),
+                ProductMonthRow.turn >= state.turn - MARKET_HISTORY_MONTHS,
+            )
+            .group_by(ProductMonthRow.turn)
+            .order_by(ProductMonthRow.turn)
+        ).all()
+    return [(int(t), float(c or 0.0)) for t, c in rows]
 
 
 # --- The player's products ------------------------------------------------------------------

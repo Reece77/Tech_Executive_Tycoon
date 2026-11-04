@@ -17,7 +17,9 @@ from tst.api.schemas.products import (
     AssignedUnitOut,
     CategoryOut,
     CategorySegmentOut,
+    EraMarkOut,
     LaunchReadinessOut,
+    MarketMonthOut,
     MarketOut,
     MarketProductOut,
     MarketSegmentOut,
@@ -30,19 +32,21 @@ from tst.api.schemas.products import (
     ProductTotalMonthOut,
     RegionalPriceOut,
     RegionOptionOut,
+    RegionSizeOut,
     TeamStrengthOut,
 )
 from tst.api.views import person_name, product_effects
 from tst.loader import LoadedData
 from tst.sim.actions.geo import default_regional_price
 from tst.sim.actions.products import launch_problems
-from tst.sim.calendar import format_turn
-from tst.sim.data_models import Balance, SegmentDef
+from tst.sim.calendar import MONTHS_PER_YEAR, format_turn
+from tst.sim.data_models import Balance, CategoryDef, SegmentDef
 from tst.sim.errors import ProductRuleError
 from tst.sim.finance.macro import ai_index
 from tst.sim.geo.cities import home_region
 from tst.sim.geo.formulas import regional_growth, relative_row
 from tst.sim.geo.models import RegionalSegment
+from tst.sim.money import exact
 from tst.sim.org.rules import org_view
 from tst.sim.products import formulas as f
 from tst.sim.products.estimates import shown_team
@@ -60,6 +64,7 @@ from tst.sim.products.phases import (
 )
 from tst.sim.products.team import Team
 from tst.sim.research.eras import annual_growth
+from tst.sim.research.levels import first_mover_appeal
 from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState
 
@@ -76,6 +81,17 @@ class _Row:
     product: Product
     seg: ProductSegment | RegionalSegment
     appeal: float
+
+
+def _first_mover(state: GameState, product: Product, data: LoadedData) -> float:
+    """The first mover's appeal bonus, as the engine applies it (27.3, M13b): public."""
+    return first_mover_appeal(
+        state, data.game_data, data.balance, product.company_id, product.category
+    )
+
+
+def _bonus(appeal: float | None, factor: float) -> float | None:
+    return None if appeal is None else appeal * factor
 
 
 def _rows(
@@ -107,6 +123,7 @@ def _rows(
         power = pricing_power(state, product, data.balance, estimate=True)  # CRO (18.3, 18.8)
         appeal = segment_appeal(product, seg, data.game_data, turn, power, index)
         assert appeal is not None
+        appeal *= _first_mover(state, product, data)
         rows.append(_Row(product, seg, appeal))
     return rows
 
@@ -169,6 +186,57 @@ def _addressable(state: GameState, category: str, segment: str, region: str | No
     return round(market.addressable) if market else 0
 
 
+def size_cents_year(addressable: float, reference_cents: int, index: float = 1.0) -> int:
+    """A market's size a year: customers x reference price (x a region's index) x 12 (27.4),
+    in exact money rounded once."""
+    return round(exact(addressable) * exact(reference_cents) * exact(index) * MONTHS_PER_YEAR)
+
+
+def _category_size(
+    state: GameState, cat: CategoryDef, data: LoadedData, region: str | None = None
+) -> int:
+    index = regional_index(state, region, data)
+    return sum(
+        size_cents_year(
+            _addressable(state, cat.key, m.segment, region), m.reference_price_cents, index
+        )
+        for m in cat.markets
+    )
+
+
+def _region_sizes(state: GameState, cat: CategoryDef, data: LoadedData) -> list[RegionSizeOut]:
+    if not data.game_data.cities:
+        return []
+    home = home_region(state, data.balance, data.game_data)
+    return [
+        RegionSizeOut(
+            region=r.key, label=r.label, size_cents_year=_category_size(state, cat, data, r.key)
+        )
+        for r in data.game_data.regions
+        if r.key != home
+    ]
+
+
+def era_marks(
+    state: GameState, category: str, data: LoadedData, since: int = 0
+) -> list[EraMarkOut]:
+    """Arrived eras whose categories include this one, from `since` (27.3): public."""
+    out = []
+    for era in data.game_data.eras.eras:
+        a = state.era_arrival(era.key)
+        if a is None or category not in era.categories or a.turn < since:
+            continue
+        caused = None
+        if a.company_id is not None:
+            caused = "You" if a.company_id == state.player.id else state.company(a.company_id).name
+        out.append(
+            EraMarkOut(
+                turn=a.turn, date_label=format_turn(a.turn), label=era.label, caused_by=caused
+            )
+        )
+    return sorted(out, key=lambda m: m.turn)
+
+
 def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
     return [
         CategoryOut(
@@ -189,6 +257,8 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
             capacity_market=cat.capacity_market,
             assembly_market=cat.assembly_market,
             sells_units=cat.sells_units,
+            size_cents_year=_category_size(state, cat, data),
+            region_sizes=_region_sizes(state, cat, data),
             launch_quality=max(data.balance.products.launch_min_quality, cat.launch_quality or 0),
             segments=[
                 CategorySegmentOut(
@@ -202,6 +272,9 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
                     ),
                     weights=_weights(data.game_data.segment(m.segment)),
                     counts_users=m.segment == CONSUMER_SEGMENT,
+                    size_cents_year=size_cents_year(
+                        _addressable(state, cat.key, m.segment), m.reference_price_cents
+                    ),
                 )
                 for m in cat.markets
             ],
@@ -211,9 +284,14 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
 
 
 def market_out(
-    state: GameState, category: str, data: LoadedData, region: str | None = None
+    state: GameState,
+    category: str,
+    data: LoadedData,
+    region: str | None = None,
+    history: Sequence[tuple[int, float]] = (),
 ) -> MarketOut:
-    """`region`: a region other than the home region (M9's region picker, 19.7)."""
+    """`region`: a region other than the home region (M9's region picker, 19.7). `history`:
+    (turn, customers in the category) by month, home region, for the chart (27.3)."""
     if category not in {c.key for c in data.game_data.categories}:
         raise ProductRuleError(f"unknown category {category!r}")
     home = home_region(state, data.balance, data.game_data) if data.game_data.cities else None
@@ -268,6 +346,7 @@ def market_out(
                 counts_users=m.segment == CONSUMER_SEGMENT,
                 player_sells=any(state.company(r.product.company_id).is_player for r in rows),
                 products=products,
+                size_cents_year=size_cents_year(addressable, m.reference_price_cents, index),
             )
         )
     growth = annual_growth(state, data.game_data, cat.key)  # with era boosts (M11, 21.4)
@@ -281,6 +360,11 @@ def market_out(
         segments=segments,
         region=shown,
         region_label=data.game_data.region(shown).label if shown else None,
+        size_cents_year=_category_size(state, cat, data, region),
+        history=[
+            MarketMonthOut(turn=t, date_label=format_turn(t), customers=c) for t, c in history
+        ],
+        era_marks=era_marks(state, cat.key, data, history[0][0] if history else state.turn),
         regions=[
             RegionOptionOut(key=r.key, label=r.label, home=r.key == home)
             for r in data.game_data.regions
@@ -339,12 +423,15 @@ def product_out(
                 price_score=_price_score(state, product, seg, data),
                 customers=seg.customers,
                 appeal=(
-                    appeal := segment_appeal(
-                        product,
-                        seg,
-                        game,
-                        shown_turn(state),
-                        pricing_power(state, product, data.balance, estimate=True),
+                    appeal := _bonus(
+                        segment_appeal(
+                            product,
+                            seg,
+                            game,
+                            shown_turn(state),
+                            pricing_power(state, product, data.balance, estimate=True),
+                        ),
+                        _first_mover(state, product, data),
                     )
                 ),
                 share_of_served=(share := seg.customers / served if served else 0.0),
@@ -465,6 +552,7 @@ def product_out(
             for rows in months
             if (turn := next(iter(rows.values())).turn) in last_turns
         ],
+        era_marks=era_marks(state, product.category, data, min(last_turns, default=state.turn)),
     )
 
 
@@ -663,7 +751,7 @@ def price_preview(
         if r.product.status == "live" and r.product.id != product.id
     ]
     score = f.price_score(reference, price_cents)
-    appeal = f.appeal(
+    appeal = _first_mover(state, product, data) * f.appeal(
         seg_def.weights,
         product.quality,
         score,
@@ -671,7 +759,9 @@ def price_preview(
         current_feature(product, game, turn),
     )
     shares, _ = f.choice_shares([appeal, *others], seg_def.outside_option, data.balance.market)
-    current = segment_appeal(product, seg, game, turn, power)
+    current = _bonus(
+        segment_appeal(product, seg, game, turn, power), _first_mover(state, product, data)
+    )
     current_share = None
     if current is not None:
         now, _ = f.choice_shares([current, *others], seg_def.outside_option, data.balance.market)

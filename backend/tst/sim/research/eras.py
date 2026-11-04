@@ -5,14 +5,20 @@ lines. Arrival is checked in phase 3 after research progress; growth is read in 
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import format_money
+from tst.sim.products.models import SELLING
 from tst.sim.research import levels
 from tst.sim.research.data import EraDef, rate_in
-from tst.sim.research.models import EraArrival
+from tst.sim.research.models import EraArrival, EraWindow
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, player_companies, with_era_arrival
+from tst.sim.state import GameState, player_companies, with_era_arrival, with_era_window
+
+TREND_MONTHS = 12  # tunable-exempt: the pre-era trend's window (27.3: "12-month trend")
 
 
 def base_growth(data: GameData, category: str, year: int) -> float:
@@ -116,6 +122,104 @@ def arrive_eras(
         logs += [  # every company the player controls hears (ADR-0020 1; M12r)
             era_news(state, data, balance, era, arrival, c.id) for c in player_companies(state)
         ]
+        if cid is not None and cid in {c.id for c in player_companies(state)}:
+            state = with_era_window(state, _window(state, data, era, cid))  # 27.3 (M13b)
+    state, reports = era_reports(state, data, balance)
+    return state, (*logs, *reports)
+
+
+def _mrr(state: GameState, product_id: int) -> int:
+    return round(
+        sum(s.customers * (s.price_cents or 0) for s in state.segments_of(product_id))
+        + sum(s.customers * (s.price_cents or 0) for s in state.regional_segments_of(product_id))
+    )
+
+
+def _customers(state: GameState, product_id: int) -> float:
+    return sum(s.customers for s in state.segments_of(product_id)) + sum(
+        s.customers for s in state.regional_segments_of(product_id)
+    )
+
+
+def affected(state: GameState, era: EraDef, company_id: int) -> list[int]:
+    """The company's selling products in the era's categories (27.3)."""
+    return [
+        p.id
+        for p in state.company_products(company_id)
+        if p.status in SELLING and p.category in era.categories
+    ]
+
+
+def _window(state: GameState, data: GameData, era: EraDef, company_id: int) -> EraWindow:
+    """The first mover's baseline at arrival (27.3)."""
+    history = state.company(company_id).mrr_history
+    trend = 0.0
+    if len(history) > TREND_MONTHS and history[-1 - TREND_MONTHS] > 0 and history[-1] > 0:
+        trend = (history[-1] / history[-1 - TREND_MONTHS]) ** (1 / TREND_MONTHS) - 1
+    demand = tuple(
+        (c, sum(m.addressable for m in state.markets if m.category == c)) for c in era.categories
+    )
+    return EraWindow(
+        era.key,
+        company_id,
+        state.turn,
+        tuple(
+            (pid, _customers(state, pid), _mrr(state, pid))
+            for pid in affected(state, era, company_id)
+        ),
+        trend,
+        demand,
+    )
+
+
+def era_reports(
+    state: GameState, data: GameData, balance: Balance
+) -> tuple[GameState, tuple[LogItem, ...]]:
+    """At a first-mover window's end, the era report (27.3): each affected product's customers
+    and MRR against its pre-era trend, each category's demand against its pre-era path (base
+    growth, no boost), and what the window added."""
+    months = balance.rnd.first_mover_months
+    logs: list[LogItem] = []
+    for w in state.era_windows:
+        if w.reported or state.turn < w.start_turn + months:
+            continue
+        era = next(e for e in data.eras.eras if e.key == w.era_key)
+        lines = []
+        added = 0
+        for pid, customers, mrr in w.products:
+            product = state.product(pid)
+            if product is None:
+                continue
+            growth = (1 + w.trend) ** months
+            expected = round(mrr * growth)
+            now = _mrr(state, pid)
+            added += now - expected
+            lines.append(
+                f"{product.name}: {_customers(state, pid):,.0f} customers (trend "
+                f"{customers * growth:,.0f}), {format_money(now)} a month (trend "
+                f"{format_money(expected)})"
+            )
+        for category, then in w.demand:
+            path = then
+            for t in range(w.start_turn, state.turn):
+                path *= (1 + base_growth(data, category, turn_to_ym(t)[0])) ** (1 / TREND_MONTHS)
+            now_d = sum(m.addressable for m in state.markets if m.category == category)
+            lines.append(
+                f"{data.category(category).label} demand {now_d:,.0f} against "
+                f"{path:,.0f} on its pre-era path"
+            )
+        logs.append(
+            inbox_item(
+                state.turn,
+                w.company_id,
+                "era_report",
+                era=era.label,
+                months=months,
+                lines="; ".join(lines) if lines else "no products in its markets",
+                added_cents=added,
+            )
+        )
+        state = with_era_window(state, replace(w, reported=True))
     return state, tuple(logs)
 
 
@@ -143,9 +247,10 @@ def era_news(
     rnd = balance.rnd
     note = (
         f" First-mover head start: for {rnd.first_mover_months} months your {categories}"
-        f" products get +{rnd.first_mover_cap:g} on their quality cap and"
-        f" +{rnd.first_mover_brand:g} on their brand target, and your"
-        f" {levels.domain_def(data, era.domain).label} lead does not decay."
+        f" products get +{rnd.first_mover_cap:g} on their quality cap,"
+        f" +{rnd.first_mover_brand:g} on their brand target and x{rnd.first_mover_appeal:g}"
+        f" appeal, and your {levels.domain_def(data, era.domain).label} lead does not decay."
+        + _products_line(state, era, observer_id, balance)
         if causer == observer_id
         else ""
     )
@@ -157,6 +262,25 @@ def era_news(
         when=who,
         markets=categories,
         note=note,
+    )
+
+
+def _products_line(state: GameState, era: EraDef, company_id: int, balance: Balance) -> str:
+    """The first mover's affected products with what the window gives them (27.3)."""
+    rnd = balance.rnd
+    items = []
+    for pid in affected(state, era, company_id):
+        p = state.product(pid)
+        if p is None:
+            continue
+        items.append(
+            f"{p.name} (quality {p.quality:.0f}, cap +{rnd.first_mover_cap:g}; brand "
+            f"{p.brand:.0f}, target +{rnd.first_mover_brand:g}; appeal x{rnd.first_mover_appeal:g})"
+        )
+    return (
+        " Affected: " + "; ".join(items) + "."
+        if items
+        else " You have no product in these markets yet."
     )
 
 

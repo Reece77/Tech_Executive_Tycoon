@@ -15135,6 +15135,20 @@
             "title": "Sells Units",
             "description": "Sells units once per customer; needs manufacturing (M12b)",
             "default": false
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "Home market size a year (27.4)",
+            "default": 0
+          },
+          "region_sizes": {
+            "items": {
+              "$ref": "#/components/schemas/RegionSizeOut"
+            },
+            "type": "array",
+            "title": "Region Sizes",
+            "description": "Market size a year in each other region (27.4)"
           }
         },
         "type": "object",
@@ -15182,6 +15196,12 @@
             "type": "boolean",
             "title": "Counts Users",
             "description": "Customers are consumer users, not businesses"
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "Market size: addressable customers x reference price x 12 (27.4)",
+            "default": 0
           }
         },
         "type": "object",
@@ -17671,6 +17691,44 @@
           "adjustments"
         ],
         "title": "EnergyOut"
+      },
+      "EraMarkOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "The era"
+          },
+          "caused_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caused By",
+            "description": "'You', a company, or null on schedule"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "label",
+          "caused_by"
+        ],
+        "title": "EraMarkOut",
+        "description": "An era's arrival, marked on a chart (27.3, M13b)."
       },
       "EraOut": {
         "properties": {
@@ -22628,6 +22686,30 @@
         "title": "ManufacturingOut",
         "description": "A device, server or chip product's bill of materials and manufacturing panel."
       },
+      "MarketMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers",
+            "description": "Customers of every product in the category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "customers"
+        ],
+        "title": "MarketMonthOut"
+      },
       "MarketOut": {
         "properties": {
           "category": {
@@ -22680,6 +22762,28 @@
             "type": "array",
             "title": "Regions",
             "description": "Region picker"
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "The category's size a year (27.4)",
+            "default": 0
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/MarketMonthOut"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "Customers in the category by month, home region"
+          },
+          "era_marks": {
+            "items": {
+              "$ref": "#/components/schemas/EraMarkOut"
+            },
+            "type": "array",
+            "title": "Era Marks",
+            "description": "Arrived eras of the category (27.3)"
           }
         },
         "type": "object",
@@ -22826,6 +22930,12 @@
             "type": "boolean",
             "title": "Player Sells",
             "description": "The player has a product selling here"
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "Market size a year (27.4)",
+            "default": 0
           },
           "products": {
             "items": {
@@ -26145,6 +26255,14 @@
             "type": "array",
             "title": "Monthly",
             "description": "Last 12 months summed over segments, oldest first, home region"
+          },
+          "era_marks": {
+            "items": {
+              "$ref": "#/components/schemas/EraMarkOut"
+            },
+            "type": "array",
+            "title": "Era Marks",
+            "description": "Eras of its category that arrived in that time (27.3)"
           }
         },
         "type": "object",
@@ -27284,6 +27402,30 @@
           "mrr_cents"
         ],
         "title": "RegionSegmentOut"
+      },
+      "RegionSizeOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "Customers x reference price x 12 (27.4)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "size_cents_year"
+        ],
+        "title": "RegionSizeOut"
       },
       "RegionalPriceIn": {
         "properties": {

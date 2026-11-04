@@ -54,7 +54,13 @@ from tst.sim.org.models import (
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
-from tst.sim.research.models import EraArrival, License, ResearchLead, ResearchProject
+from tst.sim.research.models import (
+    EraArrival,
+    EraWindow,
+    License,
+    ResearchLead,
+    ResearchProject,
+)
 from tst.sim.rivals.models import (
     FreeAgent,
     PoachApproach,
@@ -200,6 +206,7 @@ class GameState:
     research_leads: tuple[ResearchLead, ...] = ()
     research_projects: tuple[ResearchProject, ...] = ()
     era_arrivals: tuple[EraArrival, ...] = ()
+    era_windows: tuple[EraWindow, ...] = ()  # M13b (27.3): player first movers' windows
     licenses: tuple[License, ...] = ()
     # M12b (26.2, 26.3): contract-manufacturing and wafer contracts (active, and ended ones of
     # the last 24 months) by id; the last phase 5's production by product id.
@@ -863,6 +870,13 @@ def with_research_lead(state: GameState, lead: ResearchLead) -> GameState:
 def with_research_project(state: GameState, project: ResearchProject) -> GameState:
     return replace(
         state, research_projects=_upsert(state.research_projects, project, lambda p: p.id)
+    )
+
+
+def with_era_window(state: GameState, window: EraWindow) -> GameState:
+    return replace(
+        state,
+        era_windows=_upsert(state.era_windows, window, lambda w: (w.era_key, w.company_id)),
     )
 
 

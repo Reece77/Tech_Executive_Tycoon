@@ -3744,6 +3744,17 @@ export interface components {
              * @default false
              */
             sells_units?: boolean;
+            /**
+             * Size Cents Year
+             * @description Home market size a year (27.4)
+             * @default 0
+             */
+            size_cents_year?: number;
+            /**
+             * Region Sizes
+             * @description Market size a year in each other region (27.4)
+             */
+            region_sizes?: components["schemas"]["RegionSizeOut"][];
         };
         /** CategorySegmentOut */
         CategorySegmentOut: {
@@ -3774,6 +3785,12 @@ export interface components {
              * @description Customers are consumer users, not businesses
              */
             counts_users: boolean;
+            /**
+             * Size Cents Year
+             * @description Market size: addressable customers x reference price x 12 (27.4)
+             * @default 0
+             */
+            size_cents_year?: number;
         };
         /** CategoryTechOut */
         CategoryTechOut: {
@@ -4818,6 +4835,26 @@ export interface components {
              * @description Event effects on this month's energy (M10b)
              */
             adjustments: components["schemas"]["EnergyAdjustmentOut"][];
+        };
+        /**
+         * EraMarkOut
+         * @description An era's arrival, marked on a chart (27.3, M13b).
+         */
+        EraMarkOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Label
+             * @description The era
+             */
+            label: string;
+            /**
+             * Caused By
+             * @description 'You', a company, or null on schedule
+             */
+            caused_by: string | null;
         };
         /** EraOut */
         EraOut: {
@@ -6820,6 +6857,18 @@ export interface components {
              */
             sells_units?: boolean;
         };
+        /** MarketMonthOut */
+        MarketMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Customers
+             * @description Customers of every product in the category
+             */
+            customers: number;
+        };
         /** MarketOut */
         MarketOut: {
             /** Category */
@@ -6845,6 +6894,22 @@ export interface components {
              * @description Region picker
              */
             regions?: components["schemas"]["tst__api__schemas__products__RegionOptionOut"][];
+            /**
+             * Size Cents Year
+             * @description The category's size a year (27.4)
+             * @default 0
+             */
+            size_cents_year?: number;
+            /**
+             * History
+             * @description Customers in the category by month, home region
+             */
+            history?: components["schemas"]["MarketMonthOut"][];
+            /**
+             * Era Marks
+             * @description Arrived eras of the category (27.3)
+             */
+            era_marks?: components["schemas"]["EraMarkOut"][];
         };
         /** MarketProductOut */
         MarketProductOut: {
@@ -6923,6 +6988,12 @@ export interface components {
              * @description The player has a product selling here
              */
             player_sells: boolean;
+            /**
+             * Size Cents Year
+             * @description Market size a year (27.4)
+             * @default 0
+             */
+            size_cents_year?: number;
             /**
              * Products
              * @description Most customers first
@@ -8331,6 +8402,11 @@ export interface components {
              * @description Last 12 months summed over segments, oldest first, home region
              */
             monthly: components["schemas"]["ProductTotalMonthOut"][];
+            /**
+             * Era Marks
+             * @description Eras of its category that arrived in that time (27.3)
+             */
+            era_marks?: components["schemas"]["EraMarkOut"][];
         };
         /** ProductPointOut */
         ProductPointOut: {
@@ -8816,6 +8892,18 @@ export interface components {
             customers: number;
             /** Mrr Cents */
             mrr_cents: number;
+        };
+        /** RegionSizeOut */
+        RegionSizeOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Size Cents Year
+             * @description Customers x reference price x 12 (27.4)
+             */
+            size_cents_year: number;
         };
         /** RegionalPriceIn */
         RegionalPriceIn: {

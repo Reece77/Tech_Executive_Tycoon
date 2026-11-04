@@ -242,7 +242,7 @@ terms:
   # --- Research and eras (M11, formulas.md 21) ----------------------------------------------
   research.domain: "A field of technology: software platform, AI, infrastructure, chip design or devices. Each feeds some markets."
   research.baseline: "The world's level in the domain, free to everyone. It rises every month, and by 5 points when one of the domain's eras arrives."
-  research.lead: "What your company knows beyond the baseline. Research raises it; without research it loses 1.5% a month."
+  research.lead: "Points ahead of the industry in this field; start a project to build one. A lead is know-how, not a person: research raises it, and without research it loses 1.5% a month."
   research.level: "Baseline plus lead. When any company's level reaches an era's threshold, the era arrives early."
   research.threshold: "The level that brings an era before its historical date: the baseline it would have by then plus 15 points."
   research.tech_factor: "Your research lead in a market lifts what product teams can reach and how fast features grow, more for a bigger lead, up to 50 points of it."

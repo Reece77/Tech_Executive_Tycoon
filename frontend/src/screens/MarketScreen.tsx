@@ -1,12 +1,103 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import type { components } from '../api/schema';
 import { EraTimeline } from '../components/EraTimeline';
 import { MacroStrip } from '../components/MacroStrip';
 import { MarketTable } from '../components/MarketTable';
 import { LoadError, Loading } from '../components/ScreenState';
 import { useCategories, useEras, useMarket } from '../hooks/api';
 import { useTableViews } from '../hooks/useTableViews';
-import { segmentSummary } from '../lib/products';
+import { formatMoneyShort } from '../lib/format';
+import { formatCount, segmentSummary } from '../lib/products';
+
+type Market = components['schemas']['MarketOut'];
+
+/** The category's size a year and its customers by month, with era arrivals marked (27.3,
+ * 27.4). Display only: every number comes from the API. */
+function MarketDemand({ m }: { m: Market }) {
+  return (
+    <section
+      aria-label="Market size"
+      data-testid="market-size"
+      style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+    >
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 12 }}>
+        <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>
+          Market size {formatMoneyShort(m.size_cents_year ?? 0)} a year
+        </h2>
+        <span className="tst-muted" style={{ fontSize: 13 }}>
+          customers × typical price × 12, growing about {Math.round(m.annual_growth * 100)}% a year
+        </span>
+      </div>
+      {(m.history ?? []).length > 1 && (
+        <div role="img" aria-label="Customers in this market by month">
+          <ResponsiveContainer width="100%" height={150}>
+            <LineChart data={m.history} margin={{ top: 14, right: 8, bottom: 0, left: 8 }}>
+              <CartesianGrid stroke="var(--tst-rule)" vertical={false} />
+              <XAxis
+                dataKey="date_label"
+                stroke="var(--tst-muted)"
+                fontSize={11}
+                fontFamily="var(--tst-font-mono)"
+              />
+              <YAxis
+                stroke="var(--tst-muted)"
+                fontSize={11}
+                fontFamily="var(--tst-font-mono)"
+                tickFormatter={(v: number) => formatCount(v)}
+                width={56}
+              />
+              <Tooltip
+                formatter={(v) => formatCount(Number(v))}
+                contentStyle={{
+                  background: 'var(--tst-panel)',
+                  border: '1px solid var(--tst-border)',
+                  fontFamily: 'var(--tst-font-mono)',
+                }}
+              />
+              {(m.era_marks ?? []).map((e) => (
+                <ReferenceLine
+                  key={e.label}
+                  x={e.date_label}
+                  stroke="var(--tst-warn)"
+                  strokeDasharray="3 3"
+                  label={{ value: e.label, fontSize: 10, fill: 'var(--tst-warn)', position: 'top' }}
+                />
+              ))}
+              <Line
+                type="linear"
+                dataKey="customers"
+                name="Customers"
+                stroke="var(--tst-accent)"
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+      {(m.era_marks ?? []).length > 0 && (
+        <p className="tst-muted" style={{ margin: 0, fontSize: 12 }} data-testid="market-era-marks">
+          Eras:{' '}
+          {(m.era_marks ?? [])
+            .map((e) => `${e.label} (${e.date_label}${e.caused_by ? `, ${e.caused_by}` : ''})`)
+            .join(' · ')}
+        </p>
+      )}
+    </section>
+  );
+}
 
 /** Every product in a category's market, segment by segment, incumbents included. */
 export function MarketScreen() {
@@ -80,6 +171,7 @@ export function MarketScreen() {
       <MacroStrip saveId={saveId} />
       {market.error && <LoadError title="Could not load the market" error={market.error} />}
       {market.isPending && <Loading />}
+      {market.data && <MarketDemand m={market.data} />}
       {market.data?.segments.map((s) => (
         <section
           key={s.segment}
@@ -91,6 +183,9 @@ export function MarketScreen() {
             <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>{s.label}</h2>
             <span className="tst-muted" style={{ fontSize: 13 }}>
               {segmentSummary(s)}
+            </span>
+            <span className="tst-muted" style={{ fontSize: 13 }} data-testid="segment-size">
+              size {formatMoneyShort(s.size_cents_year ?? 0)} a year
             </span>
           </div>
           <MarketTable

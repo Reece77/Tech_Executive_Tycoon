@@ -1150,6 +1150,21 @@ class PitchRow(Base):
     measured: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
 
+class EraWindowRow(Base):
+    """A player first mover's era window and the baseline its report compares against
+    (M13b, 27.3; 0032)."""
+
+    __tablename__ = "era_window"
+
+    era_key: Mapped[str] = mapped_column(String(32), primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    start_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    products: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+    trend: Mapped[float] = mapped_column(Float, nullable=False)
+    demand: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+    reported: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+
 class PitchPolicyRow(Base):
     """The player's pitch settings per company (M13b, 27.1; 0032)."""
 
