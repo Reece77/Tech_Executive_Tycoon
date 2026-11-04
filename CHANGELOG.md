@@ -4,6 +4,16 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M13b Executive ambition and visible eras (formulas.md §27; **not merged: §27.5 targets 3 and 5 miss, see the brief**):
+  - The CPO seat takes authority (headcount cap for new product teams, categories it may enter, products it may not sunset) and launches ready products.
+  - Pitches (27.1): executives with authority and the CEO pitch a big move at most once a quarter (stream `pitch`, 36): a new product, a sunset, a region, a research team, a data centre, an office, an assembly plant, a campaign or a buyback, scored and shown from displayed knowledge only, with a low and high case at 24 months. Approve runs it through the normal actions as the executive; Modify opens the move's own screen; Decline costs morale. On Holiday pitches under the spend limit (default 5% of cash) go ahead; "stop for big pitches" stops a Holiday. Approved pitches are scored hit, miss or too early after 24 months; each executive has a record. Migration `0032_pitches` (`exec_pitch`, `pitch_policy`, `era_window`).
+  - Reports (27.2) are led by decisions, in one of four voices from the executive's displayed personality (`exec_voices.yaml`); the CEO writes a quarterly letter to the Chair.
+  - Eras (27.3): first-mover window 24 months, +8 quality cap, +15 brand target and x1.15 appeal; the arrival item (Critical) lists the affected products; an era report at the window's end; era marks on the Product and new Market charts.
+  - Market size a year by segment and region on the Market screen and in the New product dialog; the Research screen explains a lead (27.4).
+  - API: pitches, records and the pitch policy on `/scaleup`, `POST /scaleup/pitches/{id}/{answer}`, `POST /scaleup/pitch-policy`, `blocking_pitch_ids`; CLI `tst pitches`, `approve-pitch`, `decline-pitch`, `pitch-limit`; `tools/m13b_targets.py` (nightly `tests/balance/test_m13b_balance.py`).
+  - 27.5 targets: 1 pass (8/10), 2 pass (x2.07), 4 pass (5.2 a year); 3 miss (62% against 63%) and 5 miss (+481% to +799%), neither fixable by `pitch.*` or `rnd.first_mover_*` (docs/balance-targets.md, M13b). S2 re-banded to < 65 worker-minutes on CI.
+  - Golden snapshots unchanged.
+
 - M12r Fixes from Codex review 3 (`docs/reviews/codex-review-3.md`, Resolution):
   - Licence actions offer the Research screen's public ceiling (the displayed range's low end in, high end out, minus the margin) in whole points, checked before cash and energy; the licensor's refusal reads the same ceiling, so no response distinguishes two rivals with the same displayed range (finding 1).
   - The Research screen's lab is built from estimates (`projects.lab(..., estimate=True)`): displayed skills, noticed tags and executive seat factors from displayed ranges (finding 2).

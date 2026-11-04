@@ -41,7 +41,12 @@ export async function answerBlocking(page: Page, opts: { proposals?: boolean } =
   for (const id of proposals) {
     await page.request.post(`/api/saves/${save}/scaleup/proposals/${id}/decline`);
   }
-  if ((events.blocking_event_ids as number[]).length || proposals.length) {
+  // And a pitch (27.1, M13b).
+  const pitches = opts.proposals === false ? [] : ((events.blocking_pitch_ids ?? []) as number[]);
+  for (const id of pitches) {
+    await page.request.post(`/api/saves/${save}/scaleup/pitches/${id}/decline`);
+  }
+  if ((events.blocking_event_ids as number[]).length || proposals.length || pitches.length) {
     await page.reload();
     if (opts.proposals !== false) await expect(page.getByTestId('continue-blocked')).toHaveCount(0);
   }

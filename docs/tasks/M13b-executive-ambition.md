@@ -40,10 +40,33 @@ Acquisitions as pitches (M14 adds the kind). Rivals' executives pitching (rivals
 
 On `quick-stage3`, give every seat authority, set auto-approve to 5% of cash, and Holiday three years. Did they start a product and enter a region? Read one quarter's reports: do they sound like people? Then pull an era forward on `pt-ai` and read the era report.
 
+## Status (2026-11-04): stopped before merging
+
+Sub-tasks 1-7 are built and tested; sub-task 8's Playwright specs (a)-(c) pass and the close-out docs are written, but **two §27.5 targets miss and the allowed keys cannot fix them**, so per the instructions this branch is not merged (values in `docs/balance-targets.md`, M13b):
+
+- **Target 3** (hit rate score 15 against 8, ≥ +15 points): 62% against 63%. The hit rate does not move with `pitch.spread`; outcomes are all-or-nothing, and the 27.1 quality rule (best or second best) does not make the second best less likely to work. Options: score executives against a central case instead of the low case; make the outcome depend on the executive's true skill (for example the CPO's new product team built with the seat's builder factor), or narrow the target.
+- **Target 5** (first mover +15-35% customers against the era on schedule): +481% to +799%. With M11's lab from 2014 the era arrives three years early; with the head start switched off the early arm is still +171% to +292% ahead from the era's demand boosts alone. Options: measure the head start itself (the same early era with and without the first-mover window: now about x2.4, which `rnd.first_mover_*` can tune down), or a scenario that pulls the era only a few months forward.
+
+Every other check: targets 1, 2 and 4 pass (8/10 seeds; x2.07; 5.2 a year); golden snapshots unchanged; the backend suite and frontend checks pass locally.
+
 ## Decisions made
 
-_(Agent fills in.)_
+- **Who pitches.** Executives with authority (the CPO now takes authority too) and the CEO for the functions no seat holder with authority covers. Kinds by seat: CPO new product and sunset; CRO region; CTO research team and data centre; COO office and assembly plant; CMO campaign; CFO buyback (once listed; rounds and loans stay 24.1 proposals). A dividend is not pitched (the buyback covers "return cash").
+- **When.** In a quarter's first month: two uniforms on stream `pitch` (36), key `(person id,)`: whether (true ambition), then which (true score). A pitch still pending at the executive's next draw lapses (no morale cost), so a long Holiday does not jam a seat.
+- **Scores and numbers.** Every candidate's score and number comes from displayed knowledge: displayed skill midpoints (category fit), public market sizes and prices, the company's own customers, costs and quotes. Candidates of all kinds rank on one scale, an estimated 24-month value in cents (a monthly case x 24; research by the cap lift on the revenue it feeds; an office by the builder pay of the roles it fills x talent weight; a campaign by its customers' revenue; a buyback last). The low and high case are central x (1 -+ spread), spread = max(0.15, 0.6 - 0.025 x the displayed seat score). A buyback's case is its amount, without a spread.
+- **Approval.** Through the normal actions as the executive (the CEO for its pitches), all or nothing; a buyback runs as the founder (a Chair's decision). On Holiday and in scripts (no `block_major`) a pitch under the limit goes ahead in phase 2; at the controls every pitch waits and blocks Continue. Approved pitches are Chair decisions, so the M13 property "the CEO takes only CEO actions" is measured on the CEO's own monthly decisions (`at_controls=True` in that test).
+- **Campaign.** A one-off spend posted to marketing now, plus awareness +25% and brand target +10% modifiers (23.2) on the product for 3 months (`pitch.campaign_*`).
+- **Sunset rule.** The state keeps no per-product customer history, so "below maintenance and shrinking for 6 months" is read as live, nobody working on it (`rotting`) and launched at least `pitch.sunset_months` ago.
+- **Follow-through measures.** New product: its MRR; region: its MRR there; data centre: spot minus own cost on the CU it serves; plant: its case; office: people in it; research: lead points gained; campaign: customers gained; sunset: the saving once sunset; buyback: its amount. "Too early" when what it created is not yet operating.
+- **Reports.** The four parts of 27.2 in one of four voices (`exec_voices.yaml`: blunt, cautious, warm, plain) chosen from displayed personality midpoints. "What I did" groups decisions by the product they name and adds where that product stands now (quality, customers): the state keeps no quarter-start product history for a before-and-after. The CEO's letter is an `exec_report` item with seat "CEO". The LLM rewrite keeps the voice, every action and every number.
+- **Eras.** The appeal bonus applies wherever segment appeal is computed (the market month and the screens), for any company holding a first-mover window. The arrival item is labelled Critical in the inbox (inbox items have no severity of their own). The era report's baseline is stored when a player company causes an era (`era_window`). The Market screen had no demand chart and no demand history is stored, so its new chart plots customers of every product in the category by month (from `product_month`), with era marks; both charts also list the marks as text.
+- **Modify.** Closes the pitch as `modified` and opens the move's own screen; the New product dialog is prefilled (`?new=<category>&segment=<segment>`), other screens open on the right page.
+- **Baselines kept.** M10c's and M13's balance arms set the pitch limit to 0 (pitches wait unanswered) so their targets read as before; 27.5 target 2's "pitches off" arm does the same.
+- **S2** re-banded to under 65 worker-minutes on CI (`S2_BUDGET`), as the brief says.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- The two target misses above (Reece's decision).
+- Modify could prefill every move's dialog (region, research, data centre, office, plant), not only a new product.
+- A product's quarter-start quality and customers could be kept so reports read "41 -> 47" rather than "now 47".
+- Rivals' executives do not pitch (out of scope); M14 adds acquisitions as a pitch kind.

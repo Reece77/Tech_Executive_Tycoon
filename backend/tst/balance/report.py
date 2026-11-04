@@ -30,8 +30,9 @@ PLAYERS: Final = ("bootstrap-frugal", "steady", "blitzscale")  # T3
 DIFFICULTY_RUNS: Final = (("steady", "easy"), ("steady", "hard"))  # T5's extra runs
 E3_MONTHS: Final = 24
 # S2 for v2 (M10d brief): what CI's nightly needs plus 25% headroom, re-set when a milestone
-# adds work per turn. M7a set 20 for v1.
-S2_BUDGET: Final = 43.0
+# adds work per turn. M7a set 20 for v1; M13b re-banded 43 -> 65 (product manager, 2026-11-03:
+# M12r measured 50-52 worker-minutes on CI on main and its branch alike; 52 plus 25%).
+S2_BUDGET: Final = 65.0
 STARTUP_YEARS_MONTHS: Final = 60  # T7: alive five years after founding
 EARLY_LEAVE_MONTHS: Final = 12  # T6
 
