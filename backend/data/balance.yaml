@@ -692,6 +692,7 @@ pitch: # executives' pitches: big moves they propose for the founder to approve 
   campaign_brand_gap: 20 # brand points below the target before the CMO pitches a campaign (27.1)
   office_seats: 25 # seats in an office the COO pitches (27.1)
   new_product_share: 0.25 # share of a segment's addressable customers a new product's central case reaches at 24 months, / (1 + products already selling there) (27.1)
+  region_capture: 1.0 # x the CRO's central case for a region (home share x demand x price x fit, grown 24 months): calibrates it against what launches reach (27.5 target 3)
   region_fit_without_office: 0.7 # the CRO's fit for a region where the company has no office (27.1; 1 with one)
   campaign_awareness_pct: 25 # % awareness a campaign adds to its product for campaign_months (a modifier, 23.2)
   campaign_brand_pct: 10 # % brand target a campaign adds for campaign_months

@@ -246,7 +246,8 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
         best: tuple[float, str, float, int] | None = None
         for m in cat.markets:
             market = state.market(cat.key, m.segment)
-            if market is None:
+            # a builders-only team reaches self-serve buyers; sales-led ones need sellers
+            if market is None or data.segment(m.segment).reach != "self_serve":
                 continue
             rivals = sum(
                 1
@@ -360,6 +361,8 @@ def _regions(state: GameState, company: int, b: Balance, data: GameData) -> list
                     continue
                 local = gf.regional_price_cents(price, region, home, data)
                 central += rm.addressable * share * fit * local
+            year = 2010 + state.turn // MONTHS_PER_YEAR  # tunable-exempt: turn 0 is 2010
+            central *= (1 + cat.growth_in(year)) ** 2 * pb.region_capture  # at 24 months
             if central <= 0:
                 continue
             cost = gf.localization_cents(cat.scope, b)
@@ -573,7 +576,9 @@ def _campaigns(state: GameState, company: int, b: Balance, data: GameData) -> li
         if gap < pb.campaign_brand_gap or customers <= 0:
             continue
         push = max(pb.campaign_min_cents, round(p.marketing_budget_cents * pb.campaign_share))
-        lift = customers * pb.campaign_lift * gap / SCORE_MAX
+        year = 2010 + state.turn // MONTHS_PER_YEAR  # tunable-exempt: turn 0 is 2010
+        organic = customers * ((1 + data.category(p.category).growth_in(year)) ** 2 - 1)
+        lift = organic + customers * pb.campaign_lift * gap / SCORE_MAX
         out.append(
             Candidate(
                 kind="campaign",
@@ -828,6 +833,19 @@ def execute(
             oid = out.state.next_ids.office
             _do(out, LeaseOffice(actor, str(p["city"]), int(p["seats"])), rng, b, data, draws)
             out.target_id = oid
+            from tst.sim.actions.geo import SetUnitOffice
+
+            hiring = sorted(
+                {
+                    plan.unit_id
+                    for plan in out.state.plans
+                    if plan.company_id == company
+                    and plan.status == "active"
+                    and plan.unit_id is not None
+                }
+            )
+            for unit_id in hiring:  # the open plans' units move in, so their hires join there
+                _do(out, SetUnitOffice(actor, unit_id, oid), rng, b, data, draws)
         case "campaign":
             _campaign(out, pitch, b)
             out.target_id = int(p["product_id"])
@@ -954,9 +972,7 @@ def measure(state: GameState, pitch: Pitch, b: Balance, data: GameData) -> int |
             office = state.office(target) if target is not None else None
             if office is None or office.status != "open":
                 return None
-            from tst.sim.geo.offices import office_members
-
-            return len(office_members(state, pitch.company_id).get(office.id, ()))
+            return max(0, _in_city(state, pitch.company_id, office.city) - pitch.baseline)
         case "campaign":
             return max(0, round(_customers(state, int(p["product_id"])) - pitch.baseline))
         case "buyback":
@@ -978,6 +994,11 @@ def _dc_saving(state: GameState, f: object, b: Balance, data: GameData) -> int:
     return round(spot * used - monthly)
 
 
+def _in_city(state: GameState, company: int, city: str) -> int:
+    """Staff who live in a city (people live where they work, 19.2)."""
+    return sum(1 for e in state.staff(company) if state.person(e.person_id).city == city)
+
+
 def baseline_of(state: GameState, pitch: Pitch) -> int:
     """The tracked measure's starting point, read when the pitch is approved."""
     p = dict(pitch.params)
@@ -988,6 +1009,8 @@ def baseline_of(state: GameState, pitch: Pitch) -> int:
             return round(_customers(state, int(p["product_id"])))
         case "sunset":
             return pitch.central  # the saving it promised; met once the product is sunset
+        case "office":
+            return _in_city(state, pitch.company_id, str(p["city"]))
     return 0
 
 
