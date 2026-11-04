@@ -49,7 +49,12 @@ def _stored(path: Path, state: GameState, data: LoadedData) -> facility_views.St
     with repository.open_session(path) as session:
         if not has_table(session, SupplyMonthRow):
             return {}
-        rows = session.scalars(select(SupplyMonthRow).where(SupplyMonthRow.turn >= since))
+        rows = session.scalars(
+            select(SupplyMonthRow).where(
+                SupplyMonthRow.turn >= since,
+                SupplyMonthRow.turn < state.turn,  # months already played only (M12r)
+            )
+        )
         return {(r.good, r.turn): good_month_from_row(r) for r in rows}
 
 

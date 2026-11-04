@@ -441,3 +441,26 @@ def test_cloud_features_follow_the_infrastructure_lead(loaded: LoadedData) -> No
     assert cloud is not None
     category = loaded.game_data.category("cloud_hosting")
     assert feature_score(cloud.feature_points, category, state.turn) == pytest.approx(70)
+
+
+def test_a_future_month_in_memory_is_never_current(loaded: LoadedData) -> None:
+    """M12r finding 3: the quote and contract path (goods.current) and the view enforce the
+    cutoff themselves: a month after the state's turn is ignored, whatever was loaded."""
+    from tst.api.facility_views import components_out
+
+    rng = RngFactory(5)
+    state = fresh_game(loaded)
+    for turn in range(210):
+        state = goods.supply_phase(replace(state, turn=turn), rng, loaded.balance, loaded.game_data)
+    state = replace(state, turn=210)
+    played = {g.good: g for g in state.supply}
+    future = tuple(replace(g, turn=230, index=7.654321, allocation=0.4321) for g in state.supply)
+    ahead = replace(state, supply=future)
+    for g in ("server", "gpu"):
+        assert goods.index_now(ahead, g, loaded.game_data) != 7.654321
+        assert goods.allocation_now(ahead, g, loaded.game_data) != 0.4321
+        assert goods.current(state, g, loaded.game_data) == played[g]
+    mixed = replace(state, supply=(*state.supply[1:], future[0]))
+    shown = components_out(mixed, loaded, {})
+    assert all(c.index != 7.654321 and c.allocation != 0.4321 for c in shown)
+    assert all(p.turn <= 209 for c in shown for p in c.history)

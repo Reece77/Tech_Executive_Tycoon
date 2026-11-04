@@ -40,13 +40,15 @@ type Stored = Mapping[tuple[str, int], GoodMonth]
 
 
 def current_turn(state: GameState, data: LoadedData) -> int:
-    """The latest month the player may see an index for (22.6)."""
+    """The latest month the player may see an index for (22.6): the month being played
+    while there is history, then the last month played, never later, whatever was loaded
+    (M12r)."""
     components = data.game_data.components
     assert components is not None
     if state.turn <= components.last_turn:
         return state.turn
     latest = [g.turn for g in state.supply]
-    return min(latest) if latest else components.last_turn
+    return min([*latest, state.turn - 1]) if latest else components.last_turn
 
 
 def month_at(

@@ -159,21 +159,72 @@ def _jump_past_history(path: Path, loaded: LoadedData, to_turn: int) -> list:
     return months
 
 
+def _plant_future(path: Path, months: list, turn: int) -> tuple[float, float]:  # type: ignore[type-arg]
+    """M12r finding 3: write a supply_month row for every good at `turn`, ahead of the save,
+    with unmistakable values; returns them."""
+    from tst.db.state_io import good_month_to_row
+
+    index, allocation = 7.654321, 0.4321
+    with open_session(path) as session, session.begin():
+        for g in months[-1]:
+            session.add(
+                good_month_to_row(replace(g, turn=turn, index=index, allocation=allocation))
+            )
+    return index, allocation
+
+
+def _shown(text: str, index: float, allocation: float) -> bool:
+    return any(v in text for v in (str(index), "7.654", "7.65432", str(allocation), "0.4321"))
+
+
 def test_no_future_index_after_2025(setup: tuple[Client, Path, Path], loaded: LoadedData) -> None:
-    """The API shows indexes up to the month just played, never the next (22.6)."""
+    """The API shows indexes up to the month just played, never the next (22.6): a planted
+    row for the month about to be played (turn = the save's turn) is not shown."""
     api, path, _ = setup
     now = ym_to_turn(2027, 6)
     months = _jump_past_history(path, loaded, now)
+    index, allocation = _plant_future(path, months, now)
     out = api.get(f"{BASE}/infrastructure")
     server = out["components"][0]
     assert max(p["turn"] for p in server["history"]) == now - 1
     assert server["index"] == pytest.approx(months[-1][0].index)
-    state = replace(load_state_at(path), turn=now)
-    ahead = goods.supply_phase(state, RngFactory(5), loaded.balance, loaded.game_data)
-    text = json.dumps(out)
-    for g in ahead.supply:
-        assert g.turn == now
-        assert str(round(g.index, 6))[:8] not in text
+    assert not _shown(json.dumps(out), index, allocation)
+
+
+def test_a_planted_future_supply_row_is_never_used(
+    setup: tuple[Client, Path, Path], loaded: LoadedData
+) -> None:
+    """M12r finding 3 (Codex review 3): a supply_month row for turn 230 at save turn 210 is
+    neither loaded nor shown, and no quote or contract uses it (22.6, 22.9)."""
+    api, path, _ = setup
+    now = ym_to_turn(2027, 7)
+    assert now == 210
+    months = _jump_past_history(path, loaded, now)
+    preview = (
+        f"{BASE}/infrastructure/build-preview?kind=data_centre_gpu&region=north_america&units=100"
+    )
+    urls = (f"{BASE}/infrastructure", preview, f"/api/saves/{SAVE}/overview")
+    before = [api.client.get(u).text for u in urls]
+    index, allocation = _plant_future(path, months, 230)
+    after = [api.client.get(u).text for u in urls]
+    assert after == before
+    assert not any(_shown(t, index, allocation) for t in after)
+    state = load_state_at(path)
+    assert state.turn == now and {g.turn for g in state.supply} == {now - 1}
+    signed = api.post(
+        f"{BASE}/infrastructure/contracts", {"good": "gpu", "months": 12, "volume": 100}
+    )
+    [contract] = signed["infrastructure"]["contracts"]
+    gpu = next(g for g in months[-1] if g.good == "gpu")
+    assert contract["index"] == pytest.approx(gpu.index) and contract["index"] != index
+    assert not _shown(json.dumps(signed), index, allocation)
+    built = api.post(
+        f"{BASE}/infrastructure/facilities",
+        {"kind": "data_centre_gpu", "region": "north_america", "units": 100},
+    )
+    [facility] = built["infrastructure"]["facilities"]
+    assert facility["capex_cents"] == json.loads(before[1])["capex_cents"]
+    assert not _shown(json.dumps(built), index, allocation)
 
 
 def load_state_at(path: Path):  # type: ignore[no-untyped-def]
