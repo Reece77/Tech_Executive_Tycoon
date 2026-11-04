@@ -183,3 +183,50 @@ def state_eras():  # type: ignore[no-untyped-def]
     from tst.loader import load_all
 
     return load_all(Settings().data_dir).game_data.eras.eras
+
+
+def _twin(tmp_path: Path, loaded: LoadedData, name: str, lead: float) -> tuple[Client, Path]:
+    """A save like the fixture's with IBM's devices lead planted and an ARR so large that
+    every licence is unaffordable."""
+    save_dir = tmp_path / name
+    path = _build(save_dir, loaded)
+    with open_session(path) as session, session.begin():
+        before = load_state(session)
+        rich = replace(before.player, mrr_history=(10_000_000_000_000,))
+        state = replace(
+            before,
+            companies=tuple(rich if c.id == rich.id else c for c in before.companies),
+            research_leads=(ResearchLead(IBM, "devices", lead),),
+        )
+        sync_state(session, before, state)
+    app = create_app()
+    app.dependency_overrides[get_settings] = lambda: Settings(save_dir=save_dir)
+    return Client(TestClient(app)), path
+
+
+def test_licence_requests_do_not_distinguish_true_leads(tmp_path: Path, loaded: LoadedData) -> None:
+    """M12r finding 1: two rivals whose true leads differ but whose displayed ranges are the
+    same give byte-identical responses to the same failed, unaffordable and fractional
+    requests, in and out, and the same Research screen (21.7)."""
+    from tests.unit.test_research_licence_oracle import _sibling
+    from tst.sim.research.projects import add_lead
+
+    a, path = _twin(tmp_path, loaded, "a", 23.4567)
+    with open_session(path) as session:
+        state = load_state(session)
+    other = _sibling(loaded, add_lead(state, IBM, "devices", -23.4567), 23.4567)
+    assert abs(other - 23.4567) > 0.3
+    b, _ = _twin(tmp_path, loaded, "b", other)
+    screen = a.client.get(f"{BASE}/research")
+    assert screen.text == b.client.get(f"{BASE}/research").text
+    devices = next(r for r in screen.json()["rivals"] if r["domain"] == "devices")
+    ceiling = next(r for r in devices["rivals"] if r["company_id"] == IBM)["max_points"]
+    points: list[float] = [ceiling + 1, ceiling, 1, 1.5, 13.4, 13.5, 1e-9]
+    points += [p / 4 for p in range(1, 4 * 30)]
+    for way in ("in", "out"):
+        for p in points:
+            body = {"company_id": IBM, "domain": "devices", "points": p}
+            ra = a.client.post(f"{BASE}/research/licenses/{way}", json=body)
+            rb = b.client.post(f"{BASE}/research/licenses/{way}", json=body)
+            assert ra.status_code != 200, (way, p)
+            assert (ra.status_code, ra.text) == (rb.status_code, rb.text), (way, p)

@@ -155,13 +155,14 @@ def supply_phase(state: GameState, rng: RngFactory, balance: Balance, data: Game
 
 def current(state: GameState, good: str, data: GameData) -> GoodMonth:
     """The month the player is in: history while there is history, else the latest month
-    phase 4 set (never a month ahead, 22.6)."""
+    phase 4 set (never a month ahead, 22.6): a month after the state's turn is ignored,
+    whatever was loaded (M12r)."""
     history = _components(data).good(good)
     known = history_month(history, state.turn)
     if known is not None:
         return known
     latest = state.good_month(good)
-    if latest is not None:
+    if latest is not None and latest.turn <= state.turn:
         return latest
     last = history_month(history, history.last_turn)
     assert last is not None

@@ -441,3 +441,78 @@ def test_cloud_features_follow_the_infrastructure_lead(loaded: LoadedData) -> No
     assert cloud is not None
     category = loaded.game_data.category("cloud_hosting")
     assert feature_score(cloud.feature_points, category, state.turn) == pytest.approx(70)
+
+
+def test_a_future_month_in_memory_is_never_current(loaded: LoadedData) -> None:
+    """M12r finding 3: the quote and contract path (goods.current) and the view enforce the
+    cutoff themselves: a month after the state's turn is ignored, whatever was loaded."""
+    from tst.api.facility_views import components_out
+
+    rng = RngFactory(5)
+    state = fresh_game(loaded)
+    for turn in range(210):
+        state = goods.supply_phase(replace(state, turn=turn), rng, loaded.balance, loaded.game_data)
+    state = replace(state, turn=210)
+    played = {g.good: g for g in state.supply}
+    future = tuple(replace(g, turn=230, index=7.654321, allocation=0.4321) for g in state.supply)
+    ahead = replace(state, supply=future)
+    for g in ("server", "gpu"):
+        assert goods.index_now(ahead, g, loaded.game_data) != 7.654321
+        assert goods.allocation_now(ahead, g, loaded.game_data) != 0.4321
+        assert goods.current(state, g, loaded.game_data) == played[g]
+    mixed = replace(state, supply=(*state.supply[1:], future[0]))
+    shown = components_out(mixed, loaded, {})
+    assert all(c.index != 7.654321 and c.allocation != 0.4321 for c in shown)
+    assert all(p.turn <= 209 for c in shown for p in c.history)
+
+
+def _cloud_outage(loaded: LoadedData, home: float, foreign: float, region: str, abroad: str):  # type: ignore[no-untyped-def]
+    """A 500-CU data centre in `region` selling Cloud hosting to `home` SMB customers at home
+    and `foreign` in `abroad`, no products of its own; then an outage there (22.5)."""
+    from tst.sim.facilities.outages import apply_outages
+    from tst.sim.geo.models import RegionalSegment
+    from tst.sim.state import with_product_segment, with_regional_segment
+
+    state = _live(fresh_game(loaded), loaded, capacity=500, region=region)
+    state = _act(state, SellCapacity(_founder(state)), loaded).new_state
+    cloud = compute.capacity_product(state, 1, loaded.game_data)
+    assert cloud is not None
+    seg = state.product_segment(cloud.id, "smb")
+    assert seg is not None
+    state = with_product_segment(state, replace(seg, customers=home))
+    if foreign:
+        state = with_regional_segment(
+            state, RegionalSegment(cloud.id, abroad, "smb", seg.price_cents, customers=foreign)
+        )
+    alloc = compute.allocate(state, 1, loaded.balance, loaded.game_data)
+    (f,) = state.facilities
+    assert alloc.sold.get(f.id, 0.0) == pytest.approx((home + foreign) * 4)
+    after, _ = apply_outages(state, [f.id], loaded.balance, loaded.game_data)
+    return after, cloud.id
+
+
+def test_overseas_cloud_customers_churn_in_an_outage(loaded: LoadedData) -> None:
+    """M12r finding 4 (Codex review 3): 100 European SMB Cloud customers on a European site,
+    none at home: at base churn 0.03 and multiplier 3 the outage removes 6 of them, the
+    outage records 6 lost and the event targets that segment (22.5, 22.9)."""
+    assert loaded.game_data.segment("smb").base_churn == 0.03
+    assert loaded.balance.facility.outage.cloud_churn_mult == 3
+    after, cloud = _cloud_outage(loaded, 0.0, 100.0, "europe", "europe")
+    (rseg,) = after.regional_segments_of(cloud)
+    assert rseg.customers == pytest.approx(94.0)
+    (outage,) = after.outages
+    assert outage.customers_lost == pytest.approx(6.0)
+    (queued,) = after.queued
+    assert (queued.product_id, queued.segment) == (cloud, "smb")
+
+
+def test_mixed_home_and_foreign_cloud_customers_churn_in_an_outage(loaded: LoadedData) -> None:
+    """50 home and 50 Latin American SMB customers on one North American site (Latin
+    America's neighbour): 3 lost in each."""
+    after, cloud = _cloud_outage(loaded, 50.0, 50.0, "north_america", "latin_america")
+    seg = after.product_segment(cloud, "smb")
+    (rseg,) = after.regional_segments_of(cloud)
+    assert seg is not None
+    assert seg.customers == pytest.approx(47.0) and rseg.customers == pytest.approx(47.0)
+    (outage,) = after.outages
+    assert outage.customers_lost == pytest.approx(6.0)

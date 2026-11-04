@@ -948,7 +948,10 @@ def _load_facilities(session: Session, state: GameState) -> GameState:
         )
     )
     latest: dict[str, GoodMonth] = {}
-    last_turn = session.scalar(select(func.max(SupplyMonthRow.turn)))
+    # only months already played (M12r): a row at or after the save's turn is never loaded
+    last_turn = session.scalar(
+        select(func.max(SupplyMonthRow.turn)).where(SupplyMonthRow.turn < turn)
+    )
     if last_turn is not None:
         for r in session.scalars(select(SupplyMonthRow).where(SupplyMonthRow.turn == last_turn)):
             latest[r.good] = good_month_from_row(r)

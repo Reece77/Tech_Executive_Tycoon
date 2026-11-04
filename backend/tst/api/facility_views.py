@@ -40,13 +40,15 @@ type Stored = Mapping[tuple[str, int], GoodMonth]
 
 
 def current_turn(state: GameState, data: LoadedData) -> int:
-    """The latest month the player may see an index for (22.6)."""
+    """The latest month the player may see an index for (22.6): the month being played
+    while there is history, then the last month played, never later, whatever was loaded
+    (M12r)."""
     components = data.game_data.components
     assert components is not None
     if state.turn <= components.last_turn:
         return state.turn
     latest = [g.turn for g in state.supply]
-    return min(latest) if latest else components.last_turn
+    return min([*latest, state.turn - 1]) if latest else components.last_turn
 
 
 def month_at(
@@ -200,7 +202,7 @@ def facility_out(
     )
 
 
-def contracts_out(state: GameState, data: LoadedData) -> list[ContractOut]:
+def contracts_out(state: GameState, data: LoadedData, company_id: int) -> list[ContractOut]:
     components = data.game_data.components
     assert components is not None
     tp = data.balance.supply.take_or_pay
@@ -218,7 +220,7 @@ def contracts_out(state: GameState, data: LoadedData) -> list[ContractOut]:
             take_or_pay_cents=round(c.remaining * exact(c.unit_value_cents) * exact(tp)),
             settled_cents=c.settled_cents,
         )
-        for c in sorted(state.company_contracts(state.player.id), key=lambda c: -c.id)
+        for c in sorted(state.company_contracts(company_id), key=lambda c: -c.id)
     ]
 
 
@@ -231,9 +233,10 @@ def _price_per_unit(rows: list[tuple[float, float, int | None]]) -> int | None:
     return round(sum(c * (p or 0) for c, _, p in rows) / units)
 
 
-def cloud_out(state: GameState, alloc: compute.Allocation, data: LoadedData) -> CloudOut:
+def cloud_out(
+    state: GameState, alloc: compute.Allocation, data: LoadedData, company: int
+) -> CloudOut:
     b, d = data.balance, data.game_data
-    company = state.player.id
     category = d.category(b.compute.capacity_category)
     units = {m.segment: m.units_per_customer for m in category.markets}
     product = compute.capacity_product(state, company, d)
@@ -310,9 +313,12 @@ def cloud_out(state: GameState, alloc: compute.Allocation, data: LoadedData) -> 
     )
 
 
-def infrastructure_out(state: GameState, data: LoadedData, stored: Stored) -> InfrastructureOut:
+def infrastructure_out(
+    state: GameState, data: LoadedData, stored: Stored, company: int
+) -> InfrastructureOut:
+    """The Infrastructure screen of one company (ADR-0020 1): the route resolves which
+    (M12r)."""
     b, d = data.balance, data.game_data
-    company = state.player.id
     alloc = compute.allocate(state, company, b, d)
     facilities = [
         facility_out(state, f, alloc, data)
@@ -329,8 +335,8 @@ def infrastructure_out(state: GameState, data: LoadedData, stored: Stored) -> In
         facilities=facilities,
         total_live_units=sum(f.live_units for f in facilities),
         total_building_units=sum(f.units - f.live_units for f in facilities),
-        contracts=contracts_out(state, data),
-        cloud=cloud_out(state, alloc, data),
+        contracts=contracts_out(state, data, company),
+        cloud=cloud_out(state, alloc, data, company),
         kinds=[
             KindOut(
                 key=key,
@@ -370,9 +376,9 @@ def build_preview(
     contract_id: int | None,
     balances: LedgerBalances,
     data: LoadedData,
+    company: int,
 ) -> BuildPreviewOut:
     b, d = data.balance, data.game_data
-    company = state.player.id
     q = lifecycle.quote(state, company, kind, region, capacity, b, d, contract_id)
     k = b.facility.kinds[kind]
     full = ff.monthly_cost_cents(capacity, q.capex_cents, k.life_months, k.opex_per_unit_cents)

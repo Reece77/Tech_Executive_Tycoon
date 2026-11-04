@@ -12,7 +12,7 @@ from tst.sim.research import levels
 from tst.sim.research.data import EraDef, rate_in
 from tst.sim.research.models import EraArrival
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, with_era_arrival
+from tst.sim.state import GameState, player_companies, with_era_arrival
 
 
 def base_growth(data: GameData, category: str, year: int) -> float:
@@ -113,22 +113,31 @@ def arrive_eras(
         cid = found[0] if found else None
         arrival = EraArrival(era.key, state.turn, cid, max(0, hist - state.turn))
         state = with_era_arrival(state, arrival)
-        logs.append(era_news(state, data, balance, era, arrival))
+        logs += [  # every company the player controls hears (ADR-0020 1; M12r)
+            era_news(state, data, balance, era, arrival, c.id) for c in player_companies(state)
+        ]
     return state, tuple(logs)
 
 
 def era_news(
-    state: GameState, data: GameData, balance: Balance, era: EraDef, arrival: EraArrival
+    state: GameState,
+    data: GameData,
+    balance: Balance,
+    era: EraDef,
+    arrival: EraArrival,
+    observer_id: int,
 ) -> LogItem:
-    """The player's inbox note for an arrived era (21.4): who caused it, how early, and the
-    first mover's head start when it is the player's."""
-    player = state.player.id
-    if arrival.company_id is None:
+    """One player company's inbox note for an arrived era (21.4): who caused it, how
+    early, and the first mover's head start when the observer caused it. The causing
+    company is named apart from the observer, so another company of the player's group is
+    named, not called "your research" (ADR-0020 1; M12r)."""
+    causer = arrival.company_id
+    if causer is None:
         who = "on schedule"
-    elif arrival.company_id == player:
+    elif causer == observer_id:
         who = f"{arrival.months_early} months early, pulled forward by your research"
     else:
-        name = state.company(arrival.company_id).name
+        name = state.company(causer).name
         who = f"{arrival.months_early} months early, pulled forward by {name}"
     categories = ", ".join(data.category(c).label for c in era.categories) or "no market yet"
     rnd = balance.rnd
@@ -137,12 +146,12 @@ def era_news(
         f" products get +{rnd.first_mover_cap:g} on their quality cap and"
         f" +{rnd.first_mover_brand:g} on their brand target, and your"
         f" {levels.domain_def(data, era.domain).label} lead does not decay."
-        if arrival.company_id == player
+        if causer == observer_id
         else ""
     )
     return inbox_item(
         state.turn,
-        player,
+        observer_id,
         "era_arrived",
         era=era.label,
         when=who,

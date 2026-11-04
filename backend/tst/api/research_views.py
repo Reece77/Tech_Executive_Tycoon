@@ -7,8 +7,6 @@ skill ranges it sees; eras still to come show thresholds and no historical dates
 
 from __future__ import annotations
 
-import math
-
 from tst.api.schemas.research import (
     CategoryTechOut,
     DomainOut,
@@ -37,9 +35,8 @@ def _r1(x: float) -> float:
     return round(x, 1)
 
 
-def domains_out(state: GameState, data: LoadedData) -> list[DomainOut]:
+def domains_out(state: GameState, data: LoadedData, cid: int) -> list[DomainOut]:
     g, b = data.game_data, data.balance
-    cid = state.player.id
     out = []
     for d in levels.domain_keys(g):
         era = estimates.next_era(state, g, d)
@@ -60,9 +57,8 @@ def domains_out(state: GameState, data: LoadedData) -> list[DomainOut]:
     return out
 
 
-def categories_out(state: GameState, data: LoadedData) -> list[CategoryTechOut]:
+def categories_out(state: GameState, data: LoadedData, cid: int) -> list[CategoryTechOut]:
     g, b = data.game_data, data.balance
-    cid = state.player.id
     out = []
     for cat in g.categories:
         f = levels.tech_factor(state, cid, cat.key, b, g)
@@ -79,8 +75,8 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryTechOut]:
     return out
 
 
-def _researchers(state: GameState, data: LoadedData, unit_id: int) -> int:
-    view = org_view(state, state.player.id)
+def _researchers(state: GameState, data: LoadedData, cid: int, unit_id: int) -> int:
+    view = org_view(state, cid)
     count = 0
     for pid in view.members.get(unit_id, ()):
         e = state.employment_of(pid)
@@ -91,18 +87,16 @@ def _researchers(state: GameState, data: LoadedData, unit_id: int) -> int:
     return count
 
 
-def projects_out(state: GameState, data: LoadedData) -> list[ProjectOut]:
+def projects_out(state: GameState, data: LoadedData, cid: int) -> list[ProjectOut]:
     g, b = data.game_data, data.balance
-    cid = state.player.id
     view = org_view(state, cid)
     out = []
     for p in state.active_projects(cid):
         if p.unit_id is None:
             continue
         unit = state.unit(p.unit_id)
-        work = lab(state, view, p, b, g)
-        shown = estimates.shown_lab(state, cid, work, p.domain, b, g)
-        look = estimates.outlook(state, cid, p.domain, shown, b, g)
+        work = lab(state, view, p, b, g, estimate=True)  # 18.8, 21.7 (M12r)
+        look = estimates.outlook(state, cid, p.domain, work, b, g)
         era = estimates.next_era(state, g, p.domain)
         early = None
         if era is not None and look.months is not None:
@@ -134,29 +128,29 @@ def projects_out(state: GameState, data: LoadedData) -> list[ProjectOut]:
     return out
 
 
-def units_out(state: GameState, data: LoadedData) -> list[UnitChoiceOut]:
+def units_out(state: GameState, data: LoadedData, cid: int) -> list[UnitChoiceOut]:
     return [
-        UnitChoiceOut(unit_id=u.id, name=u.name, researchers=_researchers(state, data, u.id))
-        for u in state.active_units(state.player.id)
+        UnitChoiceOut(unit_id=u.id, name=u.name, researchers=_researchers(state, data, cid, u.id))
+        for u in state.active_units(cid)
         if u.product_id is None and state.unit_project(u.id) is None
     ]
 
 
-def rivals_out(state: GameState, data: LoadedData) -> list[DomainRivalsOut]:
+def rivals_out(state: GameState, data: LoadedData, me: int) -> list[DomainRivalsOut]:
     """Every rival's lead in each domain as a range, with what licensing would allow; the
-    limits use the range's low end, so the player never learns the exact gap (21.7)."""
+    limits are the actions' own public ceilings (the range's low end in, high end out), so
+    the player never learns the exact gap (21.7, M12r)."""
     g, b = data.game_data, data.balance
-    me = state.player.id
-    margin = b.rnd.license.margin
     out = []
     for d in levels.domain_keys(g):
-        mine = state.research_lead(me, d)
         rows = []
         for c in state.rivals():
+            if c.id == me:
+                continue
             low, high = estimates.lead_range(state, me, c.id, d, b, g)
             why = licensing.refusal(state, g, b, me, c.id, d)
-            safe_in = max(0, math.floor(low - margin - mine))
-            safe_out = max(0, math.floor(mine - margin - high))
+            safe_in = licensing.public_license_in_limit(state, b, g, me, c.id, d)
+            safe_out = licensing.public_license_out_limit(state, b, g, me, c.id, d)
             rows.append(
                 RivalLeadOut(
                     company_id=c.id,
@@ -167,9 +161,7 @@ def rivals_out(state: GameState, data: LoadedData) -> list[DomainRivalsOut]:
                     high=high,
                     licensed=any(x.involves(me, c.id) for x in state.licenses),
                     can_license_in=why is None and safe_in > 0,
-                    why_not=why
-                    if why
-                    else (None if safe_in > 0 else "their lead is too close to yours"),
+                    why_not=why,  # None only when the public ceiling is above 0 (M12r)
                     max_points=safe_in if why is None else 0,
                     can_license_out=safe_out > 0,
                     max_out_points=safe_out,
@@ -182,9 +174,8 @@ def rivals_out(state: GameState, data: LoadedData) -> list[DomainRivalsOut]:
     return out
 
 
-def licenses_out(state: GameState, data: LoadedData) -> list[LicenseOut]:
+def licenses_out(state: GameState, data: LoadedData, me: int) -> list[LicenseOut]:
     g = data.game_data
-    me = state.player.id
     out = []
     for x in state.licenses:
         if me not in (x.licensor_id, x.licensee_id):
@@ -227,11 +218,10 @@ def _accelerates(data: LoadedData, era: EraDef) -> str:
     return "; ".join(parts)
 
 
-def eras_out(state: GameState, data: LoadedData) -> list[EraOut]:
+def eras_out(state: GameState, data: LoadedData, me: int) -> list[EraOut]:
     """Arrived eras (when, on schedule or early, and who caused them), the next one per
     domain, and later ones with thresholds; no historical date of an era to come (21.4)."""
     g, b = data.game_data, data.balance
-    me = state.player.id
     rnd = b.rnd
     reward = (
         f"For {rnd.first_mover_months} months: +{rnd.first_mover_cap:g} quality cap and "
@@ -273,21 +263,20 @@ def _window(era: EraDef) -> str | None:
     return f"expected {y1}\u2013{y2}"
 
 
-def research_out(state: GameState, data: LoadedData) -> ResearchOut:
+def research_out(state: GameState, data: LoadedData, company_id: int) -> ResearchOut:
+    """The Research screen of one company (ADR-0020 1): the route resolves which (M12r)."""
     b = data.balance
     lic = b.rnd.license
     return ResearchOut(
-        domains=domains_out(state, data),
-        categories=categories_out(state, data),
-        projects=projects_out(state, data),
-        units=units_out(state, data),
-        rivals=rivals_out(state, data),
-        licenses=licenses_out(state, data),
-        eras=eras_out(state, data),
+        domains=domains_out(state, data, company_id),
+        categories=categories_out(state, data, company_id),
+        projects=projects_out(state, data, company_id),
+        units=units_out(state, data, company_id),
+        rivals=rivals_out(state, data, company_id),
+        licenses=licenses_out(state, data, company_id),
+        eras=eras_out(state, data, company_id),
         decay_pct=b.rnd.decay * PERCENT,
-        price_per_point_cents=license_price_cents(
-            1, licensing.arr_cents(state, state.player.id), b
-        ),
+        price_per_point_cents=license_price_cents(1, licensing.arr_cents(state, company_id), b),
         margin=lic.margin,
         royalty_pct=lic.royalty_bp / PERCENT_BP,
         royalty_months=lic.royalty_months,

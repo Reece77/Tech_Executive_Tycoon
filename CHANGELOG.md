@@ -4,6 +4,18 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M12r Fixes from Codex review 3 (`docs/reviews/codex-review-3.md`, Resolution):
+  - Licence actions offer the Research screen's public ceiling (the displayed range's low end in, high end out, minus the margin) in whole points, checked before cash and energy; the licensor's refusal reads the same ceiling, so no response distinguishes two rivals with the same displayed range (finding 1).
+  - The Research screen's lab is built from estimates (`projects.lab(..., estimate=True)`): displayed skills, noticed tags and executive seat factors from displayed ranges (finding 2).
+  - Supply months at or after the save's turn are never loaded, shown or used by quotes and contracts; the view and `goods.current` hold the cutoff themselves (finding 3).
+  - An outage's extra Cloud churn applies to overseas Cloud customers too, with complete loss accounting (finding 4).
+  - A rival's research premium is paid in all six monthly payrolls; the extra builders return in phase 1 of the next month (finding 5).
+  - An AI researcher's budget is multiplied as exact fractions and rounded half-to-even once (finding 6). Finding 7 was fixed by M12b (96bacd7).
+  - Research and infrastructure view builders take a company id; era news goes to every company in `player_companies` and names the causing company (finding 8).
+  - Data dictionary: one column table per heading for the M11 and M12a tables, migration `0029_facilities` (finding 9).
+  - Turn-time headroom: the product perf test times the median of three blocks after a warm-up (limit 1.0 s unchanged) and reads the state through the screens' cached read path; profile and numbers in the brief.
+  - Golden snapshots unchanged. Nightly guards: the balance table identical to M12b's; S2 read 50 worker-minutes on today's runners, as `main` does (51.9), against 37.1 at M12b (reported in the brief).
+
 - M12b Hardware, devices and fabless chips (formulas.md §26, lane A):
   - Unit-sale markets (`revenue_model: units`): devices, servers and three chip categories (mobile SoCs, server CPUs, AI accelerators); a new `device_oems` segment; replacement cycles as base churn; units sold once at `price x units`; the capacity cap with lost demand going to the next-best product; launch needs quality 30 and a manufacturing source.
   - Bills of materials from new goods (`device_bom`, `server_bom`, `equipment`, `foundry_wafer` in `components_history.yaml`, with the 2021 shortage and the 2023-2024 advanced-node crunch) and cost of goods at sale (`5000_cogs`); contract manufacturing (Foxconn, Pegatron) with monthly take-or-pay and shortage allocation; own assembly plants (`assembly_plant` facility kind) with seeded yield (stream `manufacturing`, 30), fixed and per-unit costs, staffing by a new manufacturing-engineer role; selling spare plant capacity in `contract_manufacturing`.

@@ -1078,58 +1078,6 @@ A CFO or COO proposal waiting for the player (24.1). Pending proposals block Con
 | `status` | VARCHAR(10) | no | `pending`, `approved`, `declined` or `lapsed`. |
 | `resolved_turn` | INTEGER | yes | When it was answered. |
 
-## Facilities, market goods and contracts (migration `0028_facilities`, M12a)
-
-One facility model with kinds and one market-good model (ADR-0020 2-3; formulas.md 22). Existing saves start with no rows; their goods follow `components_history.yaml`.
-
-### facility
-
-A facility (22.2): a general or GPU data centre in M12a, more kinds later. The state holds facilities that are not closed; a closed one keeps its row.
-
-| Column | Type | Null | Meaning |
-| --- | --- | --- | --- |
-| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
-| `company_id` | INTEGER FK company | no | The owner. |
-| `kind` | VARCHAR(32) | no | `balance.facility.kinds` key: `data_centre_general` or `data_centre_gpu`. |
-| `region` | VARCHAR(32) | no | regions.yaml key; it serves this region and the region whose neighbour it is (19.5). |
-| `city` | VARCHAR(32) | yes | cities.yaml key; null for a regional site (for v3's sited kinds). |
-| `capacity` | INTEGER | no | Units ordered (CU for data centres). |
-| `on_time` | INTEGER | no | Units live from `ready_turn`; the rest from `late_turn` (a component shortage, 22.4). |
-| `ordered_turn` | INTEGER | no | The month the build was ordered. |
-| `ready_turn` | INTEGER | no | The month it goes live: ordered + the kind's build months. |
-| `late_turn` | INTEGER | no | The month the late units arrive (equal to `ready_turn` when none are late). |
-| `capex_cents` | BIGINT | no | The whole build's capex at the input good's index (a contract's for the units it covers). |
-| `input_index` | FLOAT | no | The average index the capex was priced at. |
-| `capex_paid_cents` | BIGINT | no | Capex paid so far, in equal monthly parts until `ready_turn` (to `1500_ppe`). |
-| `depreciated_cents` | BIGINT | no | Depreciation booked so far (to `6700_depreciation` against `1510_accumulated_depreciation`). Book value is paid less depreciated, never below 0. |
-| `status` | VARCHAR(16) | no | `building`, `live` or `closed`. |
-| `unit_id` | INTEGER | yes | The org unit whose infrastructure people staff it (no FK). |
-| `contract_id` | INTEGER | yes | The component contract it drew on. |
-| `closed_turn` | INTEGER | yes | When it was sold. |
-| `yield_rate` | FLOAT | no | M12b (0030), assembly plants: this month's yield after noise (stream `manufacturing`); 0 for data centres and before a plant's first live month. |
-| `run_units` | FLOAT | no | M12b: units a plant ran last month for its company's own products. |
-| `sold_units` | FLOAT | no | M12b: units a plant ran last month for contract-manufacturing customers. |
-
-### supply_month
-
-One market good's month (22.4). Rows exist only for months already played; the API shows months up to the current one, never later.
-
-| Column | Type | Null | Meaning |
-| --- | --- | --- | --- |
-| `good` | VARCHAR(32) | no | components_history.yaml key (`server`, `gpu`); with `turn`, the primary key. |
-| `turn` | INTEGER | no | The month. |
-| `price_index` | FLOAT | no | The index (January 2010 = 1.0). |
-| `allocation` | FLOAT | no | Share of a build's units delivered on time (1.0 outside shortages). |
-| `base` | FLOAT | no | The index without a shock's rise. |
-| `change` | FLOAT | no | The trend's yearly change (fraction); after 2025 an AR(1) step each January. |
-| `shock_turn` | INTEGER | yes | The latest shock's first month (after 2025 only). |
-| `shock_months` | INTEGER | no | How long it runs. |
-| `shock_rise` | FLOAT | no | Its rise on the trend (fraction), fading after it ends. |
-| `shock_allocation` | FLOAT | no | Allocation while it runs. |
-
-### supply_contract
-
-A component contract (22.4): a locked index for a volume of builds, take-or-pay at the end.
 ## Research and eras (migration `0028_research`, M11)
 
 Every row belongs to a company (ADR-0020) except `era_arrival`, which is the world's. Existing saves start with no leads, projects or licences; eras whose historical month is before the save's turn are recorded as arrived on schedule.
@@ -1151,20 +1099,6 @@ A research project (21.3), or a rival's research action (21.6) when `unit_id` is
 | Column | Type | Null | Meaning |
 | --- | --- | --- | --- |
 | `id` | INTEGER | no | Primary key. |
-| `company_id` | INTEGER FK company | no | The buyer. |
-| `good` | VARCHAR(32) | no | The component. |
-| `price_index` | FLOAT | no | The locked index. |
-| `signed_turn` | INTEGER | no | When it was signed. |
-| `end_turn` | INTEGER | no | Its last month. |
-| `volume` | INTEGER | no | Units of builds it covers. |
-| `unit_value_cents` | BIGINT | no | Capex of one unit at the locked index (for take-or-pay). |
-| `used` | INTEGER | no | Units built on it. |
-| `status` | VARCHAR(16) | no | `active` or `settled`. |
-| `settled_cents` | BIGINT | no | The take-or-pay charge when it ended. |
-
-### facility_outage
-
-A data-centre outage (22.5). The state holds the last 24 months.
 | `company_id` | INTEGER FK company | no | The company researching. |
 | `domain` | VARCHAR(32) | no | The domain researched. |
 | `unit_id` | INTEGER | yes | The org unit working on it; NULL for a rival's research action. |
@@ -1195,6 +1129,89 @@ A licence of research lead from one company to another (21.5).
 | Column | Type | Null | Meaning |
 | --- | --- | --- | --- |
 | `id` | INTEGER | no | Primary key. |
+| `licensor_id` | INTEGER FK company | no | The company whose know-how it is. |
+| `licensee_id` | INTEGER FK company | no | The company that gained the points. |
+| `domain` | VARCHAR(32) | no | The domain. |
+| `points` | FLOAT | no | Lead points granted. |
+| `turn` | INTEGER | no | The month it was signed. |
+| `price_cents` | BIGINT | no | Paid once by the licensee (licensing in); 0 for a royalty licence. |
+| `royalty_bp` | INTEGER | no | Basis points of the licensee's monthly revenue in the domain's categories (licensing out); 0 if none. |
+| `royalty_end_turn` | INTEGER | yes | The last month the royalty is paid. |
+
+## Facilities, market goods and contracts (migration `0029_facilities`, M12a)
+
+One facility model with kinds and one market-good model (ADR-0020 2-3; formulas.md 22). Existing saves start with no rows; their goods follow `components_history.yaml`.
+
+### facility
+
+A facility (22.2): a general or GPU data centre in M12a, more kinds later. The state holds facilities that are not closed; a closed one keeps its row.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The owner. |
+| `kind` | VARCHAR(32) | no | `balance.facility.kinds` key: `data_centre_general` or `data_centre_gpu` (M12b adds `assembly_plant`). |
+| `region` | VARCHAR(32) | no | regions.yaml key; it serves this region and the region whose neighbour it is (19.5). |
+| `city` | VARCHAR(32) | yes | cities.yaml key; null for a regional site (for v3's sited kinds). |
+| `capacity` | INTEGER | no | Units ordered (CU for data centres). |
+| `on_time` | INTEGER | no | Units live from `ready_turn`; the rest from `late_turn` (a component shortage, 22.4). |
+| `ordered_turn` | INTEGER | no | The month the build was ordered. |
+| `ready_turn` | INTEGER | no | The month it goes live: ordered + the kind's build months. |
+| `late_turn` | INTEGER | no | The month the late units arrive (equal to `ready_turn` when none are late). |
+| `capex_cents` | BIGINT | no | The whole build's capex at the input good's index (a contract's for the units it covers). |
+| `input_index` | FLOAT | no | The average index the capex was priced at. |
+| `capex_paid_cents` | BIGINT | no | Capex paid so far, in equal monthly parts until `ready_turn` (to `1500_ppe`). |
+| `depreciated_cents` | BIGINT | no | Depreciation booked so far (to `6700_depreciation` against `1510_accumulated_depreciation`). Book value is paid less depreciated, never below 0. |
+| `status` | VARCHAR(16) | no | `building`, `live` or `closed`. |
+| `unit_id` | INTEGER | yes | The org unit whose infrastructure people staff it (no FK). |
+| `contract_id` | INTEGER | yes | The component contract it drew on. |
+| `closed_turn` | INTEGER | yes | When it was sold. |
+| `yield_rate` | FLOAT | no | M12b (`0031_hardware`), assembly plants: this month's yield after noise (stream `manufacturing`); 0 for data centres and before a plant's first live month. |
+| `run_units` | FLOAT | no | M12b: units a plant ran last month for its company's own products. |
+| `sold_units` | FLOAT | no | M12b: units a plant ran last month for contract-manufacturing customers. |
+
+### supply_month
+
+One market good's month (22.4). Rows exist only for months already played; the API shows months up to the current one, never later.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `good` | VARCHAR(32) | no | components_history.yaml key (`server`, `gpu`); with `turn`, the primary key. |
+| `turn` | INTEGER | no | The month. |
+| `price_index` | FLOAT | no | The index (January 2010 = 1.0). |
+| `allocation` | FLOAT | no | Share of a build's units delivered on time (1.0 outside shortages). |
+| `base` | FLOAT | no | The index without a shock's rise. |
+| `change` | FLOAT | no | The trend's yearly change (fraction); after 2025 an AR(1) step each January. |
+| `shock_turn` | INTEGER | yes | The latest shock's first month (after 2025 only). |
+| `shock_months` | INTEGER | no | How long it runs. |
+| `shock_rise` | FLOAT | no | Its rise on the trend (fraction), fading after it ends. |
+| `shock_allocation` | FLOAT | no | Allocation while it runs. |
+
+### supply_contract
+
+A component contract (22.4): a locked index for a volume of builds, take-or-pay at the end.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER FK company | no | The buyer. |
+| `good` | VARCHAR(32) | no | The component. |
+| `price_index` | FLOAT | no | The locked index. |
+| `signed_turn` | INTEGER | no | When it was signed. |
+| `end_turn` | INTEGER | no | Its last month. |
+| `volume` | INTEGER | no | Units of builds it covers. |
+| `unit_value_cents` | BIGINT | no | Capex of one unit at the locked index (for take-or-pay). |
+| `used` | INTEGER | no | Units built on it. |
+| `status` | VARCHAR(16) | no | `active` or `settled`. |
+| `settled_cents` | BIGINT | no | The take-or-pay charge when it ended. |
+
+### facility_outage
+
+A data-centre outage (22.5). The state holds the last 24 months.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
 | `facility_id` | INTEGER | no | The facility (no FK). |
 | `company_id` | INTEGER FK company | no | Its owner. |
 | `turn` | INTEGER | no | The month (indexed). |
@@ -1214,14 +1231,6 @@ New games number incumbents' products from 900,000 (10 per incumbent) and their 
 ### New accounts
 
 `1510_accumulated_depreciation` (asset, credit balance) and `6700_depreciation` (expense, with compute in cost of revenue). The cash flow counts both with investing, where depreciation cancels and a sale leaves its proceeds.
-| `licensor_id` | INTEGER FK company | no | The company whose know-how it is. |
-| `licensee_id` | INTEGER FK company | no | The company that gained the points. |
-| `domain` | VARCHAR(32) | no | The domain. |
-| `points` | FLOAT | no | Lead points granted. |
-| `turn` | INTEGER | no | The month it was signed. |
-| `price_cents` | BIGINT | no | Paid once by the licensee (licensing in); 0 for a royalty licence. |
-| `royalty_bp` | INTEGER | no | Basis points of the licensee's monthly revenue in the domain's categories (licensing out); 0 if none. |
-| `royalty_end_turn` | INTEGER | yes | The last month the royalty is paid. |
 
 ## Hardware, devices and fabless chips (migration `0031_hardware`, M12b; re-parented after M13's `0030_public_company`)
 

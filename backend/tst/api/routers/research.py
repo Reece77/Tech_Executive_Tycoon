@@ -41,7 +41,7 @@ def _act(path: Path, data: LoadedData, action: Action) -> ResearchActionOut:
     with repository.open_session(path) as session:
         unread = inbox.unread_count(session, state.player.id)
     return ResearchActionOut(
-        research=research_views.research_out(state, data),
+        research=research_views.research_out(state, data, state.player.id),
         energy=views.energy(state, data),
         unread_inbox=unread,
     )
@@ -50,13 +50,15 @@ def _act(path: Path, data: LoadedData, action: Action) -> ResearchActionOut:
 @router.get("/research", response_model=ResearchOut, responses=ERRORS, operation_id="getResearch")
 def get_research(save_id: str, settings: SettingsDep, data: DataDep) -> ResearchOut:
     """The Research screen: levels, projects, rivals' levels as ranges, licences and eras."""
-    return research_views.research_out(_state(_path(settings, save_id)), data)
+    state = _state(_path(settings, save_id))
+    return research_views.research_out(state, data, state.player.id)  # the UI company (M12r)
 
 
 @router.get("/eras", response_model=list[EraOut], responses=ERRORS, operation_id="getEras")
 def get_eras(save_id: str, settings: SettingsDep, data: DataDep) -> list[EraOut]:
     """The era timeline (the Market screen shows it too, 21.4)."""
-    return research_views.eras_out(_state(_path(settings, save_id)), data)
+    state = _state(_path(settings, save_id))
+    return research_views.eras_out(state, data, state.player.id)
 
 
 @router.post(

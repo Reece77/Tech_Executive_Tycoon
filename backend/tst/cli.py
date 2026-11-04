@@ -1369,7 +1369,7 @@ def _infrastructure(path: Path, state: GameState, data: LoadedData) -> Any:
     from tst.api.facility_views import infrastructure_out
     from tst.api.routers.facilities import _stored
 
-    return infrastructure_out(state, data, _stored(path, state, data))
+    return infrastructure_out(state, data, _stored(path, state, data), state.player.id)
 
 
 @app.command()
@@ -2209,7 +2209,7 @@ def research(save: SaveOpt) -> None:
     from tst.api.research_views import research_out
 
     _, data, state = _game(save)
-    out = research_out(state, data)
+    out = research_out(state, data, state.player.id)
     typer.echo("Domain             Baseline   Lead  Level  Next era (threshold)")
     for d in out.domains:
         era = f"{d.next_era} ({d.next_threshold:.1f})" if d.next_era else "-"

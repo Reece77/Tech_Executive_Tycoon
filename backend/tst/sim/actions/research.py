@@ -3,6 +3,7 @@ project, set its budget, and license research in from a rival or out to one."""
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, replace
 from typing import Literal
 
@@ -148,13 +149,16 @@ def _rival(state: GameState, rival_id: int) -> int:
     return rival.id
 
 
-def _points(points: float, limit: float) -> float:
+def _points(points: float, ceiling: int) -> float:
+    """Whole points up to the public ceiling (M12r): the ceiling and every check here use
+    only values the player sees, so no answer narrows a rival's lead below its range."""
+    if not math.isfinite(points) or points != math.floor(points):
+        raise ResearchRuleError("license whole points")
     if points <= 0:
         raise ResearchRuleError("license a positive number of points")
-    if points > limit + 1e-9:  # tunable-exempt: float tolerance
-        # The limit follows the rival's true lead, which stays hidden (21.7): no number here.
+    if points > ceiling:
         raise ResearchRuleError("that is more than the licence allows; ask for fewer points")
-    return points
+    return float(points)
 
 
 def license_in(
@@ -172,8 +176,8 @@ def license_in(
     why = licensing.refusal(state, data, balance, company, rival, action.domain)
     if why is not None:
         raise ResearchRuleError(f"{state.company(rival).name} says no: {why}")
-    limit = licensing.license_in_limit(state, balance, company, rival, action.domain)
-    points = _points(action.points, limit)
+    ceiling = licensing.public_license_in_limit(state, balance, data, company, rival, action.domain)
+    points = _points(action.points, ceiling)
     price = license_price_cents(points, licensing.arr_cents(state, company), balance)
     if account_balance(balances, company, CASH) < price:
         raise InsufficientCashError(f"the licence costs {format_money(price)}")
@@ -206,11 +210,13 @@ def license_out(state: GameState, action: LicenseOut, balance: Balance, data: Ga
     company = acting_company(state, action.actor_id)
     known_domain(data, action.domain)
     rival = _rival(state, action.licensee_id)
-    limit = licensing.license_in_limit(state, balance, rival, company, action.domain)
-    if limit <= 0:
+    ceiling = licensing.public_license_out_limit(
+        state, balance, data, company, rival, action.domain
+    )
+    if ceiling <= 0:
         margin = balance.rnd.license.margin
         raise ResearchRuleError(f"your lead is not more than {margin:g} points ahead of theirs")
-    points = _points(action.points, limit)
+    points = _points(action.points, ceiling)
     state = spend_energy(
         state, action.actor_id, "license_out", balance, cost=balance.rnd.license.energy
     )
