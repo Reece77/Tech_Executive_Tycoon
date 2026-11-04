@@ -205,9 +205,12 @@ def test_a_quarterly_report_says_what_the_holder_did(loaded: LoadedData) -> None
     params = dict(report.params)
     assert report.link_id == EXEC and params["seat"] == "CTO"
     text = str(params["report"])
-    assert text.startswith("Q1 2010: 1 builder on 1 product (1 live, 0 in development).")
-    assert "I made 1 decision:" in text and "could have been better" in text
+    # M13b (27.2): decisions first, in the holder's voice, then pitches, worries, numbers
+    assert text.startswith("Q1 2010")
+    assert "opened a plan for" in text and "could have been better" in text
     assert "has nobody working on it" in text  # a concern
+    assert text.index("could have been better") < text.index("has nobody working on it")
+    assert text.endswith("1 builder on 1 product (1 live, 0 in development).")
     off = replace(state, turn=3)  # not a quarter end
     assert not [i for i in _run(loaded, off, seed)[2] if i.template == EXEC_REPORT]
 
@@ -218,7 +221,7 @@ def test_a_seat_without_authority_still_reports(loaded: LoadedData) -> None:
     state = replace(_company(loaded, "cfo", "finance_manager", staff=2), turn=5)
     (report,) = quarterly_reports(state, 10_000_000, loaded.balance, loaded.game_data)
     text = str(dict(report.params)["report"])
-    assert "Q2 2010: cash $100,000.00; debt $0.00" in text
+    assert "Q2 2010" in text and "cash $100,000.00; debt $0.00" in text  # 27.2 layout
     assert "no authority" in text
 
 

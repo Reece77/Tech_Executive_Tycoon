@@ -82,9 +82,9 @@ SCORE_MAX: Final = 100.0  # tunable-exempt: quality and brand scale
 ATTR_MAX: Final = 20.0  # tunable-exempt: attribute scale
 NEUTRAL_FIT: Final = 0.5  # tunable-exempt: fit with no builders to judge
 # Candidates of every kind are ranked by an estimated value over 24 months in cents (27.1):
-# a monthly case x pitch.record_months; research by the quality-cap lift it buys on the revenue it feeds; an
-# office by the builder pay of the roles it fills (x its city's talent weight); a campaign by
-# its customers' revenue. Returning cash (a buyback) ranks below every growth move.
+# a monthly case x pitch.record_months; research by the quality-cap lift it buys on the
+# revenue it feeds; an office by the builder pay of the roles it fills (x its city's talent
+# weight); a campaign by its customers' revenue. A buyback ranks below every growth move.
 RETURN_SCORE: Final = 1.0  # tunable-exempt: ranks a buyback last, after any growth move
 DRAWS: Final = 2  # uniforms on the pitch stream a draw month: whether, then which (27.1)
 CHAIR_KINDS: Final = frozenset({"buyback"})  # approved as the Chair, not the executive (25.6)

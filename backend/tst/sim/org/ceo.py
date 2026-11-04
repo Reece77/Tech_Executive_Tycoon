@@ -190,7 +190,9 @@ def run_ceo(
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...], tuple[DelegateAction, ...]]:
     """Phase 2, after the executives with authority (25.6); then the CEO's quarterly pitch
     across the functions it runs (27.1, M13b)."""
+    from tst.sim.ledger import CASH, account_balance
     from tst.sim.org.pitches import CEO_SCOPE_SEAT, SEAT_KINDS, pitch_month
+    from tst.sim.org.reports import EXEC_REPORT, ceo_letter, is_report_month
 
     if not state.ceos:
         return state, (), (), ()
@@ -267,6 +269,21 @@ def run_ceo(
         )
         score = ceo_score(skills, balance.ceo.weights)  # true, never shown
         pitch_month(run, company.id, "ceo", ceo.person_id, kinds, score, at_controls)
+        if is_report_month(state.turn, balance):  # the letter to the Chair (27.2, M13b)
+            person = run.state.person(ceo.person_id)
+            cash = account_balance(run.balances, company.id, CASH)
+            run.logs.append(
+                inbox_item(
+                    state.turn,
+                    company.id,
+                    EXEC_REPORT,
+                    link_kind="person",
+                    link_id=ceo.person_id,
+                    seat="CEO",
+                    name=f"{person.first_name} {person.last_name}",
+                    report=ceo_letter(run.state, ceo.person_id, ceo.scopes, cash, balance, data),
+                )
+            )
     keep = state.turn - balance.ceo.memory_months
     run.state = replace(
         run.state, ceo_decisions=tuple(d for d in run.state.ceo_decisions if d.turn > keep)

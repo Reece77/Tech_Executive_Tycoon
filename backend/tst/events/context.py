@@ -222,8 +222,9 @@ def text_prompt(kind: str, lines: list[str], company_name: str) -> tuple[str, st
         "minutes": "Write a short paragraph (at most 80 words) of board meeting minutes for "
         f"{company_name}. Use only these facts.",
         "exec_report": "Rewrite this executive's quarterly report to the founder in their own "
-        "voice, first person, at most 120 words: their numbers, what they did and their "
-        "concerns. Use only these facts; keep every number as given.",
+        "voice, first person, at most 150 words, keeping the report's tone: what they did, "
+        "what they are pitching, what worries them and the numbers (27.2). Use only these "
+        "facts; keep every action and every number as given.",
         "exit_line": "Write one line, in quotes, that this person said in their exit "
         "interview. Use only these facts; no numbers.",
     }
