@@ -40,6 +40,10 @@ v2 runs in two lanes where the systems are separate (Reece, 2026-10-29). Each la
 - **T5: bootstrap-frugal rarely goes bankrupt** (M12a): 7% on seeds 11–40 on both `main` and the combined code; re-banded to 0–50% for now. M15 decides whether bootstrapping should carry more risk again (Reece's M7a band was 20–50%).
 - **Rivals never license from the player.** Licensing out only works with rivals that approach you; add rival demand for licences in.
 
+## Ideas beyond the roadmap
+
+Player-facing ideas and Reece's verdicts live in `docs/ideas-backlog.md`. The one proposed for v2 is a short **people-and-press milestone** (press and media with public promises, rival founders as characters) between M14 and M15; it is scoped when M14 is written.
+
 ## Lane rules (for every paired milestone)
 
 - **Files.** Each brief lists the folders its lane owns. Shared files (`balance.yaml`, `CHANGELOG.md`, `docs/formulas.md`, `docs/data-dictionary.md`) keep both sides on merge.
