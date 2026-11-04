@@ -245,11 +245,12 @@ def era_news(
         who = f"{arrival.months_early} months early, pulled forward by {name}"
     categories = ", ".join(data.category(c).label for c in era.categories) or "no market yet"
     rnd = balance.rnd
+    appeal = f", x{rnd.first_mover_appeal:g} appeal" if rnd.first_mover_appeal != 1 else ""
     note = (
         f" First-mover head start: for {rnd.first_mover_months} months your {categories}"
-        f" products get +{rnd.first_mover_cap:g} on their quality cap,"
-        f" +{rnd.first_mover_brand:g} on their brand target and x{rnd.first_mover_appeal:g}"
-        f" appeal, and your {levels.domain_def(data, era.domain).label} lead does not decay."
+        f" products get +{rnd.first_mover_cap:g} on their quality cap"
+        f"{appeal}, +{rnd.first_mover_brand:g} on their brand target,"
+        f" and your {levels.domain_def(data, era.domain).label} lead does not decay."
         + _products_line(state, era, observer_id, balance)
         if causer == observer_id
         else ""
@@ -268,6 +269,7 @@ def era_news(
 def _products_line(state: GameState, era: EraDef, company_id: int, balance: Balance) -> str:
     """The first mover's affected products with what the window gives them (27.3)."""
     rnd = balance.rnd
+    appeal = f"; appeal x{rnd.first_mover_appeal:g}" if rnd.first_mover_appeal != 1 else ""
     items = []
     for pid in affected(state, era, company_id):
         p = state.product(pid)
@@ -275,7 +277,7 @@ def _products_line(state: GameState, era: EraDef, company_id: int, balance: Bala
             continue
         items.append(
             f"{p.name} (quality {p.quality:.0f}, cap +{rnd.first_mover_cap:g}; brand "
-            f"{p.brand:.0f}, target +{rnd.first_mover_brand:g}; appeal x{rnd.first_mover_appeal:g})"
+            f"{p.brand:.0f}, target +{rnd.first_mover_brand:g}{appeal})"
         )
     return (
         " Affected: " + "; ".join(items) + "."

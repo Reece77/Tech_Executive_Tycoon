@@ -108,15 +108,16 @@ def test_a_lead_past_the_threshold_brings_an_era_early(loaded: LoadedData) -> No
 
 
 def test_the_first_mover_window(loaded: LoadedData) -> None:
-    """For 24 months the causer's AI products get +8 on the quality cap and +15 on the brand
-    target, and its AI lead does not decay; then it ends (21.4; M13b 27.3: was 12, +5, +10)."""
+    """For 24 months the causer's AI products get +5 on the quality cap and +6 on the brand
+    target, and its AI lead does not decay; then it ends (21.4; M13b 27.3 and 27.5 target 5:
+    was 12, +5, +10)."""
     data, balance = loaded.game_data, loaded.balance
     jan_2016 = ym_to_turn(2016, 1)
     state = _months(loaded, fresh_game(loaded), jan_2016)
     state, _ = eras.arrive_eras(_with_ai_lead(state, 20.0, jan_2016), data, balance, RngFactory(1))
     factor = levels.tech_factor(state, 1, "ai_models", balance, data)
-    assert (factor.cap_points, factor.brand_points) == (8.0, 15.0)
-    assert factor.cap(50.0) == pytest.approx(50.0 * (1 + balance.rnd.cap_per_point * 16.0) + 8.0)
+    assert (factor.cap_points, factor.brand_points) == (5.0, 6.0)
+    assert factor.cap(50.0) == pytest.approx(50.0 * (1 + balance.rnd.cap_per_point * 16.0) + 5.0)
     other = levels.tech_factor(state, 1, "b2b_saas", balance, data)
     assert other.cap_points == 0 and other.brand_points == 0
     assert decay_leads(state, data, balance).research_lead(1, "ai") == 20.0
@@ -124,7 +125,7 @@ def test_the_first_mover_window(loaded: LoadedData) -> None:
         levels.tech_factor(
             replace(state, turn=jan_2016 + 23), 1, "ai_models", balance, data
         ).cap_points
-        == 8.0
+        == 5.0
     )
     late = replace(state, turn=jan_2016 + 24)
     assert levels.tech_factor(late, 1, "ai_models", balance, data).cap_points == 0

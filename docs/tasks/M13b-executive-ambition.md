@@ -40,14 +40,43 @@ Acquisitions as pitches (M14 adds the kind). Rivals' executives pitching (rivals
 
 On `quick-stage3`, give every seat authority, set auto-approve to 5% of cash, and Holiday three years. Did they start a product and enter a region? Read one quarter's reports: do they sound like people? Then pull an era forward on `pt-ai` and read the era report.
 
-## Status (2026-11-04): stopped before merging
+## Status (2026-11-04, after the product manager's rulings): stopped before merging
 
-Sub-tasks 1-7 are built and tested; sub-task 8's Playwright specs (a)-(c) pass and the close-out docs are written, but **two §27.5 targets miss and the allowed keys cannot fix them**, so per the instructions this branch is not merged (values in `docs/balance-targets.md`, M13b):
+Sub-tasks 1-7 are built and tested, sub-task 8's Playwright specs (a)-(c) pass and the close-out docs are written. After the rulings, targets 1-5 pass and **target 7 misses**, and `pitch.*` cannot bring it into its band while target 1 holds, so per the instructions this branch is not merged (values in `docs/balance-targets.md`, M13b):
 
-- **Target 3** (hit rate score 15 against 8, ≥ +15 points): 62% against 63%. The hit rate does not move with `pitch.spread`; outcomes are all-or-nothing, and the 27.1 quality rule (best or second best) does not make the second best less likely to work. Options: score executives against a central case instead of the low case; make the outcome depend on the executive's true skill (for example the CPO's new product team built with the seat's builder factor), or narrow the target.
-- **Target 5** (first mover +15-35% customers against the era on schedule): +481% to +799%. With M11's lab from 2014 the era arrives three years early; with the head start switched off the early arm is still +171% to +292% ahead from the era's demand boosts alone. Options: measure the head start itself (the same early era with and without the first-mover window: now about x2.4, which `rnd.first_mover_*` can tune down), or a scenario that pulls the era only a few months forward.
+| Target | Value | Band |
+| --- | --- | --- |
+| 1 new product and new region | 8/10 seeds | ≥ 7/10 |
+| 2 ARR, pitches / pitches off | 2.22 | ≥ 1.10 |
+| 3 hit rate, score 15 / score 8 | 67% / 39% (+28 points) | ≥ +10 points |
+| 4 pitches a year, median | 5.5 | ≤ 8 |
+| 5 the window alone | +30% to +56% on 7 of 8 seeds (+80% on seed 5) | +25-60% on ≥ 7 |
+| 5 (information) early era / on schedule | +237% to +392% | none |
+| **7 ARR, pitches / steady script** | **2.32** | **≤ 1.2** |
 
-Every other check: targets 1, 2 and 4 pass (8/10 seeds; x2.07; 5.2 a year); golden snapshots unchanged; the backend suite and frontend checks pass locally.
+- **Why target 7 misses.** Region launches cause the whole gap. With the CRO's region pitches removed, ARR is $81.2M against steady $72.2M (×1.12, though target 1 then fails at 0/10). With them, a launch adds about $15-40M ARR by month 36: East Asia $25-42M, Europe $17-36M, against about $72M at home. Target 1 needs a region on 7 of 10 seeds, so the median seed has at least one launch, and that alone is more than the 20% target 7 allows. Lowering the pitch rate trades target 1 for target 7, but never reaches both. The sweep (team 6, region capture 1.7):
+
+  | Setting | T1 | T7 |
+  | --- | --- | --- |
+  | `base` 0.45, `per_ambition` 0.04 (shipped) | 8/10 | 2.32 |
+  | `base` 0.2, `per_ambition` 0.02, clamp [0.05, 0.9] | 8/10 | 1.94 |
+  | `base` 0.15, `per_ambition` 0.01, clamp [0.05, 0.9] | 8/10 | 1.74 |
+  | the same with `auto_approve_cash_bp` 200 | 8/10 | 1.72 |
+  | `base` 0.1, `per_ambition` 0.01, clamp [0.03, 0.9] | 6/10 | 1.49 |
+  | a flat 7% a quarter (0.7 pitches a year) | 6/10 | 1.41 |
+
+  `pitch.*` frequency is left as shipped until Reece decides. Options:
+  - narrow target 1 to a new product or a region;
+  - re-band target 7 (×2.3 now; about ×1.7 at the lowest frequency that keeps target 1);
+  - compare against a founder script that also enters regions;
+  - make a region launch smaller or slower for the founder and executives alike (an M9 regional-economy change, outside `pitch.*`).
+
+Every other check:
+- golden snapshots unchanged (11 passed);
+- backend lint, format and mypy clean;
+- the backend suite: 1,360 passed and 1 xfailed (the existing T2 xfail). The only failure is `tests/balance/test_m13b_balance.py`, on target 7 (2.32 > 1.2), as reported above.
+
+The front end has not changed since the last run of its checks and of e2e flows (a)-(c), which passed.
 
 ## Decisions made
 
@@ -63,10 +92,21 @@ Every other check: targets 1, 2 and 4 pass (8/10 seeds; x2.07; 5.2 a year); gold
 - **Modify.** Closes the pitch as `modified` and opens the move's own screen; the New product dialog is prefilled (`?new=<category>&segment=<segment>`), other screens open on the right page.
 - **Baselines kept.** M10c's and M13's balance arms set the pitch limit to 0 (pitches wait unanswered) so their targets read as before; 27.5 target 2's "pitches off" arm does the same.
 - **S2** re-banded to under 65 worker-minutes on CI (`S2_BUDGET`), as the brief says.
+- **Product manager's rulings (2026-11-04).**
+  - Target 3: every pitch is scored hit against its central case from displayed estimates, the same for every executive. Execution follows the executing executive's true seat score through the 18.3 seat factor: a new product's builders' output, and a region launch's regional awareness and capacity. The band is now at least +10 points.
+  - Target 5: the first-mover window is measured alone: the same seed with the era forced to the same early month, with and without the window, at the window's end. Band +25-60%. The early era against on schedule is printed as information.
+  - New target 7: target 1's median ARR at month 36 is at most 1.2× the founder's steady script on the same seeds.
+- **Target 3 calibration** (so the central case reads what moves reach):
+  - `pitch.region_capture` 1.7 scales the CRO's case, which is now grown 24 months at the category's growth.
+  - The CPO pitches only self-serve segments (a builders-only team cannot sell to sales-led ones), with `pitch.team_builders` 3 → 6 so the product can launch inside the record window.
+  - A campaign's case adds the category's 24-month organic growth.
+  - An office's measure is the staff living in its city above the count at approval, and an approved office moves the active hiring plans' units into it, so their hires join there.
+- **Target 5 tuning:** `rnd.first_mover_cap` 8 → 5, `first_mover_brand` 15 → 6, `first_mover_appeal` 1.15 → 1 (no bonus; the mechanism and its tests stay, run at ×1.15). The arrival item names the appeal only above ×1.
 
 ## Follow-ups
 
-- The two target misses above (Reece's decision).
+- Target 7 above (Reece's decision).
+- New products' central case is still far above what a launch reaches in 24 months (measured/central 0-0.23 at `pitch.new_product_share` 0.25), so they are misses at any score; they do not decide target 3.
 - Modify could prefill every move's dialog (region, research, data centre, office, plant), not only a new product.
 - A product's quarter-start quality and customers could be kept so reports read "41 -> 47" rather than "now 47".
 - Rivals' executives do not pitch (out of scope); M14 adds acquisitions as a pitch kind.

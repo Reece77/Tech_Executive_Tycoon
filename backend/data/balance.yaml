@@ -680,7 +680,7 @@ pitch: # executives' pitches: big moves they propose for the founder to approve 
   cost_months: 12 # months of cost counted against the auto-approve limit (27.1)
   auto_approve_cash_bp: 500 # bp of cash; the default auto-approve limit, 5% of cash (27.1)
   spread: { at_zero: 0.6, per_score: 0.025, min: 0.15 } # half-width of the low/high case as a fraction of the central case: max(min, at_zero - per_score x the displayed seat score) (27.1)
-  team_builders: 3 # builders in the team the CPO suggests for a new product (27.1)
+  team_builders: 6 # builders in the team the CPO suggests for a new product (27.1; 27.5 target 3: 3 -> 6, so it can launch inside the record window)
   sunset_months: 6 # months a product must have shrunk, below its maintenance line, before the CPO pitches its sunset (27.1)
   dc_use: 0.6 # projected use of a data centre's capacity the CTO needs before pitching one (27.1)
   dc_months: 24 # months that use must last (27.1)
@@ -692,7 +692,7 @@ pitch: # executives' pitches: big moves they propose for the founder to approve 
   campaign_brand_gap: 20 # brand points below the target before the CMO pitches a campaign (27.1)
   office_seats: 25 # seats in an office the COO pitches (27.1)
   new_product_share: 0.25 # share of a segment's addressable customers a new product's central case reaches at 24 months, / (1 + products already selling there) (27.1)
-  region_capture: 1.0 # x the CRO's central case for a region (home share x demand x price x fit, grown 24 months): calibrates it against what launches reach (27.5 target 3)
+  region_capture: 1.7 # x the CRO's central case for a region (home share x demand x price x fit, grown 24 months): calibrates it against what launches reach (27.5 target 3)
   region_fit_without_office: 0.7 # the CRO's fit for a region where the company has no office (27.1; 1 with one)
   campaign_awareness_pct: 25 # % awareness a campaign adds to its product for campaign_months (a modifier, 23.2)
   campaign_brand_pct: 10 # % brand target a campaign adds for campaign_months
@@ -935,9 +935,9 @@ rnd:
   era_lead: 15 # points; an era's threshold is the baseline at its historical month plus this (21.4)
   era_baseline: 5 # points added to the domain's baseline when an era arrives (21.4)
   first_mover_months: 24 # months of the first mover's window (21.4; M13b 27.3: 12 -> 24)
-  first_mover_cap: 8 # quality-cap points for the first mover's products in the era's categories (21.4; M13b 27.3: 5 -> 8)
-  first_mover_brand: 15 # brand-target points for those products (21.4; M13b 27.3: 10 -> 15)
-  first_mover_appeal: 1.15 # multiplier on those products' appeal during the window (M13b 27.3; 1 = none)
+  first_mover_cap: 5 # quality-cap points for the first mover's products in the era's categories (21.4; M13b 27.3: 5 -> 8; 27.5 target 5: back to 5)
+  first_mover_brand: 6 # brand-target points for those products (21.4; M13b 27.3: 10 -> 15; 27.5 target 5: 6, the window alone adds 25-60% customers)
+  first_mover_appeal: 1.0 # multiplier on those products' appeal during the window (M13b 27.3; 1 = none; 27.5 target 5: 1.15 -> 1)
   license: # licensing (21.5)
     energy: 8 # founder energy to license in or out
     margin: 10 # points; the licensor keeps this much of its lead over the licensee

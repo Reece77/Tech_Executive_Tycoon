@@ -87,8 +87,9 @@ def test_decline_morale(loaded: LoadedData) -> None:
 
 def test_stronger_first_mover_and_stream(loaded: LoadedData) -> None:
     rnd = loaded.balance.rnd
-    assert (rnd.first_mover_months, rnd.first_mover_cap, rnd.first_mover_brand) == (24, 8, 15)
-    assert rnd.first_mover_appeal == pytest.approx(1.15)
+    # 27.5 target 5 (product manager, 2026-11-04): the window alone adds 25-60% customers
+    assert (rnd.first_mover_months, rnd.first_mover_cap, rnd.first_mover_brand) == (24, 5, 6)
+    assert rnd.first_mover_appeal == pytest.approx(1.0)
     assert STREAM_IDS["pitch"] == 36
     assert len(set(STREAM_IDS.values())) == len(STREAM_IDS)
 

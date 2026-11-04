@@ -2278,7 +2278,7 @@ It is written by the LLM within §16's budget from engine-supplied facts only, i
 
 ### 27.3 Eras the player can feel
 
-- **Stronger first-mover window:** `rnd.first_mover_months` 12 → 24, `first_mover_cap` 5 → 8, `first_mover_brand` 10 → 15, and a new **appeal bonus** `rnd.first_mover_appeal` (×1.15) on the first mover's products in the era's categories for the window. All tunable for 27.5 target 5.
+- **Stronger first-mover window:** `rnd.first_mover_months` 12 → 24, `first_mover_cap` 5 → 8, `first_mover_brand` 10 → 15, and a new **appeal bonus** `rnd.first_mover_appeal` (×1.15) on the first mover's products in the era's categories for the window. All tunable for 27.5 target 5, which tuned them to 24 months, cap +5, brand +6 and appeal ×1 (no bonus; the mechanism stays). The arrival item names the appeal only when it is above ×1.
 - **On arrival:** a critical inbox item names the era, who caused it and how many months early, and lists the player's affected products with their new cap, brand target and appeal.
 - **At the window's end:** an **era report**: the products' customers and MRR against their pre-era 12-month trend, the category's demand against its pre-era path, and what the window added.
 - **Charts:** the Market demand chart and the Product trend chart mark era arrivals (a labelled vertical line).
@@ -2292,10 +2292,11 @@ It is written by the LLM within §16's budget from engine-supplied facts only, i
 
 1. **They make big moves.** A stage-3 steady company with all seats given authority, auto-approve at 5% of cash and Holiday for 36 months: at least one new product launched **and** one new region entered on at least 7 of 10 seeds.
 2. **And it pays.** That run's median ARR at month 36 is at least 10% above the same run with pitches off (M10c's delegated baseline).
-3. **Good executives pitch better.** Seat holders at score 15 against score 8: hit rate at least 15 points higher.
+3. **Good executives pitch better.** Seat holders at score 15 against score 8: hit rate at least **10** points higher (product manager, 2026-11-04). Every pitch's hit is scored against its **central case** from displayed estimates, the same for every executive (not the executive's own low case). The approved move's execution follows the executing executive's **true** seat score through the existing seat factor (18.3): a new product's team pace (its builders' output) and a region launch's sales ramp (regional awareness and capacity). Calibration: `pitch.region_capture` scales the CRO's central case to what launches reach; a CPO's team is `pitch.team_builders` builders on a self-serve segment, so it can launch inside the record window; a campaign's central case adds the category's organic growth; an office is measured by the staff who live in its city, above the count at approval.
 4. **The inbox stays calm:** at most 8 pitches a year per company on median.
-5. **Eras pay the first mover.** A company that pulls an era forward has 15–35% more customers in the era's categories at the end of the window than the same seed with the era on schedule (7 of 10 seeds).
+5. **The first-mover window pays.** Measured alone (product manager, 2026-11-04): the same seed with the era forced to the same early month, with and without the window. The window adds **25–60%** customers in the era's categories at the window's end (7 of the seeds where the era arrives early); `rnd.first_mover_*` is tuned into it. The full early-era effect (the era on schedule against pulled forward) is printed as information only.
 6. **Nothing else moves.** Every earlier guard as before; the T2 xfail stays (M15). A company that gives no authority plays exactly as before (golden snapshots unchanged by sub-tasks 1–2).
+7. **Pitches don't outplay the founder by far** (product manager, 2026-11-04). Target 1's run's median ARR at month 36 is at most **1.2×** the steady script played by the founder (seats filled at score 15, no authority) on the same seeds; if it is higher, `pitch.*` is tuned down.
 
 ### 27.6 What the API may show
 

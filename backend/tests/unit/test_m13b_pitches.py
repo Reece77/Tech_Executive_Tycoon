@@ -59,7 +59,11 @@ def test_a_cpo_pitches_in_a_quarters_first_month(loaded: LoadedData) -> None:
     out, _, logs, _ = _run(loaded, state, seed)
     (pitch,) = out.pending_pitches(1)
     assert pitch.seat == "cpo" and pitch.person_id == EXEC and pitch.kind == "new_product"
-    assert pitch.low <= pitch.high and pitch.cost_cents > 0 and pitch.hires == 3
+    assert (
+        pitch.low <= pitch.high
+        and pitch.cost_cents > 0
+        and pitch.hires == loaded.balance.pitch.team_builders
+    )
     assert dict(pitch.params)["category"] != "b2b_saas"  # a category it doesn't sell in
     assert any(i.template == "exec_pitch" for i in logs)
     quiet = _pitching_seed(loaded, state, pitches_=False)
@@ -97,7 +101,7 @@ def test_approval_runs_the_move_as_the_executive(loaded: LoadedData) -> None:
     assert product.status == "in_development"
     unit = next(u for u in game.state.active_units(1) if u.product_id == product.id)
     (plan,) = [p for p in game.state.plans if p.unit_id == unit.id]
-    assert (plan.target, plan.owner_id) == (3, EXEC)
+    assert (plan.target, plan.owner_id) == (loaded.balance.pitch.team_builders, EXEC)
     assert all(s.price_cents for s in game.state.segments_of(product.id))
     assert game.state.person_state(founder).energy == founder_energy
     assert (game.state.person_state(EXEC).energy or 0) < (exec_energy or 100)

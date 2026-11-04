@@ -365,17 +365,27 @@ Notes: T2–T5 are scripted (demand above capacity; price, cost and allocation f
 
 ## M13b: executive ambition and visible eras (§27.5)
 
-`tools/m13b_targets.py`, nightly `tests/balance/test_m13b_balance.py`, 10 seeds, measured 2026-11-04 on `m13b-ambition` before any tuning. Targets 1-4 fork each seed's steady game at stage 3, appoint six senior seat holders and give every seat authority, then play 36 months as on Holiday (auto-approve at the default 5% of cash); target 5 runs M11's 10-person AI lab from January 2014 with an AI product, early against on schedule.
+`tools/m13b_targets.py`, nightly `tests/balance/test_m13b_balance.py`, 10 seeds, measured 2026-11-04 on `m13b-ambition` after the product manager's rulings. Targets 1-4 and 7 fork each seed's steady game at stage 3, then appoint six senior seat holders. Targets 1-4 give every seat authority and play 36 months as on Holiday (auto-approve at the default 5% of cash). Target 7's founder arm plays M10c's steady script with the same holders and no authority. Target 5 runs M11's 10-person AI lab from January 2014 with an AI product. The era arrives in month 52 or 53, and the run compares the window against no window in that same month.
 
 | Target | Value | Band | Result |
 | --- | --- | --- | --- |
 | 1 new product and new region launched | 8/10 seeds | ≥ 7/10 | pass |
-| 2 median ARR at 36 months, pitches / pitches off | 2.07 | ≥ 1.10 | pass |
-| 3 hit rate, score 15 against score 8 | 62% against 63% (−1 point) | ≥ +15 points | **miss: not fixable by `pitch.*` or `rnd.first_mover_*`** |
-| 4 pitches a year per company, median | 5.2 | ≤ 8 | pass |
-| 5 AI customers at the window's end, early / on schedule | +481% to +799% (8 seeds with a product) | +15–35% on ≥ 7/10 | **miss: not fixable by `rnd.first_mover_*`** |
+| 2 median ARR at 36 months, pitches / pitches off | 2.22 | ≥ 1.10 | pass |
+| 3 hit rate (central case), score 15 against score 8 | 67% against 39% (+28 points) | ≥ +10 points | pass |
+| 4 pitches a year per company, median | 5.5 | ≤ 8 | pass |
+| 5 AI customers at the window's end, window / no window | +38%, +39%, +43%, +36%, +80%, +32%, +30%, +56% (7 of 8 seeds in band) | +25–60% on ≥ 7 | pass |
+| 5 information: early era / on schedule | +303%, +319%, +303%, +299%, +392%, +237%, +237%, +258% | none | information |
+| 7 median ARR at 36 months, pitches / founder's steady script | 2.32 | ≤ 1.2 | **miss: not fixable by `pitch.*` while target 1 holds** |
 | S2 | re-banded to < 65 worker-minutes on CI (product manager, 2026-11-03) | | band only |
 
-Why the two misses cannot be tuned away (measured with `pitch.spread` and `rnd.first_mover_*` variants):
-- **Target 3.** The hit rate did not move at all across spread settings (0.6 - 0.025 s down to a flat 0.2): a pitch's outcome is all-or-nothing in practice (a launched region or product earns far above its low case; one that is not operating counts as too early), so the low case's width never decides a hit. The quality rule (best or second-best candidate) changes which move is pitched, not how likely it is to work. Score 8 against 15: 4/8, 1/4, 5/8, 3/5, 5/8, 4/6, 7/8, 6/8, 6/9, 4/7 against 2/5, 2/5, 4/7, 3/5, 5/8, 3/5, 6/7, 5/6, 6/9, 3/6.
-- **Target 5.** The lab pulls Transformers in May 2014, three years early. With the first mover's cap, brand and appeal at zero the early arm still has +171% to +292% more customers, from the era's demand boosts alone; no first-mover setting can bring the comparison down to 15–35%. With the lab from January 2016 (13 months early) it reads +187% without the head start and +578% with it. The head start itself (the same early era with and without it) is about ×2.4, far above 15–35%.
+Tuned: `pitch.region_capture` 1.7 and `pitch.team_builders` 6 (target 3); `rnd.first_mover_cap` 5, `first_mover_brand` 6 and `first_mover_appeal` 1 (target 5). Per-kind hit rates at score 15 against 8:
+
+| Kind | Score 15 | Score 8 |
+| --- | --- | --- |
+| region | 20/20 | 1/22 |
+| research | 12/14 | 9/14 |
+| office | 7/11 | 9/12 |
+| campaign | 2/2 | 9/9 |
+| new product | 0/14 | 0/14 |
+
+Target 7: region launches cause the gap. Without the CRO's pitches the run reads ×1.12, but target 1 then fails (0/10). One launch adds about $15-40M ARR by month 36 against about $72M at home. A sweep of `pitch.base`, `per_ambition`, `chance_clamp` and `auto_approve_cash_bp` gives T1 8/10 at ×1.72 or more, and T1 6/10 at ×1.41-1.49 (the table is in the brief's Status).

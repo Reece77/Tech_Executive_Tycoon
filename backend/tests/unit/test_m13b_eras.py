@@ -29,7 +29,21 @@ def _caused(loaded: LoadedData) -> tuple[GameState, list]:  # type: ignore[type-
     return state, list(logs)
 
 
+def _appeal(loaded: LoadedData, appeal: float = 1.15) -> LoadedData:
+    """The data with a first-mover appeal bonus: the shipped value is 1 (27.5 target 5,
+    2026-11-04), so the mechanism is exercised at the brief's x1.15."""
+    rnd = loaded.balance.rnd.model_copy(update={"first_mover_appeal": appeal})
+    return replace(loaded, balance=loaded.balance.model_copy(update={"rnd": rnd}))
+
+
+def test_the_shipped_window_has_no_appeal_bonus(loaded: LoadedData) -> None:
+    state, _ = _caused(loaded)
+    data, balance = loaded.game_data, loaded.balance
+    assert levels.first_mover_appeal(state, data, balance, 1, "ai_models") == 1.0
+
+
 def test_the_first_mover_gets_the_appeal_bonus_for_the_window(loaded: LoadedData) -> None:
+    loaded = _appeal(loaded)
     data, balance = loaded.game_data, loaded.balance
     state, _ = _caused(loaded)
     assert levels.first_mover_appeal(state, data, balance, 1, "ai_models") == pytest.approx(1.15)
@@ -42,6 +56,7 @@ def test_the_first_mover_gets_the_appeal_bonus_for_the_window(loaded: LoadedData
 def test_the_appeal_bonus_reaches_the_market(loaded: LoadedData) -> None:
     """The Market screen's appeal for the first mover's product is x1.15 (the engine's own
     appeal hook)."""
+    loaded = _appeal(loaded)
     state, _ = _caused(loaded)
     out = market_out(state, "ai_models", loaded)
     row = next(p for s in out.segments for p in s.products if p.name == "Oracle")
@@ -64,8 +79,11 @@ def test_the_arrival_item_lists_the_affected_products(loaded: LoadedData) -> Non
     )
     note = str(dict(news.params)["note"])
     assert "17 months early" in str(dict(news.params)["when"])
-    assert "Oracle (quality" in note and "cap +8" in note and "target +15" in note
-    assert "x1.15 appeal" in note
+    assert "Oracle (quality" in note and "cap +5" in note and "target +6" in note
+    assert "appeal" not in note  # no appeal bonus shipped (27.5 target 5)
+    _, boosted = _caused(_appeal(loaded))
+    news = next(i for i in boosted if i.template == "era_arrived")
+    assert "x1.15 appeal" in str(dict(news.params)["note"])
     (window,) = state.era_windows
     assert window.era_key == "transformers" and window.company_id == 1
     assert [p[0] for p in window.products] == [state.company_products(1)[0].id]
