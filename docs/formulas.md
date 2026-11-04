@@ -2240,3 +2240,63 @@ Bill of materials and unit cost by line; contracts with volume, use and take-or-
 - **Eras.** Custom silicon's +5 cap is an era boost (`cap_points`, `own_chip`) added in `tech_factor` for companies with a live own chip of the device category's type. A future era's `arrival` property is its window midpoint, so M11's migration 0028 and the rival research bonus read a public month; `levels.scheduled_turn` draws `t_sched` (engine only) and `arrive_eras` takes the RNG.
 - **Key people.** The twelve hardware and chip incumbents have 4 named key people each (`key_people` in incumbents.yaml), not `rivals.key_people`'s 8, to keep the turn within its time budget (product manager, 2026-11-03); their pools take the rest of the budget.
 - **Old saves** (0031) get M12b's eras on schedule if past them, but no hardware markets or incumbents (as M12a's Cloud hosting).
+
+## 27. Executive ambition and visible eras (M13b)
+
+Reece's playtest 2 (2026-11-03): executives and the CEO kept the company profitable on Holiday but never made big moves, their reports were lifeless, the CPO had nothing to delegate, and eras did not push his product over the edge. Decisions (2026-11-03): big moves are **proposed and approved** (on Holiday, those under a spend limit go ahead); eras get a **stronger, visible** first-mover effect; this comes **before M14**, so M14's CEO proposes acquisitions through the same system.
+
+### 27.1 Pitches (big moves an executive proposes)
+
+- **Who pitches.** A seat holder with authority (§24.1), and the CEO (§25.6) for any function. An executive without authority never pitches.
+- **When.** Phase 2, at most one open pitch per executive and one new pitch per executive per quarter. Each quarter an executive pitches with probability `clamp(pitch.base + pitch.per_ambition × (ambition − 10), 0.15, 0.9)` (base 0.45, 0.04 per point; true ambition), one uniform on stream `pitch` (id 36), key `(person_id,)`.
+- **What they pitch.** The best-scoring candidate of their function, scored from **displayed** knowledge only (ADR-0015):
+
+| Seat | Pitch kinds | Candidate score (higher is better) |
+| --- | --- | --- |
+| CPO (new authority) | a **new product** in a category the company doesn't sell in; a **sunset** of a product below maintenance and shrinking for 6 months | new product: displayed category revenue at reference price × growth × fit, where fit = the company's displayed skill match for the category's builder skills (0–1) × (1 + 0.01 × research lead in the feeding domain) |
+| CRO | **launch in a region** (§19.5) | the region's displayed demand for the product's segments × the company's fit (language, office) |
+| CTO | a **research project** in a domain feeding live products; a **data centre** when projected use ≥ 60% for 24 months | research: products' revenue in the domain's categories × room to the quality cap; data centre: (spot − own cost per CU) × projected CU |
+| COO | an **office** in a city with a deeper hiring pool for open plans; an **assembly plant** when contract volume ≥ 75% of a plant size for 12 months | open plans unfilled × the city's pool depth; plant: (contract fee − plant cost per unit at projected use) × units |
+| CMO | a **campaign**: a one-off marketing push for a product with a brand gap | brand gap × the product's customers |
+| CFO | as §24.1 (rounds, loans, early repayment), plus once public a **buyback or dividend** to the Chair | as §24.1 |
+
+- **Quality.** With probability `clamp(0.55 + 0.03 s, 0.6, 0.98)` (§24.2) the executive pitches its best candidate, otherwise its second best. A strong executive's pitches visibly succeed more often.
+- **The pitch** is an inbox item (major, blocks Continue under §23.1) in the executive's voice: what, why (two or three driver numbers), the cost (capex, monthly cost, hires), a **low and high case** (revenue or saving at 24 months, from displayed estimates ± the executive's uncertainty, wider for a weaker executive), the risk, and Approve, Modify (open the action's own dialog prefilled) or Decline.
+- **Approve** runs the move through the normal actions as that executive (a new product gets a unit, a hiring plan for the CPO's suggested team and a launch target), within the seat's guardrails, and spends the executive's energy, not the founder's.
+- **Holiday and the spend limit.** The player sets `auto_approve_cents` (default 5% of cash, 0 = always ask). On Holiday a pitch whose total cost over 12 months is under the limit goes ahead automatically and is reported; above it, it waits. Holiday stops only for pitches above the limit when the player has ticked "stop for big pitches".
+- **Follow-through.** Each approved pitch is tracked against its low and high case for 24 months and scored **hit** (≥ low case), **miss** or **too early**. The executive's record (hits / pitches) shows on their profile and in reports. Declined pitches lower that executive's morale slightly (−2, once), more for high-ego executives (−4 at ego ≥ 15).
+
+### 27.2 Reports with a voice
+
+The quarterly report (§24.3) is rebuilt around decisions:
+1. **What I did**: the quarter's delegated actions grouped by product, with their effect (for example "moved two engineers from Pipeline to Forge; Forge's quality 41 → 47").
+2. **What I'm pitching** (or why not), with the status of earlier pitches (hit, miss, too early).
+3. **What worries me**: one or two concerns tied to a number.
+4. **The numbers**: the function's KPIs against last quarter and the target.
+
+It is written by the LLM within §16's budget from engine-supplied facts only, in the executive's voice from **revealed** personality (a blunt high-ambition CRO, a cautious CFO); templates do the same with personality variants when the LLM is off. The CEO's report is a company letter to the Chair covering all functions.
+
+### 27.3 Eras the player can feel
+
+- **Stronger first-mover window:** `rnd.first_mover_months` 12 → 24, `first_mover_cap` 5 → 8, `first_mover_brand` 10 → 15, and a new **appeal bonus** `rnd.first_mover_appeal` (×1.15) on the first mover's products in the era's categories for the window. All tunable for 27.5 target 5.
+- **On arrival:** a critical inbox item names the era, who caused it and how many months early, and lists the player's affected products with their new cap, brand target and appeal.
+- **At the window's end:** an **era report**: the products' customers and MRR against their pre-era 12-month trend, the category's demand against its pre-era path, and what the window added.
+- **Charts:** the Market demand chart and the Product trend chart mark era arrivals (a labelled vertical line).
+
+### 27.4 Small items from playtest 2
+
+- **Market size.** The Market screen and the New product dialog show each category's displayed size: customers × reference price per year, by segment and region, with growth. Public data, as demand already is.
+- **Research lead wording.** The Research screen explains "lead" as "points ahead of the industry in this field; start a project to build one" (Reece read it as a person to hire).
+
+### 27.5 Acceptance targets (printed)
+
+1. **They make big moves.** A stage-3 steady company with all seats given authority, auto-approve at 5% of cash and Holiday for 36 months: at least one new product launched **and** one new region entered on at least 7 of 10 seeds.
+2. **And it pays.** That run's median ARR at month 36 is at least 10% above the same run with pitches off (M10c's delegated baseline).
+3. **Good executives pitch better.** Seat holders at score 15 against score 8: hit rate at least 15 points higher.
+4. **The inbox stays calm:** at most 8 pitches a year per company on median.
+5. **Eras pay the first mover.** A company that pulls an era forward has 15–35% more customers in the era's categories at the end of the window than the same seed with the era on schedule (7 of 10 seeds).
+6. **Nothing else moves.** Every earlier guard as before; the T2 xfail stays (M15). A company that gives no authority plays exactly as before (golden snapshots unchanged by sub-tasks 1–2).
+
+### 27.6 What the API may show
+
+Pitches with their reasons, costs and low and high cases; each executive's pitch record. Never the pitch probability, the quality draw, an executive's true ambition, skills or score, or which candidate was best.

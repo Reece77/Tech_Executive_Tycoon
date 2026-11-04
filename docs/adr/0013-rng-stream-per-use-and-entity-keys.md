@@ -105,3 +105,4 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | `ipo` | 33 | `(company_id,)` | An IPO's book demand (formulas.md §25.2) | M13 (lane B) |
 | `market_sentiment` | 34 | `(company_id,)` | Sentiment and analysts' targets (formulas.md §25.3) | M13 (lane B) |
 | — | 35 | — | Reserved for lane B | M13 |
+| `pitch` | 36 | `(person_id,)` | Executives' quarterly pitch draw and pitch-quality draw (formulas.md §27.1) | M13b |
