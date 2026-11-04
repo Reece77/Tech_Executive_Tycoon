@@ -54,6 +54,7 @@ from tst.sim.products.models import ProductMonth
 from tst.sim.research.eras import arrive_eras
 from tst.sim.research.licensing import leaks, royalties
 from tst.sim.research.projects import decay_leads, run_projects
+from tst.sim.research.rivals import month_start as rival_research_start
 from tst.sim.research.rivals import rival_research_month
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
 from tst.sim.rivals.models import RivalMove
@@ -163,6 +164,7 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     The macro indicators for the month come first of all (M10, 20.1).
     """
     ctx = replace(ctx, state=macro.macro_phase(ctx.state, ctx.rng, ctx.balance, ctx.data))
+    ctx = replace(ctx, state=rival_research_start(ctx.state, ctx.balance))  # 21.6 (M12r)
     # Proposals left unanswered (Holiday, scripts) lapse at the next Continue (24.1, M10c).
     lapsed = ctx.state
     for proposal in ctx.state.pending_proposals(ctx.state.player.id):

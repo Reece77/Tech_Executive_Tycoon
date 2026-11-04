@@ -87,9 +87,22 @@ def _scale_builders(state: GameState, company_id: int, factor: float) -> GameSta
     return state
 
 
+def month_start(state: GameState, balance: Balance) -> GameState:
+    """Phase 1: a rival research action that ended last month returns its extra builders,
+    so its last month's payroll paid the premium too (21.6; M12r)."""
+    for project in state.research_projects:
+        if project.unit_id is not None or project.status != "stopped":
+            continue
+        if project.end_turn != state.turn - 1 or not state.company(project.company_id).alive:
+            continue
+        state = _scale_builders(state, project.company_id, 1 / (1 + balance.rnd.rival.pool_cost))
+    return state
+
+
 def rival_research_month(state: GameState, rng: RngFactory, balance: Balance) -> GameState:
     """Phase 3: each running rival research action, by project id, adds its monthly lead and
-    draws for a breakthrough; one that ends this month returns the extra builders (21.6)."""
+    draws for a breakthrough; one that ends this month keeps its extra builders through this
+    month's payroll and returns them at the start of the next (`month_start`; 21.6, M12r)."""
     rnd = balance.rnd
     for project in state.active_projects():
         if project.unit_id is not None:
@@ -117,6 +130,4 @@ def rival_research_month(state: GameState, rng: RngFactory, balance: Balance) ->
             last_event_turn=state.turn if event else project.last_event_turn,
         )
         state = with_research_project(state, updated)
-        if done:
-            state = _scale_builders(state, company.id, 1 / (1 + rnd.rival.pool_cost))
     return state

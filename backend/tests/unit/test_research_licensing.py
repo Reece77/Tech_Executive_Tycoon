@@ -16,7 +16,12 @@ from tst.sim.research import licensing
 from tst.sim.research.formulas import license_price_cents
 from tst.sim.research.models import ResearchLead
 from tst.sim.research.projects import add_lead
-from tst.sim.research.rivals import research_needs, rival_research_month, start_research
+from tst.sim.research.rivals import (
+    month_start,
+    research_needs,
+    rival_research_month,
+    start_research,
+)
 from tst.sim.rivals.models import PoachApproach
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_employment
@@ -151,5 +156,40 @@ def test_rivals_research(loaded: LoadedData) -> None:
         )
     assert state.research_lead(SALESFORCE, "software_platform") == pytest.approx(6 * 0.8 * 14 / 10)
     assert not state.active_projects(SALESFORCE)
+    state = month_start(replace(state, turn=state.turn + 1), quiet)  # the next month (M12r)
     back = next(p for p in state.company_pools(SALESFORCE) if p.function == "builder")
     assert back.headcount == pytest.approx(builders.headcount)
+
+
+def test_rival_research_pays_its_premium_every_month(loaded: LoadedData) -> None:
+    """M12r finding 5 (Codex review 3): a six-month rival research action pays the builder
+    pool's +10% in each of its six monthly payrolls (phase 6, after phase 3), the last month
+    included; the pool is back to normal for the next month's payroll (21.6, 21.10)."""
+    from tst.sim.hiring.phases import monthly_costs
+
+    game = _lab_game(loaded, staff=1)
+    state: GameState = replace(
+        game.state, research_leads=(ResearchLead(1, "software_platform", 30.0),)
+    )
+    b, g = loaded.balance, loaded.game_data
+    quiet = b.model_copy(update={"rnd": b.rnd.model_copy(update={"breakthrough_chance": 0.0})})
+
+    def payroll(s: GameState) -> int:
+        return sum(amount for _, _, amount in monthly_costs(s, SALESFORCE, b, g))
+
+    base = payroll(state)
+    state, _ = start_research(state, state.company(SALESFORCE), "software_platform", b, g)
+    premium = payroll(state) - base
+    builders = sum(
+        p.headcount for p in game.state.company_pools(SALESFORCE) if p.function == "builder"
+    )
+    assert premium > 0 and builders > 0
+    premiums = []
+    for month in range(7):
+        state = replace(state, turn=state.turn + (month > 0))
+        state = month_start(state, quiet)  # phase 1
+        state = rival_research_month(state, RngFactory(1), quiet)  # phase 3
+        premiums.append(payroll(state) - base)  # phase 6
+    assert premiums[:6] == [premium] * 6
+    assert sum(premiums[:6]) == 6 * premium
+    assert premiums[6] == 0
