@@ -12,8 +12,15 @@ from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.data_models import AUTHORITY_SEATS, Balance, GameData
 from tst.sim.errors import InvalidActionError, OrgRuleError
 from tst.sim.org.executives import seats_in_play
-from tst.sim.org.models import Authority, GuardValue, Proposal, ProposalStatus
-from tst.sim.state import GameState, with_authority, with_proposal
+from tst.sim.org.models import (
+    Authority,
+    GuardValue,
+    Pitch,
+    PitchPolicy,
+    Proposal,
+    ProposalStatus,
+)
+from tst.sim.state import GameState, with_authority, with_pitch_policy, with_proposal
 
 PROTECTED_UNITS = "protected_units"  # the CTO's guardrail that is a list of unit ids
 PROTECTED_PRODUCTS = "protected_products"  # the CPO's: product ids it may not sunset (M13b)
@@ -185,3 +192,50 @@ def pending_proposal(state: GameState, company: int, proposal_id: int) -> Propos
 
 def close_proposal(state: GameState, proposal: Proposal, status: ProposalStatus) -> GameState:
     return with_proposal(state, replace(proposal, status=status, resolved_turn=state.turn))
+
+
+# --- Pitches (M13b, 27.1) ------------------------------------------------------------------------
+
+PitchAnswer = Literal["approve", "decline", "modified"]
+
+
+@dataclass(frozen=True, slots=True)
+class AnswerPitch:
+    """Approve, decline or close as modified an executive's pitch (27.1). Approving runs the
+    move through the normal actions as the executive, with their energy; declining costs them
+    morale once; `modified` closes it after the founder made the move their own way."""
+
+    actor_id: int
+    pitch_id: int
+    answer: PitchAnswer
+    kind: Literal["answer_pitch"] = "answer_pitch"
+
+
+@dataclass(frozen=True, slots=True)
+class SetPitchPolicy:
+    """The Holiday spend limit (None: the default share of cash; 0: always ask) and whether a
+    Holiday stops for pitches above it (27.1). Free: a setting, not a decision."""
+
+    actor_id: int
+    auto_approve_cents: int | None
+    stop_for_big: bool = False
+    kind: Literal["set_pitch_policy"] = "set_pitch_policy"
+
+
+def pending_pitch(state: GameState, company: int, pitch_id: int) -> Pitch:
+    pitch = state.pitch(pitch_id)
+    if pitch is None or pitch.company_id != company:
+        raise InvalidActionError(f"no pitch {pitch_id}")
+    if pitch.status != "pending":
+        raise InvalidActionError("that pitch has been answered")
+    return pitch
+
+
+def set_pitch_policy(state: GameState, action: SetPitchPolicy) -> Outcome:
+    company = acting_company(state, action.actor_id)
+    if action.auto_approve_cents is not None and action.auto_approve_cents < 0:
+        raise InvalidActionError("the auto-approve limit cannot be negative")
+    policy = PitchPolicy(company, action.auto_approve_cents, action.stop_for_big)
+    if policy == state.pitch_policy(company):
+        raise InvalidActionError("nothing changes")
+    return Outcome(with_pitch_policy(state, policy))

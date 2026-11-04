@@ -117,6 +117,8 @@ from tst.db.models import (
     PersonStateRow,
     PersonTagRevealRow,
     PersonTagRow,
+    PitchPolicyRow,
+    PitchRow,
     PoachApproachRow,
     ProductDivisionRow,
     ProductionContractRow,
@@ -180,7 +182,7 @@ from tst.sim.markets_public.models import (
     PublicCompany,
     ShareMonth,
 )
-from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Proposal
+from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Pitch, PitchPolicy, Proposal
 from tst.sim.people.models import Person, RevealRecord, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.research.models import EraArrival, License, ResearchLead, ResearchProject
@@ -529,6 +531,7 @@ def load_state(session: Session) -> GameState:
     )
     state = _load_m10(session, state)
     state = _load_exec(session, state)
+    state = _load_pitches(session, state)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
     state = _load_public(session, state)
@@ -798,6 +801,50 @@ def _load_exec(session: Session, state: GameState) -> GameState:
             state.next_ids, exec_decision=after(ExecDecisionRow), proposal=after(ProposalRow)
         ),
     )
+
+
+PITCH_FIELDS = tuple(f for f in Pitch.__dataclass_fields__ if f != "params")
+
+
+def _load_pitches(session: Session, state: GameState) -> GameState:
+    """Every pitch and the pitch settings (M13b, 0032)."""
+    if not has_table(session, PitchRow):
+        return state
+    pitches = tuple(
+        Pitch(
+            params=tuple(sorted((r.params or {}).items())),
+            **{f: getattr(r, f) for f in PITCH_FIELDS},
+        )
+        for r in session.scalars(select(PitchRow).order_by(PitchRow.id))
+    )
+    policies = tuple(
+        PitchPolicy(r.company_id, r.auto_approve_cents, bool(r.stop_for_big))
+        for r in session.scalars(select(PitchPolicyRow).order_by(PitchPolicyRow.company_id))
+    )
+    last = int(session.scalar(select(func.max(PitchRow.id))) or 0)
+    return replace(
+        state,
+        pitches=pitches,
+        pitch_policies=policies,
+        next_ids=replace(state.next_ids, pitch=last + 1),
+    )
+
+
+def _sync_pitches(session: Session, old: GameState, new: GameState) -> None:
+    if (old.pitches, old.pitch_policies) == (new.pitches, new.pitch_policies) or not has_table(
+        session, PitchRow
+    ):
+        return
+    for p in _changed(old.pitches, new.pitches, lambda p: p.id):
+        session.merge(PitchRow(params=dict(p.params), **{f: getattr(p, f) for f in PITCH_FIELDS}))
+    for pol in _changed(old.pitch_policies, new.pitch_policies, lambda p: p.company_id):
+        session.merge(
+            PitchPolicyRow(
+                company_id=pol.company_id,
+                auto_approve_cents=pol.auto_approve_cents,
+                stop_for_big=pol.stop_for_big,
+            )
+        )
 
 
 def _sync_exec(session: Session, old: GameState, new: GameState) -> None:
@@ -1738,6 +1785,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_geo(session, old, new)
     _sync_marketing(session, old, new)
     _sync_exec(session, old, new)
+    _sync_pitches(session, old, new)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
     _sync_public(session, old, new)

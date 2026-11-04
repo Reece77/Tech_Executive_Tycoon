@@ -938,6 +938,13 @@ class PitchBalance(_Frozen):
     campaign_min_cents: int = Field(ge=0)
     campaign_brand_gap: float = Field(ge=0)
     office_seats: int = Field(gt=0)
+    new_product_share: float = Field(gt=0, le=1)
+    region_fit_without_office: float = Field(gt=0, le=1)
+    campaign_awareness_pct: float = Field(ge=0)
+    campaign_brand_pct: float = Field(ge=0)
+    campaign_lift: float = Field(ge=0)
+    buyback_share: float = Field(gt=0, le=1)
+    research_roles: dict[str, str]
 
     @model_validator(mode="after")
     def _check(self) -> PitchBalance:
@@ -1762,6 +1769,8 @@ INBOX_TEMPLATE_KEYS = (
     "exec_report",  # M10c (24.3)
     "exec_decisions",  # M10c (24.1)
     "exec_proposal",  # M10c (24.1)
+    "exec_pitch",  # M13b (27.1)
+    "pitch_went_ahead",  # M13b (27.1)
     # M4a (formulas.md 14)
     "safe_filled",
     "safe_declined",

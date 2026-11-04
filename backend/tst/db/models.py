@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 31
+SCHEMA_VERSION = 32
 
 
 class Base(DeclarativeBase):
@@ -1116,6 +1116,48 @@ class ProposalRow(Base):
     text: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(10), nullable=False)
     resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class PitchRow(Base):
+    """An executive's pitch (M13b, 27.1; 0032): its numbers, the answer and how it turned
+    out. Every pitch stays: executives' records count them all."""
+
+    __tablename__ = "exec_pitch"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    seat: Mapped[str] = mapped_column(String(8), nullable=False)
+    person_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    params: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    why: Mapped[str] = mapped_column(Text, nullable=False)
+    cost_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    capex_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    monthly_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    hires: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit: Mapped[str] = mapped_column(String(16), nullable=False)
+    low: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    high: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    risk: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    target_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    baseline: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    outcome: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    outcome_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    measured: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+
+class PitchPolicyRow(Base):
+    """The player's pitch settings per company (M13b, 27.1; 0032)."""
+
+    __tablename__ = "pitch_policy"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    auto_approve_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    stop_for_big: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
 
 class MarketingSplitRow(Base):

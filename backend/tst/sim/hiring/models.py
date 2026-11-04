@@ -129,6 +129,7 @@ class NextIds:
     production_contract: int = 1  # M12b: loaded as max(id) + 1 of the production_contract table
     ceo: int = 1  # M13: loaded as max(id) + 1 of the ceo table
     ceo_decision: int = 1  # M13: loaded as max(id) + 1 of the ceo_decision table
+    pitch: int = 1  # M13b: loaded as max(id) + 1 of the exec_pitch table
 
     def take(
         self,
@@ -167,6 +168,7 @@ class NextIds:
             "production_contract",
             "ceo",
             "ceo_decision",
+            "pitch",
         ],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)

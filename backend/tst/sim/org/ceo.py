@@ -76,6 +76,8 @@ CHAIR_ONLY: Final = frozenset(
         "remove_executive",
         "set_authority",
         "answer_proposal",
+        "answer_pitch",  # M13b (27.1): the Chair answers pitches, the CEO's included
+        "set_pitch_policy",
         "build_facility",
         "sell_facility",
         "sign_contract",
@@ -183,8 +185,13 @@ def run_ceo(
     balance: Balance,
     data: GameData,
     balances: Mapping[tuple[int, AccountCode], Cents],
+    *,
+    at_controls: bool = False,
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...], tuple[DelegateAction, ...]]:
-    """Phase 2, after the executives with authority (25.6)."""
+    """Phase 2, after the executives with authority (25.6); then the CEO's quarterly pitch
+    across the functions it runs (27.1, M13b)."""
+    from tst.sim.org.pitches import CEO_SCOPE_SEAT, SEAT_KINDS, pitch_month
+
     if not state.ceos:
         return state, (), (), ()
     run = DelegateRun(state=state, balances=dict(balances), rng=rng, balance=balance, data=data)
@@ -252,6 +259,14 @@ def run_ceo(
             person = run.state.person(ceo.person_id)
             summary = f"{person.first_name} {person.last_name}: " + "; ".join(lines) + "."
             run.logs.append(inbox_item(state.turn, company.id, "ceo_decisions", summary=summary))
+        kinds = tuple(
+            k
+            for scope in CEO_SCOPES
+            if scope in ceo.scopes and scope not in covered
+            for k in SEAT_KINDS.get(CEO_SCOPE_SEAT.get(scope, scope), ())
+        )
+        score = ceo_score(skills, balance.ceo.weights)  # true, never shown
+        pitch_month(run, company.id, "ceo", ceo.person_id, kinds, score, at_controls)
     keep = state.turn - balance.ceo.memory_months
     run.state = replace(
         run.state, ceo_decisions=tuple(d for d in run.state.ceo_decisions if d.turn > keep)

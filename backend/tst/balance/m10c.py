@@ -31,10 +31,11 @@ from tst.balance.strategies import SEAT_ROLES, appoint_executives, steady
 from tst.sim.actions import AppointExecutive
 from tst.sim.actions.authority import AnswerProposal, SetAuthority
 from tst.sim.org.divisions import support_pools
+from tst.sim.org.models import PitchPolicy
 from tst.sim.org.rules import org_view
 from tst.sim.products.models import SELLING
 from tst.sim.products.phases import team_of
-from tst.sim.state import with_person_state
+from tst.sim.state import with_person_state, with_pitch_policy
 
 SEEDS: Final = tuple(range(1, 11))
 MONTHS: Final = 36
@@ -95,6 +96,9 @@ def _seat(game: Game, score: float, authority: bool) -> None:
             game.act(SetAuthority(game.founder_id, seat, True))
     ps = game.state.person_state(game.founder_id)
     game.state = with_person_state(game.state, replace(ps, energy=100))
+    # Pitches off (M13b): every pitch waits for an answer that never comes, so these arms
+    # play as M10c's did; 27.5 target 2 compares pitches on against this baseline.
+    game.state = with_pitch_policy(game.state, PitchPolicy(PLAYER, auto_approve_cents=0))
 
 
 def _refill(game: Game) -> None:

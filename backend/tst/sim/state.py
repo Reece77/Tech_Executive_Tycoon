@@ -46,6 +46,8 @@ from tst.sim.org.models import (
     ExecSeat,
     HiringPlan,
     OrgUnit,
+    Pitch,
+    PitchPolicy,
     Proposal,
     WorkPolicy,
 )
@@ -173,6 +175,8 @@ class GameState:
     authorities: tuple[Authority, ...] = ()
     exec_decisions: tuple[ExecDecision, ...] = ()
     proposals: tuple[Proposal, ...] = ()
+    pitches: tuple[Pitch, ...] = ()  # M13b (27.1): pending and recent pitches, by id
+    pitch_policies: tuple[PitchPolicy, ...] = ()  # M13b: by company_id
     macro: MacroMonth | None = None  # the indicators phase 1 last set (M10, 20.1)
     loans: tuple[Loan, ...] = ()  # every loan, sorted by id (M10, 20.3)
     # M9 (19.2, 19.5): open offices by id; other regions' markets by (category, segment,
@@ -415,6 +419,21 @@ class GameState:
         """A seat's authority record (M10c, 24.1); None if never given."""
         return next(
             (a for a in self.authorities if a.company_id == company_id and a.seat == seat), None
+        )
+
+    def pending_pitches(self, company_id: int) -> tuple[Pitch, ...]:
+        """Pitches waiting for the founder's answer (27.1, M13b)."""
+        return tuple(
+            p for p in self.pitches if p.company_id == company_id and p.status == "pending"
+        )
+
+    def pitch(self, pitch_id: int) -> Pitch | None:
+        return next((p for p in self.pitches if p.id == pitch_id), None)
+
+    def pitch_policy(self, company_id: int) -> PitchPolicy:
+        return next(
+            (p for p in self.pitch_policies if p.company_id == company_id),
+            PitchPolicy(company_id),
         )
 
     def pending_proposals(self, company_id: int) -> tuple[Proposal, ...]:
@@ -696,6 +715,16 @@ def with_authority(state: GameState, authority: Authority) -> GameState:
 
 def with_exec_decision(state: GameState, decision: ExecDecision) -> GameState:
     return replace(state, exec_decisions=_upsert(state.exec_decisions, decision, lambda d: d.id))
+
+
+def with_pitch(state: GameState, pitch: Pitch) -> GameState:
+    return replace(state, pitches=_upsert(state.pitches, pitch, lambda p: p.id))
+
+
+def with_pitch_policy(state: GameState, policy: PitchPolicy) -> GameState:
+    return replace(
+        state, pitch_policies=_upsert(state.pitch_policies, policy, lambda p: p.company_id)
+    )
 
 
 def with_proposal(state: GameState, proposal: Proposal) -> GameState:

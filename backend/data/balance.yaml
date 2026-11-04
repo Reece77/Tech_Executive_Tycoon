@@ -691,6 +691,13 @@ pitch: # executives' pitches: big moves they propose for the founder to approve 
   campaign_min_cents: 500000 # cents; $5,000 a month at least (27.1)
   campaign_brand_gap: 20 # brand points below the target before the CMO pitches a campaign (27.1)
   office_seats: 25 # seats in an office the COO pitches (27.1)
+  new_product_share: 0.25 # share of a segment's addressable customers a new product's central case reaches at 24 months, / (1 + products already selling there) (27.1)
+  region_fit_without_office: 0.7 # the CRO's fit for a region where the company has no office (27.1; 1 with one)
+  campaign_awareness_pct: 25 # % awareness a campaign adds to its product for campaign_months (a modifier, 23.2)
+  campaign_brand_pct: 10 # % brand target a campaign adds for campaign_months
+  campaign_lift: 0.15 # a campaign's central case: customers x this x brand gap / 100 more customers (27.1)
+  buyback_share: 0.25 # share of the cash above the CFO's cash threshold a buyback pitch spends (27.1)
+  research_roles: { software_platform: software_engineer, ai: data_scientist, infrastructure: devops_engineer, chip_design: chip_designer, devices: hardware_engineer } # the role the CTO hires for a research team in each domain (27.1)
 
 # --- Capital and macro (formulas.md section 20, M10 lane B) -------------------------------
 macro:

@@ -119,6 +119,9 @@ class TurnContext:
     # The operating result (P&L by account class) of those same entries: a lender's fee is
     # interest, below operating profit, though it is cash out (14.1, 20.3; M10r finding 1).
     prior_operating: Mapping[int, Cents] = field(default_factory=dict)
+    # The player's own Continue (block_major): pitches wait for the founder; otherwise
+    # (Holiday, scripts) those under the spend limit go ahead (27.1, M13b).
+    at_controls: bool = False
 
     @property
     def turn(self) -> int:
@@ -196,12 +199,14 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=state, delegate_actions=taken).post(*entries).log(*logs)
     # Executives with authority act after the hiring delegates (M10c, 24.1).
     state, entries, logs, acted = run_executives(
-        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
+        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances, at_controls=ctx.at_controls
     )
     ctx = replace(ctx, state=state, delegate_actions=ctx.delegate_actions + acted)
     ctx = ctx.post(*entries).log(*logs)
     # The CEO runs what no seat with authority covers (M13, 25.6).
-    state, entries, logs, acted = run_ceo(ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances)
+    state, entries, logs, acted = run_ceo(
+        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances, at_controls=ctx.at_controls
+    )
     ctx = replace(ctx, state=state, delegate_actions=ctx.delegate_actions + acted)
     ctx = ctx.post(*entries).log(*logs)
     state, moves, approached, raised = rival_month(
@@ -520,11 +525,13 @@ def advance_turn(
             )
     blocking = blocking_events(state) if block_major else ()
     proposals = state.pending_proposals(state.player.id) if block_major else ()
-    if blocking or proposals:
+    pitches = state.pending_pitches(state.player.id) if block_major else ()  # M13b (27.1)
+    if blocking or proposals or pitches:
         raise EventsOpenError(
-            blocking_message(len(blocking), len(proposals)),
+            blocking_message(len(blocking), len(proposals) + len(pitches)),
             tuple(e.id for e in blocking),
             tuple(p.id for p in proposals),
+            tuple(p.id for p in pitches),
         )
     ctx = TurnContext(
         state=state,
@@ -537,6 +544,7 @@ def advance_turn(
         start=state,
         prior_flow=prior_flow or {},
         prior_operating=prior_operating or {},
+        at_controls=block_major,
     )
     for _name, phase in PHASES:
         ctx = phase(ctx)

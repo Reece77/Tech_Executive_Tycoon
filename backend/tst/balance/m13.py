@@ -31,6 +31,7 @@ from tst.sim.finance.macro import history_month
 from tst.sim.hiring.models import PersonState
 from tst.sim.markets_public import formulas as pf
 from tst.sim.markets_public.public import consensus
+from tst.sim.org.models import PitchPolicy
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Employment
 from tst.sim.products.models import Product, ProductSegment
@@ -43,6 +44,7 @@ from tst.sim.state import (
     with_employment,
     with_person,
     with_person_state,
+    with_pitch_policy,
     with_product,
     with_product_segment,
 )
@@ -318,6 +320,9 @@ def target_5_run(job: tuple[bool, int]) -> CeoRun:
     ceo = add_ceo(game, T5_SCORE)
     if with_ceo:
         assert game.act(AppointCeo(game.founder_id, ceo))
+    # Pitches off (M13b): M13's target as measured before pitches existed; the CEO's pitches
+    # wait for an answer that never comes.
+    game.state = with_pitch_policy(game.state, PitchPolicy(PLAYER, auto_approve_cents=0))
     spent = available = 0
     for _ in range(T5_MONTHS):
         if with_ceo:

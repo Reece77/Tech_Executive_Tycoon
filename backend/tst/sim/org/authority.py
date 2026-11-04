@@ -431,9 +431,16 @@ def run_executives(
     balance: Balance,
     data: GameData,
     balances: Mapping[tuple[int, AccountCode], Cents],
+    *,
+    at_controls: bool = False,
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...], tuple[DelegateAction, ...]]:
     """Phase 2, after the hiring delegates (ADR-0015): every executive with authority, the
-    player's company only, seats in 24.1 order."""
+    player's company only, seats in 24.1 order; then each one's quarterly pitch (27.1, M13b).
+    `at_controls`: the player's own Continue, so pitches wait for the founder."""
+    from tst.sim.org.pitches import SEAT_KINDS, follow_through, pitch_month
+
+    if state.pitches:
+        state = follow_through(state, balance, data)
     run = DelegateRun(state=state, balances=dict(balances), rng=rng, balance=balance, data=data)
     ea = balance.exec_authority
     lines: list[str] = []
@@ -468,6 +475,7 @@ def run_executives(
                 ExecDecision(did, company, a.seat, holder, state.turn, text, mistake),
             )
             lines.append(f"{name} ({a.seat.upper()}) {text}{' (a misstep)' if mistake else ''}")
+        pitch_month(run, company, a.seat, holder, SEAT_KINDS[a.seat], score, at_controls)
     if lines:
         run.logs.append(
             inbox_item(state.turn, company, "exec_decisions", summary="; ".join(lines) + ".")
