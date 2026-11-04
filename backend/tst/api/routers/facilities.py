@@ -59,7 +59,10 @@ def _stored(path: Path, state: GameState, data: LoadedData) -> facility_views.St
 
 
 def _out(path: Path, state: GameState, data: LoadedData) -> InfrastructureOut:
-    return facility_views.infrastructure_out(state, data, _stored(path, state, data))
+    # the single UI company, resolved at the boundary (ADR-0020 1; M12r)
+    return facility_views.infrastructure_out(
+        state, data, _stored(path, state, data), state.player.id
+    )
 
 
 def _act(path: Path, data: LoadedData, action: Action) -> InfrastructureActionOut:
@@ -115,7 +118,9 @@ def preview_build(
 
         # Infrastructure previews data centres only; plants are built from Hardware (M12b)
         raise FacilityRuleError(f"{kind!r} is not a data-centre kind")
-    return facility_views.build_preview(state, kind, region, units, contract_id, balances, data)
+    return facility_views.build_preview(
+        state, kind, region, units, contract_id, balances, data, state.player.id
+    )
 
 
 @router.post(

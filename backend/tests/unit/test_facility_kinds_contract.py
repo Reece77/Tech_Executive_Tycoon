@@ -135,8 +135,9 @@ def test_it_adds_no_cloud_capacity_quality_or_outages(works: LoadedData) -> None
 
 def test_the_infrastructure_view_skips_it(works: LoadedData) -> None:
     both = _live(_live(fresh_game(works), works, "data_centre_general", 500), works, WORKS, 10_000)
-    out = infrastructure_out(both, works, {})
+    out = infrastructure_out(both, works, {}, both.player.id)
     assert [f.kind for f in out.facilities] == ["data_centre_general"]
     assert WORKS not in {k.key for k in out.kinds}
-    alone = infrastructure_out(_live(fresh_game(works), works, WORKS, 10_000), works, {})
+    lone = _live(fresh_game(works), works, WORKS, 10_000)
+    alone = infrastructure_out(lone, works, {}, lone.player.id)
     assert alone.facilities == [] and not alone.cloud.can_start
