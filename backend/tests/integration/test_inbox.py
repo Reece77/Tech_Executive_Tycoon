@@ -445,14 +445,20 @@ def _m10c_items(loaded: LoadedData) -> list[LogItem]:
 
 def _m13b_items(loaded: LoadedData) -> list[LogItem]:
     """A CPO's pitch at the controls, and one that goes ahead on Holiday (27.1)."""
+    from tests.unit.test_m13b_eras import _caused
     from tests.unit.test_m13b_pitches import _cpo, _pitching_seed
     from tests.unit.test_m13b_pitches import _run as _pitch_run
+    from tst.sim.research import eras
 
     state = _cpo(loaded)
     seed = _pitching_seed(loaded, state)
+    caused, _ = _caused(loaded)  # an era's report at the first mover's window end (27.3)
+    end = replace(caused, turn=caused.turn + loaded.balance.rnd.first_mover_months)
+    _, reports = eras.era_reports(end, loaded.game_data, loaded.balance)
     return [
         *_pitch_run(loaded, state, seed)[2],
         *_pitch_run(loaded, state, seed, at_controls=False)[2],
+        *reports,
     ]
 
 
