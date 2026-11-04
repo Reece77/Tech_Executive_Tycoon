@@ -43,7 +43,7 @@ from tst.sim.state import (
 
 FOUNDER = 1
 FUNDING_CENTS = 2_000_000_000  # $20M
-SEEDS = range(1, 60)
+SEEDS = range(1, 400)
 
 
 def _company(
@@ -104,21 +104,32 @@ def cpo(save_dir: Path, name: str, data: LoadedData) -> Path:
     return path
 
 
+def _limit(state: GameState, seed: int, data: LoadedData) -> int | None:
+    """The dollar limit between the two pitches' costs if this seed's draws make both
+    executives pitch on this state, else None."""
+    asks = with_pitch_policy(state, PitchPolicy(FOUNDER, auto_approve_cents=0))
+    out, _, _, _ = run_executives(
+        asks, RngFactory(seed), data.balance, data.game_data, {(FOUNDER, CASH): FUNDING_CENTS}
+    )
+    costs = sorted(p.cost_cents for p in out.pending_pitches(FOUNDER))
+    if len(costs) == 2 and costs[1] > costs[0] + 200_00:
+        return (costs[0] + costs[1]) // 2 // 100  # whole dollars
+    return None
+
+
 def holiday(save_dir: Path, name: str, data: LoadedData) -> tuple[Path, int]:
-    """A seed whose first month makes both executives pitch, and a limit between the costs."""
-    b, g = data.balance, data.game_data
+    """A seed whose first month makes both executives pitch, and a limit between the costs.
+    The draws are probed on one company first (cheap), then checked on the seed's own save."""
+    path, probe, _ = _company(save_dir, f"{name}-probe", SEEDS[0], data, ("cpo", "cto"))
+    path.unlink()
     for seed in SEEDS:
-        path, state, _ = _company(save_dir, f"{name}-probe", seed, data, ("cpo", "cto"))
-        asks = with_pitch_policy(state, PitchPolicy(FOUNDER, auto_approve_cents=0))
-        out, _, _, _ = run_executives(
-            asks, RngFactory(seed), b, g, {(FOUNDER, CASH): FUNDING_CENTS}
-        )
-        path.unlink()
-        costs = sorted(p.cost_cents for p in out.pending_pitches(FOUNDER))
-        if len(costs) == 2 and costs[1] > costs[0] + 200_00:
-            limit = (costs[0] + costs[1]) // 2 // 100  # whole dollars
-            path, _, _ = _company(save_dir, name, seed, data, ("cpo", "cto"))
+        if _limit(probe, seed, data) is None:
+            continue
+        path, state, _ = _company(save_dir, name, seed, data, ("cpo", "cto"))
+        limit = _limit(state, seed, data)
+        if limit is not None:
             return path, limit
+        path.unlink()
     raise SystemExit("no seed makes both executives pitch")
 
 
