@@ -11,6 +11,9 @@ Placement key: **v2** = a v2 milestone before the v2 retrospective; **v3** = alo
 | **Press, media and public promises** | Short interviews at launches, earnings calls and crises. Your tone moves brand, share price and morale. You can make **public promises** ("we ship a frontier model by Q3", "our chip beats NVIDIA's next year", "no layoffs this year"). The engine tracks each one: keeping it builds brand and analyst credibility; breaking it costs brand, the share price and staff trust, and rivals and the press remind everyone. Promises are the press system's stakes, not a separate system. | **Yes** (2026-11-03) | v2: a short people-and-press milestone after M14, before M15 (it builds on M13's earnings and guidance) |
 | One-on-ones and private promises | Raises, promotions and projects promised to individuals | **Not needed** (2026-11-03) | dropped |
 | Mentoring | Senior and junior pairs; skills and personality rub off, bad habits included | Yes | v2 people-and-press milestone, or v4 |
+| Recruiter replaces a poached person | A recruiter on staff can be asked to find a replacement (playtest 2) | Yes | people-and-press milestone |
+| Candidate search by interest | Filter recruitment by interests, at extra cost (playtest 2) | Yes | people-and-press milestone |
+| Leadership fit in the org chart | Show who would make a good team lead or manager, from revealed traits (playtest 2) | Yes | people-and-press milestone |
 | Rival founders as characters | Named rival CEOs with personalities, grudges and public feuds; LLM-written storylines through the event director (ADR-0005) | Yes | v2 people-and-press milestone (press needs someone to argue with) |
 | Industry rankings | Yearly Fortune 500, Best Places to Work and Most Innovative lists; goals to chase; rankings affect hiring and brand | Yes | M15, with the company score |
 
