@@ -10,7 +10,13 @@ import math
 from collections.abc import Mapping
 from typing import Literal
 
-from tst.sim.data_models import ExecQuality, ExecSeatsBalance, HiringBalance, OrgBalance
+from tst.sim.data_models import (
+    ExecQuality,
+    ExecSeatsBalance,
+    HiringBalance,
+    OrgBalance,
+    PitchBalance,
+)
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.scale import ATTR_NEUTRAL
 
@@ -163,3 +169,48 @@ def decision_quality(score: float, quality: ExecQuality) -> float:
     """P(an executive with authority takes the right rule this month) =
     clamp(base + per_score x s, min, max), s the true seat score (24.2, M10c)."""
     return max(quality.min, min(quality.max, quality.base + quality.per_score * score))
+
+
+# --- Pitches (M13b, 27.1) --------------------------------------------------------------------
+
+
+def pitch_chance(ambition: float, pitch: PitchBalance) -> float:
+    """P(an executive with authority pitches this quarter) =
+    clamp(base + per_ambition x (ambition - 10), 0.15, 0.9), true ambition (27.1)."""
+    lo, hi = pitch.chance_clamp
+    return max(lo, min(hi, pitch.base + pitch.per_ambition * (ambition - pitch.ambition_neutral)))
+
+
+def pitch_pick(count: int, u: float, quality: float) -> int | None:
+    """Which candidate an executive pitches, best first (27.1): the best with probability
+    `quality` (decision_quality, 24.2), else the second best; None without candidates."""
+    if count <= 0:
+        return None
+    return 0 if u < quality or count == 1 else 1
+
+
+def case_spread(displayed_score: float, pitch: PitchBalance) -> float:
+    """Half-width of a pitch's low and high case as a fraction of its central case:
+    max(min, at_zero - per_score x the displayed seat score), so weaker-looking executives
+    give wider cases (27.1). From displayed ranges only (ADR-0015, 27.6)."""
+    s = pitch.spread
+    return max(s.min, s.at_zero - s.per_score * displayed_score)
+
+
+def auto_approve_limit(cash_cents: int, limit_cents: int | None, pitch: PitchBalance) -> int:
+    """The Holiday spend limit (27.1): the player's, else auto_approve_cash_bp of cash; 0 means
+    always ask."""
+    if limit_cents is not None:
+        return max(0, limit_cents)
+    return max(0, cash_cents) * pitch.auto_approve_cash_bp // BP_DENOMINATOR
+
+
+def auto_approves(cost_cents: int, limit_cents: int, on_holiday: bool) -> bool:
+    """On Holiday a pitch whose cost over cost_months is under the limit goes ahead; at the
+    controls every pitch waits for the founder (27.1)."""
+    return on_holiday and limit_cents > 0 and cost_cents < limit_cents
+
+
+def decline_morale(ego: float, pitch: PitchBalance) -> float:
+    """Morale a declined pitch costs its executive, once: more for high ego (27.1)."""
+    return pitch.decline_morale_ego if ego >= pitch.ego_at else pitch.decline_morale

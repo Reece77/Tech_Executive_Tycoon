@@ -16,6 +16,9 @@ from tst.sim.org.models import Authority, GuardValue, Proposal, ProposalStatus
 from tst.sim.state import GameState, with_authority, with_proposal
 
 PROTECTED_UNITS = "protected_units"  # the CTO's guardrail that is a list of unit ids
+PROTECTED_PRODUCTS = "protected_products"  # the CPO's: product ids it may not sunset (M13b)
+CATEGORIES = "categories"  # the CPO's: category keys it may enter, () = any (M13b, 27.1)
+LIST_GUARDS = frozenset({PROTECTED_UNITS, PROTECTED_PRODUCTS, CATEGORIES})
 FRACTIONAL = frozenset({"coverage_target"})  # guardrails that may be fractions
 
 
@@ -29,7 +32,23 @@ class SetAuthority:
     kind: Literal["set_authority"] = "set_authority"
 
 
-def _value(key: str, value: object, state: GameState, company: int) -> GuardValue:
+def _value(
+    key: str, value: object, state: GameState, company: int, data: GameData | None = None
+) -> GuardValue:
+    if key in (PROTECTED_PRODUCTS, CATEGORIES):  # the CPO's lists (M13b, 27.1)
+        if not isinstance(value, (list, tuple)):
+            raise InvalidActionError(f"{key} is a list")
+        if key == CATEGORIES:
+            keys = tuple(sorted({str(v) for v in value}))
+            known = {c.key for c in data.categories} if data is not None else set(keys)
+            if not set(keys) <= known:
+                raise OrgRuleError(f"unknown categories {sorted(set(keys) - known)}")
+            return keys
+        products = {p.id for p in state.company_products(company)}
+        ids = tuple(sorted({int(v) for v in value}))
+        if not set(ids) <= products:
+            raise OrgRuleError("protected products must be the company's products")
+        return ids
     if key == PROTECTED_UNITS:
         if not isinstance(value, (list, tuple)):
             raise InvalidActionError("protected_units is a list of unit ids")
@@ -50,6 +69,7 @@ def guardrails_for(
     state: GameState,
     company: int,
     balance: Balance,
+    data: GameData | None = None,
 ) -> tuple[tuple[str, GuardValue], ...]:
     """Defaults, then the seat's current guardrails, then the changes; unknown keys refused."""
     defaults = balance.exec_authority.defaults[seat]
@@ -61,7 +81,7 @@ def guardrails_for(
     for key, value in changes:
         if key not in defaults:
             raise InvalidActionError(f"the {seat.upper()} has no guardrail {key!r}")
-        merged[key] = _value(key, value, state, company)
+        merged[key] = _value(key, value, state, company, data)
     return tuple(sorted(merged.items()))
 
 
@@ -90,7 +110,9 @@ def set_authority(
         if holder is None or state.employment_of(holder) is None:
             raise OrgRuleError(f"appoint a {action.seat.upper()} before giving them authority")
     current = state.authority(company, action.seat)
-    guardrails = guardrails_for(current, action.seat, action.guardrails, state, company, balance)
+    guardrails = guardrails_for(
+        current, action.seat, action.guardrails, state, company, balance, data
+    )
     if current is not None and (current.enabled, current.guardrails) == (
         action.enabled,
         guardrails,

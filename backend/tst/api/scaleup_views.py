@@ -20,6 +20,7 @@ from tst.api.schemas.scaleup import (
     DivisionOut,
     DivisionPeriodOut,
     DivisionStatementsOut,
+    GuardChoiceOut,
     ProposalOut,
     ReportOut,
     ScaleupOut,
@@ -100,6 +101,7 @@ ACTS_ON = {  # 24.1, in words
     "offices",
     "cfo": "Proposes a round or a loan when runway is short; repays debt early when cash is "
     "plentiful",
+    "cpo": "Launches products that are ready; pitches new products and sunsets",  # M13b (27.1)
 }
 
 
@@ -114,7 +116,32 @@ def _authority_out(
         guardrails={k: list(v) if isinstance(v, tuple) else v for k, v in a.guardrails},
         since_label=format_turn(a.since_turn) if a.enabled else None,
         acts_on=ACTS_ON[seat],
+        choices=_choices(state, company_id, dict(a.guardrails), data),
     )
+
+
+def _choices(
+    state: GameState, company_id: int, rails: dict[str, object], data: LoadedData
+) -> dict[str, list[GuardChoiceOut]]:
+    """The values each list guardrail may hold (M13b): units, products or categories."""
+    out: dict[str, list[GuardChoiceOut]] = {}
+    if "protected_units" in rails:
+        out["protected_units"] = [
+            GuardChoiceOut(value=str(u.id), label=u.name) for u in state.active_units(company_id)
+        ]
+    if "protected_products" in rails:
+        out["protected_products"] = [
+            GuardChoiceOut(value=str(p.id), label=p.name)
+            for p in state.company_products(company_id)
+            if p.status != "retired"
+        ]
+    if "categories" in rails:
+        out["categories"] = [
+            GuardChoiceOut(value=c.key, label=c.label)
+            for c in data.game_data.categories
+            if not c.capacity_market and not c.assembly_market  # as the New product dialog
+        ]
+    return out
 
 
 def _seat_out(state: GameState, company_id: int, seat: str, data: LoadedData) -> SeatOut:

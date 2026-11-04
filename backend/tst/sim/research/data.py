@@ -98,6 +98,7 @@ class RndBalance(_Frozen):
     first_mover_months: int = Field(ge=0)
     first_mover_cap: float = Field(ge=0)
     first_mover_brand: float = Field(ge=0)
+    first_mover_appeal: float = Field(ge=1)  # M13b (27.3)
     license: LicenseBalance
     leak: LeakBalance
     rival: RivalResearchBalance

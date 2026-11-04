@@ -208,6 +208,8 @@ def run_ceo(
             ceo_score(skills, balance.ceo.weights), balance.exec_authority.quality
         )
         covered = {a.seat for a, _ in acting_seats(run.state, company.id)}
+        if "cpo" in covered:  # a CPO with authority runs product priorities (M13b, 27.1)
+            covered.add("products")
         lines: list[str] = []
         for index, scope in enumerate(CEO_SCOPES):
             if scope not in ceo.scopes or scope in covered:

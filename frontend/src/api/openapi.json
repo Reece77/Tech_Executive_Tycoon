@@ -13990,6 +13990,12 @@
                     "type": "integer"
                   },
                   "type": "array"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
                 }
               ]
             },
@@ -14021,12 +14027,29 @@
                     "type": "integer"
                   },
                   "type": "array"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
                 }
               ]
             },
             "type": "object",
             "title": "Guardrails",
-            "description": "headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct (CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents (COO), runway_months and repay_above_months (CFO)"
+            "description": "headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct (CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents (COO), runway_months and repay_above_months (CFO), headcount_cap, categories and protected_products (CPO, M13b)"
+          },
+          "choices": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/GuardChoiceOut"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Choices",
+            "description": "For each list guardrail, the values it may hold (M13b)"
           },
           "since_label": {
             "anyOf": [
@@ -19433,6 +19456,26 @@
           "fraction"
         ],
         "title": "GrantOut"
+      },
+      "GuardChoiceOut": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "The id or key as a string"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "label"
+        ],
+        "title": "GuardChoiceOut",
+        "description": "One value a list guardrail may hold (M13b): a unit, a product or a category."
       },
       "GuidanceIn": {
         "properties": {
@@ -29237,7 +29280,7 @@
                 "type": "null"
               }
             ],
-            "description": "Authority over the seat's function (M10c, 24.1); null for the CPO"
+            "description": "Authority over the seat's function (M10c, 24.1; the CPO's from M13b)"
           }
         },
         "type": "object",

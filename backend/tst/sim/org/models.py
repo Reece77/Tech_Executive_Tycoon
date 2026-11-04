@@ -95,7 +95,7 @@ class HiringPlan:
 
 # --- Executives with authority (formulas.md 24, M10c) -----------------------------------------
 
-type GuardValue = int | float | tuple[int, ...]
+type GuardValue = int | float | tuple[int, ...] | tuple[str, ...]
 type ProposalKind = Literal["round", "loan", "lease"]
 type ProposalStatus = Literal["pending", "approved", "declined", "lapsed"]
 

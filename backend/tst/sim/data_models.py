@@ -30,6 +30,7 @@ from tst.sim.facilities.config import (
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.money import BP_DENOMINATOR
+from tst.sim.org.voice_data import Voice
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
@@ -865,7 +866,14 @@ class CrisisBalance(_Frozen):
     outage_min_customers: float = Field(ge=0)
 
 
-AUTHORITY_SEATS = ("cto", "cro", "cmo", "coo", "cfo")  # seats that take authority (24.1)
+AUTHORITY_SEATS = (
+    "cto",
+    "cro",
+    "cmo",
+    "coo",
+    "cfo",
+    "cpo",
+)  # seats that take authority (24.1; CPO M13b 27.1)
 
 
 class ExecQuality(_Frozen):
@@ -896,6 +904,46 @@ class ExecAuthorityBalance(_Frozen):
     def _check(self) -> ExecAuthorityBalance:
         if sorted(self.defaults) != sorted(AUTHORITY_SEATS):
             raise ValueError(f"exec_authority.defaults must cover {list(AUTHORITY_SEATS)}")
+        return self
+
+
+class PitchSpread(_Frozen):
+    at_zero: float = Field(ge=0)
+    per_score: float = Field(ge=0)
+    min: float = Field(ge=0)
+
+
+class PitchBalance(_Frozen):
+    """Executives' pitches (formulas.md 27.1, M13b)."""
+
+    base: float = Field(ge=0, le=1)
+    per_ambition: float = Field(ge=0)
+    chance_clamp: tuple[float, float]
+    ambition_neutral: float = Field(ge=1, le=20)  # tunable-exempt: attribute scale 1-20
+    decline_morale: float = Field(ge=0)
+    decline_morale_ego: float = Field(ge=0)
+    ego_at: float = Field(ge=1, le=20)  # tunable-exempt: attribute scale 1-20
+    record_months: int = Field(gt=0)
+    cost_months: int = Field(gt=0)
+    auto_approve_cash_bp: int = Field(ge=0)
+    spread: PitchSpread
+    team_builders: int = Field(gt=0)
+    sunset_months: int = Field(gt=0)
+    dc_use: float = Field(gt=0, le=1)
+    dc_months: int = Field(gt=0)
+    plant_share: float = Field(gt=0, le=1)
+    plant_months: int = Field(gt=0)
+    campaign_months: int = Field(gt=0)
+    campaign_share: float = Field(gt=0)
+    campaign_min_cents: int = Field(ge=0)
+    campaign_brand_gap: float = Field(ge=0)
+    office_seats: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _check(self) -> PitchBalance:
+        lo, hi = self.chance_clamp
+        if not 0 <= lo <= hi <= 1:
+            raise ValueError("pitch.chance_clamp: 0 <= low <= high <= 1")
         return self
 
 
@@ -1104,6 +1152,7 @@ class Balance(_Frozen):
     backup: BackupBalance
     holiday: HolidayBalance  # M7b (formulas.md 17.1)
     exec_authority: ExecAuthorityBalance  # M10c (formulas.md 24)
+    pitch: PitchBalance  # M13b (formulas.md 27.1)
     inbox: InboxBalance  # M10b (formulas.md 23.1)
     coo: CooBalance  # M7b (formulas.md 17.3)
     people: PeopleBalance
@@ -1806,6 +1855,7 @@ class GameData(_Frozen):
     tech: TechFrontierFile | None = None  # M11 (21.1-21.3): None = no research domains
     eras: ErasFile = ErasFile()  # M11 (21.4)
     banks: tuple[Bank, ...] = ()  # M13 (25.2): lead underwriters
+    voices: tuple[Voice, ...] = ()  # M13b (27.2): executives' report voices
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:

@@ -3244,7 +3244,7 @@ export interface components {
             enabled: boolean;
             /** Guardrails */
             guardrails?: {
-                [key: string]: number | number[];
+                [key: string]: number | number[] | string[];
             };
         };
         /**
@@ -3257,10 +3257,17 @@ export interface components {
             enabled: boolean;
             /**
              * Guardrails
-             * @description headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct (CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents (COO), runway_months and repay_above_months (CFO)
+             * @description headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct (CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents (COO), runway_months and repay_above_months (CFO), headcount_cap, categories and protected_products (CPO, M13b)
              */
             guardrails: {
-                [key: string]: number | number[];
+                [key: string]: number | number[] | string[];
+            };
+            /**
+             * Choices
+             * @description For each list guardrail, the values it may hold (M13b)
+             */
+            choices?: {
+                [key: string]: components["schemas"]["GuardChoiceOut"][];
             };
             /**
              * Since Label
@@ -5538,6 +5545,19 @@ export interface components {
              * @default false
              */
             next_vest_is_cliff?: boolean;
+        };
+        /**
+         * GuardChoiceOut
+         * @description One value a list guardrail may hold (M13b): a unit, a product or a category.
+         */
+        GuardChoiceOut: {
+            /**
+             * Value
+             * @description The id or key as a string
+             */
+            value: string;
+            /** Label */
+            label: string;
         };
         /** GuidanceIn */
         GuidanceIn: {
@@ -9633,7 +9653,7 @@ export interface components {
              * @description The penalty while vacant (stage 3+)
              */
             vacancy_penalty_pct: number | null;
-            /** @description Authority over the seat's function (M10c, 24.1); null for the CPO */
+            /** @description Authority over the seat's function (M10c, 24.1; the CPO's from M13b) */
             authority: components["schemas"]["AuthorityOut"] | null;
         };
         /** SecondaryIn */

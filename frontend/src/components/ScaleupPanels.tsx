@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, NumberInput } from '@mantine/core';
+import { Alert, Button, Modal, MultiSelect, NumberInput } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import {
@@ -352,6 +352,9 @@ const GUARD_LABELS: Record<string, string> = {
   lease_approval_rent_cents: 'Leases above this rent need your approval ($ a month)',
   runway_months: 'Propose funding below this runway (months)',
   repay_above_months: 'Repay debt with cash above (months of burn)',
+  protected_units: 'Units it may not move people from',
+  categories: 'Categories it may enter (none chosen: any)',
+  protected_products: 'Products it may not sunset',
 };
 
 /** A seat's authority and guardrails (24.1, M10c). Percent-of-ask is entered as a percent;
@@ -380,14 +383,28 @@ export function AuthorityDialog({
         .map(([k, v]) => [k, shown(k, v as number)]),
     ),
   );
+  // List guardrails (CTO protected units; the CPO's categories and protected products, M13b),
+  // edited as the API's string values; ids go back as numbers.
+  const [lists, setLists] = useState<Record<string, string[]>>(() =>
+    Object.fromEntries(
+      Object.entries(a?.guardrails ?? {})
+        .filter(([k, v]) => Array.isArray(v) && k in (a?.choices ?? {}))
+        .map(([k, v]) => [k, (v as (number | string)[]).map(String)]),
+    ),
+  );
   if (!a) return null;
+  const listValue = (k: string, v: string[]): number[] | string[] =>
+    k === 'categories' ? v : v.map(Number);
   const submit = (enabled: boolean) =>
     act.mutate(
       {
         action: 'authority',
         seat: seat.seat,
         enabled,
-        guardrails: Object.fromEntries(Object.entries(values).map(([k, v]) => [k, stored(k, v)])),
+        guardrails: {
+          ...Object.fromEntries(Object.entries(values).map(([k, v]) => [k, stored(k, v)])),
+          ...Object.fromEntries(Object.entries(lists).map(([k, v]) => [k, listValue(k, v)])),
+        },
       },
       { onSuccess: onClose },
     );
@@ -406,6 +423,18 @@ export function AuthorityDialog({
             min={0}
             value={values[k]}
             onChange={(v) => setValues({ ...values, [k]: Number(v) || 0 })}
+            data-testid={`guard-${k}`}
+          />
+        ))}
+        {Object.keys(lists).map((k) => (
+          <MultiSelect
+            key={k}
+            label={GUARD_LABELS[k] ?? k}
+            data={(a.choices?.[k] ?? []).map((c) => ({ value: c.value, label: c.label }))}
+            value={lists[k]}
+            onChange={(v) => setLists({ ...lists, [k]: v })}
+            searchable
+            clearable
             data-testid={`guard-${k}`}
           />
         ))}

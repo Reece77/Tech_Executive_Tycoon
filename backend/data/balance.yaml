@@ -666,6 +666,31 @@ exec_authority: # executives with authority (formulas.md 24, M10c)
     cmo: { marketing_pct_of_revenue: 15 } # % of last month's revenue spent on marketing in total
     coo: { coverage_target: 1.0, lease_approval_rent_cents: 0, max_salary_ratio_bp: 11000 } # support coverage; rent above which a lease is only proposed
     cfo: { runway_months: 9, repay_above_months: 24 } # months of burn: propose a round or loan below the first; repay debt early with cash above the second
+    cpo: { headcount_cap: 12, categories: [], protected_products: [] } # M13b (27.1): builders a new product's team may total; category keys it may enter ([] = any); product ids it may not sunset
+
+pitch: # executives' pitches: big moves they propose for the founder to approve (formulas.md 27.1, M13b)
+  base: 0.45 # probability an executive with authority pitches in a quarter, at ambition 10 (27.1)
+  per_ambition: 0.04 # added per point of true ambition above 10 (27.1)
+  chance_clamp: [0.15, 0.9] # the pitch probability's bounds (27.1)
+  ambition_neutral: 10 # attribute points; the ambition at which the probability is `base`
+  decline_morale: 2 # morale points a declined pitch costs its executive, once (27.1)
+  decline_morale_ego: 4 # the same for an executive with ego at or above ego_at (27.1)
+  ego_at: 15 # attribute points; the ego from which a decline stings more (27.1)
+  record_months: 24 # months an approved pitch is tracked against its low and high case (27.1)
+  cost_months: 12 # months of cost counted against the auto-approve limit (27.1)
+  auto_approve_cash_bp: 500 # bp of cash; the default auto-approve limit, 5% of cash (27.1)
+  spread: { at_zero: 0.6, per_score: 0.025, min: 0.15 } # half-width of the low/high case as a fraction of the central case: max(min, at_zero - per_score x the displayed seat score) (27.1)
+  team_builders: 3 # builders in the team the CPO suggests for a new product (27.1)
+  sunset_months: 6 # months a product must have shrunk, below its maintenance line, before the CPO pitches its sunset (27.1)
+  dc_use: 0.6 # projected use of a data centre's capacity the CTO needs before pitching one (27.1)
+  dc_months: 24 # months that use must last (27.1)
+  plant_share: 0.75 # contract volume as a share of a plant size before the COO pitches a plant (27.1)
+  plant_months: 12 # months that volume must last (27.1)
+  campaign_months: 3 # months of a CMO campaign (27.1)
+  campaign_share: 1.0 # a campaign adds this x the product's current monthly marketing (at least campaign_min_cents) each campaign month (27.1)
+  campaign_min_cents: 500000 # cents; $5,000 a month at least (27.1)
+  campaign_brand_gap: 20 # brand points below the target before the CMO pitches a campaign (27.1)
+  office_seats: 25 # seats in an office the COO pitches (27.1)
 
 # --- Capital and macro (formulas.md section 20, M10 lane B) -------------------------------
 macro:
@@ -901,9 +926,10 @@ rnd:
   quality_clamp: [0.5, 1.5] # q's range (21.3)
   era_lead: 15 # points; an era's threshold is the baseline at its historical month plus this (21.4)
   era_baseline: 5 # points added to the domain's baseline when an era arrives (21.4)
-  first_mover_months: 12 # months of the first mover's window (21.4)
-  first_mover_cap: 5 # quality-cap points for the first mover's products in the era's categories (21.4)
-  first_mover_brand: 10 # brand-target points for those products (21.4)
+  first_mover_months: 24 # months of the first mover's window (21.4; M13b 27.3: 12 -> 24)
+  first_mover_cap: 8 # quality-cap points for the first mover's products in the era's categories (21.4; M13b 27.3: 5 -> 8)
+  first_mover_brand: 15 # brand-target points for those products (21.4; M13b 27.3: 10 -> 15)
+  first_mover_appeal: 1.15 # multiplier on those products' appeal during the window (M13b 27.3; 1 = none)
   license: # licensing (21.5)
     energy: 8 # founder energy to license in or out
     margin: 10 # points; the licensor keeps this much of its lead over the licensee

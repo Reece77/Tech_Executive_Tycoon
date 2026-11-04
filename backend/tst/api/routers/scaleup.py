@@ -37,7 +37,7 @@ from tst.sim.actions import (
 )
 from tst.sim.actions.authority import AnswerProposal, SetAuthority
 from tst.sim.errors import InvalidActionError
-from tst.sim.org.models import SEATS
+from tst.sim.org.models import SEATS, GuardValue
 from tst.sim.state import GameState
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["scaleup"])
@@ -148,8 +148,11 @@ def set_authority(
     """Give, change or withdraw a seat's authority over its function (24.1)."""
     path = _path(settings, save_id)
     founder = _founder_id(_state(path))
-    guardrails = tuple(
-        sorted((k, tuple(v) if isinstance(v, list) else v) for k, v in body.guardrails.items())
+    guardrails: tuple[tuple[str, GuardValue], ...] = tuple(
+        sorted(
+            (k, tuple(v) if isinstance(v, list) else v)  # type: ignore[misc]
+            for k, v in body.guardrails.items()
+        )
     )
     return _act(path, data, SetAuthority(founder, _seat(seat), body.enabled, guardrails))
 

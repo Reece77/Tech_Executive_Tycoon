@@ -19,6 +19,8 @@ Right rule, then mistake, by seat:
   mistake: one hire fewer.
 - CFO: a round or loan proposal below the runway threshold, early repayment above the cash
   threshold; mistake: repays 20% less.
+- CPO (M13b, 27.1): launches products that are ready; mistake: waits a month. Its big moves
+  are pitches (tst.sim.org.pitches).
 """
 
 from __future__ import annotations
@@ -362,6 +364,25 @@ def _cfo(seat: _Seat, data: GameData) -> None:
         )
 
 
+# --- CPO (M13b, 27.1) -------------------------------------------------------------------------
+
+
+def _cpo(seat: _Seat, data: GameData) -> None:
+    """Product priorities: launch every product in development that is ready (as the CEO's
+    products scope, 25.6); a misstep waits a month (24.2). Its big moves, a new product or a
+    sunset, are pitches (27.1)."""
+    from tst.sim.actions import LaunchProduct
+    from tst.sim.actions.products import launch_problems
+
+    if not seat.right:
+        return
+    state, b = seat.state, seat.run.balance
+    for product in state.company_products(seat.a.company_id):
+        if product.status != "in_development" or launch_problems(state, product, b, data):
+            continue
+        seat.act(LaunchProduct(seat.holder, product.id), f"launched {product.name}")
+
+
 # --- Proposals (24.1) -------------------------------------------------------------------------
 
 
@@ -436,6 +457,8 @@ def run_executives(
                 _coo(seat, data)
             case "cfo":
                 _cfo(seat, data)
+            case "cpo":
+                _cpo(seat, data)
         person = run.state.person(holder)
         name = f"{person.first_name} {person.last_name}"
         for text, mistake in seat.notes:

@@ -123,7 +123,7 @@ export type ScaleupAction =
       action: 'authority';
       seat: string;
       enabled: boolean;
-      guardrails?: Record<string, number | number[]>;
+      guardrails?: Record<string, number | number[] | string[]>;
     }; // M10c (24.1)
 
 /** One product action, as the product screens build it; maps to its route. */

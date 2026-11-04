@@ -1932,13 +1932,15 @@ def authority(
     from tst.sim.actions.authority import SetAuthority
 
     path, data, state = _game(save)
-    rails: list[tuple[str, int | float | tuple[int, ...]]] = []
+    rails: list[tuple[str, int | float | tuple[int, ...] | tuple[str, ...]]] = []
     for g in guard or []:
         key, _, value = g.partition("=")
         if not value:
             raise _fail(f"a guardrail is key=value, not {g!r}")
-        if key == "protected_units":
+        if key in ("protected_units", "protected_products"):
             rails.append((key, tuple(int(x) for x in value.split(",") if x)))
+        elif key == "categories":  # the CPO's (M13b, 27.1)
+            rails.append((key, tuple(x for x in value.split(",") if x)))
         else:
             try:
                 number = float(value)

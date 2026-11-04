@@ -46,15 +46,27 @@ class CrossDivisionOut(BaseModel):
     fix: str = Field(description="The move that removes the factor")
 
 
+class GuardChoiceOut(BaseModel):
+    """One value a list guardrail may hold (M13b): a unit, a product or a category."""
+
+    value: str = Field(description="The id or key as a string")
+    label: str
+
+
 class AuthorityOut(BaseModel):
     """A seat's authority (24.1, M10c): on or off and its guardrails. Never the decision
     quality or the holder's score (24.4)."""
 
     enabled: bool
-    guardrails: dict[str, float | list[int]] = Field(
+    guardrails: dict[str, float | list[int] | list[str]] = Field(
         description="headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct "
         "(CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents "
-        "(COO), runway_months and repay_above_months (CFO)"
+        "(COO), runway_months and repay_above_months (CFO), headcount_cap, categories and "
+        "protected_products (CPO, M13b)"
+    )
+    choices: dict[str, list[GuardChoiceOut]] = Field(
+        default_factory=dict,
+        description="For each list guardrail, the values it may hold (M13b)",
     )
     since_label: str | None = Field(description="Given since; null while off")
     acts_on: str = Field(description="What the seat does with authority")
@@ -73,7 +85,7 @@ class SeatOut(BaseModel):
     )
     vacancy_penalty_pct: float | None = Field(description="The penalty while vacant (stage 3+)")
     authority: AuthorityOut | None = Field(
-        description="Authority over the seat's function (M10c, 24.1); null for the CPO"
+        description="Authority over the seat's function (M10c, 24.1; the CPO's from M13b)"
     )
 
 
@@ -147,7 +159,7 @@ class AuthorityIn(BaseModel):
     current or default values."""
 
     enabled: bool
-    guardrails: dict[str, float | list[int]] = Field(default_factory=dict)
+    guardrails: dict[str, float | list[int] | list[str]] = Field(default_factory=dict)
 
 
 class AppointIn(BaseModel):

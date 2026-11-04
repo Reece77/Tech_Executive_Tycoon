@@ -1,0 +1,46 @@
+# Executives' report voices (formulas.md 27.2, M13b). A report's sentences are built from
+# engine facts; the voice picks the wording. The first voice whose rule matches the company's
+# displayed view of the executive (the midpoint of a revealed personality range, ADR-0007)
+# is used; the last voice has no rule and catches everyone else. Placeholders: {did}, {pitch},
+# {worry}, {numbers}, {quarter}. The LLM may rewrite a report in the same voice from the same
+# facts (16, 27.2), never adding any.
+voices:
+  - key: blunt
+    rule: { trait: ambition, at_least: 14 } # attribute points, displayed midpoint
+    opener: "{quarter}, straight to it."
+    did: "What I did: {did}."
+    nothing_done: "I made no moves this quarter, and I am not proud of it."
+    pitch: "What I want: {pitch}"
+    no_pitch: "Nothing worth your money this quarter; I won't pitch for the sake of it."
+    worry: "What bothers me: {worry}."
+    calm: "Nothing is on fire."
+    numbers: "The numbers: {numbers}."
+  - key: cautious
+    rule: { trait: risk_appetite, at_most: 7 }
+    opener: "{quarter}: a careful look back."
+    did: "I kept to small, safe steps: {did}."
+    nothing_done: "I saw no change worth the risk this quarter."
+    pitch: "With some hesitation, I'm proposing {pitch}"
+    no_pitch: "I'd rather not commit money to anything new yet."
+    worry: "I'm watching {worry}."
+    calm: "No risks I'd flag."
+    numbers: "For the record: {numbers}."
+  - key: warm
+    rule: { trait: sociability, at_least: 14 }
+    opener: "{quarter}: thanks to the team, here's where we are."
+    did: "Together we {did}."
+    nothing_done: "The team held steady; we didn't need to change course."
+    pitch: "I'm excited about this one: {pitch}"
+    no_pitch: "No new ask from me this quarter."
+    worry: "One thing I'd like us to talk about: {worry}."
+    calm: "The team is in good shape."
+    numbers: "Where we stand: {numbers}."
+  - key: plain
+    opener: "{quarter} report."
+    did: "This quarter I {did}."
+    nothing_done: "I saw nothing that needed a change this quarter."
+    pitch: "I'm pitching {pitch}"
+    no_pitch: "No pitch from me this quarter."
+    worry: "Concerns: {worry}."
+    calm: "No pressing concerns."
+    numbers: "Numbers: {numbers}."
