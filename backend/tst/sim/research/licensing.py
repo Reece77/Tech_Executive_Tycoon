@@ -7,11 +7,13 @@ rule, not a draw. A researcher who leaves a project for a rival takes some of th
 
 from __future__ import annotations
 
+import math
+
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, LICENSE_REVENUE, RESEARCH, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.products.models import SELLING
-from tst.sim.research import levels
+from tst.sim.research import estimates, levels
 from tst.sim.research.formulas import royalty_cents
 from tst.sim.research.projects import add_lead
 from tst.sim.state import GameState
@@ -47,12 +49,39 @@ def license_in_limit(
     return max(0.0, gap - balance.rnd.license.margin)
 
 
+def public_license_in_limit(
+    state: GameState, balance: Balance, data: GameData, licensee: int, licensor: int, domain: str
+) -> int:
+    """The most whole points the licensee is offered (21.7, 21.10; M12r): the licensor's
+    displayed range's low end - margin - the licensee's own lead, floored, never below 0.
+    It uses only what the licensee sees, so no answer to a request depends on the
+    licensor's true lead; the low end never exceeds the true lead, so neither does this."""
+    low, _ = estimates.lead_range(state, licensee, licensor, domain, balance, data)
+    mine = state.research_lead(licensee, domain)
+    ceiling = max(0, math.floor(low - balance.rnd.license.margin - mine))
+    assert ceiling <= max(0.0, license_in_limit(state, balance, licensee, licensor, domain))
+    return ceiling
+
+
+def public_license_out_limit(
+    state: GameState, balance: Balance, data: GameData, licensor: int, licensee: int, domain: str
+) -> int:
+    """The most whole points the licensor may grant (21.7, 21.10; M12r): its own lead -
+    margin - the licensee's displayed range's high end, floored, never below 0."""
+    _, high = estimates.lead_range(state, licensor, licensee, domain, balance, data)
+    mine = state.research_lead(licensor, domain)
+    ceiling = max(0, math.floor(mine - balance.rnd.license.margin - high))
+    assert ceiling <= max(0.0, license_in_limit(state, balance, licensee, licensor, domain))
+    return ceiling
+
+
 def refusal(
     state: GameState, data: GameData, balance: Balance, licensee: int, licensor: int, domain: str
 ) -> str | None:
-    """Why a licensor says no, or None: it is a direct competitor in a category the domain
-    feeds, or its lead is not more than the margin ahead (21.5)."""
-    if license_in_limit(state, balance, licensee, licensor, domain) <= 0:
+    """Why a licensor says no, or None: its lead is not more than the margin ahead as far
+    as the licensee can see (the public ceiling is 0), or it is a direct competitor in a
+    category the domain feeds (21.5). Both depend only on public values (M12r)."""
+    if public_license_in_limit(state, balance, data, licensee, licensor, domain) <= 0:
         margin = balance.rnd.license.margin
         return f"its lead is not more than {margin:g} points ahead of yours"
     if competes(state, data, licensee, licensor, domain):

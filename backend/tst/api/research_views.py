@@ -7,8 +7,6 @@ skill ranges it sees; eras still to come show thresholds and no historical dates
 
 from __future__ import annotations
 
-import math
-
 from tst.api.schemas.research import (
     CategoryTechOut,
     DomainOut,
@@ -144,19 +142,18 @@ def units_out(state: GameState, data: LoadedData) -> list[UnitChoiceOut]:
 
 def rivals_out(state: GameState, data: LoadedData) -> list[DomainRivalsOut]:
     """Every rival's lead in each domain as a range, with what licensing would allow; the
-    limits use the range's low end, so the player never learns the exact gap (21.7)."""
+    limits are the actions' own public ceilings (the range's low end in, high end out), so
+    the player never learns the exact gap (21.7, M12r)."""
     g, b = data.game_data, data.balance
     me = state.player.id
-    margin = b.rnd.license.margin
     out = []
     for d in levels.domain_keys(g):
-        mine = state.research_lead(me, d)
         rows = []
         for c in state.rivals():
             low, high = estimates.lead_range(state, me, c.id, d, b, g)
             why = licensing.refusal(state, g, b, me, c.id, d)
-            safe_in = max(0, math.floor(low - margin - mine))
-            safe_out = max(0, math.floor(mine - margin - high))
+            safe_in = licensing.public_license_in_limit(state, b, g, me, c.id, d)
+            safe_out = licensing.public_license_out_limit(state, b, g, me, c.id, d)
             rows.append(
                 RivalLeadOut(
                     company_id=c.id,
@@ -167,9 +164,7 @@ def rivals_out(state: GameState, data: LoadedData) -> list[DomainRivalsOut]:
                     high=high,
                     licensed=any(x.involves(me, c.id) for x in state.licenses),
                     can_license_in=why is None and safe_in > 0,
-                    why_not=why
-                    if why
-                    else (None if safe_in > 0 else "their lead is too close to yours"),
+                    why_not=why,  # None only when the public ceiling is above 0 (M12r)
                     max_points=safe_in if why is None else 0,
                     can_license_out=safe_out > 0,
                     max_out_points=safe_out,

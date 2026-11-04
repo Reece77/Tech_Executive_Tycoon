@@ -35,23 +35,30 @@ def _lines(entries, company: int, account: str) -> int:  # type: ignore[no-untyp
 
 
 def test_license_in(loaded: LoadedData) -> None:
-    """Up to their lead - 10 - yours, price $150,000 x points x (1 + ARR / $20M), paid once;
-    the licensor books licence revenue (21.5)."""
+    """Up to their lead - 10 - yours, offered as the public ceiling (the displayed range's
+    low end; M12r), price $150,000 x points x (1 + ARR / $20M), paid once; the licensor
+    books licence revenue (21.5)."""
     game = _lab_game(loaded, staff=1)
     game.state = add_lead(game.state, SALESFORCE, "devices", 40.0)
+    b, g = loaded.balance, loaded.game_data
+    ceiling = licensing.public_license_in_limit(game.state, b, g, 1, SALESFORCE, "devices")
+    assert 0 < ceiling <= 30
     energy = game.state.person_state(FOUNDER).energy or 0
     with pytest.raises(ResearchRuleError, match="ask for fewer points"):
-        game.act(LicenseIn(FOUNDER, SALESFORCE, "devices", 31))
+        game.act(LicenseIn(FOUNDER, SALESFORCE, "devices", ceiling + 1))
     cash = game.cash
-    game.act(LicenseIn(FOUNDER, SALESFORCE, "devices", 30))
-    assert game.state.research_lead(1, "devices") == 30
-    price = license_price_cents(30, 0, loaded.balance)
-    assert price == 30 * loaded.balance.rnd.license.price_per_point_cents
+    game.act(LicenseIn(FOUNDER, SALESFORCE, "devices", ceiling))
+    assert game.state.research_lead(1, "devices") == ceiling
+    price = license_price_cents(ceiling, 0, loaded.balance)
+    assert price == ceiling * loaded.balance.rnd.license.price_per_point_cents
     assert game.cash == cash - price
     assert game.balances[(SALESFORCE, LICENSE_REVENUE)] == -price
     assert game.state.person_state(FOUNDER).energy == energy - loaded.balance.rnd.license.energy
     licence = game.state.licenses[0]
-    assert (licence.licensor_id, licence.licensee_id, licence.points) == (SALESFORCE, 1, 30)
+    assert (licence.licensor_id, licence.licensee_id, licence.points) == (SALESFORCE, 1, ceiling)
+    while more := licensing.public_license_in_limit(game.state, b, g, 1, SALESFORCE, "devices"):
+        game.act(LicenseIn(FOUNDER, SALESFORCE, "devices", more))
+    assert game.state.research_lead(1, "devices") <= 30
     with pytest.raises(ResearchRuleError, match="not more than 10"):
         game.act(LicenseIn(FOUNDER, SALESFORCE, "devices", 1))
 
@@ -72,10 +79,14 @@ def test_a_direct_competitor_says_no(loaded: LoadedData) -> None:
 def test_license_out_earns_royalties(loaded: LoadedData) -> None:
     game = _lab_game(loaded, staff=1)
     game.state = add_lead(game.state, 1, "software_platform", 30.0)
+    ceiling = licensing.public_license_out_limit(
+        game.state, loaded.balance, loaded.game_data, 1, SALESFORCE, "software_platform"
+    )
+    assert 0 < ceiling < 20
     with pytest.raises(ResearchRuleError, match="ask for fewer points"):
-        game.act(LicenseOut(FOUNDER, SALESFORCE, "software_platform", 25))
-    game.act(LicenseOut(FOUNDER, SALESFORCE, "software_platform", 15))
-    assert game.state.research_lead(SALESFORCE, "software_platform") == 15
+        game.act(LicenseOut(FOUNDER, SALESFORCE, "software_platform", ceiling + 1))
+    game.act(LicenseOut(FOUNDER, SALESFORCE, "software_platform", ceiling))
+    assert game.state.research_lead(SALESFORCE, "software_platform") == ceiling
     licence = game.state.licenses[0]
     assert licence.royalty_bp == 200
     assert licence.royalty_end_turn == game.state.turn + 23
