@@ -77,6 +77,12 @@ def _lose(state: GameState, product_id: int, share: float) -> tuple[GameState, f
     return state, lost, worst[1] if worst else None
 
 
+def _extra_churn(segment: str, balance: Balance, data: GameData) -> float:
+    """The outage month's extra churn on Cloud customers: (mult - 1) x base churn (22.5)."""
+    extra = (balance.facility.outage.cloud_churn_mult - 1) * data.segment(segment).base_churn
+    return min(1.0, extra)
+
+
 def outages_month(
     state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LogItem, ...]]:
@@ -113,15 +119,19 @@ def apply_outages(
                 worst = (lost, product_id, segment)
         cloud = compute.capacity_product(state, company, data)
         if cloud is not None and alloc.sold.get(facility_id, 0.0) > 0:
-            category = data.category(cloud.category)
-            for seg in state.segments_of(cloud.id):  # churn x mult: the extra comes off now
-                extra = (ob.cloud_churn_mult - 1) * data.segment(seg.segment).base_churn
-                gone = seg.customers * min(1.0, extra)
+            # churn x mult, at home and abroad (M12r): the extra comes off now
+            for seg in state.segments_of(cloud.id):
+                gone = seg.customers * _extra_churn(seg.segment, balance, data)
                 lost_total += gone
                 state = with_product_segment(state, replace(seg, customers=seg.customers - gone))
                 if worst is None or gone > worst[0]:
                     worst = (gone, cloud.id, seg.segment)
-            del category
+            for rseg in state.regional_segments_of(cloud.id):
+                gone = rseg.customers * _extra_churn(rseg.segment, balance, data)
+                lost_total += gone
+                state = with_regional_segment(state, replace(rseg, customers=rseg.customers - gone))
+                if worst is None or gone > worst[0]:
+                    worst = (gone, cloud.id, rseg.segment)
         outage_id, ids = state.next_ids.take("outage")
         state = with_outage(
             replace(state, next_ids=ids),
