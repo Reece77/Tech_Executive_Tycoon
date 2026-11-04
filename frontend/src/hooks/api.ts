@@ -119,6 +119,8 @@ export type ScaleupAction =
   | { action: 'appoint'; seat: string; person_id: number; salary_cents?: number }
   | { action: 'remove'; seat: string }
   | { action: 'proposal'; proposal_id: number; approve: boolean } // M10c (24.1)
+  | { action: 'pitch'; pitch_id: number; answer: 'approve' | 'decline' | 'modified' } // M13b
+  | { action: 'pitch_policy'; auto_approve_cents: number | null; stop_for_big: boolean }
   | {
       action: 'authority';
       seat: string;
@@ -1596,6 +1598,19 @@ async function applyScaleup(saveId: string, a: ScaleupAction) {
         await api.POST('/api/saves/{save_id}/scaleup/seats/{seat}/authority', {
           params: { path: { save_id: saveId, seat: a.seat } },
           body: { enabled: a.enabled, guardrails: a.guardrails ?? {} },
+        }),
+      );
+    case 'pitch': // M13b (27.1)
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/scaleup/pitches/{pitch_id}/{answer}', {
+          params: { path: { save_id: saveId, pitch_id: a.pitch_id, answer: a.answer } },
+        }),
+      );
+    case 'pitch_policy':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/scaleup/pitch-policy', {
+          params: { path: { save_id: saveId } },
+          body: { auto_approve_cents: a.auto_approve_cents, stop_for_big: a.stop_for_big },
         }),
       );
   }

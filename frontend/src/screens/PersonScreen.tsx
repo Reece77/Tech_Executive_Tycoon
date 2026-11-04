@@ -7,7 +7,7 @@ import { MoraleBar } from '../components/MoraleBar';
 import { ActiveEffects } from '../components/ActiveEffects';
 import { RelationshipsPanel } from '../components/Relationships';
 import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../components/PersonOrg';
-import { BreakdownTip } from '../components/Term';
+import { BreakdownTip, Term } from '../components/Term';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { StatusChip } from '../components/StatusChip';
 import { FormerProfileView } from './FormerProfile';
@@ -209,6 +209,18 @@ function ProfileBody({
       </section>
       <MoraleBreakdownPanel saveId={saveId} p={p} overview={overview} />
       <ActiveEffects saveId={saveId} effects={p.active_effects} />
+      {p.pitch_record && (
+        <p
+          className="tst-muted"
+          style={{ margin: 0, fontSize: 13 }}
+          data-testid="person-pitch-record"
+        >
+          <Term term="exec.pitch_record">Pitch record</Term>: {p.pitch_record.pitches} pitched,{' '}
+          {p.pitch_record.approved} approved; {p.pitch_record.hits} hit, {p.pitch_record.misses}{' '}
+          missed, {p.pitch_record.too_early} too early
+          {p.pitch_record.tracking > 0 && `, ${p.pitch_record.tracking} still tracked`}.
+        </p>
+      )}
       {!p.is_founder && p.employment && (
         <RelationshipsPanel saveId={saveId} personId={p.person_id} />
       )}

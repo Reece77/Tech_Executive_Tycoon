@@ -55,6 +55,10 @@ class EventsOut(BaseModel):
     blocking_proposal_ids: list[int] = Field(
         description="Executives' proposals waiting for an answer: each blocks Continue (24.1)"
     )
+    blocking_pitch_ids: list[int] = Field(
+        default_factory=list,
+        description="Executives' pitches waiting for an answer: each blocks Continue (27.1)",
+    )
     open: list[EventOut]
     recent: list[EventOut] = Field(description="Answered events of the last few months")
     ai_spend_cents: float = Field(description="Real cents spent this calendar month")

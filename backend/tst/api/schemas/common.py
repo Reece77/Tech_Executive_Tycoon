@@ -17,6 +17,9 @@ class ErrorOut(BaseModel):
     proposal_ids: list[int] | None = Field(
         default=None, description="events_open: executives' proposals to answer (M10c)"
     )
+    pitch_ids: list[int] | None = Field(
+        default=None, description="events_open: executives' pitches to answer (M13b)"
+    )
     retryable: bool | None = Field(
         default=None,
         description="True: refused before anything was written, so the same request may be "

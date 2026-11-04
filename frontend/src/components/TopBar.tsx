@@ -119,7 +119,9 @@ export function TopBar({
   const blocked = blocking + proposals > 0;
   const parts = [
     blocking ? `${blocking} event${blocking === 1 ? '' : 's'}` : '',
-    proposals ? `${proposals} proposal${proposals === 1 ? '' : 's'}` : '',
+    proposals
+      ? `${proposals} proposal${proposals === 1 ? '' : 's'} or pitch${proposals === 1 ? '' : 'es'}`
+      : '',
   ].filter(Boolean);
   const blockText = `Answer ${parts.join(' and ')} first`;
   return (

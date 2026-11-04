@@ -87,6 +87,7 @@ def list_events(save_id: str, settings: SettingsDep, data: DataDep) -> EventsOut
         blocking_event_id=blocking,
         blocking_event_ids=blocking_ids,
         blocking_proposal_ids=[p.id for p in state.pending_proposals(cid)],
+        blocking_pitch_ids=[p.id for p in state.pending_pitches(cid)],
         open=[event_views.event_out(state, e, data) for e in shown],
         recent=[event_views.event_out(state, e, data) for e in recent],
         ai_spend_cents=round(month_spend(settings.resolved_save_dir()).cents, 4),

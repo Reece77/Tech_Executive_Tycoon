@@ -1824,8 +1824,9 @@ def _scaleup(path: Path, state: GameState, data: LoadedData) -> Any:
         lines = repository.division_lines(session, state.player.id)
         months = repository.division_months(session, state.player.id)
         reports = scaleup_views.reports_out(repository.exec_reports(session, state.player.id))
+        cash = company_cash(repository.current_balances(session, state.turn), state.player.id)
     profit = scaleup_views.last_month_profit(lines, months, state, data)
-    return scaleup_views.scaleup_out(state, data, profit, reports)
+    return scaleup_views.scaleup_out(state, data, profit, reports, cash)
 
 
 @app.command()
@@ -1970,6 +1971,80 @@ def reports(save: SaveOpt) -> None:
         typer.echo(f"{d.date_label}  {d.name} ({d.seat.upper()}) {d.text}{slip}")
     for p in out.proposals:
         typer.echo(f"Proposal {p.proposal_id} [{p.status}] {p.name}: {p.text}")
+
+
+@app.command()
+def pitches(save: SaveOpt) -> None:
+    """Executives' pitches, pending first, with their cases, and each one's record; the
+    Holiday spend limit (27.1, M13b)."""
+    path, data, state = _game(save)
+    out = _scaleup(path, state, data)
+    if not out.pitches:
+        typer.echo("No pitches yet: executives with authority pitch at most once a quarter.")
+    for p in out.pitches:
+        outcome = f", {p.outcome.replace('_', ' ')}" if p.outcome else ""
+        typer.echo(
+            f"Pitch {p.pitch_id} [{p.status}{outcome}] {p.name} ({p.seat.upper()}), {p.date_label}:"
+        )
+        typer.echo(f"  {p.title}: {p.why}.")
+        typer.echo(
+            f"  Cost {format_money(p.cost_cents)} over 12 months; in 24 months {p.case_label}. "
+            f"Risk: {p.risk}."
+        )
+    for seat in out.seats:
+        if seat.record and seat.record.pitches:
+            r = seat.record
+            typer.echo(
+                f"{seat.label} {seat.holder_name}: {r.pitches} pitched, {r.approved} approved, "
+                f"{r.hits} hit, {r.misses} missed, {r.too_early} too early"
+            )
+    if out.pitch_policy is not None:
+        pol = out.pitch_policy
+        which = "default, 5% of cash" if pol.auto_approve_cents is None else "set"
+        typer.echo(
+            f"Holiday auto-approve limit {format_money(pol.limit_cents)} ({which})"
+            + ("; Holiday stops for bigger pitches" if pol.stop_for_big else "")
+        )
+
+
+def _answer_pitch(save: str, pitch: int, answer: str) -> None:
+    from tst.sim.actions.authority import AnswerPitch
+
+    path, data, state = _game(save)
+    result = _run(path, data, AnswerPitch(_actor(state), pitch, answer))  # type: ignore[arg-type]
+    done = result.new_state.pitch(pitch)
+    status = done.status.replace("_", " ") if done else answer
+    typer.echo(f"Pitch {pitch} {status}: {done.title if done else ''}")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("approve-pitch")
+def approve_pitch(save: SaveOpt, pitch: Annotated[int, typer.Argument()]) -> None:
+    """Approve a pitch: the move runs at once, as the executive (27.1)."""
+    _answer_pitch(save, pitch, "approve")
+
+
+@app.command("decline-pitch")
+def decline_pitch(save: SaveOpt, pitch: Annotated[int, typer.Argument()]) -> None:
+    """Decline a pitch: the executive's morale dips (27.1)."""
+    _answer_pitch(save, pitch, "decline")
+
+
+@app.command("pitch-limit")
+def pitch_limit(
+    save: SaveOpt,
+    cents: Annotated[
+        int | None,
+        typer.Option(help="Holiday auto-approve limit; omit for 5% of cash, 0 to always ask"),
+    ] = None,
+    stop: Annotated[bool, typer.Option(help="Holiday stops for pitches above the limit")] = False,
+) -> None:
+    """Set the Holiday spend limit for pitches (27.1)."""
+    from tst.sim.actions.authority import SetPitchPolicy
+
+    path, data, state = _game(save)
+    _run(path, data, SetPitchPolicy(_actor(state), cents, stop))
+    typer.echo("Pitch limit " + ("5% of cash" if cents is None else format_money(cents)))
 
 
 # --- Debt and macro (M10, formulas.md 20) ------------------------------------------------------

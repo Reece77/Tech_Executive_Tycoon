@@ -102,6 +102,7 @@ def create_app() -> FastAPI:
                 message=exc.message,
                 event_ids=list(exc.event_ids),
                 proposal_ids=list(exc.proposal_ids),
+                pitch_ids=list(exc.pitch_ids),
             )
             return JSONResponse(status_code=status_code, content=body.model_dump())
         if isinstance(exc, CriticalEventOpenError):

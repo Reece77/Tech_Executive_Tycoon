@@ -2091,6 +2091,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/scaleup/pitches/{pitch_id}/{answer}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Pitch
+         * @description Approve (the move runs at once, as the executive, with their energy), decline (their
+         *     morale dips), or `modified`: the founder made the move their own way (27.1, M13b).
+         */
+        post: operations["answerPitch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/scaleup/pitch-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Pitch Policy
+         * @description The Holiday spend limit (null: 5% of cash; 0: always ask) and whether Holiday stops for
+         *     pitches above it (27.1, M13b). Free.
+         */
+        post: operations["setPitchPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/scaleup/seats/{seat}/remove": {
         parameters: {
             query?: never;
@@ -4012,6 +4054,8 @@ export interface components {
              * @description Event modifiers on this person's morale (M10b)
              */
             active_effects: components["schemas"]["ActiveEffectOut"][];
+            /** @description An executive's pitch record, once they have pitched (M13b) */
+            pitch_record?: components["schemas"]["PitchRecordOut"] | null;
             learned: components["schemas"]["LearnedOut"];
         };
         /** ChipOut */
@@ -4919,6 +4963,11 @@ export interface components {
              */
             proposal_ids?: number[] | null;
             /**
+             * Pitch Ids
+             * @description events_open: executives' pitches to answer (M13b)
+             */
+            pitch_ids?: number[] | null;
+            /**
              * Retryable
              * @description True: refused before anything was written, so the same request may be sent again (save_busy; M8r). Absent: do not retry automatically.
              */
@@ -5020,6 +5069,11 @@ export interface components {
              * @description Executives' proposals waiting for an answer: each blocks Continue (24.1)
              */
             blocking_proposal_ids: number[];
+            /**
+             * Blocking Pitch Ids
+             * @description Executives' pitches waiting for an answer: each blocks Continue (27.1)
+             */
+            blocking_pitch_ids?: number[];
             /** Open */
             open: components["schemas"]["EventOut"][];
             /**
@@ -7877,6 +7931,8 @@ export interface components {
              * @description Event modifiers on this person's morale (M10b)
              */
             active_effects: components["schemas"]["ActiveEffectOut"][];
+            /** @description An executive's pitch record, once they have pitched (M13b) */
+            pitch_record?: components["schemas"]["PitchRecordOut"] | null;
         };
         /** PersonRecordOut */
         PersonRecordOut: {
@@ -7965,6 +8021,154 @@ export interface components {
              * @description Energy left this month: the founder and delegates only
              */
             energy?: number | null;
+        };
+        /**
+         * PitchOut
+         * @description A big move an executive proposes (27.1, M13b), with the numbers they pitch it on:
+         *     estimates from what the company sees. Never the pitch probability, the quality draw, the
+         *     executive's true ambition, skills or score, or which candidate was best (27.6).
+         */
+        PitchOut: {
+            /** Pitch Id */
+            pitch_id: number;
+            /**
+             * Seat
+             * @description cpo | cro | cto | coo | cmo | cfo | ceo
+             */
+            seat: string;
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Kind
+             * @description new_product | sunset | region | research | data_centre | office | plant | campaign | buyback
+             */
+            kind: string;
+            /** Title */
+            title: string;
+            /** Why */
+            why: string;
+            /**
+             * Cost Cents
+             * @description Its cost over 12 months: the auto-approve test
+             */
+            cost_cents: number;
+            /** Capex Cents */
+            capex_cents: number;
+            /** Monthly Cents */
+            monthly_cents: number;
+            /** Hires */
+            hires: number;
+            /**
+             * Unit
+             * @description cents_month | cents | points | people | customers
+             */
+            unit: string;
+            /**
+             * Low
+             * @description The low case at 24 months, in `unit`
+             */
+            low: number;
+            /** High */
+            high: number;
+            /**
+             * Case Label
+             * @description The low and high case in words
+             */
+            case_label: string;
+            /** Risk */
+            risk: string;
+            /**
+             * Params
+             * @description What Modify prefills
+             */
+            params: {
+                [key: string]: number | string;
+            };
+            /**
+             * Status
+             * @description pending | approved | auto_approved | declined | modified | lapsed
+             */
+            status: string;
+            /**
+             * Outcome
+             * @description hit | miss | too_early once scored
+             */
+            outcome: string | null;
+            /**
+             * Measured Label
+             * @description What it reached, in words, once scored
+             */
+            measured_label: string | null;
+        };
+        /** PitchPolicyIn */
+        PitchPolicyIn: {
+            /**
+             * Auto Approve Cents
+             * @description Null: 5% of cash; 0: always ask
+             */
+            auto_approve_cents?: number | null;
+            /**
+             * Stop For Big
+             * @default false
+             */
+            stop_for_big?: boolean;
+        };
+        /**
+         * PitchPolicyOut
+         * @description The player's pitch settings (27.1): the Holiday spend limit and the big-pitch stop.
+         */
+        PitchPolicyOut: {
+            /**
+             * Auto Approve Cents
+             * @description Null: the default share of cash
+             */
+            auto_approve_cents: number | null;
+            /**
+             * Default Cents
+             * @description What the default is now (5% of cash)
+             */
+            default_cents: number;
+            /**
+             * Limit Cents
+             * @description The limit in force now
+             */
+            limit_cents: number;
+            /** Stop For Big */
+            stop_for_big: boolean;
+        };
+        /**
+         * PitchRecordOut
+         * @description An executive's pitch record (27.1, M13b): scored pitches by outcome.
+         */
+        PitchRecordOut: {
+            /**
+             * Pitches
+             * @description Pitches made
+             */
+            pitches: number;
+            /** Approved */
+            approved: number;
+            /**
+             * Hits
+             * @description At or above their low case after 24 months
+             */
+            hits: number;
+            /** Misses */
+            misses: number;
+            /**
+             * Too Early
+             * @description What they created was not yet operating
+             */
+            too_early: number;
+            /**
+             * Tracking
+             * @description Approved and still within their 24 months
+             */
+            tracking: number;
         };
         /** PlanActivityOut */
         PlanActivityOut: {
@@ -9593,6 +9797,12 @@ export interface components {
              * @description Each seat's latest quarterly report (M10c, 24.3)
              */
             reports: components["schemas"]["ReportOut"][];
+            /**
+             * Pitches
+             * @description Pending first, then the latest (M13b, 27.1)
+             */
+            pitches?: components["schemas"]["PitchOut"][];
+            pitch_policy?: components["schemas"]["PitchPolicyOut"] | null;
         };
         /** ScenarioOut */
         ScenarioOut: {
@@ -9743,6 +9953,8 @@ export interface components {
             vacancy_penalty_pct: number | null;
             /** @description Authority over the seat's function (M10c, 24.1; the CPO's from M13b) */
             authority: components["schemas"]["AuthorityOut"] | null;
+            /** @description The holder's pitch record (27.1, M13b) */
+            record?: components["schemas"]["PitchRecordOut"] | null;
         };
         /** SecondaryIn */
         SecondaryIn: {
@@ -17456,6 +17668,128 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    answerPitch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                pitch_id: number;
+                answer: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setPitchPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PitchPolicyIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
