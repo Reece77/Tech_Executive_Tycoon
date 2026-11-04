@@ -62,7 +62,7 @@ def test_a_cpo_pitches_in_a_quarters_first_month(loaded: LoadedData) -> None:
     assert (
         pitch.low <= pitch.high
         and pitch.cost_cents > 0
-        and pitch.hires == loaded.balance.pitch.team_builders
+        and pitch.hires >= loaded.balance.pitch.team_builders
     )
     assert dict(pitch.params)["category"] != "b2b_saas"  # a category it doesn't sell in
     assert any(i.template == "exec_pitch" for i in logs)
@@ -101,20 +101,23 @@ def test_approval_runs_the_move_as_the_executive(loaded: LoadedData) -> None:
     assert product.status == "in_development"
     unit = next(u for u in game.state.active_units(1) if u.product_id == product.id)
     (plan,) = [p for p in game.state.plans if p.unit_id == unit.id]
-    assert (plan.target, plan.owner_id) == (loaded.balance.pitch.team_builders, EXEC)
+    assert (plan.target, plan.owner_id) == (pitch.hires, EXEC)
     assert all(s.price_cents for s in game.state.segments_of(product.id))
     assert game.state.person_state(founder).energy == founder_energy
     assert (game.state.person_state(EXEC).energy or 0) < (exec_energy or 100)
 
 
 def test_guardrails_hold(loaded: LoadedData) -> None:
-    """Only the categories the CPO may enter; never a team above the headcount cap."""
-    state = _cpo(loaded, categories=("fintech",), headcount_cap=2)
+    """Only the categories the CPO may enter; never a team above the headcount cap, and none
+    too small to launch inside the record window (27.5 target 3)."""
+    state = _cpo(loaded, categories=("fintech",), headcount_cap=9)
     out, _, _, _ = _run(loaded, state, _pitching_seed(loaded, state))
     (pitch,) = out.pending_pitches(1)
-    assert dict(pitch.params)["category"] == "fintech" and pitch.hires == 2
-    blocked = _cpo(loaded, headcount_cap=0)
-    assert _run(loaded, blocked, _pitching_seed(loaded, blocked))[0].pending_pitches(1) == ()
+    assert dict(pitch.params)["category"] == "fintech"
+    assert loaded.balance.pitch.team_builders <= pitch.hires <= 9
+    for cap in (0, 2):
+        blocked = _cpo(loaded, headcount_cap=cap)
+        assert _run(loaded, blocked, _pitching_seed(loaded, blocked))[0].pending_pitches(1) == ()
 
 
 def test_protected_products_are_not_sunset(loaded: LoadedData) -> None:
@@ -322,3 +325,29 @@ def test_execution_follows_the_executives_seat_factor(loaded: LoadedData) -> Non
     assert execution_factor(late, "new_product", product, b) == 1.0
     shown = execution_factor(out, "new_product", product, b, estimate=True)
     assert shown > 0
+
+
+def test_a_new_products_expected_launch_follows_the_displayed_pace(loaded: LoadedData) -> None:
+    """27.5 target 3 (2026-11-04): skill-10 builders after pitch.team_ready_months, until
+    quality and the feature score reach the launch bars, plus the CPO's launch month."""
+    b, saas = loaded.balance, loaded.game_data.category("b2b_saas")
+    months = [pitches.launch_months(saas, n, 80, b) for n in (3, 10, 12)]
+    assert months[0] is None  # three builders cannot launch inside the record window
+    assert months[1] is not None and months[2] is not None
+    assert b.pitch.team_ready_months < months[2] <= months[1] < b.pitch.record_months
+    assert pitches.launch_months(saas, 10, 0, b) < months[1]  # F_exp grows over time
+
+
+def test_a_new_products_case_counts_only_months_after_its_launch(loaded: LoadedData) -> None:
+    state = _cpo(loaded)
+    b = loaded.balance
+    ranked = pitches.candidates(state, 1, ("new_product",), CASH_CENTS, b, loaded.game_data)
+    assert ranked
+    for c in ranked:
+        params = dict(c.params)
+        team = int(params["team"])
+        assert b.pitch.team_builders <= team
+        launch = pitches.launch_months(
+            loaded.game_data.category(str(params["category"])), team, state.turn, b
+        )
+        assert launch is not None and f"about {launch} months" in c.risk

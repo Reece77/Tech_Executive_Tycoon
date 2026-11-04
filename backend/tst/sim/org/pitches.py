@@ -68,6 +68,7 @@ from tst.sim.org.formulas import (
 )
 from tst.sim.org.models import CaseUnit, Pitch, PitchKind
 from tst.sim.people.reveal import revealed_range
+from tst.sim.products import formulas as pf
 from tst.sim.products.formulas import coord_factor
 from tst.sim.products.models import SELLING
 from tst.sim.research import levels
@@ -81,6 +82,7 @@ PCT: Final = 100  # tunable-exempt: percent
 SCORE_MAX: Final = 100.0  # tunable-exempt: quality and brand scale
 ATTR_MAX: Final = 20.0  # tunable-exempt: attribute scale
 NEUTRAL_FIT: Final = 0.5  # tunable-exempt: fit with no builders to judge
+NEUTRAL_SKILL: Final = 10.0  # tunable-exempt: the attribute scale's neutral point
 # Candidates of every kind are ranked by an estimated value over 24 months in cents (27.1):
 # a monthly case x pitch.record_months; research by the quality-cap lift it buys on the
 # revenue it feeds; an office by the builder pay of the roles it fills (x its city's talent
@@ -206,6 +208,26 @@ def _salary_month(role: str, b: Balance, data: GameData) -> int:
     return round(market_mid_cents(mid, bp) / MONTHS_PER_YEAR)
 
 
+def launch_months(cat: CategoryDef, team: int, turn: int, b: Balance) -> int | None:
+    """Months from approval to launch at the displayed development pace (27.5 target 3):
+    `team` builders at skill 10 (output 1 each, Q_cap 5 x 10) start after
+    pitch.team_ready_months, from start quality and no features, until quality and the
+    feature score reach the launch bars, plus the month the CPO launches it. None if that
+    is not within pitch.record_months."""
+    pb, pp = b.products, b.pitch
+    needed = max(pb.launch_min_quality, cat.launch_quality or 0)
+    output = coord_factor(team, pb) * team
+    qcap = pb.qcap_per_skill * NEUTRAL_SKILL
+    quality, points = pb.start_quality, 0.0
+    for m in range(pp.team_ready_months + 1, pp.record_months + 1):
+        quality = pf.next_quality(quality, output, cat.scope, qcap, pb)
+        points += output
+        ready = pf.feature_score(points, cat, turn + m) >= pb.launch_min_feature
+        if ready and quality >= needed:
+            return m + 1 if m + 1 < pp.record_months else None
+    return None
+
+
 def _builder_room(state: GameState, company: int, cap: float, data: GameData) -> int:
     have = sum(
         1
@@ -233,10 +255,11 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
     allowed = set(_guard(state, company, "cpo", "categories", b) or ())  # type: ignore[call-overload]
     mine = {p.category for p in state.company_products(company) if p.status != "retired"}
     cap = float(_guard(state, company, "cpo", "headcount_cap", b) or 0)  # type: ignore[arg-type]
-    team = min(pb.team_builders, int(cap))
-    if team < 1:
+    smallest = min(pb.team_builders, int(cap))
+    if smallest < 1:
         return []
     year = state.turn // MONTHS_PER_YEAR
+    pay = _salary_month(BUILDER_ROLE, b, data)
     out = []
     for cat in data.categories:
         if cat.key in mine or cat.capacity_market or cat.assembly_market or cat.sells_units:
@@ -275,8 +298,21 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
         )
         fit = category_fit(state, company, cat, data) * (1 + 0.01 * lead)  # tunable-exempt: 27.1
         growth = cat.growth_in(2010 + year)  # tunable-exempt: turn 0 is January 2010
-        central = revenue * fit * (1 + growth) ** 2
-        monthly = team * _salary_month(BUILDER_ROLE, b, data)
+        # The team, from pitch.team_builders up to the headcount cap, whose case at 24 months
+        # (only the months after its expected launch) best covers its pay (27.5 target 3).
+        sized: tuple[float, int, int, float] | None = None
+        for team in range(smallest, int(cap) + 1):
+            launch = launch_months(cat, team, state.turn, b)
+            if launch is None:
+                continue
+            selling = (pb.record_months - launch) / pb.record_months
+            case = revenue * fit * (1 + growth) ** 2 * selling
+            if sized is None or case - team * pay > sized[0]:
+                sized = (case - team * pay, team, launch, case)
+        if sized is None:
+            continue
+        _, team, launch, central = sized
+        monthly = team * pay
         label = data.segment(segment).label
         out.append(
             Candidate(
@@ -294,7 +330,7 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
                 unit="cents_month",
                 monthly_cents=monthly,
                 hires=team,
-                risk="revenue starts only once quality reaches launch level",
+                risk=f"it should launch in about {launch} months; revenue starts only then",
             )
         )
     return out

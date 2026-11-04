@@ -365,27 +365,40 @@ Notes: T2–T5 are scripted (demand above capacity; price, cost and allocation f
 
 ## M13b: executive ambition and visible eras (§27.5)
 
-`tools/m13b_targets.py`, nightly `tests/balance/test_m13b_balance.py`, 10 seeds, measured 2026-11-04 on `m13b-ambition` after the product manager's rulings. Targets 1-4 and 7 fork each seed's steady game at stage 3, then appoint six senior seat holders. Targets 1-4 give every seat authority and play 36 months as on Holiday (auto-approve at the default 5% of cash). Target 7's founder arm plays M10c's steady script with the same holders and no authority. Target 5 runs M11's 10-person AI lab from January 2014 with an AI product. The era arrives in month 52 or 53, and the run compares the window against no window in that same month.
+`tools/m13b_targets.py`, nightly `tests/balance/test_m13b_balance.py`, 10 seeds, measured 2026-11-04 on `m13b-ambition` after the product manager's two rulings that day.
+
+How the arms run:
+- **Targets 1-4 and 7** fork each seed's steady game at stage 3 and appoint six senior seat holders.
+- **Targets 1-4** give every seat authority, then play 36 months as on Holiday (auto-approve at the default 5% of cash).
+- **Target 7's founder arm** (`steady_regions`) plays M10c's steady script with the same holders and no authority. It also launches its live product in the CRO's best region whenever the CRO's gates are met, at most once per 24 months.
+- **Target 5** runs M11's 10-person AI lab from January 2014 with an AI product. The era arrives in month 52 or 53, and the run compares the window against no window in that same month.
 
 | Target | Value | Band | Result |
 | --- | --- | --- | --- |
 | 1 new product and new region launched | 8/10 seeds | ≥ 7/10 | pass |
-| 2 median ARR at 36 months, pitches / pitches off | 2.22 | ≥ 1.10 | pass |
-| 3 hit rate (central case), score 15 against score 8 | 67% against 39% (+28 points) | ≥ +10 points | pass |
-| 4 pitches a year per company, median | 5.5 | ≤ 8 | pass |
+| 2 median ARR at 36 months, pitches / pitches off | 1.68 | ≥ 1.10 | pass |
+| 3 hit rate (central case), score 15 against score 8 | 81% against 40% (+41 points) | ≥ +10 points | pass |
+| 4 pitches a year per company, median | 2.3 | ≤ 8 | pass |
 | 5 AI customers at the window's end, window / no window | +38%, +39%, +43%, +36%, +80%, +32%, +30%, +56% (7 of 8 seeds in band) | +25–60% on ≥ 7 | pass |
 | 5 information: early era / on schedule | +303%, +319%, +303%, +299%, +392%, +237%, +237%, +258% | none | information |
-| 7 median ARR at 36 months, pitches / founder's steady script | 2.32 | ≤ 1.2 | **miss: not fixable by `pitch.*` while target 1 holds** |
+| 7 median ARR at 36 months, pitches / founder's steady + regions | 1.10 ($127M against $116M; the founder launched 2 regions on every seed) | ≤ 1.2 | pass |
 | S2 | re-banded to < 65 worker-minutes on CI (product manager, 2026-11-03) | | band only |
 
-Tuned: `pitch.region_capture` 1.7 and `pitch.team_builders` 6 (target 3); `rnd.first_mover_cap` 5, `first_mover_brand` 6 and `first_mover_appeal` 1 (target 5). Per-kind hit rates at score 15 against 8:
+Tuned keys:
+- target 3: `pitch.region_capture` 1.7, `pitch.team_builders` 6, `pitch.team_ready_months` 3;
+- target 5: `rnd.first_mover_cap` 5, `first_mover_brand` 6, `first_mover_appeal` 1;
+- target 7: `pitch.base` 0.15, `per_ambition` 0.01, `chance_clamp` [0.05, 0.9].
+
+Hit rates by kind, score 15 against score 8:
 
 | Kind | Score 15 | Score 8 |
 | --- | --- | --- |
-| region | 20/20 | 1/22 |
-| research | 12/14 | 9/14 |
-| office | 7/11 | 9/12 |
-| campaign | 2/2 | 9/9 |
-| new product | 0/14 | 0/14 |
+| region | 10/12 | 0/12 |
+| office | 4/4 | 4/5 |
+| research | 2/2 | 2/2 |
+| campaign | 1/1 | 4/4 |
+| new product | 0/2 | 0/2 |
 
-Target 7: region launches cause the gap. Without the CRO's pitches the run reads ×1.12, but target 1 then fails (0/10). One launch adds about $15-40M ARR by month 36 against about $72M at home. A sweep of `pitch.base`, `per_ambition`, `chance_clamp` and `auto_approve_cash_bp` gives T1 8/10 at ×1.72 or more, and T1 6/10 at ×1.41-1.49 (the table is in the brief's Status).
+On new products: measured / central was 0.14 and 0.58 at score 15, and 0.04 and 0.04 at score 8. Before the target 7 tuning, at the higher pitch rate, it was 1/8 against 0/6, with 3 too early.
+
+Target 7 sweep (`pitch.base` / `per_ambition`): 0.45/0.04 ×1.54; 0.35/0.03 ×1.33; 0.25/0.02 ×1.26; 0.2/0.015 (floor 0.1) ×1.28; 0.15/0.01 (floor 0.05) ×1.10. Target 1 held at 8-9/10 throughout.

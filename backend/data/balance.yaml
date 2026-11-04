@@ -669,9 +669,9 @@ exec_authority: # executives with authority (formulas.md 24, M10c)
     cpo: { headcount_cap: 12, categories: [], protected_products: [] } # M13b (27.1): builders a new product's team may total; category keys it may enter ([] = any); product ids it may not sunset
 
 pitch: # executives' pitches: big moves they propose for the founder to approve (formulas.md 27.1, M13b)
-  base: 0.45 # probability an executive with authority pitches in a quarter, at ambition 10 (27.1)
-  per_ambition: 0.04 # added per point of true ambition above 10 (27.1)
-  chance_clamp: [0.15, 0.9] # the pitch probability's bounds (27.1)
+  base: 0.15 # probability an executive with authority pitches in a quarter, at ambition 10 (27.1; 27.5 target 7: 0.45 -> 0.15)
+  per_ambition: 0.01 # added per point of true ambition above 10 (27.1; 27.5 target 7: 0.04 -> 0.01)
+  chance_clamp: [0.05, 0.9] # the pitch probability's bounds (27.1; 27.5 target 7: 0.15 -> 0.05 at the bottom)
   ambition_neutral: 10 # attribute points; the ambition at which the probability is `base`
   decline_morale: 2 # morale points a declined pitch costs its executive, once (27.1)
   decline_morale_ego: 4 # the same for an executive with ego at or above ego_at (27.1)
@@ -692,6 +692,7 @@ pitch: # executives' pitches: big moves they propose for the founder to approve 
   campaign_brand_gap: 20 # brand points below the target before the CMO pitches a campaign (27.1)
   office_seats: 25 # seats in an office the COO pitches (27.1)
   new_product_share: 0.25 # share of a segment's addressable customers a new product's central case reaches at 24 months, / (1 + products already selling there) (27.1)
+  team_ready_months: 3 # months before a pitched new product's team is hired and building, in its expected launch (27.5 target 3)
   region_capture: 1.7 # x the CRO's central case for a region (home share x demand x price x fit, grown 24 months): calibrates it against what launches reach (27.5 target 3)
   region_fit_without_office: 0.7 # the CRO's fit for a region where the company has no office (27.1; 1 with one)
   campaign_awareness_pct: 25 # % awareness a campaign adds to its product for campaign_months (a modifier, 23.2)

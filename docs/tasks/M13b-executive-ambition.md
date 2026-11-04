@@ -40,43 +40,19 @@ Acquisitions as pitches (M14 adds the kind). Rivals' executives pitching (rivals
 
 On `quick-stage3`, give every seat authority, set auto-approve to 5% of cash, and Holiday three years. Did they start a product and enter a region? Read one quarter's reports: do they sound like people? Then pull an era forward on `pt-ai` and read the era report.
 
-## Status (2026-11-04, after the product manager's rulings): stopped before merging
-
-Sub-tasks 1-7 are built and tested, sub-task 8's Playwright specs (a)-(c) pass and the close-out docs are written. After the rulings, targets 1-5 pass and **target 7 misses**, and `pitch.*` cannot bring it into its band while target 1 holds, so per the instructions this branch is not merged (values in `docs/balance-targets.md`, M13b):
+## Status (2026-11-04, after the second ruling): every target passes
 
 | Target | Value | Band |
 | --- | --- | --- |
 | 1 new product and new region | 8/10 seeds | ≥ 7/10 |
-| 2 ARR, pitches / pitches off | 2.22 | ≥ 1.10 |
-| 3 hit rate, score 15 / score 8 | 67% / 39% (+28 points) | ≥ +10 points |
-| 4 pitches a year, median | 5.5 | ≤ 8 |
+| 2 ARR, pitches / pitches off | 1.68 | ≥ 1.10 |
+| 3 hit rate (central case), score 15 / score 8 | 81% / 40% (+41 points) | ≥ +10 points |
+| 4 pitches a year, median | 2.3 | ≤ 8 |
 | 5 the window alone | +30% to +56% on 7 of 8 seeds (+80% on seed 5) | +25-60% on ≥ 7 |
 | 5 (information) early era / on schedule | +237% to +392% | none |
-| **7 ARR, pitches / steady script** | **2.32** | **≤ 1.2** |
+| 7 ARR, pitches / founder's steady + regions | 1.10 | ≤ 1.2 |
 
-- **Why target 7 misses.** Region launches cause the whole gap. With the CRO's region pitches removed, ARR is $81.2M against steady $72.2M (×1.12, though target 1 then fails at 0/10). With them, a launch adds about $15-40M ARR by month 36: East Asia $25-42M, Europe $17-36M, against about $72M at home. Target 1 needs a region on 7 of 10 seeds, so the median seed has at least one launch, and that alone is more than the 20% target 7 allows. Lowering the pitch rate trades target 1 for target 7, but never reaches both. The sweep (team 6, region capture 1.7):
-
-  | Setting | T1 | T7 |
-  | --- | --- | --- |
-  | `base` 0.45, `per_ambition` 0.04 (shipped) | 8/10 | 2.32 |
-  | `base` 0.2, `per_ambition` 0.02, clamp [0.05, 0.9] | 8/10 | 1.94 |
-  | `base` 0.15, `per_ambition` 0.01, clamp [0.05, 0.9] | 8/10 | 1.74 |
-  | the same with `auto_approve_cash_bp` 200 | 8/10 | 1.72 |
-  | `base` 0.1, `per_ambition` 0.01, clamp [0.03, 0.9] | 6/10 | 1.49 |
-  | a flat 7% a quarter (0.7 pitches a year) | 6/10 | 1.41 |
-
-  `pitch.*` frequency is left as shipped until Reece decides. Options:
-  - narrow target 1 to a new product or a region;
-  - re-band target 7 (×2.3 now; about ×1.7 at the lowest frequency that keeps target 1);
-  - compare against a founder script that also enters regions;
-  - make a region launch smaller or slower for the founder and executives alike (an M9 regional-economy change, outside `pitch.*`).
-
-Every other check:
-- golden snapshots unchanged (11 passed);
-- backend lint, format and mypy clean;
-- the backend suite: 1,360 passed and 1 xfailed (the existing T2 xfail). The only failure is `tests/balance/test_m13b_balance.py`, on target 7 (2.32 > 1.2), as reported above.
-
-The front end has not changed since the last run of its checks and of e2e flows (a)-(c), which passed.
+Values in `docs/balance-targets.md`, M13b. The ≤ 1.5 fallback band was not needed.
 
 ## Decisions made
 
@@ -101,12 +77,18 @@ The front end has not changed since the last run of its checks and of e2e flows 
   - The CPO pitches only self-serve segments (a builders-only team cannot sell to sales-led ones), with `pitch.team_builders` 3 → 6 so the product can launch inside the record window.
   - A campaign's case adds the category's 24-month organic growth.
   - An office's measure is the staff living in its city above the count at approval, and an approved office moves the active hiring plans' units into it, so their hires join there.
+- **Second ruling (product manager, 2026-11-04).**
+  - **Target 7's founder arm** is "steady + regions": M10c's steady script, plus a founder launch of its live product in the best region (the CRO's candidate score) whenever the CRO's gates are met, at most one launch per 24 months. It is the balance arm `steady_regions` (no game code). It launched 2 regions on every seed, at a median ARR of $116M.
+  - **Pitch frequency** is tuned down for target 7: `pitch.base` 0.45 → 0.15, `per_ambition` 0.04 → 0.01, `chance_clamp` [0.15, 0.9] → [0.05, 0.9]. The sweep: 0.35/0.03 gave ×1.33; 0.25/0.02 ×1.26; 0.2/0.015 ×1.28; 0.15/0.01 ×1.10. Target 1 held at 8-9/10 throughout.
+  - **A new product's central case** counts only the months after its expected launch at the displayed pace. The pace is skill-10 builders after `pitch.team_ready_months` (3), with quality and feature score run to the launch bars, plus the CPO's launch month. The case is × (24 − L) / 24, with no pitch if L is outside the window.
+  - The CPO's team is the size, from `pitch.team_builders` (6) up to its headcount cap, whose case best covers the team's pay. A cap too small to launch in time gives no pitch.
+  - Estimated launch against actual (higher-frequency run): estimated 17-24 months, actual 10-25. Score 15 launched sooner and score 8 later or too early.
+- **New-product hit rates by score.** At the shipped frequency, 2 new-product pitches were scored per arm: score 15 got 0/2 (measured / central 0.14 and 0.58) and score 8 got 0/2 (0.04 and 0.04). In the higher-frequency run before the target 7 tuning, score 15 got 1/8 (median ratio about 0.56) and score 8 got 0/6, with 3 too early. Good executives' products reach several times what weak ones do, but still mostly below the central case: the share `pitch.new_product_share` (0.25) was not re-tuned.
 - **Target 5 tuning:** `rnd.first_mover_cap` 8 → 5, `first_mover_brand` 15 → 6, `first_mover_appeal` 1.15 → 1 (no bonus; the mechanism and its tests stay, run at ×1.15). The arrival item names the appeal only above ×1.
 
 ## Follow-ups
 
-- Target 7 above (Reece's decision).
-- New products' central case is still far above what a launch reaches in 24 months (measured/central 0-0.23 at `pitch.new_product_share` 0.25), so they are misses at any score; they do not decide target 3.
+- New products' central case is still above what a launch reaches in 24 months (measured / central about 0.04-0.6 at `pitch.new_product_share` 0.25), so they are mostly misses at either score; a lower share would let good CPOs hit.
 - Modify could prefill every move's dialog (region, research, data centre, office, plant), not only a new product.
 - A product's quarter-start quality and customers could be kept so reports read "41 -> 47" rather than "now 47".
 - Rivals' executives do not pitch (out of scope); M14 adds acquisitions as a pitch kind.

@@ -12,6 +12,10 @@ ahead, bigger ones wait and lapse. Arms:
 - `off`: the same with the limit at 0, so every pitch waits for an answer that never comes:
   M10c's delegated baseline with the CPO seat.
 - `pitches_8`: holders at score 8, the default limit.
+- `steady_regions` (target 7): the founder plays M10c's steady script with the same holders
+  at score 15 and no authority, plus a launch of its live product in the best region (the
+  CRO's candidate score) whenever the CRO's gates are met, at most one launch per 24 months
+  (product manager, 2026-11-04). Balance script only: no game code.
 
 Target 5: from January 2014 each seed runs an AI product and a 10-person AI lab (M11's target
 3a lab, ML research 14, fully funded) in two arms, `early` (Transformers arrives when the
@@ -48,9 +52,11 @@ from tst.sim.actions import (
     SetPrice,
 )
 from tst.sim.actions.authority import AnswerProposal, SetAuthority
+from tst.sim.actions.geo import LaunchInRegion
 from tst.sim.actions.research import StartProject
 from tst.sim.calendar import ym_to_turn
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry, apply_entries
+from tst.sim.org import pitches
 from tst.sim.org.models import PitchPolicy
 from tst.sim.products.models import SELLING
 from tst.sim.state import with_person_state, with_pitch_policy
@@ -60,7 +66,8 @@ MONTHS: Final = 36
 SEATS_GIVEN: Final = ("cto", "cro", "cmo", "coo", "cfo", "cpo")
 GOOD: Final = 15.0
 WEAK: Final = 8.0
-ARMS: Final = ("pitches", "off", "pitches_8", "steady")
+ARMS: Final = ("pitches", "off", "pitches_8", "steady_regions")
+REGION_GAP: Final = 24  # target 7: months between the founder's region launches (2026-11-04)
 ERA: Final = "transformers"
 LAB_FROM: Final = ym_to_turn(2014, 1)
 LAB_SIZE: Final = 10
@@ -110,7 +117,7 @@ def _refill(game: Game) -> None:
 
 def _arm(base: Game, arm: str) -> Run:
     game = fork(base)
-    if arm == "steady":  # target 7: the founder plays the steady script, seats filled
+    if arm == "steady_regions":  # target 7: the founder's steady script plus regions
         return _steady(game, base)
     _seat(game, WEAK if arm == "pitches_8" else GOOD, 0 if arm == "off" else None)
     products = {p.id for p in game.state.company_products(PLAYER) if p.status in SELLING}
@@ -150,19 +157,42 @@ def _arm(base: Game, arm: str) -> Run:
 
 
 def _steady(game: Game, base: Game) -> Run:
-    """M10c's steady arm: senior holders at score 15 without authority, the steady script."""
+    """M10c's steady arm (senior holders at score 15 without authority, the steady script)
+    plus the founder's region launches (target 7)."""
     for seat in SEATS_GIVEN:
         (pid,) = add_staff(game, SEAT_ROLES[seat], "senior", 1, skill=GOOD)
         _energy(game)
         game.act(AppointExecutive(game.founder_id, seat, pid))
     _energy(game)
+    last: int | None = None
+    launches = 0
     for _ in range(MONTHS):
         if game.state.ended:
             break
         steady(game)
+        due = last is None or game.state.turn - last >= REGION_GAP
+        if due and _launch_region(game):
+            last = game.state.turn
+            launches += 1
         game.turn()
     arr = game.snapshots[-1].arr_cents if game.snapshots and not game.state.ended else 0
-    return Run(0, "steady", base.state.turn, arr, 0, 0, 0, 0, 0)
+    return Run(0, "steady_regions", base.state.turn, arr, 0, launches, 0, 0, 0)
+
+
+def _launch_region(game: Game) -> bool:
+    """Launch the CRO's best region candidate as the founder; False if there is none or the
+    rules refuse it (cash, energy)."""
+    loaded = game.loaded
+    ranked = pitches.candidates(
+        game.state, PLAYER, ("region",), game.cash, loaded.balance, loaded.game_data
+    )
+    if not ranked:
+        return False
+    params = dict(ranked[0].params)
+    _energy(game)
+    return bool(
+        game.act(LaunchInRegion(game.founder_id, int(params["product_id"]), str(params["region"])))
+    )
 
 
 def play(seed: int) -> list[Run]:
@@ -330,7 +360,7 @@ def target_4(results: Results) -> float:
 
 T5_BAND: Final = (0.25, 0.60)  # 27.5 target 5 (product manager, 2026-11-04)
 T3_POINTS: Final = 0.10  # 27.5 target 3: at least +10 points (product manager, 2026-11-04)
-T7_RATIO: Final = 1.2  # 27.5 target 7: at most 1.2 x the steady script (2026-11-04)
+T7_RATIO: Final = 1.2  # 27.5 target 7: at most 1.2 x the steady + regions script (2026-11-04)
 
 
 def target_5(results: Results) -> tuple[int, list[float]]:
@@ -347,8 +377,9 @@ def era_effect(results: Results) -> list[float]:
 
 
 def target_7(results: Results) -> float:
-    """Target 1's run (pitches) median ARR / the steady script's, same seeds."""
-    on, base = arm(results, "pitches"), arm(results, "steady")
+    """Target 1's run (pitches) median ARR / the founder's steady + regions script's, same
+    seeds."""
+    on, base = arm(results, "pitches"), arm(results, "steady_regions")
     under = median(r.arr for r in base) if base else 0
     return median(r.arr for r in on) / under if on and under else 0.0
 
@@ -386,6 +417,7 @@ def report(results: Results) -> str:
     info = ", ".join(f"{x:+.0%}" for x in era_effect(results))
     lines.append(f"27.5 information: the early era against the era on schedule: {info}")
     lines.append(
-        f"27.5 target 7: pitches / steady script median ARR {target_7(results):.2f} (<= 1.2)"
+        f"27.5 target 7: pitches / steady + regions script median ARR "
+        f"{target_7(results):.2f} (<= {T7_RATIO})"
     )
     return "\n".join(lines)

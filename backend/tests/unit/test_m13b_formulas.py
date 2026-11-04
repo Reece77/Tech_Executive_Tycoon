@@ -27,14 +27,15 @@ from tst.sim.rng import STREAM_IDS
 
 
 def test_pitch_chance(loaded: LoadedData) -> None:
-    """clamp(0.45 + 0.04 (ambition - 10), 0.15, 0.9) (27.1)."""
+    """clamp(0.15 + 0.01 (ambition - 10), 0.05, 0.9) (27.1; 27.5 target 7, 2026-11-04: was
+    0.45 + 0.04, from 0.15)."""
     pb = loaded.balance.pitch
-    assert pitch_chance(10, pb) == pytest.approx(0.45)
-    assert pitch_chance(15, pb) == pytest.approx(0.65)
-    assert pitch_chance(5, pb) == pytest.approx(0.25)
-    assert pitch_chance(20, pb) == pytest.approx(0.85)
-    assert pitch_chance(1, pb) == pytest.approx(0.15)  # 0.09 clamped up
-    assert pitch_chance(1, pb.model_copy(update={"per_ambition": 1.0})) == 0.15
+    assert pitch_chance(10, pb) == pytest.approx(0.15)
+    assert pitch_chance(15, pb) == pytest.approx(0.20)
+    assert pitch_chance(5, pb) == pytest.approx(0.10)
+    assert pitch_chance(20, pb) == pytest.approx(0.25)
+    assert pitch_chance(1, pb) == pytest.approx(0.06)
+    assert pitch_chance(1, pb.model_copy(update={"per_ambition": 1.0})) == 0.05
     assert pitch_chance(20, pb.model_copy(update={"per_ambition": 1.0})) == 0.9
 
 

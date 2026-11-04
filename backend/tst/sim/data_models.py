@@ -939,6 +939,7 @@ class PitchBalance(_Frozen):
     campaign_brand_gap: float = Field(ge=0)
     office_seats: int = Field(gt=0)
     new_product_share: float = Field(gt=0, le=1)
+    team_ready_months: int = Field(ge=0)
     region_capture: float = Field(gt=0)
     region_fit_without_office: float = Field(gt=0, le=1)
     campaign_awareness_pct: float = Field(ge=0)
