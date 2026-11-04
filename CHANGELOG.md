@@ -14,7 +14,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Research and infrastructure view builders take a company id; era news goes to every company in `player_companies` and names the causing company (finding 8).
   - Data dictionary: one column table per heading for the M11 and M12a tables, migration `0029_facilities` (finding 9).
   - Turn-time headroom: the product perf test times the median of three blocks after a warm-up (limit 1.0 s unchanged) and reads the state through the screens' cached read path; profile and numbers in the brief.
-  - Golden snapshots unchanged.
+  - Golden snapshots unchanged. Nightly guards: the balance table identical to M12b's; S2 read 50 worker-minutes on today's runners, as `main` does (51.9), against 37.1 at M12b (reported in the brief).
 
 - M12b Hardware, devices and fabless chips (formulas.md §26, lane A):
   - Unit-sale markets (`revenue_model: units`): devices, servers and three chip categories (mobile SoCs, server CPUs, AI accelerators); a new `device_oems` segment; replacement cycles as base churn; units sold once at `price x units`; the capacity cap with lost demand going to the next-best product; launch needs quality 30 and a manufacturing source.
