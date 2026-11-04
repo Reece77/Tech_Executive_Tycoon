@@ -17,6 +17,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.events import modifiers as mf
 from tst.sim.finance import macro
 from tst.sim.ledger import CASH, RESEARCH, LedgerEntry
+from tst.sim.money import exact
 from tst.sim.org.rules import OrgView, org_view
 from tst.sim.org.scaleup import modifiers
 from tst.sim.people.reveal import revealed_range
@@ -66,9 +67,10 @@ def research_skill(skills: Mapping[str, float], domain: DomainDef) -> float:
 
 
 def researcher_cost_cents(state: GameState, data: GameData, domain: DomainDef) -> int:
-    """A researcher's monthly budget (21.3); x the AI compute index for an indexed domain."""
+    """A researcher's monthly budget (21.3); x the AI compute index for an indexed domain,
+    in exact fractions rounded half-to-even once (ADR-0003; M12r)."""
     if domain.compute_indexed:
-        return round(domain.budget_cents * macro.ai_index(state, data))
+        return round(exact(domain.budget_cents) * exact(macro.ai_index(state, data)))
     return domain.budget_cents
 
 
