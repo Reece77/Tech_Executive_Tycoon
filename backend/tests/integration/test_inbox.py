@@ -315,6 +315,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     items += _loan_items(loaded)  # M10
     items += _m10b_items(loaded)
     items += _m10c_items(loaded)
+    items += _m13b_items(loaded)
     items += _m12a_items(loaded)
     items += _m11_items(loaded)
     for item in items:
@@ -440,6 +441,19 @@ def _m10c_items(loaded: LoadedData) -> list[LogItem]:
     cto = _give(replace(with_product(cto, root=False), turn=2), "cto", loaded.balance)
     cfo = _give(_company(loaded, "cfo", "finance_manager", staff=10), "cfo", loaded.balance)
     return [*_run(loaded, cto)[2], *_run(loaded, cfo, cash=10_000_000)[2]]
+
+
+def _m13b_items(loaded: LoadedData) -> list[LogItem]:
+    """A CPO's pitch at the controls, and one that goes ahead on Holiday (27.1)."""
+    from tests.unit.test_m13b_pitches import _cpo, _pitching_seed
+    from tests.unit.test_m13b_pitches import _run as _pitch_run
+
+    state = _cpo(loaded)
+    seed = _pitching_seed(loaded, state)
+    return [
+        *_pitch_run(loaded, state, seed)[2],
+        *_pitch_run(loaded, state, seed, at_controls=False)[2],
+    ]
 
 
 def _stage_3(loaded: LoadedData) -> GameState:

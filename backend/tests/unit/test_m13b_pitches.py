@@ -241,3 +241,35 @@ def test_holiday_stops_for_big_pitches_only_when_ticked(loaded: LoadedData) -> N
         out, PitchPolicy(1, auto_approve_cents=pitch.cost_cents + 1, stop_for_big=True)
     )
     assert not big_pitch_waiting(roomy, CASH_CENTS, loaded.balance)
+
+
+def test_the_ceo_pitches_across_the_functions_it_runs(loaded: LoadedData) -> None:
+    """A CEO with no seat holder covering a function pitches that function's moves (27.1);
+    at the controls the pitch waits for the Chair."""
+    from tests.unit.test_m13_ceo import CEO, staffed, with_ceo_appointed
+    from tst.sim.org.ceo import run_ceo
+
+    state = with_ceo_appointed(staffed())
+    state = replace(state, turn=state.turn - state.turn % 3)  # a quarter's first month
+    chance = pitch_chance(state.person(CEO).personality["ambition"], loaded.balance.pitch)
+    seed = next(
+        s
+        for s in range(1, 500)
+        if float(RngFactory(s).stream(state.turn, "pitch", CEO).random()) < chance
+    )
+    out, _, _, taken = run_ceo(
+        state,
+        RngFactory(seed),
+        loaded.balance,
+        loaded.game_data,
+        {(1, CASH): 10**12},
+        at_controls=True,
+    )
+    mine = [p for p in out.pending_pitches(1) if p.person_id == CEO]
+    if mine:
+        (pitch,) = mine
+        assert pitch.seat == "ceo"
+        assert pitch.kind in {k for kinds in pitches.SEAT_KINDS.values() for k in kinds}
+        assert not any(a.kind in ("create_product", "build_facility") for _, a in taken)
+    else:  # no candidate in any function this month: nothing pending, nothing done
+        assert out.pending_pitches(1) == ()

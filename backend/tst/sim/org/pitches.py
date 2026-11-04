@@ -55,6 +55,7 @@ from tst.sim.hiring.formulas import market_mid_cents
 from tst.sim.ledger import CASH, MARKETING, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents, format_money
+from tst.sim.org.delegates import delegate_draws
 from tst.sim.org.executives import displayed_score
 from tst.sim.org.formulas import (
     auto_approve_limit,
@@ -80,7 +81,12 @@ PCT: Final = 100  # tunable-exempt: percent
 SCORE_MAX: Final = 100.0  # tunable-exempt: quality and brand scale
 ATTR_MAX: Final = 20.0  # tunable-exempt: attribute scale
 NEUTRAL_FIT: Final = 0.5  # tunable-exempt: fit with no builders to judge
-QUALITY_DRAW: Final = 1  # the second uniform on the pitch stream
+# Candidates of every kind are ranked by an estimated value over 24 months in cents (27.1):
+# a monthly case x pitch.record_months; research by the quality-cap lift it buys on the revenue it feeds; an
+# office by the builder pay of the roles it fills (x its city's talent weight); a campaign by
+# its customers' revenue. Returning cash (a buyback) ranks below every growth move.
+RETURN_SCORE: Final = 1.0  # tunable-exempt: ranks a buyback last, after any growth move
+DRAWS: Final = 2  # uniforms on the pitch stream a draw month: whether, then which (27.1)
 CHAIR_KINDS: Final = frozenset({"buyback"})  # approved as the Chair, not the executive (25.6)
 # The pitch kinds of each seat (27.1); the CEO pitches those of the functions it runs.
 SEAT_KINDS: Final[dict[str, tuple[PitchKind, ...]]] = {
@@ -183,6 +189,11 @@ def product_mrr(state: GameState, product_id: int, region: str | None = None) ->
     return round(total)
 
 
+def _price_per_customer(state: GameState, product_id: int) -> float:
+    customers = _customers(state, product_id)
+    return product_mrr(state, product_id) / customers if customers > 0 else 0.0
+
+
 def _customers(state: GameState, product_id: int) -> float:
     return sum(s.customers for s in state.segments_of(product_id)) + sum(
         s.customers for s in state.regional_segments_of(product_id)
@@ -277,7 +288,7 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
                     f"growing {growth:.0%} a year, with {rivals} products selling there; "
                     f"our team fits it {fit:.0%}"
                 ),
-                score=central,
+                score=central * b.pitch.record_months,
                 central=central,
                 unit="cents_month",
                 monthly_cents=monthly,
@@ -312,7 +323,7 @@ def _sunsets(state: GameState, company: int, b: Balance, data: GameData) -> list
                     f"{format_money(product_mrr(state, p.id))} a month and costs "
                     f"{format_money(saving)} a month to run"
                 ),
-                score=saving,
+                score=saving * b.pitch.record_months,
                 central=saving,
                 unit="cents_month",
                 risk="its customers leave as it winds down",
@@ -364,7 +375,7 @@ def _regions(state: GameState, company: int, b: Balance, data: GameData) -> list
                         f"{format_money(round(central))} a month"
                         + ("" if region in offices else ", with no office there")
                     ),
-                    score=central,
+                    score=central * b.pitch.record_months,
                     central=central,
                     unit="cents_month",
                     capex_cents=cost,
@@ -412,7 +423,7 @@ def _research(state: GameState, company: int, b: Balance, data: GameData) -> lis
                     f"{domain.label} feeds, with room to grow quality; our lead is "
                     f"{start:.0f} points"
                 ),
-                score=room,
+                score=room * b.pitch.record_months * min(1.0, gain * rnd.cap_per_point),
                 central=gain,
                 unit="points",
                 monthly_cents=monthly,
@@ -455,7 +466,7 @@ def _data_centres(state: GameState, company: int, b: Balance, data: GameData) ->
                 f"our products use {need:,.0f} CU a month at {format_money(round(spot))} a CU "
                 f"spot; own capacity costs {format_money(round(monthly / size))} a CU at full use"
             ),
-            score=saving,
+            score=saving * b.pitch.record_months,
             central=saving,
             unit="cents_month",
             capex_cents=q.capex_cents,
@@ -495,7 +506,7 @@ def _offices(state: GameState, company: int, b: Balance, data: GameData) -> list
                     f"{unfilled} roles in our hiring plans are still open; {city.label}'s "
                     f"talent pool weighs {depth:.1f}"
                 ),
-                score=unfilled * depth,
+                score=people * depth * _salary_month(BUILDER_ROLE, b, data) * b.pitch.record_months,
                 central=people,
                 unit="people",
                 monthly_cents=rent * pb.office_seats,
@@ -541,7 +552,7 @@ def _plants(state: GameState, company: int, b: Balance, data: GameData) -> list[
                 f"{format_money(round(fee))} a unit; our own plant would cost about "
                 f"{format_money(round(per_unit))} a unit"
             ),
-            score=saving,
+            score=saving * b.pitch.record_months,
             central=saving,
             unit="cents_month",
             capex_cents=q.capex_cents,
@@ -573,7 +584,7 @@ def _campaigns(state: GameState, company: int, b: Balance, data: GameData) -> li
                     f"customers; a campaign of {format_money(push)} a month lifts awareness "
                     f"{pb.campaign_awareness_pct:g}%"
                 ),
-                score=gap * customers,
+                score=lift * _price_per_customer(state, p.id) * b.pitch.record_months,
                 central=lift,
                 unit="customers",
                 capex_cents=push * pb.campaign_months,
@@ -606,7 +617,7 @@ def _buyback(
                 f"cash is {format_money(cash)}, more than {months:g} months of burn "
                 f"({format_money(burn)} a month)"
             ),
-            score=amount,
+            score=RETURN_SCORE,
             central=amount,
             unit="cents",
             capex_cents=amount,
@@ -640,8 +651,8 @@ def candidates(
         maker = makers.get(kind)
         for c in maker() if maker else []:
             out.append((-c.score, i, repr(c.params), c))
-    out.sort(key=lambda t: t[:3])
-    return [c for *_, c in out]
+    out.sort(key=lambda t: (t[0], t[1], t[2]))
+    return [t[-1] for t in out]
 
 
 # --- Making a pitch -----------------------------------------------------------------------------
@@ -654,6 +665,8 @@ def make_pitch(
     spread = case_spread(shown_seat_score(state, company, holder, seat, b), b.pitch)
     low = math.floor(c.central * (1 - spread))
     high = math.ceil(c.central * (1 + spread))
+    if c.unit == "cents":  # an amount, not an estimate: no spread (a buyback)
+        low = high = round(c.central)
     pid = state.next_ids.pitch
     return Pitch(
         id=pid,
@@ -1075,7 +1088,7 @@ def pitch_month(
                 state, replace(p, status="lapsed", resolved_turn=state.turn)
             )
     gen = run.rng.stream(state.turn, "pitch", holder)
-    u_pitch, u_quality = (float(x) for x in gen.random(2))
+    u_pitch, u_quality = (float(gen.random()) for _ in range(DRAWS))
     ambition = state.person(holder).personality["ambition"]  # true, never shown (27.6)
     if u_pitch >= pitch_chance(ambition, b.pitch):
         return
@@ -1098,7 +1111,7 @@ def pitch_month(
         turn = state.turn
 
         def draws(n: int) -> Callable[[], np.random.Generator]:
-            return lambda: run.rng.stream(turn, "delegate", holder, PITCH_ACTION_KEY + n)
+            return lambda: delegate_draws(run.rng, turn, holder, PITCH_ACTION_KEY + n)
 
         try:
             out = approve(
@@ -1137,6 +1150,8 @@ def pitch_month(
 
 
 PITCH_ACTION_KEY: Final = 3_000_000  # tunable-exempt: delegate-stream key offset for pitches
+ANSWER_KEY: Final = 4_000_000  # tunable-exempt: the same for a pitch the founder approves
+ANSWER_STEPS: Final = 100  # tunable-exempt: actions one approval may take, per action seq
 
 
 def _item(state: GameState, pitch: Pitch, name: str, extra: str) -> LogItem:

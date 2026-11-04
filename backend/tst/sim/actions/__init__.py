@@ -423,6 +423,7 @@ def apply_action(
         return ActionResult(closed, inner.ledger_entries, inner.log_items)
     if isinstance(action, AnswerPitch):  # 27.1 (M13b): the move, as the executive
         from tst.sim.org import pitches
+        from tst.sim.org.delegates import delegate_draws
 
         company = acting_company(state, action.actor_id)
         pitch = pending_pitch(state, company, action.pitch_id)
@@ -431,10 +432,11 @@ def apply_action(
                 state, pitch, "declined" if action.answer == "decline" else "modified", balance
             )
             return ActionResult(closed, (), ())
-        turn = state.turn
+        turn, holder = state.turn, pitch.person_id
+        base = pitches.ANSWER_KEY + seq * pitches.ANSWER_STEPS
 
         def step(n: int) -> Callable[[], np.random.Generator]:
-            return lambda: rng.stream(turn, "actions", seq, n)
+            return lambda: delegate_draws(rng, turn, holder, base + n)  # the executive acts
 
         approved = pitches.approve(
             state, pitch, action.actor_id, rng, balance, data, ledger_balances, step

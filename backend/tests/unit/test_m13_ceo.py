@@ -95,8 +95,13 @@ def test_ceo_refuses_chair_only_actions() -> None:
 def _ceo_actions(seed: int, price: int, cash: int) -> tuple[GameState, list[object]]:
     state = with_ceo_appointed(staffed(price=price))
     state = with_person_state(state, replace(state.person_state(CEO), energy=None))
-    out_state, _, _, taken = run_ceo(
-        state, RngFactory(seed), LOADED.balance, LOADED.game_data, {(CID, CASH): cash}
+    out_state, _, _, taken = run_ceo(  # at the controls: the CEO's own decisions only;
+        state,  # an approved pitch is the Chair's decision (M13b, 27.1)
+        RngFactory(seed),
+        LOADED.balance,
+        LOADED.game_data,
+        {(CID, CASH): cash},
+        at_controls=True,
     )
     return out_state, [a for cid, a in taken if a.actor_id == CEO]  # type: ignore[attr-defined]
 
