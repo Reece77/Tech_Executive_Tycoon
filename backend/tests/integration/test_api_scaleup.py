@@ -180,14 +180,16 @@ def test_cli_divisions_execs_and_appoint(
 COO_ID = 5
 
 
-def _same_range_values(loaded: LoadedData, path: Path, skill: str) -> tuple[float, float]:
-    """Two true values of the COO's `skill`, as far apart as possible, that the company sees
-    as the same displayed range."""
+def _same_range_values(
+    loaded: LoadedData, path: Path, skill: str, person_id: int = COO_ID
+) -> tuple[float, float]:
+    """Two true values of the person's (the COO's) `skill`, as far apart as possible, that
+    the company sees as the same displayed range."""
     from tst.sim.people.reveal import revealed_range
 
     with open_session(path) as session:
         state = load_state(session)
-    person, reveal = state.person(COO_ID), state.reveal(1, COO_ID)
+    person, reveal = state.person(person_id), state.reveal(1, person_id)
     assert reveal is not None
 
     def shown(v: float) -> tuple[int, int]:
@@ -201,12 +203,12 @@ def _same_range_values(loaded: LoadedData, path: Path, skill: str) -> tuple[floa
     return min(same), max(same)
 
 
-def _plant(path: Path, values: dict[str, float]) -> None:
+def _plant(path: Path, values: dict[str, float], person_id: int = COO_ID) -> None:
     with open_session(path) as session, session.begin():
         for skill, value in values.items():
             session.execute(
                 update(PersonSkillRow)
-                .where(PersonSkillRow.person_id == COO_ID, PersonSkillRow.skill == skill)
+                .where(PersonSkillRow.person_id == person_id, PersonSkillRow.skill == skill)
                 .values(value=value)
             )
 
@@ -220,6 +222,7 @@ def _screens(client: Client, product_id: int) -> str:
             "product": client.get(f"{BASE}/products/{product_id}"),
             "portfolio": client.get(f"{BASE}/portfolio"),
             "person": client.get(f"{BASE}/people/{COO_ID}"),
+            "research": client.get(f"{BASE}/research"),  # M12r finding 2
         },
         sort_keys=True,
     )
@@ -245,6 +248,7 @@ def test_hidden_coo_skill_changes_no_response(api: tuple[Client, Path], loaded: 
         f"{BASE}/products", {"name": "Ledger", "category": "b2b_saas", "segments": ["smb"]}, 201
     )["product"]["product_id"]
     client.post(f"{BASE}/products/{product}/assign", {"unit_id": team})
+    lab = _research_team(client, dept, range(16, 19))  # M12r: a deep research team too
     client.post(f"{BASE}/people/21/fire")  # the finance manager: 21 staff, the COO alone
     client.post(f"{BASE}/scaleup/seats/coo/appoint", {"person_id": COO_ID})
     weights = loaded.balance.exec_seats.seats["coo"].weights
@@ -260,4 +264,46 @@ def test_hidden_coo_skill_changes_no_response(api: tuple[Client, Path], loaded: 
     scale = json.loads(strong)["scaleup"]
     assert any(p["output_effect_pct"] < 0 for p in scale["support"])  # an under-covered pool
     assert any("layer tax" in d["effect_note"] for d in scale["divisions"])  # a deep division
+    [project] = json.loads(strong)["research"]["projects"]
+    assert project["unit_id"] == lab and project["gain_per_month"] > 0
     assert weak == strong
+
+
+def _research_team(client: Client, parent: int | None, people: range) -> int:
+    """A team under `parent` with `people`, researching the software platform."""
+    body: dict[str, Any] = {"kind": "team", "name": "Lab"}
+    if parent is not None:
+        body["parent_id"] = parent
+    org = client.post(f"{BASE}/org/units", body, 201)["org"]
+    unit = next(u for u in org["units"] if u["name"] == "Lab")["unit_id"]
+    for pid in people:
+        client.post(f"{BASE}/org/people/{pid}/move", {"unit_id": unit})
+    client.post(f"{BASE}/research/projects", {"unit_id": unit, "domain": "software_platform"})
+    return int(unit)
+
+
+CTO_ID = 9
+
+
+def test_hidden_cto_skill_changes_no_research_response(
+    api: tuple[Client, Path], loaded: LoadedData
+) -> None:
+    """M12r finding 2 (Codex review 3): two CTOs the player sees identically give a
+    byte-identical Research screen, gain_per_month and months_to_era included (18.8, 21.7)."""
+    client, path = api
+    lab = _research_team(client, None, range(10, 16))
+    client.post(f"{BASE}/scaleup/seats/cto/appoint", {"person_id": CTO_ID})
+    weights = loaded.balance.exec_seats.seats["cto"].weights
+    lows, highs = {}, {}
+    for skill in weights:
+        lows[skill], highs[skill] = _same_range_values(loaded, path, skill, CTO_ID)
+    assert sum(w * (highs[s] - lows[s]) for s, w in weights.items()) > 0.5  # true s differs
+
+    _plant(path, lows, CTO_ID)
+    weak = client.client.get(f"{BASE}/research")
+    _plant(path, highs, CTO_ID)
+    strong = client.client.get(f"{BASE}/research")
+    [project] = strong.json()["projects"]
+    assert project["unit_id"] == lab and project["gain_per_month"] > 0
+    assert project["months_to_era"] is not None
+    assert weak.text == strong.text

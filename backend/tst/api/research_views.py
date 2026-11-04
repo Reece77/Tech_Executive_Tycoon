@@ -98,9 +98,8 @@ def projects_out(state: GameState, data: LoadedData) -> list[ProjectOut]:
         if p.unit_id is None:
             continue
         unit = state.unit(p.unit_id)
-        work = lab(state, view, p, b, g)
-        shown = estimates.shown_lab(state, cid, work, p.domain, b, g)
-        look = estimates.outlook(state, cid, p.domain, shown, b, g)
+        work = lab(state, view, p, b, g, estimate=True)  # 18.8, 21.7 (M12r)
+        look = estimates.outlook(state, cid, p.domain, work, b, g)
         era = estimates.next_era(state, g, p.domain)
         early = None
         if era is not None and look.months is not None:

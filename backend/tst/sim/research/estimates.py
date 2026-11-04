@@ -1,69 +1,26 @@
 """Research numbers as the player can judge them (docs/formulas.md 21.7, ADR-0007).
 
 The engine's research output comes from true skills and tags. What the Research screen
-shows uses the same lab with each researcher's research skill taken from the midpoints of
-the ranges the company sees and only the tags it has noticed (as 23.4 does for product
-teams). A rival's lead shows as a range of whole points that always contains the true value,
-offset by a seeded draw so its midpoint is not the true lead.
+shows is the lab built with `estimate=True` (`projects.lab`): each researcher's research
+skill from the midpoints of the ranges the company sees, only the tags it has noticed (as
+23.4 does for product teams) and executive seat factors from displayed ranges (18.8). A
+rival's lead shows as a range of whole points that always contains the true value, offset
+by a seeded draw so its midpoint is not the true lead.
 """
 
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 from tst.sim.data_models import Balance, GameData
-from tst.sim.people.reveal import revealed_range
-from tst.sim.products import formulas as pf
 from tst.sim.research import levels
 from tst.sim.research.data import EraDef
-from tst.sim.research.projects import Lab, progress, research_skill
+from tst.sim.research.projects import Lab, progress
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
 CENTRE = 0.5  # tunable-exempt: a uniform draw centred on 0
-
-
-def _shown_skills(state: GameState, company_id: int, person_id: int) -> dict[str, float] | None:
-    person = state.person(person_id)
-    reveal = state.reveal(company_id, person_id)
-    if person.is_founder or reveal is None:
-        return None
-    return {k: sum(revealed_range(person, reveal, k)) / 2 for k in person.skills.as_dict()}
-
-
-def _known_tags(state: GameState, company_id: int, person_id: int) -> tuple[str, ...]:
-    person = state.person(person_id)
-    reveal = state.reveal(company_id, person_id)
-    if person.is_founder or reveal is None:
-        return person.tags
-    return tuple(tag for tag, _ in reveal.revealed_tags)
-
-
-def shown_lab(
-    state: GameState, company_id: int, lab: Lab, domain: str, balance: Balance, data: GameData
-) -> Lab:
-    """`lab` with each researcher's output x (shown r x shown t) / (true r x true t)."""
-    pb = balance.products
-    d = levels.domain_def(data, domain)
-    out = []
-    for r in lab.researchers:
-        person = state.person(r.person_id)
-        shown = _shown_skills(state, company_id, r.person_id)
-        true = r.skill * pf.tag_multiplier(person.tags, pb)
-        seen = (research_skill(shown, d) if shown is not None else r.skill) * pf.tag_multiplier(
-            _known_tags(state, company_id, r.person_id), pb
-        )
-        out.append(
-            replace(
-                r,
-                skill=research_skill(shown, d) if shown is not None else r.skill,
-                output=r.output * (seen / true if true else 1.0),
-            )
-        )
-    n = len(out)
-    output = pf.coord_factor(n, pb) * sum(r.output for r in out) if n else 0.0
-    return replace(lab, researchers=tuple(out), output=output)
 
 
 @dataclass(frozen=True, slots=True)

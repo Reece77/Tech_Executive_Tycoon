@@ -19,6 +19,7 @@ from tst.sim.finance import macro
 from tst.sim.ledger import CASH, RESEARCH, LedgerEntry
 from tst.sim.org.rules import OrgView, org_view
 from tst.sim.org.scaleup import modifiers
+from tst.sim.people.reveal import revealed_range
 from tst.sim.products import formulas as pf
 from tst.sim.research import levels
 from tst.sim.research.data import DomainDef
@@ -71,18 +72,44 @@ def researcher_cost_cents(state: GameState, data: GameData, domain: DomainDef) -
     return domain.budget_cents
 
 
+def _shown_skills(state: GameState, company_id: int, person_id: int) -> dict[str, float]:
+    """A researcher's skills as the company sees them: the midpoints of its displayed ranges
+    (23.4); a founder, or someone it has no reveal record of, at true values."""
+    person = state.person(person_id)
+    reveal = state.reveal(company_id, person_id)
+    if person.is_founder or reveal is None:
+        return person.skills.as_dict()
+    return {k: sum(revealed_range(person, reveal, k)) / 2 for k in person.skills.as_dict()}
+
+
+def _known_tags(state: GameState, company_id: int, person_id: int) -> tuple[str, ...]:
+    """The tags the company has noticed (23.4); a founder's or an unrecorded person's all."""
+    person = state.person(person_id)
+    reveal = state.reveal(company_id, person_id)
+    if person.is_founder or reveal is None:
+        return person.tags
+    return tuple(tag for tag, _ in reveal.revealed_tags)
+
+
 def lab(
     state: GameState,
     view: OrgView,
     project: ResearchProject,
     balance: Balance,
     data: GameData,
+    *,
+    estimate: bool = False,
 ) -> Lab:
     """Who researches on a project and their output (21.3): coord(n) x sum (r_i / 10) x m_i x
-    lambda_i, lambda_i the tags' and seats' factors on builders (11.10, 18.5)."""
+    lambda_i, lambda_i the tags' and seats' factors on builders (11.10, 18.5).
+
+    `estimate`: the lab as the company sees it, for the API (21.7, 21.10; M12r): research
+    skills from displayed ranges, only noticed tags, and executive seat factors from
+    displayed ranges (`modifiers(..., estimate=True)`, 18.8). The engine uses true values."""
     pb = balance.products
     domain = levels.domain_def(data, project.domain)
-    mods = modifiers(state, view, balance, data)
+    cid = project.company_id
+    mods = modifiers(state, view, balance, data, estimate=estimate)
     out: list[Researcher] = []
     members = view.members.get(project.unit_id, ()) if project.unit_id is not None else ()
     # event modifiers on the unit's builder output (M10b, 23.2) count for research too
@@ -98,11 +125,11 @@ def lab(
             if employment is None or data.role(employment.role).product_function != "builder":
                 continue
         m = pf.morale_factor(state.person_state(person_id).morale, pb)
-        lam = pf.tag_multiplier(person.tags, pb) * (
-            mods.builder.get(person_id, 1.0) if mods else 1.0
-        )
+        tags = _known_tags(state, cid, person_id) if estimate else person.tags
+        lam = pf.tag_multiplier(tags, pb) * (mods.builder.get(person_id, 1.0) if mods else 1.0)
         lam *= unit_factor
-        r = research_skill(person.skills.as_dict(), domain)
+        skills = _shown_skills(state, cid, person_id) if estimate else person.skills.as_dict()
+        r = research_skill(skills, domain)
         out.append(Researcher(person_id, r, r / ATTR_NEUTRAL * m * lam))
     output = pf.coord_factor(len(out), pb) * sum(r.output for r in out) if out else 0.0
     needed = len(out) * researcher_cost_cents(state, data, domain)
