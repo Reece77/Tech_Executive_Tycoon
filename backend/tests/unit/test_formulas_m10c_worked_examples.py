@@ -24,7 +24,8 @@ def test_exec_authority_keys(loaded: LoadedData) -> None:
     ea = loaded.balance.exec_authority
     assert (ea.change_energy, ea.energy_per_month, ea.report_months) == (2, 100, 3)
     assert ea.mistake_budget_off == 0.20
-    assert sorted(ea.defaults) == sorted(AUTHORITY_SEATS) == ["cfo", "cmo", "coo", "cro", "cto"]
+    assert sorted(ea.defaults) == sorted(AUTHORITY_SEATS)
+    assert sorted(AUTHORITY_SEATS) == ["cfo", "cmo", "coo", "cpo", "cro", "cto"]  # CPO: M13b
     assert ea.defaults["cro"]["price_band_pct"] == 10
     assert ea.defaults["cfo"] == {"runway_months": 9, "repay_above_months": 24}
     assert ea.defaults["coo"]["coverage_target"] == 1.0
