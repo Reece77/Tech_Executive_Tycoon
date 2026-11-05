@@ -51,6 +51,7 @@ from tst.sim.geo.offices import employee_office_cents
 from tst.sim.hiring.formulas import severance_cents
 from tst.sim.hiring.models import Search
 from tst.sim.hiring.phases import employment_monthly_cost_cents
+from tst.sim.hiring.recruit import leadership_fit
 from tst.sim.org.morale import market_mid_for
 from tst.sim.org.rules import is_remote, org_view
 from tst.sim.people.formulas import potential_phrase
@@ -342,7 +343,10 @@ def person_summary(
         else:
             city = home_city(person, data.game_data)
             relocate = candidate is not None and candidate.relocate_to is not None
+    fit_low, fit_high = leadership_fit(person, reveal, data.balance)  # M14b (29.5)
     return PersonSummaryOut(
+        leadership_fit_low=fit_low,
+        leadership_fit_high=fit_high,
         person_id=person.id,
         name=f"{person.first_name} {person.last_name}",
         age=person.age(state.turn),

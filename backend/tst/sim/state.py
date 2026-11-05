@@ -53,7 +53,14 @@ from tst.sim.org.models import (
 )
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
-from tst.sim.press.models import Credibility, Feud, PressMoment, Promise, Statement
+from tst.sim.press.models import (
+    Credibility,
+    Departure,
+    Feud,
+    PressMoment,
+    Promise,
+    Statement,
+)
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
 from tst.sim.research.models import (
     EraArrival,
@@ -230,6 +237,7 @@ class GameState:
     credibility: tuple[Credibility, ...] = ()
     feuds: tuple[Feud, ...] = ()
     statements: tuple[Statement, ...] = ()
+    departures: tuple[Departure, ...] = ()  # resignations and poaches lately, by person id
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:

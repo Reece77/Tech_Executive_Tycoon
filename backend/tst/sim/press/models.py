@@ -102,3 +102,17 @@ class Statement:
     kind: Literal["statement", "jab", "answer"]
     text: str
     product_id: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Departure:
+    """Someone who resigned or was poached lately (29.5): Replace's source once their
+    employment has ended and left the live state. Kept recruit.replace_window months."""
+
+    person_id: int
+    company_id: int
+    role: str
+    level: str
+    unit_id: int | None
+    reason: str  # resigned | poached
+    turn: int

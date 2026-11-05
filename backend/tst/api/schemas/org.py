@@ -20,6 +20,10 @@ class OrgMemberOut(BaseModel):
     is_leader: bool = Field(description="Leads this unit (the founder leads the company)")
     manager_id: int | None = Field(description="Null for the founder")
     remote: bool = Field(description="Works under a remote policy (no office fee)")
+    leadership_fit_low: int = Field(
+        default=1, description="Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)"
+    )
+    leadership_fit_high: int = Field(default=5, description="The top of the fit's range")
 
 
 class UnitOut(BaseModel):
@@ -185,6 +189,7 @@ class HiringPlanIn(BaseModel):
     equity_bp: int = Field(default=0, ge=0)
     unit_id: int | None = None
     focus: str = "current"  # current | potential
+    interest: str | None = None  # M14b (29.5): candidates with this interest, a fee a search
 
 
 class HiringPlanPatchIn(BaseModel):

@@ -8,6 +8,7 @@ from collections.abc import Iterable
 from dataclasses import replace
 
 from tst.sim.data_models import Balance, GameData
+from tst.sim.hiring.recruit import record_departures
 from tst.sim.log import LogItem
 from tst.sim.press import moments, promises
 from tst.sim.press.models import Credibility
@@ -29,6 +30,7 @@ def press_month(
     for company in player_companies(state):
         if credibility_of(state, company.id) is None:  # 29.3: every company starts at 50
             state = with_credibility(state, Credibility(company.id, balance.press.cred_start))
+    state = record_departures(state, balance)  # 29.5: Replace's leavers
     state, feud_logs = characters.feud_month(state, rng, balance, data, rival_moves)
     state, promise_logs = promises.check(state, rng, balance, data)
     state = moments.backfires(state, balance)

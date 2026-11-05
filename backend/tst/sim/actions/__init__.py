@@ -343,6 +343,7 @@ __all__ = [
     "RemoveExecutive",
     "RenameUnit",
     "RepayLoan",
+    "ReplaceLeaver",
     "Scout",
     "ScoutSearch",
     "SecondaryOffering",

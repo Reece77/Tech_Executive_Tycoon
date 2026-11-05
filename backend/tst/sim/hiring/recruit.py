@@ -3,9 +3,12 @@ search by interest, and leadership fit from revealed values only."""
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from tst.sim.data_models import Balance, GameData
 from tst.sim.people.models import Person, RevealState
 from tst.sim.people.reveal import revealed_range
+from tst.sim.press.models import Departure
 from tst.sim.state import GameState
 
 BP = 10_000  # tunable-exempt: basis points
@@ -32,30 +35,30 @@ def recruiter_on_staff(state: GameState, company_id: int) -> int | None:
     return min(ids) if ids else None
 
 
+def leaver(state: GameState, company_id: int, person_id: int) -> Departure | None:
+    """A resignation serving notice, or a departure of the last replace_window months."""
+    e = state.employment_of(person_id)
+    if (
+        e is not None
+        and e.company_id == company_id
+        and e.status == "notice"
+        and e.end_reason in REPLACEABLE
+    ):
+        return Departure(
+            person_id, company_id, e.role, e.level, e.unit_id, e.end_reason or "", state.turn
+        )
+    return next(
+        (d for d in state.departures if d.person_id == person_id and d.company_id == company_id),
+        None,
+    )
+
+
 def replace_problem(
     state: GameState, company_id: int, person_id: int, balance: Balance
 ) -> str | None:
     """Why Replace is not offered for this leaver, or None (29.5)."""
-    e = state.employment_of(person_id)
-    if e is None or e.company_id != company_id:
-        e = next(
-            (
-                x
-                for x in sorted(state.employments, key=lambda x: -x.id)
-                if x.person_id == person_id and x.company_id == company_id
-            ),
-            None,
-        )
-    if e is None:
-        return f"person {person_id} never worked here"
-    resigning = e.status == "notice" and e.end_reason in REPLACEABLE
-    left = (
-        e.status == "ended"
-        and e.end_reason in REPLACEABLE
-        and e.end_turn is not None
-        and state.turn - e.end_turn <= balance.recruit.replace_window
-    )
-    if not (resigning or left):
+    left = leaver(state, company_id, person_id)
+    if left is None or state.turn - left.turn > balance.recruit.replace_window:
         return "Replace is for someone who resigned or was poached lately"
     if recruiter_on_staff(state, company_id) is None:
         return "Replace needs a recruiter on staff"
@@ -64,15 +67,25 @@ def replace_problem(
     return None
 
 
-def leaver_employment(state: GameState, company_id: int, person_id: int):  # type: ignore[no-untyped-def]
-    return next(
-        (
-            x
-            for x in sorted(state.employments, key=lambda x: -x.id)
-            if x.person_id == person_id and x.company_id == company_id
-        ),
-        None,
-    )
+def record_departures(state: GameState, balance: Balance) -> GameState:
+    """Phase 12: the player's resignations and poaches that ended this month are kept for
+    Replace; older ones drop."""
+    players = {c.id for c in state.companies if c.is_player}
+    new = [
+        Departure(
+            e.person_id, e.company_id, e.role, e.level, e.unit_id, e.end_reason or "", state.turn
+        )
+        for e in state.employments
+        if e.company_id in players
+        and e.status == "ended"
+        and e.end_turn == state.turn
+        and e.end_reason in REPLACEABLE
+    ]
+    keep = state.turn - balance.recruit.replace_window
+    kept = {d.person_id: d for d in state.departures if d.turn >= keep}
+    for d in new:
+        kept[d.person_id] = d
+    return replace(state, departures=tuple(kept[k] for k in sorted(kept)))
 
 
 def skip_months(balance: Balance) -> int:
