@@ -1832,6 +1832,11 @@ INBOX_TEMPLATE_KEYS = (
     "license_in",
     "license_out",
     "research_leak",
+    "promise_made",  # M14b (29.2)
+    "promise_kept",
+    "promise_broken",
+    "rival_statement",  # M14b (29.4)
+    "replace_started",  # M14b (29.5)
 )
 
 
