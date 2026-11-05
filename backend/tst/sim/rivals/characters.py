@@ -21,7 +21,8 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, feud_of, player_companies, with_feud, with_statement
 
 SELLING = ("live", "sunset")
-SPEAKING_MOVES = ("price_cut", "launched", "enter_segment")
+# A CEO speaks at their company's launches, releases (quality and feature pushes) and price cuts
+SPEAKING_MOVES = ("price_cut", "launched", "enter_segment", "feature_push", "quality_push")
 STATEMENT_MEMORY = 24  # tunable-exempt: months of statements kept in the live state
 SCALE = 100  # tunable-exempt: the feud's 0-100 scale
 ANSWERING = ("aggressive",)  # personalities that answer a bold claim naming them (29.1)

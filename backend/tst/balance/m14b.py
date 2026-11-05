@@ -128,12 +128,14 @@ def target_34_run(job: tuple[bool, int]) -> PressRun:
     bold, seed = job
     game = start_game(_loaded(), seed, "funded_spinout", "standard")
     moves: list[tuple[int, int, str]] = []  # (turn, rival, action) against the player
+    shown_ids: set[int] = set()  # moments whose event was shown (the state keeps a year)
     for _ in range(TURNS):
         if game.state.ended:
             break
         _answer_press(game, "bold" if bold else "measured")
         steady(game)
         game.turn()
+        shown_ids |= {m.id for m in game.state.press_moments if m.event_turn is not None}
         mine = {
             (p.category, s.segment)
             for p in game.state.company_products(PLAYER)
@@ -159,8 +161,7 @@ def target_34_run(job: tuple[bool, int]) -> PressRun:
         span = max(1, game.state.turn - at)
         after = sum(1 for t, r, _ in moves if r == feud.rival_id and t >= at) / span
         lift = after / before - 1 if before > 0 else None
-    shown = sum(1 for e in game.state.events if e.category == "press")  # in memory: all kept
-    return PressRun(bold, seed, shown / years, feud is not None, lift)
+    return PressRun(bold, seed, len(shown_ids) / years, feud is not None, lift)
 
 
 # --- T5 ----------------------------------------------------------------------------------------
