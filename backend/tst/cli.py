@@ -528,12 +528,23 @@ def references(
 @app.command()
 def offer(
     save: SaveOpt,
-    candidate: Annotated[int, typer.Option("--candidate", help="Candidate id")],
-    salary: Annotated[str, typer.Option(help="Annual salary in dollars, e.g. 92000")],
+    candidate: Annotated[int | None, typer.Option("--candidate", help="Candidate id")] = None,
+    salary: Annotated[str, typer.Option(help="Annual salary in dollars, e.g. 92000")] = "",
     equity_bp: Annotated[int, typer.Option("--equity-bp", help="Equity in basis points")] = 0,
     preview: Annotated[bool, typer.Option(help="Show the hint without sending")] = False,
+    company: Annotated[str | None, typer.Option(help="M14: bid for this company")] = None,
+    price: Annotated[int, typer.Option(help="M14: the bid in cents")] = 0,
+    cash_share: Annotated[float, typer.Option(help="M14: share paid in cash, 0-1")] = 1.0,
+    hostile: Annotated[bool, typer.Option(help="M14: a hostile tender")] = False,
+    brand: Annotated[bool, typer.Option(help="M14: keep it as a brand")] = False,
 ) -> None:
-    """Make an offer (resolved at the next Continue), or preview it with --preview."""
+    """Make a job offer to --candidate (resolved at the next Continue; --preview shows the
+    hint), or with --company and --price a bid for a company (M14, 28.3)."""
+    if company is not None:
+        _company_bid(save, company, price, cash_share, hostile, brand)
+        return
+    if candidate is None or not salary:
+        raise _fail("give --candidate and --salary for a job offer, or --company and --price")
     path, data, state = _game(save)
     try:
         salary_cents = cents(salary)
@@ -2487,3 +2498,103 @@ def appoint_ceo(
         f"{name.first_name} {name.last_name} is CEO; you are Chair. "
         f"{_energy(result.new_state, data)}"
     )
+
+
+# --- M14: mergers and acquisitions (formulas.md 28) -------------------------------------------
+
+from tst.api.schemas.mna import MnaOut  # noqa: E402
+
+
+def _mna(path: Path, state: GameState, data: LoadedData) -> MnaOut:
+    from tst.api import mna_views
+
+    with repository.open_session(path) as session:
+        balances = repository.current_balances(session, state.turn)
+    return mna_views.mna_out(state, balances, data)
+
+
+def _company_named(state: GameState, name: str) -> int:
+    for c in state.companies:
+        if c.name.lower() == name.lower() or str(c.id) == name:
+            return c.id
+    raise _fail(f"no company called {name!r}")
+
+
+@app.command()
+def targets(save: SaveOpt) -> None:
+    """Companies you could buy, by name: market cap or value range, diligence and deals (28)."""
+    path, data, state = _game(save)
+    out = _mna(path, state, data)
+    for t in out.targets:
+        if t.listed and t.market_cap_cents is not None:
+            value = f"market cap {format_money(t.market_cap_cents)}"
+        else:
+            value = (
+                f"value {format_money(t.value_low_cents or 0)}-"
+                f"{format_money(t.value_high_cents or 0)}"
+            )
+        extra = f"; findings: {', '.join(t.findings) or 'none'}" if t.diligence == "done" else ""
+        typer.echo(
+            f"{t.company_id:>4} {t.name} ({t.kind}): {value}; "
+            f"diligence {t.diligence.replace('_', ' ')}{extra}"
+        )
+    for d in out.deals:
+        typer.echo(
+            f"Deal {d.deal_id} {d.target_name}: {format_money(d.price_cents)} [{d.status}], "
+            f"{d.mode or 'mode not set'}"
+        )
+    for a in out.acquisitions:
+        typer.echo(
+            f"Bought {a.name} ({a.mode}): kept {a.pool_kept}, let go {a.let_go}, "
+            f"{a.departed} of {a.key_people} key people left"
+        )
+
+
+@app.command()
+def diligence(
+    save: SaveOpt, company: Annotated[str, typer.Option(help="Company name or id")]
+) -> None:
+    """Start two months of due diligence on a company (28.2)."""
+    from tst.sim.mna.deals import StartDiligence
+
+    path, data, state = _game(save)
+    _run(path, data, StartDiligence(_actor(state), _company_named(state, company)))
+    typer.echo("Diligence started: the findings arrive in two months.")
+
+
+def _company_bid(
+    save: str, company: str, price: int, cash_share: float, hostile: bool, brand: bool
+) -> None:
+    """Bid for a company (28.3). The answer names no hidden number."""
+    from tst.sim.mna.deals import BidForCompany
+
+    path, data, state = _game(save)
+    action = BidForCompany(
+        _actor(state),
+        _company_named(state, company),
+        price,
+        cash_share,
+        hostile,
+        "brand" if brand else "integrate",
+    )
+    result = _run(path, data, action)
+    for item in result.log_items:
+        params = dict(item.params)
+        if item.template == "deal_update":
+            typer.echo(f"{params.get('title')}. {params.get('detail')}")
+
+
+@app.command()
+def directive(
+    save: SaveOpt,
+    company: Annotated[str, typer.Option(help="A kept brand's name or id")],
+    mode: Annotated[str, typer.Option(help="grow, harvest or defend")],
+) -> None:
+    """Set a kept brand's directive (28.5)."""
+    from tst.sim.mna.integration import SetDirective
+
+    if mode not in ("grow", "harvest", "defend"):
+        raise _fail("mode must be grow, harvest or defend")
+    path, data, state = _game(save)
+    _run(path, data, SetDirective(_actor(state), _company_named(state, company), mode))  # type: ignore[arg-type]
+    typer.echo(f"Directive set: {mode}.")
