@@ -2,7 +2,16 @@
 
 **Goal:** buying companies is a real strategic lever. Any company can be bought, from a struggling startup to a listed incumbent, for cash or (once listed) stock, by friendly offer or hostile tender. Due diligence narrows what you know. Regulators block deals that make a market too concentrated. After each deal you choose: keep it as a brand you steer with a directive, or integrate it for savings at the cost of culture clash and departures. Rivals buy startups too, and a bid for your own company can now end the game with an exit.
 
-**Spec sections:** §2 (v2 fantasy), §10 (instruments) · **ADRs:** 0002, 0003, 0004, 0013 (streams `mna` 37, `integration` 38, `rival_mna` 39), 0015, 0019 (§16), 0020 · **Formulas:** `docs/formulas.md` §28 (all), with §15, §20.3, §25, §27 · **Depends on:** M13b (`m13b-done`)
+**Spec sections:** §2 (v2 fantasy), §10 (instruments) · **ADRs:** 0002, 0003, 0004, 0013 (streams `mna` 37, `integration` 38, `rival_mna` 39), 0015, 0019 (§16), 0020 · **Formulas:** `docs/formulas.md` §28 (all), with §15, §20.3, §25, §27 · **Depends on:** M13b (`m13b-done`) · **Lane:** A, alongside M14b
+
+## Lane
+
+- **Lane A.** It runs at the same time as M14b (lane B, people and press) in its own session and branch (`m14-mna`).
+- **Merge order: M14b merges first.** Before merging M14: merge `main` (with M14b), re-parent M14's unmerged migrations, add M14b's press trigger for an acquisition announcement (§29.1) if M14b left a hook for it, regenerate golden snapshots once with both milestones' reasons in CHANGELOG, and re-run every guard on the combined code. If an M14b target moves, report it rather than tune M14b's keys.
+- **M14 owns:** new `backend/tst/sim/mna/`; rivals' startup purchases; consolidation in finance; `listed_from` in `incumbents.yaml` and `entrants.yaml`; account 1800; `data/events/deals.yaml`; the Rival screen's value and deal controls; Finance → Deals and subsidiaries; Org's acquired units and directives; the exit ending.
+- **M14 must not edit:** `backend/tst/sim/press/`, the rival CEO and feud code, `hiring/` recruitment changes, `data/events/press.yaml`, the Recruitment screen or the Overview's credibility panel (M14b's).
+- **Shared files:** `balance.yaml` (add only `mna.*`, `antitrust.*`, `integration.*`; both lanes append to `events.trigger`), `docs/formulas.md` (notes in §28 only), `RivalScreen.tsx` (M14 owns it; M14b adds one panel component), `CHANGELOG.md`, `docs/data-dictionary.md`: keep both sides.
+- **RNG:** `mna` 37, `integration` 38, `rival_mna` 39; lane B has 40–42.
 
 ## Design for v3 (ADR-0020)
 
@@ -47,7 +56,7 @@ Minority stakes, subsidiaries' own boards and cap tables, spin-offs and selling 
 - [ ] Antitrust blocks over 50% without a remedy; brand and integrate both work as specified.
 - [ ] §28.9 targets 2–7 met (printed, values recorded); target 1 holds.
 - [ ] `test_product_perf` stays within budget.
-- [ ] `make check` green; `make e2e` passes; merged through a pull request per CLAUDE.md §6 with the trailer `Milestone-Tag: m14-done`.
+- [ ] `make check` green; `make e2e` passes; merged after M14b with migrations re-parented, golden snapshots regenerated on the combined code and both milestones' guards passing; merged through a pull request per CLAUDE.md §6 with the trailer `Milestone-Tag: m14-done`.
 
 ## Manual check (Reece, after merge)
 

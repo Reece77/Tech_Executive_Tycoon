@@ -2382,3 +2382,66 @@ Market caps of listed companies; value ranges for private ones (narrower after d
 
 **Integration flight.** Personality distance 0.5: each acquired key person leaves with chance 0.02 + 0.03 = 5% a month; over 12 months `1 − 0.95^12` = **46%** of them at most if none is retained, before the player's retention actions (raises and promotions lower it as §8's resignation rules do).
 
+## 29. People and press (M14b, lane B)
+
+Reece (2026-11-03 and playtest 2): press and media matter, with **public promises about technology and products**; one-on-ones and private promises are not wanted. Rival founders become characters. Three recruitment fixes from playtest 2 ride along. Principle: **press raises the stakes of what the company already does**; it never replaces a system.
+
+### 29.1 Press moments (events, category `press`)
+
+- **Triggers** (each a press template the engine queues): a product launch; a quarterly earnings report once listed (§25.4); an era arrival the company caused (§27.3); a critical outage (§22.5) or security breach; layoffs of 10% or more; an acquisition announced (M14 adds the trigger when it merges); a rival CEO's public jab (§29.4). At most `press.max_per_quarter` (2) a quarter; the rest are skipped, highest stakes first.
+- **Each moment is an interview** with three tones and an optional promise:
+  - **Bold**: brand target +`press.bold_brand` (3) for 6 months, and an aggressive rival named in it may respond (§29.4); if results contradict the claim within 6 months (the product's share falls, a miss once listed), credibility −`press.bold_backfire` (6).
+  - **Measured**: brand target +1; no risk.
+  - **Deflect**: credibility −2; ends the moment.
+- **Audience** scales every press effect: `a = 0.5` at stage 1–2, 1.0 at stage 3, 1.5 once listed.
+
+### 29.2 Public promises
+
+- **Kinds** (made in a press moment, at most `promise.max_open` (3) open at once):
+  - **Ship:** launch product X (in development) by a date, 3–18 months out.
+  - **Beat:** product X's displayed quality above rival Y's displayed quality by a date.
+  - **Research:** reach a level in a domain, or cause an era, by a date.
+  - **No layoffs** for 12 months.
+  - **No price rise** on product X for 12 months.
+- The engine checks each promise at its deadline (or when broken earlier, for no-layoffs and no-price-rise) from **displayed** values only, so the player can always see where a promise stands.
+- **Kept:** brand target +`promise.kept_brand` (4) × `a` for 12 months, credibility +`promise.kept_cred` (5) × `a`; staff morale +2 for no-layoffs.
+- **Broken:** brand target −`promise.broken_brand` (8) × `a`, credibility −`promise.broken_cred` (10) × `a`; once listed, sentiment −0.05 × `a`; for no-layoffs, every employee's morale −5 and trust in the founder (relationships) −10. A press reminder event follows within 3 months ("you said …").
+- Bigger promises (shorter deadlines, harder targets) pay more: the kept bonus × `1 + promise.ambition` (0–1, from how far the target is from today's value, displayed). Breaking costs the same either way.
+
+### 29.3 Credibility
+
+- A public stat 0–100 per company, starting at 50, drifting 1 a month toward 50.
+- **Effects:** brand gains from press × `(0.5 + credibility / 100)`; once listed, the analysts' consensus uses the player's guidance at weight `credibility / 100` (the rest is §25.4's consensus); hiring appeal +`press.cred_hiring` × (credibility − 50) / 50 (at most +0.05).
+- Shown on the Overview with its last five changes and their causes.
+
+### 29.4 Rival founders as characters
+
+- **Each rival has a named CEO:** the key person with the highest leadership skill at an incumbent (re-chosen if they leave), the founder at a startup. Their personality is the person's; their company's personality still decides (§15.3).
+- **Public statements:** at a press moment that names a rival, and at the rival's own launches and price cuts, its CEO may make a statement (LLM within §16's budget from engine facts, or a template in their voice).
+- **Feud** between the player's founder and each rival CEO, 0–100: + `feud.bold_mention` (10) when a bold answer names them, +8 for a head-to-head launch in a segment both sell in, +15 for poaching their key person (either way), +20 for a hostile bid (M14); −2 a month. **Rivalry** at 50: the rival's decisions weight actions against the player's products ×`feud.target_mult` (1.5), it poaches from the player first, and storyline events follow (§16). Feud and its causes are public on the Rival screen.
+- Draws on stream `press` (id 40), key `(company_id,)` for the player and the rival's stable key for rivals.
+
+### 29.5 Recruitment fixes (playtest 2)
+
+- **Replace (recruiter):** when an employee resigns or is poached and a recruiter is on staff, a Replace button opens a hiring plan with the role and level prefilled; with a recruiter the search takes `recruit.replace_speed` (0.6) of the normal time.
+- **Search by interest:** a hiring plan may filter candidates by one interest, at `recruit.interest_fee_bp` (15% of the role's mid salary) per search; candidates' interests are those already revealed (§5).
+- **Leadership fit** on the org chart and People screen: a 1–5 star range from **revealed** leadership, mentoring, communication and temperament (a range when any is unrevealed).
+
+### 29.6 What the API may show
+
+Press moments and choices, open promises with their displayed progress and deadline, credibility and its history, rival CEOs, statements, feud scores and causes, leadership-fit ranges. Never a backfire before it happens, true skills behind a fit range, or a rival's decision weights.
+
+### 29.7 Balance targets (M14b acceptance, printed)
+
+1. **Nothing else moves.** All earlier guards as before; T2 stays the known miss.
+2. **Promises matter.** Over 10 seeds on a listed company, keeping three promises gives brand +5 to +15 more than making none at 24 months; breaking three gives −10 to −25, and sentiment 5–15% lower.
+3. **The inbox stays calm:** at most 6 press moments a year (median).
+4. **Rivalries happen:** in 10-year steady runs, at least one feud reaches rivalry on 5–9 of 10 seeds; a rivalry raises that rival's actions against the player by 20–60%.
+5. **Replace helps:** time to fill with a recruiter's Replace is 30–50% shorter than a normal search.
+
+### 29.8 Worked examples
+
+**A kept promise, listed.** `a` = 1.5, ambition 0.4, credibility 60: brand target +4 × 1.5 × 1.4 × 1.1 = **+9.2** for 12 months; credibility +7.5.
+
+**A broken no-layoffs promise, stage 3.** `a` = 1.0: brand target −8, credibility −10, every employee's morale −5.
+
