@@ -13440,6 +13440,480 @@
         }
       }
     },
+    "/api/saves/{save_id}/press": {
+      "get": {
+        "tags": [
+          "press"
+        ],
+        "summary": "Get Press",
+        "description": "Credibility, promises and recent press moments, and the promise form (29.6).",
+        "operationId": "getPress",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PressOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/press/promises": {
+      "post": {
+        "tags": [
+          "press"
+        ],
+        "summary": "Make Promise",
+        "description": "A public promise in this month's answered press moment (29.2).",
+        "operationId": "makePromise",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromiseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PressActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/feuds": {
+      "get": {
+        "tags": [
+          "press"
+        ],
+        "summary": "List Feuds",
+        "operationId": "listFeuds",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeudOut"
+                  },
+                  "title": "Response Listfeuds"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/rivals/{rival_id}/leader": {
+      "get": {
+        "tags": [
+          "press"
+        ],
+        "summary": "Get Rival Leader",
+        "description": "The rival's CEO, statements and feud (29.4).",
+        "operationId": "getRivalLeader",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "rival_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Rival Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RivalLeaderOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/replaceable": {
+      "get": {
+        "tags": [
+          "press"
+        ],
+        "summary": "List Replaceable",
+        "description": "Resignations and poaches Replace can fill (29.5).",
+        "operationId": "listReplaceable",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReplaceableOut"
+                  },
+                  "title": "Response Listreplaceable"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/recruitment/replace": {
+      "post": {
+        "tags": [
+          "press"
+        ],
+        "summary": "Replace Leaver",
+        "description": "Replace with a recruiter (29.5).",
+        "operationId": "replaceLeaver",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PressActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -15433,6 +15907,35 @@
         ],
         "title": "CategoryTechOut"
       },
+      "CauseOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Mon YYYY"
+          },
+          "change": {
+            "type": "number",
+            "title": "Change"
+          },
+          "cause": {
+            "type": "string",
+            "title": "Cause"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "change",
+          "cause"
+        ],
+        "title": "CauseOut"
+      },
       "CeoAuthorityIn": {
         "properties": {
           "scopes": {
@@ -15941,6 +16444,18 @@
             ],
             "title": "Energy",
             "description": "Energy left this month: the founder and delegates only"
+          },
+          "leadership_fit_low": {
+            "type": "integer",
+            "title": "Leadership Fit Low",
+            "description": "Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)",
+            "default": 1
+          },
+          "leadership_fit_high": {
+            "type": "integer",
+            "title": "Leadership Fit High",
+            "description": "The top of the fit's range",
+            "default": 5
           },
           "work_style": {
             "anyOf": [
@@ -17051,6 +17566,29 @@
           "name"
         ],
         "title": "CreateUnitIn"
+      },
+      "CredibilityOut": {
+        "properties": {
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "description": "0-100; drifts toward 50"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/CauseOut"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "The last changes and their causes, newest last"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "history"
+        ],
+        "title": "CredibilityOut"
       },
       "CrossDivisionOut": {
         "properties": {
@@ -18611,6 +19149,54 @@
         ],
         "title": "FacilityOut"
       },
+      "FeudOut": {
+        "properties": {
+          "rival_id": {
+            "type": "integer",
+            "title": "Rival Id"
+          },
+          "rival": {
+            "type": "string",
+            "title": "Rival"
+          },
+          "ceo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ceo"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "rivalry": {
+            "type": "boolean",
+            "title": "Rivalry"
+          },
+          "causes": {
+            "items": {
+              "$ref": "#/components/schemas/CauseOut"
+            },
+            "type": "array",
+            "title": "Causes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rival_id",
+          "rival",
+          "ceo",
+          "score",
+          "rivalry",
+          "causes"
+        ],
+        "title": "FeudOut"
+      },
       "FinanceActionOut": {
         "properties": {
           "energy": {
@@ -20072,21 +20658,21 @@
           },
           "manufacturers": {
             "items": {
-              "$ref": "#/components/schemas/OptionOut"
+              "$ref": "#/components/schemas/tst__api__schemas__hardware__OptionOut"
             },
             "type": "array",
             "title": "Manufacturers"
           },
           "foundries": {
             "items": {
-              "$ref": "#/components/schemas/OptionOut"
+              "$ref": "#/components/schemas/tst__api__schemas__hardware__OptionOut"
             },
             "type": "array",
             "title": "Foundries"
           },
           "cities": {
             "items": {
-              "$ref": "#/components/schemas/OptionOut"
+              "$ref": "#/components/schemas/tst__api__schemas__hardware__OptionOut"
             },
             "type": "array",
             "title": "Cities"
@@ -20304,6 +20890,17 @@
             "type": "string",
             "title": "Focus",
             "default": "current"
+          },
+          "interest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interest"
           }
         },
         "type": "object",
@@ -23200,6 +23797,65 @@
         "title": "MarketingSplitIn",
         "description": "Shares of the marketing budget by region, in basis points summing to 10,000; empty\nreturns to the default split by revenue (23.5)."
       },
+      "MomentOut": {
+        "properties": {
+          "moment_id": {
+            "type": "integer",
+            "title": "Moment Id"
+          },
+          "trigger": {
+            "type": "string",
+            "title": "Trigger"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "shown": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shown",
+            "description": "The month its event is shown"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "tone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tone"
+          },
+          "can_promise": {
+            "type": "boolean",
+            "title": "Can Promise",
+            "description": "Answered this month, not with no comment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "moment_id",
+          "trigger",
+          "label",
+          "shown",
+          "status",
+          "tone",
+          "can_promise"
+        ],
+        "title": "MomentOut"
+      },
       "MoraleBreakdownOut": {
         "properties": {
           "person_id": {
@@ -23903,24 +24559,6 @@
         ],
         "title": "OfficeOut"
       },
-      "OptionOut": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "label"
-        ],
-        "title": "OptionOut"
-      },
       "OptionsOut": {
         "properties": {
           "granted": {
@@ -24118,6 +24756,18 @@
             "type": "boolean",
             "title": "Remote",
             "description": "Works under a remote policy (no office fee)"
+          },
+          "leadership_fit_low": {
+            "type": "integer",
+            "title": "Leadership Fit Low",
+            "description": "Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)",
+            "default": 1
+          },
+          "leadership_fit_high": {
+            "type": "integer",
+            "title": "Leadership Fit High",
+            "description": "The top of the fit's range",
+            "default": 5
           }
         },
         "type": "object",
@@ -25190,6 +25840,18 @@
             "title": "Energy",
             "description": "Energy left this month: the founder and delegates only"
           },
+          "leadership_fit_low": {
+            "type": "integer",
+            "title": "Leadership Fit Low",
+            "description": "Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)",
+            "default": 1
+          },
+          "leadership_fit_high": {
+            "type": "integer",
+            "title": "Leadership Fit High",
+            "description": "The top of the fit's range",
+            "default": 5
+          },
           "work_style": {
             "anyOf": [
               {
@@ -25509,6 +26171,18 @@
             ],
             "title": "Energy",
             "description": "Energy left this month: the founder and delegates only"
+          },
+          "leadership_fit_low": {
+            "type": "integer",
+            "title": "Leadership Fit Low",
+            "description": "Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)",
+            "default": 1
+          },
+          "leadership_fit_high": {
+            "type": "integer",
+            "title": "Leadership Fit High",
+            "description": "The top of the fit's range",
+            "default": 5
           }
         },
         "type": "object",
@@ -26181,6 +26855,59 @@
           "values"
         ],
         "title": "PresetOut"
+      },
+      "PressActionOut": {
+        "properties": {
+          "press": {
+            "$ref": "#/components/schemas/PressOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "press",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "PressActionOut"
+      },
+      "PressOut": {
+        "properties": {
+          "credibility": {
+            "$ref": "#/components/schemas/CredibilityOut"
+          },
+          "promises": {
+            "items": {
+              "$ref": "#/components/schemas/PromiseOut"
+            },
+            "type": "array",
+            "title": "Promises"
+          },
+          "moments": {
+            "items": {
+              "$ref": "#/components/schemas/MomentOut"
+            },
+            "type": "array",
+            "title": "Moments"
+          },
+          "form": {
+            "$ref": "#/components/schemas/PromiseFormOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "credibility",
+          "promises",
+          "moments",
+          "form"
+        ],
+        "title": "PressOut"
       },
       "PriceIn": {
         "properties": {
@@ -27630,6 +28357,203 @@
         ],
         "title": "ProjectOut"
       },
+      "PromiseFormOut": {
+        "properties": {
+          "moment_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Moment Id",
+            "description": "This month's answered moment to promise in"
+          },
+          "open_count": {
+            "type": "integer",
+            "title": "Open Count"
+          },
+          "max_open": {
+            "type": "integer",
+            "title": "Max Open"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          },
+          "months": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Months",
+            "description": "[shortest, longest] months for ship, beat, research"
+          },
+          "in_development": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__press__OptionOut"
+            },
+            "type": "array",
+            "title": "In Development"
+          },
+          "live": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__press__OptionOut"
+            },
+            "type": "array",
+            "title": "Live"
+          },
+          "rival_products": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__press__OptionOut"
+            },
+            "type": "array",
+            "title": "Rival Products"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__press__OptionOut"
+            },
+            "type": "array",
+            "title": "Domains"
+          }
+        },
+        "type": "object",
+        "required": [
+          "moment_id",
+          "open_count",
+          "max_open",
+          "energy",
+          "months",
+          "in_development",
+          "live",
+          "rival_products",
+          "domains"
+        ],
+        "title": "PromiseFormOut"
+      },
+      "PromiseIn": {
+        "properties": {
+          "promise": {
+            "type": "string",
+            "title": "Promise",
+            "description": "ship | beat | research | no_layoffs | no_price_rise"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "rival_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rival Product Id"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "promise"
+        ],
+        "title": "PromiseIn"
+      },
+      "PromiseOut": {
+        "properties": {
+          "promise_id": {
+            "type": "integer",
+            "title": "Promise Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "words": {
+            "type": "string",
+            "title": "Words",
+            "description": "What you said, e.g. 'ship Forge by Jun 2016'"
+          },
+          "made": {
+            "type": "string",
+            "title": "Made"
+          },
+          "deadline": {
+            "type": "string",
+            "title": "Deadline"
+          },
+          "months_left": {
+            "type": "integer",
+            "title": "Months Left"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "open | kept | broken"
+          },
+          "progress": {
+            "type": "string",
+            "title": "Progress",
+            "description": "Where it stands, from displayed values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "promise_id",
+          "kind",
+          "words",
+          "made",
+          "deadline",
+          "months_left",
+          "status",
+          "progress"
+        ],
+        "title": "PromiseOut"
+      },
       "ProposalOut": {
         "properties": {
           "proposal_id": {
@@ -28040,6 +28964,70 @@
         "type": "object",
         "title": "RepayIn"
       },
+      "ReplaceIn": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "title": "ReplaceIn"
+      },
+      "ReplaceableOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "description": "resigned | poached"
+          },
+          "can_replace": {
+            "type": "boolean",
+            "title": "Can Replace"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role",
+          "level",
+          "reason",
+          "can_replace",
+          "problem"
+        ],
+        "title": "ReplaceableOut"
+      },
       "ReportOut": {
         "properties": {
           "seat": {
@@ -28291,6 +29279,56 @@
           "max_out_points"
         ],
         "title": "RivalLeadOut"
+      },
+      "RivalLeaderOut": {
+        "properties": {
+          "rival_id": {
+            "type": "integer",
+            "title": "Rival Id"
+          },
+          "ceo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ceo",
+            "description": "Their CEO: the founder at a startup"
+          },
+          "ceo_person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ceo Person Id"
+          },
+          "statements": {
+            "items": {
+              "$ref": "#/components/schemas/StatementOut"
+            },
+            "type": "array",
+            "title": "Statements"
+          },
+          "feud": {
+            "$ref": "#/components/schemas/FeudOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rival_id",
+          "ceo",
+          "ceo_person_id",
+          "statements",
+          "feud"
+        ],
+        "title": "RivalLeaderOut"
       },
       "RivalMoveOut": {
         "properties": {
@@ -29659,6 +30697,18 @@
             ],
             "title": "Unit Id",
             "description": "The hiring unit, for the default city"
+          },
+          "interest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interest",
+            "description": "Only candidates with this interest, for a fee (M14b, 29.5)"
           }
         },
         "type": "object",
@@ -30470,6 +31520,30 @@
           "amount_cents"
         ],
         "title": "StatementLineOut"
+      },
+      "StatementOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "statement | jab | answer"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "kind",
+          "text"
+        ],
+        "title": "StatementOut"
       },
       "StatementPeriodOut": {
         "properties": {
@@ -31665,6 +32739,24 @@
         ],
         "title": "RegionOptionOut"
       },
+      "tst__api__schemas__hardware__OptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "OptionOut"
+      },
       "tst__api__schemas__history__NamedOut": {
         "properties": {
           "id": {
@@ -31682,6 +32774,31 @@
           "name"
         ],
         "title": "NamedOut"
+      },
+      "tst__api__schemas__press__OptionOut": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "OptionOut"
       },
       "tst__api__schemas__products__NamedOut": {
         "properties": {

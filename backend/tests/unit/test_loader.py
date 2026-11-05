@@ -42,7 +42,8 @@ def test_hashes_cover_every_file(loaded: LoadedData) -> None:
     assert (
         sorted(loaded.hashes) == sorted([*DATA_FILES, *events])
         and len(events) == 14  # M10b: crisis.yaml; M10c: executive.yaml; M11: research.yaml
-    )  # M7a: founder.yaml; M10: lender.yaml; M12a: facility.yaml; M13: public.yaml; M14b: press.yaml
+    )  # M7a: founder.yaml; M10: lender.yaml; M12a: facility.yaml; M13: public.yaml
+    # M14b: press.yaml
     for name, digest in loaded.hashes.items():
         assert digest == file_hash((DATA_DIR / name).read_bytes())
         assert len(digest) == 64
