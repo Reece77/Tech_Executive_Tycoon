@@ -3,6 +3,9 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  replace_started: # M14b (29.5)
+    title: "Replacing {name}"
+    body: "Your recruiter is finding a {role} to replace {name}. Screened candidates arrive at the month end and get offers at once."
   promise_kept: # M14b (29.2)
     title: "Promise kept: {promise}"
     body: "You said you would {promise}, and you did. The brand and your credibility gain."

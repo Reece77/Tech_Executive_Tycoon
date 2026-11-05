@@ -1108,6 +1108,7 @@ recruit:
   replace_speed: 0.6 # Replace's time to fill over a normal plan's (29.5)
   normal_months: 2 # a plan's months from opening to the hire: search, then interview and offer (M14b measure)
   replace_window: 3 # months after a resignation or poach that Replace is offered (M14b decision)
+  replace_ratio_bp: 11000 # a Replace plan's offers as bp of the candidate's ask (M14b decision, as the executives' plans)
   interest_fee_bp: 1500 # bp of the role's mid salary at the search's level, per search by interest (29.5)
   interest_pool: 4 # candidates generated per candidate kept, to find ones with the interest (M14b decision)
   fit_weights: { leadership: 0.35, mentoring: 0.25, communication: 0.25, temperament: 0.15 } # leadership fit from revealed values (29.5; M14b decision)

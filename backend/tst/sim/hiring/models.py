@@ -33,6 +33,7 @@ class Search:
     # M9 (19.3): the city candidates live in (relocators move there), ANYWHERE for a remote
     # unit's search, None for searches opened before M9 (generated as v1 did).
     city: str | None = None
+    interest: str | None = None  # M14b (29.5): candidates with this interest only
 
 
 @dataclass(frozen=True, slots=True)

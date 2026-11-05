@@ -168,7 +168,10 @@ def _work_plan(run: _Run, plan: HiringPlan) -> PlanActivity:
     searching = any(s.role == role for s in run.state.open_searches(company))
     if still_needed(run.state, plan) > 0 and not searching:
         channel: Channel = ANY_CHANNEL if plan.channel == "any" else plan.channel
-        if run.attempt(company, OpenSearch(owner, role, channel, plan_id=plan.id)):
+        search = OpenSearch(
+            owner, role, channel, plan_id=plan.id, level=plan.level, interest=plan.interest
+        )
+        if run.attempt(company, search):
             activity = replace(activity, searches=activity.searches + 1)
 
     # 2-3. Interview the best uninterviewed candidates while more than the reserve would remain.

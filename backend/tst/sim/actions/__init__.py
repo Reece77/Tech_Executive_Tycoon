@@ -162,6 +162,7 @@ from tst.sim.actions.public import (
     mark_overridden,
     override_target,
 )
+from tst.sim.actions.recruit import ReplaceLeaver, replace_leaver
 from tst.sim.actions.research import (
     LicenseIn,
     LicenseOut,
@@ -212,10 +213,12 @@ type Action = (
     | HardwareAction
     | PublicAction
     | PressAction
+    | ReplaceLeaver
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
     "make_promise": MakePromise,  # M14b
+    "replace_leaver": ReplaceLeaver,
     "hire_banks": HireBanks,  # M13
     "set_guidance": SetGuidance,
     "buyback": Buyback,
@@ -548,6 +551,8 @@ def apply_action(
             out = choose_event(state, action, balance, data)
         case MakePromise():  # M14b (29.2)
             out = make_promise(state, action, balance, data)
+        case ReplaceLeaver():  # M14b (29.5)
+            out = replace_leaver(state, action, balance, data, ledger_balances)
         case (
             HireBanks()
             | SetGuidance()

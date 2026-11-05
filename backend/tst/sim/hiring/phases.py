@@ -666,12 +666,36 @@ def candidate_batches(
         ]
         if search.level is not None:  # an exec-level search (M8, 18.3); draws unchanged
             levels = [search.level] * count
-        first, ids = state.next_ids.take_many("person", count)
-        state = replace(state, next_ids=ids)
         role = data.role(search.role)
-        people = generate_pool(
-            gen, data, balance, state.turn, role, levels, first_person_id=first, city=search.city
-        )
+        if search.interest is None:
+            first, ids = state.next_ids.take_many("person", count)
+            state = replace(state, next_ids=ids)
+            people = generate_pool(
+                gen,
+                data,
+                balance,
+                state.turn,
+                role,
+                levels,
+                first_person_id=first,
+                city=search.city,
+            )
+        else:  # M14b (29.5): a larger pool, keeping those with the interest, ids in order
+            pool = generate_pool(
+                gen,
+                data,
+                balance,
+                state.turn,
+                role,
+                levels * balance.recruit.interest_pool,
+                first_person_id=state.next_ids.person,
+                city=search.city,
+            )
+            kept = [p for p in pool if search.interest in p.interests][:count]
+            first, ids = state.next_ids.take_many("person", len(kept))
+            state = replace(state, next_ids=ids)
+            people = tuple(replace(p, id=first + i) for i, p in enumerate(kept))
+            count = len(people)
         scout = actor.skills["judgment_of_talent"] if actor is not None else 0.0
         for person in people:
             state = with_person(state, person)
@@ -700,6 +724,8 @@ def candidate_batches(
                 reveal = apply_knowledge_action(
                     reveal, action, scout, balance, turn=state.turn, skill_keys=skill_keys
                 )
+            if search.interest is not None:  # they were found for it: the profile shows (29.5)
+                reveal = replace(reveal, profile_revealed_turn=state.turn)
             state = with_reveal(state, reveal)
         if search.company_id == state.player.id:
             state, joined = _free_agents_join(state, search, balance)

@@ -108,6 +108,7 @@ class RecruitBalance(_Frozen):
     replace_speed: float = Field(gt=0, le=1)  # Replace's time to fill over a normal search's
     normal_months: int = Field(ge=1)  # a plan's months from opening to a hire
     replace_window: int = Field(ge=1)  # months after a departure that Replace is offered
+    replace_ratio_bp: int = Field(gt=0)
     interest_fee_bp: int = Field(ge=0)  # of the role's mid salary, per search
     interest_pool: int = Field(ge=1)  # candidates drawn per kept candidate to find the interest
     fit_weights: dict[str, float]  # leadership fit from these revealed values (29.5)
