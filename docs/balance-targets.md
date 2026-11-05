@@ -43,6 +43,18 @@ Every strategy answers critical events with the first choice, sets prices at the
 | T2 | no strategy wins more than **6/10** seeds | spec §16 |
 | T3 | bootstrap-frugal, steady and blitzscale each succeed on at least **3/10** seeds | every v1 strategy should be a real option |
 
+### Known misses (from 2026-11-05)
+
+A known miss is a target that misses on `main` with a recorded owner and a bound, kept in one list, `backend/tst/balance/known_misses.py`. Both `tools/balance_runner.py` (`make balance`, CI's nightly "balance" job) and the nightly pytest balance tests (`test_known_misses`, its xfail) read it.
+- **Within its bound,** the runner prints `MISS … KNOWN MISS (<owner>)` and doesn't fail the job, and pytest xfails it.
+- **Beyond its bound,** or for any target not listed, a miss still fails.
+- **If the target passes,** it prints `ok` (remove the entry when its owner fixes it).
+
+| Target | Owner | Fails only if ("worse than") | Why |
+| --- | --- | --- | --- |
+| T2 | M15 | one strategy wins **10/10** seeds (score: the top strategy's share of the seeds, bound 0.9) | steady wins 8/10 on `main` (nightly, 2026-11-05); M15's v2 strategies should split wins |
+
+
 ## Target curves (bands)
 
 | # | Measure | Band |

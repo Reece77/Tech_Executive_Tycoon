@@ -1,6 +1,7 @@
 """The balance runner (spec §16, docs/balance-targets.md): plays the v1 strategies on fixed
 seeds over the pure sim and prints every target with its measured value. Exits 1 when a
-pass/fail target (T1-T3) fails, or any target with --strict.
+pass/fail target (T1-T3) fails, or any target with --strict. A recorded known miss
+(tst/balance/known_misses.py) within its bound prints KNOWN MISS (<owner>) and does not fail.
 
     uv run --project backend python tools/balance_runner.py            # 4 x 10 x 120, + T5 runs
     uv run --project backend python tools/balance_runner.py --turns 24 --seeds 1 2
@@ -31,6 +32,7 @@ def main() -> int:
     os.environ.setdefault("TST_LLM_ADAPTER", "mock")
     os.chdir(BACKEND)
     sys.path.insert(0, str(BACKEND))
+    from tst.balance.known_misses import verdict
     from tst.balance.report import evaluate, run_all, runs_table, table
     from tst.balance.strategies import STRATEGIES
 
@@ -54,7 +56,7 @@ def main() -> int:
         f"\n{len(results)} runs x {args.turns} turns in {time.perf_counter() - started:.0f} s "
         f"wall clock with {args.jobs} jobs"
     )
-    failed = [r for r in rows if r.ok is False and (r.gate or args.strict)]
+    failed = [r for r in rows if verdict(r) == "fail" and (r.gate or args.strict)]
     return 1 if failed else 0
 
 

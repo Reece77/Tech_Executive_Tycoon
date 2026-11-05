@@ -4,6 +4,11 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- CI (2026-11-05):
+  - The scheduled nightly skips when `main` has had no commits in the last 25 hours (a manual run always runs).
+  - Recorded known misses (`backend/tst/balance/known_misses.py`: target, owning milestone, "worse than" bound) are read by both `tools/balance_runner.py` and the nightly pytest xfail. A known miss within its bound prints KNOWN MISS (owner) and doesn't fail the job; any other miss still fails.
+  - Today the list holds T2, owned by M15, failing only if one strategy wins 10/10 (docs/balance-targets.md, Known misses).
+
 - M13b Executive ambition and visible eras (formulas.md §27):
   - The CPO seat takes authority (headcount cap for new product teams, categories it may enter, products it may not sunset) and launches ready products.
   - Pitches (27.1): executives with authority and the CEO pitch a big move at most once a quarter (stream `pitch`, 36): a new product, a sunset, a region, a research team, a data centre, an office, an assembly plant, a campaign or a buyback, scored and shown from displayed knowledge only, with a low and high case at 24 months. Approve runs it through the normal actions as the executive; Modify opens the move's own screen; Decline costs morale. On Holiday pitches under the spend limit (default 5% of cash) go ahead; "stop for big pitches" stops a Holiday. Approved pitches are scored hit, miss or too early after 24 months; each executive has a record. Migration `0032_pitches` (`exec_pitch`, `pitch_policy`, `era_window`).
