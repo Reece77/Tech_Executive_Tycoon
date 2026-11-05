@@ -1084,7 +1084,7 @@ mna:
   sweep_months: 3 # a brand subsidiary's cash above this many months of its costs sweeps to the parent each month (28.5)
   directive_energy: 2 # founder energy to set a brand's directive (28.5)
   acquired_flag_months: 12 # months Org flags an acquired unit (M14 brief)
-  rival_rate: 0.04 # an incumbent's chance a quarter to buy one startup in its categories (28.6)
+  rival_rate: 0.008 # an incumbent's chance a quarter to buy one startup in its categories (28.6; 28.9 target 7 tuning: 0.04 -> 0.008, about 3 a decade)
   rival_cash_months: 12 # only with cash above this many months of costs (28.6)
   cpo_limit_mult: 4 # the CPO pitches only startups priced under the auto-approve limit x this (28.7)
   pitch_synergy: 0.25 # an acquisition pitch's central case adds this x the target's monthly costs as integration savings (M14 decision for 28.7; the middle of 28.9 target 4's band)
@@ -1100,8 +1100,8 @@ antitrust:
 
 integration:
   months: 12 # culture clash and key-person flight last this long after closing (28.5)
-  flight_brand: 0.03 # a kept brand's key people leave with this chance a month (28.5)
-  flight_base: 0.02 # an integrated key person leaves with this chance a month (28.5)
+  flight_brand: 0.007 # a kept brand's key people leave with this chance a month (28.5; 28.9 target 3 tuning: 0.03 -> 0.007, brands lose at most 10% in 12 months)
+  flight_base: 0.01 # an integrated key person leaves with this chance a month (28.5; 28.9 target 3 tuning: 0.02 -> 0.01)
   flight_per_distance: 0.06 # + this x the personality distance (28.5)
   clash: 0.10 # acquired people's morale moves this x distance of the gap to the player's average a month (M14 decision for 28.5's clash)
   distance_span: 4 # attribute points; a mean personality-trait gap this big between the companies is distance 1 (M14 decision)

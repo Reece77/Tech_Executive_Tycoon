@@ -57,11 +57,14 @@ def test_antitrust_example(loaded: LoadedData) -> None:
 
 def test_integration_flight_example(loaded: LoadedData) -> None:
     """Distance 0.5: 0.02 + 0.03 = 5% a month; 1 - 0.95^12 = 46% over 12 months."""
-    ib = loaded.balance.integration
+    # 28.5's values (balance.yaml tunes flight_base to 0.01 and flight_brand to 0.007, 28.9)
+    ib = loaded.balance.integration.model_copy(update={"flight_base": 0.02, "flight_brand": 0.03})
     chance = mf.flight_chance(0.5, ib)
     assert chance == pytest.approx(0.05)
     assert 1 - (1 - chance) ** ib.months == pytest.approx(0.46, abs=0.005)
     assert mf.flight_chance(0.5, ib, brand=True) == pytest.approx(0.03)
+    tuned = loaded.balance.integration
+    assert mf.flight_chance(0.5, tuned) == pytest.approx(0.01 + 0.06 * 0.5)
 
 
 def test_value_ranges_contain_the_truth_off_centre(loaded: LoadedData) -> None:

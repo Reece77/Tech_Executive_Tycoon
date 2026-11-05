@@ -400,11 +400,16 @@ def report(r: Results) -> str:
     lost_i, lost_b = target_3(r)
     sav_s, sav_a = target_4(r)
     lines = [
-        f"28.9 target 2: private deals at {_fmt(p)} x V_f (1.0-1.6); listed premium {_fmt(listed, True)} (25-50%)",
-        f"28.9 target 3: integrated deals lose {_fmt(lost_i, True)} of key people (10-30%); brands {_fmt(lost_b, True)} (<= 10%)",
-        f"28.9 target 4: integration cuts the staff cost base {_fmt(sav_s, True)} (scripted), {_fmt(sav_a, True)} (the acquirer's startups) (15-35%)",
-        f"28.9 target 5: acquirer / steady + regions median ARR at year 10: {_fmt(target_5(r))} (1.0-1.4)",
-        f"28.9 target 6: deals at 40% blocked after review on {target_6(r):.0%} of seeds after 2020 (15-50%)",
+        f"28.9 target 2: private deals at {_fmt(p)} x V_f (1.0-1.6); "
+        f"listed premium {_fmt(listed, True)} (25-50%)",
+        f"28.9 target 3: integrated deals lose {_fmt(lost_i, True)} of key people (10-30%); "
+        f"brands {_fmt(lost_b, True)} (<= 10%)",
+        f"28.9 target 4: integration cuts the staff cost base {_fmt(sav_s, True)} (scripted), "
+        f"{_fmt(sav_a, True)} (the acquirer's startups) (15-35%)",
+        f"28.9 target 5: acquirer / steady + regions median ARR at year 10: "
+        f"{_fmt(target_5(r))} (1.0-1.4)",
+        f"28.9 target 6: deals at 40% blocked after review on {target_6(r):.0%} of seeds "
+        "after 2020 (15-50%)",
         f"28.9 target 7: incumbents buy {_fmt(target_7(r))} startups a decade, median (1-4)",
         "deal runs: "
         + "; ".join(
