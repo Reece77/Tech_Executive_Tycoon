@@ -65,4 +65,9 @@ On `pt-ipo`, launch a product and promise to ship the next one in six months, bo
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **Blocked before merge (needs a ruling):** M10's covenant guard (20.5 target 3) reads 70% on M14b against `main`'s 60% on seeds 1–10, band 20–60%. Over seeds 11–40 both read 70%. No M14b key brings it back short of turning press moments off. Values in docs/balance-targets.md (M14b).
+- Promises of a broken kind beyond the five (a price cut, a region launch) and private promises stay out (Reece).
+- Interest edits on an existing plan (`HiringPlanPatchIn` has no interest); the plan table could mark Replace plans.
+- Rival statements are recorded for every rival, but reach the inbox only for markets the player sells in, plus jabs and answers; a per-rival mute could follow.
+- Leadership fit uses the observer's revealed ranges; a fit history (how it narrowed) could show on the profile.
+
