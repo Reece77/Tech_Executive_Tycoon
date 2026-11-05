@@ -3,6 +3,21 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  replace_started: # M14b (29.5)
+    title: "Replacing {name}"
+    body: "Your recruiter is finding a {role} to replace {name}. Screened candidates arrive at the month end and get offers at once."
+  promise_kept: # M14b (29.2)
+    title: "Promise kept: {promise}"
+    body: "You said you would {promise}, and you did. The brand and your credibility gain."
+  promise_broken: # M14b (29.2)
+    title: "Promise broken: {promise}"
+    body: "You said you would {promise}. The press has noticed, and so have customers and staff."
+  rival_statement: # M14b (29.4): a rival CEO speaks
+    title: "{name} of {rival}: a public statement"
+    body: "\"{text}\""
+  promise_made: # M14b (29.2)
+    title: "A public promise: {promise}"
+    body: "You told the press you would {promise}. Track it on the Overview's Promises panel."
   banks_hired: # M13 (25.2 step 1): the IPO chain starts
     title: "{bank} will lead your IPO"
     body: "{bank} is hired as lead underwriter for a fee of {fee} of the money raised. The S-1 filing comes next month, then a roadshow and pricing."

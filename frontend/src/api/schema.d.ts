@@ -2903,6 +2903,123 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/press": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Press
+         * @description Credibility, promises and recent press moments, and the promise form (29.6).
+         */
+        get: operations["getPress"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/press/promises": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make Promise
+         * @description A public promise in this month's answered press moment (29.2).
+         */
+        post: operations["makePromise"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/feuds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Feuds */
+        get: operations["listFeuds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/rivals/{rival_id}/leader": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rival Leader
+         * @description The rival's CEO, statements and feud (29.4).
+         */
+        get: operations["getRivalLeader"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/recruitment/replaceable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Replaceable
+         * @description Resignations and poaches Replace can fill (29.5).
+         */
+        get: operations["listReplaceable"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/recruitment/replace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Replace Leaver
+         * @description Replace with a recruiter (29.5).
+         */
+        post: operations["replaceLeaver"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -3861,6 +3978,20 @@ export interface components {
              */
             first_mover: boolean;
         };
+        /** CauseOut */
+        CauseOut: {
+            /** Turn */
+            turn: number;
+            /**
+             * Label
+             * @description Mon YYYY
+             */
+            label: string;
+            /** Change */
+            change: number;
+            /** Cause */
+            cause: string;
+        };
         /** CeoAuthorityIn */
         CeoAuthorityIn: {
             /** Scopes */
@@ -4034,6 +4165,18 @@ export interface components {
              * @description Energy left this month: the founder and delegates only
              */
             energy?: number | null;
+            /**
+             * Leadership Fit Low
+             * @description Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)
+             * @default 1
+             */
+            leadership_fit_low?: number;
+            /**
+             * Leadership Fit High
+             * @description The top of the fit's range
+             * @default 5
+             */
+            leadership_fit_high?: number;
             /**
              * Work Style
              * @description Null until an interview or network intro
@@ -4516,6 +4659,19 @@ export interface components {
             name: string;
             /** Parent Id */
             parent_id?: number | null;
+        };
+        /** CredibilityOut */
+        CredibilityOut: {
+            /**
+             * Value
+             * @description 0-100; drifts toward 50
+             */
+            value: number;
+            /**
+             * History
+             * @description The last changes and their causes, newest last
+             */
+            history: components["schemas"]["CauseOut"][];
         };
         /** CrossDivisionOut */
         CrossDivisionOut: {
@@ -5207,6 +5363,21 @@ export interface components {
              */
             sale_value_cents: number;
         };
+        /** FeudOut */
+        FeudOut: {
+            /** Rival Id */
+            rival_id: number;
+            /** Rival */
+            rival: string;
+            /** Ceo */
+            ceo: string | null;
+            /** Score */
+            score: number;
+            /** Rivalry */
+            rivalry: boolean;
+            /** Causes */
+            causes: components["schemas"]["CauseOut"][];
+        };
         /** FinanceActionOut */
         FinanceActionOut: {
             energy: components["schemas"]["EnergyOut"];
@@ -5753,11 +5924,11 @@ export interface components {
              */
             components: components["schemas"]["ComponentOut"][];
             /** Manufacturers */
-            manufacturers: components["schemas"]["OptionOut"][];
+            manufacturers: components["schemas"]["tst__api__schemas__hardware__OptionOut"][];
             /** Foundries */
-            foundries: components["schemas"]["OptionOut"][];
+            foundries: components["schemas"]["tst__api__schemas__hardware__OptionOut"][];
             /** Cities */
-            cities: components["schemas"]["OptionOut"][];
+            cities: components["schemas"]["tst__api__schemas__hardware__OptionOut"][];
             /** Cheap City */
             cheap_city: string;
             /** Plant Sizes */
@@ -5825,6 +5996,12 @@ export interface components {
             fire_morale_penalty_min: number;
             /** Energy Per Month */
             energy_per_month: number;
+            /**
+             * Interest Fee Bp
+             * @description A search by interest costs this bp of the role's mid salary (29.5)
+             * @default 0
+             */
+            interest_fee_bp?: number;
         };
         /** HiringPlanIn */
         HiringPlanIn: {
@@ -5853,9 +6030,21 @@ export interface components {
              * @default current
              */
             focus?: string;
+            /** Interest */
+            interest?: string | null;
         };
         /** HiringPlanOut */
         HiringPlanOut: {
+            /**
+             * Interest
+             * @description Candidates with this interest (M14b)
+             */
+            interest?: string | null;
+            /**
+             * Replace Of
+             * @description A Replace plan: the leaver (M14b)
+             */
+            replace_of?: number | null;
             /** Plan Id */
             plan_id: number;
             /** Owner Id */
@@ -7070,6 +7259,29 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** MomentOut */
+        MomentOut: {
+            /** Moment Id */
+            moment_id: number;
+            /** Trigger */
+            trigger: string;
+            /** Label */
+            label: string;
+            /**
+             * Shown
+             * @description The month its event is shown
+             */
+            shown: string | null;
+            /** Status */
+            status: string;
+            /** Tone */
+            tone: string | null;
+            /**
+             * Can Promise
+             * @description Answered this month, not with no comment
+             */
+            can_promise: boolean;
+        };
         /**
          * MoraleBreakdownOut
          * @description Why someone's morale is heading where it is (formulas.md 9, 13.11).
@@ -7347,13 +7559,6 @@ export interface components {
              */
             close_penalty_cents?: number | null;
         };
-        /** OptionOut */
-        OptionOut: {
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
-        };
         /**
          * OptionsOut
          * @description An employee's option grant for the contract panel (M4b, formulas.md 14.2).
@@ -7434,6 +7639,18 @@ export interface components {
              * @description Works under a remote policy (no office fee)
              */
             remote: boolean;
+            /**
+             * Leadership Fit Low
+             * @description Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)
+             * @default 1
+             */
+            leadership_fit_low?: number;
+            /**
+             * Leadership Fit High
+             * @description The top of the fit's range
+             * @default 5
+             */
+            leadership_fit_high?: number;
         };
         /** OrgMetaOut */
         OrgMetaOut: {
@@ -7912,6 +8129,18 @@ export interface components {
              */
             energy?: number | null;
             /**
+             * Leadership Fit Low
+             * @description Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)
+             * @default 1
+             */
+            leadership_fit_low?: number;
+            /**
+             * Leadership Fit High
+             * @description The top of the fit's range
+             * @default 5
+             */
+            leadership_fit_high?: number;
+            /**
              * Work Style
              * @description Null until an interview or network intro
              */
@@ -8021,6 +8250,18 @@ export interface components {
              * @description Energy left this month: the founder and delegates only
              */
             energy?: number | null;
+            /**
+             * Leadership Fit Low
+             * @description Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)
+             * @default 1
+             */
+            leadership_fit_low?: number;
+            /**
+             * Leadership Fit High
+             * @description The top of the fit's range
+             * @default 5
+             */
+            leadership_fit_high?: number;
         };
         /**
          * PitchOut
@@ -8349,6 +8590,22 @@ export interface components {
             values: {
                 [key: string]: number;
             };
+        };
+        /** PressActionOut */
+        PressActionOut: {
+            press: components["schemas"]["PressOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** PressOut */
+        PressOut: {
+            credibility: components["schemas"]["CredibilityOut"];
+            /** Promises */
+            promises: components["schemas"]["PromiseOut"][];
+            /** Moments */
+            moments: components["schemas"]["MomentOut"][];
+            form: components["schemas"]["PromiseFormOut"];
         };
         /** PriceIn */
         PriceIn: {
@@ -9005,6 +9262,79 @@ export interface components {
             /** Started */
             started: string;
         };
+        /** PromiseFormOut */
+        PromiseFormOut: {
+            /**
+             * Moment Id
+             * @description This month's answered moment to promise in
+             */
+            moment_id: number | null;
+            /** Open Count */
+            open_count: number;
+            /** Max Open */
+            max_open: number;
+            /** Energy */
+            energy: number;
+            /**
+             * Months
+             * @description [shortest, longest] months for ship, beat, research
+             */
+            months: number[];
+            /** In Development */
+            in_development: components["schemas"]["tst__api__schemas__press__OptionOut"][];
+            /** Live */
+            live: components["schemas"]["tst__api__schemas__press__OptionOut"][];
+            /** Rival Products */
+            rival_products: components["schemas"]["tst__api__schemas__press__OptionOut"][];
+            /** Domains */
+            domains: components["schemas"]["tst__api__schemas__press__OptionOut"][];
+        };
+        /** PromiseIn */
+        PromiseIn: {
+            /**
+             * Promise
+             * @description ship | beat | research | no_layoffs | no_price_rise
+             */
+            promise: string;
+            /** Product Id */
+            product_id?: number | null;
+            /** Rival Product Id */
+            rival_product_id?: number | null;
+            /** Domain */
+            domain?: string | null;
+            /** Level */
+            level?: number | null;
+            /** Months */
+            months?: number | null;
+        };
+        /** PromiseOut */
+        PromiseOut: {
+            /** Promise Id */
+            promise_id: number;
+            /** Kind */
+            kind: string;
+            /**
+             * Words
+             * @description What you said, e.g. 'ship Forge by Jun 2016'
+             */
+            words: string;
+            /** Made */
+            made: string;
+            /** Deadline */
+            deadline: string;
+            /** Months Left */
+            months_left: number;
+            /**
+             * Status
+             * @description open | kept | broken
+             */
+            status: string;
+            /**
+             * Progress
+             * @description Where it stands, from displayed values
+             */
+            progress: string;
+        };
         /**
          * ProposalOut
          * @description An executive's proposal (24.1, M10c): pending ones block Continue.
@@ -9178,6 +9508,31 @@ export interface components {
              */
             amount_cents?: number | null;
         };
+        /** ReplaceIn */
+        ReplaceIn: {
+            /** Person Id */
+            person_id: number;
+        };
+        /** ReplaceableOut */
+        ReplaceableOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /** Level */
+            level: string;
+            /**
+             * Reason
+             * @description resigned | poached
+             */
+            reason: string;
+            /** Can Replace */
+            can_replace: boolean;
+            /** Problem */
+            problem: string | null;
+        };
         /**
          * ReportOut
          * @description A seat holder's latest quarterly report (24.3), as the inbox shows it.
@@ -9293,6 +9648,21 @@ export interface components {
              * @description Points you can grant them (from the range)
              */
             max_out_points: number;
+        };
+        /** RivalLeaderOut */
+        RivalLeaderOut: {
+            /** Rival Id */
+            rival_id: number;
+            /**
+             * Ceo
+             * @description Their CEO: the founder at a startup
+             */
+            ceo: string | null;
+            /** Ceo Person Id */
+            ceo_person_id: number | null;
+            /** Statements */
+            statements: components["schemas"]["StatementOut"][];
+            feud: components["schemas"]["FeudOut"];
         };
         /** RivalMoveOut */
         RivalMoveOut: {
@@ -9866,6 +10236,11 @@ export interface components {
              * @description The hiring unit, for the default city
              */
             unit_id?: number | null;
+            /**
+             * Interest
+             * @description Only candidates with this interest, for a fee (M14b, 29.5)
+             */
+            interest?: string | null;
         };
         /** SearchOut */
         SearchOut: {
@@ -10177,6 +10552,18 @@ export interface components {
             label: string;
             /** Amount Cents */
             amount_cents: number;
+        };
+        /** StatementOut */
+        StatementOut: {
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @description statement | jab | answer
+             */
+            kind: string;
+            /** Text */
+            text: string;
         };
         /** StatementPeriodOut */
         StatementPeriodOut: {
@@ -10700,10 +11087,24 @@ export interface components {
             /** Is Home */
             is_home: boolean;
         };
+        /** OptionOut */
+        tst__api__schemas__hardware__OptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
         /** NamedOut */
         tst__api__schemas__history__NamedOut: {
             /** Id */
             id: number;
+            /** Name */
+            name: string;
+        };
+        /** OptionOut */
+        tst__api__schemas__press__OptionOut: {
+            /** Id */
+            id: number | string;
             /** Name */
             name: string;
         };
@@ -20421,6 +20822,363 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getPress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PressOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    makePromise: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromiseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PressActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listFeuds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeudOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getRivalLeader: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                rival_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RivalLeaderOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listReplaceable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplaceableOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    replaceLeaver: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PressActionOut"];
                 };
             };
             /** @description Bad Request */

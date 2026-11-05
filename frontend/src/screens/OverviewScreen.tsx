@@ -4,6 +4,7 @@ import { OverviewTip } from '../components/Term';
 import { CashChart } from '../components/CashChart';
 import { KpiTile } from '../components/KpiTile';
 import { ActiveEffects } from '../components/ActiveEffects';
+import { PressPanels } from '../components/PressPanels';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOverview, type Overview, type OverviewBreakdowns } from '../hooks/api';
 import { formatMoneyShort, formatMoneyWhole, formatRunway, formatWhole } from '../lib/format';
@@ -181,6 +182,7 @@ export function OverviewScreen() {
         <CostsPanel overview={data} month={month} />
       </div>
       <ActiveEffects saveId={saveId} effects={data.active_effects} />
+      <PressPanels saveId={saveId} />
       <Panel
         title="Latest in your inbox"
         label="Latest messages"

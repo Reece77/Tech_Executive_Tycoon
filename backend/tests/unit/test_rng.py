@@ -85,6 +85,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "ipo": 33,  # M13 (25.2)
         "market_sentiment": 34,  # M13 (25.3)
         "pitch": 36,  # M13b (27.1)
+        "press": 40,  # M14b (29.4)
         "misc": 99,
     }
 

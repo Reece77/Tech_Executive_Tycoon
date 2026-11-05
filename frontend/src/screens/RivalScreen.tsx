@@ -5,6 +5,7 @@ import { Alert, Button } from '@mantine/core';
 import { Link, useNavigate, useParams } from 'react-router';
 import { AttributeRange } from '../components/AttributeRange';
 import { KpiTile } from '../components/KpiTile';
+import { RivalLeaderPanel } from '../components/RivalLeaderPanel';
 import { Term } from '../components/Term';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOpenSearch, useRival, type RivalProfile } from '../hooks/api';
@@ -48,6 +49,7 @@ function RivalBody({ saveId, r }: { saveId: string; r: RivalProfile }) {
       <p className="tst-muted" style={{ margin: 0, fontSize: 13 }}>
         {r.style_text} Founded {r.founded_label}.{r.failed ? ' Closed.' : ''}
       </p>
+      <RivalLeaderPanel saveId={saveId} rivalId={r.company_id} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
         <KpiTile
           term="kpi.rival_staff"

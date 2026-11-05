@@ -14,6 +14,7 @@ import { Link } from 'react-router';
 import {
   useClosePlan,
   useCreatePlan,
+  useNewGameMeta,
   useOrg,
   useOrgMeta,
   useOverview,
@@ -35,6 +36,7 @@ import { AttributeRange } from './AttributeRange';
 import { DataTable } from './DataTable';
 import { LoadError } from './ScreenState';
 import { RoleHelp } from './RoleHelp';
+import { InterestFilter } from './ReplacePanel';
 
 const helper = createColumnHelper<GameTableFeatures, HiringPlan>();
 const BP = 10_000; // basis points in 1.0 (display and input conversion only)
@@ -310,6 +312,8 @@ function PlanDialog({
   const [channel, setChannel] = useState<string>(plan?.channel ?? 'any');
   const [ratio, setRatio] = useState<number>((plan?.ratio_bp ?? 11_000) / BP);
   const [equity, setEquity] = useState<number>(plan?.equity_bp ?? 0);
+  const [interest, setInterest] = useState<string | null>(null); // M14b (29.5): new plans only
+  const interests = useNewGameMeta().data?.interests ?? [];
   const chosen = staff.find((p) => String(p.person_id) === owner);
   const skill = (key: string) => chosen?.skills.find((s) => s.key === key);
   const judgment = skill('judgment_of_talent');
@@ -331,7 +335,7 @@ function PlanDialog({
     if (plan) {
       update.mutate({ planId: plan.plan_id, body }, { onSuccess: onClose });
     } else {
-      create.mutate(body, { onSuccess: onClose });
+      create.mutate({ ...body, interest }, { onSuccess: onClose });
     }
   };
   const units = org.data?.units ?? [];
@@ -450,6 +454,7 @@ function PlanDialog({
               : 'Best now ranks candidates by the skills the company can see today.'}
           </span>
         </fieldset>
+        {!plan && <InterestFilter interests={interests} value={interest} onChange={setInterest} />}
         <Radio.Group label="Channel" value={channel} onChange={setChannel}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 6 }}>
             {PLAN_CHANNELS.map((c) => (

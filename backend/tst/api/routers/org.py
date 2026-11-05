@@ -335,6 +335,7 @@ def create_plan(
         body.equity_bp,
         body.unit_id,
         body.focus,  # type: ignore[arg-type]
+        interest=body.interest,
     )
     result = repository.run_action(path, data, action)
     plan = max(result.new_state.plans, key=lambda p: p.id)

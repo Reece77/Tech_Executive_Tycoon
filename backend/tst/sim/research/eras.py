@@ -11,6 +11,7 @@ from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import format_money
+from tst.sim.press.moments import queue_moment
 from tst.sim.products.models import SELLING
 from tst.sim.research import levels
 from tst.sim.research.data import EraDef, rate_in
@@ -124,6 +125,7 @@ def arrive_eras(
         ]
         if cid is not None and cid in {c.id for c in player_companies(state)}:
             state = with_era_window(state, _window(state, data, era, cid))  # 27.3 (M13b)
+            state = queue_moment(state, cid, "era", {"era": era.label})  # M14b (29.1)
     state, reports = era_reports(state, data, balance)
     return state, (*logs, *reports)
 

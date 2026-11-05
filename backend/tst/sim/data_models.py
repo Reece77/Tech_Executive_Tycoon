@@ -31,6 +31,12 @@ from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.org.voice_data import Voice
+from tst.sim.press.config import (
+    FeudBalance,
+    PressBalance,
+    PromiseBalance,
+    RecruitBalance,
+)
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
@@ -1199,6 +1205,10 @@ class Balance(_Frozen):
     ipo: IpoBalance  # M13 (formulas.md 25.1-25.2)
     public: PublicBalance  # M13 (formulas.md 25.3-25.5, 25.7)
     ceo: CeoBalance  # M13 (formulas.md 25.6)
+    press: PressBalance  # M14b (formulas.md 29.1, 29.3)
+    promise: PromiseBalance  # M14b (formulas.md 29.2)
+    feud: FeudBalance  # M14b (formulas.md 29.4)
+    recruit: RecruitBalance  # M14b (formulas.md 29.5)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1822,6 +1832,11 @@ INBOX_TEMPLATE_KEYS = (
     "license_in",
     "license_out",
     "research_leak",
+    "promise_made",  # M14b (29.2)
+    "promise_kept",
+    "promise_broken",
+    "rival_statement",  # M14b (29.4)
+    "replace_started",  # M14b (29.5)
 )
 
 

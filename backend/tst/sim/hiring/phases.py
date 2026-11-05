@@ -59,6 +59,7 @@ from tst.sim.org.scaleup import delegate_energy_factor, support_morale_terms
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
+from tst.sim.press.moments import hiring_appeal
 from tst.sim.products.phases import product_costs_by_division
 from tst.sim.rivals.poaching import leave_rival, poach_batch
 from tst.sim.rng import RngFactory
@@ -173,7 +174,8 @@ def resolve_offers(
                 ambition=person.personality["ambition"],
                 stage=company.stage,
                 offer=hiring.offer,
-                pitch=offer_pitch(state, offer.actor_id, hiring),
+                pitch=offer_pitch(state, offer.actor_id, hiring)
+                + hiring_appeal(state, company.id, balance),  # M14b (29.3)
             )
             if candidate.channel == "poach":  # leaving an employer (M5, 15.6)
                 score += balance.rivals.poach.leave_penalty
@@ -664,12 +666,36 @@ def candidate_batches(
         ]
         if search.level is not None:  # an exec-level search (M8, 18.3); draws unchanged
             levels = [search.level] * count
-        first, ids = state.next_ids.take_many("person", count)
-        state = replace(state, next_ids=ids)
         role = data.role(search.role)
-        people = generate_pool(
-            gen, data, balance, state.turn, role, levels, first_person_id=first, city=search.city
-        )
+        if search.interest is None:
+            first, ids = state.next_ids.take_many("person", count)
+            state = replace(state, next_ids=ids)
+            people = generate_pool(
+                gen,
+                data,
+                balance,
+                state.turn,
+                role,
+                levels,
+                first_person_id=first,
+                city=search.city,
+            )
+        else:  # M14b (29.5): a larger pool, keeping those with the interest, ids in order
+            pool = generate_pool(
+                gen,
+                data,
+                balance,
+                state.turn,
+                role,
+                levels * balance.recruit.interest_pool,
+                first_person_id=state.next_ids.person,
+                city=search.city,
+            )
+            kept = [p for p in pool if search.interest in p.interests][:count]
+            first, ids = state.next_ids.take_many("person", len(kept))
+            state = replace(state, next_ids=ids)
+            people = tuple(replace(p, id=first + i) for i, p in enumerate(kept))
+            count = len(people)
         scout = actor.skills["judgment_of_talent"] if actor is not None else 0.0
         for person in people:
             state = with_person(state, person)
@@ -698,6 +724,8 @@ def candidate_batches(
                 reveal = apply_knowledge_action(
                     reveal, action, scout, balance, turn=state.turn, skill_keys=skill_keys
                 )
+            if search.interest is not None:  # they were found for it: the profile shows (29.5)
+                reveal = replace(reveal, profile_revealed_turn=state.turn)
             state = with_reveal(state, reveal)
         if search.company_id == state.player.id:
             state, joined = _free_agents_join(state, search, balance)

@@ -5,6 +5,7 @@ import { useMemo, useState, type DragEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { MoraleBar } from '../components/MoraleBar';
+import { LeadershipFit } from '../components/LeadershipFit';
 import { LeadsChip, OrgNode, UnitKindBadge } from '../components/OrgNode';
 import { WorksOn } from '../components/WorksOn';
 import { ChangeDialog, type Pending } from '../components/OrgChangeDialog';
@@ -430,6 +431,17 @@ function UnitPanel({
           sortFn: 'basic',
           sortUndefined: 'last',
           cell: ({ row }) => <MoraleBar morale={row.original.morale} width={48} />,
+        }),
+        helper.accessor((m) => m.leadership_fit_high, {
+          id: 'leadership_fit',
+          header: 'Lead fit',
+          sortFn: 'basic',
+          cell: ({ row }) => (
+            <LeadershipFit
+              low={row.original.leadership_fit_low}
+              high={row.original.leadership_fit_high}
+            />
+          ),
         }),
         helper.display({
           id: 'move',

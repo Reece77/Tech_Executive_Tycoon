@@ -35,6 +35,7 @@ import { formatFraction, formatShares } from '../lib/finance';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 import { useTableViews } from '../hooks/useTableViews';
 import { RoleHelp } from '../components/RoleHelp';
+import { ReplacePanel, InterestFilter } from '../components/ReplacePanel';
 
 type Channel = HiringMeta['channels'][number];
 const helper = createColumnHelper<GameTableFeatures, Person>();
@@ -347,10 +348,12 @@ function RecruitmentBody({
   return (
     <>
       <ScreenTitle>Recruitment</ScreenTitle>
+      <ReplacePanel saveId={saveId} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         <OpenSearchPanel
           saveId={saveId}
           hiring={hiring}
+          interests={meta.interests}
           initialRole={params.get('role')}
           onOpened={(id) => setParams({ search: String(id) }, { replace: true })}
         />
@@ -447,11 +450,13 @@ function RecruitmentBody({
 function OpenSearchPanel({
   saveId,
   hiring,
+  interests,
   initialRole,
   onOpened,
 }: {
   saveId: string;
   hiring: HiringMeta;
+  interests: NewGameMeta['interests'];
   initialRole: string | null;
   onOpened: (searchId: number) => void;
 }) {
@@ -465,6 +470,7 @@ function OpenSearchPanel({
   const [rivalId, setRivalId] = useState<string | null>(null);
   const [level, setLevel] = useState<string>('mix');
   const [city, setCity] = useState<string>('default'); // M9: default = the unit's office city
+  const [interest, setInterest] = useState<string | null>(null); // M14b (29.5): a fee a search
   const geo = useGeo(saveId);
   const execOpen = (overview.data?.stage ?? 0) >= 3 && channel !== 'poach'; // M8: from stage 3
   const rivals = useRivals(saveId, 'all');
@@ -559,6 +565,9 @@ function OpenSearchPanel({
           data-testid="search-level"
         />
       )}
+      {channel !== 'poach' && (
+        <InterestFilter interests={interests} value={interest} onChange={setInterest} />
+      )}
       {open.error && (
         <Alert color="red" title="Could not open the search" withCloseButton onClose={open.reset}>
           {open.error.message}
@@ -578,6 +587,7 @@ function OpenSearchPanel({
                 rival_id: channel === 'poach' ? Number(rivalId) : null,
                 level: execOpen && level === 'exec' ? 'exec' : null,
                 city: channel === 'poach' || city === 'default' ? null : city,
+                interest: channel === 'poach' ? null : interest,
               },
               { onSuccess: (search) => onOpened(search.search_id) },
             );

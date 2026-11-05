@@ -140,7 +140,7 @@ def write_event(
         source = "template"
         if not isinstance(result, ValidatedEvent):  # templates are checked at load
             raise RuntimeError(f"template {template.id} failed validation: {result.reason}")
-    elif template.category == "public":
+    elif template.category in ("public", "press"):  # M13, M14b: words only from the LLM
         # M13 (25): the LLM may write a public event's words; its choices are the engine's.
         fixed = check(fallback)
         if not isinstance(fixed, ValidatedEvent):

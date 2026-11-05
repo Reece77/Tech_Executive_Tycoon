@@ -19,6 +19,7 @@ from tst.api.routers import (
     holiday,
     meta,
     org,
+    press,
     products,
     public,
     research,
@@ -87,6 +88,7 @@ def create_app() -> FastAPI:
     app.include_router(hardware.router)  # M12b
     app.include_router(research.router)  # M11
     app.include_router(public.router)  # M13
+    app.include_router(press.router)  # M14b
     app.include_router(events.settings_router)
     app.include_router(meta.router)
 

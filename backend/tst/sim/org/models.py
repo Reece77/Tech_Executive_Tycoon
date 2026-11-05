@@ -91,6 +91,11 @@ class HiringPlan:
     closed_turn: int | None = None
     last_activity: PlanActivity | None = None
     focus: PlanFocus = "current"
+    # M14b (29.5): candidates with this interest only (a fee per search); and a Replace plan:
+    # the leaver it replaces, at their level, its candidates screened and offered at once.
+    interest: str | None = None
+    replace_of: int | None = None
+    level: str | None = None
 
 
 # --- Executives with authority (formulas.md 24, M10c) -----------------------------------------

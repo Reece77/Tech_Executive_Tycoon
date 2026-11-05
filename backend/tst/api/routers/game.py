@@ -183,6 +183,7 @@ def open_search(save_id: str, body: SearchIn, settings: SettingsDep, data: DataD
         level=body.level,
         city=body.city,
         unit_id=body.unit_id,
+        interest=body.interest,
     )
     result, _ = _act(path, data, action)
     search = max(result.new_state.searches, key=lambda s: s.id)

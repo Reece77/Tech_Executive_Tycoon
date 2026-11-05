@@ -31,6 +31,7 @@ from tst.sim.calendar import format_turn
 from tst.sim.data_models import ORG_TAGS, Balance
 from tst.sim.errors import SimError, UnknownPersonError
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents, pay_term
+from tst.sim.hiring.recruit import leadership_fit
 from tst.sim.money import BP_DENOMINATOR, Cents
 from tst.sim.org.delegates import activity_text, still_needed
 from tst.sim.org.divisions import is_scaleup
@@ -72,7 +73,10 @@ def org_out(state: GameState, company_id: int, data: LoadedData) -> OrgOut:
         employment = state.employment_of(pid)
         assert employment is not None
         person = state.person(pid)
+        fit_low, fit_high = leadership_fit(person, state.reveal(company_id, pid), data.balance)
         return OrgMemberOut(
+            leadership_fit_low=fit_low,
+            leadership_fit_high=fit_high,
             person_id=pid,
             name=person_name(person),
             role_label=role_label(employment.role, data) or employment.role,
@@ -293,6 +297,8 @@ def plan_out(state: GameState, plan: HiringPlan, data: LoadedData) -> HiringPlan
     activity = plan.last_activity
     pending = plan.target - plan.hired - still_needed(state, plan)
     return HiringPlanOut(
+        interest=plan.interest,
+        replace_of=plan.replace_of,
         plan_id=plan.id,
         owner_id=plan.owner_id,
         owner_name=person_name(state.person(plan.owner_id)),

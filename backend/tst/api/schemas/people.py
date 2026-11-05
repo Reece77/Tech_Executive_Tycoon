@@ -146,6 +146,10 @@ class PersonSummaryOut(BaseModel):
     energy: int | None = Field(
         default=None, description="Energy left this month: the founder and delegates only"
     )
+    leadership_fit_low: int = Field(
+        default=1, description="Leadership fit, 1-5 stars, from revealed values only (M14b, 29.5)"
+    )
+    leadership_fit_high: int = Field(default=5, description="The top of the fit's range")
 
 
 class PitchRecordOut(BaseModel):
@@ -213,6 +217,9 @@ class SearchIn(BaseModel):
         "null: the hiring unit's office city",
     )
     unit_id: int | None = Field(default=None, description="The hiring unit, for the default city")
+    interest: str | None = Field(
+        default=None, description="Only candidates with this interest, for a fee (M14b, 29.5)"
+    )
 
 
 class SearchOut(BaseModel):

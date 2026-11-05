@@ -273,6 +273,8 @@ Live records are loaded into the game state; finished ones keep their rows with 
 
 Index `ix_search_company_status (company_id, status)`.
 
+M14b: a search's interest filter lives in `search_interest` (migration `0033_press`).
+
 ### candidate
 
 A generated person available to one company. Primary key `person_id`.
@@ -372,6 +374,8 @@ Delegated hiring (formulas.md §13.10, ADR-0015). Index `ix_hiring_plan_company_
 | `closed_turn` | INTEGER | yes | Turn closed. |
 | `last_activity` | JSON | yes | `{turn, searches, interviews, scouted, offers}` for the last turn the delegate worked the plan. |
 | `focus` | VARCHAR(16) | no | `current` ("Best now", default) or `potential` ("Spot potential": juniors and mids ranked by the displayed PA midpoint, formulas.md §13.10). Added by `0007_plan_focus` (M2b). |
+
+M14b: a plan's `interest`, `replace_of` and `level` live in `hiring_plan_detail` (migration `0033_press`).
 
 ## Products and markets (migration `0008_products`, M3a)
 
@@ -1458,3 +1462,122 @@ A player first mover's era window and the baseline its era report compares again
 | `trend` | FLOAT | no | The company's monthly MRR growth over the 12 months before, as a fraction. |
 | `demand` | JSON | no | `[category, addressable customers]` at arrival, for each of the era's categories. |
 | `reported` | BOOLEAN | no | The era report was sent at the window's end. |
+
+## The founder in public (migration `0033_press`, M14b)
+
+Press moments, public promises, credibility, feuds with rival CEOs, rival CEOs' statements and recent departures (formulas.md 29), plus two side tables for the new hiring fields (29.5). Existing saves start with no rows. The hiring fields are side tables rather than new columns on `search` and `hiring_plan` because migration `0013_rivals` loads and writes those tables through the current models (the same reason as `search_level` and `search_city`). Everything here is public (29.6).
+
+### press_moment
+
+A press moment (29.1). Every moment keeps its row; the state holds the `pending` and `queued` ones and those raised in the last 12 months. Index `ix_press_moment_turn (turn)`.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The company in the news. |
+| `trigger` | VARCHAR(32) | no | `breach`, `outage`, `layoffs`, `earnings`, `era`, `launch`, `acquisition`, `jab`, `rivalry` or `reminder` (a broken promise's "you said ..."). |
+| `turn` | INTEGER | no | The month it was raised. |
+| `status` | VARCHAR(16) | no | `pending`, `queued` (its event is set for `event_turn`), `skipped` (over the quarterly cap) or `answered`. |
+| `event_turn` | INTEGER | yes | The month its event is shown. |
+| `product_id` | INTEGER | yes | The product it concerns. |
+| `rival_id` | INTEGER | yes | The rival company it names (`company.id`, no FK). |
+| `facts` | JSON | no | `[key, value]` pairs of displayed facts, for the template and the LLM. |
+| `tone` | VARCHAR(16) | yes | The answer: `bold`, `measured` or `deflect`. |
+| `answered_turn` | INTEGER | yes | When it was answered. |
+| `share_bp` | INTEGER | yes | A bold claim: the product's displayed share when it was made, bp. |
+| `backfired` | BOOLEAN | no | The bold claim has backfired. |
+
+### press_promise
+
+A public promise (29.2), judged on displayed values only. The state holds every promise.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The company that promised. |
+| `kind` | VARCHAR(32) | no | `ship`, `beat`, `research`, `no_layoffs` or `no_price_rise`. |
+| `made_turn` | INTEGER | no | When it was made. |
+| `deadline_turn` | INTEGER | no | When it is judged. |
+| `moment_id` | INTEGER | yes | The press moment it was made in (`press_moment.id`, no FK). |
+| `product_id` | INTEGER | yes | Ship, beat, no price rise: the product. |
+| `rival_product_id` | INTEGER | yes | Beat: the rival product. |
+| `domain` | VARCHAR(32) | yes | Research: the domain. |
+| `level` | INTEGER | yes | Research: the displayed lead to reach. |
+| `baseline` | INTEGER | no | The displayed value when made (quality or lead). |
+| `prices` | JSON | no | No price rise: `[segment, price cents]` displayed when made. |
+| `ambition` | FLOAT | no | How ambitious the promise was. |
+| `audience` | FLOAT | no | The audience weight `a` when made. |
+| `status` | VARCHAR(16) | no | `open`, `kept` or `broken`. |
+| `resolved_turn` | INTEGER | yes | When it was kept or broken. |
+| `reminder_turn` | INTEGER | yes | A broken promise's "you said ..." month. |
+
+### credibility
+
+A company's public credibility (29.3).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key. |
+| `value` | FLOAT | no | Credibility, 0-100. |
+| `history` | JSON | no | The last `press.cred_history` changes: `[turn, change, cause in words]`. |
+| `fired_turn` | INTEGER | yes | The month `fired` counts, for a layoffs moment. |
+| `fired` | INTEGER | no | People fired that month. |
+| `staff_start` | INTEGER | no | Staff at the start of that month. |
+
+### feud
+
+The player's founder against one rival's CEO (29.4).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key, with `rival_id`: the player's company. |
+| `rival_id` | INTEGER | no | The rival company (`company.id`, no FK). |
+| `score` | FLOAT | no | The feud, 0-100. |
+| `causes` | JSON | no | Its last changes: `[turn, change, cause in words]`. |
+| `rivalry_turn` | INTEGER | yes | When it last reached rivalry. |
+
+### rival_statement
+
+A rival CEO's public statement (29.4). Every statement keeps its row; the state holds the last 24 months. Index `ix_rival_statement_turn (turn)`.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `rival_id` | INTEGER | no | The rival company (`company.id`, no FK). |
+| `person_id` | INTEGER | no | Its CEO. |
+| `turn` | INTEGER | no | When it was said. |
+| `kind` | VARCHAR(16) | no | `statement` (at its own launch or price cut), `jab` (aimed at the player; opens a moment) or `answer` (to a bold claim that named it). |
+| `text` | TEXT | no | What was said. |
+| `product_id` | INTEGER | yes | The product it concerns. |
+
+### departure
+
+Someone who resigned or was poached (29.5): the source of a Replace plan once their employment has ended. One row per person (a later departure replaces it); the state holds the last `recruit.replace_window` months (3). Index `ix_departure_turn (turn)`.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER | no | Primary key: the leaver (no FK). |
+| `company_id` | INTEGER FK company | no | The company they left. |
+| `role` | VARCHAR(64) | no | `roles.yaml` role. |
+| `level` | VARCHAR(16) | no | Their level. |
+| `unit_id` | INTEGER | yes | Their unit (`org_unit.id`, no FK); null = the company root. |
+| `reason` | VARCHAR(16) | no | `resigned` or `poached`. |
+| `turn` | INTEGER | no | The month they left. |
+
+### search_interest
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `search_id` | INTEGER PK FK → search.id | no | The search. |
+| `interest` | VARCHAR(32) | no | `interests.yaml` key: candidates with this interest only (29.5). No row: any interest. |
+
+### hiring_plan_detail
+
+A hiring plan's M14b fields (29.5). No row: all null.
+
+| Column | Type | Null | Description |
+| --- | --- | --- | --- |
+| `plan_id` | INTEGER PK FK → hiring_plan.id | no | The plan. |
+| `interest` | VARCHAR(32) | yes | `interests.yaml` key: its searches find candidates with this interest only (a fee per search). |
+| `replace_of` | INTEGER | yes | A Replace plan: the leaver it replaces (`person.id`, no FK). |
+| `level` | VARCHAR(16) | yes | A Replace plan: the leaver's level; its searches generate candidates at it. |

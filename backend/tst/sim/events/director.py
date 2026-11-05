@@ -16,6 +16,7 @@ import numpy as np
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.data import (
     NO_STAFF_CATEGORIES,
+    PRESS_TRIGGER,
     PUBLIC_TRIGGER,
     TRIGGERS,
     EventTemplate,
@@ -28,6 +29,8 @@ from tst.sim.events.triggers import TriggerHit, crisis_hits, triggers
 from tst.sim.markets_public.describe import public_names
 from tst.sim.money import Cents
 from tst.sim.org.rules import org_view
+from tst.sim.press.moments import queue_moment
+from tst.sim.press.names import press_names
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_event, with_queued, with_storyline
@@ -395,6 +398,11 @@ def direct(
     if crisis is not None:  # 23.3: the first crisis that holds, in fixed order
         template, hit, targets = crisis
         queue.append((template, targets, "critical", hit.strength, hit.trigger, None, None))
+        if hit.trigger == "security_breach":  # M14b (29.1): the press follows a breach
+            facts: dict[str, int | str] = {}
+            if targets.product_id is not None:
+                facts["product_id"] = targets.product_id
+            state = queue_moment(state, cid, "breach", facts)
         critical_free = False
     hits = triggers(state, start, balance, data, cash, rival_moves)
     pool = candidates(state, hits, balance, data)
@@ -422,6 +430,8 @@ def direct(
             rival_id=targets.rival_id,
             months=targets.months,
         ) | loan_names(state, data, targets.loan_id)
+        if template.trigger == PRESS_TRIGGER:  # M14b (29.1)
+            names |= press_names(state, data, cid, next_month)
         if template.trigger == PUBLIC_TRIGGER:  # M13 (25)
             names |= public_names(state, data, balance, cid)
         storyline_id = None

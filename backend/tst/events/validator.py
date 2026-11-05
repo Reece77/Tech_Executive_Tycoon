@@ -14,6 +14,7 @@ from tst.sim.events.data import (
     EFFECT_TARGETS,
     EFFECT_TYPES,
     MODIFIER_STATS,
+    PRESS_STEPS,
     PUBLIC_STEPS,
     VALUELESS,
     EventTemplate,
@@ -63,6 +64,8 @@ def allowed_effects(
             continue
         if effect == "retain" and (severity != "critical" or "retain" not in template_types):
             continue  # 23.3: only a crisis template's own counter-offer
+        if effect == "press_step" and "press_step" not in template_types:
+            continue  # M14b (29.1): only a press template's own tones
         if effect == "public_step" and "public_step" not in template_types:
             continue  # M13 (25): only a public template's own steps
         words = {TARGET_KIND.get(w, w) for w in EFFECT_TARGETS[effect]}
@@ -143,9 +146,9 @@ def validate_event(
             if (target.partition(":")[0] if target else "") not in words:
                 dropped += 1
                 continue
-            if kind == "public_step":  # M13 (25): an engine step, named by its stat
+            if kind in ("public_step", "press_step"):  # M13, M14b: an engine step
                 stat = item.get("stat")
-                if stat not in PUBLIC_STEPS:
+                if stat not in (PUBLIC_STEPS if kind == "public_step" else PRESS_STEPS):
                     dropped += 1
                     continue
                 effects.append(Effect(kind, target, 0.0, str(stat)))

@@ -2,6 +2,8 @@ import { Button, Modal } from '@mantine/core';
 import { Link } from 'react-router';
 import { useChooseEvent, useEvents, type GameEventOut } from '../hooks/api';
 import { IpoEventPricing } from './IpoPanel';
+import { Term } from './Term';
+import { usePress } from '../hooks/press';
 
 const SEVERITY_STYLE: Record<string, { color: string; background: string; label: string }> = {
   minor: { color: 'var(--tst-tier-4)', background: 'var(--tst-gold-bg)', label: 'Minor' },
@@ -90,6 +92,7 @@ export function EventCard({ saveId, event }: { saveId: string; event: GameEventO
           {event.status === 'auto' ? 'Answered at Continue with' : 'You chose'} {event.chosen}.
         </span>
       )}
+      {event.category === 'press' && <PressNote saveId={saveId} event={event} />}
       {event.follow_up_note && (
         <span className="tst-muted" style={{ fontSize: 13 }}>
           {event.follow_up_note}
@@ -100,6 +103,26 @@ export function EventCard({ saveId, event }: { saveId: string; event: GameEventO
         within the game&apos;s rules (<Link to={`/game/${saveId}/settings`}>AI writing</Link>).
       </span>
     </div>
+  );
+}
+
+/** A press moment (M14b, 29.1): the tones behind its choices, and once answered bold or
+ * measured, the way to a public promise this month. */
+function PressNote({ saveId, event }: { saveId: string; event: GameEventOut }) {
+  const press = usePress(saveId);
+  const promising =
+    (event.chosen === 'A' || event.chosen === 'B') && press.data?.form.moment_id != null;
+  return (
+    <span className="tst-muted" style={{ fontSize: 12 }} data-testid="press-note">
+      <Term term="press_moment">Press moment</Term>: A is{' '}
+      <Term term="press.measured">measured</Term>, B is <Term term="press.bold">bold</Term>, C is{' '}
+      <Term term="press.no_comment">no comment</Term>.{' '}
+      {promising && (
+        <Link to={`/game/${saveId}/overview`} data-testid="press-promise-link">
+          Make a public promise this month on the Overview
+        </Link>
+      )}
+    </span>
   );
 }
 

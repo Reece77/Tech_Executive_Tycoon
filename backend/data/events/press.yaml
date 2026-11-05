@@ -1,0 +1,195 @@
+# Press moments (M14b, docs/formulas.md 29.1). The engine queues each by id (trigger press,
+# press.moments.queue_moment); the director never draws them. Each is an interview with three
+# tones: measured (first: Holiday and scripts take it), bold, or deflect, applied by the engine
+# through press_step. A promise is made separately, in the same month, on the press item. The
+# LLM may write a press event's words from these facts; its choices are always the template's.
+templates:
+  - id: press_launch
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: "{product} is out: the press wants a word"
+    body: >-
+      Reporters covering {company}'s launch of {product} want to know what it means for the market and what comes next. How you answer sets the tone for the coverage.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Say {product} will lead the market"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]
+
+  - id: press_earnings
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: "Analysts want more after the quarter"
+    body: >-
+      {company} reported a quarter that came in as {result}, and the business press wants your view on the next one.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Promise the next quarter will be bigger"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]
+
+  - id: press_era
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: "{company} is credited with a breakthrough"
+    body: >-
+      The press credits {company} with bringing {era} forward, and wants to know how far you think it goes.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Say {company} is a generation ahead"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]
+
+  - id: press_outage
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: "Reporters ask about the outage"
+    body: >-
+      The outage that took {product} down has made the news, and journalists want to hear from you before they file.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Say it will never happen again"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]
+
+  - id: press_breach
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: "The breach is in the headlines"
+    body: >-
+      News of the security breach at {company} is spreading, and reporters want to know what {product}'s customers should expect.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Say {company}'s security will be the best in the industry"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]
+
+  - id: press_layoffs
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: "The layoffs at {company} make the news"
+    body: >-
+      Word of the job cuts at {company} has reached the press, and staff and customers are reading every line of the coverage.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Say the cuts make {company} stronger"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]
+
+  - id: press_acquisition
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: "The press asks about the deal"
+    body: >-
+      {company}'s acquisition is the story of the week, and reporters want to know why, and what changes now.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Say the deal makes {company} unbeatable"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]
+
+  - id: press_jab
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: "{rival_ceo} takes a swipe at {company}"
+    body: >-
+      {rival_ceo} of {rival} used an interview to take aim at {company}, and reporters want your answer.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Hit back at {rival_ceo} by name"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]
+
+  - id: press_rivalry
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: "The press calls it a rivalry"
+    body: >-
+      Business writers now describe {company} and {rival} as rivals, and {rival_ceo} is happy to play along. They want to hear from you.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Say {rival} should be worried"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]
+
+  - id: press_reminder
+    category: press
+    trigger: press
+    severities: [major]
+    weight: 1.0
+    title: '"You said..."'
+    body: >-
+      A columnist reminds readers that {company} promised to {promise}, and asks what happened.
+    choices:
+      - key: A
+        label: "Give a measured answer"
+        effects: [{ type: press_step, target: company, stat: measured }]
+      - key: B
+        label: "Insist the plan is still on track"
+        effects: [{ type: press_step, target: company, stat: bold }]
+      - key: C
+        label: "No comment"
+        effects: [{ type: press_step, target: company, stat: deflect }]

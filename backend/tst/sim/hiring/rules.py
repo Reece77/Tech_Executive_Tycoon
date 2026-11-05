@@ -14,6 +14,7 @@ from tst.sim.hiring.models import Candidate
 from tst.sim.org.formulas import pitch
 from tst.sim.people.models import Person
 from tst.sim.people.reveal import revealed_range
+from tst.sim.press.moments import hiring_appeal
 from tst.sim.state import GameState
 
 RECRUITING = "recruiting"
@@ -104,7 +105,8 @@ def offer_preview(
         stage=company.stage,
         offer=balance.hiring.offer,
         pitch=(0.0 if actor_id is None else offer_pitch(state, actor_id, balance.hiring))
-        + (balance.rivals.poach.leave_penalty if candidate.channel == "poach" else 0.0),
+        + (balance.rivals.poach.leave_penalty if candidate.channel == "poach" else 0.0)
+        + hiring_appeal(state, company.id, balance),  # M14b (29.3): credibility
     )
     pending = state.pending_offer_for(person.id)
     problems = offer_problems(
