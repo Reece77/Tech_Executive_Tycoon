@@ -29,7 +29,7 @@ def test_the_ceo_pitches_any_target_in_its_markets(loaded: LoadedData) -> None:
     assert names and names <= {"Salesforce", "Oracle", "Zoho", "SAP"}  # B2B SaaS sellers
     for c in ranked:
         params = dict(c.params)
-        assert c.kind == "acquisition" and params["mode"] == "integrate"
+        assert c.kind == "acquisition" and params["mode"] in ("integrate", "brand")
         assert c.capex_cents == params["price_cents"] > 0 and "antitrust" in c.risk
     assert [c.score for c in ranked] == sorted((c.score for c in ranked), reverse=True)
 

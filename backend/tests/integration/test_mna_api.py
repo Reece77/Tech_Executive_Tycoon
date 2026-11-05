@@ -74,26 +74,29 @@ def test_targets_diligence_bid_and_close(api: tuple[TestClient, Path], loaded: L
     mna = client.get(f"{BASE}/mna").json()
     names = [t["name"] for t in mna["targets"]]
     assert names == sorted(names)  # by name, never by value
-    zoho = _target(mna, "Zoho")
+    zoho = _target(mna, "GitHub")
     assert zoho["listed"] is False and zoho["value_low_cents"] < zoho["value_high_cents"]
     assert zoho["findings"] == [] and zoho["people"] == [] and zoho["diligence"] == "none"
     assert all(p["quality_low"] is None for p in zoho["products"])
+    big = _target(mna, "Zoho")  # 2026-11-05: over integration.max_staff, a brand only
+    assert big["integrate_allowed"] is False and "too big to integrate" in big["integrate_note"]
+    assert zoho["integrate_allowed"] is True and zoho["integrate_note"] is None
     salesforce = _target(mna, "Salesforce")
     assert salesforce["listed"] and salesforce["market_cap_cents"] > 0
     assert salesforce["value_low_cents"] is None
     out = client.post(f"{BASE}/mna/diligence", json={"company_id": zoho["company_id"]}).json()
-    assert _target(out["mna"], "Zoho")["diligence"] == "under_way"
+    assert _target(out["mna"], "GitHub")["diligence"] == "under_way"
     for _ in range(2):
         play_turn(path, loaded)
-    zoho = _target(client.get(f"{BASE}/mna").json(), "Zoho")
+    zoho = _target(client.get(f"{BASE}/mna").json(), "GitHub")
     assert zoho["diligence"] == "done" and zoho["people"]
     assert all(p["quality_low"] is not None for p in zoho["products"])
     low = zoho["value_low_cents"]
     bid = client.post(
-        f"{BASE}/mna/offers", json={"company_id": zoho["company_id"], "price_cents": low // 3}
+        f"{BASE}/mna/offers", json={"company_id": zoho["company_id"], "price_cents": low // 4}
     )
     assert bid.status_code == 200 and "counters" in bid.json()["messages"][0]["title"]
-    counter = _target(bid.json()["mna"], "Zoho")["counter_cents"]
+    counter = _target(bid.json()["mna"], "GitHub")["counter_cents"]
     accepted = client.post(
         f"{BASE}/mna/offers",
         json={"company_id": zoho["company_id"], "price_cents": counter, "mode": "integrate"},
@@ -105,7 +108,7 @@ def test_targets_diligence_bid_and_close(api: tuple[TestClient, Path], loaded: L
     assert after["deals"][0]["status"] == "closed"
     (acq,) = after["acquisitions"]
     assert acq["mode"] == "integrate" and acq["pool_kept"] > 0 and acq["clash_months_left"] > 0
-    assert "Zoho" not in [t["name"] for t in after["targets"]]
+    assert "GitHub" not in [t["name"] for t in after["targets"]]
     for body in (mna, out, bid.json(), accepted, after):
         assert find_forbidden_keys(body) == []
 
@@ -114,11 +117,13 @@ def test_errors_name_no_hidden_number(api: tuple[TestClient, Path]) -> None:
     client, _ = api
     zoho = _target(client.get(f"{BASE}/mna").json(), "Zoho")["company_id"]
     hostile = client.post(
-        f"{BASE}/mna/offers", json={"company_id": zoho, "price_cents": 10**9, "hostile": True}
+        f"{BASE}/mna/offers",
+        json={"company_id": zoho, "price_cents": 10**9, "hostile": True, "mode": "brand"},
     )
     assert hostile.status_code == 400 and "listed target" in hostile.json()["message"]
     shares = client.post(
-        f"{BASE}/mna/offers", json={"company_id": zoho, "price_cents": 10**9, "cash_share": 0.5}
+        f"{BASE}/mna/offers",
+        json={"company_id": zoho, "price_cents": 10**9, "cash_share": 0.5, "mode": "brand"},
     )
     assert shares.status_code == 400 and "listed" in shares.json()["message"]
 

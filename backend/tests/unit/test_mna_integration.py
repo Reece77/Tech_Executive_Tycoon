@@ -31,11 +31,11 @@ def _buy(loaded: LoadedData, name: str, mode: str, seed: int = 3) -> tuple[Game,
 
 def test_integrating_moves_products_people_and_lets_the_rest_go(loaded: LoadedData) -> None:
     before = fresh_game(loaded)
-    zoho = _id(before, "Zoho")
+    zoho = _id(before, "GitHub")  # 127 staff: under integration.max_staff
     products = {p.id for p in before.company_products(zoho)}
     key = {e.person_id for e in before.staff(zoho)}
     pools = sum(p.headcount for p in before.company_pools(zoho))
-    game, _ = _buy(loaded, "Zoho", "integrate")
+    game, _ = _buy(loaded, "GitHub", "integrate")
     state = game.state
     (acq,) = state.acquisitions
     assert set(acq.product_ids) == products
@@ -50,7 +50,7 @@ def test_integrating_moves_products_people_and_lets_the_rest_go(loaded: LoadedDa
     assert {u.product_id for u in units.values()} == products
     assert all(staff[p].unit_id in units for p in key if p in staff)
     assert acq.pool_kept > 0 and acq.let_go > 0
-    assert acq.pool_kept + acq.let_go == round(pools)
+    assert acq.pool_kept + acq.let_go >= round(pools)  # plus key people in other functions
     assert game.balances[(1, SALARIES)] > 0  # severance (and a month's payroll)
     assert acq.key_people == len(key) and len(state.acquired_people) <= len(key)
     assert all(p.until_turn == acq.closed_turn + 12 for p in state.acquired_people)
@@ -58,7 +58,7 @@ def test_integrating_moves_products_people_and_lets_the_rest_go(loaded: LoadedDa
 
 def test_integration_takes_the_higher_lead_plus_a_fifth_of_the_lower(loaded: LoadedData) -> None:
     state = fresh_game(loaded)
-    zoho = _id(state, "Zoho")
+    zoho = _id(state, "GitHub")
     state = with_research_lead(state, ResearchLead(zoho, "software_platform", 10.0))
     state = with_research_lead(state, ResearchLead(1, "software_platform", 4.0))
     game = Game(loaded, state, cash=BIG)
@@ -92,7 +92,7 @@ def test_a_brand_keeps_its_books_sweeps_cash_and_follows_its_directive(
 def test_flight_is_seeded_and_counted(loaded: LoadedData) -> None:
     runs = []
     for _ in range(2):
-        game, _ = _buy(loaded, "Zoho", "integrate")
+        game, _ = _buy(loaded, "GitHub", "integrate")
         for _ in range(6):
             game.turn()
         (acq,) = game.state.acquisitions
@@ -117,3 +117,28 @@ def test_distance_reads_average_traits(loaded: LoadedData) -> None:
     assert founder is not None
     same = replace(state, people=state.people)
     assert integration.distance_between(same, 1, 1, b, d) == 0.0
+
+
+def test_kept_staff_follow_revenue_shares_and_synergies(loaded: LoadedData) -> None:
+    """2026-11-05: a one-product target keeps all its staff but the function's synergy:
+    builders 10% let go; sellers and marketers 15% in a category the acquirer is new to."""
+    before = fresh_game(loaded)
+    github = _id(before, "GitHub")
+    assert len(before.company_products(github)) == 1
+    pools = {p.function: round(p.headcount) for p in before.company_pools(github)}
+    ib = loaded.balance.integration
+    want = sum(
+        round(n * (1 - (ib.synergy_builders if f == "builder" else ib.synergy_new)))
+        for f, n in pools.items()
+    )
+    game, _ = _buy(loaded, "GitHub", "integrate")
+    (acq,) = game.state.acquisitions
+    assert acq.pool_kept == want
+    assert integration.synergy("seller", True, ib) == ib.synergy_overlap
+
+
+def test_revenue_shares(loaded: LoadedData) -> None:
+    state = fresh_game(loaded)
+    products = list(state.company_products(_id(state, "Microsoft")))
+    shares = integration.revenue_shares(state, products)
+    assert abs(sum(shares) - 1.0) < 1e-9 and len(shares) == len(products)

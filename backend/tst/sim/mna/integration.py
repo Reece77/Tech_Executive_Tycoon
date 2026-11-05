@@ -8,7 +8,6 @@ flight; generated pool staff on stream `people_gen` keyed by the target's stable
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, replace
 from typing import Literal
 
@@ -26,6 +25,7 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.mna import formulas as mf
+from tst.sim.mna.data import IntegrationBalance
 from tst.sim.mna.models import AcquiredPerson, Acquisition, Directive
 from tst.sim.org.models import OrgUnit
 from tst.sim.people.models import Employment
@@ -183,14 +183,20 @@ def integrate(
         unit = unit_ids[index % len(unit_ids)] if unit_ids else None
         state = move_person(state, employment, acquirer, unit)
     kept, let_go, severance = 0, 0, 0
+    shares = revenue_shares(state, products)
+    sells = {
+        p.category
+        for p in state.company_products(acquirer)
+        if p.status in SELLING and p.id not in {q.id for q in products}
+    }
     for function in FUNCTIONS:
         pool = next((p for p in state.company_pools(target) if p.function == function), None)
         if pool is None or pool.headcount <= 0:
             continue
         headcount = round(pool.headcount)
         wanted = [
-            min(ib.max_per_product, _need(state, p, function, pool.skill, balance, data))
-            for p in products
+            round(headcount * share * (1 - synergy(function, product.category in sells, ib)))
+            for product, share in zip(products, shares, strict=True)
         ]
         keep = min(headcount, sum(wanted))
         level = level_for(pool.skill)
@@ -207,7 +213,10 @@ def integrate(
         )
         new = sorted((e for e in state.staff(target) if e.id not in before), key=lambda e: e.id)
         slots = [unit_ids[i] for i, n in enumerate(wanted) for _ in range(n)]
+        pool_pay = _pool_pay(function, balance, data)
         for employment, unit in zip(new, slots, strict=False):
+            # they keep the pay they had in the pool (the function role's mid rate, 15.1)
+            employment = replace(employment, salary_cents=pool_pay)
             state = move_person(state, employment, acquirer, unit)
             arrived.append(employment.person_id)
         kept += keep
@@ -222,6 +231,10 @@ def integrate(
             gone * market_mid_cents(mid, bp) / 12 * ib.severance_months
         )  # tunable-exempt: months a year
         state = _zero_pool(state, pool)
+    state, gone_people, paid = _let_go_others(state, acquirer, arrived, ib, data)
+    let_go += len(gone_people)
+    severance += paid
+    arrived = [pid for pid in arrived if pid not in gone_people]
     for lead in [r for r in state.research_leads if r.company_id == target]:
         mine = state.research_lead(acquirer, lead.domain)
         blended = mf.blended_lead(mine, lead.lead, ib)
@@ -296,24 +309,76 @@ def level_for(skill: float) -> str:
     return TOP_LEVEL
 
 
-def _need(
-    state: GameState, product: Product, function: str, skill: float, b: Balance, data: GameData
-) -> int:
-    """Pool staff a product keeps (28.5): builders to its maintenance line (rot threshold x
-    scope of output at the pool's skill); sellers to replace its sales-led customers' churn;
-    marketers one per product (M14 decision)."""
-    output = max(skill, 1.0) / SKILL_NEUTRAL
+def _pool_pay(function: str, balance: Balance, data: GameData) -> int:
+    """A pool member's annual pay: the function role's mid-level market rate, as phase 6
+    pays the pool (15.1)."""
+    from tst.sim.hiring.formulas import market_mid_cents
+    from tst.sim.hiring.phases import _mid_region
+
+    role = data.role(balance.rivals.function_roles[function])
+    return market_mid_cents(role.salary_band_mid_cents["mid"], _mid_region(balance, data))
+
+
+def revenue_shares(state: GameState, products: list[Product]) -> list[float]:
+    """Each acquired product's share of the target's staff: its share of the target's MRR
+    (all of it for one product; equal shares with no revenue) (2026-11-05)."""
+    from tst.sim.org.pitches import product_mrr
+
+    if not products:
+        return []
+    mrr = [product_mrr(state, p.id) for p in products]
+    total = sum(mrr)
+    if total <= 0:
+        return [1 / len(products)] * len(products)
+    return [m / total for m in mrr]
+
+
+def synergy(function: str, overlap: bool, ib: IntegrationBalance) -> float:
+    """The share of a function's staff let go (2026-11-05): sellers and marketers 0.40 where
+    the acquirer already sells in the category, 0.15 otherwise; builders 0.10."""
     if function == "builder":
-        scope = data.category(product.category).scope
-        return math.ceil(b.products.rot_threshold * scope / output)
-    if function == "seller":
-        need = 0.0
-        for s in state.segments_of(product.id):
-            rate = b.products.seller_rate.get(s.segment)
-            if rate:
-                need += s.customers * data.segment(s.segment).base_churn / (rate * output)
-        return math.ceil(need)
-    return 1
+        return ib.synergy_builders
+    return ib.synergy_overlap if overlap else ib.synergy_new
+
+
+def _let_go_others(
+    state: GameState,
+    acquirer: int,
+    arrived: list[int],
+    ib: IntegrationBalance,
+    data: GameData,
+) -> tuple[GameState, set[int], int]:
+    """Key people in functions other than building, selling and marketing: integration.
+    synergy_other of them are let go, the lowest paid first, with severance at their own pay."""
+    others = []
+    for pid in arrived:
+        e = state.employment_of(pid)
+        if e is None or e.company_id != acquirer:
+            continue
+        if data.role(e.role).product_function in FUNCTIONS:
+            continue
+        if state.person(pid).is_founder:
+            continue
+        others.append(e)
+    count = round(len(others) * ib.synergy_other)
+    gone = sorted(others, key=lambda e: (e.salary_cents, e.id))[:count]
+    paid = 0
+    for e in gone:
+        state = with_employment(
+            state, replace(e, status="ended", end_turn=state.turn, end_reason="fired")
+        )
+        paid += round(e.salary_cents / 12 * ib.severance_months)  # tunable-exempt: months a year
+    return state, {e.person_id for e in gone}, paid
+
+
+def staff_of(state: GameState, company_id: int) -> int:
+    """A company's staff: key people plus its pools' headcount (28.5's integration limit)."""
+    pools = sum(p.headcount for p in state.company_pools(company_id))
+    return len(state.staff(company_id)) + round(pools)
+
+
+def can_integrate(state: GameState, company_id: int, balance: Balance) -> bool:
+    return staff_of(state, company_id) <= balance.integration.max_staff
 
 
 def _churn_penalties(acquisition: Acquisition, balance: Balance) -> list[tuple[int, float]]:

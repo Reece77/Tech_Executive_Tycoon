@@ -21,12 +21,11 @@ def test_28_9_targets() -> None:
     integrated, brand = m14.target_3(results)
     assert integrated is not None and m14.T3_INTEGRATED[0] <= integrated <= m14.T3_INTEGRATED[1]
     assert brand is not None and brand <= m14.T3_BRAND_MAX
-    scripted, startups = m14.target_4(results)
+    savings, _, _ = m14.target_4(results)
     lo, hi = m14.T4_SAVINGS
-    assert scripted is not None and lo <= scripted <= hi
+    assert savings is not None and lo <= savings <= hi
     ratio = m14.target_5(results)
     assert ratio is not None and m14.T5_RATIO[0] <= ratio <= m14.T5_RATIO[1]
     assert m14.T6_BLOCKED[0] <= m14.target_6(results) <= m14.T6_BLOCKED[1]
     buys = m14.target_7(results)
     assert buys is not None and m14.T7_BUYS[0] <= buys <= m14.T7_BUYS[1]
-    del startups

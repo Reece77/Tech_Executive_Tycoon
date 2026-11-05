@@ -21,7 +21,17 @@ export function DealsTab({ saveId }: { saveId: string }) {
             No deal under way. Open a company from Competitors to see its value and make an offer.
           </p>
         ) : (
-          open.map((d) => <OpenDeal key={d.deal_id} saveId={saveId} d={d} />)
+          open.map((d) => (
+            <OpenDeal
+              key={d.deal_id}
+              saveId={saveId}
+              d={d}
+              allowed={
+                mna.data.targets.find((t) => t.company_id === d.target_id)?.integrate_allowed ??
+                true
+              }
+            />
+          ))
         )}
       </Panel>
       <Panel title="Acquisitions">
@@ -83,7 +93,7 @@ export function DealsTab({ saveId }: { saveId: string }) {
   );
 }
 
-function OpenDeal({ saveId, d }: { saveId: string; d: MnaDeal }) {
+function OpenDeal({ saveId, d, allowed }: { saveId: string; d: MnaDeal; allowed: boolean }) {
   const act = useMnaAction(saveId);
   const share = `${Math.round(d.combined_share * 100)}%`;
   return (
@@ -106,10 +116,15 @@ function OpenDeal({ saveId, d }: { saveId: string; d: MnaDeal }) {
             act.mutate({ kind: 'mode', dealId: d.deal_id, mode: v as 'brand' | 'integrate' })
           }
           data={[
-            { value: 'integrate', label: 'Integrate' },
+            { value: 'integrate', label: 'Integrate', disabled: !allowed },
             { value: 'brand', label: 'Keep as a brand' },
           ]}
         />
+        {!allowed && (
+          <span className="tst-muted" style={{ fontSize: 12 }}>
+            Too big to integrate: it stays a brand.
+          </span>
+        )}
         {d.status === 'blocked' && d.remedy_product && (
           <Button
             size="xs"

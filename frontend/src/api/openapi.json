@@ -32307,6 +32307,23 @@
               }
             ],
             "title": "Open Deal Id"
+          },
+          "integrate_allowed": {
+            "type": "boolean",
+            "title": "Integrate Allowed",
+            "description": "At most integration.max_staff staff"
+          },
+          "integrate_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Integrate Note",
+            "description": "Why it must be a brand"
           }
         },
         "type": "object",
@@ -32325,7 +32342,8 @@
           "people",
           "counter_cents",
           "talks_closed_months",
-          "open_deal_id"
+          "open_deal_id",
+          "integrate_allowed"
         ],
         "title": "TargetOut"
       },

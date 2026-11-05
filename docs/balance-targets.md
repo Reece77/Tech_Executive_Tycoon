@@ -422,27 +422,32 @@ Target 7 sweep (`pitch.base` / `per_ambition`): 0.45/0.04 ×1.54; 0.35/0.03 ×1.
 
 ## M14: mergers and acquisitions (§28.9)
 
-`tools/m14_targets.py`, nightly `tests/balance/test_m14_balance.py`, 10 seeds, measured 2026-11-05 on `m14-mna`.
-- **Scripted deals (targets 2-4):** each seed's steady game at month 36, funded for the deals, bids for up to three private companies (the displayed midpoint, then the counter; two integrated, one kept as a brand) and one listed company (stepping the premium by 5 points until its board agrees), then plays 12 months.
+`tools/m14_targets.py`, nightly `tests/balance/test_m14_balance.py`, 10 seeds, measured 2026-11-05 on `m14-mna` after the product manager's ruling on target 4.
+- **Scripted deals (targets 2-4):** each seed's steady game at month 36, funded for the deals, bids for up to three private companies (the displayed midpoint, then the counter; two integrated, which must have at most `integration.max_staff` staff; one kept as a brand) and one listed company (stepping the premium by 5 points until its board agrees, integrated if within the limit), then plays 12 months.
 - **Target 5:** "steady + regions" against "acquirer" (plus one startup a year when cash covers 18 months), 120 months.
 - **Target 6:** a deal at 40% combined share in January 2021, reviewed on each seed.
 - **Target 7:** do-nothing games, 120 months.
 
 | Target | Value | Band | Result |
 | --- | --- | --- | --- |
-| 1 nothing moves without deals | earlier targets and goldens checked at the lane merge (rivals' purchases change rival play) | as before | pending the merge |
-| 2 private deals, price / V_f (median) | 1.38 | 1.0-1.6 | pass |
+| 1 nothing moves without deals | golden snapshots unchanged; earlier targets as before (re-run on the combined code at the lane merge) | as before | pass |
+| 2 private deals, price / V_f (median) | 1.37 | 1.0-1.6 | pass |
 | 2 listed friendly deals, premium (median) | 35% | 25-50% | pass |
-| 3 key people lost within 12 months, integrated (median) | 25% | 10-30% | pass |
-| 3 the same, kept brands | 7% | <= 10% | pass |
-| 4 staff cost base cut by integration (median) | 87% scripted (incumbents), 51% the acquirer's startups | 15-35% | **miss: not fixable by M14's keys** |
+| 3 key people lost within 12 months, integrated (median) | 20% | 10-30% | pass |
+| 3 the same, kept brands | 0% | <= 10% | pass |
+| 4 payroll cut by integration, every integrated deal (median) | 24% (scripted 23%, the acquirer's startups 51%) | 15-35% | pass |
 | 5 acquirer / steady + regions, median ARR at year 10 | 1.06 | 1.0-1.4 | pass |
 | 6 deals at 40% blocked after review, after 2020 | 4 of 10 seeds (40%) | 15-50% | pass |
 | 7 incumbents' startup purchases a decade (median) | 3 (by seed: 3, 6, 2, 3, 2, 4, 3, 8, 3, 1) | 1-4 | pass |
 
 **Tuned keys:**
-- `integration.flight_brand` 0.03 -> 0.007 (brands lost 27%);
-- `integration.flight_base` 0.02 -> 0.01 (integrated lost 29% before; target 4's startup saving rises as fewer people leave);
-- `mna.rival_rate` 0.04 -> 0.008 (18 purchases a decade before).
+- `integration.flight_brand` 0.03 -> 0.007;
+- `integration.flight_base` 0.02 -> 0.01;
+- `mna.rival_rate` 0.04 -> 0.008.
 
-**Target 4.** Integration keeps the staff each product needs: builders to the maintenance line, sellers for its customers, a marketer. Incumbents' pools are sized for their revenue, so 80-95% are let go. `integration.max_per_product` can only lower what stays. See the M14 brief's Status.
+**Target 4 (2026-11-05 ruling).**
+- **The rule:** each acquired product keeps its revenue share of the target's staff, less a synergy by function (sellers and marketers 0.40 where the acquirer already sells in the category, else 0.15; builders 0.10; other key people 0.30).
+- **The limit:** only targets with at most 250 staff integrate.
+- **Tuning:** none needed; the synergy keys land it in band as given.
+- **Startups:** their figure mostly reflects departures, since they have few or no pool staff.
+- **Before the ruling:** the maintenance-line rule cut 87% (scripted) and 51% (startups).

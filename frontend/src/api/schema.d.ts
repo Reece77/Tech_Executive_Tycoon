@@ -10844,6 +10844,16 @@ export interface components {
             talks_closed_months: number | null;
             /** Open Deal Id */
             open_deal_id: number | null;
+            /**
+             * Integrate Allowed
+             * @description At most integration.max_staff staff
+             */
+            integrate_allowed: boolean;
+            /**
+             * Integrate Note
+             * @description Why it must be a brand
+             */
+            integrate_note?: string | null;
         };
         /** TargetPersonOut */
         TargetPersonOut: {

@@ -50,7 +50,9 @@ function DealBody({
   const act = useMnaAction(saveId);
   const [price, setPrice] = useState<number | string>('');
   const [cash, setCash] = useState<number | string>(100);
-  const [mode, setMode] = useState<'integrate' | 'brand'>('integrate');
+  const [mode, setMode] = useState<'integrate' | 'brand'>(
+    t.integrate_allowed ? 'integrate' : 'brand',
+  );
   const [hostile, setHostile] = useState(false);
   const [result, setResult] = useState<MnaActionResult | null>(null);
   const done = (r: MnaActionResult) => setResult(r);
@@ -148,10 +150,15 @@ function DealBody({
             value={mode}
             onChange={(v) => setMode(v as 'integrate' | 'brand')}
             data={[
-              { value: 'integrate', label: 'Integrate' },
+              { value: 'integrate', label: 'Integrate', disabled: !t.integrate_allowed },
               { value: 'brand', label: 'Keep as a brand' },
             ]}
           />
+          {t.integrate_note && (
+            <span className="tst-muted" style={{ fontSize: 12 }} data-testid="integrate-note">
+              {t.integrate_note}
+            </span>
+          )}
           {t.listed && (
             <Checkbox
               label="Hostile tender"

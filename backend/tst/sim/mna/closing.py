@@ -64,6 +64,10 @@ def close_deal(
         )
         return state, [], [log] if state.company(deal.acquirer_id).is_player else []
     mode = deal.mode or "integrate"
+    from tst.sim.mna.integration import can_integrate
+
+    if mode == "integrate" and not can_integrate(state, deal.target_id, balance):
+        mode = "brand"  # it grew past integration.max_staff before closing (2026-11-05)
     deal = replace(deal, mode=mode, status="closed", resolved_turn=state.turn)
     posted = list(deals.closing_entries(state, deal, balances, data))
     state = deals.issue_shares(state, deal)

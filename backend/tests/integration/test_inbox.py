@@ -473,9 +473,9 @@ def _m14_items(loaded: LoadedData) -> list[LogItem]:
     game = _game(loaded)
     zoho = _id(game.state, "Zoho")
     _energy(game)
-    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho) // 2))
+    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho) // 2, mode="brand"))
     _energy(game)
-    game.act(BidForCompany(_founder(game), _id(game.state, "Evernote"), 10**12))
+    game.act(BidForCompany(_founder(game), _id(game.state, "Evernote"), 10**12, mode="brand"))
     game.turn()
     _, sold = apply_public_step(listed(), 1, "takeover_accept", loaded.balance)
     items = [*game.action_logs, *(i for r in game.results for i in r.log_items), *sold]

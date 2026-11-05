@@ -1073,6 +1073,7 @@ def _acquisitions(
     pitches' 24-month scale; central case: that revenue grown 24 months, plus integration
     savings of mna.pitch_synergy x its monthly costs."""
     from tst.sim.mna import antitrust, deals, valuation
+    from tst.sim.mna.integration import can_integrate
 
     mb = b.mna
     mine = {p.category for p in state.company_products(company) if p.status in SELLING}
@@ -1118,7 +1119,7 @@ def _acquisitions(
                 params=(
                     ("company_id", target.id),
                     ("price_cents", price),
-                    ("mode", "integrate"),
+                    ("mode", "integrate" if can_integrate(state, target.id, b) else "brand"),
                 ),
                 title=f"buying {target.name}",
                 why=(

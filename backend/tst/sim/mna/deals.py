@@ -280,6 +280,7 @@ def _validate_offer(
     acquirer_id: int,
     balances: LedgerBalances,
     data: GameData,
+    balance: Balance,
 ) -> None:
     _target(state, acquirer_id, action.target_id)
     if action.price_cents <= 0:
@@ -304,6 +305,7 @@ def _validate_offer(
             f"the cash part is {format_money(cash_part)}; there is {format_money(cash)} on hand "
             "(take a bank loan first, or pay partly in shares)"
         )
+    _check_mode(state, action.target_id, action.mode, balance)
     if action.hostile:
         if not valuation.is_listed(state, action.target_id, data):
             raise MnaRuleError("a hostile tender needs a listed target")
@@ -323,7 +325,7 @@ def make_offer(
 ) -> DealOutcome:
     """A friendly offer or a hostile tender (28.3). Accepted offers become deals that close
     after antitrust (28.4); the answer names no hidden number."""
-    _validate_offer(state, action, acquirer_id, balances, data)
+    _validate_offer(state, action, acquirer_id, balances, data, balance)
     mb = balance.mna
     state = spend(state, mb.tender.energy if action.hostile else mb.offer_energy)
     target = action.target_id
@@ -452,8 +454,23 @@ def _closing_text(deal: Deal) -> str:
     return "It closes next month."
 
 
-def set_deal_mode(state: GameState, action: SetDealMode, acquirer_id: int) -> GameState:
+def _check_mode(state: GameState, target_id: int, mode: str, balance: Balance) -> None:
+    """Integration is for targets of at most integration.max_staff staff (2026-11-05)."""
+    from tst.sim.mna.integration import can_integrate
+
+    if mode == "integrate" and not can_integrate(state, target_id, balance):
+        limit = balance.integration.max_staff
+        raise MnaRuleError(
+            f"{state.company(target_id).name} has more than {limit} staff: too big to "
+            "integrate. Keep it as a brand (its key people can still move to you)"
+        )
+
+
+def set_deal_mode(
+    state: GameState, action: SetDealMode, acquirer_id: int, balance: Balance
+) -> GameState:
     deal = _own_open(state, action.deal_id, acquirer_id)
+    _check_mode(state, deal.target_id, action.mode, balance)
     return with_deal(state, replace(deal, mode=action.mode))
 
 

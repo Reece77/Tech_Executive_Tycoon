@@ -97,6 +97,9 @@ def target_out(
     if found is not None and found.blocked_until is not None and state.turn < found.blocked_until:
         blocked = found.blocked_until - state.turn
     deal = deals.open_deal(state, company_id)
+    from tst.sim.mna.integration import can_integrate
+
+    allowed = can_integrate(state, company_id, b)
     status = (
         "done"
         if diligenced
@@ -120,6 +123,11 @@ def target_out(
         counter_cents=found.counter_cents if found is not None else None,
         talks_closed_months=blocked,
         open_deal_id=deal.id if deal is not None else None,
+        integrate_allowed=allowed,
+        integrate_note=None
+        if allowed
+        else f"More than {b.integration.max_staff} staff: too big to integrate. Keep it as a "
+        "brand; its key people can still move to you.",
     )
 
 

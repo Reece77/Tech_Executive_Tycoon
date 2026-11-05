@@ -11,6 +11,7 @@ from dataclasses import replace
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.mna import antitrust, deals
+from tst.sim.mna.integration import can_integrate
 from tst.sim.mna.models import Deal
 from tst.sim.products.models import SELLING
 from tst.sim.rivals.models import INCUMBENT_KEY, stream_key
@@ -48,6 +49,7 @@ def rival_deals(
             if c.is_startup
             and c.parent_id is None
             and deals.open_deal(state, c.id) is None
+            and can_integrate(state, c.id, balance)  # startups always integrate (28.6)
             and any(p.category in categories for p in state.company_products(c.id))
         ]
         if not startups:

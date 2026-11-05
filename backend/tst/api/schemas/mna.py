@@ -49,6 +49,8 @@ class TargetOut(BaseModel):
     counter_cents: int | None = Field(description="Their counter-offer, once they made one")
     talks_closed_months: int | None = Field(description="Months until a new bid is possible")
     open_deal_id: int | None
+    integrate_allowed: bool = Field(description="At most integration.max_staff staff")
+    integrate_note: str | None = Field(default=None, description="Why it must be a brand")
 
 
 class DealOut(BaseModel):

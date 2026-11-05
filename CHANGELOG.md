@@ -4,7 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
-- M14 Mergers and acquisitions (formulas.md §28; lane A; **not merged: §28.9 target 4 misses, see the brief**):
+- M14 Mergers and acquisitions (formulas.md §28; lane A):
   - Valuation of every company: listed rivals' market cap (`listed_from` in `incumbents.yaml` and `entrants.yaml`), private value ranges.
   - Diligence and hidden problems; private offers with one counter; listed boards; hostile tenders; cash or stock consideration; closing with goodwill (account 1800) and a brand's investment (1810).
   - Antitrust: review, block, and a remedy that divests.
@@ -13,7 +13,8 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Streams `mna` 37, `integration` 38, `rival_mna` 39. Migration `0033_mna`.
   - API `/mna` routes; CLI `tst targets`, `tst diligence`, `tst offer --company`, `tst directive`.
   - Screens: Rival screen deal panel, Finance > Deals, consolidated statements, Org flags and brands, the exit ending.
-  - 28.9: targets 2, 3, 5, 6 and 7 pass; target 4 misses (87% / 51% against 15-35%).
+  - Integration keeps each product's revenue share of the target's staff less a synergy by function, for targets of at most 250 staff (larger ones are kept as brands); product manager's ruling 2026-11-05.
+  - 28.9: every target passes (target 4: payroll cut 24%).
   - Tuned: `integration.flight_brand` 0.007, `integration.flight_base` 0.01, `mna.rival_rate` 0.008.
 
 - CI (2026-11-05):

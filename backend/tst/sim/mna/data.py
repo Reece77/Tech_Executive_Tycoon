@@ -121,7 +121,11 @@ class IntegrationBalance(_Frozen):
     flight_per_distance: float = Field(ge=0)  # + this x personality distance
     clash: float = Field(ge=0, le=1)  # morale moves this x distance of the gap a month
     distance_span: float = Field(gt=0)  # attribute points of mean trait gap = distance 1
-    max_per_product: int = Field(ge=0)  # pool staff kept per function per product
+    max_staff: int = Field(gt=0)  # only targets with at most this many staff can integrate
+    synergy_overlap: float = Field(ge=0, le=1)  # sellers/marketers let go where we sell already
+    synergy_new: float = Field(ge=0, le=1)  # the same in a category new to the acquirer
+    synergy_builders: float = Field(ge=0, le=1)  # builders let go
+    synergy_other: float = Field(ge=0, le=1)  # key people in other functions let go
     severance_months: float = Field(ge=0)
     churn_mult: float = Field(ge=1)
     churn_months: int = Field(ge=0)

@@ -3,8 +3,9 @@
 
 - Targets 2-4 (scripted deals): each seed's steady game at month 36, funded for the deals,
   bids for up to three private companies (the displayed midpoint, then the counter; two
-  integrated, one kept as a brand) and one listed company (a friendly bid stepping the
-  premium by 5 points until its board agrees), then plays 12 more months.
+  integrated, within integration.max_staff, one kept as a brand) and one listed company
+  (a friendly bid stepping the premium by 5 points until its board agrees), then plays 12
+  more months.
 - Target 5: "steady + regions" (M13b's arm from the first month) against "acquirer" (the
   same plus one startup a year in its categories when cash covers 18 months, integrated),
   120 months.
@@ -27,6 +28,7 @@ from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry, apply_entries
 from tst.sim.mna import antitrust, deals, valuation
 from tst.sim.mna.deals import BidForCompany
+from tst.sim.mna.integration import can_integrate
 from tst.sim.mna.models import Deal
 from tst.sim.rng import RngFactory
 
@@ -137,7 +139,8 @@ def buy_listed(game: Game, target: int) -> float | None:
         return None
     premium = START_PREMIUM
     while premium <= MAX_PREMIUM + 1e-9:
-        _bid(game, target, round(cap * (1 + premium)))
+        mode = "integrate" if can_integrate(game.state, target, b) else "brand"
+        _bid(game, target, round(cap * (1 + premium)), mode)
         deal = _deal(game, target)
         if deal is not None:
             return premium if deal.status in ("accepted", "review") else None
@@ -178,7 +181,10 @@ def play_deals(seed: int) -> DealRun:
     for target in private:
         if bought >= PRIVATE_DEALS:
             break
-        got = buy_private(game, target, modes[bought])
+        mode = modes[bought]
+        if mode == "integrate" and not can_integrate(game.state, target, game.loaded.balance):
+            continue  # integrated deals use targets within integration.max_staff (2026-11-05)
+        got = buy_private(game, target, mode)
         deal = _deal(game, target)
         if got is None or deal is None or deal.status != "accepted":
             if deal is not None and deal.status in ("review", "blocked"):
@@ -367,11 +373,12 @@ def target_3(r: Results) -> tuple[float | None, float | None]:
     return _median(integrated), _median(brand)
 
 
-def target_4(r: Results) -> tuple[float | None, float | None]:
-    """(scripted deals' median saving, the acquirer's startup integrations' median)."""
+def target_4(r: Results) -> tuple[float | None, float | None, float | None]:
+    """Payroll cut by integration, median over every integrated (integratable) deal; then
+    the scripted deals' and the acquirer's startups' medians on their own."""
     scripted = [x for d in r.deals for x in d.savings]
     startups = [x for a in r.arms for x in a.savings]
-    return _median(scripted), _median(startups)
+    return _median(scripted + startups), _median(scripted), _median(startups)
 
 
 def target_5(r: Results) -> float | None:
@@ -398,14 +405,14 @@ def _fmt(x: float | None, pct: bool = False) -> str:
 def report(r: Results) -> str:
     p, listed = target_2(r)
     lost_i, lost_b = target_3(r)
-    sav_s, sav_a = target_4(r)
+    sav, sav_s, sav_a = target_4(r)
     lines = [
         f"28.9 target 2: private deals at {_fmt(p)} x V_f (1.0-1.6); "
         f"listed premium {_fmt(listed, True)} (25-50%)",
         f"28.9 target 3: integrated deals lose {_fmt(lost_i, True)} of key people (10-30%); "
         f"brands {_fmt(lost_b, True)} (<= 10%)",
-        f"28.9 target 4: integration cuts the staff cost base {_fmt(sav_s, True)} (scripted), "
-        f"{_fmt(sav_a, True)} (the acquirer's startups) (15-35%)",
+        f"28.9 target 4: integration cuts the payroll {_fmt(sav, True)} (15-35%): scripted "
+        f"{_fmt(sav_s, True)}, the acquirer's startups {_fmt(sav_a, True)}",
         f"28.9 target 5: acquirer / steady + regions median ARR at year 10: "
         f"{_fmt(target_5(r))} (1.0-1.4)",
         f"28.9 target 6: deals at 40% blocked after review on {target_6(r):.0%} of seeds "

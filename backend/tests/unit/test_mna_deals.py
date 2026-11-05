@@ -67,7 +67,7 @@ def test_private_offer_counter_then_talks_end(loaded: LoadedData) -> None:
     zoho = _id(game.state, "Zoho")
     res = _reservation(game, zoho)
     _energy(game)
-    game.act(BidForCompany(_founder(game), zoho, res // 2))
+    game.act(BidForCompany(_founder(game), zoho, res // 2, mode="brand"))
     found = game.state.target_files[0]
     assert (
         found.counter_cents is not None
@@ -75,11 +75,11 @@ def test_private_offer_counter_then_talks_end(loaded: LoadedData) -> None:
     )
     assert str(res) not in str(game.action_logs[-1].params)  # the reservation is never named
     _energy(game)
-    game.act(BidForCompany(_founder(game), zoho, found.counter_cents - 100))
+    game.act(BidForCompany(_founder(game), zoho, found.counter_cents - 100, mode="brand"))
     assert "ended talks" in str(dict(game.action_logs[-1].params)["title"])
     _energy(game)
     with pytest.raises(MnaRuleError, match="closed for now"):
-        game.act(BidForCompany(_founder(game), zoho, res * 2))
+        game.act(BidForCompany(_founder(game), zoho, res * 2, mode="brand"))
 
 
 def test_an_accepted_offer_closes_next_month_with_goodwill(loaded: LoadedData) -> None:
@@ -138,18 +138,20 @@ def test_listed_board_and_failed_tender(loaded: LoadedData) -> None:
     b, d = loaded.balance, loaded.game_data
     cap = deals.estimate_cents(game.state, 1, salesforce, game.balances, b, d)
     _energy(game)
-    game.act(BidForCompany(_founder(game), salesforce, cap))  # no premium: the board says no
+    game.act(BidForCompany(_founder(game), salesforce, cap, mode="brand"))  # no premium: no
     assert "rejected" in str(dict(game.action_logs[-1].params)["title"])
     bar = game.state.target_files[0].board_bar
     assert bar is not None and "0.3" not in str(game.action_logs[-1].params)
     _energy(game)
-    game.act(BidForCompany(_founder(game), salesforce, round(cap * 1.1), hostile=True))
+    game.act(
+        BidForCompany(_founder(game), salesforce, round(cap * 1.1), hostile=True, mode="brand")
+    )
     assert "failed" in str(dict(game.action_logs[-1].params)["title"])  # chance 0 at 10%
     fee = mf.tender_fee_cents(round(cap * 1.1), b.mna.tender)
     assert game.balances[(1, GENERAL_ADMIN)] == fee
     _energy(game)
     with pytest.raises(MnaRuleError, match="closed for now"):
-        game.act(BidForCompany(_founder(game), salesforce, cap * 3))
+        game.act(BidForCompany(_founder(game), salesforce, cap * 3, mode="brand"))
 
 
 def test_stock_needs_a_listing_and_cash_must_cover_the_cash_part(loaded: LoadedData) -> None:
@@ -242,7 +244,7 @@ def test_over_half_is_blocked_until_a_remedy(loaded: LoadedData) -> None:
     share, market = antitrust.combined_share(game.state, 1, zoho, loaded.balance, loaded.game_data)
     assert share >= loaded.balance.antitrust.block and market is not None
     _energy(game)
-    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho)))
+    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho), mode="brand"))
     (deal,) = game.state.deals
     assert deal.status == "blocked" and deal.remedy_product_id is not None
     game.turn()
@@ -288,3 +290,12 @@ def test_below_the_review_line_is_cleared(loaded: LoadedData) -> None:
     deal = Deal(1, 1, zoho, 10**10, 1.0, game.state.turn, close_turn=game.state.turn + 1)
     screened, _ = antitrust.screen(game.state, deal, game.rng, loaded.balance, loaded.game_data)
     assert screened.status == "accepted" and screened.close_turn == game.state.turn + 1
+
+
+def test_targets_over_the_staff_limit_cannot_integrate(loaded: LoadedData) -> None:
+    """2026-11-05: integration needs at most integration.max_staff staff (Zoho has more)."""
+    game = _game(loaded)
+    zoho = _id(game.state, "Zoho")
+    _energy(game)
+    with pytest.raises(MnaRuleError, match="too big to integrate"):
+        game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho)))

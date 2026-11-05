@@ -48,7 +48,7 @@ def apply_mna(
             out = deals.make_offer(state, action, company, rng, balances, balance, data, spend)
             return Outcome(out.state, out.entries, out.logs)
         case SetDealMode():
-            return Outcome(deals.set_deal_mode(state, action, company))
+            return Outcome(deals.set_deal_mode(state, action, company, balance))
         case AbandonDeal():
             return Outcome(deals.abandon_deal(state, action, company))
         case AcceptRemedy():

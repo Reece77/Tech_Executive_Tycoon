@@ -91,8 +91,10 @@ test('(c) over half a market is blocked and the remedy offered', async ({ page }
   const save = `m14-blocked-${stamp}`;
   const id = target(tool(['blocked', save]));
   await page.goto(`/game/${save}/competitors/${id}`);
+  // Zoho is over integration.max_staff: Integrate is off and says why (2026-11-05)
+  await expect(page.getByTestId('integrate-note')).toContainText('too big to integrate');
   for (let i = 0; i < 2 && !(await page.getByTestId('deal-status').count()); i += 1) {
-    await offer(page, 'integrate');
+    await offer(page, 'brand');
   }
   await expect(page.getByTestId('deal-status')).toContainText('Blocked');
   await page.goto(`/game/${save}/finance/deals`);
