@@ -1,7 +1,16 @@
-import { Alert, Button, Modal, NumberInput, SegmentedControl } from '@mantine/core';
+import { Alert, Button, Checkbox, Modal, NumberInput, SegmentedControl } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { useHoliday, useStartHoliday, useStopHoliday, type Holiday } from '../hooks/api';
+import {
+  useHoliday,
+  useScaleup,
+  useScaleupAction,
+  useStartHoliday,
+  useStopHoliday,
+  type Holiday,
+} from '../hooks/api';
+import { formatMoneyWhole } from '../lib/format';
+import { Term } from './Term';
 
 // Holiday (formulas.md 17.1): the dialog, and the strip under the top bar while it runs and
 // once it ends. Every number here comes from the API's holiday job.
@@ -34,6 +43,30 @@ export function HolidayDialog({
   const [stop, setStop] = useState<string>(holiday.default_stop);
   const start = useStartHoliday(saveId);
   const valid = Number.isInteger(months) && months >= 1 && months <= holiday.max_months;
+  // Executives' pitches (27.1, M13b): under the limit they go ahead while you are away.
+  const scaleup = useScaleup(saveId);
+  const policy = scaleup.data?.pitch_policy;
+  const setPolicy = useScaleupAction(saveId);
+  const [useDefault, setUseDefault] = useState<boolean | null>(null);
+  const [dollars, setDollars] = useState<number | null>(null);
+  const [stopBig, setStopBig] = useState<boolean | null>(null);
+  const isDefault = useDefault ?? policy?.auto_approve_cents === null;
+  const limitDollars = dollars ?? Math.round((policy?.limit_cents ?? 0) / 100);
+  const stopForBig = stopBig ?? policy?.stop_for_big ?? false;
+  const go = () => {
+    const begin = () =>
+      start.mutate(
+        { months, stop: stop as 'minor' | 'major' | 'critical' },
+        { onSuccess: onClose },
+      );
+    if (!policy) return begin();
+    const cents = isDefault ? null : Math.max(0, Math.round(limitDollars * 100));
+    if (cents === policy.auto_approve_cents && stopForBig === policy.stop_for_big) return begin();
+    setPolicy.mutate(
+      { action: 'pitch_policy', auto_approve_cents: cents, stop_for_big: stopForBig },
+      { onSuccess: begin },
+    );
+  };
   return (
     <Modal opened onClose={onClose} title="Go on holiday" centered>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -63,6 +96,39 @@ export function HolidayDialog({
           <span className="tst-muted">It always stops when </span>
           {alwaysStops(holiday).join('; ')}.
         </div>
+        {policy && (
+          <div
+            data-testid="holiday-pitches"
+            style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+          >
+            <div style={{ fontSize: 13 }}>
+              <Term term="exec.auto_approve">Executives&apos; pitches</Term> costing less than this
+              over 12 months go ahead while you are away; bigger ones wait.
+            </div>
+            <Checkbox
+              label={`5% of cash (now ${formatMoneyWhole(policy.default_cents)})`}
+              checked={isDefault}
+              onChange={(e) => setUseDefault(e.currentTarget.checked)}
+              data-testid="pitch-limit-default"
+            />
+            {!isDefault && (
+              <NumberInput
+                label="Auto-approve limit, $ (0: always ask)"
+                min={0}
+                value={limitDollars}
+                onChange={(v) => setDollars(typeof v === 'number' ? v : Number(v) || 0)}
+                data-testid="pitch-limit"
+              />
+            )}
+            <Checkbox
+              label="Stop the holiday for a pitch above the limit"
+              checked={stopForBig}
+              onChange={(e) => setStopBig(e.currentTarget.checked)}
+              data-testid="pitch-stop-big"
+            />
+          </div>
+        )}
+        {setPolicy.error && <Alert color="red">{setPolicy.error.message}</Alert>}
         {start.error && (
           <Alert color="red" title="Holiday did not start">
             {start.error.message}
@@ -74,13 +140,8 @@ export function HolidayDialog({
           </Button>
           <Button
             h={44}
-            disabled={!valid || start.isPending}
-            onClick={() =>
-              start.mutate(
-                { months, stop: stop as 'minor' | 'major' | 'critical' },
-                { onSuccess: onClose },
-              )
-            }
+            disabled={!valid || start.isPending || setPolicy.isPending}
+            onClick={go}
             data-testid="holiday-start"
           >
             Start holiday

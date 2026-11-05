@@ -7,6 +7,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -924,6 +925,23 @@ function LastYear({
                 }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
+              {(p.era_marks ?? [])
+                .filter((m) => months.some((x) => x.date_label === m.date_label))
+                .map((m) => (
+                  <ReferenceLine
+                    key={m.label}
+                    yAxisId="mrr"
+                    x={m.date_label}
+                    stroke="var(--tst-warn)"
+                    strokeDasharray="3 3"
+                    label={{
+                      value: m.label,
+                      fontSize: 10,
+                      fill: 'var(--tst-warn)',
+                      position: 'top',
+                    }}
+                  />
+                ))}
               <Line
                 yAxisId="mrr"
                 type="linear"
@@ -947,6 +965,14 @@ function LastYear({
             </LineChart>
           </ResponsiveContainer>
         </div>
+      )}
+      {(p.era_marks ?? []).length > 0 && (
+        <p className="tst-muted" style={{ margin: 0, fontSize: 12 }} data-testid="era-marks">
+          Eras:{' '}
+          {(p.era_marks ?? [])
+            .map((m) => `${m.label} (${m.date_label}${m.caused_by ? `, ${m.caused_by}` : ''})`)
+            .join(' · ')}
+        </p>
       )}
       {p.status === 'live' && (
         <>

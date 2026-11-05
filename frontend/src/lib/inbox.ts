@@ -77,6 +77,12 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   exec_report: { label: 'Delegate', group: 'company' },
   exec_decisions: { label: 'Delegate', group: 'company' },
   exec_proposal: { label: 'Delegate', group: 'company' },
+  // M13b: executives' pitches (27.1)
+  exec_pitch: { label: 'Delegate', group: 'company' },
+  pitch_went_ahead: { label: 'Delegate', group: 'company' },
+  // M13b (27.3): an era's arrival (critical) and its report at the window's end
+  era_arrived: { label: 'Critical', group: 'company' },
+  era_report: { label: 'Product', group: 'company' },
   // M13: the IPO, the public company and the CEO (25)
   banks_hired: { label: 'Finance', group: 'finance' },
   ipo_listed: { label: 'Finance', group: 'finance' },

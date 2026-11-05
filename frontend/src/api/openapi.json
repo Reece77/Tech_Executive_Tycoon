@@ -9656,6 +9656,180 @@
         }
       }
     },
+    "/api/saves/{save_id}/scaleup/pitches/{pitch_id}/{answer}": {
+      "post": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Answer Pitch",
+        "description": "Approve (the move runs at once, as the executive, with their energy), decline (their\nmorale dips), or `modified`: the founder made the move their own way (27.1, M13b).",
+        "operationId": "answerPitch",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "pitch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pitch Id"
+            }
+          },
+          {
+            "name": "answer",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Answer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/scaleup/pitch-policy": {
+      "post": {
+        "tags": [
+          "scaleup"
+        ],
+        "summary": "Set Pitch Policy",
+        "description": "The Holiday spend limit (null: 5% of cash; 0: always ask) and whether Holiday stops for\npitches above it (27.1, M13b). Free.",
+        "operationId": "setPitchPolicy",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PitchPolicyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/scaleup/seats/{seat}/remove": {
       "post": {
         "tags": [
@@ -13990,6 +14164,12 @@
                     "type": "integer"
                   },
                   "type": "array"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
                 }
               ]
             },
@@ -14021,12 +14201,29 @@
                     "type": "integer"
                   },
                   "type": "array"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
                 }
               ]
             },
             "type": "object",
             "title": "Guardrails",
-            "description": "headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct (CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents (COO), runway_months and repay_above_months (CFO)"
+            "description": "headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct (CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents (COO), runway_months and repay_above_months (CFO), headcount_cap, categories and protected_products (CPO, M13b)"
+          },
+          "choices": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/GuardChoiceOut"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Choices",
+            "description": "For each list guardrail, the values it may hold (M13b)"
           },
           "since_label": {
             "anyOf": [
@@ -15112,6 +15309,20 @@
             "title": "Sells Units",
             "description": "Sells units once per customer; needs manufacturing (M12b)",
             "default": false
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "Home market size a year (27.4)",
+            "default": 0
+          },
+          "region_sizes": {
+            "items": {
+              "$ref": "#/components/schemas/RegionSizeOut"
+            },
+            "type": "array",
+            "title": "Region Sizes",
+            "description": "Market size a year in each other region (27.4)"
           }
         },
         "type": "object",
@@ -15159,6 +15370,12 @@
             "type": "boolean",
             "title": "Counts Users",
             "description": "Customers are consumer users, not businesses"
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "Market size: addressable customers x reference price x 12 (27.4)",
+            "default": 0
           }
         },
         "type": "object",
@@ -15764,6 +15981,17 @@
             "type": "array",
             "title": "Active Effects",
             "description": "Event modifiers on this person's morale (M10b)"
+          },
+          "pitch_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PitchRecordOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "An executive's pitch record, once they have pitched (M13b)"
           },
           "learned": {
             "$ref": "#/components/schemas/LearnedOut"
@@ -17649,6 +17877,44 @@
         ],
         "title": "EnergyOut"
       },
+      "EraMarkOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "The era"
+          },
+          "caused_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caused By",
+            "description": "'You', a company, or null on schedule"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "label",
+          "caused_by"
+        ],
+        "title": "EraMarkOut",
+        "description": "An era's arrival, marked on a chart (27.3, M13b)."
+      },
       "EraOut": {
         "properties": {
           "key": {
@@ -17814,6 +18080,21 @@
             ],
             "title": "Proposal Ids",
             "description": "events_open: executives' proposals to answer (M10c)"
+          },
+          "pitch_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pitch Ids",
+            "description": "events_open: executives' pitches to answer (M13b)"
           },
           "retryable": {
             "anyOf": [
@@ -18056,6 +18337,14 @@
             "type": "array",
             "title": "Blocking Proposal Ids",
             "description": "Executives' proposals waiting for an answer: each blocks Continue (24.1)"
+          },
+          "blocking_pitch_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Blocking Pitch Ids",
+            "description": "Executives' pitches waiting for an answer: each blocks Continue (27.1)"
           },
           "open": {
             "items": {
@@ -19433,6 +19722,26 @@
           "fraction"
         ],
         "title": "GrantOut"
+      },
+      "GuardChoiceOut": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "The id or key as a string"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "label"
+        ],
+        "title": "GuardChoiceOut",
+        "description": "One value a list guardrail may hold (M13b): a unit, a product or a category."
       },
       "GuidanceIn": {
         "properties": {
@@ -22585,6 +22894,30 @@
         "title": "ManufacturingOut",
         "description": "A device, server or chip product's bill of materials and manufacturing panel."
       },
+      "MarketMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers",
+            "description": "Customers of every product in the category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "customers"
+        ],
+        "title": "MarketMonthOut"
+      },
       "MarketOut": {
         "properties": {
           "category": {
@@ -22637,6 +22970,28 @@
             "type": "array",
             "title": "Regions",
             "description": "Region picker"
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "The category's size a year (27.4)",
+            "default": 0
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/MarketMonthOut"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "Customers in the category by month, home region"
+          },
+          "era_marks": {
+            "items": {
+              "$ref": "#/components/schemas/EraMarkOut"
+            },
+            "type": "array",
+            "title": "Era Marks",
+            "description": "Arrived eras of the category (27.3)"
           }
         },
         "type": "object",
@@ -22783,6 +23138,12 @@
             "type": "boolean",
             "title": "Player Sells",
             "description": "The player has a product selling here"
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "Market size a year (27.4)",
+            "default": 0
           },
           "products": {
             "items": {
@@ -24868,6 +25229,17 @@
             "type": "array",
             "title": "Active Effects",
             "description": "Event modifiers on this person's morale (M10b)"
+          },
+          "pitch_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PitchRecordOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "An executive's pitch record, once they have pitched (M13b)"
           }
         },
         "type": "object",
@@ -25160,6 +25532,266 @@
           "interests"
         ],
         "title": "PersonSummaryOut"
+      },
+      "PitchOut": {
+        "properties": {
+          "pitch_id": {
+            "type": "integer",
+            "title": "Pitch Id"
+          },
+          "seat": {
+            "type": "string",
+            "title": "Seat",
+            "description": "cpo | cro | cto | coo | cmo | cfo | ceo"
+          },
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "new_product | sunset | region | research | data_centre | office | plant | campaign | buyback"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents",
+            "description": "Its cost over 12 months: the auto-approve test"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "monthly_cents": {
+            "type": "integer",
+            "title": "Monthly Cents"
+          },
+          "hires": {
+            "type": "integer",
+            "title": "Hires"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "description": "cents_month | cents | points | people | customers"
+          },
+          "low": {
+            "type": "integer",
+            "title": "Low",
+            "description": "The low case at 24 months, in `unit`"
+          },
+          "central": {
+            "type": "integer",
+            "title": "Central",
+            "description": "The central case: a hit reaches it",
+            "default": 0
+          },
+          "high": {
+            "type": "integer",
+            "title": "High"
+          },
+          "case_label": {
+            "type": "string",
+            "title": "Case Label",
+            "description": "The low and high case in words"
+          },
+          "risk": {
+            "type": "string",
+            "title": "Risk"
+          },
+          "params": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Params",
+            "description": "What Modify prefills"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "pending | approved | auto_approved | declined | modified | lapsed"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome",
+            "description": "hit | miss | too_early once scored"
+          },
+          "measured_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Measured Label",
+            "description": "What it reached, in words, once scored"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pitch_id",
+          "seat",
+          "person_id",
+          "name",
+          "date_label",
+          "kind",
+          "title",
+          "why",
+          "cost_cents",
+          "capex_cents",
+          "monthly_cents",
+          "hires",
+          "unit",
+          "low",
+          "high",
+          "case_label",
+          "risk",
+          "params",
+          "status",
+          "outcome",
+          "measured_label"
+        ],
+        "title": "PitchOut",
+        "description": "A big move an executive proposes (27.1, M13b), with the numbers they pitch it on:\nestimates from what the company sees. Never the pitch probability, the quality draw, the\nexecutive's true ambition, skills or score, or which candidate was best (27.6)."
+      },
+      "PitchPolicyIn": {
+        "properties": {
+          "auto_approve_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Approve Cents",
+            "description": "Null: 5% of cash; 0: always ask"
+          },
+          "stop_for_big": {
+            "type": "boolean",
+            "title": "Stop For Big",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "PitchPolicyIn"
+      },
+      "PitchPolicyOut": {
+        "properties": {
+          "auto_approve_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Approve Cents",
+            "description": "Null: the default share of cash"
+          },
+          "default_cents": {
+            "type": "integer",
+            "title": "Default Cents",
+            "description": "What the default is now (5% of cash)"
+          },
+          "limit_cents": {
+            "type": "integer",
+            "title": "Limit Cents",
+            "description": "The limit in force now"
+          },
+          "stop_for_big": {
+            "type": "boolean",
+            "title": "Stop For Big"
+          }
+        },
+        "type": "object",
+        "required": [
+          "auto_approve_cents",
+          "default_cents",
+          "limit_cents",
+          "stop_for_big"
+        ],
+        "title": "PitchPolicyOut",
+        "description": "The player's pitch settings (27.1): the Holiday spend limit and the big-pitch stop."
+      },
+      "PitchRecordOut": {
+        "properties": {
+          "pitches": {
+            "type": "integer",
+            "title": "Pitches",
+            "description": "Pitches made"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "hits": {
+            "type": "integer",
+            "title": "Hits",
+            "description": "At or above their central case after 24 months"
+          },
+          "misses": {
+            "type": "integer",
+            "title": "Misses"
+          },
+          "too_early": {
+            "type": "integer",
+            "title": "Too Early",
+            "description": "What they created was not yet operating"
+          },
+          "tracking": {
+            "type": "integer",
+            "title": "Tracking",
+            "description": "Approved and still within their 24 months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pitches",
+          "approved",
+          "hits",
+          "misses",
+          "too_early",
+          "tracking"
+        ],
+        "title": "PitchRecordOut",
+        "description": "An executive's pitch record (27.1, M13b): scored pitches by outcome."
       },
       "PlanActivityOut": {
         "properties": {
@@ -26102,6 +26734,14 @@
             "type": "array",
             "title": "Monthly",
             "description": "Last 12 months summed over segments, oldest first, home region"
+          },
+          "era_marks": {
+            "items": {
+              "$ref": "#/components/schemas/EraMarkOut"
+            },
+            "type": "array",
+            "title": "Era Marks",
+            "description": "Eras of its category that arrived in that time (27.3)"
           }
         },
         "type": "object",
@@ -27241,6 +27881,30 @@
           "mrr_cents"
         ],
         "title": "RegionSegmentOut"
+      },
+      "RegionSizeOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "size_cents_year": {
+            "type": "integer",
+            "title": "Size Cents Year",
+            "description": "Customers x reference price x 12 (27.4)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "size_cents_year"
+        ],
+        "title": "RegionSizeOut"
       },
       "RegionalPriceIn": {
         "properties": {
@@ -28828,6 +29492,24 @@
             "type": "array",
             "title": "Reports",
             "description": "Each seat's latest quarterly report (M10c, 24.3)"
+          },
+          "pitches": {
+            "items": {
+              "$ref": "#/components/schemas/PitchOut"
+            },
+            "type": "array",
+            "title": "Pitches",
+            "description": "Pending first, then the latest (M13b, 27.1)"
+          },
+          "pitch_policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PitchPolicyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -29237,7 +29919,18 @@
                 "type": "null"
               }
             ],
-            "description": "Authority over the seat's function (M10c, 24.1); null for the CPO"
+            "description": "Authority over the seat's function (M10c, 24.1; the CPO's from M13b)"
+          },
+          "record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PitchRecordOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The holder's pitch record (27.1, M13b)"
           }
         },
         "type": "object",

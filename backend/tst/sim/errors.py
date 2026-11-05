@@ -215,11 +215,16 @@ class EventsOpenError(SimError):
     code = "events_open"
 
     def __init__(
-        self, message: str, event_ids: tuple[int, ...], proposal_ids: tuple[int, ...] = ()
+        self,
+        message: str,
+        event_ids: tuple[int, ...],
+        proposal_ids: tuple[int, ...] = (),
+        pitch_ids: tuple[int, ...] = (),
     ) -> None:
         super().__init__(message)
         self.event_ids = event_ids
         self.proposal_ids = proposal_ids  # M10c (24.1): executives' proposals block too
+        self.pitch_ids = pitch_ids  # M13b (27.1): and their pitches
 
 
 class EventError(SimError):

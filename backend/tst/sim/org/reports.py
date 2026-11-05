@@ -1,10 +1,13 @@
-"""Quarterly reports from seat holders (docs/formulas.md 24.3, M10c).
+"""Quarterly reports from seat holders (docs/formulas.md 24.3, M10c; rebuilt in M13b, 27.2).
 
 At the end of each quarter (every `exec_authority.report_months` months), each filled seat's
-holder reports: their function's KPIs, what they did with their authority this quarter, and one
-or two concerns. Only what the company can see goes in (24.4): headcounts, customers, revenue,
-spend, cash, coverage, and the flags the product screens already show. The template text is the
-report; the LLM may rewrite it later from the same lines (write_pending), never adding facts.
+holder reports, in four parts: what I did (the quarter's decisions, grouped by product, with
+where the product stands now), what I'm pitching (or why not) and how earlier pitches turned
+out, what worries me (concerns tied to a number), and the numbers (the function's KPIs against
+last quarter and the target). The wording follows the executive's voice (exec_voices.yaml),
+chosen from their displayed personality. Only what the company can see goes in (24.4). The CEO
+writes a company letter to the Chair instead (`ceo_letter`). The template text is the report;
+the LLM may rewrite it later from the same lines (write_pending), never adding facts.
 """
 
 from __future__ import annotations
@@ -16,8 +19,10 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents, format_money
 from tst.sim.org.divisions import support_pools
 from tst.sim.org.executives import seats_in_play
-from tst.sim.org.models import SEATS
+from tst.sim.org.models import SEATS, ExecDecision
 from tst.sim.org.rules import org_view
+from tst.sim.org.voice_data import Voice
+from tst.sim.org.voices import voice_for
 from tst.sim.state import GameState
 
 EXEC_REPORT = "exec_report"
@@ -72,7 +77,11 @@ def _kpis_and_concerns(
                 f"{_n(builders, 'builder')} on {_n(len(products), 'product')} ({len(live)} live, "
                 f"{len(products) - len(live)} in development)"
             )
-            concerns += [f"{p.name} has nobody working on it" for p in products if p.rotting]
+            concerns += [
+                f"{p.name} has nobody working on it (quality {p.quality:.0f})"
+                for p in products
+                if p.rotting
+            ]
         case "cro":
             sellers = _function_count(state, company, SELLER, data)
             kpis.append(f"{_n(sellers, 'seller')}; {_n(customers, 'customer')}")
@@ -86,7 +95,9 @@ def _kpis_and_concerns(
             spend = sum(p.marketing_budget_cents for p in live)
             kpis.append(f"marketing {format_money(spend)} a month; {_n(customers, 'customer')}")
             if live and spend == 0:
-                concerns.append("we spend nothing on marketing")
+                concerns.append(
+                    f"we spend nothing on marketing for {_n(len(live), 'live product')}"
+                )
         case "coo":
             pools = support_pools(state, org_view(state, company), balance, data)
             central = pools.get(None)
@@ -95,7 +106,8 @@ def _kpis_and_concerns(
             if central is not None:
                 kpis.append(f"support {central.support} of {central.need} needed")
             concerns += [
-                "support is short" + ("" if key is None else " in a division")
+                f"support is short{'' if key is None else ' in a division'}: "
+                f"{pool.support} of {pool.need} needed"
                 for key, pool in pools.items()
                 if pool.need > 0 and pool.support < pool.need
             ]
@@ -103,21 +115,80 @@ def _kpis_and_concerns(
             runway = projected_runway(state, company, cash, balance, data)
             debt = sum(loan.balance_cents for loan in state.company_loans(company) if loan.active)
             kpis.append(f"cash {format_money(cash)}; debt {format_money(debt)}")
-            kpis.append("profitable" if runway is None else f"runway {runway} months")
             limit = balance.exec_authority.defaults["cfo"]["runway_months"]
             a = state.authority(company, "cfo")
             if a is not None:
                 limit = a.number("runway_months")
+            kpis.append(
+                "profitable"
+                if runway is None
+                else f"runway {_n(runway, 'month')} against a target of {float(limit):g}"
+            )
             if runway is not None and runway < float(limit):
                 concerns.append(f"runway is under {limit} months")
     return kpis, concerns
 
 
+def _did(state: GameState, decisions: list[ExecDecision]) -> str:
+    """The quarter's decisions grouped by the product each names, newest first, each group
+    with where that product stands now (27.2)."""
+    products = [p for p in state.company_products(state.player.id) if p.status != "retired"]
+    groups: dict[str, list[str]] = {}
+    for d in sorted(decisions, key=lambda d: (-d.turn, -d.id))[: DONE_LISTED * 2]:
+        named = next((p for p in products if p.name in d.text), None)
+        groups.setdefault(named.name if named else "", []).append(d.text)
+    parts = []
+    for name, texts in groups.items():
+        part = "; ".join(texts[:DONE_LISTED])
+        product = next((p for p in products if p.name == name), None)
+        if product is not None:
+            customers = round(
+                sum(s.customers for s in state.segments_of(product.id))
+                + sum(s.customers for s in state.regional_segments_of(product.id))
+            )
+            now = f"quality now {product.quality:.0f}, {_n(customers, 'customer')}"
+            part += f" ({product.name}'s {now})"
+        parts.append(part)
+    return "; ".join(parts)
+
+
+def _pitching(state: GameState, holder: int, voice: Voice, since: int) -> str:
+    """What I'm pitching this quarter, or why not, and how earlier pitches turned out (27.2)."""
+    from tst.sim.org.pitches import case_text
+
+    mine = [p for p in state.pitches if p.person_id == holder]
+    now = [p for p in mine if p.turn > since]
+    if now:
+        p = max(now, key=lambda p: p.id)
+        line = voice.pitch.format(
+            pitch=f"{p.title}, {case_text(p.unit, p.low)} to {case_text(p.unit, p.high)} "
+            f"in 24 months ({p.status.replace('_', ' ')})."
+        )
+    else:
+        line = voice.no_pitch
+    scored = [p for p in mine if p.outcome is not None]
+    if scored:
+        hits = sum(1 for p in scored if p.outcome == "hit")
+        misses = sum(1 for p in scored if p.outcome == "miss")
+        early = len(scored) - hits - misses
+        line += (
+            f" Earlier pitches: {hits} hit, {misses} missed"
+            + (f", {early} too early to tell" if early else "")
+            + "."
+        )
+    tracking = sum(1 for p in mine if p.approved and p.outcome is None and p.turn <= since)
+    if tracking:
+        line += f" {_n(tracking, 'approved pitch')} still being tracked."
+    return line
+
+
 def report_text(
     state: GameState, seat: str, holder: int, cash: Cents, balance: Balance, data: GameData
 ) -> str:
-    """One holder's quarterly report (24.3): KPIs, what they did, one or two concerns."""
+    """One holder's quarterly report (24.3, 27.2) in their voice: what I did, what I'm
+    pitching, what worries me, the numbers."""
     company = state.player.id
+    voice = voice_for(state, company, holder, data.voices) if data.voices else None
     kpis, concerns = _kpis_and_concerns(state, seat, cash, balance, data)
     since = state.turn - balance.exec_authority.report_months
     done = [
@@ -126,24 +197,77 @@ def report_text(
         if d.company_id == company and d.person_id == holder and d.seat == seat and d.turn > since
     ]
     a = state.authority(company, seat)
+    if voice is None:  # no voices loaded: M10c's plain wording
+        return _plain(state, kpis, concerns, done, a is not None and a.enabled)
+    quarter = quarter_label(state.turn)
+    parts = [voice.opener.format(quarter=quarter)]
     if a is None or not a.enabled:
+        parts.append("I had no authority this quarter, so I advised and you decided.")
+    elif not done:
+        parts.append(voice.nothing_done)
+    else:
+        slips = sum(1 for d in done if d.mistake)
+        parts.append(voice.did.format(did=_did(state, done)))
+        if slips:
+            parts.append(f"In hindsight {slips} of those could have been better.")
+    if a is not None and a.enabled:
+        parts.append(_pitching(state, holder, voice, since))
+    parts.append(
+        voice.worry.format(worry="; ".join(concerns[:CONCERNS])) if concerns else voice.calm
+    )
+    if kpis:
+        parts.append(voice.numbers.format(numbers="; ".join(kpis)))
+    return " ".join(parts)
+
+
+def _plain(
+    state: GameState, kpis: list[str], concerns: list[str], done: list[ExecDecision], on: bool
+) -> str:
+    if not on:
         did = "I had no authority this quarter, so I advised and you decided."
     elif not done:
         did = "With my authority I saw nothing that needed a change."
     else:
         newest = sorted(done, key=lambda d: (-d.turn, -d.id))[:DONE_LISTED]
-        slips = sum(1 for d in done if d.mistake)
-        did = (
-            f"I made {_n(len(done), 'decision')}: "
-            + "; ".join(d.text for d in newest)
-            + "."
-            + (f" In hindsight {slips} of them could have been better." if slips else "")
-        )
+        did = f"I made {_n(len(done), 'decision')}: " + "; ".join(d.text for d in newest) + "."
     worry = (
         "Concerns: " + "; ".join(concerns[:CONCERNS]) + "." if concerns else "No pressing concerns."
     )
     head = f"{quarter_label(state.turn)}: " + "; ".join(kpis) + "." if kpis else ""
     return " ".join(x for x in (head, did, worry) if x)
+
+
+def ceo_letter(
+    state: GameState, ceo_id: int, scopes: tuple[str, ...], cash: Cents, b: Balance, data: GameData
+) -> str:
+    """The CEO's quarterly letter to the Chair (27.2): every function's numbers, what the CEO
+    did, what they are pitching, and the company's worries."""
+    company = state.player.id
+    voice = voice_for(state, company, ceo_id, data.voices) if data.voices else None
+    since = state.turn - b.exec_authority.report_months
+    lines: list[str] = []
+    worries: list[str] = []
+    for seat in ("cro", "cto", "cmo", "coo", "cfo"):
+        kpis, concerns = _kpis_and_concerns(state, seat, cash, b, data)
+        lines += kpis[:1]
+        worries += concerns[:1]
+    done = [d for d in state.ceo_decisions if d.person_id == ceo_id and d.turn > since]
+    did = "; ".join(d.text for d in sorted(done, key=lambda d: (-d.turn, -d.id))[:DONE_LISTED])
+    quarter = quarter_label(state.turn)
+    parts = [f"Dear Chair, {quarter}."]
+    parts.append(
+        f"I ran {', '.join(s.upper() if s != 'products' else 'products' for s in scopes)}."
+    )
+    parts.append(f"What I did: {did}." if did else "I made no changes this quarter.")
+    if voice is not None:
+        parts.append(_pitching(state, ceo_id, voice, since))
+    parts.append(
+        "What worries me: " + "; ".join(worries[:CONCERNS]) + "."
+        if worries
+        else "Nothing worries me."
+    )
+    parts.append("Across the company: " + "; ".join(lines) + ".")
+    return " ".join(parts)
 
 
 def quarterly_reports(

@@ -2248,7 +2248,7 @@ Reece's playtest 2 (2026-11-03): executives and the CEO kept the company profita
 ### 27.1 Pitches (big moves an executive proposes)
 
 - **Who pitches.** A seat holder with authority (§24.1), and the CEO (§25.6) for any function. An executive without authority never pitches.
-- **When.** Phase 2, at most one open pitch per executive and one new pitch per executive per quarter. Each quarter an executive pitches with probability `clamp(pitch.base + pitch.per_ambition × (ambition − 10), 0.15, 0.9)` (base 0.45, 0.04 per point; true ambition), one uniform on stream `pitch` (id 36), key `(person_id,)`.
+- **When.** Phase 2, at most one open pitch per executive and one new pitch per executive per quarter. Each quarter an executive pitches with probability `clamp(pitch.base + pitch.per_ambition × (ambition − 10), 0.05, 0.9)` (base 0.15, 0.01 per point, tuned for 27.5 target 7; first written as 0.45, 0.04 and a 0.15 floor; true ambition), one uniform on stream `pitch` (id 36), key `(person_id,)`.
 - **What they pitch.** The best-scoring candidate of their function, scored from **displayed** knowledge only (ADR-0015):
 
 | Seat | Pitch kinds | Candidate score (higher is better) |
@@ -2278,7 +2278,7 @@ It is written by the LLM within §16's budget from engine-supplied facts only, i
 
 ### 27.3 Eras the player can feel
 
-- **Stronger first-mover window:** `rnd.first_mover_months` 12 → 24, `first_mover_cap` 5 → 8, `first_mover_brand` 10 → 15, and a new **appeal bonus** `rnd.first_mover_appeal` (×1.15) on the first mover's products in the era's categories for the window. All tunable for 27.5 target 5.
+- **Stronger first-mover window:** `rnd.first_mover_months` 12 → 24, `first_mover_cap` 5 → 8, `first_mover_brand` 10 → 15, and a new **appeal bonus** `rnd.first_mover_appeal` (×1.15) on the first mover's products in the era's categories for the window. All tunable for 27.5 target 5, which tuned them to 24 months, cap +5, brand +6 and appeal ×1 (no bonus; the mechanism stays). The arrival item names the appeal only when it is above ×1.
 - **On arrival:** a critical inbox item names the era, who caused it and how many months early, and lists the player's affected products with their new cap, brand target and appeal.
 - **At the window's end:** an **era report**: the products' customers and MRR against their pre-era 12-month trend, the category's demand against its pre-era path, and what the window added.
 - **Charts:** the Market demand chart and the Product trend chart mark era arrivals (a labelled vertical line).
@@ -2292,10 +2292,11 @@ It is written by the LLM within §16's budget from engine-supplied facts only, i
 
 1. **They make big moves.** A stage-3 steady company with all seats given authority, auto-approve at 5% of cash and Holiday for 36 months: at least one new product launched **and** one new region entered on at least 7 of 10 seeds.
 2. **And it pays.** That run's median ARR at month 36 is at least 10% above the same run with pitches off (M10c's delegated baseline).
-3. **Good executives pitch better.** Seat holders at score 15 against score 8: hit rate at least 15 points higher.
+3. **Good executives pitch better.** Seat holders at score 15 against score 8: hit rate at least **10** points higher (product manager, 2026-11-04). Every pitch's hit is scored against its **central case** from displayed estimates, the same for every executive (not the executive's own low case). The approved move's execution follows the executing executive's **true** seat score through the existing seat factor (18.3): a new product's team pace (its builders' output) and a region launch's sales ramp (regional awareness and capacity). Calibration: `pitch.region_capture` scales the CRO's central case to what launches reach. A new product's central case counts **only the months after its expected launch** at the displayed development pace (product manager, 2026-11-04): skill-10 builders (output 1 each, Q_cap 50) start after `pitch.team_ready_months`, from start quality and no features, until quality and the feature score reach the launch bars, plus the CPO's launch month. The case is × (24 − launch months) / 24, and there is no pitch if launch falls outside the window. The segment share behind the case, `pitch.new_product_share`, is calibrated so the central case sits near a score-12 CPO's median 24-month outcome (0.04; 2026-11-05). The CPO pitches only self-serve segments, with the team size (from `pitch.team_builders` up to its headcount cap) whose case best covers its pay; a campaign's central case adds the category's organic growth; an office is measured by the staff who live in its city, above the count at approval.
 4. **The inbox stays calm:** at most 8 pitches a year per company on median.
-5. **Eras pay the first mover.** A company that pulls an era forward has 15–35% more customers in the era's categories at the end of the window than the same seed with the era on schedule (7 of 10 seeds).
+5. **The first-mover window pays.** Measured alone (product manager, 2026-11-04): the same seed with the era forced to the same early month, with and without the window. The window adds **25–60%** customers in the era's categories at the window's end (7 of the seeds where the era arrives early); `rnd.first_mover_*` is tuned into it. The full early-era effect (the era on schedule against pulled forward) is printed as information only.
 6. **Nothing else moves.** Every earlier guard as before; the T2 xfail stays (M15). A company that gives no authority plays exactly as before (golden snapshots unchanged by sub-tasks 1–2).
+7. **Pitches don't outplay the founder by far** (product manager, 2026-11-04). Target 1's run's median ARR at month 36 is at most **1.2×** the founder's **steady + regions** script on the same seeds: M10c's steady script (seats filled at score 15, no authority), plus a launch of its live product in the best region by the CRO's candidate score whenever the CRO's gates are met, at most one launch per 24 months (in the balance scripts only; no game code). If it is higher, `pitch.*` is tuned down; it was tuned to `pitch.base` 0.15, `per_ambition` 0.01, `chance_clamp` [0.05, 0.9].
 
 ### 27.6 What the API may show
 

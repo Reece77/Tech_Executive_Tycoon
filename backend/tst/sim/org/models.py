@@ -95,8 +95,24 @@ class HiringPlan:
 
 # --- Executives with authority (formulas.md 24, M10c) -----------------------------------------
 
-type GuardValue = int | float | tuple[int, ...]
+type GuardValue = int | float | tuple[int, ...] | tuple[str, ...]
 type ProposalKind = Literal["round", "loan", "lease"]
+# M13b (27.1): big moves an executive pitches
+type PitchKind = Literal[
+    "new_product",
+    "sunset",
+    "region",
+    "research",
+    "data_centre",
+    "office",
+    "plant",
+    "campaign",
+    "buyback",
+    "dividend",
+]
+type PitchStatus = Literal["pending", "approved", "auto_approved", "declined", "modified", "lapsed"]
+type PitchOutcome = Literal["hit", "miss", "too_early"]
+type CaseUnit = Literal["cents_month", "points", "people", "customers", "cents"]
 type ProposalStatus = Literal["pending", "approved", "declined", "lapsed"]
 
 
@@ -152,3 +168,55 @@ class Proposal:
 
     def param(self, key: str) -> int | str:
         return dict(self.params)[key]
+
+
+@dataclass(frozen=True, slots=True)
+class Pitch:
+    """A big move an executive proposes (27.1, M13b): what, why, the cost, a low and high case
+    at 24 months (in `unit`) from displayed estimates, the risk; then the founder's answer and,
+    for an approved pitch, how it turned out against its low case."""
+
+    id: int
+    company_id: int
+    seat: str  # the executive's seat, or "ceo"
+    person_id: int
+    turn: int
+    kind: PitchKind
+    params: tuple[tuple[str, int | str], ...]
+    title: str  # what, in a few words
+    why: str  # two or three driver numbers
+    cost_cents: int  # what it costs over pitch.cost_months (the auto-approve test)
+    capex_cents: int
+    monthly_cents: int
+    hires: int
+    unit: CaseUnit
+    low: int
+    high: int
+    risk: str
+    # the central case from displayed estimates, the same for every executive: a pitch is a
+    # hit when it reaches it (27.1; product manager's ruling 2026-11-04)
+    central: int = 0
+    status: PitchStatus = "pending"
+    resolved_turn: int | None = None
+    target_id: int | None = None  # what approving created: a product, unit, facility, office
+    baseline: int = 0  # the tracked measure when approved, in `unit`
+    outcome: PitchOutcome | None = None
+    outcome_turn: int | None = None
+    measured: int | None = None  # the tracked measure at the outcome, in `unit`
+
+    def param(self, key: str) -> int | str:
+        return dict(self.params)[key]
+
+    @property
+    def approved(self) -> bool:
+        return self.status in ("approved", "auto_approved")
+
+
+@dataclass(frozen=True, slots=True)
+class PitchPolicy:
+    """The player's pitch settings for a company (27.1): the Holiday spend limit (None = the
+    default share of cash, 0 = always ask) and whether a Holiday stops for big pitches."""
+
+    company_id: int
+    auto_approve_cents: int | None = None
+    stop_for_big: bool = False

@@ -148,12 +148,26 @@ class PersonSummaryOut(BaseModel):
     )
 
 
+class PitchRecordOut(BaseModel):
+    """An executive's pitch record (27.1, M13b): scored pitches by outcome."""
+
+    pitches: int = Field(description="Pitches made")
+    approved: int
+    hits: int = Field(description="At or above their central case after 24 months")
+    misses: int
+    too_early: int = Field(description="What they created was not yet operating")
+    tracking: int = Field(description="Approved and still within their 24 months")
+
+
 class PersonProfileOut(PersonSummaryOut):
     work_style: str | None = Field(description="Null until an interview or network intro")
     work_style_matches_role: bool | None = Field(description="Null while work style is unknown")
     morale_history: list[MoralePointOut] = Field(description="Last 12 months, oldest first")
     active_effects: list[ActiveEffectOut] = Field(
         description="Event modifiers on this person's morale (M10b)"
+    )
+    pitch_record: PitchRecordOut | None = Field(
+        default=None, description="An executive's pitch record, once they have pitched (M13b)"
     )
 
 

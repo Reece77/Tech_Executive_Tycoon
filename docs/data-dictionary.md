@@ -1398,3 +1398,63 @@ One decision a CEO took (25.6). The state holds the last `ceo.memory_months` (12
 | `mistake` | BOOLEAN | no | A plausible but worse option. |
 | `undo` | JSON | no | `[[key, value], ...]`: the action kind and fields that reverse it; `[]` when it cannot be overridden. |
 | `overridden_turn` | INTEGER | yes | When the Chair overrode it. |
+
+## Executives' pitches and era windows (migration `0032_pitches`, M13b)
+
+Existing saves start with no rows; without a `pitch_policy` row the Holiday spend limit is the default, 5% of cash.
+
+### exec_pitch
+
+A big move an executive proposes (formulas.md 27.1). Every pitch stays: executives' records count them all.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The company. |
+| `seat` | VARCHAR(8) | no | The executive's seat (`cpo`, `cro`, `cto`, `coo`, `cmo`, `cfo`) or `ceo`. |
+| `person_id` | INTEGER | no | The executive. |
+| `turn` | INTEGER | no | The month it was pitched. |
+| `kind` | VARCHAR(16) | no | `new_product`, `sunset`, `region`, `research`, `data_centre`, `office`, `plant`, `campaign` or `buyback`. |
+| `params` | JSON | no | What approving runs: a category and segment, a product and region, a domain, a facility kind and size, a city, an amount. |
+| `title` | TEXT | no | What, in a few words. |
+| `why` | TEXT | no | Two or three driver numbers, from what the company can see. |
+| `cost_cents` | BIGINT | no | Its cost over `pitch.cost_months` (12): the auto-approve test. |
+| `capex_cents` | BIGINT | no | Up-front cost. |
+| `monthly_cents` | BIGINT | no | Monthly cost. |
+| `hires` | INTEGER | no | People it hires. |
+| `unit` | VARCHAR(16) | no | The case's unit: `cents_month`, `cents`, `points`, `people` or `customers`. |
+| `low` | BIGINT | no | The low case at 24 months, in `unit`. |
+| `high` | BIGINT | no | The high case. |
+| `risk` | TEXT | no | The risk, in words. |
+| `central` | BIGINT | no | The central case from displayed estimates: a hit reaches it, the same yardstick for every executive. |
+| `status` | VARCHAR(16) | no | `pending`, `approved`, `auto_approved` (on Holiday, under the limit), `declined`, `modified` or `lapsed` (still pending at the executive's next quarterly draw). |
+| `resolved_turn` | INTEGER | yes | When it was answered. |
+| `target_id` | INTEGER | yes | What approving created: a product, unit, facility or office. |
+| `baseline` | BIGINT | no | The tracked measure when approved, in `unit`. |
+| `outcome` | VARCHAR(16) | yes | `hit` (at or above `central`), `miss` or `too_early`, `pitch.record_months` after approval. |
+| `outcome_turn` | INTEGER | yes | When it was scored. |
+| `measured` | BIGINT | yes | The tracked measure when scored, in `unit`. |
+
+### pitch_policy
+
+The player's pitch settings per company (27.1).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key. |
+| `auto_approve_cents` | BIGINT | yes | The Holiday spend limit; NULL = `pitch.auto_approve_cash_bp` of cash (5%); 0 = always ask. |
+| `stop_for_big` | BOOLEAN | no | A Holiday stops for a pitch at or above the limit. |
+
+### era_window
+
+A player first mover's era window and the baseline its era report compares against (27.3).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `era_key` | VARCHAR(32) | no | Primary key, with `company_id`: `eras.yaml` era key. |
+| `company_id` | INTEGER FK company | no | The first mover. |
+| `start_turn` | INTEGER | no | The era's arrival. |
+| `products` | JSON | no | `[product id, customers, MRR cents]` of each affected product at arrival. |
+| `trend` | FLOAT | no | The company's monthly MRR growth over the 12 months before, as a fraction. |
+| `demand` | JSON | no | `[category, addressable customers]` at arrival, for each of the era's categories. |
+| `reported` | BOOLEAN | no | The era report was sent at the window's end. |

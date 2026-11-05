@@ -22,6 +22,7 @@ from tst.db.models import InboxEventLinkRow, InboxItemRow
 from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
+from tst.sim.data_models import Balance
 from tst.sim.errors import CriticalEventOpenError, GameOverError, SimError
 from tst.sim.events.effects import blocking_events
 from tst.sim.finance.statements import projected_runway
@@ -32,7 +33,7 @@ from tst.sim.turn import TurnResult
 log = logging.getLogger(__name__)
 
 type StopLevel = Literal["minor", "major", "critical"]
-type StopReason = Literal["game_over", "event", "runway", "offer", "months", "stopped"]
+type StopReason = Literal["game_over", "event", "pitch", "runway", "offer", "months", "stopped"]
 
 STOP_LEVELS: tuple[StopLevel, ...] = ("minor", "major", "critical")  # rank: the index
 SUMMARY_TEMPLATE = "holiday_summary"
@@ -52,6 +53,7 @@ ROUND_TEMPLATES = frozenset({"round_closed", "safe_filled", "bridge_funded"})
 REASON_TEXT: dict[StopReason, str] = {
     "game_over": "the game is over",
     "event": "an event needs your answer",
+    "pitch": "an executive pitched a move above your auto-approve limit",
     "runway": "runway is getting short",
     "offer": "investors made an offer",
     "months": "the months you chose have passed",
@@ -169,11 +171,26 @@ def run_holiday(
         _, end = _vitals(path, data)
         if on_month is not None:
             on_month(done, end.turn)
-        reason = _reason(result, end, stop, limit, warned, done, months, should_stop())
+        reason = _reason(
+            result, end, stop, limit, warned, done, months, should_stop(), data.balance
+        )
         if end.runway_months is not None and end.runway_months < limit:
             warned = True  # only the first fall below the limit stops a holiday
     item_id = write_summary(path, data, done, reason, start, end)
     return HolidayResult(done, reason, start, end, item_id)
+
+
+def big_pitch_waiting(state: GameState, cash: Cents, balance: Balance) -> bool:
+    """A pitch above the auto-approve limit waits and the player ticked "stop for big
+    pitches" (27.1); below the limit pitches go ahead, and without the tick they wait."""
+    from tst.sim.org.formulas import auto_approve_limit
+
+    player = state.player.id
+    policy = state.pitch_policy(player)
+    if not policy.stop_for_big:
+        return False
+    limit = auto_approve_limit(cash, policy.auto_approve_cents, balance.pitch)
+    return any(p.cost_cents >= limit for p in state.pending_pitches(player))
 
 
 def _reason(
@@ -185,6 +202,7 @@ def _reason(
     done: int,
     months: int,
     pressed: bool,
+    balance: Balance | None = None,
 ) -> StopReason | None:
     """The first stop reason after a month, in the order of 17.1 (None: keep going)."""
     state = result.new_state
@@ -200,6 +218,8 @@ def _reason(
     major = STOP_LEVELS.index("major")
     if rank <= major and state.pending_proposals(player):  # a proposal is major (24.1)
         return "event"
+    if balance is not None and big_pitch_waiting(state, end.cash_cents, balance):  # M13b
+        return "pitch"
     runway = end.runway_months
     if runway is not None and (runway < RUNWAY_FLOOR_MONTHS or (runway < limit and not warned)):
         return "runway"

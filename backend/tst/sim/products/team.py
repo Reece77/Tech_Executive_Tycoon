@@ -14,6 +14,7 @@ from tst.sim.data_models import Balance, CategoryDef, GameData
 from tst.sim.events import modifiers as mf
 from tst.sim.geo.cities import work_region
 from tst.sim.geo.formulas import cross_region_factor
+from tst.sim.org.pitch_execution import execution_factor
 from tst.sim.org.rules import OrgView
 from tst.sim.org.scaleup import modifiers
 from tst.sim.products import formulas as f
@@ -197,7 +198,9 @@ def product_team(
         sellers=tuple(sellers),
         marketers=tuple(marketers),
         output_mult=(mods.output_factor(state, view, product) if mods else 1.0)
-        * ev("builder_output"),
+        * ev("builder_output")
+        # an approved new-product pitch: its executive's seat factor on the pace (27.1, M13b)
+        * execution_factor(state, "new_product", product.id, balance, estimate=estimate),
         feature_mult=mods.cpo if mods else 1.0,
         marketing_mult=mods.marketing_factor(state, product) if mods else 1.0,
         qcap_mult=(mods.qcap if mods else 1.0) * ev("quality_cap"),

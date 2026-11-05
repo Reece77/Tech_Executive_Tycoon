@@ -27,6 +27,7 @@ from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, Ledge
 from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.money import Cents, exact
 from tst.sim.org.executives import CRO, side_factor
+from tst.sim.org.pitch_execution import execution_factor
 from tst.sim.org.rules import OrgView, org_view
 from tst.sim.products import formulas as f
 from tst.sim.products.estimates import shown_team
@@ -34,6 +35,7 @@ from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegme
 from tst.sim.products.setup import regional_monthly_growth
 from tst.sim.products.team import Team, product_team
 from tst.sim.research import eras
+from tst.sim.research.levels import first_mover_appeal
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -348,6 +350,10 @@ def run_markets(
     )
 
 
+def _times(appeal: float | None, factor: float) -> float | None:
+    return None if appeal is None else appeal * factor
+
+
 def _run_segment[S: (ProductSegment, RegionalSegment)](
     state: GameState,
     rng: RngFactory,
@@ -384,14 +390,19 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
         return 1.0 if product.is_static else team(product).churn_mult
 
     appeals = {
-        s.product_id: price_appeal(
-            products[s.product_id],
-            seg_key,
-            s.price_cents,
-            data,
-            turn,
-            power(products[s.product_id]),
-            index,
+        s.product_id: _times(
+            price_appeal(
+                products[s.product_id],
+                seg_key,
+                s.price_cents,
+                data,
+                turn,
+                power(products[s.product_id]),
+                index,
+            ),
+            first_mover_appeal(  # 27.3 (M13b): the first mover's window
+                state, data, balance, products[s.product_id].company_id, category_def.key
+            ),
         )
         for s in entries
     }
@@ -434,6 +445,7 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             aware = f.awareness(product.brand, mb) * team(product).awareness_mult  # CMO (18.3)
             if geo is not None and region is not None:
                 aware *= geo.awareness_factor(product.company_id, region, product.id)  # 19.5, 23.5
+                aware *= execution_factor(state, "region", product.id, balance, region)  # 27.1
             won[s.product_id] = wanted * min(1.0, aware)
         else:
             t = team(product)
@@ -443,6 +455,8 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
                 )
             else:
                 cap = t.capacity(seg_key, balance)
+            if geo is not None and region is not None:  # a region pitch's ramp (27.1, M13b)
+                cap *= execution_factor(state, "region", product.id, balance, region)
             won[s.product_id] = min(wanted, cap)
             if wanted > cap:
                 limited.add(s.product_id)

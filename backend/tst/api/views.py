@@ -28,6 +28,7 @@ from tst.api.schemas.people import (
     PersonOrgOut,
     PersonProfileOut,
     PersonSummaryOut,
+    PitchRecordOut,
     RangeChangeOut,
     RangeOut,
     SearchOut,
@@ -416,6 +417,20 @@ def person_summary(
     )
 
 
+def pitch_record(state: GameState, person_id: int) -> PitchRecordOut:
+    """An executive's pitch record (27.1): their pitches by answer and outcome."""
+    mine = [p for p in state.pitches if p.person_id == person_id]
+    approved = [p for p in mine if p.approved]
+    return PitchRecordOut(
+        pitches=len(mine),
+        approved=len(approved),
+        hits=sum(1 for p in mine if p.outcome == "hit"),
+        misses=sum(1 for p in mine if p.outcome == "miss"),
+        too_early=sum(1 for p in mine if p.outcome == "too_early"),
+        tracking=sum(1 for p in approved if p.outcome is None),
+    )
+
+
 def person_profile(
     session: Session, state: GameState, company_id: int, person_id: int, data: LoadedData
 ) -> PersonProfileOut:
@@ -446,6 +461,11 @@ def person_profile(
             MoralePointOut(turn=r.turn, date_label=format_turn(r.turn), morale=r.morale)
             for r in reversed(rows)
         ],
+        pitch_record=(
+            pitch_record(state, person_id)
+            if any(p.person_id == person_id for p in state.pitches)
+            else None
+        ),
     )
 
 

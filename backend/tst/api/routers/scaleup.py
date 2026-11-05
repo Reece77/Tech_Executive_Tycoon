@@ -20,6 +20,7 @@ from tst.api.schemas.scaleup import (
     AppointIn,
     AuthorityIn,
     DivisionStatementsOut,
+    PitchPolicyIn,
     ProductDivisionIn,
     ScaleupActionOut,
     ScaleupOut,
@@ -37,8 +38,8 @@ from tst.sim.actions import (
 )
 from tst.sim.actions.authority import AnswerProposal, SetAuthority
 from tst.sim.errors import InvalidActionError
-from tst.sim.org.models import SEATS
-from tst.sim.state import GameState
+from tst.sim.org.models import SEATS, GuardValue
+from tst.sim.state import GameState, company_cash
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["scaleup"])
 
@@ -48,8 +49,9 @@ def _scaleup(path: Path, state: GameState, data: LoadedData) -> ScaleupOut:
         lines = repository.division_lines(session, state.player.id)
         months = repository.division_months(session, state.player.id)
         reports = scaleup_views.reports_out(repository.exec_reports(session, state.player.id))
+        cash = company_cash(repository.current_balances(session, state.turn), state.player.id)
     profit = scaleup_views.last_month_profit(lines, months, state, data)
-    return scaleup_views.scaleup_out(state, data, profit, reports)
+    return scaleup_views.scaleup_out(state, data, profit, reports, cash)
 
 
 def _act(path: Path, data: LoadedData, action: Action) -> ScaleupActionOut:
@@ -148,8 +150,11 @@ def set_authority(
     """Give, change or withdraw a seat's authority over its function (24.1)."""
     path = _path(settings, save_id)
     founder = _founder_id(_state(path))
-    guardrails = tuple(
-        sorted((k, tuple(v) if isinstance(v, list) else v) for k, v in body.guardrails.items())
+    guardrails: tuple[tuple[str, GuardValue], ...] = tuple(
+        sorted(
+            (k, tuple(v) if isinstance(v, list) else v)  # type: ignore[misc]
+            for k, v in body.guardrails.items()
+        )
     )
     return _act(path, data, SetAuthority(founder, _seat(seat), body.enabled, guardrails))
 
@@ -169,6 +174,45 @@ def answer_proposal(
     path = _path(settings, save_id)
     founder = _founder_id(_state(path))
     return _act(path, data, AnswerProposal(founder, proposal_id, answer == "approve"))
+
+
+@router.post(
+    "/scaleup/pitches/{pitch_id}/{answer}",
+    response_model=ScaleupActionOut,
+    responses=ERRORS,
+    operation_id="answerPitch",
+)
+def answer_pitch(
+    save_id: str, pitch_id: int, answer: str, settings: SettingsDep, data: DataDep
+) -> ScaleupActionOut:
+    """Approve (the move runs at once, as the executive, with their energy), decline (their
+    morale dips), or `modified`: the founder made the move their own way (27.1, M13b)."""
+    from tst.sim.actions.authority import AnswerPitch
+
+    if answer not in ("approve", "decline", "modified"):
+        raise InvalidActionError("answer approve, decline or modified")
+    path = _path(settings, save_id)
+    founder = _founder_id(_state(path))
+    return _act(path, data, AnswerPitch(founder, pitch_id, answer))  # type: ignore[arg-type]
+
+
+@router.post(
+    "/scaleup/pitch-policy",
+    response_model=ScaleupActionOut,
+    responses=ERRORS,
+    operation_id="setPitchPolicy",
+)
+def set_pitch_policy(
+    save_id: str, body: PitchPolicyIn, settings: SettingsDep, data: DataDep
+) -> ScaleupActionOut:
+    """The Holiday spend limit (null: 5% of cash; 0: always ask) and whether Holiday stops for
+    pitches above it (27.1, M13b). Free."""
+    from tst.sim.actions.authority import SetPitchPolicy
+
+    path = _path(settings, save_id)
+    founder = _founder_id(_state(path))
+    action = SetPitchPolicy(founder, body.auto_approve_cents, body.stop_for_big)
+    return _act(path, data, action)
 
 
 @router.post(

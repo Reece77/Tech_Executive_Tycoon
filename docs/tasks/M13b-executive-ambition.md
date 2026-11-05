@@ -40,10 +40,63 @@ Acquisitions as pitches (M14 adds the kind). Rivals' executives pitching (rivals
 
 On `quick-stage3`, give every seat authority, set auto-approve to 5% of cash, and Holiday three years. Did they start a product and enter a region? Read one quarter's reports: do they sound like people? Then pull an era forward on `pt-ai` and read the era report.
 
+## Status (2026-11-05, after the new-product calibration): every target passes
+
+| Target | Value | Band |
+| --- | --- | --- |
+| 1 new product and new region | 8/10 seeds | ≥ 7/10 |
+| 2 ARR, pitches / pitches off | 1.68 | ≥ 1.10 |
+| 3 hit rate (central case), score 15 / score 8 | 86% / 40% (+46 points) | ≥ +10 points |
+| 4 pitches a year, median | 2.3 | ≤ 8 |
+| 5 the window alone | +30% to +56% on 7 of 8 seeds (+80% on seed 5) | +25-60% on ≥ 7 |
+| 5 (information) early era / on schedule | +237% to +392% | none |
+| 7 ARR, pitches / founder's steady + regions | 1.10 | ≤ 1.2 |
+
+Values in `docs/balance-targets.md`, M13b. The ≤ 1.5 fallback band was not needed.
+
 ## Decisions made
 
-_(Agent fills in.)_
+- **Who pitches.** Executives with authority (the CPO now takes authority too) and the CEO for the functions no seat holder with authority covers. Kinds by seat: CPO new product and sunset; CRO region; CTO research team and data centre; COO office and assembly plant; CMO campaign; CFO buyback (once listed; rounds and loans stay 24.1 proposals). A dividend is not pitched (the buyback covers "return cash").
+- **When.** In a quarter's first month: two uniforms on stream `pitch` (36), key `(person id,)`: whether (true ambition), then which (true score). A pitch still pending at the executive's next draw lapses (no morale cost), so a long Holiday does not jam a seat.
+- **Scores and numbers.** Every candidate's score and number comes from displayed knowledge: displayed skill midpoints (category fit), public market sizes and prices, the company's own customers, costs and quotes. Candidates of all kinds rank on one scale, an estimated 24-month value in cents (a monthly case x 24; research by the cap lift on the revenue it feeds; an office by the builder pay of the roles it fills x talent weight; a campaign by its customers' revenue; a buyback last). The low and high case are central x (1 -+ spread), spread = max(0.15, 0.6 - 0.025 x the displayed seat score). A buyback's case is its amount, without a spread.
+- **Approval.** Through the normal actions as the executive (the CEO for its pitches), all or nothing; a buyback runs as the founder (a Chair's decision). On Holiday and in scripts (no `block_major`) a pitch under the limit goes ahead in phase 2; at the controls every pitch waits and blocks Continue. Approved pitches are Chair decisions, so the M13 property "the CEO takes only CEO actions" is measured on the CEO's own monthly decisions (`at_controls=True` in that test).
+- **Campaign.** A one-off spend posted to marketing now, plus awareness +25% and brand target +10% modifiers (23.2) on the product for 3 months (`pitch.campaign_*`).
+- **Sunset rule.** The state keeps no per-product customer history, so "below maintenance and shrinking for 6 months" is read as live, nobody working on it (`rotting`) and launched at least `pitch.sunset_months` ago.
+- **Follow-through measures.** New product: its MRR; region: its MRR there; data centre: spot minus own cost on the CU it serves; plant: its case; office: people in it; research: lead points gained; campaign: customers gained; sunset: the saving once sunset; buyback: its amount. "Too early" when what it created is not yet operating.
+- **Reports.** The four parts of 27.2 in one of four voices (`exec_voices.yaml`: blunt, cautious, warm, plain) chosen from displayed personality midpoints. "What I did" groups decisions by the product they name and adds where that product stands now (quality, customers): the state keeps no quarter-start product history for a before-and-after. The CEO's letter is an `exec_report` item with seat "CEO". The LLM rewrite keeps the voice, every action and every number.
+- **Eras.** The appeal bonus applies wherever segment appeal is computed (the market month and the screens), for any company holding a first-mover window. The arrival item is labelled Critical in the inbox (inbox items have no severity of their own). The era report's baseline is stored when a player company causes an era (`era_window`). The Market screen had no demand chart and no demand history is stored, so its new chart plots customers of every product in the category by month (from `product_month`), with era marks; both charts also list the marks as text.
+- **Modify.** Closes the pitch as `modified` and opens the move's own screen; the New product dialog is prefilled (`?new=<category>&segment=<segment>`), other screens open on the right page.
+- **Baselines kept.** M10c's and M13's balance arms set the pitch limit to 0 (pitches wait unanswered) so their targets read as before; 27.5 target 2's "pitches off" arm does the same.
+- **S2** re-banded to under 65 worker-minutes on CI (`S2_BUDGET`), as the brief says.
+- **Product manager's rulings (2026-11-04).**
+  - Target 3: every pitch is scored hit against its central case from displayed estimates, the same for every executive. Execution follows the executing executive's true seat score through the 18.3 seat factor: a new product's builders' output, and a region launch's regional awareness and capacity. The band is now at least +10 points.
+  - Target 5: the first-mover window is measured alone: the same seed with the era forced to the same early month, with and without the window, at the window's end. Band +25-60%. The early era against on schedule is printed as information.
+  - New target 7: target 1's median ARR at month 36 is at most 1.2× the founder's steady script on the same seeds.
+- **Target 3 calibration** (so the central case reads what moves reach):
+  - `pitch.region_capture` 1.7 scales the CRO's case, which is now grown 24 months at the category's growth.
+  - The CPO pitches only self-serve segments (a builders-only team cannot sell to sales-led ones), with `pitch.team_builders` 3 → 6 so the product can launch inside the record window.
+  - A campaign's case adds the category's 24-month organic growth.
+  - An office's measure is the staff living in its city above the count at approval, and an approved office moves the active hiring plans' units into it, so their hires join there.
+- **Second ruling (product manager, 2026-11-04).**
+  - **Target 7's founder arm** is "steady + regions": M10c's steady script, plus a founder launch of its live product in the best region (the CRO's candidate score) whenever the CRO's gates are met, at most one launch per 24 months. It is the balance arm `steady_regions` (no game code). It launched 2 regions on every seed, at a median ARR of $116M.
+  - **Pitch frequency** is tuned down for target 7: `pitch.base` 0.45 → 0.15, `per_ambition` 0.04 → 0.01, `chance_clamp` [0.15, 0.9] → [0.05, 0.9]. The sweep: 0.35/0.03 gave ×1.33; 0.25/0.02 ×1.26; 0.2/0.015 ×1.28; 0.15/0.01 ×1.10. Target 1 held at 8-9/10 throughout.
+  - **A new product's central case** counts only the months after its expected launch at the displayed pace. The pace is skill-10 builders after `pitch.team_ready_months` (3), with quality and feature score run to the launch bars, plus the CPO's launch month. The case is × (24 − L) / 24, with no pitch if L is outside the window.
+  - The CPO's team is the size, from `pitch.team_builders` (6) up to its headcount cap, whose case best covers the team's pay. A cap too small to launch in time gives no pitch.
+  - Estimated launch against actual (higher-frequency run): estimated 17-24 months, actual 10-25. Score 15 launched sooner and score 8 later or too early.
+- **New-product hit rates by score.** At the shipped frequency, 2 new-product pitches were scored per arm: score 15 got 0/2 (measured / central 0.14 and 0.58) and score 8 got 0/2 (0.04 and 0.04). In the higher-frequency run before the target 7 tuning, score 15 got 1/8 (median ratio about 0.56) and score 8 got 0/6, with 3 too early. Good executives' products reach several times what weak ones do, but still mostly below the central case: the share `pitch.new_product_share` (0.25) was not re-tuned.
+- **New-product calibration (product manager, 2026-11-05).** One pass on `pitch.new_product_share`, measured at the pre-tuning pitch frequency (`base` 0.45, `per_ambition` 0.04, floor 0.15) to get enough new-product pitches, with CPOs at scores 15, 12 and 8 on seeds 1-10:
+
+  | Share | Score 15 hits | Score 12 hits, median measured / central | Score 8 hits |
+  | --- | --- | --- | --- |
+  | 0.25 | 1/8 | 0/7, 0.15 | 0/6 (3 too early) |
+  | 0.04 (shipped) | 4/8 (50%) | 2/7, 0.92 | 2/6 (33%; 3 too early) |
+
+  At 0.04 the central case sits at a score-12 CPO's median outcome, and score 15 meets its aim (≥ 50%). Score 8 is one hit over its aim (≤ 30%). Its two hits are ×1.43 and ×2.89 the central case, so no nearby share removes them. This is an M15 follow-up. Every §27.5 target stays in band (target 3 rose to +46 points).
+- **Target 5 tuning:** `rnd.first_mover_cap` 8 → 5, `first_mover_brand` 15 → 6, `first_mover_appeal` 1.15 → 1 (no bonus; the mechanism and its tests stay, run at ×1.15). The arrival item names the appeal only above ×1.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- **M15:** score-8 CPOs hit 2 of 6 new-product pitches (33%) against the ≤ 30% aim at `pitch.new_product_share` 0.04 (score 15: 4/8). The sample is small, and the two hits are well above the central case. A larger seed set, or a pace estimate that reads the CPO's displayed seat factor, could separate them.
+- Modify could prefill every move's dialog (region, research, data centre, office, plant), not only a new product.
+- A product's quarter-start quality and customers could be kept so reports read "41 -> 47" rather than "now 47".
+- Rivals' executives do not pitch (out of scope); M14 adds acquisitions as a pitch kind.

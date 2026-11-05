@@ -223,6 +223,11 @@ terms:
   exec.authority: "Lets a seat holder run their function each month within the guardrails you set, through the same actions you would take, with their own energy. Better executives make better calls; a misstep is a plausible but worse choice, named in their decisions."
   exec.guardrails: "Limits on what an executive with authority may do: a headcount cap and pay ceiling, a price band, marketing as a share of revenue, a support coverage target, or the runway that triggers a funding proposal."
   exec.proposal: "Something an executive wants you to approve: a funding round, a loan or an office lease. Pending proposals block Continue until you approve or decline them; approving takes the action as you."
+  exec.pitch: "A big move an executive with authority proposes, at most once a quarter, with why, the cost and a low and high case at 24 months. Approve runs it as the executive, with their energy; Modify opens its own screen; Decline costs them a little morale. Pending pitches block Continue."
+  exec.auto_approve: "On holiday, a pitch that costs less than this over 12 months goes ahead and is reported; bigger ones wait for you. The default is 5% of cash; 0 means always ask."
+  exec.pitch_record: "An executive's pitches and how the approved ones turned out after 24 months: a hit reached its central case (the same yardstick for every executive), a miss did not, too early means what it created was not yet running."
+  era.first_mover: "Pull an era forward and for 24 months your products in its markets get +8 quality cap, +15 brand target and 15% more appeal, and your lead does not decay. An era report at the end shows what it added."
+  market.size: "Customers who could buy, times the typical monthly price, times 12: what a market is worth a year if every possible customer paid the reference price."
   exec.report: "Each seat holder's quarterly report: their function's numbers, what they did with their authority, and one or two concerns."
   # M12a: Infrastructure (formulas.md 22)
   infra.component_index: "A component's price against January 2010 (1.00). Builds are priced at this month's index; a shortage cuts allocation and delays part of a build."
@@ -242,7 +247,7 @@ terms:
   # --- Research and eras (M11, formulas.md 21) ----------------------------------------------
   research.domain: "A field of technology: software platform, AI, infrastructure, chip design or devices. Each feeds some markets."
   research.baseline: "The world's level in the domain, free to everyone. It rises every month, and by 5 points when one of the domain's eras arrives."
-  research.lead: "What your company knows beyond the baseline. Research raises it; without research it loses 1.5% a month."
+  research.lead: "Points ahead of the industry in this field; start a project to build one. A lead is know-how, not a person: research raises it, and without research it loses 1.5% a month."
   research.level: "Baseline plus lead. When any company's level reaches an era's threshold, the era arrives early."
   research.threshold: "The level that brings an era before its historical date: the baseline it would have by then plus 15 points."
   research.tech_factor: "Your research lead in a market lifts what product teams can reach and how fast features grow, more for a bigger lead, up to 50 points of it."

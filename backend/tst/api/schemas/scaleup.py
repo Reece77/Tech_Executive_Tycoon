@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from tst.api.schemas.people import EnergyOut
+from tst.api.schemas.people import EnergyOut, PitchRecordOut
 
 
 class DivisionOut(BaseModel):
@@ -46,15 +46,27 @@ class CrossDivisionOut(BaseModel):
     fix: str = Field(description="The move that removes the factor")
 
 
+class GuardChoiceOut(BaseModel):
+    """One value a list guardrail may hold (M13b): a unit, a product or a category."""
+
+    value: str = Field(description="The id or key as a string")
+    label: str
+
+
 class AuthorityOut(BaseModel):
     """A seat's authority (24.1, M10c): on or off and its guardrails. Never the decision
     quality or the holder's score (24.4)."""
 
     enabled: bool
-    guardrails: dict[str, float | list[int]] = Field(
+    guardrails: dict[str, float | list[int] | list[str]] = Field(
         description="headcount_cap, max_salary_ratio_bp, protected_units (CTO), price_band_pct "
         "(CRO), marketing_pct_of_revenue (CMO), coverage_target and lease_approval_rent_cents "
-        "(COO), runway_months and repay_above_months (CFO)"
+        "(COO), runway_months and repay_above_months (CFO), headcount_cap, categories and "
+        "protected_products (CPO, M13b)"
+    )
+    choices: dict[str, list[GuardChoiceOut]] = Field(
+        default_factory=dict,
+        description="For each list guardrail, the values it may hold (M13b)",
     )
     since_label: str | None = Field(description="Given since; null while off")
     acts_on: str = Field(description="What the seat does with authority")
@@ -73,8 +85,61 @@ class SeatOut(BaseModel):
     )
     vacancy_penalty_pct: float | None = Field(description="The penalty while vacant (stage 3+)")
     authority: AuthorityOut | None = Field(
-        description="Authority over the seat's function (M10c, 24.1); null for the CPO"
+        description="Authority over the seat's function (M10c, 24.1; the CPO's from M13b)"
     )
+    record: PitchRecordOut | None = Field(
+        default=None, description="The holder's pitch record (27.1, M13b)"
+    )
+
+
+class PitchOut(BaseModel):
+    """A big move an executive proposes (27.1, M13b), with the numbers they pitch it on:
+    estimates from what the company sees. Never the pitch probability, the quality draw, the
+    executive's true ambition, skills or score, or which candidate was best (27.6)."""
+
+    pitch_id: int
+    seat: str = Field(description="cpo | cro | cto | coo | cmo | cfo | ceo")
+    person_id: int
+    name: str
+    date_label: str
+    kind: str = Field(
+        description="new_product | sunset | region | research | data_centre | office | plant "
+        "| campaign | buyback"
+    )
+    title: str
+    why: str
+    cost_cents: int = Field(description="Its cost over 12 months: the auto-approve test")
+    capex_cents: int
+    monthly_cents: int
+    hires: int
+    unit: str = Field(description="cents_month | cents | points | people | customers")
+    low: int = Field(description="The low case at 24 months, in `unit`")
+    central: int = Field(default=0, description="The central case: a hit reaches it")
+    high: int
+    case_label: str = Field(description="The low and high case in words")
+    risk: str
+    params: dict[str, int | str] = Field(description="What Modify prefills")
+    status: str = Field(
+        description="pending | approved | auto_approved | declined | modified | lapsed"
+    )
+    outcome: str | None = Field(description="hit | miss | too_early once scored")
+    measured_label: str | None = Field(description="What it reached, in words, once scored")
+
+
+class PitchPolicyOut(BaseModel):
+    """The player's pitch settings (27.1): the Holiday spend limit and the big-pitch stop."""
+
+    auto_approve_cents: int | None = Field(description="Null: the default share of cash")
+    default_cents: int = Field(description="What the default is now (5% of cash)")
+    limit_cents: int = Field(description="The limit in force now")
+    stop_for_big: bool
+
+
+class PitchPolicyIn(BaseModel):
+    auto_approve_cents: int | None = Field(
+        default=None, ge=0, description="Null: 5% of cash; 0: always ask"
+    )
+    stop_for_big: bool = False
 
 
 class ProposalOut(BaseModel):
@@ -126,6 +191,10 @@ class ScaleupOut(BaseModel):
         description="Executives' decisions of the last 3 months, newest first (M10c)"
     )
     reports: list[ReportOut] = Field(description="Each seat's latest quarterly report (M10c, 24.3)")
+    pitches: list[PitchOut] = Field(
+        default_factory=list, description="Pending first, then the latest (M13b, 27.1)"
+    )
+    pitch_policy: PitchPolicyOut | None = None
 
 
 class ScaleupActionOut(BaseModel):
@@ -147,7 +216,7 @@ class AuthorityIn(BaseModel):
     current or default values."""
 
     enabled: bool
-    guardrails: dict[str, float | list[int]] = Field(default_factory=dict)
+    guardrails: dict[str, float | list[int] | list[str]] = Field(default_factory=dict)
 
 
 class AppointIn(BaseModel):

@@ -9,18 +9,23 @@ generator (stream `delegate`).
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from typing import Any
 
 import numpy as np
 
 from tst.sim.actions.authority import (
+    AnswerPitch,
     AnswerProposal,
     SetAuthority,
+    SetPitchPolicy,
     close_proposal,
+    pending_pitch,
     pending_proposal,
     proposal_action,
     set_authority,
+    set_pitch_policy,
 )
 from tst.sim.actions.events import ChooseEvent, choose_event
 from tst.sim.actions.facilities import (
@@ -198,6 +203,8 @@ type Action = (
     | ScaleupAction
     | SetAuthority
     | AnswerProposal
+    | AnswerPitch
+    | SetPitchPolicy
     | GeoAction
     | FacilityAction
     | ResearchAction
@@ -265,6 +272,8 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "set_marketing_split": SetMarketingSplit,
     "set_authority": SetAuthority,
     "answer_proposal": AnswerProposal,
+    "answer_pitch": AnswerPitch,  # M13b
+    "set_pitch_policy": SetPitchPolicy,
     "build_facility": BuildFacility,  # M12a
     "sell_facility": SellFacility,
     "staff_facility": StaffFacility,
@@ -287,6 +296,7 @@ __all__ = [
     "Action",
     "ActionResult",
     "AddSegment",
+    "AnswerPitch",
     "AnswerProposal",
     "AppointCeo",
     "AppointExecutive",
@@ -411,6 +421,27 @@ def apply_action(
         )
         closed = close_proposal(inner.new_state, proposal, "approved")
         return ActionResult(closed, inner.ledger_entries, inner.log_items)
+    if isinstance(action, AnswerPitch):  # 27.1 (M13b): the move, as the executive
+        from tst.sim.org import pitches
+        from tst.sim.org.delegates import delegate_draws
+
+        company = acting_company(state, action.actor_id)
+        pitch = pending_pitch(state, company, action.pitch_id)
+        if action.answer != "approve":
+            closed = pitches.close(
+                state, pitch, "declined" if action.answer == "decline" else "modified", balance
+            )
+            return ActionResult(closed, (), ())
+        turn, holder = state.turn, pitch.person_id
+        base = pitches.ANSWER_KEY + seq * pitches.ANSWER_STEPS
+
+        def step(n: int) -> Callable[[], np.random.Generator]:
+            return lambda: delegate_draws(rng, turn, holder, base + n)  # the executive acts
+
+        approved = pitches.approve(
+            state, pitch, action.actor_id, rng, balance, data, ledger_balances, step
+        )
+        return ActionResult(approved.state, tuple(approved.entries), tuple(approved.logs))
     if isinstance(action, OverrideCeo):  # 25.6 (M13): the decision's undo, as the Chair
         _, undo = override_target(state, action.actor_id, action.decision_id, balance)
         before = state.person_state(action.actor_id).energy
@@ -544,6 +575,8 @@ def apply_action(
             out = set_marketing_split(state, action, balance, data)
         case SetAuthority():
             out = set_authority(state, action, balance, data)
+        case SetPitchPolicy():  # M13b (27.1)
+            out = set_pitch_policy(state, action)
         case BuildFacility():  # M12a
             out = build_facility(state, action, balance, data, ledger_balances)
         case SellFacility():

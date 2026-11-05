@@ -52,6 +52,7 @@ STREAM_IDS: Final = MappingProxyType(
         # key (company_id,): a listed company's sentiment shock and analysts' targets (M13, 25.3)
         "market_sentiment": 34,
         # 35: reserved for lane B (M13)
+        "pitch": 36,  # key (person_id,): an executive's quarterly pitch and quality draws (M13b)
         "misc": 99,
     }
 )

@@ -24,6 +24,27 @@ class AppealWeightsOut(BaseModel):
     features: float
 
 
+class EraMarkOut(BaseModel):
+    """An era's arrival, marked on a chart (27.3, M13b)."""
+
+    turn: int
+    date_label: str
+    label: str = Field(description="The era")
+    caused_by: str | None = Field(description="'You', a company, or null on schedule")
+
+
+class RegionSizeOut(BaseModel):
+    region: str
+    label: str
+    size_cents_year: int = Field(description="Customers x reference price x 12 (27.4)")
+
+
+class MarketMonthOut(BaseModel):
+    turn: int
+    date_label: str
+    customers: float = Field(description="Customers of every product in the category")
+
+
 class CategorySegmentOut(BaseModel):
     segment: str
     label: str
@@ -33,6 +54,9 @@ class CategorySegmentOut(BaseModel):
     hosting_cents: int = Field(description="Hosting cost per customer per month")
     weights: AppealWeightsOut
     counts_users: bool = Field(description="Customers are consumer users, not businesses")
+    size_cents_year: int = Field(
+        default=0, description="Market size: addressable customers x reference price x 12 (27.4)"
+    )
 
 
 class CategoryOut(BaseModel):
@@ -52,6 +76,10 @@ class CategoryOut(BaseModel):
     )
     sells_units: bool = Field(
         default=False, description="Sells units once per customer; needs manufacturing (M12b)"
+    )
+    size_cents_year: int = Field(default=0, description="Home market size a year (27.4)")
+    region_sizes: list[RegionSizeOut] = Field(
+        default_factory=list, description="Market size a year in each other region (27.4)"
     )
 
 
@@ -85,6 +113,7 @@ class MarketSegmentOut(BaseModel):
     weights: AppealWeightsOut
     counts_users: bool
     player_sells: bool = Field(description="The player has a product selling here")
+    size_cents_year: int = Field(default=0, description="Market size a year (27.4)")
     products: list[MarketProductOut] = Field(description="Most customers first")
 
 
@@ -102,6 +131,13 @@ class MarketOut(BaseModel):
     region: str | None = Field(default=None, description="The region shown (M9)")
     region_label: str | None = None
     regions: list[RegionOptionOut] = Field(default_factory=list, description="Region picker")
+    size_cents_year: int = Field(default=0, description="The category's size a year (27.4)")
+    history: list[MarketMonthOut] = Field(
+        default_factory=list, description="Customers in the category by month, home region"
+    )
+    era_marks: list[EraMarkOut] = Field(
+        default_factory=list, description="Arrived eras of the category (27.3)"
+    )
 
 
 class NamedOut(BaseModel):
@@ -260,6 +296,9 @@ class ProductOut(BaseModel):
     )
     monthly: list[ProductTotalMonthOut] = Field(
         description="Last 12 months summed over segments, oldest first, home region"
+    )
+    era_marks: list[EraMarkOut] = Field(
+        default_factory=list, description="Eras of its category that arrived in that time (27.3)"
     )
 
 

@@ -100,6 +100,9 @@ INBOX_CATEGORY: dict[str, str] = {
     # M10c: executives' quarterly reports and proposals (24.1, 24.3)
     "exec_report": "people",
     "exec_proposal": "finance",
+    "exec_pitch": "people",  # M13b (27.1)
+    "pitch_went_ahead": "people",
+    "era_report": "products",  # M13b (27.3)
     # M12a: data centres, contracts, Cloud hosting and outages (22.6)
     "facility_ordered": "products",
     "facility_live": "products",

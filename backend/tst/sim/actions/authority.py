@@ -12,10 +12,20 @@ from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.data_models import AUTHORITY_SEATS, Balance, GameData
 from tst.sim.errors import InvalidActionError, OrgRuleError
 from tst.sim.org.executives import seats_in_play
-from tst.sim.org.models import Authority, GuardValue, Proposal, ProposalStatus
-from tst.sim.state import GameState, with_authority, with_proposal
+from tst.sim.org.models import (
+    Authority,
+    GuardValue,
+    Pitch,
+    PitchPolicy,
+    Proposal,
+    ProposalStatus,
+)
+from tst.sim.state import GameState, with_authority, with_pitch_policy, with_proposal
 
 PROTECTED_UNITS = "protected_units"  # the CTO's guardrail that is a list of unit ids
+PROTECTED_PRODUCTS = "protected_products"  # the CPO's: product ids it may not sunset (M13b)
+CATEGORIES = "categories"  # the CPO's: category keys it may enter, () = any (M13b, 27.1)
+LIST_GUARDS = frozenset({PROTECTED_UNITS, PROTECTED_PRODUCTS, CATEGORIES})
 FRACTIONAL = frozenset({"coverage_target"})  # guardrails that may be fractions
 
 
@@ -29,7 +39,23 @@ class SetAuthority:
     kind: Literal["set_authority"] = "set_authority"
 
 
-def _value(key: str, value: object, state: GameState, company: int) -> GuardValue:
+def _value(
+    key: str, value: object, state: GameState, company: int, data: GameData | None = None
+) -> GuardValue:
+    if key in (PROTECTED_PRODUCTS, CATEGORIES):  # the CPO's lists (M13b, 27.1)
+        if not isinstance(value, (list, tuple)):
+            raise InvalidActionError(f"{key} is a list")
+        if key == CATEGORIES:
+            keys = tuple(sorted({str(v) for v in value}))
+            known = {c.key for c in data.categories} if data is not None else set(keys)
+            if not set(keys) <= known:
+                raise OrgRuleError(f"unknown categories {sorted(set(keys) - known)}")
+            return keys
+        products = {p.id for p in state.company_products(company)}
+        ids = tuple(sorted({int(v) for v in value}))
+        if not set(ids) <= products:
+            raise OrgRuleError("protected products must be the company's products")
+        return ids
     if key == PROTECTED_UNITS:
         if not isinstance(value, (list, tuple)):
             raise InvalidActionError("protected_units is a list of unit ids")
@@ -50,6 +76,7 @@ def guardrails_for(
     state: GameState,
     company: int,
     balance: Balance,
+    data: GameData | None = None,
 ) -> tuple[tuple[str, GuardValue], ...]:
     """Defaults, then the seat's current guardrails, then the changes; unknown keys refused."""
     defaults = balance.exec_authority.defaults[seat]
@@ -61,7 +88,7 @@ def guardrails_for(
     for key, value in changes:
         if key not in defaults:
             raise InvalidActionError(f"the {seat.upper()} has no guardrail {key!r}")
-        merged[key] = _value(key, value, state, company)
+        merged[key] = _value(key, value, state, company, data)
     return tuple(sorted(merged.items()))
 
 
@@ -90,7 +117,9 @@ def set_authority(
         if holder is None or state.employment_of(holder) is None:
             raise OrgRuleError(f"appoint a {action.seat.upper()} before giving them authority")
     current = state.authority(company, action.seat)
-    guardrails = guardrails_for(current, action.seat, action.guardrails, state, company, balance)
+    guardrails = guardrails_for(
+        current, action.seat, action.guardrails, state, company, balance, data
+    )
     if current is not None and (current.enabled, current.guardrails) == (
         action.enabled,
         guardrails,
@@ -163,3 +192,50 @@ def pending_proposal(state: GameState, company: int, proposal_id: int) -> Propos
 
 def close_proposal(state: GameState, proposal: Proposal, status: ProposalStatus) -> GameState:
     return with_proposal(state, replace(proposal, status=status, resolved_turn=state.turn))
+
+
+# --- Pitches (M13b, 27.1) ------------------------------------------------------------------------
+
+PitchAnswer = Literal["approve", "decline", "modified"]
+
+
+@dataclass(frozen=True, slots=True)
+class AnswerPitch:
+    """Approve, decline or close as modified an executive's pitch (27.1). Approving runs the
+    move through the normal actions as the executive, with their energy; declining costs them
+    morale once; `modified` closes it after the founder made the move their own way."""
+
+    actor_id: int
+    pitch_id: int
+    answer: PitchAnswer
+    kind: Literal["answer_pitch"] = "answer_pitch"
+
+
+@dataclass(frozen=True, slots=True)
+class SetPitchPolicy:
+    """The Holiday spend limit (None: the default share of cash; 0: always ask) and whether a
+    Holiday stops for pitches above it (27.1). Free: a setting, not a decision."""
+
+    actor_id: int
+    auto_approve_cents: int | None
+    stop_for_big: bool = False
+    kind: Literal["set_pitch_policy"] = "set_pitch_policy"
+
+
+def pending_pitch(state: GameState, company: int, pitch_id: int) -> Pitch:
+    pitch = state.pitch(pitch_id)
+    if pitch is None or pitch.company_id != company:
+        raise InvalidActionError(f"no pitch {pitch_id}")
+    if pitch.status != "pending":
+        raise InvalidActionError("that pitch has been answered")
+    return pitch
+
+
+def set_pitch_policy(state: GameState, action: SetPitchPolicy) -> Outcome:
+    company = acting_company(state, action.actor_id)
+    if action.auto_approve_cents is not None and action.auto_approve_cents < 0:
+        raise InvalidActionError("the auto-approve limit cannot be negative")
+    policy = PitchPolicy(company, action.auto_approve_cents, action.stop_for_big)
+    if policy == state.pitch_policy(company):
+        raise InvalidActionError("nothing changes")
+    return Outcome(with_pitch_policy(state, policy))

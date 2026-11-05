@@ -43,6 +43,7 @@ from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_prob
 from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.ledger import ENGINE_ACCOUNTS
 from tst.sim.markets_public.config import BanksFile
+from tst.sim.org.voice_data import VoicesFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 
 BALANCE_FILE = "balance.yaml"
@@ -68,6 +69,7 @@ COMPONENTS_FILE = "components_history.yaml"  # M12a (formulas.md 22.4)
 TECH_FILE = "tech_frontier.yaml"  # M11 (formulas.md 21.1-21.3)
 ERAS_FILE = "eras.yaml"  # M11 (formulas.md 21.4)
 BANKS_FILE = "banks.yaml"  # M13 (formulas.md 25.2)
+VOICES_FILE = "exec_voices.yaml"  # M13b (formulas.md 27.2)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -80,6 +82,7 @@ DATA_FILES = (
     COMPUTE_INDEX_FILE,
     ENTRANTS_FILE,
     ERAS_FILE,
+    VOICES_FILE,
     INBOX_FILE,
     INCUMBENTS_FILE,
     INVESTORS_FILE,
@@ -432,6 +435,7 @@ def load_all(path: Path) -> LoadedData:
     tech = _validate(TechFrontierFile, parsed[TECH_FILE], TECH_FILE)
     eras = _validate(ErasFile, parsed[ERAS_FILE], ERAS_FILE)
     banks = _validate(BanksFile, parsed[BANKS_FILE], BANKS_FILE)
+    voices = _validate(VoicesFile, parsed[VOICES_FILE], VOICES_FILE)
     game_data = _validate(
         GameData,
         {
@@ -467,10 +471,14 @@ def load_all(path: Path) -> LoadedData:
             "tech": tech,
             "eras": eras,
             "banks": banks.banks,
+            "voices": voices.voices,
         },
         "seed data cross-check",
     )
     _check_against_balance(balance, game_data)
+    traits = {t.key for t in game_data.personality}
+    if bad := sorted({v.rule.trait for v in game_data.voices if v.rule} - traits):
+        raise DataLoadError(f"{VOICES_FILE}: rules name unknown personality traits {bad}")
     if problems := research_problems(balance, game_data):
         raise DataLoadError(f"{TECH_FILE}, {ERAS_FILE}: " + "; ".join(problems))
 

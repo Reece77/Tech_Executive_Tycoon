@@ -4,6 +4,22 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M13b Executive ambition and visible eras (formulas.md §27):
+  - The CPO seat takes authority (headcount cap for new product teams, categories it may enter, products it may not sunset) and launches ready products.
+  - Pitches (27.1): executives with authority and the CEO pitch a big move at most once a quarter (stream `pitch`, 36): a new product, a sunset, a region, a research team, a data centre, an office, an assembly plant, a campaign or a buyback, scored and shown from displayed knowledge only, with a low and high case at 24 months. Approve runs it through the normal actions as the executive; Modify opens the move's own screen; Decline costs morale. On Holiday pitches under the spend limit (default 5% of cash) go ahead; "stop for big pitches" stops a Holiday. Approved pitches are scored hit, miss or too early after 24 months; each executive has a record. Migration `0032_pitches` (`exec_pitch`, `pitch_policy`, `era_window`).
+  - Reports (27.2) are led by decisions, in one of four voices from the executive's displayed personality (`exec_voices.yaml`); the CEO writes a quarterly letter to the Chair.
+  - Eras (27.3): first-mover window 24 months, +5 quality cap and +6 brand target (an appeal bonus, shipped at x1, i.e. none); the arrival item (Critical) lists the affected products; an era report at the window's end; era marks on the Product and new Market charts.
+  - Market size a year by segment and region on the Market screen and in the New product dialog; the Research screen explains a lead (27.4).
+  - API: pitches, records and the pitch policy on `/scaleup`, `POST /scaleup/pitches/{id}/{answer}`, `POST /scaleup/pitch-policy`, `blocking_pitch_ids`; CLI `tst pitches`, `approve-pitch`, `decline-pitch`, `pitch-limit`; `tools/m13b_targets.py` (nightly `tests/balance/test_m13b_balance.py`).
+  - 27.5 targets after the product manager's rulings (2026-11-04), all passing:
+    - 1 (8/10), 2 (x1.68), 3 (+46 points against the central case), 4 (2.3 a year);
+    - 5 (the window alone +30% to +56% on 7 of 8 seeds);
+    - 7 (x1.10 the founder's steady + regions script).
+    - A new product's central case counts only the months after its expected launch at the displayed pace, with the team sized to it (`pitch.team_ready_months`).
+    - Tuned: `pitch.base` 0.15, `per_ambition` 0.01, `chance_clamp` [0.05, 0.9], `region_capture` 1.7, `team_builders` 6, `new_product_share` 0.04 (a score-12 CPO's median outcome; score-8 new-product hits 33% against the ≤ 30% aim is an M15 follow-up); `rnd.first_mover_cap` 5, `first_mover_brand` 6, `first_mover_appeal` 1 (docs/balance-targets.md, M13b).
+    - S2 re-banded to < 65 worker-minutes on CI.
+  - Golden snapshots unchanged.
+
 - M12r Fixes from Codex review 3 (`docs/reviews/codex-review-3.md`, Resolution):
   - Licence actions offer the Research screen's public ceiling (the displayed range's low end in, high end out, minus the margin) in whole points, checked before cash and energy; the licensor's refusal reads the same ceiling, so no response distinguishes two rivals with the same displayed range (finding 1).
   - The Research screen's lab is built from estimates (`projects.lab(..., estimate=True)`): displayed skills, noticed tags and executive seat factors from displayed ranges (finding 2).

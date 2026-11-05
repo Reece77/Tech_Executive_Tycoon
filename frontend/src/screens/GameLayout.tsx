@@ -24,7 +24,9 @@ export function GameLayout() {
   // Open major and critical events block Continue until answered (23.1, M10b); a critical
   // one also opens as a modal (M6).
   const blocking = events.data?.blocking_event_ids.length ?? 0;
-  const proposals = events.data?.blocking_proposal_ids.length ?? 0; // M10c (24.1)
+  const proposals =
+    (events.data?.blocking_proposal_ids.length ?? 0) + // M10c (24.1)
+    (events.data?.blocking_pitch_ids?.length ?? 0); // M13b (27.1): pitches block too
   const blocked = blocking + proposals > 0;
   const holiday = useHoliday(saveId);
   const away = holiday.data?.status === 'running';

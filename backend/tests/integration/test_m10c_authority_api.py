@@ -27,7 +27,9 @@ def test_give_change_and_withdraw_authority(api: tuple[Client, Path]) -> None:  
     cto = _seat(out, "cto")
     assert cto["authority"]["enabled"] is False
     assert cto["authority"]["guardrails"]["headcount_cap"] == 30
-    assert _seat(out, "cpo")["authority"] is None  # no authority for the CPO (24.1)
+    cpo = _seat(out, "cpo")["authority"]  # M13b (27.1): the CPO takes authority too
+    assert cpo["enabled"] is False and cpo["guardrails"]["headcount_cap"] == 12
+    assert {"categories", "protected_products"} <= set(cpo["choices"])
     client.post(f"{BASE}/scaleup/seats/cto/authority", {"enabled": True}, status=400)  # vacant
     client.post(f"{BASE}/scaleup/seats/cto/appoint", {"person_id": 2})
     out = client.post(

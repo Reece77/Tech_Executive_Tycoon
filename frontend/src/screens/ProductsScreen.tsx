@@ -1,7 +1,7 @@
 import { Alert, Button, Checkbox, Modal, NativeSelect, TextInput } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { KpiTile } from '../components/KpiTile';
 import { LifecycleChip } from '../components/LifecycleChip';
@@ -36,7 +36,9 @@ export function ProductsScreen() {
   const products = useProducts(saveId);
   const portfolio = usePortfolio(saveId);
   const meta = useProductsMeta();
-  const [creating, setCreating] = useState(false);
+  // ?new=<category>&segment=<segment> opens the dialog prefilled: a pitch's Modify (27.1)
+  const [params] = useSearchParams();
+  const [creating, setCreating] = useState(params.get('new') !== null);
 
   if (products.isPending || portfolio.isPending || meta.isPending) return <Loading />;
   if (products.error || portfolio.error || meta.error) {
@@ -100,7 +102,13 @@ export function ProductsScreen() {
         product&apos;s size: fast, steady or slow.
       </p>
       {creating && (
-        <NewProductDialog saveId={saveId} meta={meta.data} onClose={() => setCreating(false)} />
+        <NewProductDialog
+          saveId={saveId}
+          meta={meta.data}
+          onClose={() => setCreating(false)}
+          initialCategory={params.get('new') ?? ''}
+          initialSegment={params.get('segment')}
+        />
       )}
     </>
   );
@@ -307,17 +315,21 @@ function NewProductDialog({
   saveId,
   meta,
   onClose,
+  initialCategory = '',
+  initialSegment = null,
 }: {
   saveId: string;
   meta: ProductsMeta;
   onClose: () => void;
+  initialCategory?: string;
+  initialSegment?: string | null;
 }) {
   const categories = useCategories(saveId);
   const create = useCreateProduct(saveId);
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [categoryKey, setCategoryKey] = useState('');
-  const [chosen, setChosen] = useState<string[]>([]);
+  const [categoryKey, setCategoryKey] = useState(initialCategory);
+  const [chosen, setChosen] = useState<string[]>(initialSegment ? [initialSegment] : []);
 
   const list = (categories.data ?? []).filter((c) => !c.capacity_market && !c.assembly_market); // M12a, M12b
   const category: Category | undefined = list.find((c) => c.key === categoryKey) ?? list[0];
@@ -386,6 +398,19 @@ function NewProductDialog({
             <legend style={{ fontSize: 13, color: 'var(--tst-text-2)', padding: '0 0 8px' }}>
               Sell to
             </legend>
+            <p
+              className="tst-muted"
+              style={{ margin: 0, fontSize: 13 }}
+              data-testid="category-size"
+            >
+              Market size {formatMoneyShort(category.size_cents_year ?? 0)} a year at home, growing
+              about {Math.round(category.annual_growth * 100)}% a year
+              {(category.region_sizes ?? []).length > 0 &&
+                `; elsewhere ${(category.region_sizes ?? [])
+                  .map((r) => `${r.label} ${formatMoneyShort(r.size_cents_year)}`)
+                  .join(', ')}`}
+              .
+            </p>
             {category.segments.map((s) => (
               <label
                 key={s.segment}
@@ -418,7 +443,8 @@ function NewProductDialog({
                 </span>
                 <span className="tst-num tst-muted" style={{ marginLeft: 'auto', fontSize: 13 }}>
                   {formatCount(s.addressable)} {s.counts_users ? 'users' : 'businesses'} · ~
-                  {formatMoneyWhole(s.reference_price_cents)} a month
+                  {formatMoneyWhole(s.reference_price_cents)} a month ·{' '}
+                  {formatMoneyShort(s.size_cents_year ?? 0)} a year
                 </span>
               </label>
             ))}

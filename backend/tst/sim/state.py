@@ -46,13 +46,21 @@ from tst.sim.org.models import (
     ExecSeat,
     HiringPlan,
     OrgUnit,
+    Pitch,
+    PitchPolicy,
     Proposal,
     WorkPolicy,
 )
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
-from tst.sim.research.models import EraArrival, License, ResearchLead, ResearchProject
+from tst.sim.research.models import (
+    EraArrival,
+    EraWindow,
+    License,
+    ResearchLead,
+    ResearchProject,
+)
 from tst.sim.rivals.models import (
     FreeAgent,
     PoachApproach,
@@ -173,6 +181,8 @@ class GameState:
     authorities: tuple[Authority, ...] = ()
     exec_decisions: tuple[ExecDecision, ...] = ()
     proposals: tuple[Proposal, ...] = ()
+    pitches: tuple[Pitch, ...] = ()  # M13b (27.1): pending and recent pitches, by id
+    pitch_policies: tuple[PitchPolicy, ...] = ()  # M13b: by company_id
     macro: MacroMonth | None = None  # the indicators phase 1 last set (M10, 20.1)
     loans: tuple[Loan, ...] = ()  # every loan, sorted by id (M10, 20.3)
     # M9 (19.2, 19.5): open offices by id; other regions' markets by (category, segment,
@@ -196,6 +206,7 @@ class GameState:
     research_leads: tuple[ResearchLead, ...] = ()
     research_projects: tuple[ResearchProject, ...] = ()
     era_arrivals: tuple[EraArrival, ...] = ()
+    era_windows: tuple[EraWindow, ...] = ()  # M13b (27.3): player first movers' windows
     licenses: tuple[License, ...] = ()
     # M12b (26.2, 26.3): contract-manufacturing and wafer contracts (active, and ended ones of
     # the last 24 months) by id; the last phase 5's production by product id.
@@ -415,6 +426,21 @@ class GameState:
         """A seat's authority record (M10c, 24.1); None if never given."""
         return next(
             (a for a in self.authorities if a.company_id == company_id and a.seat == seat), None
+        )
+
+    def pending_pitches(self, company_id: int) -> tuple[Pitch, ...]:
+        """Pitches waiting for the founder's answer (27.1, M13b)."""
+        return tuple(
+            p for p in self.pitches if p.company_id == company_id and p.status == "pending"
+        )
+
+    def pitch(self, pitch_id: int) -> Pitch | None:
+        return next((p for p in self.pitches if p.id == pitch_id), None)
+
+    def pitch_policy(self, company_id: int) -> PitchPolicy:
+        return next(
+            (p for p in self.pitch_policies if p.company_id == company_id),
+            PitchPolicy(company_id),
         )
 
     def pending_proposals(self, company_id: int) -> tuple[Proposal, ...]:
@@ -698,6 +724,16 @@ def with_exec_decision(state: GameState, decision: ExecDecision) -> GameState:
     return replace(state, exec_decisions=_upsert(state.exec_decisions, decision, lambda d: d.id))
 
 
+def with_pitch(state: GameState, pitch: Pitch) -> GameState:
+    return replace(state, pitches=_upsert(state.pitches, pitch, lambda p: p.id))
+
+
+def with_pitch_policy(state: GameState, policy: PitchPolicy) -> GameState:
+    return replace(
+        state, pitch_policies=_upsert(state.pitch_policies, policy, lambda p: p.company_id)
+    )
+
+
 def with_proposal(state: GameState, proposal: Proposal) -> GameState:
     return replace(state, proposals=_upsert(state.proposals, proposal, lambda p: p.id))
 
@@ -834,6 +870,13 @@ def with_research_lead(state: GameState, lead: ResearchLead) -> GameState:
 def with_research_project(state: GameState, project: ResearchProject) -> GameState:
     return replace(
         state, research_projects=_upsert(state.research_projects, project, lambda p: p.id)
+    )
+
+
+def with_era_window(state: GameState, window: EraWindow) -> GameState:
+    return replace(
+        state,
+        era_windows=_upsert(state.era_windows, window, lambda w: (w.era_key, w.company_id)),
     )
 
 

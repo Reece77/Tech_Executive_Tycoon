@@ -20,6 +20,9 @@ from tst.api.schemas.scaleup import (
     DivisionOut,
     DivisionPeriodOut,
     DivisionStatementsOut,
+    GuardChoiceOut,
+    PitchOut,
+    PitchPolicyOut,
     ProposalOut,
     ReportOut,
     ScaleupOut,
@@ -27,7 +30,7 @@ from tst.api.schemas.scaleup import (
     SeatOut,
     SupportPoolOut,
 )
-from tst.api.views import person_name, role_label
+from tst.api.views import person_name, pitch_record, role_label
 from tst.db.models import InboxItemRow
 from tst.loader import LoadedData
 from tst.sim.actions.authority import default_authority
@@ -47,7 +50,7 @@ from tst.sim.org.divisions import (
     support_pools,
 )
 from tst.sim.org.formulas import seat_effect, support_factor, support_morale
-from tst.sim.org.models import SEATS
+from tst.sim.org.models import SEATS, Pitch
 from tst.sim.org.rules import org_view
 from tst.sim.snapshot import DivisionMonth
 from tst.sim.state import GameState
@@ -100,6 +103,7 @@ ACTS_ON = {  # 24.1, in words
     "offices",
     "cfo": "Proposes a round or a loan when runway is short; repays debt early when cash is "
     "plentiful",
+    "cpo": "Launches products that are ready; pitches new products and sunsets",  # M13b (27.1)
 }
 
 
@@ -114,7 +118,32 @@ def _authority_out(
         guardrails={k: list(v) if isinstance(v, tuple) else v for k, v in a.guardrails},
         since_label=format_turn(a.since_turn) if a.enabled else None,
         acts_on=ACTS_ON[seat],
+        choices=_choices(state, company_id, dict(a.guardrails), data),
     )
+
+
+def _choices(
+    state: GameState, company_id: int, rails: dict[str, object], data: LoadedData
+) -> dict[str, list[GuardChoiceOut]]:
+    """The values each list guardrail may hold (M13b): units, products or categories."""
+    out: dict[str, list[GuardChoiceOut]] = {}
+    if "protected_units" in rails:
+        out["protected_units"] = [
+            GuardChoiceOut(value=str(u.id), label=u.name) for u in state.active_units(company_id)
+        ]
+    if "protected_products" in rails:
+        out["protected_products"] = [
+            GuardChoiceOut(value=str(p.id), label=p.name)
+            for p in state.company_products(company_id)
+            if p.status != "retired"
+        ]
+    if "categories" in rails:
+        out["categories"] = [
+            GuardChoiceOut(value=c.key, label=c.label)
+            for c in data.game_data.categories
+            if not c.capacity_market and not c.assembly_market  # as the New product dialog
+        ]
+    return out
 
 
 def _seat_out(state: GameState, company_id: int, seat: str, data: LoadedData) -> SeatOut:
@@ -142,6 +171,49 @@ def _seat_out(state: GameState, company_id: int, seat: str, data: LoadedData) ->
         vacancy_penalty_pct=(
             effect_pct(seat, b.exec_seats.vacant_effect, b) if in_play and holder is None else None
         ),
+        record=pitch_record(state, holder) if holder is not None else None,
+    )
+
+
+def pitch_out(state: GameState, p: Pitch) -> PitchOut:
+    from tst.sim.org.pitches import case_text
+
+    return PitchOut(
+        pitch_id=p.id,
+        seat=p.seat,
+        person_id=p.person_id,
+        name=person_name(state.person(p.person_id)),
+        date_label=format_turn(p.turn),
+        kind=p.kind,
+        title=p.title,
+        why=p.why,
+        cost_cents=p.cost_cents,
+        capex_cents=p.capex_cents,
+        monthly_cents=p.monthly_cents,
+        hires=p.hires,
+        unit=p.unit,
+        low=p.low,
+        high=p.high,
+        central=p.central,
+        case_label=f"{case_text(p.unit, p.low)} to {case_text(p.unit, p.high)}",
+        risk=p.risk,
+        params=dict(p.params),
+        status=p.status,
+        outcome=p.outcome,
+        measured_label=case_text(p.unit, p.measured) if p.measured is not None else None,
+    )
+
+
+def pitch_policy_out(state: GameState, cash: int, data: LoadedData) -> PitchPolicyOut:
+    from tst.sim.org.formulas import auto_approve_limit
+
+    policy = state.pitch_policy(state.player.id)
+    pb = data.balance.pitch
+    return PitchPolicyOut(
+        auto_approve_cents=policy.auto_approve_cents,
+        default_cents=auto_approve_limit(cash, None, pb),
+        limit_cents=auto_approve_limit(cash, policy.auto_approve_cents, pb),
+        stop_for_big=policy.stop_for_big,
     )
 
 
@@ -170,6 +242,7 @@ def scaleup_out(
     data: LoadedData,
     last_profit: dict[int, int] | None = None,
     reports: list[ReportOut] | None = None,
+    cash: int | None = None,
 ) -> ScaleupOut:
     b = data.balance
     company = state.player
@@ -291,6 +364,14 @@ def scaleup_out(
             if d.company_id == company.id and d.turn > state.turn - DECISION_MONTHS
         ],
         reports=reports or [],
+        pitches=[
+            pitch_out(state, p)
+            for p in sorted(
+                (p for p in state.pitches if p.company_id == company.id),
+                key=lambda p: (p.status != "pending", -p.id),
+            )[:PROPOSALS_SHOWN]
+        ],
+        pitch_policy=pitch_policy_out(state, cash or 0, data) if cash is not None else None,
     )
 
 
