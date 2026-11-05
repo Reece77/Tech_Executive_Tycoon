@@ -1458,3 +1458,18 @@ A player first mover's era window and the baseline its era report compares again
 | `trend` | FLOAT | no | The company's monthly MRR growth over the 12 months before, as a fraction. |
 | `demand` | JSON | no | `[category, addressable customers]` at arrival, for each of the era's categories. |
 | `reported` | BOOLEAN | no | The era report was sent at the window's end. |
+
+## Mergers and acquisitions (migration `0033_mna`, M14)
+
+The M&A records keep their fields in a JSON `data` column: each is the frozen record in `backend/tst/sim/mna/models.py` without its key columns, tuples as JSON lists. Saves made before M14 have no rows, so a company that never buys plays as before.
+
+| Table | Key | Columns | Notes |
+| --- | --- | --- | --- |
+| `rival_listing` | `company_id` | `sentiment` (float) | A listed rival's sentiment S (28.1); its market cap is V_f × S. A row appears in a rival's first listed month (`listed_from` in `incumbents.yaml` / `entrants.yaml`). |
+| `company_parent` | `company_id` | `parent_id` | A kept brand's parent (28.5, ADR-0020). No row: an independent company. |
+| `mna_target_file` | `acquirer_id`, `target_id` | `data`: `problems` (list of `tech_debt`, `key_person_risk`, `customer_concentration`; **hidden** until diligence or closing), `diligence_turn`, `diligence_done_turn`, `board_bar` (**hidden**), `counter_cents`, `blocked_until` | What one acquirer knows of one target (28.2–28.3). |
+| `mna_deal` | `id` | `data`: `acquirer_id`, `target_id`, `price_cents`, `cash_share` (0–1), `made_turn`, `status` (`accepted`, `review`, `blocked`, `closed`, `abandoned`, `failed`), `hostile`, `close_turn`, `review_end_turn`, `combined_share`, `market`, `blocked_draw` (**hidden**), `remedy_product_id`, `mode` (`brand`, `integrate`), `resolved_turn`, `loan_cents` | A deal on its way to closing (28.3–28.4). |
+| `mna_acquisition` | `deal_id` | `data`: `acquirer_id`, `target_id`, `mode`, `closed_turn`, `price_cents`, `directive` (`grow`, `harvest`, `defend`), `distance`, `cost_before_cents`, `key_people`, `pool_kept`, `let_go`, `departed`, `problems`, `product_ids`, `unit_ids` | A closed acquisition and its integration progress (28.5). |
+| `mna_acquired_person` | `person_id` | `data`: `deal_id`, `until_turn`, `brand`, `flight_mult` | An acquired key person during culture clash (28.5); the row goes when clash ends or they leave. |
+
+Rivals now also record `company_history.op_history` (their monthly operating result, as the player's), for V_f's trailing margin (28.1). Accounts `1800_goodwill` and `1810_investment_subsidiaries` are new in `accounts.yaml`.

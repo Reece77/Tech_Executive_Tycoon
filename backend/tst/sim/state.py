@@ -39,6 +39,7 @@ from tst.sim.markets_public.models import (
     PublicCompany,
     ShareMonth,
 )
+from tst.sim.mna.models import AcquiredPerson, Acquisition, Deal, RivalListing, TargetFile
 from tst.sim.money import Cents
 from tst.sim.org.models import (
     Authority,
@@ -117,6 +118,8 @@ class CompanyState:
     # entrants.yaml; (2, category_index, n) for the nth startup founded in a category.
     # Empty for the player and for rivals of saves made before M12a (keyed by company id).
     rival_key: tuple[int, ...] = ()
+    # M14 (28.5, ADR-0020): the company that owns this one as a kept brand; None otherwise
+    parent_id: int | None = None
 
     @property
     def is_rival(self) -> bool:
@@ -221,6 +224,14 @@ class GameState:
     share_months: tuple[ShareMonth, ...] = ()
     ceos: tuple[Ceo, ...] = ()
     ceo_decisions: tuple[CeoDecision, ...] = ()
+    # M14 (28): listed rivals' sentiment by company id; what each acquirer knows of each
+    # target by (acquirer_id, target_id); deals by id; closed acquisitions by deal id; acquired
+    # key people during culture clash by person id.
+    rival_listings: tuple[RivalListing, ...] = ()
+    target_files: tuple[TargetFile, ...] = ()
+    deals: tuple[Deal, ...] = ()
+    acquisitions: tuple[Acquisition, ...] = ()
+    acquired_people: tuple[AcquiredPerson, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -571,6 +582,13 @@ class GameState:
             if company.is_player:
                 return company
         raise LookupError("game state has no player company")
+
+
+def group_companies(state: GameState, parent_id: int) -> tuple[CompanyState, ...]:
+    """A parent and the kept brands it owns (M14, 28.5; ADR-0020): consolidation iterates
+    these. M16 extends this to deeper groups."""
+    parent = state.company(parent_id)
+    return (parent, *(c for c in state.companies if c.parent_id == parent_id and c.alive))
 
 
 def player_companies(state: GameState) -> tuple[CompanyState, ...]:
@@ -944,3 +962,52 @@ def with_ceo(state: GameState, ceo: Ceo) -> GameState:
 
 def with_ceo_decision(state: GameState, decision: CeoDecision) -> GameState:
     return replace(state, ceo_decisions=_upsert(state.ceo_decisions, decision, lambda d: d.id))
+
+
+# --- M14 (28): mergers and acquisitions ----------------------------------------------------
+
+
+def with_rival_listing(state: GameState, listing: RivalListing) -> GameState:
+    return replace(
+        state, rival_listings=_upsert(state.rival_listings, listing, lambda x: x.company_id)
+    )
+
+
+def with_target_file(state: GameState, file: TargetFile) -> GameState:
+    return replace(
+        state,
+        target_files=_upsert(state.target_files, file, lambda f: (f.acquirer_id, f.target_id)),
+    )
+
+
+def with_deal(state: GameState, deal: Deal) -> GameState:
+    return replace(state, deals=_upsert(state.deals, deal, lambda d: d.id))
+
+
+def with_acquisition(state: GameState, acquisition: Acquisition) -> GameState:
+    return replace(
+        state, acquisitions=_upsert(state.acquisitions, acquisition, lambda a: a.deal_id)
+    )
+
+
+def with_acquired_person(state: GameState, person: AcquiredPerson) -> GameState:
+    return replace(
+        state, acquired_people=_upsert(state.acquired_people, person, lambda p: p.person_id)
+    )
+
+
+def without_acquired_person(state: GameState, person_id: int) -> GameState:
+    return replace(
+        state, acquired_people=tuple(p for p in state.acquired_people if p.person_id != person_id)
+    )
+
+
+def target_file(state: GameState, acquirer_id: int, target_id: int) -> TargetFile | None:
+    return next(
+        (f for f in state.target_files if (f.acquirer_id, f.target_id) == (acquirer_id, target_id)),
+        None,
+    )
+
+
+def rival_listing(state: GameState, company_id: int) -> RivalListing | None:
+    return next((x for x in state.rival_listings if x.company_id == company_id), None)

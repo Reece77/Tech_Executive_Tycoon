@@ -67,6 +67,7 @@ from tst.db.mappers import (
     unit_from_row,
     unit_to_row,
 )
+from tst.db.mna_io import load_mna, sync_mna
 from tst.db.models import (
     AuthorityRow,
     BoardSeatHistoryRow,
@@ -539,6 +540,7 @@ def load_state(session: Session) -> GameState:
     state = _load_m10(session, state)
     state = _load_exec(session, state)
     state = _load_pitches(session, state)
+    state = load_mna(session, state, has_table)  # M14 (0033)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
     state = _load_public(session, state)
@@ -1822,6 +1824,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_marketing(session, old, new)
     _sync_exec(session, old, new)
     _sync_pitches(session, old, new)
+    sync_mna(session, old, new, has_table)  # M14 (0033)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
     _sync_public(session, old, new)
