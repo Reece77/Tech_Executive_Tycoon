@@ -149,6 +149,7 @@ class CreatePlan:
     equity_bp: int = 0
     unit_id: int | None = None
     focus: PlanFocus = "current"
+    interest: str | None = None  # M14b (29.5): candidates with this interest, a fee a search
     kind: Literal["create_plan"] = "create_plan"
 
 
@@ -568,7 +569,10 @@ def create_plan(state: GameState, action: CreatePlan, balance: Balance, data: Ga
         equity_bp=action.equity_bp,
         created_turn=state.turn,
         focus=action.focus,
+        interest=action.interest,
     )
+    if action.interest is not None and action.interest not in data.interest_keys:
+        raise InvalidActionError(f"unknown interest {action.interest!r}")
     return Outcome(replace(with_plan(state, plan), next_ids=ids))
 
 

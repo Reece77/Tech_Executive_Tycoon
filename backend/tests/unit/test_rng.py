@@ -88,6 +88,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "mna": 37,  # M14 (28)
         "integration": 38,  # M14 (28.5)
         "rival_mna": 39,  # M14 (28.6)
+        "press": 40,  # M14b (29.4)
         "misc": 99,
     }
 

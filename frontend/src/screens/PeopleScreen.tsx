@@ -9,6 +9,7 @@ import { TABLE_SEARCH_ATTR } from '../hooks/useGameHotkeys';
 import { useTableViews } from '../hooks/useTableViews';
 import { KpiTile } from '../components/KpiTile';
 import { MoraleBar } from '../components/MoraleBar';
+import { LeadershipFit } from '../components/LeadershipFit';
 import { LeadsChip } from '../components/OrgNode';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import { StatusChip } from '../components/StatusChip';
@@ -119,6 +120,18 @@ function overviewColumns(saveId: string) {
       sortFn: 'basic',
       sortUndefined: 'last',
       cell: ({ row }) => <MoraleBar morale={row.original.morale} width={64} />,
+    }),
+    helper.accessor((p) => p.leadership_fit_high ?? undefined, {
+      id: 'leadership_fit',
+      header: 'Lead fit',
+      sortFn: 'basic',
+      sortUndefined: 'last',
+      cell: ({ row }) => (
+        <LeadershipFit
+          low={row.original.leadership_fit_low}
+          high={row.original.leadership_fit_high}
+        />
+      ),
     }),
     helper.display({
       id: 'top',

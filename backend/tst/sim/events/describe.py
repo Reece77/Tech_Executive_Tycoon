@@ -119,6 +119,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return _loan_text(state, effect, balance)
         case "modifier":
             return modifier_text(state, effect.stat, effect.target, v, effect.months)
+        case "press_step":  # M14b (29.1)
+            return PRESS_STEP_TEXT.get(effect.stat, effect.stat)
         case "public_step":  # M13 (25)
             return PUBLIC_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
     return effect.type.replace("_", " ")
@@ -212,3 +214,11 @@ def month_choices(
     if gone:
         parts.append("Expired: " + "; ".join(gone))
     return ". ".join(parts) + "." if parts else None
+
+
+# M14b (29.1): a press moment's tones, in words (never a hidden number).
+PRESS_STEP_TEXT: dict[str, str] = {
+    "bold": "a bold claim: brand lifts for 6 months, and it can backfire if results disagree",
+    "measured": "a measured answer: a small brand lift, no risk",
+    "deflect": "no comment: credibility falls a little",
+}

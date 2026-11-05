@@ -2598,3 +2598,71 @@ def directive(
     path, data, state = _game(save)
     _run(path, data, SetDirective(_actor(state), _company_named(state, company), mode))  # type: ignore[arg-type]
     typer.echo(f"Directive set: {mode}.")
+
+
+# --- M14b: press, promises and feuds (formulas.md 29) ---------------------------------------
+
+
+@app.command("press")
+def press_cmd(save: SaveOpt) -> None:
+    """Credibility and its last changes, and recent press moments (29.1, 29.3)."""
+    from tst.api.press_views import press_out
+
+    _, data, state = _game(save)
+    out = press_out(state, data)
+    typer.echo(f"Credibility {out.credibility.value:.0f}/100")
+    for c in out.credibility.history:
+        typer.echo(f"  {c.label}  {c.change:+.1f}  {c.cause}")
+    for m in out.moments:
+        tone = f", answered {m.tone}" if m.tone else ""
+        typer.echo(f"  {m.shown or '-':<9} {m.label}: {m.status}{tone}")
+    if out.form.moment_id is not None:
+        typer.echo(
+            "  You can make a promise in this month's press moment (tst promises --make ...)."
+        )
+
+
+@app.command()
+def promises(
+    save: SaveOpt,
+    make: Annotated[
+        str | None,
+        typer.Option(help="ship, beat, research, no_layoffs or no_price_rise: make a promise"),
+    ] = None,
+    product: Annotated[int | None, typer.Option(help="Your product id")] = None,
+    rival_product: Annotated[int | None, typer.Option(help="The rival's product id (beat)")] = None,
+    domain: Annotated[str | None, typer.Option(help="Research domain key")] = None,
+    level: Annotated[int | None, typer.Option(help="Research lead to reach")] = None,
+    months: Annotated[int | None, typer.Option(help="Months to the deadline (3-18)")] = None,
+) -> None:
+    """Your public promises; --make one in this month's answered press moment (29.2)."""
+    from tst.api.press_views import press_out
+    from tst.sim.actions.press import MakePromise
+
+    path, data, state = _game(save)
+    if make is not None:
+        action = MakePromise(_founder(state), make, product, rival_product, domain, level, months)
+        state = _run(path, data, action).new_state
+        typer.echo(f"Promised; {_energy(state, data)}")
+    out = press_out(state, data)
+    if not out.promises:
+        typer.echo("No promises yet.")
+    for p in out.promises:
+        typer.echo(f"  [{p.promise_id}] {p.status:<6} {p.words} ({p.progress})")
+
+
+@app.command()
+def feuds(save: SaveOpt) -> None:
+    """Feuds with rival CEOs, highest first, with their recent causes (29.4)."""
+    from tst.api.press_views import feud_out
+
+    _, data, state = _game(save)
+    ids = sorted({f.rival_id for f in state.feuds if f.company_id == state.player.id})
+    rows = sorted((feud_out(state, rid, data) for rid in ids), key=lambda f: -f.score)
+    if not rows:
+        typer.echo("No feuds.")
+    for f in rows:
+        flag = " RIVALRY" if f.rivalry else ""
+        typer.echo(f"{f.rival:<24} {f.ceo or '-':<24} {f.score:5.1f}{flag}")
+        for c in f.causes:
+            typer.echo(f"    {c.label}  +{c.change:.0f}  {c.cause}")

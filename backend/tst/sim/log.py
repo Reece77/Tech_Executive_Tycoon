@@ -8,7 +8,7 @@ from typing import Literal
 
 type LinkKind = Literal[
     "person", "candidate", "search", "product", "finance", "rival"
-]  # rival: M14
+]  # rival: M14 and M14b
 type ParamValue = str | int
 
 

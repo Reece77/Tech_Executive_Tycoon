@@ -337,6 +337,17 @@ def make_offer(
         cap = valuation.market_cap_cents(state, target, balances, balance, data) or 0
         premium = mf.premium_over(price, cap)
         if action.hostile:
+            if state.company(acquirer_id).is_player:  # 29.4: a hostile bid feeds the feud
+                from tst.sim.rivals.characters import add_feud
+
+                state = add_feud(
+                    state,
+                    acquirer_id,
+                    target,
+                    balance.feud.hostile_bid,
+                    "you made a hostile bid",
+                    balance,
+                )
             u = float(mna_draws(rng, state.turn, *key, TENDER_TAG).random())
             aggressive = state.company(target).personality == "aggressive"
             if u < mf.tender_chance(premium, aggressive, mb.tender):
@@ -430,6 +441,9 @@ def _accept(
     deal, logs = antitrust.screen(state, deal, rng, balance, data)
     found = replace(found, counter_cents=None, board_bar=None)
     state = with_deal(with_target_file(state, found), deal)
+    from tst.sim.press.moments import queue_moment  # 29.1: the announcement is a press moment
+
+    state = queue_moment(state, acquirer_id, "acquisition")
     name = state.company(action.target_id).name
     how = "tendered" if action.hostile else "agreed"
     accepted = _update(

@@ -26,6 +26,7 @@ from tst.sim.markets_public.value import (
     fundamentals,
     growth_of,
 )
+from tst.sim.press.moments import credibility, queue_moment
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -247,8 +248,13 @@ def _report(
     cid, turn = public.company_id, state.turn
     actual = public.quarter_revenue_cents
     margin = pf.margin_bp(public.quarter_op_cents, actual)
-    s = pf.surprise(actual, g.revenue_cents)
-    sm = pf.margin_surprise_points(margin, g.margin_bp)
+    # M14b (29.3): the market expects the player's guidance at weight credibility / 100, and
+    # the trend consensus for the rest.
+    w = credibility(state, cid, balance) / pf.PCT if g.by_player else 1.0
+    expected = round(w * g.revenue_cents + (1 - w) * g.consensus_revenue_cents)
+    expected_margin = round(w * g.margin_bp + (1 - w) * g.consensus_margin_bp)
+    s = pf.surprise(actual, expected)
+    sm = pf.margin_surprise_points(margin, expected_margin)
     jump = pf.earnings_jump(s, sm, eb)
     result = pf.result_of(s, eb)
     sentiment = sentiment * (1 + jump)
@@ -305,6 +311,8 @@ def _report(
     ]
     if result == "miss":
         state = ipo.queue_public(state, cid, EARNINGS_MISS, turn + 1)
+    words = {"beat": "a beat", "inline": "in line", "miss": "a miss"}[result]
+    state = queue_moment(state, cid, "earnings", {"result": words})  # M14b (29.1)
     return state, public, sentiment, result, logs
 
 

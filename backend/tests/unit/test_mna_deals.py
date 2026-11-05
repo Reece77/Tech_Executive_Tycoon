@@ -299,3 +299,33 @@ def test_targets_over_the_staff_limit_cannot_integrate(loaded: LoadedData) -> No
     _energy(game)
     with pytest.raises(MnaRuleError, match="too big to integrate"):
         game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho)))
+
+
+# --- The lane merge with M14b (29.1, 29.4) ---------------------------------------------------
+
+
+def test_an_agreed_deal_raises_an_acquisition_press_moment(loaded: LoadedData) -> None:
+    game = _game(loaded)
+    zoho = _id(game.state, "Zoho")
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho), mode="brand"))
+    (moment,) = (m for m in game.state.press_moments if m.trigger == "acquisition")
+    assert moment.company_id == 1 and moment.turn == game.state.turn
+
+
+def test_a_hostile_bid_feeds_the_feud_win_or_lose(loaded: LoadedData) -> None:
+    from tst.sim.state import feud_of
+
+    game = _game(loaded)
+    salesforce = _id(game.state, "Salesforce")
+    b, d = loaded.balance, loaded.game_data
+    cap = deals.estimate_cents(game.state, 1, salesforce, game.balances, b, d)
+    _energy(game)
+    game.act(
+        BidForCompany(_founder(game), salesforce, round(cap * 1.1), hostile=True, mode="brand")
+    )
+    assert "failed" in str(dict(game.action_logs[-1].params)["title"])
+    feud = feud_of(game.state, 1, salesforce)
+    assert feud is not None and feud.score == b.feud.hostile_bid
+    assert feud.causes[-1][2] == "you made a hostile bid"
+    assert not any(m.trigger == "acquisition" for m in game.state.press_moments)

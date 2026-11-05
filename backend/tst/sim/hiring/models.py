@@ -33,6 +33,7 @@ class Search:
     # M9 (19.3): the city candidates live in (relocators move there), ANYWHERE for a remote
     # unit's search, None for searches opened before M9 (generated as v1 did).
     city: str | None = None
+    interest: str | None = None  # M14b (29.5): candidates with this interest only
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,6 +132,10 @@ class NextIds:
     ceo_decision: int = 1  # M13: loaded as max(id) + 1 of the ceo_decision table
     pitch: int = 1  # M13b: loaded as max(id) + 1 of the exec_pitch table
     deal: int = 1  # M14: loaded as max(id) + 1 of the mna_deal table
+    # M14b: loaded as max(id) + 1 of the press_moment, press_promise and rival_statement tables
+    press_moment: int = 1
+    promise: int = 1
+    statement: int = 1
 
     def take(
         self,
@@ -171,6 +176,9 @@ class NextIds:
             "ceo_decision",
             "pitch",
             "deal",
+            "press_moment",
+            "promise",
+            "statement",
         ],
     ) -> tuple[int, NextIds]:
         value: int = getattr(self, kind)

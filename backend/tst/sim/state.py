@@ -54,6 +54,14 @@ from tst.sim.org.models import (
 )
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
+from tst.sim.press.models import (
+    Credibility,
+    Departure,
+    Feud,
+    PressMoment,
+    Promise,
+    Statement,
+)
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
 from tst.sim.research.models import (
     EraArrival,
@@ -232,6 +240,15 @@ class GameState:
     deals: tuple[Deal, ...] = ()
     acquisitions: tuple[Acquisition, ...] = ()
     acquired_people: tuple[AcquiredPerson, ...] = ()
+    # M14b (29): press moments (pending, queued, or answered in the last 12 months) and every
+    # promise, by id; credibility by company id; the player's feuds by (company_id, rival_id);
+    # rival CEOs' statements of the last 24 months, by id.
+    press_moments: tuple[PressMoment, ...] = ()
+    promises: tuple[Promise, ...] = ()
+    credibility: tuple[Credibility, ...] = ()
+    feuds: tuple[Feud, ...] = ()
+    statements: tuple[Statement, ...] = ()
+    departures: tuple[Departure, ...] = ()  # resignations and poaches lately, by person id
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -1011,3 +1028,36 @@ def target_file(state: GameState, acquirer_id: int, target_id: int) -> TargetFil
 
 def rival_listing(state: GameState, company_id: int) -> RivalListing | None:
     return next((x for x in state.rival_listings if x.company_id == company_id), None)
+
+
+# --- M14b (formulas.md 29) ---------------------------------------------------------------------
+
+
+def credibility_of(state: GameState, company_id: int) -> Credibility | None:
+    return next((c for c in state.credibility if c.company_id == company_id), None)
+
+
+def feud_of(state: GameState, company_id: int, rival_id: int) -> Feud | None:
+    return next(
+        (f for f in state.feuds if f.company_id == company_id and f.rival_id == rival_id), None
+    )
+
+
+def with_press_moment(state: GameState, moment: PressMoment) -> GameState:
+    return replace(state, press_moments=_upsert(state.press_moments, moment, lambda m: m.id))
+
+
+def with_promise(state: GameState, promise: Promise) -> GameState:
+    return replace(state, promises=_upsert(state.promises, promise, lambda p: p.id))
+
+
+def with_credibility(state: GameState, cred: Credibility) -> GameState:
+    return replace(state, credibility=_upsert(state.credibility, cred, lambda c: c.company_id))
+
+
+def with_feud(state: GameState, feud: Feud) -> GameState:
+    return replace(state, feuds=_upsert(state.feuds, feud, lambda f: (f.company_id, f.rival_id)))
+
+
+def with_statement(state: GameState, statement: Statement) -> GameState:
+    return replace(state, statements=_upsert(state.statements, statement, lambda s: s.id))

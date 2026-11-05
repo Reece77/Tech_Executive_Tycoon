@@ -27,6 +27,7 @@ from tst.sim.products.models import SELLING, Product, ProductSegment
 from tst.sim.research.levels import tech_factor
 from tst.sim.research.rivals import RESEARCH, research_needs, researching, start_research
 from tst.sim.rivals import formulas as f
+from tst.sim.rivals.characters import rivalry_mult
 from tst.sim.rivals.models import PoachApproach, RivalEffect, RivalMove, SegmentShare, stream_key
 from tst.sim.rivals.poaching import TARGET_KEY, poach_draw
 from tst.sim.rivals.startups import startup_funding
@@ -34,6 +35,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import (
     CompanyState,
     GameState,
+    player_companies,
     with_approach,
     with_pool,
     with_product,
@@ -408,6 +410,10 @@ def choose(
     rv = balance.rivals
     weights = rv.weights[style(state, company)]
     best: tuple[Candidate, float] | None = None
+    # M14b (29.4): a rival in a rivalry weights actions against the player's products (and
+    # poaching from the player) x feud.target_mult.
+    mult = rivalry_mult(state, company.id, balance)
+    against = _player_markets(state) if mult != 1 else frozenset()
     for c in candidates(state, company, balances, balance, data):
         noise = float(gen.normal(0.0, rv.noise_sd))
         if c.need <= 0 or _cooling(state, company.id, c, balance):
@@ -417,12 +423,32 @@ def choose(
             if c.action == RESEARCH  # M11 (21.6)
             else weights.get(c.action, weights["enter_segment"])
         )
+        if mult != 1 and _against_player(state, c, against):
+            weight *= mult
         u = f.utility(c.need, weight, noise)
         if best is None or u > best[1]:
             best = (c, u)
     if best is None or best[1] < rv.act_threshold:
         return None
     return best
+
+
+def _player_markets(state: GameState) -> frozenset[tuple[str, str]]:
+    """(category, segment) where a player product is live (M14b, 29.4)."""
+    return frozenset(
+        (p.category, seg.segment)
+        for c in player_companies(state)
+        for p in state.company_products(c.id)
+        if p.status in ("live", "sunset")
+        for seg in state.segments_of(p.id)
+    )
+
+
+def _against_player(state: GameState, c: Candidate, markets: frozenset[tuple[str, str]]) -> bool:
+    if c.action == "poach":
+        return True
+    product = state.product(c.product_id) if c.product_id is not None else None
+    return product is not None and (product.category, c.segment) in markets
 
 
 # --- Effects of an action (15.3) --------------------------------------------------------------

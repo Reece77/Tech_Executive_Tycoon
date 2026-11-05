@@ -80,6 +80,8 @@ from tst.db.models import (
     CompanyHqRow,
     CompanyRivalKeyRow,
     CompanyRow,
+    CredibilityRow,
+    DepartureRow,
     EmploymentRow,
     EraArrivalRow,
     EraWindowRow,
@@ -90,11 +92,13 @@ from tst.db.models import (
     ExecSeatRow,
     FacilityOutageRow,
     FacilityRow,
+    FeudRow,
     FinanceHistoryRow,
     FormerStaffRow,
     FreeAgentRow,
     FundingRoundRow,
     GuidanceRow,
+    HiringPlanDetailRow,
     HiringPlanRow,
     LedgerEntryRow,
     LedgerLineRow,
@@ -122,12 +126,14 @@ from tst.db.models import (
     PitchPolicyRow,
     PitchRow,
     PoachApproachRow,
+    PressMomentRow,
     ProductDivisionRow,
     ProductionContractRow,
     ProductionMonthRow,
     ProductRegionRow,
     ProductRow,
     ProductSegmentRow,
+    PromiseRow,
     ProposalRow,
     PublicCompanyRow,
     RegionalMarketRow,
@@ -141,10 +147,12 @@ from tst.db.models import (
     SafeRow,
     SaveMetaRow,
     SearchCityRow,
+    SearchInterestRow,
     SearchLevelRow,
     SearchRow,
     SegmentShareRow,
     ShareMonthRow,
+    StatementRow,
     StorylineRow,
     SupplyContractRow,
     SupplyMonthRow,
@@ -187,6 +195,15 @@ from tst.sim.markets_public.models import (
 from tst.sim.org.models import Authority, ExecDecision, ExecSeat, Pitch, PitchPolicy, Proposal
 from tst.sim.people.models import Person, RevealRecord, RevealState
 from tst.sim.people.relationships import Relationship
+from tst.sim.press.models import (
+    Credibility,
+    Departure,
+    Feud,
+    PressMoment,
+    Promise,
+    Statement,
+)
+from tst.sim.press.moments import MEMORY as PRESS_MEMORY
 from tst.sim.research.models import (
     EraArrival,
     EraWindow,
@@ -540,12 +557,13 @@ def load_state(session: Session) -> GameState:
     state = _load_m10(session, state)
     state = _load_exec(session, state)
     state = _load_pitches(session, state)
-    state = load_mna(session, state, has_table)  # M14 (0033)
+    state = load_mna(session, state, has_table)  # M14 (0034)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
     state = _load_public(session, state)
     state = _load_research(session, state)
-    return _load_geo(session, state, product_ids)
+    state = _load_geo(session, state, product_ids)
+    return _load_press(session, state)
 
 
 RESEARCH_MEMORY = 24  # months of stopped projects loaded: last events and History (M11)
@@ -1824,11 +1842,12 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_marketing(session, old, new)
     _sync_exec(session, old, new)
     _sync_pitches(session, old, new)
-    sync_mna(session, old, new, has_table)  # M14 (0033)
+    sync_mna(session, old, new, has_table)  # M14 (0034)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
     _sync_public(session, old, new)
     _sync_research(session, old, new)
+    _sync_press(session, old, new)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()
         for row in former_rows(old, new):  # M7c: what the player knew when they left
@@ -2012,6 +2031,211 @@ def _regional_segment_row(s: RegionalSegment) -> RegionalSegmentRow:
     )
 
 
+# --- The founder in public (M14b, formulas.md 29; 0033) -------------------------------------
+
+STATEMENT_MEMORY = 24  # months of rival CEOs' statements the state holds (29.4)
+# months of departures the state holds: Replace's window (balance.yaml recruit.replace_window)
+DEPARTURE_MEMORY = 3
+
+
+def _moment_live(m: PressMoment, turn: int) -> bool:
+    """Pending or queued, or raised within the last PRESS_MEMORY months (press.moments)."""
+    return m.status in ("pending", "queued") or m.turn > turn - PRESS_MEMORY
+
+
+def _causes(raw: Any) -> tuple[tuple[int, float, str], ...]:
+    return tuple((int(c[0]), float(c[1]), str(c[2])) for c in raw)
+
+
+def moment_from_row(r: Any) -> PressMoment:
+    return PressMoment(
+        id=r.id,
+        company_id=r.company_id,
+        trigger=r.trigger,
+        turn=r.turn,
+        status=r.status,
+        event_turn=r.event_turn,
+        product_id=r.product_id,
+        rival_id=r.rival_id,
+        facts=tuple((str(k), v) for k, v in r.facts),
+        tone=r.tone,
+        answered_turn=r.answered_turn,
+        share_bp=r.share_bp,
+        backfired=bool(r.backfired),
+    )
+
+
+def moment_to_row(m: PressMoment) -> PressMomentRow:
+    fields = asdict(m)
+    fields["facts"] = [[k, v] for k, v in m.facts]
+    return PressMomentRow(**fields)
+
+
+def promise_from_row(r: Any) -> Promise:
+    return Promise(
+        id=r.id,
+        company_id=r.company_id,
+        kind=r.kind,
+        made_turn=r.made_turn,
+        deadline_turn=r.deadline_turn,
+        moment_id=r.moment_id,
+        product_id=r.product_id,
+        rival_product_id=r.rival_product_id,
+        domain=r.domain,
+        level=r.level,
+        baseline=r.baseline,
+        prices=tuple((str(k), int(v)) for k, v in r.prices),
+        ambition=float(r.ambition),
+        audience=float(r.audience),
+        status=r.status,
+        resolved_turn=r.resolved_turn,
+        reminder_turn=r.reminder_turn,
+    )
+
+
+def promise_to_row(p: Promise) -> PromiseRow:
+    fields = asdict(p)
+    fields["prices"] = [[k, v] for k, v in p.prices]
+    return PromiseRow(**fields)
+
+
+def _load_press(session: Session, state: GameState) -> GameState:
+    """Press moments pending, queued or raised in the last PRESS_MEMORY months, every promise,
+    credibility, feuds, the last STATEMENT_MEMORY months of rival CEOs' statements, departures
+    of the last DEPARTURE_MEMORY months, and the
+    M14b hiring fields of the loaded searches and plans (M14b, 0033)."""
+    if not has_table(session, PressMomentRow):
+        return state
+    turn = state.turn
+
+    def next_id(model: Any) -> int:
+        return int(session.scalar(select(func.max(model.id))) or 0) + 1
+
+    interests = {r.search_id: r.interest for r in session.scalars(select(SearchInterestRow))}
+    details = {r.plan_id: r for r in session.scalars(select(HiringPlanDetailRow))}
+
+    def plan(p: Any) -> Any:
+        d = details.get(p.id)
+        if d is None:
+            return p
+        return replace(p, interest=d.interest, replace_of=d.replace_of, level=d.level)
+
+    return replace(
+        state,
+        searches=tuple(replace(s, interest=interests.get(s.id)) for s in state.searches),
+        plans=tuple(plan(p) for p in state.plans),
+        press_moments=tuple(
+            moment_from_row(r)
+            for r in session.scalars(
+                select(PressMomentRow)
+                .where(
+                    PressMomentRow.status.in_(("pending", "queued"))
+                    | (PressMomentRow.turn > turn - PRESS_MEMORY)
+                )
+                .order_by(PressMomentRow.id)
+            )
+        ),
+        promises=tuple(
+            promise_from_row(r) for r in session.scalars(select(PromiseRow).order_by(PromiseRow.id))
+        ),
+        credibility=tuple(
+            Credibility(
+                r.company_id,
+                float(r.value),
+                _causes(r.history),
+                r.fired_turn,
+                r.fired,
+                r.staff_start,
+            )
+            for r in session.scalars(select(CredibilityRow).order_by(CredibilityRow.company_id))
+        ),
+        feuds=tuple(
+            Feud(r.company_id, r.rival_id, float(r.score), _causes(r.causes), r.rivalry_turn)
+            for r in session.scalars(select(FeudRow).order_by(FeudRow.company_id, FeudRow.rival_id))
+        ),
+        statements=tuple(
+            Statement(
+                r.id, r.rival_id, r.person_id, r.turn, cast(Any, r.kind), r.text, r.product_id
+            )
+            for r in session.scalars(
+                select(StatementRow)
+                .where(StatementRow.turn > turn - STATEMENT_MEMORY)
+                .order_by(StatementRow.id)
+            )
+        ),
+        departures=tuple(
+            Departure(
+                r.person_id, r.company_id, r.role, r.level, r.unit_id, r.reason, r.turn, r.name
+            )
+            for r in session.scalars(
+                select(DepartureRow)
+                .where(DepartureRow.turn >= turn - DEPARTURE_MEMORY)
+                .order_by(DepartureRow.person_id)
+            )
+        ),
+        next_ids=replace(
+            state.next_ids,
+            press_moment=next_id(PressMomentRow),
+            promise=next_id(PromiseRow),
+            statement=next_id(StatementRow),
+        ),
+    )
+
+
+def _sync_press(session: Session, old: GameState, new: GameState) -> None:
+    """Press moments, promises, credibility, feuds, statements, departures, and the M14b fields of
+    searches and plans (M14b). Runs after searches and plans are written: their side rows
+    reference them."""
+    if not has_table(session, PressMomentRow):
+        return
+    session.flush()
+    for m in _changed(old.press_moments, new.press_moments, lambda m: m.id):
+        session.merge(moment_to_row(m))
+    for p in _changed(old.promises, new.promises, lambda p: p.id):
+        session.merge(promise_to_row(p))
+    for c in _changed(old.credibility, new.credibility, lambda c: c.company_id):
+        session.merge(
+            CredibilityRow(
+                company_id=c.company_id,
+                value=c.value,
+                history=[list(h) for h in c.history],
+                fired_turn=c.fired_turn,
+                fired=c.fired,
+                staff_start=c.staff_start,
+            )
+        )
+    for f in _changed(old.feuds, new.feuds, lambda f: (f.company_id, f.rival_id)):
+        session.merge(
+            FeudRow(
+                company_id=f.company_id,
+                rival_id=f.rival_id,
+                score=f.score,
+                causes=[list(h) for h in f.causes],
+                rivalry_turn=f.rivalry_turn,
+            )
+        )
+    for s in _changed(old.statements, new.statements, lambda s: s.id):
+        session.merge(StatementRow(**asdict(s)))
+    for d in _changed(old.departures, new.departures, lambda d: d.person_id):
+        session.merge(DepartureRow(**asdict(d)))
+    old_interests = {s.id: s.interest for s in old.searches}
+    for search in new.searches:
+        if search.interest is not None and old_interests.get(search.id) != search.interest:
+            session.merge(SearchInterestRow(search_id=search.id, interest=search.interest))
+    old_details = {p.id: (p.interest, p.replace_of, p.level) for p in old.plans}
+    for plan in new.plans:
+        detail = (plan.interest, plan.replace_of, plan.level)
+        if old_details.get(plan.id, (None, None, None)) != detail:
+            session.merge(
+                HiringPlanDetailRow(
+                    plan_id=plan.id,
+                    interest=plan.interest,
+                    replace_of=plan.replace_of,
+                    level=plan.level,
+                )
+            )
+
+
 # --- The last state written, per save (M6 sub-task 0) -----------------------------------------
 
 
@@ -2083,4 +2307,7 @@ def live_view(state: GameState) -> GameState:
         share_months=tuple(m for m in state.share_months if m.turn > turn - SHARE_HISTORY),  # M13
         ceos=tuple(c for c in state.ceos if _ceo_live(c, turn)),
         ceo_decisions=tuple(d for d in state.ceo_decisions if d.turn > turn - CEO_MEMORY),
+        press_moments=tuple(m for m in state.press_moments if _moment_live(m, turn)),  # M14b
+        statements=tuple(s for s in state.statements if s.turn > turn - STATEMENT_MEMORY),
+        departures=tuple(d for d in state.departures if d.turn >= turn - DEPARTURE_MEMORY),
     )

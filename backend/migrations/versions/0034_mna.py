@@ -5,8 +5,8 @@
 keep their fields in a JSON `data` column (data-dictionary.md). Existing saves start with
 none: a company that never buys plays as before.
 
-Revision ID: 0033_mna
-Revises: 0032_pitches
+Revision ID: 0034_mna
+Revises: 0033_press
 """
 
 from __future__ import annotations
@@ -16,8 +16,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0033_mna"
-down_revision: str | None = "0032_pitches"
+revision: str = "0034_mna"
+down_revision: str | None = "0033_press"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -54,11 +54,11 @@ def upgrade() -> None:
         sa.Column("person_id", sa.Integer(), primary_key=True),
         sa.Column("data", sa.JSON(), nullable=False),
     )
-    op.execute("UPDATE save_meta SET schema_version = 33")
+    op.execute("UPDATE save_meta SET schema_version = 34")
 
 
 def downgrade() -> None:
-    op.execute("UPDATE save_meta SET schema_version = 32")
+    op.execute("UPDATE save_meta SET schema_version = 33")
     for table in (
         "mna_acquired_person",
         "mna_acquisition",

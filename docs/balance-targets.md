@@ -53,6 +53,7 @@ A known miss is a target that misses on `main` with a recorded owner and a bound
 | Target | Owner | Fails only if ("worse than") | Why |
 | --- | --- | --- | --- |
 | T2 | M15 | one strategy wins **10/10** seeds (score: the top strategy's share of the seeds, bound 0.9) | steady wins 8/10 on `main` (nightly, 2026-11-05); M15's v2 strategies should split wins |
+| M10.T3 (20.5 target 3, covenants bite sometimes, band 20–60%) | M15 | **90% or more** of blitz_debt seeds breach (score: the share that breach, bound 0.89; 90% was M10's original measured value) | `main` reads 70% (21/30) on seeds 11–40; its 60% (6/10) on seeds 1–10 was luck. M14b reads 70% (7/10) on seeds 1–10 and 70% (21/30) on seeds 11–40. Product manager's ruling, 2026-11-04 |
 
 
 ## Target curves (bands)
@@ -419,6 +420,18 @@ New-product calibration (2026-11-05). One pass at the pre-tuning pitch rate, for
 - Score 8 is one hit over its ≤ 30% aim; that's an M15 follow-up.
 
 Target 7 sweep (`pitch.base` / `per_ambition`): 0.45/0.04 ×1.54; 0.35/0.03 ×1.33; 0.25/0.02 ×1.26; 0.2/0.015 (floor 0.1) ×1.28; 0.15/0.01 (floor 0.05) ×1.10. Target 1 held at 8-9/10 throughout.
+
+### M14b People and press (2026-11-05, lane B, merges before M14)
+
+The full nightly suite on `m14b-press` (main at `44b9fe3` plus M14b): 30 passed, 1 xfailed (T2, the recorded known miss), 2 failed. One failure, the ten-year API run, came from a Replace 500 since fixed in `777f425`; it passes on its own. The other guard fails against `main`, and no M14b key fixes it:
+
+| Guard | Band | main, seeds 1–10 | M14b, seeds 1–10 | main, seeds 11–40 | M14b, seeds 11–40 | M14b keys tried |
+| --- | --- | --- | --- | --- | --- | --- |
+| M10 20.5 target 3: blitz_debt seeds that breach a covenant | 20–60% | 60% (6/10) | 70% (7/10; seed 6 flips) | 70% (21/30) | 70% (21/30) | `press.max_per_quarter` 1: 7/10; `press.measured_brand` 0, `feud.target_mult` 1.0, `press.cred_hiring` 0: 7/10 each; only with press moments off (`max_per_quarter` 0) does it return to 6/10 |
+
+Reading: over 30 seeds `main` and M14b agree (70%), above the band on both. On the standard seeds `main` sits at the band's top and M14b's press events (they join the event flow and move later draws) flip seed 6. **Ruling (product manager, 2026-11-04):** a pre-existing miss, not M14b's. It is a known miss (`M10.T3` in `backend/tst/balance/known_misses.py`, owner M15) that fails only at 90% or more of seeds, M10's original measured value; `test_3_covenants_bite_sometimes` xfails while the rate is above 60% and under 90%. See Known misses above.
+
+M14b's own §29.7 targets (`tools/m14b_targets.py`, nightly), 10 seeds, all pass: T2 three kept promises +10.7 brand at 24 months (+5 to +15), three broken −11.1 (−10 to −25) with sentiment 10% lower (5–15%); T3 1.2 press moments a year (≤ 6); T4 rivalry on 7/10 bold steady runs (5–9), that rival's moves against the player +26% (20–60%); T5 Replace fills 50% sooner (30–50%). Tuned (`press.*` and `feud.*` only): `feud.bold_mention` 10 → 20, `feud.decay` 2 → 1, `press.statement_chance` 0.6, `press.jab_base` 0.3; releases count as speaking moves.
 
 ## M14: mergers and acquisitions (§28.9)
 

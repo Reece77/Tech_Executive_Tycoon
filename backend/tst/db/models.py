@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 33
+SCHEMA_VERSION = 34
 
 
 class Base(DeclarativeBase):
@@ -1532,11 +1532,11 @@ class CeoDecisionRow(Base):
     overridden_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
-# --- Mergers and acquisitions (M14, formulas.md 28; 0033) -------------------------------------
+# --- Mergers and acquisitions (M14, formulas.md 28; 0034) -------------------------------------
 
 
 class RivalListingRow(Base):
-    """A listed rival's sentiment S (28.1; 0033): its market cap is V_f x S."""
+    """A listed rival's sentiment S (28.1; 0034): its market cap is V_f x S."""
 
     __tablename__ = "rival_listing"
 
@@ -1545,7 +1545,7 @@ class RivalListingRow(Base):
 
 
 class CompanyParentRow(Base):
-    """A kept brand's parent company (28.5, ADR-0020; 0033)."""
+    """A kept brand's parent company (28.5, ADR-0020; 0034)."""
 
     __tablename__ = "company_parent"
 
@@ -1554,7 +1554,7 @@ class CompanyParentRow(Base):
 
 
 class TargetFileRow(Base):
-    """What one acquirer knows of one target (28.2-28.3; 0033). `data` holds TargetFile's
+    """What one acquirer knows of one target (28.2-28.3; 0034). `data` holds TargetFile's
     other fields, hidden ones included (never sent to the API)."""
 
     __tablename__ = "mna_target_file"
@@ -1565,7 +1565,7 @@ class TargetFileRow(Base):
 
 
 class DealRow(Base):
-    """A deal (28.3-28.4; 0033). `data` holds the Deal's fields."""
+    """A deal (28.3-28.4; 0034). `data` holds the Deal's fields."""
 
     __tablename__ = "mna_deal"
 
@@ -1574,7 +1574,7 @@ class DealRow(Base):
 
 
 class AcquisitionRow(Base):
-    """A closed acquisition (28.5; 0033). `data` holds the Acquisition's fields."""
+    """A closed acquisition (28.5; 0034). `data` holds the Acquisition's fields."""
 
     __tablename__ = "mna_acquisition"
 
@@ -1583,9 +1583,136 @@ class AcquisitionRow(Base):
 
 
 class AcquiredPersonRow(Base):
-    """An acquired key person during culture clash (28.5; 0033)."""
+    """An acquired key person during culture clash (28.5; 0034)."""
 
     __tablename__ = "mna_acquired_person"
 
     person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- The founder in public (M14b, formulas.md 29; 0033) --------------------------------------
+
+
+class PressMomentRow(Base):
+    """A press moment (29.1). Every moment keeps its row; the state holds the pending and
+    queued ones and those raised in the last 12 months."""
+
+    __tablename__ = "press_moment"
+    __table_args__ = (Index("ix_press_moment_turn", "turn"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    trigger: Mapped[str] = mapped_column(String(32), nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    event_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rival_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    facts: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+    tone: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    answered_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    share_bp: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    backfired: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+
+class PromiseRow(Base):
+    """A public promise (29.2). The state holds every promise."""
+
+    __tablename__ = "press_promise"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    made_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    deadline_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    moment_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rival_product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    domain: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    level: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    baseline: Mapped[int] = mapped_column(Integer, nullable=False)
+    prices: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+    ambition: Mapped[float] = mapped_column(Float, nullable=False)
+    audience: Mapped[float] = mapped_column(Float, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    resolved_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reminder_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class CredibilityRow(Base):
+    """A company's public credibility, 0-100, with its last changes (29.3)."""
+
+    __tablename__ = "credibility"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    value: Mapped[float] = mapped_column(Float, nullable=False)
+    history: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+    fired_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fired: Mapped[int] = mapped_column(Integer, nullable=False)
+    staff_start: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class FeudRow(Base):
+    """The player's founder against one rival's CEO, 0-100 (29.4)."""
+
+    __tablename__ = "feud"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    rival_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    score: Mapped[float] = mapped_column(Float, nullable=False)
+    causes: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+    rivalry_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class StatementRow(Base):
+    """A rival CEO's public statement (29.4). The state holds the last 24 months."""
+
+    __tablename__ = "rival_statement"
+    __table_args__ = (Index("ix_rival_statement_turn", "turn"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    rival_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    person_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class DepartureRow(Base):
+    """Someone who resigned or was poached (29.5): Replace's source. One row per person (a
+    later departure replaces it); the state holds the last `recruit.replace_window` months."""
+
+    __tablename__ = "departure"
+    __table_args__ = (Index("ix_departure_turn", "turn"),)
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    role: Mapped[str] = mapped_column(String(64), nullable=False)
+    level: Mapped[str] = mapped_column(String(16), nullable=False)
+    unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reason: Mapped[str] = mapped_column(String(16), nullable=False)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    name: Mapped[str] = mapped_column(String(128), nullable=False, default="")
+
+
+class SearchInterestRow(Base):
+    """A search for candidates with one interest only (29.5). No row: any interest."""
+
+    __tablename__ = "search_interest"
+
+    search_id: Mapped[int] = mapped_column(ForeignKey("search.id"), primary_key=True)
+    interest: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+class HiringPlanDetailRow(Base):
+    """A hiring plan's M14b fields (29.5): its interest filter, and for a Replace plan the
+    leaver it replaces and their level. No row: all null."""
+
+    __tablename__ = "hiring_plan_detail"
+
+    plan_id: Mapped[int] = mapped_column(ForeignKey("hiring_plan.id"), primary_key=True)
+    interest: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    replace_of: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    level: Mapped[str | None] = mapped_column(String(16), nullable=True)

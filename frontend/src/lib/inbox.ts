@@ -13,7 +13,8 @@ export type KindLabel =
   | 'News'
   | 'Event'
   | 'Critical'
-  | 'Holiday';
+  | 'Holiday'
+  | 'Press';
 export type InboxFilter =
   'all' | 'unread' | 'people' | 'hiring' | 'products' | 'finance' | 'archived';
 type Group = 'people' | 'hiring' | 'company' | 'products' | 'finance';
@@ -100,6 +101,12 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   ceo_left: { label: 'Delegate', group: 'company' },
   ceo_replaced: { label: 'Delegate', group: 'company' },
   ceo_decisions: { label: 'Delegate', group: 'company' },
+  // M14b: public promises, rival CEOs' statements and Replace (29.2, 29.4, 29.5)
+  promise_made: { label: 'Press', group: 'company' },
+  promise_kept: { label: 'Press', group: 'company' },
+  promise_broken: { label: 'Press', group: 'company' },
+  rival_statement: { label: 'Press', group: 'company' },
+  replace_started: { label: 'Delegate', group: 'hiring' },
 };
 
 /** The Finance tab a finance message opens (M4b). */

@@ -32,9 +32,11 @@ from tst.sim.finance.board import vacate_departed
 from tst.sim.finance.options import settle_leavers
 from tst.sim.hiring.formulas import ROLL_RANGE, energy_cost, roll_succeeds, severance_cents
 from tst.sim.hiring.models import Candidate, Channel, Offer, Search
+from tst.sim.hiring.recruit import interest_fee_cents
 from tst.sim.hiring.rules import offer_problems
 from tst.sim.ledger import (
     CASH,
+    RECRUITING,
     SALARIES,
     LedgerBalances,
     LedgerEntry,
@@ -47,6 +49,7 @@ from tst.sim.org.executives import seats_in_play
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.models import Person
 from tst.sim.people.reveal import apply_knowledge_action
+from tst.sim.press.phase import on_fire
 from tst.sim.scale import clamp_morale
 from tst.sim.state import (
     GameState,
@@ -84,6 +87,7 @@ class OpenSearch:
     # the company root).
     city: str | None = None
     unit_id: int | None = None
+    interest: str | None = None  # M14b (29.5): candidates with this interest, for a fee
     kind: Literal["open_search"] = "open_search"
 
 
@@ -214,11 +218,30 @@ def open_search(
             raise InvalidActionError("a poach search needs a rival still in business")
     elif action.rival_id is not None:
         raise InvalidActionError("only a poach search names a rival")
-    if action.level is not None:  # M8 (18.3)
+    plan_of = state.plan(action.plan_id) if action.plan_id is not None else None
+    replacing = plan_of is not None and plan_of.replace_of is not None
+    if action.level is not None and not replacing:  # M8 (18.3); a Replace plan's level (M14b)
         if action.level != EXEC_SEARCH_LEVEL or action.channel == "poach":
             raise InvalidActionError("a search may target only exec level, and not a poach")
         if not seats_in_play(state, company, balance):
             raise InvalidActionError(f"exec searches open at stage {balance.exec_seats.stage}")
+    fee_entries: tuple[LedgerEntry, ...] = ()
+    if action.interest is not None:  # M14b (29.5): a search by interest, for a fee
+        if action.interest not in data.interest_keys or action.channel == "poach":
+            raise InvalidActionError(f"cannot search by interest {action.interest!r}")
+        fee = interest_fee_cents(action.role, action.level, balance, data)
+        if account_balance(balances, company, CASH) < fee:
+            raise InsufficientCashError(f"a search by interest costs {fee} cents")
+        fee_entries = (
+            LedgerEntry.transfer(
+                turn=state.turn,
+                company_id=company,
+                memo=f"Search by interest: {action.interest}",
+                debit=RECRUITING,
+                credit=CASH,
+                amount=fee,
+            ),
+        )
     city = search_city(state, company, action, balance, data)
     state = spend_energy(state, action.actor_id, CHANNEL_ENERGY[action.channel], balance)
     search_id, ids = state.next_ids.take("search")
@@ -233,8 +256,9 @@ def open_search(
         rival_id=action.rival_id,
         level=action.level,
         city=city,
+        interest=action.interest,
     )
-    return Outcome(replace(with_search(state, search), next_ids=ids))
+    return Outcome(replace(with_search(state, search), next_ids=ids), fee_entries)
 
 
 def search_city(
@@ -415,6 +439,7 @@ def fire(state: GameState, action: Fire, balance: Balance, data: GameData) -> Ou
     if person.id == action.actor_id:
         raise InvalidActionError("an actor cannot fire themselves")
 
+    staff_before = len(state.staff(company))
     state = with_employment(
         state, replace(employment, status="ended", end_turn=state.turn, end_reason="fired")
     )
@@ -449,6 +474,8 @@ def fire(state: GameState, action: Fire, balance: Balance, data: GameData) -> Ou
     log += detached
     state, vacated = vacate_departed(state)  # a nominee's board seat empties (14.6, M4c)
     log += vacated
+    state, pressed = on_fire(state, company, staff_before, balance, data)  # M14b (29.1-29.2)
+    log += tuple(pressed)
     # The larger morale hit gives the tag away, so the company learns it now (M1c brief).
     reveal = state.reveal(company, person.id)
     if (

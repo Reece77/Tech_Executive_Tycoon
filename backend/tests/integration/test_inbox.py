@@ -319,6 +319,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     items += _m14_items(loaded)
     items += _m12a_items(loaded)
     items += _m11_items(loaded)
+    items += _m14b_items(loaded)
     for item in items:
         if item.template is None:
             continue
@@ -480,6 +481,38 @@ def _m14_items(loaded: LoadedData) -> list[LogItem]:
     _, sold = apply_public_step(listed(), 1, "takeover_accept", loaded.balance)
     items = [*game.action_logs, *(i for r in game.results for i in r.log_items), *sold]
     return items
+
+
+def _m14b_items(loaded: LoadedData) -> list[LogItem]:
+    """A promise made, kept and broken (29.2), a rival CEO's statement (29.4) and a Replace
+    (29.5)."""
+    from tests.unit.test_m14b_people import _resigned_with_recruiter
+    from tests.unit.test_m14b_press import _answered, scaleup
+    from tst.sim.actions import MakePromise, ReplaceLeaver, apply_action
+    from tst.sim.press import promises
+    from tst.sim.press.models import Promise
+    from tst.sim.rivals import characters
+    from tst.sim.rng import RngFactory
+    from tst.sim.state import with_promise
+
+    b, d = loaded.balance, loaded.game_data
+    cash = {(1, CASH): 10**12}
+    state = _answered(scaleup())
+    founder = state.founder_of(1)
+    assert founder is not None
+    made = apply_action(
+        state, MakePromise(founder.id, "no_layoffs"), RngFactory(1), b, d, cash, seq=0
+    )
+    p = Promise(1, 1, "ship", state.turn, state.turn + 6)
+    _, kept = promises.resolve(with_promise(state, p), p, "kept", b, d)
+    _, broken = promises.resolve(with_promise(state, p), p, "broken", b, d)
+    rival = next(c.id for c in state.companies if c.is_rival and state.staff(c.id))
+    _, spoke = characters._speak(state, rival, "statement", None, 1)
+    left = _resigned_with_recruiter()
+    founder = left.founder_of(1)
+    assert founder is not None
+    replaced = apply_action(left, ReplaceLeaver(founder.id, 2), RngFactory(1), b, d, cash, seq=0)
+    return [*made.log_items, *kept, *broken, *spoke, *replaced.log_items]
 
 
 def _stage_3(loaded: LoadedData) -> GameState:

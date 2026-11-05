@@ -175,7 +175,7 @@ export function retryBusy(failures: number, error: unknown): boolean {
 }
 export const BUSY_RETRY_MS = 250;
 
-function unwrap<T>(result: { data?: T; error?: unknown; response: Response }): T {
+export function unwrap<T>(result: { data?: T; error?: unknown; response: Response }): T {
   if (result.data !== undefined) return result.data;
   const body = result.error as Partial<Schemas['ErrorOut']> | undefined;
   throw new ApiError(
@@ -379,7 +379,7 @@ export function useOverview(saveId: string) {
 }
 
 /** Every action changes energy, the inbox, or the team: refetch everything for this save. */
-function useInvalidateSave(saveId: string) {
+export function useInvalidateSave(saveId: string) {
   const client = useQueryClient();
   return () => client.invalidateQueries({ queryKey: keys.save(saveId) });
 }

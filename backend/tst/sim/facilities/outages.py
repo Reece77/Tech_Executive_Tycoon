@@ -20,6 +20,7 @@ from tst.sim.facilities import formulas as ff
 from tst.sim.facilities.lifecycle import facility_name, staffing
 from tst.sim.facilities.models import Facility, Outage
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.press.moments import queue_moment
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -162,4 +163,8 @@ def apply_outages(
                     segment=worst[2],
                 ),
             )
+            facts: dict[str, int | str] = {"product_id": worst[1]}  # M14b (29.1)
+            if worst[2] is not None:
+                facts["segment"] = worst[2]
+            state = queue_moment(state, company, "outage", facts)
     return state, tuple(logs)

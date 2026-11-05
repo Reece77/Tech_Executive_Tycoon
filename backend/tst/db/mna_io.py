@@ -1,4 +1,4 @@
-"""Loading and syncing M14's records (formulas.md 28; migration 0033). Each M&A record keeps
+"""Loading and syncing M14's records (formulas.md 28; migration 0034). Each M&A record keeps
 its dataclass fields in a JSON `data` column; tuples round-trip as JSON lists."""
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ def from_data[T](cls: Callable[..., T], data: dict[str, Any], **keys: Any) -> T:
 def load_mna(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every M&A record, and kept brands' parents (0033)."""
+    """Every M&A record, and kept brands' parents (0034)."""
     if not has_table(session, DealRow):
         return state
     parents = {r.company_id: r.parent_id for r in session.scalars(select(CompanyParentRow))}
@@ -109,7 +109,7 @@ def _sync[T](
 def sync_mna(
     session: Session, old: GameState, new: GameState, has_table: Callable[[Session, Any], bool]
 ) -> None:
-    """Write what changed in the M&A records and kept brands' parents (0033)."""
+    """Write what changed in the M&A records and kept brands' parents (0034)."""
     unchanged = (
         old.rival_listings,
         old.target_files,

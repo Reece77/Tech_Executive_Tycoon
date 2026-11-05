@@ -23,6 +23,8 @@ from tst.sim.errors import (
 )
 from tst.sim.hardware import production
 from tst.sim.log import inbox_item
+from tst.sim.press.moments import queue_moment
+from tst.sim.press.shares import main_rival
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.products.phases import (
     PRODUCT_LINK,
@@ -348,7 +350,15 @@ def launch_product(
         product=product.name,
         segments=_join(labels),
     )
-    return Outcome(with_product(state, launched), log=(note,))
+    state = with_product(state, launched)
+    rival_id, segment = main_rival(state, product.id)  # M14b (29.1): a launch press moment
+    facts: dict[str, int | str] = {"product_id": product.id}
+    if rival_id is not None:
+        facts["rival_id"] = rival_id
+    if segment is not None:
+        facts["segment"] = segment
+    state = queue_moment(state, company, "launch", facts)
+    return Outcome(state, log=(note,))
 
 
 def sunset_product(state: GameState, action: SunsetProduct, balance: Balance) -> Outcome:

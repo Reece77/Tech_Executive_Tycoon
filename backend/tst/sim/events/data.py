@@ -27,6 +27,7 @@ CATEGORIES: Final = (
     "executive",  # M10c: executives with authority ask and clash (24.3)
     "research",  # M11: research projects' breakthroughs and dead ends (21.3)
     "public",  # M13: the IPO chain and public life (25), queued by the engine, never drawn
+    "press",  # M14b: press moments (29.1), queued by the engine, never drawn
 )
 # Templates a company with no employees may draw (16.1: founder, market and finance).
 NO_STAFF_CATEGORIES: Final = ("market", "finance", "founder")
@@ -68,7 +69,9 @@ ENGINE_QUEUED: Final = ("covenant_breach", "facility_outage")
 # M13 (25): the IPO chain, earnings, activists, takeover bids and the board's CEO vote. The
 # engine queues each by template id; any severity, and no template is required.
 PUBLIC_TRIGGER: Final = "public"
-SCHEDULED: Final = ("storyline", "follow_up", *ENGINE_QUEUED, PUBLIC_TRIGGER)
+# M14b (29.1): press moments, queued by the engine by template id (press.moments).
+PRESS_TRIGGER: Final = "press"
+SCHEDULED: Final = ("storyline", "follow_up", *ENGINE_QUEUED, PUBLIC_TRIGGER, PRESS_TRIGGER)
 # M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
 # critical template whenever it holds and no critical event came in the last 6 months.
 CRISIS_TRIGGERS: Final = ("key_exit", "security_breach", "outage")
@@ -108,7 +111,10 @@ EFFECT_TYPES: Final = (
     # M13 (25): a step of the IPO chain or of public life, named by its stat (PUBLIC_STEPS);
     # the engine applies it, and only templates carry it (never the LLM).
     "public_step",
+    # M14b (29.1): a press moment's tone (PRESS_STEPS), applied by the engine; templates only.
+    "press_step",
 )
+PRESS_STEPS: Final = ("bold", "measured", "deflect")
 PUBLIC_STEPS: Final = (
     "file",  # 25.2 step 2: the S-1 goes in on time
     "file_late",  # a metric is restated: ipo.filing_delay_months later
@@ -140,6 +146,7 @@ VALUELESS: Final = (
     "follow_up",
     "retain",
     "public_step",
+    "press_step",
 )  # no size: happen or not
 NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
 
@@ -164,6 +171,7 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "modifier": ("product", "unit", "person", "other", "company", "founder"),
     "retain": ("person",),
     "public_step": ("company",),
+    "press_step": ("company",),
 }
 
 # M10b (23.2): what a modifier can change, and the target words each stat accepts. A company
@@ -227,6 +235,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "security_breach": frozenset({"segment"}),
     "outage": frozenset({"segment"}),
     PUBLIC_TRIGGER: frozenset({"bank", "price", "demand", "ticker", "ceo"}),  # M13
+    PRESS_TRIGGER: frozenset({"segment", "rival", "rival_ceo", "era", "result", "promise"}),
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
 PLACEHOLDERS: Final = (
@@ -246,6 +255,10 @@ PLACEHOLDERS: Final = (
     "demand",  # the book in words (25.8)
     "ticker",
     "ceo",  # the CEO's name
+    "rival_ceo",  # M14b (29.4): the named rival's CEO
+    "era",  # M14b: the era the company caused
+    "result",  # M14b: the quarter's result (beat, in line, miss)
+    "promise",  # M14b: a broken promise, in words
 )
 
 
@@ -277,6 +290,9 @@ class EffectSpec(_Frozen):
         elif self.type == "public_step":
             if self.stat not in PUBLIC_STEPS or self.months is not None:
                 raise ValueError(f"a public_step needs a stat in {list(PUBLIC_STEPS)}")
+        elif self.type == "press_step":
+            if self.stat not in PRESS_STEPS or self.months is not None:
+                raise ValueError(f"a press_step needs a stat in {list(PRESS_STEPS)}")
         elif self.stat is not None or self.months is not None:
             raise ValueError("only a modifier has a stat and months")
         if self.target not in EFFECT_TARGETS[self.type]:
@@ -432,7 +448,7 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
             if missing:
                 problems.append(f"{t.id}: trigger {t.trigger!r} cannot supply {missing}")
             continue
-        if t.trigger in (*ENGINE_QUEUED, PUBLIC_TRIGGER):
+        if t.trigger in (*ENGINE_QUEUED, PUBLIC_TRIGGER, PRESS_TRIGGER):
             missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
             if missing:
                 problems.append(f"{t.id}: trigger {t.trigger!r} cannot supply {missing}")

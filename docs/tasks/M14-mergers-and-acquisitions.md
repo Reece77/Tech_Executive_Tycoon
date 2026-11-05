@@ -99,9 +99,15 @@ Sub-tasks 1-9 are built and tested; every §28.9 target is in band (values in `d
 - **Storage:** M&A records keep their fields as JSON (migration 0033); kept brands' parents are in `company_parent`.
 - **Tuning (28.9):** `integration.flight_brand` 0.007, `integration.flight_base` 0.01, `mna.rival_rate` 0.008.
 
+### Lane merge with M14b (2026-11-05)
+
+- `0033_mna` became `0034_mna` on top of M14b's `0033_press` (schema version 34).
+- M14b's hooks are called from `mna/deals.py`: an agreed deal queues an `acquisition` press moment for the acquirer (`press.queue_moment`; only the player has moments), and the player's hostile tender adds `feud.hostile_bid` (20) to the feud with the target's CEO, whether it succeeds or fails (`characters.add_feud`, cause "you made a hostile bid").
+
 ## Follow-ups
 
 - Goodwill impairment (out of scope).
 - The acquirer's own overlapping product as a remedy.
 - Rivals' executives pitching acquisitions; rivals bidding for the player outside the takeover event.
 - A Deals entry in the top bar when a review or a closing is due.
+- Found at the lane merge, in M14b-owned code (`rivals/characters.py`, not edited by lane A): a kept brand counts as a rival, so the player's launches against its own brand add head-to-head feud and the brand's CEO can make statements and jabs at its parent; and integrating key people reads as "you hired one of their people" (+15 feud with the closing target). Proposed fix: skip companies in the player's group and employments that ended with reason `acquired`.

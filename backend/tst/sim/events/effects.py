@@ -21,6 +21,7 @@ from tst.sim.markets_public.public import apply_public_step
 from tst.sim.money import BP_DENOMINATOR, exact
 from tst.sim.org.rules import org_view
 from tst.sim.people.relationships import clamp_relationship, pair_key
+from tst.sim.press.moments import apply_tone
 from tst.sim.state import (
     GameState,
     with_approach,
@@ -320,6 +321,9 @@ def apply_choice(
             logs += kept
         elif t == "modifier":  # runs for its months from this one (M10b, 23.2)
             state = start_modifier(state, cid, event.id, effect, event.severity, balance.events)
+        elif t == "press_step" and effect.stat:  # M14b (29.1): a press moment's tone
+            state, logged = apply_tone(state, event, effect.stat, balance, data)
+            logs += logged
         elif t == "public_step" and effect.stat:  # M13 (25): the IPO chain and public life
             state, posted, logged = public_step(state, cid, effect.stat, balance, data)
             entries += posted

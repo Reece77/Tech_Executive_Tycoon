@@ -141,6 +141,7 @@ def hiring_meta(data: DataDep) -> HiringMetaOut:
     )
     morale = data.balance.morale
     return HiringMetaOut(
+        interest_fee_bp=data.balance.recruit.interest_fee_bp,  # M14b (29.5)
         channels=channels,
         roles=[
             RoleOut(

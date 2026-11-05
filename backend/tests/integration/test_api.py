@@ -184,6 +184,10 @@ PRODUCT_FORBIDDEN_NAMES = frozenset(
 # (M4a); the SAFE dialog gets a hint band only.
 FINANCE_FORBIDDEN_NAMES = frozenset(
     {
+        # M14b (29.6): a bold claim's share and backfire, rivals' decision weights
+        "share_bp",
+        "backfired",
+        "target_mult",
         # M13 (25.8): the book's draw, the sentiment behind the price, V_f, the triggers
         "demand_draw",
         "book_demand",

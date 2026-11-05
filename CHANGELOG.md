@@ -4,13 +4,23 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M14b People and press (formulas.md §29, lane B, merges before M14):
+  - Press moments as engine-queued `press` events (`data/events/press.yaml`) for launches, quarterly reports, caused eras, outages, breaches, layoffs of 10%+, rival jabs, rivalries, reminders, and acquisitions (`press.moments.queue_moment`, the hook M14 calls). At most 2 a quarter and one a month, highest stakes first; tones measured, bold and no comment through a new `press_step` effect; bold claims can backfire; effects scale with the audience (0.5 / 1.0 / 1.5).
+  - Public promises (ship, beat, research, no layoffs, no price rise; `make_promise`, energy 2) judged on displayed values only, kept and broken with brand, credibility, sentiment, morale and trust effects, and a "you said ..." reminder (stream `press`, 40).
+  - Credibility 0-100 drifting to 50, with its causes; it scales press brand gains, adds to hiring appeal, and weights the player's guidance in what the market expects once listed.
+  - Rival CEOs (`tst/sim/rivals/characters.py`): statements and jabs at their launches, releases and price cuts; feuds from bold mentions, head-to-head launches and poaching (M14 adds hostile bids via `add_feud`); rivalry at 50 weights the rival's moves against the player x1.5.
+  - Recruitment: Replace with a recruiter (fills one month sooner), search by interest for a fee (15% of the role's mid salary), leadership fit from revealed values on People and Org.
+  - Migration `0033_press` (press moments, promises, credibility, feuds, statements, departures; side tables for search and plan fields); API `/press`, `/press/promises`, `/feuds`, `/rivals/{id}/leader`, `/recruitment/replaceable`, `/recruitment/replace`; `tst press|promises|feuds`; Overview Promises and credibility, `RivalLeaderPanel`, Replace and interest search, leadership fit, glossary.
+  - 29.7 targets (`tools/m14b_targets.py`, nightly): T2 kept +10.7 / broken -11.1 brand, sentiment 10% lower; T3 1.2 moments a year; T4 rivalry on 7/10 bold steady runs, +26% moves; T5 Replace 50% sooner. Tuned (`press.*`, `feud.*` only): `feud.bold_mention` 10 -> 20, `feud.decay` 2 -> 1, `press.statement_chance` 0.6, `press.jab_base` 0.3, releases count as speaking moves.
+  - **Golden snapshots regenerated once** (lane B, merging first): press moments join the event flow from a launch (golden seed 1 first differs at turn 7), and their brand modifiers move revenue and cash. M14 regenerates again on the combined code.
+
 - M14 Mergers and acquisitions (formulas.md §28; lane A):
   - Valuation of every company: listed rivals' market cap (`listed_from` in `incumbents.yaml` and `entrants.yaml`), private value ranges.
   - Diligence and hidden problems; private offers with one counter; listed boards; hostile tenders; cash or stock consideration; closing with goodwill (account 1800) and a brand's investment (1810).
   - Antitrust: review, block, and a remedy that divests.
   - Kept brands: directive, cash sweep, consolidated statements. Integration: units, key people, pool staff, severance, culture clash and flight.
   - Rivals buy startups. Acquisition pitches for the CEO and CPO. Accepting a takeover bid ends the game with an exit.
-  - Streams `mna` 37, `integration` 38, `rival_mna` 39. Migration `0033_mna`.
+  - Streams `mna` 37, `integration` 38, `rival_mna` 39. Migration `0034_mna` (re-parented onto M14b's `0033_press` at the lane merge).
   - API `/mna` routes; CLI `tst targets`, `tst diligence`, `tst offer --company`, `tst directive`.
   - Screens: Rival screen deal panel, Finance > Deals, consolidated statements, Org flags and brands, the exit ending.
   - Integration keeps each product's revenue share of the target's staff less a synergy by function, for targets of at most 250 staff (larger ones are kept as brands); product manager's ruling 2026-11-05.
