@@ -17,6 +17,7 @@ from statistics import mean, median
 from typing import Final
 
 from tst.balance.game import PLAYER, Game, start_game
+from tst.balance.known_misses import known_miss, verdict
 from tst.balance.strategies import STRATEGIES
 from tst.loader import LoadedData, load_all
 from tst.sim.rivals.startups import is_entrant
@@ -189,6 +190,7 @@ class Row:
     band: str
     ok: bool | None  # None: printed only
     gate: bool = False  # a pass/fail target (T1-T3): the runner exits 1 if it fails
+    score: float | None = None  # the numeric measure a known miss's bound reads (known_misses)
 
 
 def _runs(
@@ -252,7 +254,15 @@ def evaluate(results: Sequence[RunResult]) -> list[Row]:
     detail = ", ".join(f"{s} {wins.get(s, 0)}" for s in STRATEGIES)
     cap = 6 * seeds / 10
     rows.append(
-        Row("T2", "wins per strategy", detail, f"each <= {cap:g}/{seeds}", most <= cap, True)
+        Row(
+            "T2",
+            "wins per strategy",
+            detail,
+            f"each <= {cap:g}/{seeds}",
+            most <= cap,
+            True,
+            score=most / seeds if seeds else None,  # the top strategy's share of the seeds
+        )
     )
     for s in PLAYERS:
         runs = _runs(results, s)
@@ -463,9 +473,14 @@ def _finance_templates() -> frozenset[str]:
 def table(rows: Sequence[Row]) -> str:
     width = max(len(r.measure) for r in rows)
     lines = []
+    marks = {"printed": "    ", "ok": " ok ", "known": "MISS", "fail": "FAIL"}
     for r in rows:
-        mark = "    " if r.ok is None else (" ok " if r.ok else "FAIL")
-        lines.append(f"{mark} {r.target:4s} {r.measure:{width}s}  {r.value:>28s}  ({r.band})")
+        v = verdict(r)
+        known = known_miss(r.target) if v == "known" else None
+        tail = f"  KNOWN MISS ({known.owner})" if known else ""
+        lines.append(
+            f"{marks[v]} {r.target:4s} {r.measure:{width}s}  {r.value:>28s}  ({r.band}){tail}"
+        )
     return "\n".join(lines)
 
 

@@ -12,7 +12,27 @@ permissions:
   contents: read
 
 jobs:
+  # Skip the scheduled run when `main` has not changed in the last 25 hours (Reece, 2026-11-04):
+  # the results would only repeat the last night's. A manual run (workflow_dispatch) always runs.
+  changed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          n=$(git log --since="25 hours ago" --oneline | wc -l)
+          echo "commits on main in the last 25 hours: $n"
+          if [ "$n" -gt 0 ]; then echo "run=true" >> "$GITHUB_OUTPUT"; else echo "run=false" >> "$GITHUB_OUTPUT"; fi
+
   nightly:
+    needs: changed
+    if: needs.changed.outputs.run == 'true'
     # M10d: `make balance` alone (it gates S2, the run's worker-minutes, on a machine it does not
     # share) and the nightly tests in four shards (two took over 45 minutes each on CI).
     name: nightly (${{ matrix.part }})
