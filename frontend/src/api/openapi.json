@@ -25596,6 +25596,12 @@
             "title": "Low",
             "description": "The low case at 24 months, in `unit`"
           },
+          "central": {
+            "type": "integer",
+            "title": "Central",
+            "description": "The central case: a hit reaches it",
+            "default": 0
+          },
           "high": {
             "type": "integer",
             "title": "High"
@@ -25758,7 +25764,7 @@
           "hits": {
             "type": "integer",
             "title": "Hits",
-            "description": "At or above their low case after 24 months"
+            "description": "At or above their central case after 24 months"
           },
           "misses": {
             "type": "integer",

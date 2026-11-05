@@ -8072,6 +8072,12 @@ export interface components {
              * @description The low case at 24 months, in `unit`
              */
             low: number;
+            /**
+             * Central
+             * @description The central case: a hit reaches it
+             * @default 0
+             */
+            central?: number;
             /** High */
             high: number;
             /**
@@ -8154,7 +8160,7 @@ export interface components {
             approved: number;
             /**
              * Hits
-             * @description At or above their low case after 24 months
+             * @description At or above their central case after 24 months
              */
             hits: number;
             /** Misses */
