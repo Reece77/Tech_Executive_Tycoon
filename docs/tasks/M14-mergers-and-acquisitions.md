@@ -62,10 +62,48 @@ Minority stakes, subsidiaries' own boards and cap tables, spin-offs and selling 
 
 On `pt-ipo` after listing, buy a struggling startup in your category and integrate it, then buy a second one and keep it as a brand with the "grow" directive. A year later: who left, what did integration save, and does the brand pull its weight? Then try a deal that crosses 50% of a market.
 
+## Status (2026-11-05): built; stopped before merging
+
+Sub-tasks 1-9 are built and tested; the four Playwright flows pass. **Target 4 misses and M14's keys cannot fix it**, so per the instructions this branch is not merged (values in `docs/balance-targets.md`, M14):
+
+| Target | Value | Band |
+| --- | --- | --- |
+| 2 private deals / listed premium | 1.38 x V_f / 35% | 1.0-1.6 / 25-50% |
+| 3 key people lost: integrated / brand | 25% / 7% | 10-30% / <= 10% |
+| **4 staff cost cut by integration** | **87% (scripted deals) / 51% (the acquirer's startups)** | **15-35%** |
+| 5 acquirer / steady + regions ARR, year 10 | 1.06 | 1.0-1.4 |
+| 6 deals at 40% blocked after review, after 2020 | 40% of seeds | 15-50% |
+| 7 incumbents' startup purchases a decade | 3 (median) | 1-4 |
+
+- **Why target 4 misses.** 28.5 keeps, per product, only the pool staff it needs: builders to the CTO's maintenance line and sellers for its customers. An incumbent's pools are sized for its revenue (thousands of people at Zoho or Apple), and a product's maintenance line needs a handful of builders, so integration lets 80-95% of the staff go. Startups have smaller pools and mostly key people, and still save about half.
+- **Why the keys can't fix it.** The only lever on how many people stay is `integration.max_per_product`, which caps the kept staff and can only raise the saving; severance doesn't change it, and fewer departures would leave startups saving more than 35%. Options:
+  - Define the kept staff as the product's share of the target's pools (for example its revenue share) instead of its minimum need.
+  - Measure target 4 on the whole cost base, hosting and marketing included.
+  - Re-band target 4.
+- **Lane steps not yet run.** M14b has not merged (no `m14b-done` tag yet), so the merge of `main`, the migration's re-parenting, the press trigger and the golden regeneration are still to do.
+
 ## Decisions made
 
-_(Agent fills in.)_
+- **Fees** (diligence, failed tenders) post to 6900 general and administrative; 28.2's "6100 professional fees" names an account the chart does not have (6100 is rent).
+- **Accounts.** 1800 goodwill, and 1810 investment in subsidiaries for a kept brand's book equity (consolidation replaces it with the brand's net assets; cash sweeps reduce it).
+- **Hidden problems** are fixed per target from the master seed (stream `mna`, turn 0), equivalent to "drawn when first looked at" without depending on what the player opens.
+- **Mode** (brand or integrate) is chosen with the offer and can change until closing; final at closing; integrate by default. A deal agreed in a month closes at that month's end.
+- **Counters** are whole dollars (rounded up), and once made they are the bar: a lower offer ends talks even if it clears the hidden reservation.
+- **Displayed value ranges** are rounded outward to two significant figures, so the display is no oracle (the differential API test relies on it).
+- **The remedy** divests the target's overlapping product, not the acquirer's.
+- **Integration need** for pool staff: builders to the maintenance line at the pool's skill, sellers to replace sales-led churn, one marketer per product; key people spread over the new units.
+- **Culture distance** comes from the companies' average personality traits (`integration.distance_span` 4 points = distance 1). `integration.clash` is 0.1, a new key for 28.5's clash.
+- **Flight, clash and sweeps** start the month after closing; flight is tracked for the player's acquisitions only.
+- **The exit:** talks queue a `takeover_offer` event (data/events/deals.yaml) for the next month; accepting sells to the largest rival by revenue at the bid's premium; the game outcome is `exit`. `tst offer` keeps `--candidate` for job offers and takes `--company --price` for bids.
+- **Pitches:** two new keys, `mna.pitch_synergy` (0.25) and `mna.pitch_bid_premium` (0.30), for the pitch's central case and its bid.
+- **Rivals' purchases** need the combined share below the review line, close in the same month and merge the startup's pools into the buyer's.
+- **Storage:** M&A records keep their fields as JSON (migration 0033); kept brands' parents are in `company_parent`.
+- **Tuning (28.9):** `integration.flight_brand` 0.007, `integration.flight_base` 0.01, `mna.rival_rate` 0.008.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- Target 4 (above): Reece's decision on the kept-staff rule or the band.
+- Goodwill impairment (out of scope).
+- The acquirer's own overlapping product as a remedy.
+- Rivals' executives pitching acquisitions; rivals bidding for the player outside the takeover event.
+- A Deals entry in the top bar when a review or a closing is due.

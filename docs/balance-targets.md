@@ -419,3 +419,30 @@ New-product calibration (2026-11-05). One pass at the pre-tuning pitch rate, for
 - Score 8 is one hit over its ≤ 30% aim; that's an M15 follow-up.
 
 Target 7 sweep (`pitch.base` / `per_ambition`): 0.45/0.04 ×1.54; 0.35/0.03 ×1.33; 0.25/0.02 ×1.26; 0.2/0.015 (floor 0.1) ×1.28; 0.15/0.01 (floor 0.05) ×1.10. Target 1 held at 8-9/10 throughout.
+
+## M14: mergers and acquisitions (§28.9)
+
+`tools/m14_targets.py`, nightly `tests/balance/test_m14_balance.py`, 10 seeds, measured 2026-11-05 on `m14-mna`.
+- **Scripted deals (targets 2-4):** each seed's steady game at month 36, funded for the deals, bids for up to three private companies (the displayed midpoint, then the counter; two integrated, one kept as a brand) and one listed company (stepping the premium by 5 points until its board agrees), then plays 12 months.
+- **Target 5:** "steady + regions" against "acquirer" (plus one startup a year when cash covers 18 months), 120 months.
+- **Target 6:** a deal at 40% combined share in January 2021, reviewed on each seed.
+- **Target 7:** do-nothing games, 120 months.
+
+| Target | Value | Band | Result |
+| --- | --- | --- | --- |
+| 1 nothing moves without deals | earlier targets and goldens checked at the lane merge (rivals' purchases change rival play) | as before | pending the merge |
+| 2 private deals, price / V_f (median) | 1.38 | 1.0-1.6 | pass |
+| 2 listed friendly deals, premium (median) | 35% | 25-50% | pass |
+| 3 key people lost within 12 months, integrated (median) | 25% | 10-30% | pass |
+| 3 the same, kept brands | 7% | <= 10% | pass |
+| 4 staff cost base cut by integration (median) | 87% scripted (incumbents), 51% the acquirer's startups | 15-35% | **miss: not fixable by M14's keys** |
+| 5 acquirer / steady + regions, median ARR at year 10 | 1.06 | 1.0-1.4 | pass |
+| 6 deals at 40% blocked after review, after 2020 | 4 of 10 seeds (40%) | 15-50% | pass |
+| 7 incumbents' startup purchases a decade (median) | 3 (by seed: 3, 6, 2, 3, 2, 4, 3, 8, 3, 1) | 1-4 | pass |
+
+**Tuned keys:**
+- `integration.flight_brand` 0.03 -> 0.007 (brands lost 27%);
+- `integration.flight_base` 0.02 -> 0.01 (integrated lost 29% before; target 4's startup saving rises as fewer people leave);
+- `mna.rival_rate` 0.04 -> 0.008 (18 purchases a decade before).
+
+**Target 4.** Integration keeps the staff each product needs: builders to the maintenance line, sellers for its customers, a marketer. Incumbents' pools are sized for their revenue, so 80-95% are let go. `integration.max_per_product` can only lower what stays. See the M14 brief's Status.
