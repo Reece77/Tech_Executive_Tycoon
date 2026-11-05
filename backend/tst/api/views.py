@@ -146,6 +146,8 @@ def energy(state: GameState, data: LoadedData) -> EnergyOut:
 
 def _source(state: GameState, m: Modifier) -> str:
     event = next((e for e in state.events if e.id == m.event_id), None)
+    if event is None and m.event_id is None and m.stat == "brand_target":
+        return "a public promise"  # M14b (29.2): kept and broken promises have no event
     return event.title if event is not None and event.title else "an event"
 
 

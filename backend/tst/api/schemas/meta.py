@@ -117,3 +117,6 @@ class HiringMetaOut(BaseModel):
     candidate_shelf_turns: int
     fire_morale_penalty_min: int  # morale points everyone else loses at least
     energy_per_month: int
+    interest_fee_bp: int = Field(
+        default=0, description="A search by interest costs this bp of the role's mid salary (29.5)"
+    )

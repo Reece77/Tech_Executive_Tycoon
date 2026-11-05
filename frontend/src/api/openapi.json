@@ -20826,6 +20826,12 @@
           "energy_per_month": {
             "type": "integer",
             "title": "Energy Per Month"
+          },
+          "interest_fee_bp": {
+            "type": "integer",
+            "title": "Interest Fee Bp",
+            "description": "A search by interest costs this bp of the role's mid salary (29.5)",
+            "default": 0
           }
         },
         "type": "object",
@@ -20914,6 +20920,30 @@
       },
       "HiringPlanOut": {
         "properties": {
+          "interest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interest",
+            "description": "Candidates with this interest (M14b)"
+          },
+          "replace_of": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replace Of",
+            "description": "A Replace plan: the leaver (M14b)"
+          },
           "plan_id": {
             "type": "integer",
             "title": "Plan Id"

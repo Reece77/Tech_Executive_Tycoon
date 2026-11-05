@@ -1635,6 +1635,7 @@ class DepartureRow(Base):
     unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     reason: Mapped[str] = mapped_column(String(16), nullable=False)
     turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    name: Mapped[str] = mapped_column(String(128), nullable=False, default="")
 
 
 class SearchInterestRow(Base):

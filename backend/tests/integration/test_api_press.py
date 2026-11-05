@@ -134,3 +134,21 @@ def test_leadership_fit_never_shows_true_skills(api: tuple[Client, Path]) -> Non
         assert planted not in blob, planted
     person = next(r for r in people if r["person_id"] == 2)
     assert 1 <= person["leadership_fit_low"] <= person["leadership_fit_high"] <= 5
+
+
+def test_replace_after_the_leaver_has_gone(api: tuple[Client, Path]) -> None:
+    """Regression: once a resignation's notice ends the person leaves the live state; Replace
+    is still offered by their departure record (29.5)."""
+    client, path = api
+
+    def leave_now(state):  # type: ignore[no-untyped-def]
+        e = state.employment_of(2)
+        notice = replace(e, status="notice", end_turn=state.turn, end_reason="resigned")
+        return with_employment(state, notice)
+
+    _edit(path, leave_now)
+    client.post(f"{BASE}/advance")
+    rows = client.get(f"{BASE}/recruitment/replaceable")
+    assert [r["person_id"] for r in rows] == [2] and rows[0]["can_replace"]
+    assert rows[0]["name"] and not rows[0]["name"].startswith("person ")
+    client.post(f"{BASE}/recruitment/replace", {"person_id": 2})

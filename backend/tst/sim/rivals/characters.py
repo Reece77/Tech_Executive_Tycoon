@@ -121,7 +121,12 @@ def bold_mention(
 
 
 def _speak(
-    state: GameState, rival_id: int, kind: str, product_id: int | None, player_id: int
+    state: GameState,
+    rival_id: int,
+    kind: str,
+    product_id: int | None,
+    player_id: int,
+    notify: bool = True,
 ) -> tuple[GameState, list[LogItem]]:
     ceo = rival_ceo_id(state, rival_id)
     if ceo is None:
@@ -138,6 +143,8 @@ def _speak(
         replace(state, next_ids=ids),
         Statement(sid, rival_id, ceo, state.turn, kind, text, product_id),  # type: ignore[arg-type]
     )
+    if not notify:  # recorded on the Rival screen only
+        return state, []
     name = rival_ceo_name(state, rival_id) or rival.name
     log = inbox_item(
         state.turn,
@@ -267,8 +274,10 @@ def feud_month(
                     "jab",
                     {"rival_id": rival.id, "product_id": target, "segment": move.segment or ""},
                 )
-            else:
-                state, logged = _speak(state, rival.id, "statement", move.product_id, cid)
+            else:  # the inbox hears only of statements in markets the player sells in
+                state, logged = _speak(
+                    state, rival.id, "statement", move.product_id, cid, notify=target is not None
+                )
             logs += logged
     keep = state.turn - STATEMENT_MEMORY
     state = replace(state, statements=tuple(s for s in state.statements if s.turn > keep))

@@ -47,20 +47,25 @@ def test_rival_ceo_is_the_highest_leadership() -> None:
 
 
 def test_feud_sources_decay_and_rivalry() -> None:
+    fb = B.feud
     state = fresh_game(LOADED)
     rid = _rival(state)
-    for _ in range(4):
-        state, _ = characters.bold_mention(state, CID, rid, B, D)
+    state, _ = characters.bold_mention(state, CID, rid, B, D)
+    state = characters.add_feud(state, CID, rid, fb.head_to_head, "launch", B)
     feud = feud_of(state, CID, rid)
-    assert feud is not None and feud.score == 40 and not characters.in_rivalry(state, rid, B)
-    state = characters.add_feud(state, CID, rid, B.feud.poach, "poached", B)
+    below = fb.bold_mention + fb.head_to_head
+    assert below < fb.rivalry
+    assert feud is not None and feud.score == below and not characters.in_rivalry(state, rid, B)
+    state = characters.add_feud(state, CID, rid, fb.poach, "poached", B)
+    state = characters.add_feud(state, CID, rid, fb.poach, "poached", B)
     feud = feud_of(state, CID, rid)
-    assert feud is not None and feud.score == 55 and feud.rivalry_turn == state.turn
-    assert characters.rivalry_mult(state, rid, B) == 1.5
+    score = below + 2 * fb.poach
+    assert feud is not None and feud.score == score and feud.rivalry_turn == state.turn
+    assert characters.rivalry_mult(state, rid, B) == fb.target_mult == 1.5
     assert any(m.trigger == "rivalry" and m.rival_id == rid for m in state.press_moments)
-    assert len(feud.causes) == B.feud.causes_kept
+    assert len(feud.causes) == min(4, fb.causes_kept)
     state, _ = characters.feud_month(state, RngFactory(1), B, D, ())
-    assert feud_of(state, CID, rid).score == 53  # type: ignore[union-attr]
+    assert feud_of(state, CID, rid).score == score - fb.decay  # type: ignore[union-attr]
 
 
 def test_jab_opens_a_moment_when_both_sell() -> None:

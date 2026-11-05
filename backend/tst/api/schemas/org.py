@@ -158,6 +158,8 @@ class PlanActivityOut(BaseModel):
 
 
 class HiringPlanOut(BaseModel):
+    interest: str | None = Field(default=None, description="Candidates with this interest (M14b)")
+    replace_of: int | None = Field(default=None, description="A Replace plan: the leaver (M14b)")
     plan_id: int
     owner_id: int
     owner_name: str

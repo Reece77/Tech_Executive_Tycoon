@@ -297,6 +297,8 @@ def plan_out(state: GameState, plan: HiringPlan, data: LoadedData) -> HiringPlan
     activity = plan.last_activity
     pending = plan.target - plan.hired - still_needed(state, plan)
     return HiringPlanOut(
+        interest=plan.interest,
+        replace_of=plan.replace_of,
         plan_id=plan.id,
         owner_id=plan.owner_id,
         owner_name=person_name(state.person(plan.owner_id)),

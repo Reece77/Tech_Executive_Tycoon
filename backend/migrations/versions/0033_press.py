@@ -98,6 +98,7 @@ def upgrade() -> None:
         sa.Column("unit_id", sa.Integer(), nullable=True),
         sa.Column("reason", sa.String(16), nullable=False),
         sa.Column("turn", sa.Integer(), nullable=False),
+        sa.Column("name", sa.String(128), nullable=False, server_default=""),
     )
     op.create_index("ix_departure_turn", "departure", ["turn"])
     op.create_table(

@@ -2161,7 +2161,9 @@ def _load_press(session: Session, state: GameState) -> GameState:
             )
         ),
         departures=tuple(
-            Departure(r.person_id, r.company_id, r.role, r.level, r.unit_id, r.reason, r.turn)
+            Departure(
+                r.person_id, r.company_id, r.role, r.level, r.unit_id, r.reason, r.turn, r.name
+            )
             for r in session.scalars(
                 select(DepartureRow)
                 .where(DepartureRow.turn >= turn - DEPARTURE_MEMORY)

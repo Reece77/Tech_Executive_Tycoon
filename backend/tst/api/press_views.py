@@ -187,11 +187,10 @@ def replaceable_out(state: GameState, data: LoadedData) -> list[ReplaceableOut]:
         if left is None:
             continue
         problem = replace_problem(state, cid, pid, data.balance)
-        person = state.person(pid)
         out.append(
             ReplaceableOut(
                 person_id=pid,
-                name=f"{person.first_name} {person.last_name}",
+                name=left.name or f"person {pid}",
                 role=data.game_data.role(left.role).label,
                 level=left.level,
                 reason=left.reason,

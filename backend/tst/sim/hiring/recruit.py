@@ -35,6 +35,14 @@ def recruiter_on_staff(state: GameState, company_id: int) -> int | None:
     return min(ids) if ids else None
 
 
+def _name(state: GameState, person_id: int) -> str:
+    try:
+        person = state.person(person_id)
+    except KeyError:
+        return ""
+    return f"{person.first_name} {person.last_name}"
+
+
 def leaver(state: GameState, company_id: int, person_id: int) -> Departure | None:
     """A resignation serving notice, or a departure of the last replace_window months."""
     e = state.employment_of(person_id)
@@ -44,8 +52,10 @@ def leaver(state: GameState, company_id: int, person_id: int) -> Departure | Non
         and e.status == "notice"
         and e.end_reason in REPLACEABLE
     ):
+        reason = e.end_reason or ""
+        name = _name(state, person_id)
         return Departure(
-            person_id, company_id, e.role, e.level, e.unit_id, e.end_reason or "", state.turn
+            person_id, company_id, e.role, e.level, e.unit_id, reason, state.turn, name
         )
     return next(
         (d for d in state.departures if d.person_id == person_id and d.company_id == company_id),
@@ -73,7 +83,14 @@ def record_departures(state: GameState, balance: Balance) -> GameState:
     players = {c.id for c in state.companies if c.is_player}
     new = [
         Departure(
-            e.person_id, e.company_id, e.role, e.level, e.unit_id, e.end_reason or "", state.turn
+            e.person_id,
+            e.company_id,
+            e.role,
+            e.level,
+            e.unit_id,
+            e.end_reason or "",
+            state.turn,
+            _name(state, e.person_id),
         )
         for e in state.employments
         if e.company_id in players

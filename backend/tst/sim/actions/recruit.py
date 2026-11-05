@@ -67,14 +67,13 @@ def replace_leaver(
         state = with_person_state(state, replace(ps, energy=balance.delegates.energy_per_month))
     search = OpenSearch(recruiter, left.role, PLAN_CHANNEL, plan_id=plan_id, level=left.level)
     opened = open_search(state, search, balance, data, balances)
-    person = state.person(action.person_id)
     log = inbox_item(
         state.turn,
         company,
         "replace_started",
         link_kind="person",
         link_id=recruiter,
-        name=f"{person.first_name} {person.last_name}",
+        name=left.name or "them",
         role=data.role(left.role).label,
     )
     return Outcome(opened.state, opened.entries, (log,))

@@ -5996,6 +5996,12 @@ export interface components {
             fire_morale_penalty_min: number;
             /** Energy Per Month */
             energy_per_month: number;
+            /**
+             * Interest Fee Bp
+             * @description A search by interest costs this bp of the role's mid salary (29.5)
+             * @default 0
+             */
+            interest_fee_bp?: number;
         };
         /** HiringPlanIn */
         HiringPlanIn: {
@@ -6029,6 +6035,16 @@ export interface components {
         };
         /** HiringPlanOut */
         HiringPlanOut: {
+            /**
+             * Interest
+             * @description Candidates with this interest (M14b)
+             */
+            interest?: string | null;
+            /**
+             * Replace Of
+             * @description A Replace plan: the leaver (M14b)
+             */
+            replace_of?: number | null;
             /** Plan Id */
             plan_id: number;
             /** Owner Id */

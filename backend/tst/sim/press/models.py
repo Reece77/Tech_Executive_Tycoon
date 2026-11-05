@@ -116,3 +116,4 @@ class Departure:
     unit_id: int | None
     reason: str  # resigned | poached
     turn: int
+    name: str = ""  # their name, kept because their person leaves the live state
