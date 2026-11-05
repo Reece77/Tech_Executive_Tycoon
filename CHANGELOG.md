@@ -12,11 +12,11 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Market size a year by segment and region on the Market screen and in the New product dialog; the Research screen explains a lead (27.4).
   - API: pitches, records and the pitch policy on `/scaleup`, `POST /scaleup/pitches/{id}/{answer}`, `POST /scaleup/pitch-policy`, `blocking_pitch_ids`; CLI `tst pitches`, `approve-pitch`, `decline-pitch`, `pitch-limit`; `tools/m13b_targets.py` (nightly `tests/balance/test_m13b_balance.py`).
   - 27.5 targets after the product manager's rulings (2026-11-04), all passing:
-    - 1 (8/10), 2 (x1.68), 3 (+41 points against the central case), 4 (2.3 a year);
+    - 1 (8/10), 2 (x1.68), 3 (+46 points against the central case), 4 (2.3 a year);
     - 5 (the window alone +30% to +56% on 7 of 8 seeds);
     - 7 (x1.10 the founder's steady + regions script).
     - A new product's central case counts only the months after its expected launch at the displayed pace, with the team sized to it (`pitch.team_ready_months`).
-    - Tuned: `pitch.base` 0.15, `per_ambition` 0.01, `chance_clamp` [0.05, 0.9], `region_capture` 1.7, `team_builders` 6; `rnd.first_mover_cap` 5, `first_mover_brand` 6, `first_mover_appeal` 1 (docs/balance-targets.md, M13b).
+    - Tuned: `pitch.base` 0.15, `per_ambition` 0.01, `chance_clamp` [0.05, 0.9], `region_capture` 1.7, `team_builders` 6, `new_product_share` 0.04 (a score-12 CPO's median outcome; score-8 new-product hits 33% against the ≤ 30% aim is an M15 follow-up); `rnd.first_mover_cap` 5, `first_mover_brand` 6, `first_mover_appeal` 1 (docs/balance-targets.md, M13b).
     - S2 re-banded to < 65 worker-minutes on CI.
   - Golden snapshots unchanged.
 

@@ -691,7 +691,7 @@ pitch: # executives' pitches: big moves they propose for the founder to approve 
   campaign_min_cents: 500000 # cents; $5,000 a month at least (27.1)
   campaign_brand_gap: 20 # brand points below the target before the CMO pitches a campaign (27.1)
   office_seats: 25 # seats in an office the COO pitches (27.1)
-  new_product_share: 0.25 # share of a segment's addressable customers a new product's central case reaches at 24 months, / (1 + products already selling there) (27.1)
+  new_product_share: 0.04 # share of a segment's addressable customers a new product's central case reaches at 24 months, / (1 + products already selling there) (27.1; 27.5 calibration 2026-11-05: 0.25 -> 0.04, a score-12 CPO's median 24-month outcome)
   team_ready_months: 3 # months before a pitched new product's team is hired and building, in its expected launch (27.5 target 3)
   region_capture: 1.7 # x the CRO's central case for a region (home share x demand x price x fit, grown 24 months): calibrates it against what launches reach (27.5 target 3)
   region_fit_without_office: 0.7 # the CRO's fit for a region where the company has no office (27.1; 1 with one)

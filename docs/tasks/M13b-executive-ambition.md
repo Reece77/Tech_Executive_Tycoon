@@ -40,13 +40,13 @@ Acquisitions as pitches (M14 adds the kind). Rivals' executives pitching (rivals
 
 On `quick-stage3`, give every seat authority, set auto-approve to 5% of cash, and Holiday three years. Did they start a product and enter a region? Read one quarter's reports: do they sound like people? Then pull an era forward on `pt-ai` and read the era report.
 
-## Status (2026-11-04, after the second ruling): every target passes
+## Status (2026-11-05, after the new-product calibration): every target passes
 
 | Target | Value | Band |
 | --- | --- | --- |
 | 1 new product and new region | 8/10 seeds | ≥ 7/10 |
 | 2 ARR, pitches / pitches off | 1.68 | ≥ 1.10 |
-| 3 hit rate (central case), score 15 / score 8 | 81% / 40% (+41 points) | ≥ +10 points |
+| 3 hit rate (central case), score 15 / score 8 | 86% / 40% (+46 points) | ≥ +10 points |
 | 4 pitches a year, median | 2.3 | ≤ 8 |
 | 5 the window alone | +30% to +56% on 7 of 8 seeds (+80% on seed 5) | +25-60% on ≥ 7 |
 | 5 (information) early era / on schedule | +237% to +392% | none |
@@ -84,11 +84,19 @@ Values in `docs/balance-targets.md`, M13b. The ≤ 1.5 fallback band was not nee
   - The CPO's team is the size, from `pitch.team_builders` (6) up to its headcount cap, whose case best covers the team's pay. A cap too small to launch in time gives no pitch.
   - Estimated launch against actual (higher-frequency run): estimated 17-24 months, actual 10-25. Score 15 launched sooner and score 8 later or too early.
 - **New-product hit rates by score.** At the shipped frequency, 2 new-product pitches were scored per arm: score 15 got 0/2 (measured / central 0.14 and 0.58) and score 8 got 0/2 (0.04 and 0.04). In the higher-frequency run before the target 7 tuning, score 15 got 1/8 (median ratio about 0.56) and score 8 got 0/6, with 3 too early. Good executives' products reach several times what weak ones do, but still mostly below the central case: the share `pitch.new_product_share` (0.25) was not re-tuned.
+- **New-product calibration (product manager, 2026-11-05).** One pass on `pitch.new_product_share`, measured at the pre-tuning pitch frequency (`base` 0.45, `per_ambition` 0.04, floor 0.15) to get enough new-product pitches, with CPOs at scores 15, 12 and 8 on seeds 1-10:
+
+  | Share | Score 15 hits | Score 12 hits, median measured / central | Score 8 hits |
+  | --- | --- | --- | --- |
+  | 0.25 | 1/8 | 0/7, 0.15 | 0/6 (3 too early) |
+  | 0.04 (shipped) | 4/8 (50%) | 2/7, 0.92 | 2/6 (33%; 3 too early) |
+
+  At 0.04 the central case sits at a score-12 CPO's median outcome, and score 15 meets its aim (≥ 50%). Score 8 is one hit over its aim (≤ 30%). Its two hits are ×1.43 and ×2.89 the central case, so no nearby share removes them. This is an M15 follow-up. Every §27.5 target stays in band (target 3 rose to +46 points).
 - **Target 5 tuning:** `rnd.first_mover_cap` 8 → 5, `first_mover_brand` 15 → 6, `first_mover_appeal` 1.15 → 1 (no bonus; the mechanism and its tests stay, run at ×1.15). The arrival item names the appeal only above ×1.
 
 ## Follow-ups
 
-- New products' central case is still above what a launch reaches in 24 months (measured / central about 0.04-0.6 at `pitch.new_product_share` 0.25), so they are mostly misses at either score; a lower share would let good CPOs hit.
+- **M15:** score-8 CPOs hit 2 of 6 new-product pitches (33%) against the ≤ 30% aim at `pitch.new_product_share` 0.04 (score 15: 4/8). The sample is small, and the two hits are well above the central case. A larger seed set, or a pace estimate that reads the CPO's displayed seat factor, could separate them.
 - Modify could prefill every move's dialog (region, research, data centre, office, plant), not only a new product.
 - A product's quarter-start quality and customers could be kept so reports read "41 -> 47" rather than "now 47".
 - Rivals' executives do not pitch (out of scope); M14 adds acquisitions as a pitch kind.

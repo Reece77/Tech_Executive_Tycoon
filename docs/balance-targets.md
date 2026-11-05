@@ -365,7 +365,7 @@ Notes: T2–T5 are scripted (demand above capacity; price, cost and allocation f
 
 ## M13b: executive ambition and visible eras (§27.5)
 
-`tools/m13b_targets.py`, nightly `tests/balance/test_m13b_balance.py`, 10 seeds, measured 2026-11-04 on `m13b-ambition` after the product manager's two rulings that day.
+`tools/m13b_targets.py`, nightly `tests/balance/test_m13b_balance.py`, 10 seeds, measured 2026-11-05 on `m13b-ambition` after the product manager's two rulings of 2026-11-04 and the new-product calibration of 2026-11-05.
 
 How the arms run:
 - **Targets 1-4 and 7** fork each seed's steady game at stage 3 and appoint six senior seat holders.
@@ -377,7 +377,7 @@ How the arms run:
 | --- | --- | --- | --- |
 | 1 new product and new region launched | 8/10 seeds | ≥ 7/10 | pass |
 | 2 median ARR at 36 months, pitches / pitches off | 1.68 | ≥ 1.10 | pass |
-| 3 hit rate (central case), score 15 against score 8 | 81% against 40% (+41 points) | ≥ +10 points | pass |
+| 3 hit rate (central case), score 15 against score 8 | 86% against 40% (+46 points) | ≥ +10 points | pass |
 | 4 pitches a year per company, median | 2.3 | ≤ 8 | pass |
 | 5 AI customers at the window's end, window / no window | +38%, +39%, +43%, +36%, +80%, +32%, +30%, +56% (7 of 8 seeds in band) | +25–60% on ≥ 7 | pass |
 | 5 information: early era / on schedule | +303%, +319%, +303%, +299%, +392%, +237%, +237%, +258% | none | information |
@@ -385,7 +385,7 @@ How the arms run:
 | S2 | re-banded to < 65 worker-minutes on CI (product manager, 2026-11-03) | | band only |
 
 Tuned keys:
-- target 3: `pitch.region_capture` 1.7, `pitch.team_builders` 6, `pitch.team_ready_months` 3;
+- target 3: `pitch.region_capture` 1.7, `pitch.team_builders` 6, `pitch.team_ready_months` 3, `pitch.new_product_share` 0.04;
 - target 5: `rnd.first_mover_cap` 5, `first_mover_brand` 6, `first_mover_appeal` 1;
 - target 7: `pitch.base` 0.15, `per_ambition` 0.01, `chance_clamp` [0.05, 0.9].
 
@@ -399,6 +399,11 @@ Hit rates by kind, score 15 against score 8:
 | campaign | 1/1 | 4/4 |
 | new product | 0/2 | 0/2 |
 
-On new products: measured / central was 0.14 and 0.58 at score 15, and 0.04 and 0.04 at score 8. Before the target 7 tuning, at the higher pitch rate, it was 1/8 against 0/6, with 3 too early.
+The per-kind table above was measured before the share calibration.
+
+New-product calibration (2026-11-05). One pass at the pre-tuning pitch rate, for sample size: CPOs at scores 15, 12 and 8 on seeds 1-10.
+- At share 0.25: 1/8, 0/7 and 0/6 hits, with the score-12 median of measured / central at 0.15.
+- At **0.04** (shipped): 4/8 (50%), 2/7 and 2/6 (33%), with the score-12 median at 0.92.
+- Score 8 is one hit over its ≤ 30% aim; that's an M15 follow-up.
 
 Target 7 sweep (`pitch.base` / `per_ambition`): 0.45/0.04 ×1.54; 0.35/0.03 ×1.33; 0.25/0.02 ×1.26; 0.2/0.015 (floor 0.1) ×1.28; 0.15/0.01 (floor 0.05) ×1.10. Target 1 held at 8-9/10 throughout.
