@@ -1051,3 +1051,61 @@ ceo:
   max_salary_ratio_bp: 11000 # offer x ask in bp for the CEO's plans (as exec_authority.defaults)
   replace: { below: 30, months: 3 } # board confidence below this for this many months: the board may vote to replace the CEO (25.6)
   memory_months: 12 # months of CEO decisions kept for the panel
+
+# --- Mergers and acquisitions (formulas.md section 28, M14 lane A) ------------------------
+mna:
+  min_arr_cents: 100000000 # cents; below $1M ARR a company is valued at cash + builders x min_value_per_builder (28.1)
+  min_value_per_builder_cents: 15000000 # cents; $150,000 per builder on staff, the acqui-hire value (28.1)
+  range: 0.30 # a private company's displayed value range, V_f x (1 +- this), off-centre by a seeded offset (28.1)
+  diligence:
+    energy: 6 # founder energy (28.2)
+    months: 2 # months until the findings arrive (28.2)
+    cost_bp: 50 # bp of the target's estimated value, to 6900 general and administrative (28.2; "professional fees")
+    min_cents: 5000000 # cents; at least $50,000 (28.2)
+    range: 0.10 # the value range after diligence, +- this (28.2)
+    product_range: 5 # score points; products' quality and feature score shown +- this after diligence (28.2)
+  problems:
+    p: 0.15 # each hidden problem's probability per target, drawn when first looked at (28.2)
+    tech_debt_quality: 10 # quality points lost over the first year after closing (28.2)
+    tech_debt_months: 12 # months that loss spreads over (28.2)
+    key_person_flight_mult: 2.0 # one key person's flight chance x this (28.2)
+    churn_mult: 1.5 # customer_concentration: the acquired products' churn x this (28.2)
+    churn_months: 12 # months after closing (28.2)
+  offer_energy: 10 # founder energy for an offer (28.3)
+  premium: { aggressive: 0.50, premium: 0.40, fast_follower: 0.30, cost_leader: 0.20 } # reservation premium over V_f by rival personality (28.3)
+  founder_premium: { base: 0.25, per_ambition: 0.02, neutral: 10 } # a startup founder's premium: base + per_ambition x (ambition - neutral) (28.3)
+  distress_discount: 0.25 # off the premium when cash covers fewer than distress_months of costs (28.3)
+  distress_months: 6 # months of costs (28.3)
+  counter_sd: 0.05 # a private target counters once at reservation x (1 + N(0, this)) (28.3)
+  talks_block_months: 12 # a second offer below the counter ends talks this long (28.3)
+  board: { bar: 0.30, sd: 0.05 } # a listed target's board accepts a premium over market cap of at least bar + N(0, sd), drawn once per approach (28.3)
+  tender: { energy: 15, floor: 0.15, span: 0.5, cap: 0.9, defence: 0.20, fee_bp: 100, block_months: 12 } # hostile tender: chance clamp((premium - floor) / span, 0, cap) - defence for an aggressive target; a failed one costs fee_bp of the price and blocks bids block_months (28.3)
+  closing_months: 1 # months from acceptance to closing without a review (28.3)
+  sweep_months: 3 # a brand subsidiary's cash above this many months of its costs sweeps to the parent each month (28.5)
+  directive_energy: 2 # founder energy to set a brand's directive (28.5)
+  acquired_flag_months: 12 # months Org flags an acquired unit (M14 brief)
+  rival_rate: 0.04 # an incumbent's chance a quarter to buy one startup in its categories (28.6)
+  rival_cash_months: 12 # only with cash above this many months of costs (28.6)
+  cpo_limit_mult: 4 # the CPO pitches only startups priced under the auto-approve limit x this (28.7)
+
+antitrust:
+  review: 0.35 # combined customer share in a segment, region and category from which a deal is reviewed (28.4)
+  block: 0.50 # from which it is blocked without a remedy (28.4)
+  review_months: [3, 6] # a review's length, uniform, stream mna (28.4)
+  strictness: # x the block probability by year: history, then flat (28.4)
+    - { from_year: 2010, strictness: 0.6 }
+    - { from_year: 2020, strictness: 1.0 }
+
+integration:
+  months: 12 # culture clash and key-person flight last this long after closing (28.5)
+  flight_brand: 0.03 # a kept brand's key people leave with this chance a month (28.5)
+  flight_base: 0.02 # an integrated key person leaves with this chance a month (28.5)
+  flight_per_distance: 0.06 # + this x the personality distance (28.5)
+  clash: 0.10 # acquired people's morale moves this x distance of the gap to the player's average a month (M14 decision for 28.5's clash)
+  distance_span: 4 # attribute points; a mean personality-trait gap this big between the companies is distance 1 (M14 decision)
+  max_per_product: 25 # pool staff kept per function per product (28.5)
+  severance_months: 3 # months of salary for each pool member let go, to 6000 (28.5)
+  churn_mult: 1.3 # the acquired products' churn x this (28.5)
+  churn_months: 6 # months after closing (28.5)
+  brand_blend: 0.10 # the acquired products' brand moves this share toward the player's a month (28.5)
+  tech_lower_share: 0.20 # research lead = the higher + this x the lower (28.5)
