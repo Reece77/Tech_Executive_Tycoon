@@ -5,6 +5,7 @@ import { Alert, Button } from '@mantine/core';
 import { Link, useNavigate, useParams } from 'react-router';
 import { AttributeRange } from '../components/AttributeRange';
 import { KpiTile } from '../components/KpiTile';
+import { RivalDealPanel } from '../components/RivalDealPanel';
 import { Term } from '../components/Term';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOpenSearch, useRival, type RivalProfile } from '../hooks/api';
@@ -71,6 +72,7 @@ function RivalBody({ saveId, r }: { saveId: string; r: RivalProfile }) {
           testId="rival-stance"
         />
       </div>
+      <RivalDealPanel saveId={saveId} companyId={r.company_id} />
       <Panel title="Products">
         <table className="tst-table" aria-label="Rival products">
           <thead>

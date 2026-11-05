@@ -83,6 +83,8 @@ class AcquisitionOut(BaseModel):
     problems: list[str]
     clash_months_left: int
     cost_before_cents: int = Field(description="The target's monthly costs before closing")
+    unit_ids: list[int] = Field(description="Your units created for its products")
+    flagged: bool = Field(description="Org flags its units this long after closing")
 
 
 class SubsidiaryOut(BaseModel):

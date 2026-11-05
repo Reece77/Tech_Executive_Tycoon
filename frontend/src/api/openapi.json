@@ -13440,6 +13440,587 @@
         }
       }
     },
+    "/api/saves/{save_id}/mna": {
+      "get": {
+        "tags": [
+          "mna"
+        ],
+        "summary": "Get Mna",
+        "description": "Every company that can be bought (by name), your deals, acquisitions and brands.",
+        "operationId": "getMna",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MnaOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mna/diligence": {
+      "post": {
+        "tags": [
+          "mna"
+        ],
+        "summary": "Start Diligence",
+        "operationId": "startDiligence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiligenceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MnaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mna/offers": {
+      "post": {
+        "tags": [
+          "mna"
+        ],
+        "summary": "Make Bid",
+        "operationId": "makeBid",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BidIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MnaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mna/deals/{deal_id}/mode": {
+      "post": {
+        "tags": [
+          "mna"
+        ],
+        "summary": "Set Deal Mode",
+        "operationId": "setDealMode",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "deal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Deal Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DealModeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MnaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mna/deals/{deal_id}/abandon": {
+      "post": {
+        "tags": [
+          "mna"
+        ],
+        "summary": "Abandon Deal",
+        "operationId": "abandonDeal",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "deal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Deal Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MnaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mna/deals/{deal_id}/remedy": {
+      "post": {
+        "tags": [
+          "mna"
+        ],
+        "summary": "Accept Remedy",
+        "operationId": "acceptRemedy",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "deal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Deal Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MnaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mna/subsidiaries/{company_id}/directive": {
+      "post": {
+        "tags": [
+          "mna"
+        ],
+        "summary": "Set Directive",
+        "operationId": "setDirective",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectiveIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MnaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -13775,6 +14356,112 @@
         },
         "type": "object",
         "title": "AcceptSheetIn"
+      },
+      "AcquisitionOut": {
+        "properties": {
+          "deal_id": {
+            "type": "integer",
+            "title": "Deal Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "brand",
+              "integrate"
+            ],
+            "title": "Mode"
+          },
+          "closed_turn": {
+            "type": "integer",
+            "title": "Closed Turn"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "directive": {
+            "type": "string",
+            "enum": [
+              "grow",
+              "harvest",
+              "defend"
+            ],
+            "title": "Directive"
+          },
+          "key_people": {
+            "type": "integer",
+            "title": "Key People"
+          },
+          "pool_kept": {
+            "type": "integer",
+            "title": "Pool Kept"
+          },
+          "let_go": {
+            "type": "integer",
+            "title": "Let Go"
+          },
+          "departed": {
+            "type": "integer",
+            "title": "Departed"
+          },
+          "problems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Problems"
+          },
+          "clash_months_left": {
+            "type": "integer",
+            "title": "Clash Months Left"
+          },
+          "cost_before_cents": {
+            "type": "integer",
+            "title": "Cost Before Cents",
+            "description": "The target's monthly costs before closing"
+          },
+          "unit_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Unit Ids",
+            "description": "Your units created for its products"
+          },
+          "flagged": {
+            "type": "boolean",
+            "title": "Flagged",
+            "description": "Org flags its units this long after closing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deal_id",
+          "company_id",
+          "name",
+          "mode",
+          "closed_turn",
+          "price_cents",
+          "directive",
+          "key_people",
+          "pool_kept",
+          "let_go",
+          "departed",
+          "problems",
+          "clash_months_left",
+          "cost_before_cents",
+          "unit_ids",
+          "flagged"
+        ],
+        "title": "AcquisitionOut"
       },
       "ActionOut": {
         "properties": {
@@ -14430,6 +15117,46 @@
           "reputation"
         ],
         "title": "BankOut"
+      },
+      "BidIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "price_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Price Cents"
+          },
+          "cash_share": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Cash Share",
+            "default": 1.0
+          },
+          "hostile": {
+            "type": "boolean",
+            "title": "Hostile",
+            "default": false
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "brand",
+              "integrate"
+            ],
+            "title": "Mode",
+            "default": "integrate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "price_cents"
+        ],
+        "title": "BidIn"
       },
       "BiggestRoundOut": {
         "properties": {
@@ -17089,6 +17816,145 @@
         ],
         "title": "CrossDivisionOut"
       },
+      "DealModeIn": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "brand",
+              "integrate"
+            ],
+            "title": "Mode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode"
+        ],
+        "title": "DealModeIn"
+      },
+      "DealOut": {
+        "properties": {
+          "deal_id": {
+            "type": "integer",
+            "title": "Deal Id"
+          },
+          "target_id": {
+            "type": "integer",
+            "title": "Target Id"
+          },
+          "target_name": {
+            "type": "string",
+            "title": "Target Name"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "cash_share": {
+            "type": "number",
+            "title": "Cash Share"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "review",
+              "blocked",
+              "refused",
+              "closed",
+              "abandoned",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "hostile": {
+            "type": "boolean",
+            "title": "Hostile"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "brand",
+                  "integrate"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
+          },
+          "made_turn": {
+            "type": "integer",
+            "title": "Made Turn"
+          },
+          "close_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close Turn",
+            "description": "Due to close at this turn's month end"
+          },
+          "review_end_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review End Turn"
+          },
+          "combined_share": {
+            "type": "number",
+            "title": "Combined Share",
+            "description": "The highest combined share antitrust saw"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "remedy_product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remedy Product",
+            "description": "The product a remedy would divest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deal_id",
+          "target_id",
+          "target_name",
+          "price_cents",
+          "cash_share",
+          "status",
+          "hostile",
+          "mode",
+          "made_turn",
+          "close_turn",
+          "review_end_turn",
+          "combined_share",
+          "market",
+          "remedy_product"
+        ],
+        "title": "DealOut"
+      },
       "DecisionOut": {
         "properties": {
           "seat": {
@@ -17123,6 +17989,19 @@
         ],
         "title": "DecisionOut",
         "description": "Something an executive with authority did this month or lately (24.1-24.2)."
+      },
+      "DiligenceIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id"
+        ],
+        "title": "DiligenceIn"
       },
       "DilutionLineOut": {
         "properties": {
@@ -17178,6 +18057,24 @@
           "holder_kind"
         ],
         "title": "DilutionLineOut"
+      },
+      "DirectiveIn": {
+        "properties": {
+          "directive": {
+            "type": "string",
+            "enum": [
+              "grow",
+              "harvest",
+              "defend"
+            ],
+            "title": "Directive"
+          }
+        },
+        "type": "object",
+        "required": [
+          "directive"
+        ],
+        "title": "DirectiveIn"
       },
       "DirectorOut": {
         "properties": {
@@ -19366,7 +20263,7 @@
           "game_state": {
             "type": "string",
             "title": "Game State",
-            "description": "active | bankrupt | founder_removed"
+            "description": "active | bankrupt | founder_removed | exit"
           },
           "company_name": {
             "type": "string",
@@ -19382,6 +20279,41 @@
               }
             ],
             "title": "Ended Turn"
+          },
+          "exit_buyer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Buyer",
+            "description": "Exit (M14, 28.6): who bought it"
+          },
+          "exit_price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Price Cents"
+          },
+          "exit_proceeds_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Proceeds Cents",
+            "description": "The founder's stake"
           },
           "ended_label": {
             "anyOf": [
@@ -23199,6 +24131,99 @@
         ],
         "title": "MarketingSplitIn",
         "description": "Shares of the marketing budget by region, in basis points summing to 10,000; empty\nreturns to the default split by revenue (23.5)."
+      },
+      "MessageOut": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "detail"
+        ],
+        "title": "MessageOut"
+      },
+      "MnaActionOut": {
+        "properties": {
+          "mna": {
+            "$ref": "#/components/schemas/MnaOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/MessageOut"
+            },
+            "type": "array",
+            "title": "Messages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mna",
+          "energy",
+          "unread_inbox",
+          "messages"
+        ],
+        "title": "MnaActionOut"
+      },
+      "MnaOut": {
+        "properties": {
+          "targets": {
+            "items": {
+              "$ref": "#/components/schemas/TargetOut"
+            },
+            "type": "array",
+            "title": "Targets"
+          },
+          "deals": {
+            "items": {
+              "$ref": "#/components/schemas/DealOut"
+            },
+            "type": "array",
+            "title": "Deals"
+          },
+          "acquisitions": {
+            "items": {
+              "$ref": "#/components/schemas/AcquisitionOut"
+            },
+            "type": "array",
+            "title": "Acquisitions"
+          },
+          "subsidiaries": {
+            "items": {
+              "$ref": "#/components/schemas/SubsidiaryOut"
+            },
+            "type": "array",
+            "title": "Subsidiaries"
+          },
+          "listed": {
+            "type": "boolean",
+            "title": "Listed",
+            "description": "Whether you can pay in shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "targets",
+          "deals",
+          "acquisitions",
+          "subsidiaries",
+          "listed"
+        ],
+        "title": "MnaOut"
       },
       "MoraleBreakdownOut": {
         "properties": {
@@ -30528,6 +31553,19 @@
             "type": "array",
             "title": "Periods",
             "description": "Oldest first"
+          },
+          "consolidated": {
+            "type": "boolean",
+            "title": "Consolidated",
+            "description": "Kept brands' numbers are included from closing (M14)",
+            "default": false
+          },
+          "subsidiaries": {
+            "items": {
+              "$ref": "#/components/schemas/SubsidiaryColumnOut"
+            },
+            "type": "array",
+            "title": "Subsidiaries"
           }
         },
         "type": "object",
@@ -30846,6 +31884,94 @@
         ],
         "title": "StructureGuideOut"
       },
+      "SubsidiaryColumnOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "revenue_cents": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Revenue Cents",
+            "description": "Per period, as `periods`"
+          },
+          "operating_result_cents": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Operating Result Cents"
+          },
+          "cash_cents": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Cash Cents",
+            "description": "At each period's end"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "revenue_cents",
+          "operating_result_cents",
+          "cash_cents"
+        ],
+        "title": "SubsidiaryColumnOut",
+        "description": "A kept brand's own numbers for each period (M14, 28.5): a column on the Finance screen."
+      },
+      "SubsidiaryOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "directive": {
+            "type": "string",
+            "enum": [
+              "grow",
+              "harvest",
+              "defend"
+            ],
+            "title": "Directive"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "directive",
+          "mrr_cents",
+          "cash_cents",
+          "staff"
+        ],
+        "title": "SubsidiaryOut"
+      },
       "SupportPoolOut": {
         "properties": {
           "key": {
@@ -31045,6 +32171,257 @@
           "marks"
         ],
         "title": "TalentOut"
+      },
+      "TargetOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "incumbent",
+              "startup"
+            ],
+            "title": "Kind"
+          },
+          "listed": {
+            "type": "boolean",
+            "title": "Listed"
+          },
+          "market_cap_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Cap Cents",
+            "description": "Listed: V_f x sentiment, public"
+          },
+          "value_low_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Low Cents",
+            "description": "Private: the estimated value range"
+          },
+          "value_high_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value High Cents"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "diligence": {
+            "type": "string",
+            "enum": [
+              "none",
+              "under_way",
+              "done"
+            ],
+            "title": "Diligence"
+          },
+          "diligence_cost_cents": {
+            "type": "integer",
+            "title": "Diligence Cost Cents",
+            "description": "0.5% of the estimate, at least $50,000"
+          },
+          "findings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Findings",
+            "description": "Hidden problems, only once diligence is done"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/TargetProductOut"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/TargetPersonOut"
+            },
+            "type": "array",
+            "title": "People",
+            "description": "Key people, once diligence is done"
+          },
+          "counter_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counter Cents",
+            "description": "Their counter-offer, once they made one"
+          },
+          "talks_closed_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Talks Closed Months",
+            "description": "Months until a new bid is possible"
+          },
+          "open_deal_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Deal Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "kind",
+          "listed",
+          "market_cap_cents",
+          "value_low_cents",
+          "categories",
+          "diligence",
+          "diligence_cost_cents",
+          "findings",
+          "products",
+          "people",
+          "counter_cents",
+          "talks_closed_months",
+          "open_deal_id"
+        ],
+        "title": "TargetOut"
+      },
+      "TargetPersonOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role"
+        ],
+        "title": "TargetPersonOut"
+      },
+      "TargetProductOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "quality_low": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality Low",
+            "description": "After diligence: quality as a range (28.2)"
+          },
+          "quality_high": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality High"
+          },
+          "feature_low": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature Low",
+            "description": "After diligence: the feature score as a range"
+          },
+          "feature_high": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature High"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category",
+          "quality_low",
+          "feature_low"
+        ],
+        "title": "TargetProductOut"
       },
       "TeamMoodOut": {
         "properties": {

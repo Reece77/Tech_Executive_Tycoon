@@ -417,6 +417,16 @@ function MessageDetail({
             View candidates
           </Button>
         )}
+        {item.link_kind === 'rival' && item.link_id !== null && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/competitors/${item.link_id}`}
+            h={44}
+            data-testid="view-company"
+          >
+            View company
+          </Button>
+        )}
         {item.link_kind === 'product' && item.link_id !== null && (
           <Button
             component={Link}

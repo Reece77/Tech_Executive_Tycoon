@@ -2903,6 +2903,128 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/mna": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Mna
+         * @description Every company that can be bought (by name), your deals, acquisitions and brands.
+         */
+        get: operations["getMna"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mna/diligence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Diligence */
+        post: operations["startDiligence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mna/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make Bid */
+        post: operations["makeBid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mna/deals/{deal_id}/mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Deal Mode */
+        post: operations["setDealMode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mna/deals/{deal_id}/abandon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Abandon Deal */
+        post: operations["abandonDeal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mna/deals/{deal_id}/remedy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept Remedy */
+        post: operations["acceptRemedy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mna/subsidiaries/{company_id}/directive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Directive */
+        post: operations["setDirective"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -3115,6 +3237,56 @@ export interface components {
              * @description The board nominee where the round adds a common seat (M4c)
              */
             nominee_id?: number | null;
+        };
+        /** AcquisitionOut */
+        AcquisitionOut: {
+            /** Deal Id */
+            deal_id: number;
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "brand" | "integrate";
+            /** Closed Turn */
+            closed_turn: number;
+            /** Price Cents */
+            price_cents: number;
+            /**
+             * Directive
+             * @enum {string}
+             */
+            directive: "grow" | "harvest" | "defend";
+            /** Key People */
+            key_people: number;
+            /** Pool Kept */
+            pool_kept: number;
+            /** Let Go */
+            let_go: number;
+            /** Departed */
+            departed: number;
+            /** Problems */
+            problems: string[];
+            /** Clash Months Left */
+            clash_months_left: number;
+            /**
+             * Cost Before Cents
+             * @description The target's monthly costs before closing
+             */
+            cost_before_cents: number;
+            /**
+             * Unit Ids
+             * @description Your units created for its products
+             */
+            unit_ids: number[];
+            /**
+             * Flagged
+             * @description Org flags its units this long after closing
+             */
+            flagged: boolean;
         };
         /** ActionOut */
         ActionOut: {
@@ -3407,6 +3579,29 @@ export interface components {
              * @description How the bank's name helps the price, in words
              */
             reputation: string;
+        };
+        /** BidIn */
+        BidIn: {
+            /** Company Id */
+            company_id: number;
+            /** Price Cents */
+            price_cents: number;
+            /**
+             * Cash Share
+             * @default 1
+             */
+            cash_share?: number;
+            /**
+             * Hostile
+             * @default false
+             */
+            hostile?: boolean;
+            /**
+             * Mode
+             * @default integrate
+             * @enum {string}
+             */
+            mode?: "brand" | "integrate";
         };
         /** BiggestRoundOut */
         BiggestRoundOut: {
@@ -4533,6 +4728,57 @@ export interface components {
              */
             fix: string;
         };
+        /** DealModeIn */
+        DealModeIn: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "brand" | "integrate";
+        };
+        /** DealOut */
+        DealOut: {
+            /** Deal Id */
+            deal_id: number;
+            /** Target Id */
+            target_id: number;
+            /** Target Name */
+            target_name: string;
+            /** Price Cents */
+            price_cents: number;
+            /** Cash Share */
+            cash_share: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "accepted" | "review" | "blocked" | "refused" | "closed" | "abandoned" | "failed";
+            /** Hostile */
+            hostile: boolean;
+            /** Mode */
+            mode: ("brand" | "integrate") | null;
+            /** Made Turn */
+            made_turn: number;
+            /**
+             * Close Turn
+             * @description Due to close at this turn's month end
+             */
+            close_turn: number | null;
+            /** Review End Turn */
+            review_end_turn: number | null;
+            /**
+             * Combined Share
+             * @description The highest combined share antitrust saw
+             */
+            combined_share: number;
+            /** Market */
+            market: string;
+            /**
+             * Remedy Product
+             * @description The product a remedy would divest
+             */
+            remedy_product: string | null;
+        };
         /**
          * DecisionOut
          * @description Something an executive with authority did this month or lately (24.1-24.2).
@@ -4551,6 +4797,11 @@ export interface components {
              * @description A plausible but worse choice (24.2)
              */
             mistake: boolean;
+        };
+        /** DiligenceIn */
+        DiligenceIn: {
+            /** Company Id */
+            company_id: number;
         };
         /** DilutionLineOut */
         DilutionLineOut: {
@@ -4582,6 +4833,14 @@ export interface components {
              * @default false
              */
             new?: boolean;
+        };
+        /** DirectiveIn */
+        DirectiveIn: {
+            /**
+             * Directive
+             * @enum {string}
+             */
+            directive: "grow" | "harvest" | "defend";
         };
         /** DirectorOut */
         DirectorOut: {
@@ -5485,13 +5744,25 @@ export interface components {
         GameOverOut: {
             /**
              * Game State
-             * @description active | bankrupt | founder_removed
+             * @description active | bankrupt | founder_removed | exit
              */
             game_state: string;
             /** Company Name */
             company_name: string;
             /** Ended Turn */
             ended_turn: number | null;
+            /**
+             * Exit Buyer
+             * @description Exit (M14, 28.6): who bought it
+             */
+            exit_buyer?: string | null;
+            /** Exit Price Cents */
+            exit_price_cents?: number | null;
+            /**
+             * Exit Proceeds Cents
+             * @description The founder's stake
+             */
+            exit_proceeds_cents?: number | null;
             /** Ended Label */
             ended_label: string | null;
             /** Founded Label */
@@ -7069,6 +7340,38 @@ export interface components {
             shares: {
                 [key: string]: number;
             };
+        };
+        /** MessageOut */
+        MessageOut: {
+            /** Title */
+            title: string;
+            /** Detail */
+            detail: string;
+        };
+        /** MnaActionOut */
+        MnaActionOut: {
+            mna: components["schemas"]["MnaOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+            /** Messages */
+            messages: components["schemas"]["MessageOut"][];
+        };
+        /** MnaOut */
+        MnaOut: {
+            /** Targets */
+            targets: components["schemas"]["TargetOut"][];
+            /** Deals */
+            deals: components["schemas"]["DealOut"][];
+            /** Acquisitions */
+            acquisitions: components["schemas"]["AcquisitionOut"][];
+            /** Subsidiaries */
+            subsidiaries: components["schemas"]["SubsidiaryOut"][];
+            /**
+             * Listed
+             * @description Whether you can pay in shares
+             */
+            listed: boolean;
         };
         /**
          * MoraleBreakdownOut
@@ -10211,6 +10514,14 @@ export interface components {
              * @description Oldest first
              */
             periods: components["schemas"]["StatementPeriodOut"][];
+            /**
+             * Consolidated
+             * @description Kept brands' numbers are included from closing (M14)
+             * @default false
+             */
+            consolidated?: boolean;
+            /** Subsidiaries */
+            subsidiaries?: components["schemas"]["SubsidiaryColumnOut"][];
         };
         /** StockOut */
         StockOut: {
@@ -10319,6 +10630,46 @@ export interface components {
         StructureGuideOut: {
             /** Sections */
             sections: components["schemas"]["GuideSectionOut"][];
+        };
+        /**
+         * SubsidiaryColumnOut
+         * @description A kept brand's own numbers for each period (M14, 28.5): a column on the Finance screen.
+         */
+        SubsidiaryColumnOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Revenue Cents
+             * @description Per period, as `periods`
+             */
+            revenue_cents: number[];
+            /** Operating Result Cents */
+            operating_result_cents: number[];
+            /**
+             * Cash Cents
+             * @description At each period's end
+             */
+            cash_cents: number[];
+        };
+        /** SubsidiaryOut */
+        SubsidiaryOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Directive
+             * @enum {string}
+             */
+            directive: "grow" | "harvest" | "defend";
+            /** Mrr Cents */
+            mrr_cents: number;
+            /** Cash Cents */
+            cash_cents: number;
+            /** Staff */
+            staff: number;
         };
         /** SupportPoolOut */
         SupportPoolOut: {
@@ -10431,6 +10782,100 @@ export interface components {
              * @description The bonus as + marks, one per half point
              */
             marks: string;
+        };
+        /** TargetOut */
+        TargetOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "incumbent" | "startup";
+            /** Listed */
+            listed: boolean;
+            /**
+             * Market Cap Cents
+             * @description Listed: V_f x sentiment, public
+             */
+            market_cap_cents: number | null;
+            /**
+             * Value Low Cents
+             * @description Private: the estimated value range
+             */
+            value_low_cents: number | null;
+            /** Value High Cents */
+            value_high_cents?: number | null;
+            /** Categories */
+            categories: string[];
+            /**
+             * Diligence
+             * @enum {string}
+             */
+            diligence: "none" | "under_way" | "done";
+            /**
+             * Diligence Cost Cents
+             * @description 0.5% of the estimate, at least $50,000
+             */
+            diligence_cost_cents: number;
+            /**
+             * Findings
+             * @description Hidden problems, only once diligence is done
+             */
+            findings: string[];
+            /** Products */
+            products: components["schemas"]["TargetProductOut"][];
+            /**
+             * People
+             * @description Key people, once diligence is done
+             */
+            people: components["schemas"]["TargetPersonOut"][];
+            /**
+             * Counter Cents
+             * @description Their counter-offer, once they made one
+             */
+            counter_cents: number | null;
+            /**
+             * Talks Closed Months
+             * @description Months until a new bid is possible
+             */
+            talks_closed_months: number | null;
+            /** Open Deal Id */
+            open_deal_id: number | null;
+        };
+        /** TargetPersonOut */
+        TargetPersonOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+        };
+        /** TargetProductOut */
+        TargetProductOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /**
+             * Quality Low
+             * @description After diligence: quality as a range (28.2)
+             */
+            quality_low: number | null;
+            /** Quality High */
+            quality_high?: number | null;
+            /**
+             * Feature Low
+             * @description After diligence: the feature score as a range
+             */
+            feature_low: number | null;
+            /** Feature High */
+            feature_high?: number | null;
         };
         /** TeamMoodOut */
         TeamMoodOut: {
@@ -20421,6 +20866,432 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMna: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MnaOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startDiligence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiligenceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MnaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    makeBid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BidIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MnaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setDealMode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                deal_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DealModeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MnaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    abandonDeal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                deal_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MnaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    acceptRemedy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                deal_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MnaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setDirective: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                company_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DirectiveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MnaActionOut"];
                 };
             };
             /** @description Bad Request */

@@ -170,6 +170,8 @@ def _acquisition_out(state: GameState, a: Acquisition, data: LoadedData) -> Acqu
         problems=list(a.problems),
         clash_months_left=left,
         cost_before_cents=a.cost_before_cents,
+        unit_ids=list(a.unit_ids),
+        flagged=state.turn < a.closed_turn + data.balance.mna.acquired_flag_months,
     )
 
 
