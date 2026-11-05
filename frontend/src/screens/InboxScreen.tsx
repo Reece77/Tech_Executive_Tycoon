@@ -32,6 +32,7 @@ import {
   type InboxFilter,
 } from '../lib/inbox';
 import { moraleBand } from '../lib/attr';
+import { useReplace, useReplaceable } from '../hooks/press';
 
 const FILTERS: { key: InboxFilter; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -402,6 +403,9 @@ function MessageDetail({
             View profile
           </Button>
         )}
+        {isNotice && item.link_id !== null && (
+          <ReplaceButton saveId={saveId} personId={item.link_id} />
+        )}
         {isNotice && p?.role && (
           <Button
             component={Link}
@@ -410,6 +414,27 @@ function MessageDetail({
             h={44}
           >
             Find a replacement
+          </Button>
+        )}
+        {item.link_kind === 'rival' && item.link_id !== null && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/competitors/${item.link_id}`}
+            h={44}
+            data-testid="view-rival"
+          >
+            Open the rival
+          </Button>
+        )}
+        {item.kind.startsWith('promise_') && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/overview`}
+            h={44}
+            variant="default"
+            data-testid="view-promises"
+          >
+            Open Promises
           </Button>
         )}
         {item.link_kind === 'search' && (
@@ -466,6 +491,39 @@ function MessageDetail({
         <BookmarkButton saveId={saveId} item={item} />
       </div>
     </article>
+  );
+}
+
+/** Replace with a recruiter (M14b, 29.5): offered for a resignation or poach while a
+ * recruiter is on staff and no replacement is being found yet. */
+function ReplaceButton({ saveId, personId }: { saveId: string; personId: number }) {
+  const rows = useReplaceable(saveId);
+  const replace = useReplace(saveId);
+  const row = rows.data?.find((r) => r.person_id === personId);
+  if (replace.isSuccess) {
+    return (
+      <span className="tst-muted" style={{ fontSize: 13, alignSelf: 'center' }}>
+        Your recruiter is finding a replacement.
+      </span>
+    );
+  }
+  if (!row?.can_replace) return null;
+  return (
+    <>
+      <Button
+        h={44}
+        loading={replace.isPending}
+        onClick={() => replace.mutate(personId)}
+        data-testid={`replace-${personId}`}
+      >
+        Replace
+      </Button>
+      {replace.error && (
+        <span role="alert" style={{ color: 'var(--tst-warn)', fontSize: 13, alignSelf: 'center' }}>
+          {replace.error.message}
+        </span>
+      )}
+    </>
   );
 }
 
