@@ -24,7 +24,7 @@ from dataclasses import dataclass, replace
 from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.m13 import _loaded, listed_game
 from tst.balance.strategies import steady
-from tst.sim.actions import ChooseEvent, CreatePlan, ReplaceLeaver
+from tst.sim.actions import ChooseEvent, CreatePlan, ReplaceLeaver, SetMarketing
 from tst.sim.hiring.models import PersonState
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Employment
@@ -44,6 +44,7 @@ SEEDS: tuple[int, ...] = tuple(range(1, 11))
 T2_MONTHS = 24
 T2_AT = (14, 17, 20)
 T2_AMBITION = 0.5
+T2_MARKETING = 10_000_000  # cents a month a product: $100,000
 YEARS = 10
 TURNS = 12 * YEARS
 AGAINST = ("price_cut", "feature_push", "quality_push", "brand_push", "poach")
@@ -57,11 +58,13 @@ T5_MONTHS = 8
 class PromiseRun:
     arm: str
     seed: int
-    brand: float
+    brands: tuple[tuple[int, float], ...]  # (product id, brand) at month 24
     sentiment: float
 
 
 def target_2_run(job: tuple[str, int]) -> PromiseRun:
+    """Marketing is held at T2_MARKETING a product in every arm, so a product's brand sits
+    below the cap and a brand-target change can show."""
     arm, seed = job
     game = listed_game(seed)
     for month in range(T2_MONTHS):
@@ -85,14 +88,16 @@ def target_2_run(job: tuple[str, int]) -> PromiseRun:
                 game.loaded.game_data,
                 reminder_in=1,
             )
-        steady(game)
+        for product in game.state.company_products(PLAYER):
+            if product.status in SELLING:
+                game.act(SetMarketing(game.founder_id, product.id, T2_MARKETING))
         game.turn()
     live = [p for p in game.state.company_products(PLAYER) if p.status in SELLING]
     public = public_of(game.state, PLAYER)
     return PromiseRun(
         arm,
         seed,
-        statistics.mean(p.brand for p in live) if live else 0.0,
+        tuple((p.id, p.brand) for p in live),
         public.sentiment if public else 1.0,
     )
 
@@ -256,8 +261,18 @@ def _median(xs: Sequence[float]) -> float:
 
 
 def t2_brand(r: Results, arm: str) -> float:
-    base = {x.seed: x.brand for x in r.t2 if x.arm == "none"}
-    return _median([x.brand - base[x.seed] for x in r.t2 if x.arm == arm])
+    """Per seed, the product with the most headroom in the no-promise arm (the lowest brand),
+    compared across arms."""
+    out = []
+    for x in r.t2:
+        if x.arm != arm:
+            continue
+        base = dict(next(b.brands for b in r.t2 if b.arm == "none" and b.seed == x.seed))
+        if not base:
+            continue
+        pid = min(base, key=lambda k: base[k])
+        out.append(dict(x.brands).get(pid, 0.0) - base[pid])
+    return _median(out)
 
 
 def t2_sentiment(r: Results) -> float:
