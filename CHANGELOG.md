@@ -12,7 +12,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Recruitment: Replace with a recruiter (fills one month sooner), search by interest for a fee (15% of the role's mid salary), leadership fit from revealed values on People and Org.
   - Migration `0033_press` (press moments, promises, credibility, feuds, statements, departures; side tables for search and plan fields); API `/press`, `/press/promises`, `/feuds`, `/rivals/{id}/leader`, `/recruitment/replaceable`, `/recruitment/replace`; `tst press|promises|feuds`; Overview Promises and credibility, `RivalLeaderPanel`, Replace and interest search, leadership fit, glossary.
   - 29.7 targets (`tools/m14b_targets.py`, nightly): T2 kept +10.7 / broken -11.1 brand, sentiment 10% lower; T3 1.2 moments a year; T4 rivalry on 7/10 bold steady runs, +26% moves; T5 Replace 50% sooner. Tuned (`press.*`, `feud.*` only): `feud.bold_mention` 10 -> 20, `feud.decay` 2 -> 1, `press.statement_chance` 0.6, `press.jab_base` 0.3, releases count as speaking moves.
-  - **Golden snapshots regenerated once** (lane B, merging first): press moments join the event flow from a launch (golden seed 1 first differs at turn 7), and their brand modifiers move revenue and cash. M14 regenerates again on the combined code.
+  - **Golden snapshots regenerated once** (lane B, merging first): press moments join the event flow from a launch (golden seed 1 first differs at turn 7), and their brand modifiers move revenue and cash. M14 regenerates again on the combined code if they move.
 
 - M14 Mergers and acquisitions (formulas.md §28; lane A):
   - Valuation of every company: listed rivals' market cap (`listed_from` in `incumbents.yaml` and `entrants.yaml`), private value ranges.
@@ -26,6 +26,8 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Integration keeps each product's revenue share of the target's staff less a synergy by function, for targets of at most 250 staff (larger ones are kept as brands); product manager's ruling 2026-11-05.
   - 28.9: every target passes (target 4: payroll cut 24%).
   - Tuned: `integration.flight_brand` 0.007, `integration.flight_base` 0.01, `mna.rival_rate` 0.008.
+  - Lane merge with M14b: an agreed deal raises an `acquisition` press moment (29.1) and the player's hostile tender adds `feud.hostile_bid` to the feud with the target's CEO (29.4), through M14b's hooks.
+  - Golden snapshots unchanged on the combined M14 + M14b code (the golden runs make no acquisitions), so none were regenerated at the lane merge; M14b's regeneration stands.
 
 - CI (2026-11-05):
   - The scheduled nightly skips when `main` has had no commits in the last 25 hours (a manual run always runs).
