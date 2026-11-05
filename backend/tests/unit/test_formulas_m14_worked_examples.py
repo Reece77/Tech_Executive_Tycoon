@@ -113,3 +113,11 @@ def test_streams_and_accounts(loaded: LoadedData) -> None:
     listed = {c.name: c.listed_from for c in loaded.game_data.incumbents}
     assert listed["Facebook"] == (2012, 5) and listed["Atlassian"] == (2015, 12)
     assert listed["Zoho"] is None  # private
+
+
+def test_displayed_ranges_round_outward() -> None:
+    assert mf.displayed_range((38_123_456_00, 72_987_654_00)) == (38_000_000_00, 73_000_000_00)
+    low, high = mf.displayed_range(mf.value_range_cents(56 * M, 0.3, 0.3))
+    assert low <= 56 * M <= high
+    near = mf.displayed_range(mf.value_range_cents(56 * M + 1_000_00, 0.3, 0.3))
+    assert near == (low, high)  # a nearby true value shows the same range

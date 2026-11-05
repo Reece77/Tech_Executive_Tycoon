@@ -65,9 +65,23 @@ class StatementPeriodOut(BaseModel):
     balance_sheet: BalanceSheetOut = Field(description="At the period's last closed month end")
 
 
+class SubsidiaryColumnOut(BaseModel):
+    """A kept brand's own numbers for each period (M14, 28.5): a column on the Finance screen."""
+
+    company_id: int
+    name: str
+    revenue_cents: list[int] = Field(description="Per period, as `periods`")
+    operating_result_cents: list[int]
+    cash_cents: list[int] = Field(description="At each period's end")
+
+
 class StatementsOut(BaseModel):
     period: str = Field(description="month | quarter | year")
     periods: list[StatementPeriodOut] = Field(description="Oldest first")
+    consolidated: bool = Field(
+        default=False, description="Kept brands' numbers are included from closing (M14)"
+    )
+    subsidiaries: list[SubsidiaryColumnOut] = Field(default_factory=list)
 
 
 class HolderOut(BaseModel):
@@ -396,9 +410,12 @@ class GameOverDirectorOut(BaseModel):
 class GameOverOut(BaseModel):
     """How the game ended (ADR-0018), for the game over screen."""
 
-    game_state: str = Field(description="active | bankrupt | founder_removed")
+    game_state: str = Field(description="active | bankrupt | founder_removed | exit")
     company_name: str
     ended_turn: int | None
+    exit_buyer: str | None = Field(default=None, description="Exit (M14, 28.6): who bought it")
+    exit_price_cents: int | None = None
+    exit_proceeds_cents: int | None = Field(default=None, description="The founder's stake")
     ended_label: str | None
     founded_label: str
     months_lasted: int

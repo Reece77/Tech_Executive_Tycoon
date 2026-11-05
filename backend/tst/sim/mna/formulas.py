@@ -26,6 +26,17 @@ def value_range_cents(value_cents: int, u: float, half_share: float) -> tuple[in
     return max(0, low), max(max(0, low) + 1, high)
 
 
+def displayed_range(value_range: tuple[int, int]) -> tuple[int, int]:
+    """Round a value range outward to two significant figures of its high end (M14 decision,
+    as 21.7's whole points): it still contains the truth, and nearby true values show the
+    same range, so the display is no oracle."""
+    low, high = value_range
+    if high <= 0:
+        return 0, 1
+    step = 10 ** max(0, math.floor(math.log10(high)) - 1)  # tunable-exempt: 2 significant figures
+    return (low // step) * step, -(-high // step) * step
+
+
 def midpoint_cents(value_range: tuple[int, int]) -> int:
     """The estimate the player sees (28.1): the displayed range's midpoint."""
     return (value_range[0] + value_range[1]) // 2

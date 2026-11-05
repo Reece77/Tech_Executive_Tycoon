@@ -143,7 +143,7 @@ def value_range_cents(
     company = state.company(company_id)
     value = fundamental_value_cents(state, company_id, balances, balance, data)
     half = balance.mna.diligence.range if diligenced else balance.mna.range
-    return mf.value_range_cents(value, range_draw(state, company), half)
+    return mf.displayed_range(mf.value_range_cents(value, range_draw(state, company), half))
 
 
 def listed_rivals_month(
