@@ -93,7 +93,7 @@ def test_listed_rivals_sentiment_is_seeded(loaded: LoadedData) -> None:
         RivalListing(4, 1.07),
         TargetFile(1, 5, ("tech_debt",), 3, 5, 0.31, 12_00, 20),
         Deal(2, 1, 5, 10_000_00, 0.5, 3, "review", False, 9, 8, 0.42, "b2b_saas/smb/x", 0.7, 6),
-        Acquisition(2, 1, 5, "integrate", 9, 10_00, "harvest", 0.4, 1_00, 3, 4, 5, 1, (), (7, 8)),
+        Acquisition(2, 1, 5, "integrate", 9, 10_00, "harvest", 0.4, 1_00, 3, 4, 5, 1, (), (7, 8), (9,), (10, 11)),
         AcquiredPerson(11, 2, 21, False, 2.0),
     ],
 )

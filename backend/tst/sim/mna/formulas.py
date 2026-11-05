@@ -72,8 +72,10 @@ def distressed(cash_cents: int, monthly_costs_cents: int, mb: MnaBalance) -> boo
 
 
 def counter_cents(reservation: int, z: float, mb: MnaBalance) -> int:
-    """The private target's one counter: reservation x (1 + N(0, sd)), z a standard normal."""
-    return round(reservation * (1 + mb.counter_sd * z))
+    """The private target's one counter: reservation x (1 + N(0, sd)), z a standard normal,
+    in whole dollars (rounded up), so bidding the counter as shown is accepted."""
+    cents = round(reservation * (1 + mb.counter_sd * z))
+    return -(-cents // 100) * 100  # tunable-exempt: cents in a dollar
 
 
 def board_bar(z: float, mb: MnaBalance) -> float:

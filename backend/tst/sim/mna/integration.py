@@ -120,7 +120,7 @@ def after_closing(
     if brand:
         target = state.company(acquisition.target_id)
         state = with_company(state, replace(target, parent_id=acquisition.acquirer_id))
-        return state, acquisition, [], []
+        return state, replace(acquisition, person_ids=tuple(key_people)), [], []
     return integrate(state, acquisition, rng, balances, balance, data)
 
 
@@ -178,6 +178,7 @@ def integrate(
         for months, mult in _churn_penalties(acquisition, balance):
             state = _modifier(state, acquirer, product.id, mult, months)
     key = [e for e in state.staff(target)]
+    arrived = [e.person_id for e in key]
     for index, employment in enumerate(sorted(key, key=lambda e: e.id)):
         unit = unit_ids[index % len(unit_ids)] if unit_ids else None
         state = move_person(state, employment, acquirer, unit)
@@ -208,6 +209,7 @@ def integrate(
         slots = [unit_ids[i] for i, n in enumerate(wanted) for _ in range(n)]
         for employment, unit in zip(new, slots, strict=False):
             state = move_person(state, employment, acquirer, unit)
+            arrived.append(employment.person_id)
         kept += keep
         gone = headcount - keep
         let_go += gone
@@ -231,6 +233,7 @@ def integrate(
         let_go=let_go,
         product_ids=tuple(p.id for p in products),
         unit_ids=tuple(unit_ids),
+        person_ids=tuple(arrived),
     )
     entries = []
     if severance > 0:

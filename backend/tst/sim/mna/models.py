@@ -103,6 +103,7 @@ class Acquisition:
     problems: tuple[Problem, ...] = ()  # discovered by closing at the latest
     product_ids: tuple[int, ...] = ()  # integrated products (now the acquirer's)
     unit_ids: tuple[int, ...] = ()  # the acquirer's units created for them
+    person_ids: tuple[int, ...] = ()  # everyone who came over: key people and pool staff kept
 
 
 @dataclass(frozen=True, slots=True)
