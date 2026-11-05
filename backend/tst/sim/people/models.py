@@ -19,7 +19,9 @@ PA_KEY = "potential_ability"  # reveal record key for potential ability
 FOUNDER_ROLE = "founder"  # employment role of the founder (not a hireable role)
 
 type EmploymentStatus = Literal["active", "notice", "ended"]
-type EndReason = Literal["resigned", "fired", "retired", "company_failed", "poached"]
+type EndReason = Literal[
+    "resigned", "fired", "retired", "company_failed", "poached", "acquired"
+]  # acquired: M14
 
 
 @dataclass(frozen=True, slots=True)

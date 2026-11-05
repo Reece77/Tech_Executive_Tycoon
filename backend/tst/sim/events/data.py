@@ -131,6 +131,7 @@ PUBLIC_STEPS: Final = (
     "takeover_talks",
     "ceo_replace",  # 25.6: the board's vote on the CEO
     "ceo_keep",
+    "takeover_accept",  # M14 (28.6): sell the company; the game ends with an exit
 )
 LOAN_EFFECTS: Final = ("loan_fee", "loan_rate", "loan_repay")
 VALUELESS: Final = (

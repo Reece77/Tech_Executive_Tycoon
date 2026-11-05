@@ -12,8 +12,10 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.finance import macro
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.markets_public import formulas as pf
+from tst.sim.markets_public.public import sentiment_draws
 from tst.sim.markets_public.value import growth_of, margin_of
 from tst.sim.mna import formulas as mf
+from tst.sim.mna.draws import fixed_draws
 from tst.sim.mna.models import RivalListing
 from tst.sim.rivals.models import ENTRANT_KEY, INCUMBENT_KEY, stream_key
 from tst.sim.rng import RngFactory
@@ -121,8 +123,8 @@ def market_cap_cents(
 def range_draw(state: GameState, company: CompanyState) -> float:
     """The target's fixed value-range offset uniform (28.1): stream mna at turn 0, keyed by
     its stable rival key, so it never changes and no other draw moves it."""
-    gen = RngFactory(state.save_meta.master_seed).stream(
-        0, "mna", *stream_key(company.id, company.rival_key), RANGE_TAG
+    gen = fixed_draws(
+        state.save_meta.master_seed, *stream_key(company.id, company.rival_key), RANGE_TAG
     )
     return float(gen.random())
 
@@ -153,7 +155,7 @@ def listed_rivals_month(
         if not is_listed(state, company.id, data):
             continue
         listing = rival_listing(state, company.id) or RivalListing(company.id)
-        gen = rng.stream(state.turn, "market_sentiment", *stream_key(company.id, company.rival_key))
+        gen = sentiment_draws(rng, state.turn, *stream_key(company.id, company.rival_key))
         z = float(gen.standard_normal())
         sentiment = pf.sentiment_step(listing.sentiment, z, balance.public.sentiment)
         state = with_rival_listing(state, replace(listing, sentiment=sentiment))

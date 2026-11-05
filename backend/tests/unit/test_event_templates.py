@@ -30,7 +30,7 @@ def test_the_library(loaded: LoadedData) -> None:
         "rivals": 4,
         "founder": 14,  # M7a: early days (trigger early_days)
         "lender": 2,  # M10: queued by the debt phase (20.3)
-        "public": 10,  # M13: the IPO chain and public life, queued by the engine (25)
+        "public": 11,  # M13: IPO chain and public life (25); M14: takeover_offer
         "executive": 5,  # M10c: executives ask and clash (24.3)
         "research": 4,  # M11: breakthroughs and dead ends (21.3)
     }

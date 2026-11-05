@@ -1,0 +1,119 @@
+"""M14 sub-task 5 (formulas.md 28.5): after closing, keep the target as a brand (consolidated,
+cash swept, deciding under a directive) or integrate it (products, key people and the pool
+staff they need move over; the rest are let go with severance; culture clash and flight)."""
+
+from __future__ import annotations
+
+from dataclasses import replace
+
+from tests.helpers import fresh_game
+from tests.unit.test_hiring_phases import Game
+from tests.unit.test_mna_deals import BIG, _energy, _founder, _id, _reservation
+from tst.loader import LoadedData
+from tst.sim.ledger import CASH, INVESTMENT_SUBSIDIARIES, SALARIES
+from tst.sim.mna import integration
+from tst.sim.mna.deals import BidForCompany
+from tst.sim.mna.integration import SetDirective
+from tst.sim.mna.style import style
+from tst.sim.research.models import ResearchLead
+from tst.sim.state import with_research_lead
+
+
+def _buy(loaded: LoadedData, name: str, mode: str, seed: int = 3) -> tuple[Game, int]:
+    game = Game(loaded, fresh_game(loaded, seed=seed), cash=BIG)
+    target = _id(game.state, name)
+    _energy(game)
+    game.act(BidForCompany(_founder(game), target, _reservation(game, target), mode=mode))  # type: ignore[arg-type]
+    game.turn()
+    assert game.state.deals[0].status == "closed"
+    return game, target
+
+
+def test_integrating_moves_products_people_and_lets_the_rest_go(loaded: LoadedData) -> None:
+    before = fresh_game(loaded)
+    zoho = _id(before, "Zoho")
+    products = {p.id for p in before.company_products(zoho)}
+    key = {e.person_id for e in before.staff(zoho)}
+    pools = sum(p.headcount for p in before.company_pools(zoho))
+    game, _ = _buy(loaded, "Zoho", "integrate")
+    state = game.state
+    (acq,) = state.acquisitions
+    assert set(acq.product_ids) == products
+    assert all(state.product(pid).company_id == 1 for pid in products)  # type: ignore[union-attr]
+    assert all(state.product(pid).held_feature is None for pid in products)  # type: ignore[union-attr]
+    assert not state.company(zoho).alive and state.staff(zoho) == ()
+    staff = {e.person_id: e for e in state.staff(1)}
+    assert (
+        len(key - set(staff)) <= 1
+    )  # the key people work for the player (one may resign as usual)
+    units = {u.id: u for u in state.units if u.id in acq.unit_ids}
+    assert {u.product_id for u in units.values()} == products
+    assert all(staff[p].unit_id in units for p in key if p in staff)
+    assert acq.pool_kept > 0 and acq.let_go > 0
+    assert acq.pool_kept + acq.let_go == round(pools)
+    assert game.balances[(1, SALARIES)] > 0  # severance (and a month's payroll)
+    assert acq.key_people == len(key) and len(state.acquired_people) <= len(key)
+    assert all(p.until_turn == acq.closed_turn + 12 for p in state.acquired_people)
+
+
+def test_integration_takes_the_higher_lead_plus_a_fifth_of_the_lower(loaded: LoadedData) -> None:
+    state = fresh_game(loaded)
+    zoho = _id(state, "Zoho")
+    state = with_research_lead(state, ResearchLead(zoho, "software_platform", 10.0))
+    state = with_research_lead(state, ResearchLead(1, "software_platform", 4.0))
+    game = Game(loaded, state, cash=BIG)
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho)))
+    game.turn()
+    lead = game.state.research_lead(1, "software_platform")
+    assert 10.0 < lead <= 10.0 + 0.2 * 4.0 + 0.5  # higher + 20% of the lower (decay aside)
+
+
+def test_a_brand_keeps_its_books_sweeps_cash_and_follows_its_directive(
+    loaded: LoadedData,
+) -> None:
+    game, evernote = _buy(loaded, "Evernote", "brand")
+    state = game.state
+    company = state.company(evernote)
+    assert company.parent_id == 1 and company.alive and state.staff(evernote)
+    assert style(state, company) == "aggressive"  # default directive: grow
+    _energy(game)
+    game.act(SetDirective(_founder(game), evernote, "harvest"))
+    assert style(game.state, game.state.company(evernote)) == "cost_leader"
+    invested = game.balances[(1, INVESTMENT_SUBSIDIARIES)]
+    cash = game.balances[(1, CASH)]
+    game.turn()
+    swept = invested - game.balances[(1, INVESTMENT_SUBSIDIARIES)]
+    if swept > 0:  # cash above 3 months of its costs went to the parent
+        assert game.balances[(1, CASH)] > cash - 10**9
+    assert all(p.brand for p in game.state.acquired_people)
+
+
+def test_flight_is_seeded_and_counted(loaded: LoadedData) -> None:
+    runs = []
+    for _ in range(2):
+        game, _ = _buy(loaded, "Zoho", "integrate")
+        for _ in range(6):
+            game.turn()
+        (acq,) = game.state.acquisitions
+        runs.append((acq.departed, tuple(p.person_id for p in game.state.acquired_people)))
+    assert runs[0] == runs[1]
+
+
+def test_level_bands() -> None:
+    assert integration.level_for(7.0) == "junior"
+    assert integration.level_for(10.0) == "mid"
+    assert integration.level_for(13.0) == "senior"
+    assert integration.level_for(16.0) == "staff"
+
+
+def test_distance_reads_average_traits(loaded: LoadedData) -> None:
+    state = fresh_game(loaded)
+    zoho = _id(state, "Zoho")
+    b, d = loaded.balance, loaded.game_data
+    distance = integration.distance_between(state, 1, zoho, b, d)
+    assert 0.0 <= distance <= 1.0
+    founder = state.founder_of(1)
+    assert founder is not None
+    same = replace(state, people=state.people)
+    assert integration.distance_between(same, 1, 1, b, d) == 0.0

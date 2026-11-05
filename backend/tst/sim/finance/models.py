@@ -35,10 +35,10 @@ type SafeStatus = Literal[
 type RoundStatus = Literal["open", "accepted", "closed", "failed", "lapsed"]
 type SheetStatus = Literal["offered", "accepted", "lapsed"]
 type SeatKind = Literal["common", "investor", "independent"]
-type GameOutcome = Literal["active", "bankrupt", "founder_removed"]
+type GameOutcome = Literal["active", "bankrupt", "founder_removed", "exit"]  # exit: M14
 type LoanStatus = Literal["active", "repaid", "called"]  # M10 (20.3)
 
-GAME_STATES: Final[tuple[GameOutcome, ...]] = ("active", "bankrupt", "founder_removed")
+GAME_STATES: Final[tuple[GameOutcome, ...]] = ("active", "bankrupt", "founder_removed", "exit")
 PREFERRED_CLASS: Final[dict[Series, ShareClass]] = {
     "seed": "preferred_seed",
     "a": "preferred_a",

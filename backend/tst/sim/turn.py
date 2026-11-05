@@ -40,6 +40,9 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public.public import public_month
+from tst.sim.mna.closing import mna_month
+from tst.sim.mna.integration import integration_month
+from tst.sim.mna.rivals import rival_deals
 from tst.sim.mna.valuation import listed_rivals_month
 from tst.sim.money import Cents
 from tst.sim.org.authority import run_executives
@@ -214,6 +217,8 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state, rival_moves=ctx.rival_moves + moves).post(*raised)
+    # M14 (28.6): incumbents agree startup purchases; they close in phase 7.
+    ctx = replace(ctx, state=rival_deals(ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data))
     return ctx.log(*approached)
 
 
@@ -279,6 +284,15 @@ def financing(ctx: TurnContext) -> TurnContext:
         ctx = replace(ctx, state=state).post(*public_entries).log(*public_logs)
     # M14 (28.1): listed rivals' sentiment (their market cap is V_f x S).
     ctx = replace(ctx, state=listed_rivals_month(ctx.state, ctx.rng, ctx.balance, ctx.data))
+    # M14 (28.2-28.5): diligence, antitrust reviews, closings, then brands and integrations.
+    state, deal_entries, deal_logs = mna_month(
+        ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*deal_entries).log(*deal_logs)
+    state, integration_entries, integration_logs = integration_month(
+        ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*integration_entries).log(*integration_logs)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
     state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
     ctx = replace(ctx, rival_moves=ctx.rival_moves + failed)

@@ -94,6 +94,7 @@ from tst.sim.actions.hiring import (
     open_search,
     withdraw_offer,
 )
+from tst.sim.actions.mna import MNA_ACTION_TYPES, MnaAction, apply_mna
 from tst.sim.actions.org import (
     ClosePlan,
     CreatePlan,
@@ -190,6 +191,9 @@ from tst.sim.errors import GameOverError, InvalidActionError
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
+from tst.sim.mna.antitrust import AcceptRemedy
+from tst.sim.mna.deals import AbandonDeal, BidForCompany, SetDealMode, StartDiligence
+from tst.sim.mna.integration import SetDirective
 from tst.sim.org import ceo_rules
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
@@ -210,6 +214,7 @@ type Action = (
     | ResearchAction
     | HardwareAction
     | PublicAction
+    | MnaAction  # M14
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -287,6 +292,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "set_project_budget": SetProjectBudget,
     "license_in": LicenseIn,
     "license_out": LicenseOut,
+    **MNA_ACTION_TYPES,  # M14
 }
 
 __all__ = [
@@ -603,6 +609,15 @@ def apply_action(
             out = license_in(state, action, balance, data, ledger_balances)
         case LicenseOut():
             out = license_out(state, action, balance, data)
+        case (
+            StartDiligence()
+            | BidForCompany()
+            | SetDealMode()
+            | AbandonDeal()
+            | AcceptRemedy()
+            | SetDirective()
+        ):  # M14
+            out = apply_mna(state, action, rng, balance, data, ledger_balances)
     new_state = out.state
     actor = new_state.employment_of(action.actor_id) or state.employment_of(action.actor_id)
     if actor is not None:  # people live where they work (M9, 19.2)

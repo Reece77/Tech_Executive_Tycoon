@@ -12,7 +12,8 @@ PROBLEMS: tuple[Problem, ...] = ("tech_debt", "key_person_risk", "customer_conce
 type DealStatus = Literal[
     "accepted",  # agreed; closes after closing_months
     "review",  # under antitrust review
-    "blocked",  # blocked by antitrust; a remedy may be offered
+    "blocked",  # blocked at the block line; open while a remedy can still be accepted
+    "refused",  # blocked after a review (final)
     "closed",
     "abandoned",  # the acquirer walked away (fees only)
     "failed",  # a hostile tender that failed

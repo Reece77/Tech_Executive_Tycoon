@@ -18,7 +18,7 @@ class _Frozen(BaseModel):
 class FounderPremium(_Frozen):
     base: float = Field(ge=0)  # a startup founder's premium at ambition `neutral`
     per_ambition: float  # added per attribute point of true ambition above `neutral`
-    neutral: float = Field(ge=1, le=20)
+    neutral: float = Field(ge=1, le=20)  # tunable-exempt: attribute scale
 
 
 class DiligenceBalance(_Frozen):

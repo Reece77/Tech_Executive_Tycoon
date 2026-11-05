@@ -54,9 +54,11 @@ def upgrade() -> None:
         sa.Column("person_id", sa.Integer(), primary_key=True),
         sa.Column("data", sa.JSON(), nullable=False),
     )
+    op.execute("UPDATE save_meta SET schema_version = 33")
 
 
 def downgrade() -> None:
+    op.execute("UPDATE save_meta SET schema_version = 32")
     for table in (
         "mna_acquired_person",
         "mna_acquisition",

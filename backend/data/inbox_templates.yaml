@@ -228,6 +228,15 @@ templates:
   region_launched:
     title: "{product} is localizing for {region}"
     body: "Localizing {product} for {region} cost {cost_cents}. It goes live there in {live}."
+  deal_update: # M14 (28.2-28.5): diligence findings, an offer's answer, antitrust, a closing, an acquired person leaving
+    title: "{title}"
+    body: "{detail}"
+  exit_sale: # M14 (28.6): the player's company was sold; the game ends with an exit
+    title: "You sold the company to {buyer}"
+    body: "{buyer} bought the company for {price}. Your stake came to {proceeds}. The game is over: this is your exit."
+  rival_acquired: # M14 (28.6): a rival bought a startup
+    title: "{acquirer} buys {target}"
+    body: "{acquirer} bought {target} for about {price}. Its products and people are now {acquirer}'s."
   era_report: # M13b (27.3): at the end of a first-mover window
     title: "{era}: what the head start added"
     body: "Your {months}-month head start in {era} is over. {lines}. Against the pre-era trend, your products gained {added_cents} a month."

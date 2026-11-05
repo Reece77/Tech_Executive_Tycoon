@@ -316,6 +316,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     items += _m10b_items(loaded)
     items += _m10c_items(loaded)
     items += _m13b_items(loaded)
+    items += _m14_items(loaded)
     items += _m12a_items(loaded)
     items += _m11_items(loaded)
     for item in items:
@@ -460,6 +461,25 @@ def _m13b_items(loaded: LoadedData) -> list[LogItem]:
         *_pitch_run(loaded, state, seed, at_controls=False)[2],
         *reports,
     ]
+
+
+def _m14_items(loaded: LoadedData) -> list[LogItem]:
+    """A counter, a closing, and an exit (28.3, 28.6)."""
+    from tests.unit.test_m13_public import listed
+    from tests.unit.test_mna_deals import _energy, _founder, _game, _id, _reservation
+    from tst.sim.markets_public.public import apply_public_step
+    from tst.sim.mna.deals import BidForCompany
+
+    game = _game(loaded)
+    zoho = _id(game.state, "Zoho")
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho) // 2))
+    _energy(game)
+    game.act(BidForCompany(_founder(game), _id(game.state, "Evernote"), 10**12))
+    game.turn()
+    _, sold = apply_public_step(listed(), 1, "takeover_accept", loaded.balance)
+    items = [*game.action_logs, *(i for r in game.results for i in r.log_items), *sold]
+    return items
 
 
 def _stage_3(loaded: LoadedData) -> GameState:

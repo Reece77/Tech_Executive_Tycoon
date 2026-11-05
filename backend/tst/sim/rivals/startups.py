@@ -23,6 +23,7 @@ from tst.sim.geo.cities import home_region
 from tst.sim.geo.models import ProductRegion, RegionalSegment
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.log import LogItem
+from tst.sim.mna.style import style  # M14 (28.5): a kept brand's directive
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.research.eras import annual_growth
 from tst.sim.rivals.models import ENTRANT_KEY, STARTUP_KEY, RivalMove, stream_key
@@ -191,7 +192,7 @@ def sell_first_in(
         return state
     product = state.product(product_id)
     assert product is not None
-    factor = balance.rivals.price_factor[company.personality or "fast_follower"]
+    factor = balance.rivals.price_factor[style(state, company)]
     category = data.category(product.category)
     for seg in state.segments_of(product_id):
         reference = category.market(seg.segment).reference_price_cents

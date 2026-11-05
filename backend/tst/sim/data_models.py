@@ -1780,6 +1780,9 @@ INBOX_TEMPLATE_KEYS = (
     "exec_proposal",  # M10c (24.1)
     "exec_pitch",  # M13b (27.1)
     "pitch_went_ahead",  # M13b (27.1)
+    "deal_update",  # M14 (28)
+    "rival_acquired",  # M14 (28.6)
+    "exit_sale",  # M14 (28.6)
     "era_report",  # M13b (27.3)
     # M4a (formulas.md 14)
     "safe_filled",
