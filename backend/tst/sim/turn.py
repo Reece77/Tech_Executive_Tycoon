@@ -49,6 +49,7 @@ from tst.sim.org.relationships import relationships_month
 from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
+from tst.sim.press.phase import press_month
 from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
 from tst.sim.research.eras import arrive_eras
@@ -445,6 +446,9 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
     event director queues next month's events (16.1) and the month's read-only texts (16.8)."""
     state = phases.expire_candidates(ctx.state)
     state, arrivals = phases.candidate_batches(state, ctx.rng, ctx.balance, ctx.data)
+    # M14b (29): feuds, promises and credibility; the month's press moments are queued.
+    state, press_logs = press_month(state, ctx.rng, ctx.balance, ctx.data, ctx.rival_moves)
+    ctx = ctx.log(*press_logs)
     player = state.player.id
     state, requests = direct(
         state,

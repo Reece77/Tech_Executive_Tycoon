@@ -1051,3 +1051,64 @@ ceo:
   max_salary_ratio_bp: 11000 # offer x ask in bp for the CEO's plans (as exec_authority.defaults)
   replace: { below: 30, months: 3 } # board confidence below this for this many months: the board may vote to replace the CEO (25.6)
   memory_months: 12 # months of CEO decisions kept for the panel
+
+# --- Press, promises and credibility (formulas.md 29.1-29.3, M14b lane B) ------------------
+press:
+  max_per_quarter: 2 # press moments a quarter at most; the rest are skipped, highest stakes first (29.1)
+  bold_brand: 3 # % on every product's brand target for bold_months after a bold answer (29.1)
+  bold_months: 6
+  measured_brand: 1 # % for measured_months after a measured answer (29.1)
+  measured_months: 6
+  deflect_cred: -2 # credibility points for a deflection (29.1)
+  bold_backfire: 6 # credibility points lost when results contradict a bold claim (29.1)
+  backfire_months: 6 # months a bold claim can backfire: the product's share falls, or a miss once listed (29.1)
+  audience: { early: 0.5, scaleup: 1.0, listed: 1.5 } # a, scaling every press effect: stages 1-2, stage 3, listed (29.1)
+  layoff_share: 0.10 # fired / staff at the month's start that makes a layoffs moment (29.1)
+  cred_start: 50 # credibility points a company starts at and drifts toward (29.3)
+  cred_drift: 1 # points a month toward cred_start (29.3)
+  cred_hiring: 0.05 # offer-score points at credibility 100: +cred_hiring x (credibility - 50) / 50 (29.3)
+  cred_hiring_cap: 0.05 # at most (29.3)
+  cred_history: 5 # changes shown with their causes (29.3)
+  statement_chance: 0.5 # chance a rival CEO speaks at their company's own launch or price cut (29.4; M14b decision)
+  jab_base: 0.2 # chance such a statement is a jab at the player when they sell in the segment (M14b decision)
+  jab_feud: 0.6 # + this x feud / 100 (M14b decision)
+  reminder_months: [1, 3] # a "you said ..." reminder this many months after a broken promise, drawn (29.2)
+
+promise:
+  max_open: 3 # open promises at once (29.2)
+  energy: 2 # founder energy to make a promise in a press moment (M14b decision)
+  months: [3, 18] # a ship, beat or research promise's deadline, months out (29.2)
+  fixed_months: 12 # no layoffs and no price rise run this long (29.2)
+  kept_brand: 4 # % on the brand target x a x (1 + ambition) x the credibility factor (29.2)
+  kept_cred: 5 # credibility points x a (29.2)
+  kept_months: 12 # months the kept bonus runs (29.2)
+  kept_morale: 2 # morale points for every employee, no layoffs kept (29.2)
+  broken_brand: 8 # % off the brand target x a (29.2)
+  broken_cred: 10 # credibility points x a (29.2)
+  broken_months: 12 # months the broken penalty runs (M14b decision, as kept)
+  broken_sentiment: 0.05 # sentiment x a lost once listed (29.2)
+  broken_morale: 5 # morale points every employee loses, no layoffs broken (29.2)
+  broken_trust: 10 # relationship points every employee's pair with the founder loses (29.2)
+  beat_span: 20 # displayed quality points of gap to the rival for ambition 1 (M14b decision)
+  research_span: 20 # displayed lead points to the target level for ambition 1 (M14b decision)
+  fixed_ambition: 0.2 # ambition of a no-layoffs or no-price-rise promise (M14b decision)
+
+feud:
+  bold_mention: 10 # points when a bold answer names a rival CEO (29.4)
+  head_to_head: 8 # a launch in a segment both companies sell in (29.4)
+  poach: 15 # poaching the other's key person, either way (29.4)
+  hostile_bid: 20 # a hostile bid (M14 calls feud.add_feud) (29.4)
+  decay: 2 # points a month (29.4)
+  rivalry: 50 # a feud at or above this is a rivalry (29.4)
+  target_mult: 1.5 # a rival in a rivalry weights actions against the player's products x this (29.4)
+  causes_kept: 5 # recent causes shown on the Rival screen
+
+# --- Recruitment fixes from playtest 2 (formulas.md 29.5, M14b lane B) ----------------------
+recruit:
+  replace_speed: 0.6 # Replace's time to fill over a normal plan's (29.5)
+  normal_months: 2 # a plan's months from opening to the hire: search, then interview and offer (M14b measure)
+  replace_window: 3 # months after a resignation or poach that Replace is offered (M14b decision)
+  interest_fee_bp: 1500 # bp of the role's mid salary at the search's level, per search by interest (29.5)
+  interest_pool: 4 # candidates generated per candidate kept, to find ones with the interest (M14b decision)
+  fit_weights: { leadership: 0.35, mentoring: 0.25, communication: 0.25, temperament: 0.15 } # leadership fit from revealed values (29.5; M14b decision)
+  fit_stars: [1, 5] # the fit's star scale (29.5)

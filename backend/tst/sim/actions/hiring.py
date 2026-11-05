@@ -47,6 +47,7 @@ from tst.sim.org.executives import seats_in_play
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.models import Person
 from tst.sim.people.reveal import apply_knowledge_action
+from tst.sim.press.phase import on_fire
 from tst.sim.scale import clamp_morale
 from tst.sim.state import (
     GameState,
@@ -415,6 +416,7 @@ def fire(state: GameState, action: Fire, balance: Balance, data: GameData) -> Ou
     if person.id == action.actor_id:
         raise InvalidActionError("an actor cannot fire themselves")
 
+    staff_before = len(state.staff(company))
     state = with_employment(
         state, replace(employment, status="ended", end_turn=state.turn, end_reason="fired")
     )
@@ -449,6 +451,8 @@ def fire(state: GameState, action: Fire, balance: Balance, data: GameData) -> Ou
     log += detached
     state, vacated = vacate_departed(state)  # a nominee's board seat empties (14.6, M4c)
     log += vacated
+    state, pressed = on_fire(state, company, staff_before, balance, data)  # M14b (29.1-29.2)
+    log += tuple(pressed)
     # The larger morale hit gives the tag away, so the company learns it now (M1c brief).
     reveal = state.reveal(company, person.id)
     if (

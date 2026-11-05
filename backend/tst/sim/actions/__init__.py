@@ -123,6 +123,7 @@ from tst.sim.actions.org import (
     set_policy,
     update_plan,
 )
+from tst.sim.actions.press import MakePromise, PressAction, make_promise
 from tst.sim.actions.products import (
     AddSegment,
     AssignUnit,
@@ -210,9 +211,11 @@ type Action = (
     | ResearchAction
     | HardwareAction
     | PublicAction
+    | PressAction
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
+    "make_promise": MakePromise,  # M14b
     "hire_banks": HireBanks,  # M13
     "set_guidance": SetGuidance,
     "buyback": Buyback,
@@ -325,6 +328,7 @@ __all__ = [
     "LicenseIn",
     "LicenseOut",
     "MakeOffer",
+    "MakePromise",
     "MovePerson",
     "MoveUnit",
     "NameNominee",
@@ -542,6 +546,8 @@ def apply_action(
             out = apply_finance(state, action, balance, data, ledger_balances)
         case ChooseEvent():
             out = choose_event(state, action, balance, data)
+        case MakePromise():  # M14b (29.2)
+            out = make_promise(state, action, balance, data)
         case (
             HireBanks()
             | SetGuidance()

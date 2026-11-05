@@ -53,6 +53,7 @@ from tst.sim.org.models import (
 )
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
+from tst.sim.press.models import Credibility, Feud, PressMoment, Promise, Statement
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
 from tst.sim.research.models import (
     EraArrival,
@@ -221,6 +222,14 @@ class GameState:
     share_months: tuple[ShareMonth, ...] = ()
     ceos: tuple[Ceo, ...] = ()
     ceo_decisions: tuple[CeoDecision, ...] = ()
+    # M14b (29): press moments (pending, queued, or answered in the last 12 months) and every
+    # promise, by id; credibility by company id; the player's feuds by (company_id, rival_id);
+    # rival CEOs' statements of the last 24 months, by id.
+    press_moments: tuple[PressMoment, ...] = ()
+    promises: tuple[Promise, ...] = ()
+    credibility: tuple[Credibility, ...] = ()
+    feuds: tuple[Feud, ...] = ()
+    statements: tuple[Statement, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -944,3 +953,36 @@ def with_ceo(state: GameState, ceo: Ceo) -> GameState:
 
 def with_ceo_decision(state: GameState, decision: CeoDecision) -> GameState:
     return replace(state, ceo_decisions=_upsert(state.ceo_decisions, decision, lambda d: d.id))
+
+
+# --- M14b (formulas.md 29) ---------------------------------------------------------------------
+
+
+def credibility_of(state: GameState, company_id: int) -> Credibility | None:
+    return next((c for c in state.credibility if c.company_id == company_id), None)
+
+
+def feud_of(state: GameState, company_id: int, rival_id: int) -> Feud | None:
+    return next(
+        (f for f in state.feuds if f.company_id == company_id and f.rival_id == rival_id), None
+    )
+
+
+def with_press_moment(state: GameState, moment: PressMoment) -> GameState:
+    return replace(state, press_moments=_upsert(state.press_moments, moment, lambda m: m.id))
+
+
+def with_promise(state: GameState, promise: Promise) -> GameState:
+    return replace(state, promises=_upsert(state.promises, promise, lambda p: p.id))
+
+
+def with_credibility(state: GameState, cred: Credibility) -> GameState:
+    return replace(state, credibility=_upsert(state.credibility, cred, lambda c: c.company_id))
+
+
+def with_feud(state: GameState, feud: Feud) -> GameState:
+    return replace(state, feuds=_upsert(state.feuds, feud, lambda f: (f.company_id, f.rival_id)))
+
+
+def with_statement(state: GameState, statement: Statement) -> GameState:
+    return replace(state, statements=_upsert(state.statements, statement, lambda s: s.id))

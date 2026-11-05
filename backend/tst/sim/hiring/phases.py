@@ -59,6 +59,7 @@ from tst.sim.org.scaleup import delegate_energy_factor, support_morale_terms
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment, Person
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
+from tst.sim.press.moments import hiring_appeal
 from tst.sim.products.phases import product_costs_by_division
 from tst.sim.rivals.poaching import leave_rival, poach_batch
 from tst.sim.rng import RngFactory
@@ -173,7 +174,8 @@ def resolve_offers(
                 ambition=person.personality["ambition"],
                 stage=company.stage,
                 offer=hiring.offer,
-                pitch=offer_pitch(state, offer.actor_id, hiring),
+                pitch=offer_pitch(state, offer.actor_id, hiring)
+                + hiring_appeal(state, company.id, balance),  # M14b (29.3)
             )
             if candidate.channel == "poach":  # leaving an employer (M5, 15.6)
                 score += balance.rivals.poach.leave_penalty

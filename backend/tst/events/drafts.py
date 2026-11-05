@@ -13,6 +13,7 @@ from tst.sim.events.formulas import share_value
 from tst.sim.events.models import GameEvent
 from tst.sim.events.render import loan_names, placeholder_names, render
 from tst.sim.markets_public.describe import public_names
+from tst.sim.press.names import press_names
 from tst.sim.state import GameState
 
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
@@ -65,6 +66,8 @@ def event_names(
         rival_id=event.rival_id,
         months=event.months,
     ) | loan_names(state, data, event.loan_id)
+    if event.category == "press":  # M14b (29.1)
+        names |= press_names(state, data, event.company_id, event.turn)
     if event.category == "public" and balance is not None:  # M13 (25)
         names |= public_names(state, data, balance, event.company_id)
     return names
@@ -102,7 +105,7 @@ def template_draft(
             effect: dict[str, Any] = {"type": spec.type, "target": target, "value": value}
             if spec.type == "modifier":  # M10b (23.2)
                 effect |= {"stat": spec.stat, "months": spec.months}
-            elif spec.type == "public_step":  # M13 (25)
+            elif spec.type in ("public_step", "press_step"):  # M13 (25), M14b (29.1)
                 effect |= {"stat": spec.stat}
             effects.append(effect)
         choices.append(
