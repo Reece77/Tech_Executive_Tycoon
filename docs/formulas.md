@@ -2301,3 +2301,147 @@ It is written by the LLM within §16's budget from engine-supplied facts only, i
 ### 27.6 What the API may show
 
 Pitches with their reasons, costs and low and high cases; each executive's pitch record. Never the pitch probability, the quality draw, an executive's true ambition, skills or score, or which candidate was best.
+
+## 28. Mergers and acquisitions (M14)
+
+Reece's decisions (2026-11-05): **anyone can be bought** (startups, private incumbents and listed rivals, by friendly offer or hostile tender); after each deal the player **chooses** to keep the company as a separate brand or to integrate it; **antitrust** applies a market-share test. M13b's pitch system gets an acquisition kind. Principle: **a company that never buys plays exactly as before.**
+
+### 28.1 Valuation (every company, every month, phase 7)
+
+- **Fundamental value** for any company uses §25.3's formula: `V_f = ARR × m`, with the company's own trailing growth and margin, the base rate and the venture climate. A company with ARR below $1M is valued at its cash plus `mna.min_value_per_builder` ($150,000) per builder on staff (acqui-hire value).
+- **Listed rivals** (`listed_from: [year, month]` in `incumbents.yaml` and `entrants.yaml`, following history: for example Facebook from May 2012, Atlassian from December 2015; private companies have no field) have a **market cap** `V_f × S`, with sentiment `S` as §25.3 (stream `market_sentiment`, keyed by the rival's stable key). Their market cap is public.
+- **Private companies** (startups, and incumbents never listed or not yet listed) show an **estimated value range**: `V_f × (1 ± mna.range)` (±30%), centred off the true value by a seeded offset (stream `mna`, the same rule as §21.10's lead ranges), so the midpoint is not the truth.
+
+### 28.2 Due diligence (immediate, energy 6; 2 months; cost 0.5% of the target's estimated value, at least $50,000, to 6100 professional fees)
+
+- Narrows the value range to ±10%.
+- Reveals the target's key people as candidates are revealed by scouting (§5): skill ranges, known traits, for the player's knowledge.
+- Reveals each product's quality and feature score as ranges ±5, and any **hidden problem** the target carries: `tech_debt` (quality −10 over the first year after closing), `key_person_risk` (one key person's flight chance doubled), `customer_concentration` (churn ×1.5 for 12 months after closing). Each target has each problem with probability `mna.problem_p` (0.15), drawn when it is first looked at (stream `mna`). Without diligence, problems are discovered after closing.
+
+### 28.3 Offers
+
+- **Make an offer** (immediate, energy 10): price, and consideration: **cash**, **stock** (only once the player is listed: new shares at the current price, posted to the cap table) or a mix. Financing from cash on hand, or a bank loan taken first (§20.3).
+- **Private target.** It accepts when the price is at least its **reservation** `V_f × (1 + p)`, where `p` = `mna.premium` by personality (aggressive 0.50, premium 0.40, fast_follower 0.30, cost_leader 0.20; a startup founder 0.25 + 0.02 × (ambition − 10)), minus `mna.distress_discount` (0.25) when the target's cash covers fewer than 6 months. Below it, the target counters at its reservation × (1 + N(0, 0.05)) once; a second offer below the counter ends talks for 12 months.
+- **Listed target, friendly.** Its board accepts when the premium over market cap is at least `p_board = 0.30 + N(0, 0.05)` (drawn once per approach). Shareholders then approve (always, above the board's bar).
+- **Listed target, hostile tender** (energy 15; the player must be listed or hold cash for the whole price): succeeds with probability `clamp((premium − 0.15) / 0.5, 0, 0.9)`, minus `mna.defence` (0.20) for an aggressive target. A failed tender costs 1% of the price in fees and blocks a new bid for 12 months.
+- **Closing:** 1 month after acceptance, or after antitrust review (§28.4). At closing the price posts (cash out; or new shares), the target's cash and debts transfer, and goodwill = price − the target's book equity posts to a new **1800 goodwill** account (no amortization; impairment is a follow-up).
+- **Draws** on stream `mna` (id 37), key: the target's stable rival key (ADR-0013 amendment), or the company id for the player.
+
+### 28.4 Antitrust (market-share test)
+
+- For each segment, region and category where both companies sell, combined share `S_c` = acquirer's share + target's share (customers).
+- `S_c < antitrust.review` (0.35) everywhere: cleared.
+- The highest `S_c` in `[0.35, 0.50)`: a **review** of 3–6 months (uniform, stream `mna`), then blocked with probability `(S_c − 0.35) / 0.15 × strictness(year)`, with `strictness` from `antitrust.strictness` by year (2010–2019 0.6, from 2020 1.0; history, then flat).
+- `S_c ≥ antitrust.block` (0.50): **blocked** unless the player accepts a **remedy**: divest the target's (or its own) overlapping product in that market. A divested product goes to the rival with the next-largest share in the segment, with its customers.
+- The review and its outcome are events; the player may abandon during review (fees only). Rivals' deals use the same test.
+
+### 28.5 After closing: the player's choice (once, at closing)
+
+**Keep as a brand (subsidiary).**
+- The target stays a company in the state with its own ledger, pools, key people and personality, with `parent_id` = the player's company. Its revenue, costs and cash consolidate in the player's statements (a "Subsidiaries" line, and a column per subsidiary on the Finance screen); its cash sweeps to the parent each month above 3 months of its costs.
+- It decides with the rival decision code (§15.3) under a **directive** the player sets (energy 2): **grow** (aggressive), **harvest** (cost_leader, margin first) or **defend** (premium). Its products keep their names and brands. The player can move its key people into the parent's org (they become ordinary employees).
+- Culture clash is low: its key people's flight chance is `integration.flight_brand` (3%) a month for 12 months.
+- This is the per-company model M16 will extend with separate cap tables and boards (ADR-0020).
+
+**Integrate (fold in).**
+- Its products move to the player with their customers, quality, features and brand (brand blends toward the player's at 10% a month). Its key people become the player's employees in a new unit per product.
+- Its **pool staff**: for each product, builders, sellers and marketers up to the product's need (the CTO's maintenance line plus the CRO's sales capacity for its customers; at most `integration.max_per_product` 25 each) become generated individuals at the pool's skill (stream `people_gen`, keyed by the target's stable key); the rest are let go with severance of 3 months' salary (one-off, to 6000 payroll). That is the cost synergy.
+- **Culture clash:** for 12 months, acquired people's morale moves toward the player's by `integration.clash` × the personality distance between the companies (0–1), and each acquired key person leaves with chance `integration.flight_base` (2%) + 6% × distance a month (stream `integration`, id 38, key `(person_id,)`).
+- **Customers:** churn × `integration.churn_mult` (1.3) on the acquired products for 6 months.
+- **Technology:** the player's research lead in each domain becomes the higher of the two, plus 20% of the lower.
+
+### 28.6 Being acquired, and rivals' deals
+
+- **A takeover bid for the player** (§25.4) can now be **accepted**: the company is sold, and the game ends with an **exit** ending (the founder's proceeds from their stake, the price and the History). Rejecting and the rights plan work as in M13.
+- **Rivals' M&A** (phase 2, stream `rival_mna` id 39, key: the acquirer's stable key): an incumbent with cash above 12 months of costs considers one startup a quarter in its categories, with probability `mna.rival_rate` (0.04), and buys it at its reservation if antitrust clears; the startup always integrates. History logs it and the Market news shows it.
+
+### 28.7 Pitches (M13b) and the CEO
+
+- **CEO** and **CPO** pitch acquisitions: the CEO any target; the CPO only startups priced under the auto-approve limit × 4. Candidate score: the target's displayed revenue in the acquirer's categories × fit (§27.1) ÷ estimated price, with antitrust risk shown. The pitch's central case is the target's displayed revenue at 24 months plus synergy (integration) or without (brand).
+- Acquisitions never auto-approve on Holiday, whatever the limit.
+
+### 28.8 What the API may show
+
+Market caps of listed companies; value ranges for private ones (narrower after diligence); a target's revealed people and products as ranges; offers, counters, review status and outcomes; subsidiaries' statements; integration progress (people kept, let go, departed). Never `V_f`'s components for private companies, a reservation price, `p_board`, a tender's success chance, a hidden problem before diligence or closing, or a review's block probability.
+
+### 28.9 Balance targets (M14 acceptance, printed)
+
+1. **Nothing moves without deals.** All earlier targets as before; golden snapshots unchanged by sub-tasks 1–2; T2 stays the known miss (M15).
+2. **Prices are sane.** Accepted private deals at 1.0–1.6 × `V_f`; listed friendly deals at a 25–50% premium over market cap (median of scripted deals over 10 seeds).
+3. **Integration costs something.** Integrated deals lose 10–30% of acquired key people within 12 months (median); brand deals at most 10%.
+4. **Integration saves something.** Integrated deals cut the acquired cost base by 15–35% within 12 months.
+5. **Buying helps but doesn't dominate.** A new balance arm "acquirer" (steady + regions, plus one startup in its categories a year when cash covers 18 months, integrated) ends year 10 with median ARR 1.0–1.4 × "steady + regions" (M13b's arm).
+6. **Antitrust bites.** A scripted deal to over 50% combined share is blocked without a remedy (deterministic test); deals at 40% are blocked on 15–50% of seeds after 2020.
+7. **The market consolidates a little.** Incumbents buy 1–4 startups per decade in total (median over 10 do-nothing seeds), and the M5 living-market guard still passes.
+
+### 28.10 Worked examples
+
+**Startup price.** ARR $4M, growth 60%, margin −20%, base rate 2%, climate 1.0: `m = 2 + 25 × 0.6 + 15 × (−0.2) − 0` = 14, so `V_f` = $56M. A fast_follower founder with ambition 14: `p = 0.25 + 0.08` = 0.33; reservation **$74.5M**. With 4 months of cash: `p = 0.08`, reservation **$60.5M**.
+
+**Antitrust.** In SMB CRM (North America) the player holds 22% and the target 20%: `S_c` = 0.42, a review; in 2022, block probability `(0.42 − 0.35) / 0.15 × 1.0` = **0.47**. In 2015 it is 0.47 × 0.6 = **0.28**.
+
+**Integration flight.** Personality distance 0.5: each acquired key person leaves with chance 0.02 + 0.03 = 5% a month; over 12 months `1 − 0.95^12` = **46%** of them at most if none is retained, before the player's retention actions (raises and promotions lower it as §8's resignation rules do).
+
+## 29. People and press (M14b, lane B)
+
+Reece (2026-11-03 and playtest 2): press and media matter, with **public promises about technology and products**; one-on-ones and private promises are not wanted. Rival founders become characters. Three recruitment fixes from playtest 2 ride along. Principle: **press raises the stakes of what the company already does**; it never replaces a system.
+
+### 29.1 Press moments (events, category `press`)
+
+- **Triggers** (each a press template the engine queues): a product launch; a quarterly earnings report once listed (§25.4); an era arrival the company caused (§27.3); a critical outage (§22.5) or security breach; layoffs of 10% or more; an acquisition announced (M14 adds the trigger when it merges); a rival CEO's public jab (§29.4). At most `press.max_per_quarter` (2) a quarter; the rest are skipped, highest stakes first.
+- **Each moment is an interview** with three tones and an optional promise:
+  - **Bold**: brand target +`press.bold_brand` (3) for 6 months, and an aggressive rival named in it may respond (§29.4); if results contradict the claim within 6 months (the product's share falls, a miss once listed), credibility −`press.bold_backfire` (6).
+  - **Measured**: brand target +1; no risk.
+  - **Deflect**: credibility −2; ends the moment.
+- **Audience** scales every press effect: `a = 0.5` at stage 1–2, 1.0 at stage 3, 1.5 once listed.
+
+### 29.2 Public promises
+
+- **Kinds** (made in a press moment, at most `promise.max_open` (3) open at once):
+  - **Ship:** launch product X (in development) by a date, 3–18 months out.
+  - **Beat:** product X's displayed quality above rival Y's displayed quality by a date.
+  - **Research:** reach a level in a domain, or cause an era, by a date.
+  - **No layoffs** for 12 months.
+  - **No price rise** on product X for 12 months.
+- The engine checks each promise at its deadline (or when broken earlier, for no-layoffs and no-price-rise) from **displayed** values only, so the player can always see where a promise stands.
+- **Kept:** brand target +`promise.kept_brand` (4) × `a` for 12 months, credibility +`promise.kept_cred` (5) × `a`; staff morale +2 for no-layoffs.
+- **Broken:** brand target −`promise.broken_brand` (8) × `a`, credibility −`promise.broken_cred` (10) × `a`; once listed, sentiment −0.05 × `a`; for no-layoffs, every employee's morale −5 and trust in the founder (relationships) −10. A press reminder event follows within 3 months ("you said …").
+- Bigger promises (shorter deadlines, harder targets) pay more: the kept bonus × `1 + promise.ambition` (0–1, from how far the target is from today's value, displayed). Breaking costs the same either way.
+
+### 29.3 Credibility
+
+- A public stat 0–100 per company, starting at 50, drifting 1 a month toward 50.
+- **Effects:** brand gains from press × `(0.5 + credibility / 100)`; once listed, the analysts' consensus uses the player's guidance at weight `credibility / 100` (the rest is §25.4's consensus); hiring appeal +`press.cred_hiring` × (credibility − 50) / 50 (at most +0.05).
+- Shown on the Overview with its last five changes and their causes.
+
+### 29.4 Rival founders as characters
+
+- **Each rival has a named CEO:** the key person with the highest leadership skill at an incumbent (re-chosen if they leave), the founder at a startup. Their personality is the person's; their company's personality still decides (§15.3).
+- **Public statements:** at a press moment that names a rival, and at the rival's own launches and price cuts, its CEO may make a statement (LLM within §16's budget from engine facts, or a template in their voice).
+- **Feud** between the player's founder and each rival CEO, 0–100: + `feud.bold_mention` (10) when a bold answer names them, +8 for a head-to-head launch in a segment both sell in, +15 for poaching their key person (either way), +20 for a hostile bid (M14); −2 a month. **Rivalry** at 50: the rival's decisions weight actions against the player's products ×`feud.target_mult` (1.5), it poaches from the player first, and storyline events follow (§16). Feud and its causes are public on the Rival screen.
+- Draws on stream `press` (id 40), key `(company_id,)` for the player and the rival's stable key for rivals.
+
+### 29.5 Recruitment fixes (playtest 2)
+
+- **Replace (recruiter):** when an employee resigns or is poached and a recruiter is on staff, a Replace button opens a hiring plan with the role and level prefilled; with a recruiter the search takes `recruit.replace_speed` (0.6) of the normal time.
+- **Search by interest:** a hiring plan may filter candidates by one interest, at `recruit.interest_fee_bp` (15% of the role's mid salary) per search; candidates' interests are those already revealed (§5).
+- **Leadership fit** on the org chart and People screen: a 1–5 star range from **revealed** leadership, mentoring, communication and temperament (a range when any is unrevealed).
+
+### 29.6 What the API may show
+
+Press moments and choices, open promises with their displayed progress and deadline, credibility and its history, rival CEOs, statements, feud scores and causes, leadership-fit ranges. Never a backfire before it happens, true skills behind a fit range, or a rival's decision weights.
+
+### 29.7 Balance targets (M14b acceptance, printed)
+
+1. **Nothing else moves.** All earlier guards as before; T2 stays the known miss.
+2. **Promises matter.** Over 10 seeds on a listed company, keeping three promises gives brand +5 to +15 more than making none at 24 months; breaking three gives −10 to −25, and sentiment 5–15% lower.
+3. **The inbox stays calm:** at most 6 press moments a year (median).
+4. **Rivalries happen:** in 10-year steady runs, at least one feud reaches rivalry on 5–9 of 10 seeds; a rivalry raises that rival's actions against the player by 20–60%.
+5. **Replace helps:** time to fill with a recruiter's Replace is 30–50% shorter than a normal search.
+
+### 29.8 Worked examples
+
+**A kept promise, listed.** `a` = 1.5, ambition 0.4, credibility 60: brand target +4 × 1.5 × 1.4 × 1.1 = **+9.2** for 12 months; credibility +7.5.
+
+**A broken no-layoffs promise, stage 3.** `a` = 1.0: brand target −8, credibility −10, every employee's morale −5.
+

@@ -106,3 +106,8 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | `market_sentiment` | 34 | `(company_id,)` | Sentiment and analysts' targets (formulas.md §25.3) | M13 (lane B) |
 | — | 35 | — | Reserved for lane B | M13 |
 | `pitch` | 36 | `(person_id,)` | Executives' quarterly pitch draw and pitch-quality draw (formulas.md §27.1) | M13b |
+| `mna` | 37 | the target's stable rival key | Value-range offsets, hidden problems, reservations, board bars, tenders and reviews (formulas.md §28) | M14 |
+| `integration` | 38 | `(person_id,)` | Acquired people's monthly flight draw after integration (formulas.md §28.5) | M14 |
+| `rival_mna` | 39 | the acquirer's stable rival key | Rivals' quarterly startup purchases (formulas.md §28.6) | M14 |
+| `press` | 40 | `(company_id,)` for the player; the rival's stable key for rivals | Rival CEO statements and press-moment draws (formulas.md §29) | M14b (lane B) |
+| — | 41–42 | — | Reserved for lane B | M14b |

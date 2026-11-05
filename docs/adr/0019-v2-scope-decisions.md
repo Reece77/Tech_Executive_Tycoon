@@ -25,6 +25,7 @@ The spec leaves v2's milestones "defined at v1 retrospective" (§17) and leaves 
 13. **Fabless chips sell to a market and to yourself** (2026-10-31): chips sell in a chip market to rivals' devices and servers, and go into the player's own devices and data centres at lower cost; foundry slots are bought from TSMC and others and are scarce in shortages.
 14. **Parallel lanes.** v2 pairs milestones whose systems are separate and builds each pair in two Claude Code sessions, under the lane rules in `docs/v2-roadmap.md`.
 15. **Future eras are seeded within public windows** (Reece, 2026-11-02): after 2025, eras have a published window (for example 2026–2028) and a scheduled month drawn from the seed and never shown; research can still pull one forward. M12b adds the first two (chiplets, edge AI); M15 extends the list to 2039.
+16. **Acquisitions** (Reece, 2026-11-05): any company can be bought (startups, private incumbents, listed rivals by friendly offer or hostile tender); after each deal the player chooses to keep it as a brand or integrate it; antitrust uses a market-share test. Accepting a bid for the player's company ends the game with an exit.
 
 ## Consequences
 
