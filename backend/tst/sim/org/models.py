@@ -109,6 +109,7 @@ type PitchKind = Literal[
     "campaign",
     "buyback",
     "dividend",
+    "acquisition",  # M14 (28.7)
 ]
 type PitchStatus = Literal["pending", "approved", "auto_approved", "declined", "modified", "lapsed"]
 type PitchOutcome = Literal["hit", "miss", "too_early"]

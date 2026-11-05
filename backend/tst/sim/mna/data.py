@@ -76,6 +76,8 @@ class MnaBalance(_Frozen):
     rival_rate: float = Field(ge=0, le=1)  # an incumbent's quarterly chance to buy a startup
     rival_cash_months: float = Field(ge=0)
     cpo_limit_mult: float = Field(ge=0)  # the CPO pitches startups under limit x this
+    pitch_synergy: float = Field(ge=0, le=1)  # an integration pitch's saving, of monthly costs
+    pitch_bid_premium: float = Field(ge=0)  # a pitched bid over a listed target's market cap
 
     @model_validator(mode="after")
     def _personalities(self) -> Self:

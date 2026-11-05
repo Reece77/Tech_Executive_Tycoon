@@ -1087,6 +1087,8 @@ mna:
   rival_rate: 0.04 # an incumbent's chance a quarter to buy one startup in its categories (28.6)
   rival_cash_months: 12 # only with cash above this many months of costs (28.6)
   cpo_limit_mult: 4 # the CPO pitches only startups priced under the auto-approve limit x this (28.7)
+  pitch_synergy: 0.25 # an acquisition pitch's central case adds this x the target's monthly costs as integration savings (M14 decision for 28.7; the middle of 28.9 target 4's band)
+  pitch_bid_premium: 0.30 # an approved acquisition pitch bids a listed target's market cap x (1 + this), a private one its displayed range's high end (M14 decision for 28.7)
 
 antitrust:
   review: 0.35 # combined customer share in a segment, region and category from which a deal is reviewed (28.4)
