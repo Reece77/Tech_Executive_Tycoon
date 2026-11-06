@@ -1450,19 +1450,24 @@ def _sync_m10(session: Session, old: GameState, new: GameState) -> None:
         session.merge(MacroMonthRow(**asdict(new.macro)))
     for loan in _changed(old.loans, new.loans, lambda x: x.id):
         session.merge(finance_to_row(loan))
+    # one UPDATE for companies whose row exists (it does once a history was written: the
+    # state loads it from there), a merge for the rest (M14: rivals record theirs monthly)
     before = {c.id: (c.op_history, c.burn_history) for c in old.companies}
+    updates: list[dict[str, Any]] = []
     for c in new.companies:
-        if (c.op_history or c.burn_history) and before.get(c.id) != (
-            c.op_history,
-            c.burn_history,
-        ):
-            session.merge(
-                FinanceHistoryRow(
-                    company_id=c.id,
-                    op_history=list(c.op_history),
-                    burn_history=list(c.burn_history),
-                )
-            )
+        was = before.get(c.id)
+        if not (c.op_history or c.burn_history) or was == (c.op_history, c.burn_history):
+            continue
+        row = {
+            "company_id": c.id,
+            "op_history": list(c.op_history),
+            "burn_history": list(c.burn_history),
+        }
+        if was is not None and (was[0] or was[1]):
+            updates.append(row)
+        else:
+            session.merge(FinanceHistoryRow(**row))
+    _update_rows(session, FinanceHistoryRow, updates)
 
 
 def _event_state(session: Session, turn: int) -> dict[str, Any]:
@@ -1563,8 +1568,10 @@ def _all[T](session: Session, cls: type[T], row: Any) -> tuple[T, ...]:
 
 def _changed[T](old: Iterable[T], new: Iterable[T], key: Any) -> list[T]:
     """Items of `new` that are new or differ from the item with the same key in `old`."""
+    if old is new:
+        return []
     before = {key(x): x for x in old}
-    return [x for x in new if before.get(key(x)) != x]
+    return [x for x in new if (o := before.get(key(x))) is not x and o != x]
 
 
 def _write[T](session: Session, old: Iterable[T], new: Iterable[T], key: Any, to_row: Any) -> None:
@@ -1605,8 +1612,10 @@ def _update_rows(session: Session, model: Any, rows: list[dict[str, Any]]) -> No
     session.flush()  # a Core statement does not flush: rows it may reference come first
     groups: dict[tuple[str, ...], list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        groups[tuple(row)].append({f"b_{k}": v for k, v in row.items()})
-    for keys, params in groups.items():
+        groups[tuple(row)].append(row)
+    for keys, same in groups.items():
+        names = tuple(f"b_{k}" for k in keys)  # once per group, not per row (M14 turn time)
+        params = [dict(zip(names, row.values(), strict=True)) for row in same]
         session.execute(_update_statement(model, keys), params)
 
 
@@ -1664,27 +1673,51 @@ def insert_entries(session: Session, entries: Iterable[LedgerEntry]) -> None:
 
 
 def _sync_relationships(session: Session, old: GameState, new: GameState) -> None:
-    """Pairs are written like other rows; a pair that ended is deleted (16.7)."""
-    ended = {r.key for r in old.relationships} - {r.key for r in new.relationships}
-    for a, b in sorted(ended):
+    """Pairs are written like other rows; pairs that ended are deleted in one executemany
+    (16.7; M14 turn time: one DELETE each)."""
+    if old.relationships is new.relationships:
+        return
+    if len(old.relationships) == len(new.relationships):  # the usual month: same pairs
+        moved = [
+            (o, n) for o, n in zip(old.relationships, new.relationships, strict=True) if o is not n
+        ]
+        if all(o.key == n.key for o, n in moved):
+            _update_rows(session, RelationshipRow, [_rel_row(n) for o, n in moved if o != n])
+            return
+    before = old.relationship_map()
+    ended = before.keys() - new.relationship_map().keys()
+    if ended:
+        session.flush()
+        table = cast(Table, RelationshipRow.__table__)
         session.execute(
-            delete(RelationshipRow).where(
-                RelationshipRow.person_id == a, RelationshipRow.other_person_id == b
-            )
+            delete(table).where(
+                table.c.person_id == bindparam("b_a"),
+                table.c.other_person_id == bindparam("b_b"),
+            ),
+            [{"b_a": a, "b_b": b} for a, b in sorted(ended)],
         )
-    _write(
-        session,
-        old.relationships,
-        new.relationships,
-        lambda r: r.key,
-        lambda r: RelationshipRow(
-            person_id=r.a,
-            other_person_id=r.b,
-            value=r.value,
-            start_value=r.start,
-            since_turn=r.since_turn,
-        ),
-    )
+    # changed pairs as plain parameter rows: an ORM row each cost more than the SQL (M14)
+    updates: list[dict[str, Any]] = []
+    inserts: list[dict[str, Any]] = []
+    for r in new.relationships:
+        o = before.get(r.key)
+        if o is r or o == r:
+            continue
+        (inserts if o is None else updates).append(_rel_row(r))
+    _update_rows(session, RelationshipRow, updates)
+    if inserts:
+        session.flush()
+        session.execute(insert(RelationshipRow), inserts)
+
+
+def _rel_row(r: Relationship) -> dict[str, Any]:
+    return {
+        "person_id": r.a,
+        "other_person_id": r.b,
+        "value": r.value,
+        "start_value": r.start,
+        "since_turn": r.since_turn,
+    }
 
 
 def _sync_reveal(
@@ -1755,7 +1788,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
             asks.append(
                 {"id": person.id, "salary_expectation_cents": person.salary_expectation_cents}
             )
-        if before is not None and before != person:
+        if before is not None and before is not person and before != person:
             old_skills = before.skills.as_dict()
             skill_updates += [
                 {"person_id": person.id, "skill": k, "value": v}

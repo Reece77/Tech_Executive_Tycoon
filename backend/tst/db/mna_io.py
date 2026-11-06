@@ -97,13 +97,15 @@ def _sync[T](
     to_row: Callable[[T], Any],
     delete_row: Callable[[Any], Any],
 ) -> None:
-    before = {key(x): x for x in old}
-    after = {key(x): x for x in new}
-    for k in before.keys() - after.keys():
+    """Deleted keys go; changed records are written in one UPDATE per table, new ones merged
+    (state_io._write; M14 turn time: a merge per changed row was a SELECT each)."""
+    from tst.db.state_io import _write
+
+    old, new = tuple(old), tuple(new)
+    before = {key(x) for x in old}
+    for k in before - {key(x) for x in new}:
         session.execute(delete_row(k))
-    for k, x in after.items():
-        if before.get(k) != x:
-            session.merge(to_row(x))
+    _write(session, old, new, key, to_row)
 
 
 def sync_mna(

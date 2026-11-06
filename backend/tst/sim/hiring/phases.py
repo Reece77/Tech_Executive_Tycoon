@@ -74,6 +74,7 @@ from tst.sim.state import (
     with_offer,
     with_person,
     with_person_state,
+    with_person_states,
     with_plan,
     with_reveal,
     with_search,
@@ -446,6 +447,7 @@ def morale_and_departures(
         c.id: support_morale_terms(state, views[c.id], balance, data) for c in state.companies
     }
     crowds = {c.id: crowded_people(state, c.id) for c in state.companies}  # M9 (19.2)
+    moved: list[PersonState] = []
     for employment, person in _employees(state):
         company = state.company(employment.company_id)
         target = morale_terms(
@@ -466,7 +468,9 @@ def morale_and_departures(
             gen.normal(0.0, morale_noise_sd(person.personality["temperament"], morale_cfg))
         )
         morale = morale_step(start, target, noise, morale_cfg)
-        state = with_person_state(state, replace(ps, morale=morale))
+        # applied once after the loop: morale reads only the person's own state, and a
+        # replace per person rebuilt every state (M14 turn time: 440 x 440)
+        moved.append(replace(ps, morale=morale))
 
         if employment.status != "active":
             continue
@@ -507,6 +511,7 @@ def morale_and_departures(
                 name=_name(person),
             )
         )
+    state = with_person_states(state, moved)
     return state, tuple(logs)
 
 

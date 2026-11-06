@@ -5,6 +5,8 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
+import pytest
+
 from tests.helpers import fund_save, play_turn
 from tests.integration.test_api_org import seed_staff
 from tst.db.repository import create_save, load_state, open_session, run_action
@@ -15,6 +17,7 @@ STAFF = 24  # employees; 25 with the founder
 TURNS = 120
 
 
+@pytest.mark.timing  # alone, without xdist: `make check-timing` (M14)
 def test_org_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
     path = create_save(
         "orgperf", 3, "funded_spinout", company_name="Perf Co", data=loaded, save_dir=tmp_path

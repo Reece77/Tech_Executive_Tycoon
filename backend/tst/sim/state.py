@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from bisect import bisect_left
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from operator import attrgetter
-from typing import Any
+from types import MappingProxyType
+from typing import Any, Final
 
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
@@ -80,6 +81,11 @@ from tst.sim.rivals.models import (
 )
 
 _ID = attrgetter("id")  # sort key of id-sorted collections (C speed for bisect)
+
+
+# relationship_map's memo: the tuple is kept with its map, so an id is never reused while cached
+_REL_MAPS: dict[int, tuple[tuple[Relationship, ...], Mapping[tuple[int, int], Relationship]]] = {}
+_REL_MAPS_KEPT: Final = 4  # tunable-exempt: memo size (the turn's old and new tuples)
 
 
 @dataclass(frozen=True, slots=True)
@@ -487,8 +493,18 @@ class GameState:
     def storyline(self, storyline_id: int) -> Storyline | None:
         return next((s for s in self.storylines if s.id == storyline_id), None)
 
-    def relationship_map(self) -> dict[tuple[int, int], Relationship]:
-        return {r.key: r for r in self.relationships}
+    def relationship_map(self) -> Mapping[tuple[int, int], Relationship]:
+        """The pairs by key, built once per relationships tuple (read-only; M14 turn time:
+        morale, events and the phase all ask, and a 200-person unit has 18,000 pairs)."""
+        rels = self.relationships
+        hit = _REL_MAPS.get(id(rels))
+        if hit is not None and hit[0] is rels:
+            return hit[1]
+        built = MappingProxyType({r.key: r for r in rels})
+        if len(_REL_MAPS) >= _REL_MAPS_KEPT:
+            _REL_MAPS.pop(next(iter(_REL_MAPS)))
+        _REL_MAPS[id(rels)] = (rels, built)
+        return built
 
     def relationships_of(self, person_id: int) -> tuple[Relationship, ...]:
         return tuple(r for r in self.relationships if person_id in r.key)
@@ -803,6 +819,16 @@ def with_seat(state: GameState, seat: BoardSeat) -> GameState:
 def with_person_state(state: GameState, person_state: PersonState) -> GameState:
     return replace(
         state, person_states=_upsert(state.person_states, person_state, lambda p: p.person_id)
+    )
+
+
+def with_person_states(state: GameState, person_states: list[PersonState]) -> GameState:
+    """`with_person_state` for many at once: one rebuild (M14 turn time)."""
+    if not person_states:
+        return state
+    return replace(
+        state,
+        person_states=_upsert_many(state.person_states, person_states, lambda p: p.person_id),
     )
 
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Final
 
 from tst.sim.data_models import MENTOR_TAG, ORG_TAGS, Balance
 from tst.sim.org.formulas import (
@@ -185,7 +186,39 @@ def teammates(view: OrgView, person_id: int) -> tuple[int, ...]:
 
 
 def has_teammate_tag(state: GameState, view: OrgView, person_id: int, tag: str) -> bool:
-    return any(tag in state.person(p).tags for p in teammates(view, person_id))
+    return _teammate_count(state, view, person_id, tag) > 0
+
+
+def _teammate_count(state: GameState, view: OrgView, person_id: int, tag: str) -> int:
+    """How many times `tag` appears among the person's unit-mates' true tags: the unit's
+    count less the person's own (M14 turn time: per person it read every unit-mate)."""
+    counts = _unit_tag_counts(state, view).get(view.unit_of.get(person_id), {})
+    own = state.person(person_id).tags.count(tag) if person_id in view.unit_of else 0
+    return counts.get(tag, 0) - own
+
+
+def _unit_tag_counts(state: GameState, view: OrgView) -> Mapping[int | None, Mapping[str, int]]:
+    """Each unit's true tag counts over its members, once per (people, view)."""
+    hit = _TAGS.get(id(view))
+    if hit is not None and hit[0] is state.people and hit[1] is view:
+        return hit[2]
+    out: dict[int | None, dict[str, int]] = {}
+    for unit, members in view.members.items():
+        counts: dict[str, int] = {}
+        for member in members:
+            for tag in state.person(member).tags:
+                counts[tag] = counts.get(tag, 0) + 1
+        out[unit] = counts
+    if len(_TAGS) >= _TAGS_KEPT:
+        _TAGS.clear()
+    _TAGS[id(view)] = (state.people, view, out)
+    return out
+
+
+# _unit_tag_counts' memo by view: the people tuple and view it was built for (both kept, so
+# an id is never reused while cached); a turn's morale phase has one view per company
+_TAGS: dict[int, tuple[object, OrgView, dict[int | None, dict[str, int]]]] = {}
+_TAGS_KEPT: Final = 256  # tunable-exempt: memo size
 
 
 def teammate_tag_holders(state: GameState, view: OrgView, person_id: int) -> dict[str, list[int]]:
@@ -202,10 +235,8 @@ def teammate_terms(
     state: GameState, view: OrgView, person_id: int, balance: Balance
 ) -> tuple[tuple[str, int, float], ...]:
     """(tag, holders, capped morale term) for every morale tag, in ORG_TAGS order."""
-    holders = teammate_tag_holders(state, view, person_id)
-    return tuple(
-        (tag, len(holders[tag]), tag_term(tag, len(holders[tag]), balance.org)) for tag in ORG_TAGS
-    )
+    counts = [(tag, _teammate_count(state, view, person_id, tag)) for tag in ORG_TAGS]
+    return tuple((tag, n, tag_term(tag, n, balance.org)) for tag, n in counts)
 
 
 def remote_morale(state: GameState, employment: Employment, balance: Balance) -> float:

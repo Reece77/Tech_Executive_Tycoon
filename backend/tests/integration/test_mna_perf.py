@@ -10,6 +10,8 @@ import time
 import warnings
 from pathlib import Path
 
+import pytest
+
 from tests.helpers import fund_save, move_save_directors, play_turn
 from tests.integration.test_product_perf import LIMIT_S, TurnTime
 from tst.db.repository import (
@@ -22,6 +24,9 @@ from tst.db.repository import (
 )
 from tst.loader import LoadedData
 from tst.sim.mna.deals import BidForCompany
+
+# Timed alone, without xdist, after the parallel suite: `make check-timing` (M14).
+pytestmark = pytest.mark.timing
 
 TURNS = 30
 WARM_UP = 3

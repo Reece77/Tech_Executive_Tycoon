@@ -115,10 +115,34 @@ Sub-tasks 1-9 are built and tested; every §28.9 target is in band (values in `d
 - **Rival screen (card 1).** The Products panel lists each product's market: category, segments and regions (`products` on the rival profile; home-market segments sell in the home region, as antitrust counts them).
 - **Inbox link.** The top bar's "Answer 1 event first" opens the first event that needs answering (`/events/<id>`), not the inbox.
 
+### Turn time at about 220 staff (product manager, 2026-11-06, option 1)
+
+The integration perf check (Facebook, 219 staff, integrated) failed `check` twice under CI load (1.69 s and 1.41 s a turn).
+
+- **Where the time went** (alone, this 4-core machine, one turn after warm-up: 820 ms; profiled with cProfile and timed per phase without it):
+  - All 190 remaining staff sit in one unit, so the company tracks 18,145 relationship pairs, of which about 1,400 change in a month (the rest sit at their start value).
+  - The turn (374 ms): morale 108 ms (W_rel read every unit-mate for each person; teammate tags read every unit-mate's tags; each person's morale rebuilt the whole person-state tuple), relationships 62 ms (every pair rebuilt and replaced; the pair map rebuilt 13 times).
+  - The save (295 ms): relationships 107 ms (all 18,000 pairs diffed, an ORM row per change, a DELETE per ended pair), rivals' monthly operating history and the M&A records a `session.merge` (a SELECT) per row.
+  - Outside the turn: full (generation 2) garbage collections of 250-580 ms every few turns, and the test helper `answer_critical` reloading the whole save from disk (0.7-1 s) in months with a critical event.
+- **What changed** (identical results):
+  - Relationships stay within units and to managers; the pair set is remembered while the org is unchanged; a month removes ended pairs, merges in new ones and steps only pairs that are pushed or off their start value (carried from last month); unchanged pairs and an unchanged tuple are reused, so the caches and the save see no change.
+  - W_rel and the teammate tag terms in bulk: every person's unit-mate values in one pass over the pairs in key order (the same order `teammates` gives, so sums match); each unit's tag counts once per view. The relationship map is built once per pairs tuple. Morale's person-state updates are applied once after the loop (morale reads only the person's own state).
+  - Reveal narrowing computes its shrink factor once per action; the city pay multiplier is remembered.
+  - The save writes only rows that changed, in batched statements: relationships by position (an executemany of plain rows; ended pairs one batched DELETE), rivals' histories and the M&A records as one UPDATE per table, unchanged people and rows skipped by identity.
+  - The test helpers `answer_critical` and `answer_events` read the remembered state through `read_session`, as the app's screens do.
+- **Proof of identical results:** the golden snapshots are unchanged (golden seed 1 runs with `TST_STATE_CACHE_CHECK=1`); the 219-staff scenario played 12 turns with the state-cache check on gives the same full-state digest on the old and new code; `tests/unit/test_turn_time_same_results.py` (Hypothesis) checks the step, W_rel and the tag terms against the rules as first written while people move, leave and join (a deliberately broken step fails it).
+- **Timing tests** (marker `timing`): `test_product_perf`, the two M14 perf checks, and the three other 1.0 s budgets of the same kind (`test_org_perf`, `test_hiring_flow::test_turn_time_budget`, `test_rival_balance::test_5_speed`) run in their own step, `make check-timing` (`pytest -n 0 -m timing`), after the parallel suite: in CI as a step of shard 1 of `check`, locally at the end of `make check`. The limit stays 1.0 s.
+
+| Alone, this machine (median of three blocks) | Before | After |
+| --- | --- | --- |
+| Integrate Facebook (219 staff) | 905 ms (blocks 941, 844, 905) | 555 ms (555, 559, 531); 541-558 over three runs |
+| Buy Apple as a brand | 289 ms | 256 ms |
+| test_product_perf (120 turns) | 367 ms | 308-333 ms |
+
 ## Follow-ups
 
 - Goodwill impairment (out of scope).
 - The acquirer's own overlapping product as a remedy.
 - Rivals' executives pitching acquisitions; rivals bidding for the player outside the takeover event.
 - A Deals entry in the top bar when a review or a closing is due.
-- M15a: turn time. The integration perf check (`test_integrating_the_largest_allowed_target_keeps_the_turn_budget`, Facebook with 219 staff) reads 897 ms a turn alone on the 4-core session machine after the lane merge, under the 1 s budget but close; it exceeds it when other tests share the machine (accepted by the product manager, 2026-11-06).
+- M15a: turn time beyond 220 staff. Full garbage collections (250-580 ms at 220 staff) grow with the state's object count; `gc.freeze()` after each turn measured 50 ms better on the block mean but is not adopted (frozen cyclic garbage would never be freed). Reveal narrowing rewrites about 6,900 rows a month at this size.
