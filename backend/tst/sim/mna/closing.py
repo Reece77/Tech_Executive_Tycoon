@@ -91,6 +91,9 @@ def close_deal(
         state, acquisition, rng, apply_entries(balances, posted), balance, data
     )
     state = with_acquisition(state, acquisition)
+    from tst.sim.rivals.characters import reset_feud
+
+    state = reset_feud(state, deal.target_id)  # a bought company is no one's rival (2026-11-05)
     posted += more
     if not state.company(deal.acquirer_id).is_player:  # market news (28.6)
         logs.insert(

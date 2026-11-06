@@ -91,6 +91,51 @@ def _label(market: Market | None) -> str:
     return "/".join(market) if market is not None else ""
 
 
+def market_words(market: Market | None, data: GameData) -> str:
+    """A market for the inbox, e.g. "B2B SaaS, SMB, North America"."""
+    if market is None:
+        return ""
+    category, segment, region = market
+    return ", ".join(
+        (data.category(category).label, data.segment(segment).label, data.region(region).label)
+    )
+
+
+def screening_note(state: GameState, deal: Deal, balance: Balance, data: GameData) -> LogItem:
+    """The screening result of an agreed deal, always (Reece's playtest 3): cleared with no
+    overlapping market, cleared under the review line, under review, or blocked with the
+    remedy. Names the public review and block lines, never a review's block probability."""
+    ab = balance.antitrust
+    name = state.company(deal.target_id).name
+    market = tuple(deal.market.split("/")) if deal.market else None
+    where = market_words(market, data)  # type: ignore[arg-type]
+    share = f"{deal.combined_share:.0%}"
+    if deal.status == "review":
+        title = f"Antitrust: the deal for {name} is under review"
+        detail = (
+            f"Combined share {share} in {where}, from {ab.review:.0%}: regulators review it "
+            "and decide whether it can close."
+        )
+    elif deal.status == "blocked":
+        remedy = state.product(deal.remedy_product_id) if deal.remedy_product_id else None
+        fix = (
+            f" To clear it, accept the remedy: divest {remedy.name} (Finance, Deals)."
+            if remedy is not None
+            else " No product can be divested to clear it."
+        )
+        title = f"Antitrust: the deal for {name} is blocked"
+        detail = f"Combined share {share} in {where}, at or above {ab.block:.0%}.{fix}"
+    elif market is None:
+        title = f"Antitrust: the deal for {name} is cleared"
+        detail = "Cleared: no overlapping market (you and the target sell in no common market)."
+    else:
+        title = f"Antitrust: the deal for {name} is cleared"
+        detail = (
+            f"Cleared: combined share {share} in {where}, under the {ab.review:.0%} review line."
+        )
+    return _news(state, deal, title, detail)
+
+
 def _remedy_product(state: GameState, target_id: int, market: Market) -> int | None:
     category, segment, _ = market
     for product in state.company_products(target_id):
@@ -108,13 +153,28 @@ def screen(
 ) -> tuple[Deal, list[LogItem]]:
     """A newly agreed deal's antitrust status (28.4): cleared (it closes as agreed), under
     review with its hidden outcome drawn now (stream mna, the target's key), or blocked with
-    the remedy named."""
-    from tst.sim.mna.deals import key_of
-
+    the remedy named. The player's deals always get a screening note in the inbox."""
     ab = balance.antitrust
     share, market = combined_share(state, deal.acquirer_id, deal.target_id, balance, data)
     deal = replace(deal, combined_share=share, market=_label(market))
     outcome = mf.antitrust_outcome(share, ab)
+    deal, logs = _screened(state, deal, outcome, market, rng, balance)
+    if state.company(deal.acquirer_id).is_player:
+        logs = [*logs, screening_note(state, deal, balance, data)]
+    return deal, logs
+
+
+def _screened(
+    state: GameState,
+    deal: Deal,
+    outcome: str,
+    market: Market | None,
+    rng: RngFactory,
+    balance: Balance,
+) -> tuple[Deal, list[LogItem]]:
+    from tst.sim.mna.deals import key_of
+
+    ab = balance.antitrust
     if outcome == "cleared" or market is None:
         return deal, []
     if outcome == "review":

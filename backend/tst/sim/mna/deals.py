@@ -446,10 +446,14 @@ def _accept(
     state = queue_moment(state, acquirer_id, "acquisition")
     name = state.company(action.target_id).name
     how = "tendered" if action.hostile else "agreed"
+    title = {
+        "review": f"Deal {how}, pending antitrust review: {name}",
+        "blocked": f"Deal {how}, but blocked by antitrust: {name}",
+    }.get(deal.status, f"Deal {how}: {name}")
     accepted = _update(
         state,
         acquirer_id,
-        f"Deal {how}: {name}",
+        title,
         f"{name} for {format_money(action.price_cents)} "
         f"({action.cash_share:.0%} cash). " + _closing_text(deal),
         action.target_id,

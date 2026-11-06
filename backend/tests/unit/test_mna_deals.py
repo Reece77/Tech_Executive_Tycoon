@@ -286,10 +286,11 @@ def test_a_review_is_seeded(loaded: LoadedData) -> None:
 
 
 def test_below_the_review_line_is_cleared(loaded: LoadedData) -> None:
-    game, zoho = _at_share(loaded, 0.30)
+    game, zoho = _at_share(loaded, 0.34)  # Zoho alone holds about 32%: 0.30 would not overlap
     deal = Deal(1, 1, zoho, 10**10, 1.0, game.state.turn, close_turn=game.state.turn + 1)
     screened, _ = antitrust.screen(game.state, deal, game.rng, loaded.balance, loaded.game_data)
     assert screened.status == "accepted" and screened.close_turn == game.state.turn + 1
+    assert screened.combined_share == pytest.approx(0.34, abs=0.005)
 
 
 def test_targets_over_the_staff_limit_cannot_integrate(loaded: LoadedData) -> None:
@@ -329,3 +330,68 @@ def test_a_hostile_bid_feeds_the_feud_win_or_lose(loaded: LoadedData) -> None:
     assert feud is not None and feud.score == b.feud.hostile_bid
     assert feud.causes[-1][2] == "you made a hostile bid"
     assert not any(m.trigger == "acquisition" for m in game.state.press_moments)
+
+
+# --- Reece's playtest 3: every agreed deal's screening result in the inbox -------------------
+
+
+def _note(logs: list) -> tuple[str, str]:  # type: ignore[type-arg]
+    (note,) = (i for i in logs if str(dict(i.params).get("title", "")).startswith("Antitrust:"))
+    params = dict(note.params)
+    return str(params["title"]), str(params["detail"])
+
+
+@pytest.mark.parametrize(
+    ("share", "status", "words"),
+    [
+        (None, "accepted", "Cleared: no overlapping market"),
+        (0.34, "accepted", "under the 35% review line"),  # Zoho alone holds about 32%
+        (0.42, "review", "regulators review it"),
+        (0.99, "blocked", "accept the remedy: divest Zoho CRM"),
+    ],
+)
+def test_every_screening_result_is_a_note(
+    loaded: LoadedData, share: float | None, status: str, words: str
+) -> None:
+    game, zoho = (_game(loaded), 0) if share is None else _at_share(loaded, share)
+    if share is None:
+        zoho = _id(game.state, "Zoho")  # the player sells nothing: no common market
+    deal = Deal(1, 1, zoho, 10**10, 1.0, game.state.turn, close_turn=game.state.turn + 1)
+    screened, logs = antitrust.screen(game.state, deal, game.rng, loaded.balance, loaded.game_data)
+    title, detail = _note(logs)
+    assert screened.status == status and words in detail
+    assert "Zoho" in title
+    if status == "review":  # never the review's block probability or its drawn outcome
+        assert str(round(screened.blocked_draw or 0, 2)) not in detail and "chance" not in detail
+
+
+def test_a_blocked_offer_says_so_in_its_title(loaded: LoadedData) -> None:
+    """The playtest's pt-block: the deal was blocked, but its answer led with "Deal agreed"."""
+    game, zoho = _overlap(loaded, 10**7)
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho), mode="brand"))
+    titles = [str(dict(i.params)["title"]) for i in game.action_logs]
+    assert "Deal agreed, but blocked by antitrust: Zoho" in titles
+    assert "Antitrust: the deal for Zoho is blocked" in titles
+
+
+def test_rivals_deals_send_the_player_no_screening_note(loaded: LoadedData) -> None:
+    game, zoho = _overlap(loaded, 10**7)
+    rival = next(c.id for c in game.state.companies if c.is_rival and c.id != zoho)
+    deal = Deal(1, rival, zoho, 10**10, 1.0, game.state.turn, close_turn=game.state.turn + 1)
+    _, logs = antitrust.screen(game.state, deal, game.rng, loaded.balance, loaded.game_data)
+    assert logs == []
+
+
+def test_closing_resets_the_feud_with_the_target(loaded: LoadedData) -> None:
+    from tst.sim.rivals.characters import add_feud
+    from tst.sim.state import feud_of
+
+    game = _game(loaded)
+    zoho = _id(game.state, "Zoho")
+    game.state = add_feud(game.state, 1, zoho, 40, "test", loaded.balance)
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho), mode="brand"))
+    game.turn()
+    feud = feud_of(game.state, 1, zoho)
+    assert game.state.company(zoho).parent_id == 1 and feud is not None and feud.score == 0
