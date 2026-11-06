@@ -47,9 +47,16 @@ The chief-of-staff advisor, patents, achievements (backlog). The mineral-first s
 
 Start the AI lab scenario and try to cause Transformers first. Then start a Sandbox game in 2020 and use Continue until for a year.
 
-## Playtest 3 addendum
+## Playtest 3 addendum (product manager, 2026-11-05; `docs/playtests/reece-playtest-3.md`)
 
-_(Product manager adds items from Reece's playtest 3 that touch this lane.)_
+M15b also owns `backend/tst/sim/mna/` negotiation code and the rival CEO code for these items (M14 has merged by then).
+
+9. **Negotiation, not a price list** (card 1). A private target no longer answers an offer with its minimum. Its first counter is anchored above its reservation (`mna.counter_anchor`, ×1.15–1.30, by personality), and talks run up to `mna.max_rounds` (3) rounds: each counter moves toward the reservation by half the gap, and each lowball (below the last counter × 0.9) uses up the target's patience (2 strikes end talks for 12 months). The reservation stays hidden; the API shows only counters. **Test:** no sequence of offers reveals the reservation exactly (differential test on two targets with the same counters' range).
+10. **Continue after an exit: serial founder** (card 15). Accepting a takeover no longer ends the game. The exit screen offers **Found a new company** (same save, same world and date; the founder keeps their stats, reputation and network; their proceeds become the new company's starting cash, minus what they keep; the sold company becomes a rival owned by the buyer) or **Retire** (the current ending). History records both companies; the company score and Hall of Fame record each company separately. **Tests:** the world carries on unchanged for rivals; the founder's cash and stake are right; a second exit works.
+11. **Rival CEO profiles** (log). A rival CEO opens a profile like any person's, with skills and traits as **ranges** from what the player has learned (scouting rules: public appearances and feuds reveal a little; poaching approaches and diligence reveal more). Never true values.
+12. **Rival CEOs with more character** (card 8). LLM-written storylines for rival CEOs (within §16's budget, engine facts only): an interview after their launches, a reply when the feud crosses 25 and 50, a profile piece when they enter the Top 50. Templates in their voice when the LLM is off.
+13. **Leadership fit for long-serving staff** (card 11). Knowledge of the player's own employees grows with tenure: leadership, mentoring and communication reveal fully after `people.reveal_tenure_months` (12) of working in the player's company, so long-serving staff show a single star value, not a range.
+14. **Promises** went untested (card 6); add a "make a promise" hint to the launch press moment's card so it's harder to miss.
 
 ## Decisions made
 
