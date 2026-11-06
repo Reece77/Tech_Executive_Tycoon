@@ -106,3 +106,17 @@ def test_an_approach_shows_a_band_and_a_counter_preview(tmp_path: Path, loaded: 
         assert preview["band_now"] == open_one["band"]
         assert preview["band_after"] == "likely to stay"
         api.post(f"{BASE}/approaches/999/counter-preview", {"salary_cents": 1}, status=404)
+
+
+def test_each_rival_product_shows_its_market(tmp_path: Path, loaded: LoadedData) -> None:
+    """Reece's playtest 3: the Rival screen named products but not their market."""
+    with hiring_client(tmp_path) as api:
+        names = {r["name"]: r for r in api.get(f"{BASE}/rivals")["rivals"]}
+        profile = api.get(f"{BASE}/rivals/{names['Salesforce']['company_id']}")
+        (crm,) = (p for p in profile["products"] if p["name"] == "Sales Cloud")
+        assert crm["category_label"] == loaded.game_data.category("b2b_saas").label
+        segments = {
+            s["segment_label"] for s in profile["segments"] if s["product_name"] == crm["name"]
+        }
+        assert segments <= set(crm["segment_labels"]) and crm["segment_labels"]
+        assert crm["region_labels"] and crm["region_labels"][0] == "North America"

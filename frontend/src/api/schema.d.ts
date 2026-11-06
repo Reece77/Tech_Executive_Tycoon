@@ -9997,6 +9997,23 @@ export interface components {
             /** Market */
             market: string;
         };
+        /**
+         * RivalProductMarketOut
+         * @description Where one rival product sells (Reece's playtest 3): its category, segments and
+         *     regions, in words.
+         */
+        RivalProductMarketOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category Label */
+            category_label: string;
+            /** Segment Labels */
+            segment_labels: string[];
+            /** Region Labels */
+            region_labels: string[];
+        };
         /** RivalProfileOut */
         RivalProfileOut: {
             /** Company Id */
@@ -10035,6 +10052,11 @@ export interface components {
             failed: boolean;
             /** Segments */
             segments: components["schemas"]["RivalSegmentOut"][];
+            /**
+             * Products
+             * @description Each product's market: category, segments and regions
+             */
+            products: components["schemas"]["RivalProductMarketOut"][];
             /** Key People */
             key_people: components["schemas"]["KeyPersonOut"][];
             /** Recent Moves */

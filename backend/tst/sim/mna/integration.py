@@ -22,6 +22,7 @@ from tst.sim.ledger import (
     LedgerBalances,
     LedgerEntry,
     account_balance,
+    apply_entries,
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.mna import formulas as mf
@@ -463,6 +464,8 @@ def integration_month(
     entries: list[LedgerEntry] = []
     logs: list[LogItem] = []
     entries += _sweeps(state, balances, balance, data)
+    entries += _fund_brands(state, apply_entries(balances, entries), balance, data)
+    logs += _loss_warnings(state, balance)
     state, left = _flight(state, rng, balance)
     logs += left
     state = _clash(state, balance)
@@ -512,6 +515,93 @@ def _sweeps(
             )
         )
     return out
+
+
+def _fund_brands(
+    state: GameState, balances: LedgerBalances, balance: Balance, data: GameData
+) -> list[LedgerEntry]:
+    """A brand short of cash is funded by its parent, up to mna.funding_months of its costs
+    and what the parent has (Reece's playtest 3): the parent's investment and the brand's
+    equity rise by the same amount, the mirror of a sweep."""
+    from tst.sim.mna.deals import monthly_costs_cents
+
+    out: list[LedgerEntry] = []
+    paid: dict[int, int] = {}
+    for company in state.companies:
+        if company.parent_id is None or not company.alive:
+            continue
+        shortfall = -account_balance(balances, company.id, CASH)
+        if shortfall <= 0:
+            continue
+        costs = monthly_costs_cents(state, company.id, balance, data)
+        cap = max(round(balance.mna.funding_months * costs), 0)
+        parent = company.parent_id
+        available = account_balance(balances, parent, CASH) - paid.get(parent, 0)
+        amount = min(shortfall, cap, max(available, 0))
+        if amount <= 0:
+            continue
+        paid[parent] = paid.get(parent, 0) + amount
+        out.append(
+            LedgerEntry.transfer(
+                turn=state.turn,
+                company_id=parent,
+                memo=f"Funding for {company.name}",
+                debit=INVESTMENT_SUBSIDIARIES,
+                credit=CASH,
+                amount=amount,
+            )
+        )
+        out.append(
+            LedgerEntry.transfer(
+                turn=state.turn,
+                company_id=company.id,
+                memo=f"Funding from {state.company(parent).name}",
+                debit=CASH,
+                credit=COMMON_EQUITY,
+                amount=amount,
+            )
+        )
+    return out
+
+
+def _loss_warnings(state: GameState, balance: Balance) -> list[LogItem]:
+    """A player's brand whose operating result (rivals' op_history, recorded in phase 11)
+    has been negative for mna.loss_warning_months months running since closing raises one
+    warning per losing streak (Reece's playtest 3)."""
+    months = balance.mna.loss_warning_months
+    logs: list[LogItem] = []
+    for company in state.companies:
+        parent = company.parent_id
+        if parent is None or not company.alive or not state.company(parent).is_player:
+            continue
+        closed = max(
+            (a.closed_turn for a in state.acquisitions if a.target_id == company.id), default=0
+        )
+        since = state.turn - closed - 1  # whole months recorded after the closing month
+        history = company.op_history[-since:] if since > 0 else ()
+        streak = 0
+        for result in reversed(history):
+            if result >= 0:
+                break
+            streak += 1
+        if streak != months:
+            continue
+        logs.append(
+            inbox_item(
+                state.turn,
+                parent,
+                "deal_update",
+                link_kind="rival",
+                link_id=company.id,
+                title=f"{company.name} has lost money for {months} months",
+                detail=(
+                    f"{company.name} made an operating loss each of the last {months} months. "
+                    "You cover its cash shortfall each month while you can. To change its "
+                    "course, set its directive (Finance, Deals): Harvest runs it for cash."
+                ),
+            )
+        )
+    return logs
 
 
 def _flight(state: GameState, rng: RngFactory, balance: Balance) -> tuple[GameState, list[LogItem]]:

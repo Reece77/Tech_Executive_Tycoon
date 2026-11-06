@@ -30448,6 +30448,46 @@
         ],
         "title": "RivalOutlastedOut"
       },
+      "RivalProductMarketOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category_label": {
+            "type": "string",
+            "title": "Category Label"
+          },
+          "segment_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Segment Labels"
+          },
+          "region_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Region Labels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category_label",
+          "segment_labels",
+          "region_labels"
+        ],
+        "title": "RivalProductMarketOut",
+        "description": "Where one rival product sells (Reece's playtest 3): its category, segments and\nregions, in words."
+      },
       "RivalProfileOut": {
         "properties": {
           "company_id": {
@@ -30522,6 +30562,14 @@
             "type": "array",
             "title": "Segments"
           },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/RivalProductMarketOut"
+            },
+            "type": "array",
+            "title": "Products",
+            "description": "Each product's market: category, segments and regions"
+          },
           "key_people": {
             "items": {
               "$ref": "#/components/schemas/KeyPersonOut"
@@ -30558,6 +30606,7 @@
           "stance_reason",
           "failed",
           "segments",
+          "products",
           "key_people",
           "recent_moves",
           "poach_energy"

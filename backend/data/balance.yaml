@@ -1082,6 +1082,8 @@ mna:
   tender: { energy: 15, floor: 0.15, span: 0.5, cap: 0.9, defence: 0.20, fee_bp: 100, block_months: 12 } # hostile tender: chance clamp((premium - floor) / span, 0, cap) - defence for an aggressive target; a failed one costs fee_bp of the price and blocks bids block_months (28.3)
   closing_months: 1 # months from acceptance to closing without a review (28.3)
   sweep_months: 3 # a brand subsidiary's cash above this many months of its costs sweeps to the parent each month (28.5)
+  funding_months: 1 # months of its costs; the parent pays a brand's cash shortfall up to this each month, an intercompany transfer (Reece's playtest 3, 2026-11-06)
+  loss_warning_months: 3 # months; a brand with an operating loss this many months running raises a warning (Reece's playtest 3)
   directive_energy: 2 # founder energy to set a brand's directive (28.5)
   acquired_flag_months: 12 # months Org flags an acquired unit (M14 brief)
   rival_rate: 0.005 # an incumbent's chance a quarter to buy one startup in its categories (28.6; 28.9 target 7 tuning: 0.04 -> 0.008, about 3 a decade; 0.005 at the lane merge for M12a's living-market guard, 2 a decade)

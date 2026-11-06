@@ -93,10 +93,16 @@ test('(c) over half a market is blocked and the remedy offered', async ({ page }
   await page.goto(`/game/${save}/competitors/${id}`);
   // Zoho is over integration.max_staff: Integrate is off and says why (2026-11-05)
   await expect(page.getByTestId('integrate-note')).toContainText('too big to integrate');
+  // each product's market is named (Reece's playtest 3)
+  await expect(page.getByTestId('rival-product-market').first()).toContainText('B2B SaaS');
   for (let i = 0; i < 2 && !(await page.getByTestId('deal-status').count()); i += 1) {
     await offer(page, 'brand');
   }
   await expect(page.getByTestId('deal-status')).toContainText('Blocked');
+  // the screening result is its own note, led by the block (playtest 3's pt-block)
+  await expect(
+    page.getByTestId('offer-answer').filter({ hasText: 'Antitrust: the deal for Zoho is blocked' }),
+  ).toBeVisible();
   await page.goto(`/game/${save}/finance/deals`);
   await expect(page.getByTestId('open-deal-status')).toHaveText('Blocked');
   await expect(page.getByTestId('accept-remedy')).toContainText('divest');

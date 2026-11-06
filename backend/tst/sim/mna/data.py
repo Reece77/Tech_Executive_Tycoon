@@ -71,6 +71,8 @@ class MnaBalance(_Frozen):
     tender: TenderBalance
     closing_months: int = Field(ge=0)
     sweep_months: float = Field(ge=0)  # a brand's cash above this many months of costs
+    funding_months: float = Field(ge=0)  # the parent covers a brand's shortfall up to this
+    loss_warning_months: int = Field(ge=1)  # consecutive loss-making months that raise a warning
     directive_energy: int = Field(ge=0)
     acquired_flag_months: int = Field(ge=0)  # Org flags acquired units this long
     rival_rate: float = Field(ge=0, le=1)  # an incumbent's quarterly chance to buy a startup

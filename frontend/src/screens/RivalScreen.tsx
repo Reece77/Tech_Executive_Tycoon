@@ -11,7 +11,7 @@ import { Term } from '../components/Term';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOpenSearch, useRival, type RivalProfile } from '../hooks/api';
 import { formatMoneyShort, formatMoneyWhole, formatWhole, humanize } from '../lib/format';
-import { MoveTag, StartupChip, StyleChip } from '../lib/rivals';
+import { MoveTag, ProductMarkets, StartupChip, StyleChip } from '../lib/rivals';
 
 export function RivalScreen() {
   const { saveId = '', rivalId = '0' } = useParams();
@@ -76,6 +76,7 @@ function RivalBody({ saveId, r }: { saveId: string; r: RivalProfile }) {
       </div>
       <RivalDealPanel saveId={saveId} companyId={r.company_id} />
       <Panel title="Products">
+        <ProductMarkets products={r.products} />
         <table className="tst-table" aria-label="Rival products">
           <thead>
             <tr>

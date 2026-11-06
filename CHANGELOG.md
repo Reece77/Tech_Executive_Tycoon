@@ -27,6 +27,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - 28.9: every target passes (target 4: payroll cut 24%).
   - Tuned: `integration.flight_brand` 0.007, `integration.flight_base` 0.01, `mna.rival_rate` 0.005 (0.008 until the lane merge, lowered for M12a's living-market guard).
   - Lane merge with M14b: an agreed deal raises an `acquisition` press moment (29.1) and the player's hostile tender adds `feud.hostile_bid` to the feud with the target's CEO (29.4), through M14b's hooks.
+  - Before merging (product manager, 2026-11-05/06): kept brands are never rivals for feuds, statements, jabs or head-to-head launches; feuds reset at closing; acquisition moves never count as poaching; every agreed deal's antitrust screening is an inbox note and the answer leads with the outcome; a parent funds a brand's shortfall up to `mna.funding_months` (1) of its costs, warns after `mna.loss_warning_months` (3) losing months, and a brand never fails while its parent can pay; the Rival screen names each product's market; "Answer 1 event" opens the event; `test_known_misses` covers only the balance table's targets.
   - Golden snapshots unchanged on the combined M14 + M14b code (the golden runs make no acquisitions), so none were regenerated at the lane merge; M14b's regeneration stands.
 
 - CI (2026-11-05):

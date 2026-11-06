@@ -15,6 +15,7 @@ from tst.api.schemas.rivals import (
     KeyPersonOut,
     NewsMonthOut,
     RivalMoveOut,
+    RivalProductMarketOut,
     RivalProfileOut,
     RivalRowOut,
     RivalSegmentOut,
@@ -286,10 +287,40 @@ def rival_profile(
         stance_reason=reason if company.failed_turn is None else "Closed",
         failed=company.failed_turn is not None,
         segments=segments,
+        products=product_markets(state, company.id, data),
         key_people=people,
         recent_moves=[move_out(m) for m in reversed(moves) if m.company_id == company.id],
         poach_energy=energy_cost("poach_search", data.balance),
     )
+
+
+def product_markets(
+    state: GameState, company_id: int, data: LoadedData
+) -> list[RivalProductMarketOut]:
+    """Each selling product's category, segments and regions (Reece's playtest 3). A
+    product's home-market segments sell in the home region (as antitrust counts them, 28.4)."""
+    from tst.sim.facilities.compute import home_region_of
+
+    gd = data.game_data
+    home = home_region_of(state, data.balance, gd)
+    out = []
+    for p in state.company_products(company_id):
+        if p.status == "retired":
+            continue
+        home_segments = [s.segment for s in state.segments_of(p.id)]
+        regional = state.regional_segments_of(p.id)
+        segments = sorted({*home_segments, *(r.segment for r in regional)}, key=gd.segment_index)
+        regions = ([home] if home_segments else []) + sorted({r.region for r in regional} - {home})
+        out.append(
+            RivalProductMarketOut(
+                product_id=p.id,
+                name=p.name,
+                category_label=gd.category(p.category).label,
+                segment_labels=[gd.segment(s).label for s in segments],
+                region_labels=[gd.region(r).label for r in regions],
+            )
+        )
+    return out
 
 
 def news_months(moves: list[RivalMove]) -> list[NewsMonthOut]:
