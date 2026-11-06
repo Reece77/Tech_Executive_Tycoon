@@ -267,3 +267,10 @@ class ResearchRuleError(SimError):
 
 class UnknownProjectError(NotFoundError):
     code = "unknown_project"
+
+
+class MnaRuleError(SimError):
+    """A diligence, offer or deal step the M&A rules do not allow (M14, formulas.md 28). The
+    message never names a hidden value: no reservation, board bar or tender chance (28.8)."""
+
+    code = "mna_rule"

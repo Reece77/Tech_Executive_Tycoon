@@ -90,7 +90,9 @@ def insolvency(
     logs: list[LogItem] = []
     for company in state.ledger_companies():
         cash = account_balance(balances, company.id, CASH)
-        if cash >= 0:
+        parent = company.parent_id
+        covered = parent is not None and account_balance(balances, parent, CASH) >= -cash
+        if cash >= 0 or covered:  # a kept brand never fails while its parent can pay (28.5)
             if company.insolvent_months:
                 state = with_company(state, replace(company, insolvent_months=0))
             continue

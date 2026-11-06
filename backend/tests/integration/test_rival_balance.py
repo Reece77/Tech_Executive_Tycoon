@@ -163,6 +163,7 @@ def test_4_poaching_felt_not_crushing(loaded: LoadedData) -> None:
     assert 0.10 <= rate <= 0.40  # re-banded in M10d (product manager, 2026-11-02)
 
 
+@pytest.mark.timing  # alone, without xdist: `make check-timing` (M14)
 def test_5_speed(tmp_path: Path, loaded: LoadedData) -> None:
     from tests.helpers import play_turn
     from tests.integration.test_api_products import staff

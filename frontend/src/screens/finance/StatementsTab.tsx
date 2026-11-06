@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import { StatementTable } from '../../components/StatementTable';
+import { Term } from '../../components/Term';
 import {
   useOverview,
   useStatements,
@@ -222,6 +223,7 @@ export function StatementsTab({ saveId }: { saveId: string }) {
         <span className="tst-muted" style={{ fontSize: 13 }}>
           In thousands of dollars · the books reconcile every month
           {periods.some((p) => !p.complete) ? ' · * period still in progress' : ''}
+          {statements.data.consolidated ? ' · consolidated with your brands from closing' : ''}
         </span>
       </div>
       {latest === undefined ? (
@@ -241,6 +243,42 @@ export function StatementsTab({ saveId }: { saveId: string }) {
             </h2>
             <StatementTable periods={periods} />
           </section>
+          {(statements.data.subsidiaries ?? []).length > 0 && (
+            <Panel title="Subsidiaries (included above)">
+              <table
+                data-testid="subsidiary-columns"
+                style={{ fontSize: 13, borderSpacing: '12px 2px' }}
+              >
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left' }}>Brand, {latest.label}</th>
+                    <th>
+                      <Term term="line.revenue">Revenue</Term>
+                    </th>
+                    <th>
+                      <Term term="mna.result">Operating result</Term>
+                    </th>
+                    <th>
+                      <Term term="kpi.cash">Cash</Term>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(statements.data.subsidiaries ?? []).map((sub) => {
+                    const i = statements.data.periods.length - 1;
+                    return (
+                      <tr key={sub.company_id} data-testid="subsidiary-column">
+                        <td>{sub.name}</td>
+                        <td>{formatMoneyWhole(sub.revenue_cents[i] ?? 0)}</td>
+                        <td>{formatMoneyWhole(sub.operating_result_cents[i] ?? 0)}</td>
+                        <td>{formatMoneyWhole(sub.cash_cents[i] ?? 0)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </Panel>
+          )}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
             <BalanceSheet period={latest} />
             <CashFlow period={latest} />

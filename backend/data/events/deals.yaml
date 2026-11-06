@@ -1,0 +1,24 @@
+# M&A events (formulas.md 28, M14; owned by M14). Engine-queued only (trigger public): after a
+# takeover bid's talks open, the next month, where the buyer names its price and accepting ends the game with an
+# exit (28.6).
+templates:
+  - id: takeover_offer
+    category: public
+    trigger: public
+    severities: [critical]
+    weight: 1.0
+    title: "The buyer names a price for {company}"
+    body: >-
+      Talks have gone well. The buyer offers a sizeable premium to the share price for every
+      share of {company}, in cash. The board will back your recommendation. Selling ends your
+      time running the company: it is an exit.
+    choices:
+      - key: A
+        label: "Accept and sell the company"
+        effects:
+          - { type: public_step, target: company, stat: takeover_accept }
+      - key: B
+        label: "Walk away from the deal"
+        effects:
+          - { type: public_step, target: company, stat: takeover_reject }
+          - { type: board_confidence, target: board, share: -0.2 }

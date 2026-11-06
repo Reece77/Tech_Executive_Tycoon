@@ -57,3 +57,28 @@ export function MoveTag({ tag }: { tag: string }) {
     </span>
   );
 }
+
+/** Where each rival product sells (Reece's playtest 3): category, segments and regions. */
+export function ProductMarkets({
+  products,
+}: {
+  products: readonly {
+    product_id: number;
+    name: string;
+    category_label: string;
+    segment_labels: string[];
+    region_labels: string[];
+  }[];
+}) {
+  return (
+    <ul style={{ margin: '0 0 8px', paddingLeft: 18, fontSize: 13 }} aria-label="Markets">
+      {products.map((p) => (
+        <li key={p.product_id} data-testid="rival-product-market">
+          <strong>{p.name}</strong>: {p.category_label}
+          {p.segment_labels.length > 0 && ` · ${p.segment_labels.join(', ')}`}
+          {p.region_labels.length > 0 && ` · ${p.region_labels.join(', ')}`}
+        </li>
+      ))}
+    </ul>
+  );
+}

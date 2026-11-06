@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 33
+SCHEMA_VERSION = 34
 
 
 class Base(DeclarativeBase):
@@ -1530,6 +1530,65 @@ class CeoDecisionRow(Base):
     mistake: Mapped[bool] = mapped_column(Boolean, nullable=False)
     undo: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
     overridden_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+# --- Mergers and acquisitions (M14, formulas.md 28; 0034) -------------------------------------
+
+
+class RivalListingRow(Base):
+    """A listed rival's sentiment S (28.1; 0034): its market cap is V_f x S."""
+
+    __tablename__ = "rival_listing"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    sentiment: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class CompanyParentRow(Base):
+    """A kept brand's parent company (28.5, ADR-0020; 0034)."""
+
+    __tablename__ = "company_parent"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    parent_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+
+
+class TargetFileRow(Base):
+    """What one acquirer knows of one target (28.2-28.3; 0034). `data` holds TargetFile's
+    other fields, hidden ones included (never sent to the API)."""
+
+    __tablename__ = "mna_target_file"
+
+    acquirer_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    target_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class DealRow(Base):
+    """A deal (28.3-28.4; 0034). `data` holds the Deal's fields."""
+
+    __tablename__ = "mna_deal"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class AcquisitionRow(Base):
+    """A closed acquisition (28.5; 0034). `data` holds the Acquisition's fields."""
+
+    __tablename__ = "mna_acquisition"
+
+    deal_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class AcquiredPersonRow(Base):
+    """An acquired key person during culture clash (28.5; 0034)."""
+
+    __tablename__ = "mna_acquired_person"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
 # --- The founder in public (M14b, formulas.md 29; 0033) --------------------------------------

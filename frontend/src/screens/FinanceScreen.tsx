@@ -3,6 +3,7 @@ import { ScreenTitle } from '../components/ScreenState';
 import { usePublic } from '../hooks/api';
 import { BoardTab } from './finance/BoardTab';
 import { CapTableTab } from './finance/CapTableTab';
+import { DealsTab } from './finance/DealsTab';
 import { DebtTab } from './finance/DebtTab';
 import { DivisionsTab } from './finance/DivisionsTab';
 import { FundraisingTab } from './finance/FundraisingTab';
@@ -17,6 +18,7 @@ const FINANCE_TABS = [
   { key: 'debt', label: 'Debt' }, // M10
   { key: 'stock', label: 'Stock' }, // M13: once public
   { key: 'board', label: 'Board' },
+  { key: 'deals', label: 'Deals' }, // M14: acquisitions
 ] as const;
 type TabKey = (typeof FINANCE_TABS)[number]['key'];
 
@@ -67,5 +69,7 @@ function TabBody({ tab, saveId }: { tab: TabKey; saveId: string }) {
       return <StockTab saveId={saveId} />;
     case 'board':
       return <BoardTab saveId={saveId} />;
+    case 'deals':
+      return <DealsTab saveId={saveId} />;
   }
 }

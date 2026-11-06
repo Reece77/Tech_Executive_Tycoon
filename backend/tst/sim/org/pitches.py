@@ -92,7 +92,7 @@ DRAWS: Final = 2  # uniforms on the pitch stream a draw month: whether, then whi
 CHAIR_KINDS: Final = frozenset({"buyback"})  # approved as the Chair, not the executive (25.6)
 # The pitch kinds of each seat (27.1); the CEO pitches those of the functions it runs.
 SEAT_KINDS: Final[dict[str, tuple[PitchKind, ...]]] = {
-    "cpo": ("new_product", "sunset"),
+    "cpo": ("new_product", "sunset", "acquisition"),  # acquisition: M14 (28.7)
     "cro": ("region",),
     "cto": ("research", "data_centre"),
     "coo": ("office", "plant"),
@@ -674,6 +674,9 @@ def candidates(
     cash: Cents,
     b: Balance,
     data: GameData,
+    balances: LedgerBalances | None = None,
+    *,
+    seat: str = "",
 ) -> list[Candidate]:
     """Every candidate of these kinds, best first; ties by kind order then params (27.1)."""
     makers: dict[PitchKind, Callable[[], list[Candidate]]] = {
@@ -686,6 +689,9 @@ def candidates(
         "plant": lambda: _plants(state, company, b, data),
         "campaign": lambda: _campaigns(state, company, b, data),
         "buyback": lambda: _buyback(state, company, cash, b, data),
+        "acquisition": lambda: _acquisitions(
+            state, company, cash, balances or {}, b, data, any_target=seat == "ceo"
+        ),
     }
     out: list[tuple[float, int, str, Candidate]] = []
     for i, kind in enumerate(kinds):
@@ -889,6 +895,19 @@ def execute(
             from tst.sim.actions import Buyback
 
             _do(out, Buyback(actor, int(p["amount_cents"])), rng, b, data, draws)
+        case "acquisition":  # M14 (28.7): the bid; its answer comes back as a deal update
+            from tst.sim.mna.deals import BidForCompany
+
+            target = int(p["company_id"])
+            _do(
+                out,
+                BidForCompany(founder, target, int(p["price_cents"]), mode=str(p["mode"])),  # type: ignore[arg-type]
+                rng,
+                b,
+                data,
+                draws,
+            )
+            out.target_id = target
     return out
 
 
@@ -1013,7 +1032,111 @@ def measure(state: GameState, pitch: Pitch, b: Balance, data: GameData) -> int |
             return max(0, round(_customers(state, int(p["product_id"])) - pitch.baseline))
         case "buyback":
             return pitch.central
+        case "acquisition":  # the bought company's revenue now (28.7)
+            return _acquired_mrr(state, pitch)
     return None
+
+
+def _acquired_mrr(state: GameState, pitch: Pitch) -> int | None:
+    """An acquisition pitch's measure: the acquired products' MRR (integrated) or the brand's
+    last MRR; None until the deal has closed."""
+    target = int(dict(pitch.params)["company_id"])
+    acquisition = next(
+        (
+            a
+            for a in state.acquisitions
+            if a.target_id == target and a.acquirer_id == pitch.company_id
+        ),
+        None,
+    )
+    if acquisition is None:
+        return None
+    if acquisition.mode == "brand":
+        company = state.company(target)
+        return company.mrr_history[-1] if company.mrr_history else 0
+    return sum(product_mrr(state, pid) for pid in acquisition.product_ids)
+
+
+def _acquisitions(
+    state: GameState,
+    company: int,
+    cash: Cents,
+    balances: LedgerBalances,
+    b: Balance,
+    data: GameData,
+    *,
+    any_target: bool,
+) -> list[Candidate]:
+    """The CEO's and CPO's acquisition candidates (28.7): the CEO any company it can afford;
+    the CPO only startups estimated under the auto-approve limit x mna.cpo_limit_mult. Score:
+    the target's displayed revenue in the acquirer's categories x fit / estimated price, on the
+    pitches' 24-month scale; central case: that revenue grown 24 months, plus integration
+    savings of mna.pitch_synergy x its monthly costs."""
+    from tst.sim.mna import antitrust, deals, valuation
+    from tst.sim.mna.integration import can_integrate
+
+    mb = b.mna
+    mine = {p.category for p in state.company_products(company) if p.status in SELLING}
+    limit = auto_approve_limit(cash, state.pitch_policy(company).auto_approve_cents, b.pitch)
+    year = state.turn // MONTHS_PER_YEAR
+    out = []
+    for target in sorted(state.rivals(), key=lambda c: c.id):
+        if target.parent_id is not None or deals.open_deal(state, target.id) is not None:
+            continue
+        if not any_target and not target.is_startup:
+            continue
+        estimate = deals.estimate_cents(state, company, target.id, balances, b, data)
+        if estimate <= 0 or estimate > cash:
+            continue
+        if not any_target and estimate >= limit * mb.cpo_limit_mult:
+            continue
+        revenue = 0.0
+        fit = NEUTRAL_FIT
+        for p in state.company_products(target.id):
+            if p.status not in SELLING or p.category not in mine:
+                continue
+            revenue += product_mrr(state, p.id)
+            fit = max(fit, category_fit(state, company, data.category(p.category), data))
+        if revenue <= 0:
+            continue
+        growth = max(
+            data.category(p.category).growth_in(2010 + year)  # tunable-exempt: turn 0 is 2010
+            for p in state.company_products(target.id)
+            if p.category in mine
+        )
+        costs = deals.monthly_costs_cents(state, target.id, b, data)
+        central = revenue * (1 + growth) ** 2 + mb.pitch_synergy * costs
+        listed = valuation.is_listed(state, target.id, data)
+        if listed:
+            price = round(estimate * (1 + mb.pitch_bid_premium))
+        else:
+            price = valuation.value_range_cents(state, target.id, balances, b, data)[1]
+        share, _ = antitrust.combined_share(state, company, target.id, b, data)
+        ratio = revenue * fit / price
+        out.append(
+            Candidate(
+                kind="acquisition",
+                params=(
+                    ("company_id", target.id),
+                    ("price_cents", price),
+                    ("mode", "integrate" if can_integrate(state, target.id, b) else "brand"),
+                ),
+                title=f"buying {target.name}",
+                why=(
+                    f"{target.name} earns about {format_money(round(revenue))} a month in our "
+                    f"markets; we would bid {format_money(price)} and fold it in"
+                ),
+                score=ratio * central * b.pitch.record_months,
+                central=central,
+                unit="cents_month",
+                capex_cents=price,
+                risk=(
+                    f"antitrust: a combined {share:.0%} share in its biggest overlap; culture "
+                    "clash may cost some of its people"
+                ),
+            )
+        )
+    return out
 
 
 def _dc_saving(state: GameState, f: object, b: Balance, data: GameData) -> int:
@@ -1154,7 +1277,7 @@ def pitch_month(
     if u_pitch >= pitch_chance(ambition, b.pitch):
         return
     cash = account_balance(run.balances, company, CASH)
-    ranked = candidates(state, company, kinds, cash, b, data)
+    ranked = candidates(state, company, kinds, cash, b, data, run.balances, seat=seat)
     pick = pitch_pick(
         len(ranked), u_quality, decision_quality(true_score, b.exec_authority.quality)
     )
@@ -1167,7 +1290,10 @@ def pitch_month(
     name = f"{person.first_name} {person.last_name}"
     policy = state.pitch_policy(company)
     limit = auto_approve_limit(cash, policy.auto_approve_cents, b.pitch)
-    if auto_approves(pitch.cost_cents, limit, on_holiday=not at_controls):
+    # acquisitions never go ahead on their own, whatever the limit (28.7)
+    if pitch.kind != "acquisition" and auto_approves(
+        pitch.cost_cents, limit, on_holiday=not at_controls
+    ):
         founder = state.founder_of(company)
         turn = state.turn
 

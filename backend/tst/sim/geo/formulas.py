@@ -49,7 +49,14 @@ def pay_multiplier_bp(city: CityDef, balance: Balance) -> int:
     """The multiplier people working in a city are paid at: its salary multiplier x
     geo.pay_level, the calibration that makes a San Francisco company's average pay equal
     v1's regional mix (19.1). Asks and market rates both use it."""
-    return round(exact(city.salary_multiplier_bp) * exact(balance.geo.pay_level))
+    return _pay_bp(city.salary_multiplier_bp, balance.geo.pay_level)
+
+
+@lru_cache(maxsize=1024)  # tunable-exempt: cache size, not game balance
+def _pay_bp(salary_multiplier_bp: int, pay_level: float) -> int:
+    """`pay_multiplier_bp` on its two numbers, remembered (M14 turn time: every employee's
+    morale asks each month, and exact arithmetic is slow)."""
+    return round(exact(salary_multiplier_bp) * exact(pay_level))
 
 
 def city_market_mid_cents(band_mid_cents: Cents, city: CityDef, balance: Balance) -> Cents:

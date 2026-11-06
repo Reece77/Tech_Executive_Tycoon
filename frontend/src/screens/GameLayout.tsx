@@ -10,7 +10,7 @@ import { ShortcutHelp } from '../components/ShortcutHelp';
 import { TopBar } from '../components/TopBar';
 import { useAdvance, useEvents, useFinanceSummary, useHoliday, useOverview } from '../hooks/api';
 import { useGameHotkeys } from '../hooks/useGameHotkeys';
-import { NAV_ITEMS } from '../lib/nav';
+import { answerHref, NAV_ITEMS } from '../lib/nav';
 
 export function GameLayout() {
   const { saveId = '' } = useParams();
@@ -65,7 +65,7 @@ export function GameLayout() {
         advancing={advance.isPending}
         blocking={blocking}
         proposals={proposals}
-        eventsHref={proposals && !blocking ? `/game/${saveId}/org` : `/game/${saveId}/inbox`}
+        eventsHref={answerHref(saveId, events.data?.blocking_event_ids ?? [], proposals)}
         away={away}
         onContinue={onContinue}
         onHoliday={onHoliday}

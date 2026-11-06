@@ -10,7 +10,9 @@ import { LeadsChip, OrgNode, UnitKindBadge } from '../components/OrgNode';
 import { WorksOn } from '../components/WorksOn';
 import { ChangeDialog, type Pending } from '../components/OrgChangeDialog';
 import { ScaleupPanels } from '../components/ScaleupPanels';
+import { AcquiredBadge } from '../components/AcquiredBadge';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
+import { OrgBrands } from './finance/DealsTab';
 import {
   useOrg,
   useOrgGuide,
@@ -241,6 +243,7 @@ function OrgBody({
       >
         Org
       </ScreenTitle>
+      <OrgBrands saveId={saveId} />
       <p className="tst-muted" style={{ margin: '-6px 0 0', fontSize: 12 }} data-testid="org-help">
         {org.departments_unlocked
           ? `Departments unlocked at ${meta.department_unlock_headcount} staff. `
@@ -504,6 +507,7 @@ function UnitPanel({
           {unit.name}
         </h2>
         <UnitKindBadge kind={unit.kind as UnitKind} />
+        {unit.unit_id !== null && <AcquiredBadge unitId={unit.unit_id} />}
         {parent && <span className="tst-muted">in {parent.name}</span>}
       </div>
       <TeamMoodLine unitId={unit.unit_id} />

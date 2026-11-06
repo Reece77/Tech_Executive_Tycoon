@@ -49,7 +49,7 @@ from tst.sim.actions import (
     TakeLoan,
 )
 from tst.sim.errors import UnknownTermSheetError
-from tst.sim.state import company_cash
+from tst.sim.state import company_cash, group_companies
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["finance"])
 
@@ -72,7 +72,11 @@ def get_statements(
     with repository.read_session(_path(settings, save_id)) as session:
         state = repository.read_state(session)
         lines = repository.ledger_lines(session, state.player.id)
-    return finance_views.statements_out(state, lines, period, data)
+        brands = [  # M14 (28.5): kept brands consolidate from closing
+            (c.id, repository.ledger_lines(session, c.id))
+            for c in group_companies(state, state.player.id)[1:]
+        ]
+    return finance_views.statements_out(state, lines, period, data, brands)
 
 
 @router.get(

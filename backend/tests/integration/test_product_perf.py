@@ -15,6 +15,8 @@ import time
 import warnings
 from pathlib import Path
 
+import pytest
+
 from tests.helpers import FIRST_PRODUCT, fund_save, play_turn
 from tests.integration.test_api_org import seed_staff
 from tst.db.repository import (
@@ -37,6 +39,9 @@ from tst.sim.actions import (
     SetPrice,
 )
 from tst.sim.errors import LaunchNotReadyError
+
+# Timed alone, without xdist, after the parallel suite: `make check-timing` (M14).
+pytestmark = pytest.mark.timing
 
 STAFF = 24  # employees; 25 with the founder
 TURNS = 120

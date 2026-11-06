@@ -241,8 +241,18 @@ def leave_rival(state: GameState, person_id: int, balance: Balance, data: GameDa
     )
     if employment is None:
         return state
+    # a key person moving from a kept brand to its parent's group is an acquisition's move,
+    # never poaching (product manager, 2026-11-05)
+    owner = state.company(employment.company_id).parent_id
+    moved = owner is not None and state.company(owner).is_player
     state = with_employment(
-        state, replace(employment, status="ended", end_turn=state.turn, end_reason="poached")
+        state,
+        replace(
+            employment,
+            status="ended",
+            end_turn=state.turn,
+            end_reason="acquired" if moved else "poached",
+        ),
     )
     role = data.role(employment.role)
     if role.product_function != "builder":

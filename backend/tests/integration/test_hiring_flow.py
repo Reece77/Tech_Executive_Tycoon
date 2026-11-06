@@ -6,6 +6,7 @@ import sqlite3
 import time
 from pathlib import Path
 
+import pytest
 from sqlalchemy import text
 
 from tests.helpers import fund_save, play_turn
@@ -119,6 +120,7 @@ def test_replay_with_hiring_reproduces_the_save(tmp_path: Path, loaded: LoadedDa
     assert _tables(copy) == _tables(path)
 
 
+@pytest.mark.timing  # alone, without xdist: `make check-timing` (M14)
 def test_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
     """ADR-0006: 120 turns with 10 staff and an open job post average under 1 s per turn."""
     path = create_save(

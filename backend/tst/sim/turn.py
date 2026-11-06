@@ -40,6 +40,10 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public.public import public_month
+from tst.sim.mna.closing import mna_month
+from tst.sim.mna.integration import integration_month
+from tst.sim.mna.rivals import rival_deals
+from tst.sim.mna.valuation import listed_rivals_month
 from tst.sim.money import Cents
 from tst.sim.org.authority import run_executives
 from tst.sim.org.ceo import run_ceo
@@ -215,6 +219,8 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state, rival_moves=ctx.rival_moves + moves).post(*raised)
+    # M14 (28.6): incumbents agree startup purchases; they close in phase 7.
+    ctx = replace(ctx, state=rival_deals(ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data))
     return ctx.log(*approached)
 
 
@@ -278,6 +284,17 @@ def financing(ctx: TurnContext) -> TurnContext:
             ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.revenue, op, cash
         )
         ctx = replace(ctx, state=state).post(*public_entries).log(*public_logs)
+    # M14 (28.1): listed rivals' sentiment (their market cap is V_f x S).
+    ctx = replace(ctx, state=listed_rivals_month(ctx.state, ctx.rng, ctx.balance, ctx.data))
+    # M14 (28.2-28.5): diligence, antitrust reviews, closings, then brands and integrations.
+    state, deal_entries, deal_logs = mna_month(
+        ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*deal_entries).log(*deal_logs)
+    state, integration_entries, integration_logs = integration_month(
+        ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*integration_entries).log(*integration_logs)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
     state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
     ctx = replace(ctx, rival_moves=ctx.rival_moves + failed)
@@ -386,6 +403,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     for company in state.ledger_companies():
         history = (*company.mrr_history, ctx.revenue.get(company.id, 0))[-keep:]
         state = with_company(state, replace(company, mrr_history=history))
+    state = _rival_op_history(state, ctx, types)  # M14 (28.1): rivals' V_f margin
     state = _debt_history(state, ctx, types)  # M10 (20.3): covenants read completed months
     # M10b (23.2): the month's choices in one line; modifiers whose last month this was expire.
     expiring = tuple(m for m in state.modifiers if m.end_turn <= state.turn + 1)
@@ -400,6 +418,20 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
         product_months=products.month_history(ctx.state, ctx.flows, ctx.data, ctx.balance),
     )
     return ctx.log(*items, *market_news(state, ctx.rival_moves))  # M5 (15.5)
+
+
+def _rival_op_history(
+    state: GameState, ctx: TurnContext, types: Mapping[str, AccountType]
+) -> GameState:
+    """Rivals' operating result for the month just ended (M14, 28.1): V_f's trailing margin.
+    The player's is `_debt_history`'s."""
+    keep = ctx.balance.ipo.trailing_months + 1
+    for company in state.rivals():
+        result = _month_operating(ctx, company.id, types)
+        state = with_company(
+            state, replace(company, op_history=(*company.op_history, result)[-keep:])
+        )
+    return state
 
 
 def _month_operating(ctx: TurnContext, company_id: int, types: Mapping[str, AccountType]) -> int:

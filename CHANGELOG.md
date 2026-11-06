@@ -12,7 +12,24 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Recruitment: Replace with a recruiter (fills one month sooner), search by interest for a fee (15% of the role's mid salary), leadership fit from revealed values on People and Org.
   - Migration `0033_press` (press moments, promises, credibility, feuds, statements, departures; side tables for search and plan fields); API `/press`, `/press/promises`, `/feuds`, `/rivals/{id}/leader`, `/recruitment/replaceable`, `/recruitment/replace`; `tst press|promises|feuds`; Overview Promises and credibility, `RivalLeaderPanel`, Replace and interest search, leadership fit, glossary.
   - 29.7 targets (`tools/m14b_targets.py`, nightly): T2 kept +10.7 / broken -11.1 brand, sentiment 10% lower; T3 1.2 moments a year; T4 rivalry on 7/10 bold steady runs, +26% moves; T5 Replace 50% sooner. Tuned (`press.*`, `feud.*` only): `feud.bold_mention` 10 -> 20, `feud.decay` 2 -> 1, `press.statement_chance` 0.6, `press.jab_base` 0.3, releases count as speaking moves.
-  - **Golden snapshots regenerated once** (lane B, merging first): press moments join the event flow from a launch (golden seed 1 first differs at turn 7), and their brand modifiers move revenue and cash. M14 regenerates again on the combined code.
+  - **Golden snapshots regenerated once** (lane B, merging first): press moments join the event flow from a launch (golden seed 1 first differs at turn 7), and their brand modifiers move revenue and cash. M14 regenerates again on the combined code if they move.
+
+- M14 Mergers and acquisitions (formulas.md §28; lane A):
+  - Valuation of every company: listed rivals' market cap (`listed_from` in `incumbents.yaml` and `entrants.yaml`), private value ranges.
+  - Diligence and hidden problems; private offers with one counter; listed boards; hostile tenders; cash or stock consideration; closing with goodwill (account 1800) and a brand's investment (1810).
+  - Antitrust: review, block, and a remedy that divests.
+  - Kept brands: directive, cash sweep, consolidated statements. Integration: units, key people, pool staff, severance, culture clash and flight.
+  - Rivals buy startups. Acquisition pitches for the CEO and CPO. Accepting a takeover bid ends the game with an exit.
+  - Streams `mna` 37, `integration` 38, `rival_mna` 39. Migration `0034_mna` (re-parented onto M14b's `0033_press` at the lane merge).
+  - API `/mna` routes; CLI `tst targets`, `tst diligence`, `tst offer --company`, `tst directive`.
+  - Screens: Rival screen deal panel, Finance > Deals, consolidated statements, Org flags and brands, the exit ending.
+  - Integration keeps each product's revenue share of the target's staff less a synergy by function, for targets of at most 250 staff (larger ones are kept as brands); product manager's ruling 2026-11-05.
+  - 28.9: every target passes (target 4: payroll cut 24%).
+  - Tuned: `integration.flight_brand` 0.007, `integration.flight_base` 0.01, `mna.rival_rate` 0.005 (0.008 until the lane merge, lowered for M12a's living-market guard).
+  - Lane merge with M14b: an agreed deal raises an `acquisition` press moment (29.1) and the player's hostile tender adds `feud.hostile_bid` to the feud with the target's CEO (29.4), through M14b's hooks.
+  - Before merging (product manager, 2026-11-05/06): kept brands are never rivals for feuds, statements, jabs or head-to-head launches; feuds reset at closing; acquisition moves never count as poaching; every agreed deal's antitrust screening is an inbox note and the answer leads with the outcome; a parent funds a brand's shortfall up to `mna.funding_months` (1) of its costs, warns after `mna.loss_warning_months` (3) losing months, and a brand never fails while its parent can pay; the Rival screen names each product's market; "Answer 1 event" opens the event; `test_known_misses` covers only the balance table's targets.
+  - Turn time (product manager, 2026-11-06): the monthly relationships and morale step and its save do work proportional to what changes, with identical results (golden snapshots unchanged; the 219-staff scenario's full state identical with the state-cache check); the 219-staff integration takes 555 ms a turn alone (was 905). The turn-time budgets (marker `timing`) run alone in `make check-timing`, a step of `check` shard 1 after the parallel suite.
+  - Golden snapshots unchanged on the combined M14 + M14b code (the golden runs make no acquisitions), so none were regenerated at the lane merge; M14b's regeneration stands.
 
 - CI (2026-11-05):
   - The scheduled nightly skips when `main` has had no commits in the last 25 hours (a manual run always runs).

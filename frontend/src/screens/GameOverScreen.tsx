@@ -14,6 +14,14 @@ const LINKS = [
 ];
 
 function headline(g: GameOver): { kicker: string; title: string; text: string } {
+  if (g.game_state === 'exit') {
+    // M14 (28.6): the company was sold
+    return {
+      kicker: `Exit · ${g.ended_label ?? ''}`,
+      title: `You sold ${g.company_name} to ${g.exit_buyer ?? 'a buyer'}`,
+      text: `The buyer paid ${formatMoneyWhole(g.exit_price_cents ?? 0)} for every share. Your stake came to ${formatMoneyWhole(g.exit_proceeds_cents ?? 0)}.`,
+    };
+  }
   if (g.game_state === 'founder_removed') {
     const voted = g.directors.filter((d) => d.voted).length;
     return {
