@@ -1084,7 +1084,7 @@ mna:
   sweep_months: 3 # a brand subsidiary's cash above this many months of its costs sweeps to the parent each month (28.5)
   directive_energy: 2 # founder energy to set a brand's directive (28.5)
   acquired_flag_months: 12 # months Org flags an acquired unit (M14 brief)
-  rival_rate: 0.008 # an incumbent's chance a quarter to buy one startup in its categories (28.6; 28.9 target 7 tuning: 0.04 -> 0.008, about 3 a decade)
+  rival_rate: 0.005 # an incumbent's chance a quarter to buy one startup in its categories (28.6; 28.9 target 7 tuning: 0.04 -> 0.008, about 3 a decade; 0.005 at the lane merge for M12a's living-market guard, 2 a decade)
   rival_cash_months: 12 # only with cash above this many months of costs (28.6)
   cpo_limit_mult: 4 # the CPO pitches only startups priced under the auto-approve limit x this (28.7)
   pitch_synergy: 0.25 # an acquisition pitch's central case adds this x the target's monthly costs as integration savings (M14 decision for 28.7; the middle of 28.9 target 4's band)

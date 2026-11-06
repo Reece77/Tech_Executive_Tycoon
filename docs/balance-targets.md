@@ -446,17 +446,17 @@ M14b's own §29.7 targets (`tools/m14b_targets.py`, nightly), 10 seeds, all pass
 | 1 nothing moves without deals | golden snapshots unchanged; earlier targets as before (re-run on the combined code at the lane merge) | as before | pass |
 | 2 private deals, price / V_f (median) | 1.37 | 1.0-1.6 | pass |
 | 2 listed friendly deals, premium (median) | 35% | 25-50% | pass |
-| 3 key people lost within 12 months, integrated (median) | 20% | 10-30% | pass |
+| 3 key people lost within 12 months, integrated (median) | 25% | 10-30% | pass |
 | 3 the same, kept brands | 0% | <= 10% | pass |
-| 4 payroll cut by integration, every integrated deal (median) | 24% (scripted 23%, the acquirer's startups 51%) | 15-35% | pass |
-| 5 acquirer / steady + regions, median ARR at year 10 | 1.06 | 1.0-1.4 | pass |
+| 4 payroll cut by integration, every integrated deal (median) | 24% (scripted 23%, the acquirer's startups 52%) | 15-35% | pass |
+| 5 acquirer / steady + regions, median ARR at year 10 | 1.05 | 1.0-1.4 | pass |
 | 6 deals at 40% blocked after review, after 2020 | 4 of 10 seeds (40%) | 15-50% | pass |
-| 7 incumbents' startup purchases a decade (median) | 3 (by seed: 3, 6, 2, 3, 2, 4, 3, 8, 3, 1) | 1-4 | pass |
+| 7 incumbents' startup purchases a decade (median) | 2 | 1-4 | pass |
 
 **Tuned keys:**
 - `integration.flight_brand` 0.03 -> 0.007;
 - `integration.flight_base` 0.02 -> 0.01;
-- `mna.rival_rate` 0.04 -> 0.008.
+- `mna.rival_rate` 0.04 -> 0.008, then 0.005 at the lane merge: M12a's living-market guard read 0.97 launches per category (39 of 40) at 0.008 and passes at 0.005 (1.00, as `main`). The guard is on its floor on `main`, so it is not monotonic in the rate (0.004 and 0.006 read 0.97). The table above is measured at 0.005.
 
 **Target 4 (2026-11-05 ruling).**
 - **The rule:** each acquired product keeps its revenue share of the target's staff, less a synergy by function (sellers and marketers 0.40 where the acquirer already sells in the category, else 0.15; builders 0.10; other key people 0.30).

@@ -25,7 +25,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Screens: Rival screen deal panel, Finance > Deals, consolidated statements, Org flags and brands, the exit ending.
   - Integration keeps each product's revenue share of the target's staff less a synergy by function, for targets of at most 250 staff (larger ones are kept as brands); product manager's ruling 2026-11-05.
   - 28.9: every target passes (target 4: payroll cut 24%).
-  - Tuned: `integration.flight_brand` 0.007, `integration.flight_base` 0.01, `mna.rival_rate` 0.008.
+  - Tuned: `integration.flight_brand` 0.007, `integration.flight_base` 0.01, `mna.rival_rate` 0.005 (0.008 until the lane merge, lowered for M12a's living-market guard).
   - Lane merge with M14b: an agreed deal raises an `acquisition` press moment (29.1) and the player's hostile tender adds `feud.hostile_bid` to the feud with the target's CEO (29.4), through M14b's hooks.
   - Golden snapshots unchanged on the combined M14 + M14b code (the golden runs make no acquisitions), so none were regenerated at the lane merge; M14b's regeneration stands.
 
