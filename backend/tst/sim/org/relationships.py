@@ -50,7 +50,8 @@ def _tracked(
         tuple(sorted(view.manager_of.items())),
     )
     if _PAIRS and _PAIRS[0][0] == signature:  # the same units and managers as last time
-        return _PAIRS[0][1], _PAIRS[0][2], _PAIRS[0][3]
+        _, frozen_hit, mates_hit, keys_hit = _PAIRS[0]
+        return frozen_hit, mates_hit, keys_hit
     pairs: set[tuple[int, int]] = set()
     mates: dict[int, tuple[int, ...]] = {}
     for members in view.members.values():
@@ -61,8 +62,9 @@ def _tracked(
         if manager_id is not None and manager_id != person_id:
             pairs.add(pair_key(person_id, manager_id))
     frozen = frozenset(pairs)
-    _PAIRS[:] = [(signature, frozen, mates, sorted(frozen))]
-    return frozen, mates, _PAIRS[0][3]
+    ordered = sorted(frozen)
+    _PAIRS[:] = [(signature, frozen, mates, ordered)]
+    return frozen, mates, ordered
 
 
 # _tracked's memo: one entry, the last org it saw

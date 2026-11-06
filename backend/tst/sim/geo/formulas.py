@@ -52,7 +52,7 @@ def pay_multiplier_bp(city: CityDef, balance: Balance) -> int:
     return _pay_bp(city.salary_multiplier_bp, balance.geo.pay_level)
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=1024)  # tunable-exempt: cache size, not game balance
 def _pay_bp(salary_multiplier_bp: int, pay_level: float) -> int:
     """`pay_multiplier_bp` on its two numbers, remembered (M14 turn time: every employee's
     morale asks each month, and exact arithmetic is slow)."""
