@@ -139,6 +139,8 @@ The integration perf check (Facebook, 219 staff, integrated) failed `check` twic
 | Buy Apple as a brand | 289 ms | 256 ms |
 | test_product_perf (120 turns) | 367 ms | 308-333 ms |
 
+On CI (`make check-timing`, shard 1 of `check`, af1d7dc), green on both runs, the push run and the pull request's run: the 219-staff integration 544 ms (blocks 573, 536, 544) and 567 ms (586, 550, 567); Apple as a brand 284 and 289 ms; test_product_perf 337 and 340 ms; the step's six tests in 3 min 46 s. Before, under the parallel suite: 1.69 s and 1.41 s (failed).
+
 ## Follow-ups
 
 - Goodwill impairment (out of scope).
