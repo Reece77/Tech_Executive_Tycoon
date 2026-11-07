@@ -153,7 +153,7 @@ def _burnt(state: GameState) -> tuple[GameState, int]:
 
 
 def test_answers_rest_push_on_and_delegate() -> None:
-    from tst.sim.events.models import EventChoice, Effect, GameEvent
+    from tst.sim.events.models import Effect, EventChoice, GameEvent
 
     state, fid = _burnt(fresh_game(LOADED))
     event = GameEvent(

@@ -26,7 +26,7 @@ from tst.sim.actions import (
 )
 from tst.sim.errors import InsufficientEnergyError, InvalidActionError, UnbalancedEntryError
 from tst.sim.finance.captable import person_shares
-from tst.sim.founder import effects, foundation, influence, legacy, personal, persona, stress
+from tst.sim.founder import effects, foundation, influence, legacy, persona, personal, stress
 from tst.sim.founder.config import SOURCES, TRAITS
 from tst.sim.founder.models import (
     ENDOWMENT,
@@ -426,7 +426,7 @@ def test_a_scandal_hits_and_queues_its_event() -> None:
     fid = _fid(state)
     state = with_life(state, stress.new_life(fid, B))
     state = with_influence(state, Influence(CID, "north_america", value=50.0))
-    out, entries, logs = influence.break_scandal(state, CID, "north_america", True, B, D)
+    out, _entries, logs = influence.break_scandal(state, CID, "north_america", True, B, D)
     cred = credibility_of(out, CID)
     assert cred is not None and cred.value == B.press.cred_start - 15
     record = influence_of(out, CID, "north_america")

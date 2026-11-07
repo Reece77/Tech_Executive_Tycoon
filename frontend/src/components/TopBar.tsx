@@ -105,6 +105,63 @@ export function EnergyMeter({
   );
 }
 
+type Stress = NonNullable<Overview['stress']>;
+
+/** The founder's stress beside energy (M24, 32.1), with the last six months' causes. */
+export function StressMeter({ stress }: { stress: Stress }) {
+  const tip = [
+    stress.burnout
+      ? `Burnt out: energy -${stress.energy_cut_pct}% until stress is below ${stress.recover_below}`
+      : `Burnout at ${stress.burnout_at}`,
+    ...stress.causes.map(
+      (c) => `${c.date_label}: ${c.change > 0 ? '+' : ''}${c.change} ${c.cause}`,
+    ),
+  ].join('\n');
+  const color = stress.burnout
+    ? 'var(--tst-warn)'
+    : stress.stress >= stress.burnout_at * 0.75
+      ? 'var(--tst-warn)'
+      : 'var(--tst-accent)';
+  return (
+    <div
+      style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 120 }}
+      title={tip}
+      data-testid="stress-meter"
+      data-burnout={stress.burnout}
+    >
+      <span className="tst-ptitle" style={{ margin: 0, fontSize: 11, fontWeight: 400 }}>
+        <Term term="founder.stress">Stress</Term>{' '}
+        <span className="tst-num" style={{ color: 'var(--tst-text)' }} data-testid="stress">
+          {Math.round(stress.stress)}
+        </span>
+        {stress.burnout && (
+          <span style={{ color: 'var(--tst-warn)', fontWeight: 700 }} data-testid="burnout-flag">
+            {' '}
+            · <Term term="founder.burnout">burnt out</Term>
+          </span>
+        )}
+      </span>
+      <div
+        role="meter"
+        aria-label="Founder stress"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={stress.stress}
+        style={{ height: 6, background: 'var(--tst-track)', borderRadius: 3 }}
+      >
+        <div
+          style={{
+            width: `${Math.min(100, stress.stress)}%`,
+            height: 6,
+            background: color,
+            borderRadius: 3,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function TopBar({
   overview,
   summary,
@@ -229,6 +286,7 @@ export function TopBar({
             adjustments={overview.energy.adjustments}
           />
         )}
+        {overview?.stress && !ended && <StressMeter stress={overview.stress} />}
         {ended && overview && (
           <Link to={`/game/${overview.save_id}/over`} style={BADGE} data-testid="game-over-badge">
             Game over

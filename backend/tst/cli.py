@@ -2775,3 +2775,121 @@ def feuds(save: SaveOpt) -> None:
         typer.echo(f"{f.rival:<24} {f.ceo or '-':<24} {f.score:5.1f}{flag}")
         for c in f.causes:
             typer.echo(f"    {c.label}  +{c.change:.0f}  {c.cause}")
+
+
+# --- M24: the founder's life (formulas.md 32) -----------------------------------------------
+
+
+@app.command("founder")
+def founder_cmd(
+    save: SaveOpt,
+    sell: Annotated[
+        int | None, typer.Option(help="Sell this many of your own shares once listed (32.2)")
+    ] = None,
+) -> None:
+    """Stress, persona and your personal account (32.1-32.4); --sell shares once listed."""
+    from tst.api.founder_views import founder_out
+    from tst.sim.actions.founder import SellFounderShares
+
+    path, data, state = _game(save)
+    if sell is not None:
+        state = _run(path, data, SellFounderShares(_founder(state), sell)).new_state
+        typer.echo(f"Sold {sell:,} shares; {_energy(state, data)}")
+    out = founder_out(state, data)
+    s = out.stress
+    flag = " BURNT OUT" if s.burnout else ""
+    typer.echo(f"{out.founder_name}: stress {s.stress:.0f} / 100{flag} ({s.burnouts} burnouts)")
+    for c in s.causes[-6:]:
+        typer.echo(f"  {c.date_label:<10} {c.change:+5.1f}  {c.cause}")
+    typer.echo("Persona: " + ", ".join(f"{t.label} {t.value:.0f}" for t in out.persona.traits))
+    p = out.personal
+    typer.echo(
+        f"Personal cash {format_money(p.cash_cents)}; endowment {format_money(p.endowment_cents)}"
+    )
+    for source, amount in p.income.items():
+        if amount:
+            typer.echo(f"  income from {source}: {format_money(amount)}")
+    if p.stake_value_cents is not None:
+        typer.echo(f"Stake: {p.stake_shares:,} shares worth {format_money(p.stake_value_cents)}")
+    lg = out.legacy
+    typer.echo(
+        f"Legacy {lg.total} (best score {lg.best_score}, giving {lg.giving:.0f}, "
+        f"persona {lg.persona:+.0f})"
+    )
+
+
+@app.command("foundation")
+def foundation_cmd(
+    save: SaveOpt,
+    create: Annotated[bool, typer.Option("--create", help="Create your foundation")] = False,
+    cause: Annotated[
+        str | None, typer.Option(help="education, climate, health or local (with --create)")
+    ] = None,
+    name: Annotated[str, typer.Option(help="The foundation's name")] = "",
+    city: Annotated[str | None, typer.Option(help="local: a cities.yaml key")] = None,
+) -> None:
+    """Your foundation (32.3); --create one with a --cause once you hold $1M personally."""
+    from tst.api.founder_views import founder_out
+    from tst.sim.actions.founder import CreateFoundation
+
+    path, data, state = _game(save)
+    if create:
+        if cause is None:
+            raise typer.BadParameter("--create needs a --cause")
+        state = _run(path, data, CreateFoundation(_founder(state), cause, name, city)).new_state
+        typer.echo(f"Foundation created; {_energy(state, data)}")
+    f = founder_out(state, data).foundation
+    if f is None:
+        typer.echo("No foundation yet.")
+        return
+    typer.echo(f"{f.name} ({f.cause_label}), founded {f.created_label}")
+    typer.echo(
+        f"  endowment {format_money(f.endowment_cents)}; lifetime grants "
+        f"{format_money(f.grants_cents)}"
+    )
+    if f.effect:
+        typer.echo(f"  running: {f.effect} until {f.effect_until_label}")
+
+
+@app.command("give")
+def give_cmd(
+    save: SaveOpt,
+    amount: Annotated[
+        int, typer.Option("--cents", help="Personal cash to give to your foundation, cents")
+    ],
+) -> None:
+    """Give personal cash to your foundation's endowment (32.3)."""
+    from tst.sim.actions.founder import GiveToFoundation
+
+    path, data, state = _game(save)
+    _run(path, data, GiveToFoundation(_founder(state), amount))
+    typer.echo(f"Gave {format_money(amount)} to your foundation")
+
+
+@app.command("lobby")
+def lobby_cmd(
+    save: SaveOpt,
+    region: Annotated[str | None, typer.Option(help="regions.yaml key")] = None,
+    monthly: Annotated[
+        int | None, typer.Option(help="Monthly lobbying in dollars; 0 stops it")
+    ] = None,
+) -> None:
+    """Government affairs (32.5): influence and exposure by region; set --region --monthly."""
+    from tst.api.founder_views import government_out
+    from tst.sim.actions.founder import SetLobbying
+
+    path, data, state = _game(save)
+    if region is not None or monthly is not None:
+        if region is None or monthly is None:
+            raise typer.BadParameter("give both --region and --monthly")
+        state = _run(path, data, SetLobbying(_founder(state), region, monthly)).new_state
+        typer.echo(f"Lobbying set; {_energy(state, data)}")
+    gov = government_out(state, data)
+    if not gov.regions:
+        typer.echo("No lobbying.")
+    for r in gov.regions:
+        typer.echo(
+            f"{r.region_label:<26} influence {r.influence:5.1f}  "
+            f"{format_money(r.monthly_cents)}/month  exposure {r.exposure}  "
+            f"scandals {r.scandals}"
+        )

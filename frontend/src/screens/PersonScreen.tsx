@@ -5,6 +5,7 @@ import { Line, LineChart, ResponsiveContainer, YAxis } from 'recharts';
 import { AttributeRange } from '../components/AttributeRange';
 import { MoraleBar } from '../components/MoraleBar';
 import { ActiveEffects } from '../components/ActiveEffects';
+import { FounderPanels } from '../components/FounderPanels';
 import { RelationshipsPanel } from '../components/Relationships';
 import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../components/PersonOrg';
 import { BreakdownTip, Term } from '../components/Term';
@@ -224,6 +225,7 @@ function ProfileBody({
       {!p.is_founder && p.employment && (
         <RelationshipsPanel saveId={saveId} personId={p.person_id} />
       )}
+      {p.is_founder && <FounderPanels saveId={saveId} />}
 
       <div
         style={{

@@ -6,6 +6,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.founder_parts import LegacyOut
+
 
 class HistoryRowOut(BaseModel):
     key: str = Field(description="Unique per row: event-N, decision-N, inbox-N or month-N")
@@ -152,6 +154,9 @@ class HallOfFameOut(BaseModel):
     best_product_mrr: ProductRecordOut | None
     best_product_quality: ProductRecordOut | None
     rivals_outlasted: list[RivalOutlastedOut]
+    legacy: LegacyOut | None = Field(
+        default=None, description="The founder's legacy score with its parts (M24, 32.6)"
+    )
 
 
 class VentureOut(BaseModel):

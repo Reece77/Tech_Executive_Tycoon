@@ -7,6 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.founder_parts import StressOut
 from tst.api.schemas.modes import ScoreOut
 from tst.api.schemas.people import ActiveEffectOut, EnergyOut, InboxItemOut
 from tst.db.repository import MAX_STORED_SEED
@@ -179,6 +180,7 @@ class StageReachedOut(BaseModel):
 
 class OverviewOut(BaseModel):
     score: ScoreOut | None = Field(default=None, description="The company score (M15b, 30.1)")
+    stress: StressOut | None = Field(default=None, description="The founder's stress (M24, 32.1)")
     deals_due: int = Field(
         default=0, description="Your deals under review, closing or blocked (M15b top bar)"
     )
