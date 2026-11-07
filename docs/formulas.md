@@ -2559,6 +2559,10 @@ With v1's do_nothing, bootstrap_frugal, steady and blitzscale, nine strategies.
 
 **V7. The known misses close.** M10.T3 (covenants) is re-measured as "breaches while cash is still positive", band 20–60%, and leaves the known-miss list; T5's bootstrap band is decided by Reece (§30.9); `docs/balance-targets.md` ends v2 with no known misses, or with any remaining one carried to v3 by Reece's explicit decision.
 
+**Notes (M15a).**
+- *Rival startups keep coming* (V5, product manager's rulings 2026-11-07): a startup's product starts with `rivals.startup.start_feature_share` (0.3) × (F_exp(t) − F0) feature points (11.4), so late founders reach the launch bar; rival startups need no manufacturing source to launch (rivals' manufacturing is abstract, 26.1); a rival startup below `rivals.startup.small_staff` (3) people for `rivals.startup.small_months` (24) consecutive month ends closes, shut down or acqui-hired, with its own History line.
+- *V1* counts wins among the founder-played strategies; the ceo arm is a delegation benchmark measured by V4, re-banded to ≤ 1.4× (delegation with full authority within 40% of the hands-on script). *V3*: the software integrator's gap is at least −1 point; an `integrator_ai` arm against `ai_regions` must show +3 to +10 points (a known miss owned by M23). *V5's launch clause* is checked over the categories rival startups may enter: at least 90% of (run, category, decade after 2020) cells have a rival launch, and no category misses a decade in more than 2 of 10 runs (the stricter "every cell" clause failed on one empty cell of 160); scheduled-only categories are printed. *V7* is M10's target 3 as breaches while closing cash is positive.
+
 ### 30.8 Eras to 2039 (M15a, data)
 
 Appended to `eras.yaml` as seeded windows (§26.4, stream `era_window` keyed by index, so earlier eras' months don't move):

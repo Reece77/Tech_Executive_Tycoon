@@ -72,7 +72,10 @@ _(Product manager adds items from Reece's playtest 3 that touch this lane.)_
 14. **V7:** M10's §20.5 target 3 is measured as breaches in a month whose closing cash is still positive; `debt.venture.covenant_burn_months` 3 → 2 (60% on seeds 1–10 and 11–40, was 70%; blitz_debt bankruptcy 0%, was 20%); M10's §20.5 targets 2–5 pass. M10.T3 leaves the known misses.
 15. **The weekly targets** (V1 over 30 seeds, V5, V6) run in `.github/workflows/weekly.yml` (Sundays and on demand); the nightly keeps the ten-year targets. Tests marked `weekly` are left out of `make check` and the nightly.
 16. **The V6 save** is built by `tools/v6_save.py` playing research_heavy for 360 months through the normal save path. Writing only the final state to a save failed the state-cache check: the next turn rebuilt the macro history it did not have.
-17. **Game records** each month's revenue and operating result (`Game.pnl`) for V3's margin, the last 12 months.
+17. **Small rival startups close** (product manager, 2026-11-07, third round): below `rivals.startup.small_staff` (3) people for `rivals.startup.small_months` (24) consecutive month ends, a rival startup closes, shut down or acqui-hired, with its own History line; persisted in `startup_small` (migration `0036_m15a`). It replaces ruling 3's one-person close. Tests: `tests/unit/test_m15a_rival_launches.py`.
+18. **V5's launch clause re-banded** (third round): at least 90% of (run, startup category, decade after 2020) cells have a rival launch, and no category misses a decade in more than 2 of 10 runs; the old clause failed on one empty cell of 160.
+19. **`rnd.rate` 0.4 → 0.3** for V2: research_heavy won 5 of 10 among the founder-played strategies; M11's §21.8 targets 2, 3 and 5 still pass (target 2: 1.14 net).
+20. **Game records** each month's revenue and operating result (`Game.pnl`) for V3's margin, the last 12 months.
 
 ## Follow-ups
 
