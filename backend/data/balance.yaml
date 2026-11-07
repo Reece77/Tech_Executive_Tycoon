@@ -922,7 +922,7 @@ rnd:
   cap_points: 50 # points; the most category lead that lifts Q_cap, so at most x1.20 (21.2)
   feature_per_point: 0.005 # (21.2 says 0.002; M11 tuning for 21.8 target 2) feature points gained x (1 + this x lead) (21.2)
   feature_points: 50 # points; the most category lead that lifts features (21.2)
-  rate: 0.4 # lead points per point of research output a month at zero lead (21.3 says 0.25; M11 tuning for 21.8 target 2)
+  rate: 0.3 # lead points per point of research output a month at zero lead (21.3 says 0.25; M11 tuning for 21.8 target 2: 0.4; M15a: 0.4 -> 0.3 for 30.7 V2, research_heavy won 5 of 10 seeds, now 4, ARR 1.25x -> 1.15x)
   half: 30 # points of lead at which progress is half as fast (21.3)
   start_energy: 6 # founder energy to start a research project (21.3)
   stop_energy: 2 # founder energy to stop one (21.3)
