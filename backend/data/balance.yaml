@@ -535,7 +535,7 @@ rivals:
     low_cash_months: 6 # months of costs in cash below which a startup tries to raise (15.4)
     salary_mult: 1.0 # multiplier on market rate for startup salaries (15.4)
     personalities: [aggressive, fast_follower, cost_leader] # 15.4: any but premium
-    start_feature_share: 0.3 # fraction of the features the category's market expectation gained since January 2010 (F_exp(t) - F0, 11.4) a new startup's product starts with (M15a, 30.7 V5: from 0, late founders never reached the 30% launch bar)
+    start_feature_share: 0.2 # fraction of the features the category's market expectation gained since January 2010 (F_exp(t) - F0, 11.4) a new startup's product starts with (M15a, 30.7 V5: from 0, late founders never reached the 30% launch bar; 0.3 -> 0.2: at 0.3 M8 18.9 target 5 read 1.145, needs 1.2)
     small_staff: 3 # people; a rival startup below this many is small (M15a, 30.7 V5; product manager 2026-11-07)
     small_months: 24 # consecutive month ends small before it closes, shut down or acqui-hired (M15a, 30.7 V5): long-lived tiny startups held every max_alive place
   poach:
@@ -1214,7 +1214,7 @@ rank:
   places_min_staff: 50 # staff; smaller companies are not in Best places to work (30.4)
   effect_places: 10 # a top-10 place earns the list's effect (30.4)
   hiring: 0.03 # hiring appeal for the year from a top-10 Best places to work place (30.4)
-  brand: 1 # brand target points for the year from a top-10 Most innovative place (30.4); M15a: 0 -> 1 (at +2 the player wins it most years and M8 T5, M13 T2 and M13b T1 failed: ties on a sparse list go to the lowest company id, the player)
+  brand: 0.5 # brand target points for the year from a top-10 Most innovative place (30.4); M15a: 0 -> 0.5, the most M13 25.9 T2 (blitzscale lists on 4/10 at 0 and 0.5) and M13b 27.5 T5 allow; 1 failed both (at +2 the player wins it most years and M8 T5, M13 T2 and M13b T1 failed: ties on a sparse list go to the lowest company id, the player)
   effect_months: 12 # months the effects run, January to December (30.4)
   years: 3 # Most innovative counts eras caused and launches in the last 3 years (30.4)
   tenure_full_months: 60 # mean tenure scoring the full tenure measure (M15b decision)
