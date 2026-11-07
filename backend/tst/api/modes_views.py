@@ -40,7 +40,6 @@ def score_out(
 def rankings_out(state: GameState, year: int | None = None) -> RankingsOut:
     from tst.sim.calendar import turn_to_ym
     from tst.sim.modes.rankings import LIST_LABELS
-    from tst.sim.money import format_money
 
     years = sorted({turn_to_ym(r.turn)[0] for r in state.rankings}, reverse=True)
     pick = year if year in years else (years[0] if years else None)
@@ -52,7 +51,7 @@ def rankings_out(state: GameState, year: int | None = None) -> RankingsOut:
                 company_id=r.company_id,
                 name=state.company(r.company_id).name,
                 is_you=state.company(r.company_id).is_player,
-                value_label=format_money(round(r.value))
+                value_label=f"${round(r.value) // 100:,}"  # whole dollars (cents in)
                 if kind == "revenue"
                 else f"{r.value * 100:.0f}",
             )

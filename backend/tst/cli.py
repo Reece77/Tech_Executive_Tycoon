@@ -61,7 +61,7 @@ from tst.sim.actions import (
     UpdatePlan,
 )
 from tst.sim.actions.products import assignment_of, own_product
-from tst.sim.calendar import format_turn
+from tst.sim.calendar import format_turn, ym_to_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.errors import CriticalEventOpenError, SimError
 from tst.sim.finance import statements as fs
@@ -94,7 +94,13 @@ def new_game(
     seed: Annotated[int, typer.Option(help="Master seed (0..2**63-1)")],
     name: Annotated[str, typer.Option(help="Save slug, e.g. dev")],
     company_name: Annotated[str, typer.Option(help="Company name")],
-    scenario: Annotated[str, typer.Option(help="Scenario id")] = "garage_bootstrap",
+    scenario: Annotated[
+        str,
+        typer.Option(
+            help="Background id, or a historical scenario's key (M15b): ai_lab, "
+            "mobile_first, survive_2022, chip_startup, turnaround"
+        ),
+    ] = "garage_bootstrap",
     difficulty: Annotated[str, typer.Option(help="easy|standard|hard|ironman")] = (
         DEFAULT_DIFFICULTY
     ),
@@ -115,9 +121,38 @@ def new_game(
     hq: Annotated[
         str | None, typer.Option(help="HQ city key (tst cities); default: San Francisco")
     ] = None,
+    sandbox: Annotated[bool, typer.Option(help="A Sandbox start (M15b, 30.2)")] = False,
+    year: Annotated[int | None, typer.Option(help="Sandbox: the start year")] = None,
+    cash: Annotated[
+        int | None, typer.Option(help="Sandbox: starting cash in dollars; default the background's")
+    ] = None,
+    rivals: Annotated[str, typer.Option(help="Sandbox: all|half|none")] = "all",
+    eras: Annotated[str, typer.Option(help="Sandbox: historical|seeded")] = "historical",
 ) -> None:
-    """Create a new save file at schema head, with a founder built from a background."""
+    """Create a new save file at schema head, with a founder built from a background. A
+    historical scenario's key as --scenario starts that scenario (30.3); --sandbox starts a
+    Sandbox game in --year (30.2)."""
+    from tst.sim.modes.scenarios import scenario_spec
+    from tst.sim.modes.world import ModeSpec
+
     settings, data = _context()
+    mode: ModeSpec | None = None
+    if data.game_data.historical_scenario(scenario) is not None:
+        if sandbox:
+            raise _fail("choose a Sandbox or a historical scenario, not both")
+        mode = scenario_spec(scenario, data.game_data)
+    elif sandbox:
+        if year is None:
+            raise _fail("a Sandbox start needs --year")
+        if rivals not in ("all", "half", "none") or eras not in ("historical", "seeded"):
+            raise _fail("--rivals is all|half|none and --eras historical|seeded")
+        mode = ModeSpec(
+            "sandbox",
+            year,
+            None if cash is None else cash * 100,  # tunable-exempt: cents in a dollar
+            rivals,  # type: ignore[arg-type]
+            eras,  # type: ignore[arg-type]
+        )
     founder = FounderSpec(background=founder_background, personality_preset=founder_preset)
     chosen = None if mission is None else tuple(k.strip() for k in mission.split(",") if k.strip())
     try:
@@ -132,10 +167,12 @@ def new_game(
             hq_city=hq,
             data=data,
             save_dir=settings.resolved_save_dir(),
+            mode=mode,
         )
     except SimError as exc:
         raise _fail(exc.message) from exc
-    typer.echo(f"Created {path.name}: {company_name}, {format_turn(0)}")
+    start = 0 if mode is None else ym_to_turn(mode.start_year, 1)
+    typer.echo(f"Created {path.name}: {company_name}, {format_turn(start)}")
 
 
 @app.command()
@@ -279,6 +316,64 @@ def _print_person(state: GameState, which: str, data: LoadedData) -> None:
     typer.echo("Hidden:")
     for key, value in found.hidden.items:
         typer.echo(f"    {key:<22} {value:5.2f}")
+
+
+@app.command()
+def score(save: Annotated[str, typer.Option(help="Save slug")]) -> None:
+    """Print the company score now and its parts (30.1): public inputs only."""
+    from tst.api.modes_views import score_out
+
+    settings, data = _context()
+    try:
+        path = repository.existing_save_path(settings.resolved_save_dir(), save)
+        with repository.open_session(path) as session:
+            state = repository.load_state(session)
+            balances = repository.ledger_balances(session)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    if state.mode is not None and state.mode.kind == "sandbox":
+        typer.echo("A Sandbox game has no company score.")
+        return
+    out = score_out(state, state.player.id, balances, data)
+    typer.echo(f"{state.player.name}: {out.score} / 1,000")
+    for label, points in (
+        ("Value", out.value_points),
+        ("Growth", out.growth_points),
+        ("Profit", out.profit_points),
+        ("Leadership", out.leadership_points),
+        ("Reputation", out.reputation_points),
+    ):
+        typer.echo(f"  {label:<11} {points:6.1f}")
+    typer.echo(f"  Estimate    {format_money(out.estimate_cents)}")
+    if out.last_december is not None:
+        typer.echo(f"  Last December: {out.last_december}")
+
+
+@app.command()
+def rankings(
+    save: Annotated[str, typer.Option(help="Save slug")],
+    year: Annotated[int | None, typer.Option(help="The year; default the latest")] = None,
+) -> None:
+    """Print a January's industry rankings (30.4)."""
+    from tst.api.modes_views import rankings_out
+
+    settings, _ = _context()
+    try:
+        path = repository.existing_save_path(settings.resolved_save_dir(), save)
+        with repository.open_session(path) as session:
+            state = repository.load_state(session)
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    out = rankings_out(state, year)
+    if out.year is None:
+        typer.echo("No rankings yet: the first lists come out in January.")
+        return
+    typer.echo(f"Industry rankings {out.year}")
+    for ranked in out.lists:
+        typer.echo(f"\n{ranked.label}")
+        for e in ranked.entries[:10]:  # tunable-exempt: lines printed per list
+            you = " (you)" if e.is_you else ""
+            typer.echo(f"  {e.place:>3}. {e.name}{you}  {e.value_label}")
 
 
 @app.command("list")

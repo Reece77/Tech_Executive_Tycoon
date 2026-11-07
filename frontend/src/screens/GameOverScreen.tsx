@@ -190,8 +190,7 @@ export function GameOverScreen() {
                 borderRadius: 4,
                 padding: '4px 10px',
                 color: 'var(--tst-bg)',
-                background:
-                  g.scenario_result === 'success' ? 'var(--tst-good)' : 'var(--tst-warn)',
+                background: g.scenario_result === 'success' ? 'var(--tst-good)' : 'var(--tst-warn)',
               }}
             >
               {g.scenario_label}: {g.scenario_result === 'success' ? 'success' : 'failure'}

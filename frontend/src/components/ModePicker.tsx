@@ -21,7 +21,7 @@ const ERAS = [
   { value: 'seeded', label: 'Later eras seeded around their dates' },
 ];
 
-export function defaultSandbox(meta: NewGameMeta): SandboxIn {
+function defaultSandbox(meta: NewGameMeta): SandboxIn {
   return { start_year: meta.sandbox?.year_min ?? 2010, rivals: 'all', eras: 'historical' };
 }
 
