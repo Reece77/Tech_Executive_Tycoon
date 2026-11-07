@@ -82,6 +82,7 @@ from tst.sim.errors import (
 )
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss, projected_runway
 from tst.sim.ledger import AccountCode, apply_entries
+from tst.sim.modes.world import ModeSpec, start_mode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
 from tst.sim.people.reveal import shown_rating
@@ -383,9 +384,11 @@ def create_save(
     founder: FounderSpec = DEFAULT_FOUNDER,
     mission: tuple[str, ...] | None = None,
     hq_city: str | None = None,
+    mode: ModeSpec | None = None,
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state.
-    `hq_city` (M9, 19.1): None for geo.default_hq_city."""
+    `hq_city` (M9, 19.1): None for geo.default_hq_city. `mode` (M15b, 30.2-30.3): a Sandbox
+    or scenario start, the world built to its start month."""
     path = save_path(save_dir, name)
     if path.exists():
         raise SaveExistsError(f"a save named {name!r} already exists")
@@ -406,6 +409,10 @@ def create_save(
         mission=mission,
         hq_city=hq_city,
     )
+    if mode is not None:
+        state, entries = start_mode(
+            state, entries, mode, founder, RngFactory(seed), data.balance, data.game_data
+        )
 
     save_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -449,6 +456,7 @@ def create_save(
                         founder,
                         state.player.mission,
                         state.player.hq_city,
+                        mode,
                     ),
                     seq=0,
                 )
@@ -971,6 +979,7 @@ def new_game_payload(
     founder: FounderSpec,
     mission: tuple[str, ...],
     hq_city: str | None = None,
+    mode: ModeSpec | None = None,
 ) -> dict[str, Any]:
     spec = asdict(founder)
     spec["allocation"] = None if founder.allocation is None else dict(founder.allocation)
@@ -982,6 +991,7 @@ def new_game_payload(
         "founder": spec,
         "mission": list(mission),
         "hq_city": hq_city,  # M9; older saves' payloads lack it (San Francisco)
+        "mode": None if mode is None else asdict(mode),  # M15b; older payloads lack it
     }
 
 
@@ -995,6 +1005,7 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
     with open_session(source) as session:
         meta = read_meta(session)
         seed, target_turn = meta.master_seed, meta.current_turn
+        first_turn = meta.created_turn  # a Sandbox or scenario save starts later (M15b)
         start = session.scalars(
             select(DecisionLogRow).where(DecisionLogRow.kind == NEW_GAME_KIND)
         ).one()
@@ -1033,8 +1044,9 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         founder=FounderSpec(**founder),
         mission=tuple(setup["mission"]),
         hq_city=setup.get("hq_city"),
+        mode=ModeSpec(**setup["mode"]) if setup.get("mode") else None,
     )
-    for turn in range(target_turn + 1):
+    for turn in range(first_turn, target_turn + 1):
         for _, action in (a for a in actions if a[0] == turn):
             run_action(path, data, action)
         if turn < target_turn:
