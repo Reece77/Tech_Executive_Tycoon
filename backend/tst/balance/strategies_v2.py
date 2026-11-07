@@ -287,39 +287,29 @@ def compute_spend_cents(game: Game) -> int:
 
 
 def integrator(game: Game) -> None:
-    """steady_regions plus its own general data centres once compute spend passes $200k a
-    month (30.6): each in the region whose uncovered general CU (its own and the regions it
-    serves as a neighbour, 19.5) is largest, the smallest size covering it, staffed by an
-    infrastructure team of its own; another whenever a region's uncovered spend passes $200k
-    again. Device plants follow only a hardware product, which these scripts never make."""
+    """steady_regions plus its own general data centre in its home region once compute spend
+    passes $200k a month: the smallest size covering its general CU, staffed by an
+    infrastructure team of its own; another when the uncovered spend passes $200k again
+    (30.6). Device plants follow only a hardware product, which these scripts never make."""
     steady_regions(game)
     b, g = game.loaded.balance, game.loaded.game_data
     state = game.state
     kind = b.facility.kinds[DC_KIND]
     mine = [f for f in state.facilities if f.company_id == PLAYER and f.kind == DC_KIND]
+    built = sum(f.capacity for f in mine)
+    general = sum(n.units for n in compute.needs(state, PLAYER, b, g) if n.good == kind.output_good)
+    spot = compute.spot_unit_cents(state, kind.output_good, b, g)
     for i, f in enumerate(sorted(mine, key=lambda f: f.id)):  # a unit staffs one data centre
         uid = staff_unit(
             game, f"{DC_UNIT} {i + 1}", DC_ROLE, math.ceil(f.capacity / kind.staff_per)
         )
         if uid is not None and f.unit_id != uid:
             game.act(StaffFacility(game.founder_id, f.id, uid))
-    need: dict[str, float] = {}
-    for n in compute.needs(state, PLAYER, b, g):
-        if n.good == kind.output_good:
-            need[n.region] = need.get(n.region, 0.0) + n.units
-    built: dict[str, int] = {}
-    for f in mine:
-        built[f.region] = built.get(f.region, 0) + f.capacity
-    uncovered = {
-        r: sum(u for region, u in need.items() if compute.serves(region, r, g)) - built.get(r, 0)
-        for r in g.region_keys
-    }
-    region = max(g.region_keys, key=lambda r: (uncovered[r], -g.region_keys.index(r)))
-    spot = compute.spot_unit_cents(state, kind.output_good, b, g)
-    if uncovered[region] * spot < DC_SPEND_CENTS:
+    if (general - built) * spot < DC_SPEND_CENTS:
         return
     sizes = sorted(kind.sizes or b.facility.sizes)
-    size = next((s for s in sizes if s >= uncovered[region]), sizes[-1])
+    size = next((s for s in sizes if s >= general - built), sizes[-1])
+    region = compute.home_region_of(state, b, g)
     refill_energy(game)
     game.act(BuildFacility(game.founder_id, DC_KIND, region, size))
 
