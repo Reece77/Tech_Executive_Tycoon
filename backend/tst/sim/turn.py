@@ -32,6 +32,7 @@ from tst.sim.geo.cities import settle_home_cities
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
+    PREFERRED_EQUITY,
     AccountCode,
     LedgerBalances,
     LedgerEntry,
@@ -283,8 +284,11 @@ def financing(ctx: TurnContext) -> TurnContext:
         players = player_companies(ctx.state)
         op = {c.id: _month_operating(ctx, c.id, types) for c in players}
         cash = {c.id: account_balance(ctx.balances, c.id, CASH) for c in players}
+        preferred = {  # credit balances, positive (M15b: they convert at the IPO)
+            c.id: -account_balance(ctx.balances, c.id, PREFERRED_EQUITY) for c in players
+        }
         state, public_entries, public_logs = public_month(
-            ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.revenue, op, cash
+            ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.revenue, op, cash, preferred
         )
         ctx = replace(ctx, state=state).post(*public_entries).log(*public_logs)
     # M14 (28.1): listed rivals' sentiment (their market cap is V_f x S).

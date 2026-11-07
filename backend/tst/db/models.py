@@ -1749,3 +1749,12 @@ class RankingRow(Base):
     kind: Mapped[str] = mapped_column(String(16), primary_key=True)
     place: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class QuarterMarkRow(Base):
+    """A product's quality and customers at the last quarterly reports (M15b; 0035)."""
+
+    __tablename__ = "product_quarter_mark"
+
+    product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

@@ -60,6 +60,36 @@ ENTERPRISE = "enterprise"  # the segment of "first enterprise customer"
 
 # Inbox kinds the timeline shows (17.2: hire, departure, launch, round, board, rival news),
 # by category. Month-end shows as the month lines.
+# Inbox kinds that are routine notices or prompts, not the story (the M15b audit: every kind
+# is in History or here, tests/unit/test_glossary_audit.py).
+NOT_HISTORY: frozenset[str] = frozenset(
+    {
+        "candidates_arrived",  # a search's batch: the hire is the History line
+        "offer_declined",
+        "fired",  # the departure shows as employee_left
+        "tag_revealed",
+        "unit_leader_left",
+        "plan_paused",
+        "plan_filled",
+        "plan_activity",
+        "sales_capacity_limited",
+        "product_rotting",
+        "product_understaffed",
+        "choices_month",  # the month's choices: History shows the events themselves
+        "retained",
+        "exec_decisions",  # executives' routine decisions, each in the Decisions log
+        "safe_declined",
+        "term_sheets_arrived",  # the round's close is the History line
+        "no_term_sheets",
+        "round_lapsed",
+        "board_seat_empty",
+        "nominee_left",
+        "insolvent",  # bankruptcy itself ends the game
+        "bridge_offered",
+        "bridge_lapsed",
+        "replace_started",  # the hire is the History line
+    }
+)
 INBOX_CATEGORY: dict[str, str] = {
     "offer_accepted": "people",
     "resigned": "people",
@@ -105,7 +135,11 @@ INBOX_CATEGORY: dict[str, str] = {
     "era_report": "products",  # M13b (27.3)
     "deal_update": "finance",  # M14 (28)
     "rival_acquired": "products",  # M14 (28.6): market news
-    "rankings_published": "company",  # M15b (30.4)
+    "rankings_published": "rivals",  # M15b (30.4)
+    "promise_made": "events",  # M14b (29.2), into History by the M15b audit
+    "promise_kept": "events",
+    "promise_broken": "events",
+    "rival_statement": "rivals",  # M14b (29.4)
     "exit_sale": "finance",  # M14 (28.6)
     # M12a: data centres, contracts, Cloud hosting and outages (22.6)
     "facility_ordered": "products",

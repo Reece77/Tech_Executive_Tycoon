@@ -123,6 +123,7 @@ def public_month(
     revenue: Mapping[int, int],
     op: Mapping[int, int],
     cash: Mapping[int, int],
+    preferred: Mapping[int, int] | None = None,
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...]]:
     entries: list[LedgerEntry] = []
     logs: list[LogItem] = []
@@ -142,7 +143,9 @@ def public_month(
                 d = ipo.draw_demand(rng, state.turn, cid, climate, balance)
                 state = ipo.open_pricing(state, cid, f, d, balance, data)
             elif listing.status == "priced":
-                state, posted, logged = ipo.list_company(state, cid, f, gen, rng, balance, data)
+                state, posted, logged = ipo.list_company(
+                    state, cid, f, gen, rng, balance, data, (preferred or {}).get(cid, 0)
+                )
                 entries += posted
                 logs += logged
             continue

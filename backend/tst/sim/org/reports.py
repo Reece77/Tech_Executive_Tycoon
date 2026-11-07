@@ -12,10 +12,13 @@ the LLM may rewrite it later from the same lines (write_pending), never adding f
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.finance.statements import projected_runway
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.modes.models import QuarterMark
 from tst.sim.money import Cents, format_money
 from tst.sim.org.divisions import support_pools
 from tst.sim.org.executives import seats_in_play
@@ -142,14 +145,37 @@ def _did(state: GameState, decisions: list[ExecDecision]) -> str:
         part = "; ".join(texts[:DONE_LISTED])
         product = next((p for p in products if p.name == name), None)
         if product is not None:
-            customers = round(
-                sum(s.customers for s in state.segments_of(product.id))
-                + sum(s.customers for s in state.regional_segments_of(product.id))
-            )
-            now = f"quality now {product.quality:.0f}, {_n(customers, 'customer')}"
+            customers = round(_customers(state, product.id))
+            mark = next((m for m in state.quarter_marks if m.product_id == product.id), None)
+            if mark is not None:  # the quarter's start and now (M15b)
+                now = (
+                    f"quality {mark.quality:.0f} -> {product.quality:.0f}, "
+                    f"{round(mark.customers):,} -> {_n(customers, 'customer')}"
+                )
+            else:
+                now = f"quality now {product.quality:.0f}, {_n(customers, 'customer')}"
             part += f" ({product.name}'s {now})"
         parts.append(part)
     return "; ".join(parts)
+
+
+def _customers(state: GameState, product_id: int) -> float:
+    return sum(s.customers for s in state.segments_of(product_id)) + sum(
+        s.customers for s in state.regional_segments_of(product_id)
+    )
+
+
+def mark_quarter(state: GameState, balance: Balance) -> GameState:
+    """In a report month, after the reports: every selling product's quality and customers,
+    the next reports' starting values."""
+    if not is_report_month(state.turn, balance):
+        return state
+    marks = tuple(
+        QuarterMark(p.id, state.turn, p.quality, _customers(state, p.id))
+        for p in state.company_products(state.player.id)
+        if p.status != "retired"
+    )
+    return replace(state, quarter_marks=marks)
 
 
 def _pitching(state: GameState, holder: int, voice: Voice, since: int) -> str:

@@ -1,7 +1,7 @@
 import { Alert, Button, Modal, NativeSelect, TextInput } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import {
   CartesianGrid,
   Legend,
@@ -393,7 +393,11 @@ function TeamAndMarketing({
 }) {
   const costs = meta.energy_costs;
   const [assigning, setAssigning] = useState(false);
-  const [draft, setDraft] = useState<string | null>(null); // null: show the saved budget
+  const [params] = useSearchParams(); // a campaign pitch's Modify: its monthly spend (M15b)
+  const campaign = params.get('campaign');
+  const [draft, setDraft] = useState<string | null>(
+    campaign ? priceText(Number(campaign)) : null, // null: show the saved budget
+  );
   const budget = draft ?? priceText(p.marketing_budget_cents);
   const budgetCents = budget.trim() === '' ? 0 : parseDollars(budget);
   const validBudget = budget.trim() === '' || budget.trim() === '0' || budgetCents > 0;

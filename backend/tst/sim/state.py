@@ -41,7 +41,7 @@ from tst.sim.markets_public.models import (
     ShareMonth,
 )
 from tst.sim.mna.models import AcquiredPerson, Acquisition, Deal, RivalListing, TargetFile
-from tst.sim.modes.models import CompanyScore, GameMode, Ranking
+from tst.sim.modes.models import CompanyScore, GameMode, QuarterMark, Ranking
 from tst.sim.money import Cents
 from tst.sim.org.models import (
     Authority,
@@ -260,6 +260,7 @@ class GameState:
     scores: tuple[CompanyScore, ...] = ()
     mode: GameMode | None = None  # M15b (30.2-30.3): Sandbox or a scenario; None: a campaign
     rankings: tuple[Ranking, ...] = ()  # M15b (30.4): every January's lists, oldest first
+    quarter_marks: tuple[QuarterMark, ...] = ()  # M15b: products at the last reports, by id
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:

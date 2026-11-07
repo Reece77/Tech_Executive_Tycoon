@@ -1,7 +1,8 @@
 """M15b: game modes and polish (formulas.md section 30): company scores each December and at
 a game's end (`company_score`), the save's mode, Sandbox or a scenario (`game_mode`, one row
 at most), and each January's industry rankings (`ranking`). Records keep their fields in a JSON
-`data` column (data-dictionary.md). Existing saves have none: a campaign with no history.
+`data` column (data-dictionary.md). Also each product's quality and customers at the last
+quarterly reports (`product_quarter_mark`), the next reports' starting values. Existing saves have none: a campaign with no history.
 
 Revision ID: 0035_m15b
 Revises: 0034_mna
@@ -39,10 +40,15 @@ def upgrade() -> None:
         sa.Column("place", sa.Integer(), primary_key=True),
         sa.Column("data", sa.JSON(), nullable=False),
     )
+    op.create_table(
+        "product_quarter_mark",
+        sa.Column("product_id", sa.Integer(), primary_key=True),
+        sa.Column("data", sa.JSON(), nullable=False),
+    )
     op.execute("UPDATE save_meta SET schema_version = 35")
 
 
 def downgrade() -> None:
     op.execute("UPDATE save_meta SET schema_version = 34")
-    for table in ("ranking", "game_mode", "company_score"):
+    for table in ("product_quarter_mark", "ranking", "game_mode", "company_score"):
         op.drop_table(table)

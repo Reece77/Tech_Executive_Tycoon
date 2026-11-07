@@ -11,8 +11,8 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from tst.db.mna_io import from_data, to_data
-from tst.db.models import CompanyScoreRow, GameModeRow, RankingRow
-from tst.sim.modes.models import CompanyScore, GameMode, Ranking
+from tst.db.models import CompanyScoreRow, GameModeRow, QuarterMarkRow, RankingRow
+from tst.sim.modes.models import CompanyScore, GameMode, QuarterMark, Ranking
 from tst.sim.state import GameState
 
 
@@ -36,14 +36,23 @@ def load_modes(
             select(RankingRow).order_by(RankingRow.turn, RankingRow.kind, RankingRow.place)
         )
     )
-    return replace(state, scores=scores, mode=mode, rankings=rankings)
+    marks = tuple(
+        from_data(QuarterMark, r.data, product_id=r.product_id)
+        for r in session.scalars(select(QuarterMarkRow).order_by(QuarterMarkRow.product_id))
+    )
+    return replace(state, scores=scores, mode=mode, rankings=rankings, quarter_marks=marks)
 
 
 def sync_modes(
     session: Session, old: GameState, new: GameState, has_table: Callable[[Session, Any], bool]
 ) -> None:
     """Append new scores and rankings (they are never changed) and write the mode."""
-    if (old.scores, old.mode, old.rankings) == (new.scores, new.mode, new.rankings):
+    if (old.scores, old.mode, old.rankings, old.quarter_marks) == (
+        new.scores,
+        new.mode,
+        new.rankings,
+        new.quarter_marks,
+    ):
         return
     if not has_table(session, CompanyScoreRow):
         return
@@ -60,6 +69,12 @@ def sync_modes(
             session.execute(delete(GameModeRow))
         else:
             session.merge(GameModeRow(id=1, data=to_data(new.mode)))
+    if new.quarter_marks != old.quarter_marks:  # replaced each quarter
+        session.execute(delete(QuarterMarkRow))
+        session.add_all(
+            QuarterMarkRow(product_id=m.product_id, data=to_data(m, ("product_id",)))
+            for m in new.quarter_marks
+        )
     placed = {(r.turn, r.kind, r.place) for r in old.rankings}
     session.add_all(
         RankingRow(

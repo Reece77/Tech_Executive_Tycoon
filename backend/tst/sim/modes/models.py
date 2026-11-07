@@ -49,3 +49,14 @@ class Ranking:
     place: int  # 1 = first
     company_id: int
     value: float  # the list's measure: revenue cents, or the 0-1 composite
+
+
+@dataclass(frozen=True, slots=True)
+class QuarterMark:
+    """A product's quality and customers when the last quarterly reports were written: the
+    next reports' starting values ("41 -> 47"; an M13b follow-up)."""
+
+    product_id: int
+    turn: int
+    quality: float
+    customers: float
