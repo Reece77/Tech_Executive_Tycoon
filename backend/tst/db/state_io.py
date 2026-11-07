@@ -24,6 +24,7 @@ from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, ins
 from sqlalchemy.orm import Session
 
 from tst.db.former import former_rows
+from tst.db.founder_io import load_founder, sync_founder
 from tst.db.mappers import (
     candidate_from_row,
     candidate_to_row,
@@ -560,6 +561,7 @@ def load_state(session: Session) -> GameState:
     state = _load_pitches(session, state)
     state = load_mna(session, state, has_table)  # M14 (0034)
     state = load_modes(session, state, has_table)  # M15b (0035)
+    state = load_founder(session, state, has_table)  # M24 (0036)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
     state = _load_public(session, state)
@@ -1880,6 +1882,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_mna(session, old, new, has_table)  # M14 (0034)
     session.flush()
     sync_modes(session, old, new, has_table)  # M15b (0035)
+    sync_founder(session, old, new, has_table)  # M24 (0036)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
     _sync_public(session, old, new)

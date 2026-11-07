@@ -15,6 +15,7 @@ from tst.sim.data_models import LEVELS, Balance, GameData
 from tst.sim.events.modifiers import founder_factor
 from tst.sim.facilities.lifecycle import operating_lines
 from tst.sim.finance.options import grant_on_hire, retention
+from tst.sim.founder.effects import hiring_points, pool_bonus, resign_factor
 from tst.sim.geo.cities import home_city, office_city
 from tst.sim.geo.models import ANYWHERE
 from tst.sim.geo.offices import crowded_people, employee_office_cents, rent_lines
@@ -178,7 +179,8 @@ def resolve_offers(
                 offer=hiring.offer,
                 pitch=offer_pitch(state, offer.actor_id, hiring)
                 + hiring_appeal(state, company.id, balance)  # M14b (29.3)
-                + hiring_bonus(state, company.id, balance),  # M15b (30.4)
+                + hiring_bonus(state, company.id, balance)  # M15b (30.4)
+                + hiring_points(state, company.id, person.role, balance, data),  # M24
             )
             if candidate.channel == "poach":  # leaving an employer (M5, 15.6)
                 score += balance.rivals.poach.leave_penalty
@@ -482,7 +484,9 @@ def morale_and_departures(
             person.personality["loyalty"],
             JOB_HOPPER in person.tags,
             balance.resign,
-            retention=retention(state, employment, balance),  # unvested options (M4, 14.2)
+            # unvested options (M4, 14.2); a Beloved founder (M24, 32.4)
+            retention=retention(state, employment, balance)
+            * resign_factor(state, company.id, balance),
         )
         reason: str | None = None
         if roll_succeeds(int(resign_gen.integers(0, ROLL_RANGE)), chance):
@@ -682,6 +686,8 @@ def candidate_batches(
             and (actor.personality["sociability"] >= channel.sociability_threshold)
         ):
             count += channel.sociability_bonus
+        if bonus := pool_bonus(state, search.company_id, balance):  # M24 (32.3): local grants
+            count = math.floor(count * (1 + bonus) + 1 / 2)
         levels_keys = [lv for lv in LEVELS if lv in channel.level_mix]
         weights = [channel.level_mix[lv] for lv in levels_keys]
         total = sum(weights)

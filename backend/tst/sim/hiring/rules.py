@@ -9,6 +9,7 @@ from fractions import Fraction
 from tst.sim.data_models import Balance, GameData, HiringBalance
 from tst.sim.finance.captable import unallocated
 from tst.sim.finance.options import offer_shares, pending_offer_shares
+from tst.sim.founder.effects import hiring_points
 from tst.sim.hiring.formulas import HintBand, hint_band, is_lowball, offer_score
 from tst.sim.hiring.models import Candidate
 from tst.sim.modes.rankings import hiring_bonus
@@ -108,7 +109,8 @@ def offer_preview(
         pitch=(0.0 if actor_id is None else offer_pitch(state, actor_id, balance.hiring))
         + (balance.rivals.poach.leave_penalty if candidate.channel == "poach" else 0.0)
         + hiring_appeal(state, company.id, balance)  # M14b (29.3): credibility
-        + hiring_bonus(state, company.id, balance),  # M15b (30.4): Best places to work
+        + hiring_bonus(state, company.id, balance)  # M15b (30.4): Best places to work
+        + hiring_points(state, company.id, person.role, balance, data),  # M24 (32.3-32.4)
     )
     pending = state.pending_offer_for(person.id)
     problems = offer_problems(

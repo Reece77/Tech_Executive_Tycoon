@@ -105,7 +105,7 @@ def template_draft(
             effect: dict[str, Any] = {"type": spec.type, "target": target, "value": value}
             if spec.type == "modifier":  # M10b (23.2)
                 effect |= {"stat": spec.stat, "months": spec.months}
-            elif spec.type in ("public_step", "press_step"):  # M13 (25), M14b (29.1)
+            elif spec.type in ("public_step", "press_step", "founder_step"):  # M13, M14b, M24
                 effect |= {"stat": spec.stat}
             effects.append(effect)
         choices.append(

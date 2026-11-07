@@ -111,4 +111,4 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | `rival_mna` | 39 | the acquirer's stable rival key | Rivals' quarterly startup purchases (formulas.md §28.6) | M14 |
 | `press` | 40 | `(company_id,)` for the player; the rival's stable key for rivals | Rival CEO statements and press-moment draws (formulas.md §29) | M14b (lane B) |
 | — | 41–42 | — | Reserved for lane B | M14b |
-| `founder` | 46 | `(company_id,)` | Scandal draws (formulas.md §32.5) | M24 (lane C) |
+| `founder_life` | 46 | `(company_id,)` | Scandal draws (formulas.md §32.5); named `founder_life` because `founder` (7) is the founder build | M24 (lane C) |

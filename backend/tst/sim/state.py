@@ -22,6 +22,7 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
+from tst.sim.founder.models import Foundation, FounderLife, Influence, PersonalEntry
 from tst.sim.geo.models import (
     MarketingSplit,
     Office,
@@ -262,6 +263,12 @@ class GameState:
     rankings: tuple[Ranking, ...] = ()  # M15b (30.4): every January's lists, oldest first
     quarter_marks: tuple[QuarterMark, ...] = ()  # M15b: products at the last reports, by id
     ventures: tuple[Venture, ...] = ()  # M15b addendum 10: the player's sold companies
+    # M24 (32): founders' lives by person id; every personal-book entry, oldest first (never
+    # in a company's books); foundations by person id; influence by (company_id, region).
+    founder_lives: tuple[FounderLife, ...] = ()
+    personal_book: tuple[PersonalEntry, ...] = ()
+    foundations: tuple[Foundation, ...] = ()
+    influence: tuple[Influence, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -1082,6 +1089,43 @@ def with_press_moment(state: GameState, moment: PressMoment) -> GameState:
 
 def with_promise(state: GameState, promise: Promise) -> GameState:
     return replace(state, promises=_upsert(state.promises, promise, lambda p: p.id))
+
+
+def life_of(state: GameState, person_id: int) -> FounderLife | None:
+    """A founder's life record (M24, 32.1); None before their first month."""
+    i = bisect_left(state.founder_lives, person_id, key=attrgetter("person_id"))
+    lives = state.founder_lives
+    return lives[i] if i < len(lives) and lives[i].person_id == person_id else None
+
+
+def with_life(state: GameState, life: FounderLife) -> GameState:
+    return replace(state, founder_lives=_upsert(state.founder_lives, life, attrgetter("person_id")))
+
+
+def foundation_of(state: GameState, person_id: int) -> Foundation | None:
+    return next((f for f in state.foundations if f.person_id == person_id), None)
+
+
+def with_foundation(state: GameState, foundation: Foundation) -> GameState:
+    return replace(
+        state, foundations=_upsert(state.foundations, foundation, attrgetter("person_id"))
+    )
+
+
+def influence_of(state: GameState, company_id: int, region: str) -> Influence | None:
+    return next(
+        (i for i in state.influence if i.company_id == company_id and i.region == region), None
+    )
+
+
+def with_influence(state: GameState, record: Influence) -> GameState:
+    return replace(
+        state, influence=_upsert(state.influence, record, lambda i: (i.company_id, i.region))
+    )
+
+
+def with_personal_entries(state: GameState, *entries: PersonalEntry) -> GameState:
+    return replace(state, personal_book=(*state.personal_book, *entries)) if entries else state
 
 
 def with_credibility(state: GameState, cred: Credibility) -> GameState:

@@ -13,6 +13,8 @@ type AccountCode = str
 # (company_id, account) -> balance (ADR-0012).
 type LedgerBalances = Mapping[tuple[int, AccountCode], Cents]
 
+PERSONAL_DIGIT: Final = "9"  # M24 (32.2): personal-book codes; never in a company entry
+
 # Account codes the engine posts to. All must exist in data/accounts.yaml (checked by tests).
 CASH: Final = "1000_cash"
 COMMON_EQUITY: Final = "3000_common_equity"
@@ -37,6 +39,7 @@ LICENSE_REVENUE: Final = "4100_revenue_licenses"  # licence prices and royalties
 COGS: Final = "5000_cogs"  # hardware: bills of materials, chips and assembly at sale (M12b, 26.2)
 GOODWILL: Final = "1800_goodwill"  # price - the target's book equity at closing (M14, 28.3)
 INVESTMENT_SUBSIDIARIES: Final = "1810_investment_subsidiaries"  # kept brands (M14, 28.5)
+LOBBYING: Final = "6950_lobbying"  # a company's lobbying by region (M24, 32.5)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -60,6 +63,7 @@ ENGINE_ACCOUNTS: Final = (
     LICENSE_REVENUE,
     GOODWILL,
     INVESTMENT_SUBSIDIARIES,
+    LOBBYING,
 )
 
 
@@ -84,6 +88,10 @@ class LedgerEntry:
             if isinstance(line.amount, bool) or not isinstance(line.amount, int):
                 raise UnbalancedEntryError(
                     f"entry {self.memo!r}: amount for {line.account} must be int cents"
+                )
+            if line.account[0] == PERSONAL_DIGIT:  # M24 (32.2): the founder's book is apart
+                raise UnbalancedEntryError(
+                    f"entry {self.memo!r}: {line.account} is a personal account, not a company's"
                 )
         total = sum(line.amount for line in self.lines)
         if total != 0:

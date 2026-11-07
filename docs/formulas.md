@@ -2620,7 +2620,7 @@ Reece's decisions (2026-11-07): **burnout from overwork** with a visible stress 
 
 - **Lobbying** (energy 5, a monthly company spend set per region, posted to `6950 lobbying`): influence in that region rises by `influence.rate × sqrt(spend / $100k)` (rate 3) a month, decays 3% a month, capped at 100.
 - **Effects:** an antitrust review's block probability × `(1 − influence.antitrust × I/100)` (`antitrust` 0.4); M22 will use the same influence for export licences and tariffs (hook: `influence.of(state, company_id, region)`).
-- **Scandal risk** (hidden): accumulates `risk += spend_k × influence.risk_rate` (0.002 per $1k a month), × 1.5 when Ruthless ≥ 60, decays 2% a month. Each month a scandal breaks with probability `min(0.2, risk / 1,000)` (stream `founder` id 46, key `(company_id,)`). The API shows exposure only as low, medium or high.
+- **Scandal risk** (hidden): accumulates `risk += spend_k × influence.risk_rate` (0.002 per $1k a month), × 1.5 when Ruthless ≥ 60, decays 2% a month. Each month a scandal breaks with probability `min(0.2, risk / 1,000)` (stream `founder_life` id 46, key `(company_id,)`; M24: `founder` is taken by the founder build, id 7). The API shows exposure only as low, medium or high.
 - **A scandal** is a critical press event: credibility −15, brand −6 on every product, influence in that region reset to 0, a fine of 0.5% of revenue, persona Ruthless +10 and Reckless +5; the founder chooses to apologize (credibility −5 more, stress +10), fire the head of government affairs (if any) or fight it (a 50% chance of a second story). History records it.
 
 ### 32.6 Legacy score

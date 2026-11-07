@@ -27,6 +27,13 @@ from tst.sim.facilities.config import (
     FacilityBalance,
     SupplyBalance,
 )
+from tst.sim.founder.config import (
+    FoundationBalance,
+    InfluenceBalance,
+    PersonaBalance,
+    PersonalBalance,
+    StressBalance,
+)
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
@@ -1233,6 +1240,11 @@ class Balance(_Frozen):
     promise: PromiseBalance  # M14b (formulas.md 29.2)
     feud: FeudBalance  # M14b (formulas.md 29.4)
     recruit: RecruitBalance  # M14b (formulas.md 29.5)
+    stress: StressBalance  # M24 (formulas.md 32.1)
+    personal: PersonalBalance  # M24 (formulas.md 32.2)
+    foundation: FoundationBalance  # M24 (formulas.md 32.3)
+    persona: PersonaBalance  # M24 (formulas.md 32.4)
+    influence: InfluenceBalance  # M24 (formulas.md 32.5)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1879,6 +1891,7 @@ def _dupes(keys: list[str]) -> list[str]:
 
 class GameData(_Frozen):
     accounts: tuple[Account, ...]
+    personal_accounts: tuple[Account, ...] = ()  # M24 (32.2): the founder's own book
     scenarios: tuple[Scenario, ...]
     historical: tuple[HistoricalScenario, ...] = ()  # M15b (30.3): scenarios.yaml's historical
     skills: tuple[SkillDef, ...]
