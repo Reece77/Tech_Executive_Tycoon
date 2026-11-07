@@ -105,6 +105,7 @@ INBOX_CATEGORY: dict[str, str] = {
     "era_report": "products",  # M13b (27.3)
     "deal_update": "finance",  # M14 (28)
     "rival_acquired": "products",  # M14 (28.6): market news
+    "rankings_published": "company",  # M15b (30.4)
     "exit_sale": "finance",  # M14 (28.6)
     # M12a: data centres, contracts, Cloud hosting and outages (22.6)
     "facility_ordered": "products",

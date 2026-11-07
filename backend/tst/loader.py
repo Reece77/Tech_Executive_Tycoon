@@ -412,6 +412,11 @@ def load_all(path: Path) -> LoadedData:
         _validate(Account, item, ACCOUNTS_FILE)
         for item in _list_of(parsed[ACCOUNTS_FILE], "accounts", ACCOUNTS_FILE)
     ]
+    if extra := set(parsed[SCENARIOS_FILE] or {}) - {"scenarios", "historical"}:
+        raise DataLoadError(
+            f"{SCENARIOS_FILE}: expected a single top-level key 'scenarios' (with 'historical' "
+            f"beside it, M15b); unknown keys {sorted(extra)}"
+        )
     scenarios = [
         _validate(Scenario, item, SCENARIOS_FILE)
         for item in _list_of(
@@ -420,8 +425,6 @@ def load_all(path: Path) -> LoadedData:
             SCENARIOS_FILE,
         )
     ]
-    if extra := set(parsed[SCENARIOS_FILE] or {}) - {"scenarios", "historical"}:
-        raise DataLoadError(f"{SCENARIOS_FILE}: unknown top-level keys {sorted(extra)}")
     historical = [  # M15b (30.3)
         _validate(HistoricalScenario, item, SCENARIOS_FILE)
         for item in (parsed[SCENARIOS_FILE] or {}).get("historical", [])

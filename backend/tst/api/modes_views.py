@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 
-from tst.api.schemas.modes import ScoreOut
+from tst.api.schemas.modes import RankingEntryOut, RankingListOut, RankingsOut, ScoreOut
 from tst.loader import LoadedData
 from tst.sim import score as sc
 from tst.sim.ledger import LedgerBalances
@@ -35,3 +35,29 @@ def score_out(
         estimate_cents=s.value_cents,
         last_december=last.score if last is not None else None,
     )
+
+
+def rankings_out(state: GameState, year: int | None = None) -> RankingsOut:
+    from tst.sim.calendar import turn_to_ym
+    from tst.sim.modes.rankings import LIST_LABELS
+    from tst.sim.money import format_money
+
+    years = sorted({turn_to_ym(r.turn)[0] for r in state.rankings}, reverse=True)
+    pick = year if year in years else (years[0] if years else None)
+    lists = []
+    for kind in ("revenue", "places", "innovative"):
+        entries = [
+            RankingEntryOut(
+                place=r.place,
+                company_id=r.company_id,
+                name=state.company(r.company_id).name,
+                is_you=state.company(r.company_id).is_player,
+                value_label=format_money(round(r.value))
+                if kind == "revenue"
+                else f"{r.value * 100:.0f}",
+            )
+            for r in sorted(state.rankings, key=lambda r: r.place)
+            if r.kind == kind and turn_to_ym(r.turn)[0] == pick
+        ]
+        lists.append(RankingListOut(kind=kind, label=LIST_LABELS[kind], entries=entries))
+    return RankingsOut(year=pick, lists=lists, years=years)

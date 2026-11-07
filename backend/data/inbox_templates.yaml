@@ -249,6 +249,9 @@ templates:
   exit_sale: # M14 (28.6): the player's company was sold; the game ends with an exit
     title: "You sold the company to {buyer}"
     body: "{buyer} bought the company for {price}. Your stake came to {proceeds}. The game is over: this is your exit."
+  rankings_published: # M15b (30.4): each January's industry rankings
+    title: "The {year} industry rankings"
+    body: "{leader} tops the revenue list at {revenue} a year. Your places: {places}. See the Rankings screen."
   rival_acquired: # M14 (28.6): a rival bought a startup
     title: "{acquirer} buys {target}"
     body: "{acquirer} bought {target} for about {price}. Its products and people are now {acquirer}'s."

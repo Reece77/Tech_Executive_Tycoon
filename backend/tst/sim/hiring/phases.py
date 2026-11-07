@@ -50,6 +50,7 @@ from tst.sim.ledger import (
     account_balance,
 )
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.modes.rankings import hiring_bonus
 from tst.sim.money import Cents
 from tst.sim.org.divisions import division_of_unit, is_scaleup
 from tst.sim.org.executives import exec_energy_holders
@@ -176,7 +177,8 @@ def resolve_offers(
                 stage=company.stage,
                 offer=hiring.offer,
                 pitch=offer_pitch(state, offer.actor_id, hiring)
-                + hiring_appeal(state, company.id, balance),  # M14b (29.3)
+                + hiring_appeal(state, company.id, balance)  # M14b (29.3)
+                + hiring_bonus(state, company.id, balance),  # M15b (30.4)
             )
             if candidate.channel == "poach":  # leaving an employer (M5, 15.6)
                 score += balance.rivals.poach.leave_penalty

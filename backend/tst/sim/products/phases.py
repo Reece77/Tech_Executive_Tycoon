@@ -25,6 +25,7 @@ from tst.sim.geo.models import RegionalSegment
 from tst.sim.hardware import cm_market, production
 from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
 from tst.sim.log import LinkKind, LogItem, inbox_item
+from tst.sim.modes.rankings import brand_bonus
 from tst.sim.money import Cents, exact
 from tst.sim.org.executives import CRO, side_factor
 from tst.sim.org.pitch_execution import execution_factor
@@ -792,6 +793,8 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
             target = min(float(SCORE_MAX), target * team.brand_mult)
         if team.tech.brand_points:  # the first mover's head start (M11, 21.4), at most 100
             target = min(float(SCORE_MAX), target + team.tech.brand_points)
+        if bonus := brand_bonus(state, product.company_id, balance):  # Most innovative (30.4)
+            target = min(float(SCORE_MAX), target + bonus)
         state = with_product(state, replace(product, brand=f.next_brand(product.brand, target, pb)))
     year = turn_to_ym(state.turn)[0]
     for market in state.markets:  # base growth plus era boosts (M11, 21.4)

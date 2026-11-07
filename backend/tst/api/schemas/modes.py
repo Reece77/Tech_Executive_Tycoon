@@ -18,3 +18,25 @@ class ScoreOut(BaseModel):
         description="Market cap if listed, else the displayed value range's midpoint (28.1)"
     )
     last_december: int | None = Field(description="The score at the last December, if any")
+
+
+class RankingEntryOut(BaseModel):
+    place: int
+    company_id: int
+    name: str
+    is_you: bool
+    value_label: str = Field(description="Revenue a year, or the list's 0-100 measure")
+
+
+class RankingListOut(BaseModel):
+    kind: str = Field(description="revenue | places | innovative")
+    label: str
+    entries: list[RankingEntryOut]
+
+
+class RankingsOut(BaseModel):
+    """The latest January's industry rankings (30.4)."""
+
+    year: int | None = Field(description="The year they were published; null before the first")
+    lists: list[RankingListOut]
+    years: list[int] = Field(description="Every year with rankings, newest first")

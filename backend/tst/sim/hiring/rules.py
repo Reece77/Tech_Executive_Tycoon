@@ -11,6 +11,7 @@ from tst.sim.finance.captable import unallocated
 from tst.sim.finance.options import offer_shares, pending_offer_shares
 from tst.sim.hiring.formulas import HintBand, hint_band, is_lowball, offer_score
 from tst.sim.hiring.models import Candidate
+from tst.sim.modes.rankings import hiring_bonus
 from tst.sim.org.formulas import pitch
 from tst.sim.people.models import Person
 from tst.sim.people.reveal import revealed_range
@@ -106,7 +107,8 @@ def offer_preview(
         offer=balance.hiring.offer,
         pitch=(0.0 if actor_id is None else offer_pitch(state, actor_id, balance.hiring))
         + (balance.rivals.poach.leave_penalty if candidate.channel == "poach" else 0.0)
-        + hiring_appeal(state, company.id, balance),  # M14b (29.3): credibility
+        + hiring_appeal(state, company.id, balance)  # M14b (29.3): credibility
+        + hiring_bonus(state, company.id, balance),  # M15b (30.4): Best places to work
     )
     pending = state.pending_offer_for(person.id)
     problems = offer_problems(
