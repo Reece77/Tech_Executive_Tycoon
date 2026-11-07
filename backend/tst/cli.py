@@ -331,11 +331,10 @@ def score(save: Annotated[str, typer.Option(help="Save slug")]) -> None:
             balances = repository.ledger_balances(session)
     except SimError as exc:
         raise _fail(exc.message) from exc
-    if state.mode is not None and state.mode.kind == "sandbox":
-        typer.echo("A Sandbox game has no company score.")
-        return
     out = score_out(state, state.player.id, balances, data)
-    typer.echo(f"{state.player.name}: {out.score} / 1,000")
+    sandbox = state.mode is not None and state.mode.kind == "sandbox"
+    note = " (Sandbox: kept out of the Hall of Fame and the Saves list)" if sandbox else ""
+    typer.echo(f"{state.player.name}: {out.score} / 1,000{note}")
     for label, points in (
         ("Value", out.value_points),
         ("Growth", out.growth_points),

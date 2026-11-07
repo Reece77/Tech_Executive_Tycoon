@@ -120,7 +120,8 @@ export function ModePicker({
             style={{ width: 280 }}
           />
           <span className="tst-muted" style={{ fontSize: 12, flexBasis: '100%' }}>
-            A Sandbox game has no company score and no board that can remove you.
+            In a Sandbox game the board cannot remove you, and its score is kept out of the Hall of
+            Fame.
           </span>
         </div>
       )}

@@ -4,6 +4,16 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M15b Modes and polish (formulas.md §30.1–30.5, lane B, merges first):
+  - Company score 0–1,000 from public inputs (value from market cap or the displayed value range's midpoint, growth, profit, market leadership, reputation): December and game-end snapshots, `score` on Overview, Rival and Saves, `tst score`.
+  - A world built at any start year (the world plays from 2010 with the player dormant); Sandbox starts (year, cash, all/half/no rivals, historical or seeded eras; no board removal); five historical scenarios with goals judged early or at the deadline and a result screen (stream `scenario`, 43).
+  - Industry rankings each January (Top 50 by revenue, Best places to work, Most innovative) as news and on a Rankings screen; top places add hiring appeal or brand; `tst rankings`.
+  - Continue until something needs me: `POST /continue-until`, a top-bar button, `tst advance --until-needed`.
+  - Polish: a glossary audit test over every v2 numeric field and a History audit; preferred shares convert to common at the IPO; Modify prefills every pitch kind; reports show quarter-start values.
+  - Playtest 3 addendum: negotiation with anchored counters, rounds and lowball strikes; serial founder (Found a new company or Retire after an exit; ventures in History, the score and the Hall of Fame); rival CEO profiles as ranges; rival CEO storylines (template, LLM-worded within the budget); tenure reveal; a promise hint on the launch moment; Deals in the top bar and the acquirer's own product as a remedy.
+  - Migration `0035_m15b` (`company_score`, `game_mode`, `ranking`, `product_quarter_mark`, `venture`); CLI `tst new-game --sandbox --year/--cash/--rivals/--eras` and `--scenario <historical key>`; Playwright `e2e/m15b.spec.ts` with `tools/e2e_m15b_save.py`.
+  - New balance keys: `score.*`, `rank.*`, `sandbox.*`, `story.*`, `serial.*`, `mna.counter_anchor`, `mna.max_rounds`, `mna.lowball`, `mna.strikes`, `people.reveal_tenure_months`, and `reveal.strength` / `reveal.pa_strength` for the three rival-CEO knowledge actions.
+
 - M14b People and press (formulas.md §29, lane B, merges before M14):
   - Press moments as engine-queued `press` events (`data/events/press.yaml`) for launches, quarterly reports, caused eras, outages, breaches, layoffs of 10%+, rival jabs, rivalries, reminders, and acquisitions (`press.moments.queue_moment`, the hook M14 calls). At most 2 a quarter and one a month, highest stakes first; tones measured, bold and no comment through a new `press_step` effect; bold claims can backfire; effects scale with the audience (0.5 / 1.0 / 1.5).
   - Public promises (ship, beat, research, no layoffs, no price rise; `make_promise`, energy 2) judged on displayed values only, kept and broken with brand, credibility, sentiment, morale and trust effects, and a "you said ..." reminder (stream `press`, 40).
