@@ -3142,6 +3142,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/rankings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rankings
+         * @description The industry rankings of `year` (default the latest January's), 30.4.
+         */
+        get: operations["getRankings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/continue-until": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Continue Until
+         * @description Play months as Continue does until something needs the player, up to a year (30.5).
+         *     It decides nothing: what it stops for waits in the inbox.
+         */
+        post: operations["continueUntil"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -4653,6 +4694,25 @@ export interface components {
              */
             history: components["schemas"]["IndexPointOut"][];
         };
+        /**
+         * ContinueUntilOut
+         * @description Continue until something needs me (30.5).
+         */
+        ContinueUntilOut: {
+            /** Months Played */
+            months_played: number;
+            /**
+             * Stopped For
+             * @description game_over | critical_event | event | pitch | proposal | promise | deal | months
+             */
+            stopped_for: string;
+            /** Stopped Label */
+            stopped_label: string;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+        };
         /** ContractIn */
         ContractIn: {
             /** Good */
@@ -4845,6 +4905,13 @@ export interface components {
              * @description The HQ city (M9); omit for San Francisco
              */
             hq_city?: string | null;
+            /** @description A Sandbox start (M15b, 30.2) */
+            sandbox?: components["schemas"]["SandboxIn"] | null;
+            /**
+             * Historical
+             * @description A historical scenario's key (M15b, 30.3)
+             */
+            historical?: string | null;
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -5414,6 +5481,12 @@ export interface components {
         };
         /** EventOut */
         EventOut: {
+            /**
+             * Template Id
+             * @description The event template's key (M15b)
+             * @default
+             */
+            template_id?: string;
             /** Event Id */
             event_id: number;
             /** Turn */
@@ -9720,6 +9793,52 @@ export interface components {
             /** Max */
             max: number;
         };
+        /** RankingEntryOut */
+        RankingEntryOut: {
+            /** Place */
+            place: number;
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Is You */
+            is_you: boolean;
+            /**
+             * Value Label
+             * @description Revenue a year, or the list's 0-100 measure
+             */
+            value_label: string;
+        };
+        /** RankingListOut */
+        RankingListOut: {
+            /**
+             * Kind
+             * @description revenue | places | innovative
+             */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Entries */
+            entries: components["schemas"]["RankingEntryOut"][];
+        };
+        /**
+         * RankingsOut
+         * @description The latest January's industry rankings (30.4).
+         */
+        RankingsOut: {
+            /**
+             * Year
+             * @description The year they were published; null before the first
+             */
+            year: number | null;
+            /** Lists */
+            lists: components["schemas"]["RankingListOut"][];
+            /**
+             * Years
+             * @description Every year with rankings, newest first
+             */
+            years: number[];
+        };
         /** RegionSegmentOut */
         RegionSegmentOut: {
             /** Segment */
@@ -10406,6 +10525,31 @@ export interface components {
             /** Energy Cost */
             energy_cost: number;
         };
+        /**
+         * SandboxIn
+         * @description Sandbox options (30.2).
+         */
+        SandboxIn: {
+            /** Start Year */
+            start_year: number;
+            /**
+             * Cash Dollars
+             * @description Omit for the background's
+             */
+            cash_dollars?: number | null;
+            /**
+             * Rivals
+             * @default all
+             * @enum {string}
+             */
+            rivals?: "all" | "half" | "none";
+            /**
+             * Eras
+             * @default historical
+             * @enum {string}
+             */
+            eras?: "historical" | "seeded";
+        };
         /** SaveNameIn */
         SaveNameIn: {
             /**
@@ -10459,6 +10603,17 @@ export interface components {
              * @description A turn, action or holiday is writing to it now
              */
             busy: boolean;
+            /**
+             * Mode
+             * @description campaign | sandbox | scenario (M15b)
+             * @default campaign
+             */
+            mode?: string;
+            /**
+             * Score
+             * @description The latest company score; none for Sandbox games (M15b)
+             */
+            score?: number | null;
         };
         /** ScaleupActionOut */
         ScaleupActionOut: {
@@ -22122,6 +22277,124 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PressActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getRankings: {
+        parameters: {
+            query?: {
+                year?: number | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RankingsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    continueUntil: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContinueUntilOut"];
                 };
             };
             /** @description Bad Request */

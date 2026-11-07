@@ -189,6 +189,10 @@ class PeopleBalance(_Frozen):
     region_weights: dict[str, float]
     retire_bp_per_year_over_60: int = Field(ge=0)
     retire_from_age: int = Field(gt=0)
+    # M15b (playtest 3 addendum 13): after this many months in the player's company these
+    # attributes show exactly (leadership fit becomes a single star value)
+    reveal_tenure_months: int = Field(default=12, ge=1)
+    reveal_tenure_attributes: tuple[str, ...] = ("leadership", "mentoring", "communication")
 
     @model_validator(mode="after")
     def _check(self) -> PeopleBalance:

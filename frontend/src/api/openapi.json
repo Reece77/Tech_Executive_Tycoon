@@ -14495,6 +14495,168 @@
         }
       }
     },
+    "/api/saves/{save_id}/rankings": {
+      "get": {
+        "tags": [
+          "modes"
+        ],
+        "summary": "Get Rankings",
+        "description": "The industry rankings of `year` (default the latest January's), 30.4.",
+        "operationId": "getRankings",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/continue-until": {
+      "post": {
+        "tags": [
+          "modes"
+        ],
+        "summary": "Continue Until",
+        "description": "Play months as Continue does until something needs the player, up to a year (30.5).\nIt decides nothing: what it stops for waits in the inbox.",
+        "operationId": "continueUntil",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContinueUntilOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -17797,6 +17959,41 @@
         ],
         "title": "ComponentOut"
       },
+      "ContinueUntilOut": {
+        "properties": {
+          "months_played": {
+            "type": "integer",
+            "title": "Months Played"
+          },
+          "stopped_for": {
+            "type": "string",
+            "title": "Stopped For",
+            "description": "game_over | critical_event | event | pitch | proposal | promise | deal | months"
+          },
+          "stopped_label": {
+            "type": "string",
+            "title": "Stopped Label"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "months_played",
+          "stopped_for",
+          "stopped_label",
+          "turn",
+          "date_label"
+        ],
+        "title": "ContinueUntilOut",
+        "description": "Continue until something needs me (30.5)."
+      },
       "ContractIn": {
         "properties": {
           "good": {
@@ -18253,6 +18450,29 @@
             ],
             "title": "Hq City",
             "description": "The HQ city (M9); omit for San Francisco"
+          },
+          "sandbox": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SandboxIn"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A Sandbox start (M15b, 30.2)"
+          },
+          "historical": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Historical",
+            "description": "A historical scenario's key (M15b, 30.3)"
           }
         },
         "type": "object",
@@ -19605,6 +19825,12 @@
       },
       "EventOut": {
         "properties": {
+          "template_id": {
+            "type": "string",
+            "title": "Template Id",
+            "description": "The event template's key (M15b)",
+            "default": ""
+          },
           "event_id": {
             "type": "integer",
             "title": "Event Id"
@@ -29826,6 +30052,106 @@
         ],
         "title": "RangeOut"
       },
+      "RankingEntryOut": {
+        "properties": {
+          "place": {
+            "type": "integer",
+            "title": "Place"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "is_you": {
+            "type": "boolean",
+            "title": "Is You"
+          },
+          "value_label": {
+            "type": "string",
+            "title": "Value Label",
+            "description": "Revenue a year, or the list's 0-100 measure"
+          }
+        },
+        "type": "object",
+        "required": [
+          "place",
+          "company_id",
+          "name",
+          "is_you",
+          "value_label"
+        ],
+        "title": "RankingEntryOut"
+      },
+      "RankingListOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "revenue | places | innovative"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/RankingEntryOut"
+            },
+            "type": "array",
+            "title": "Entries"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "label",
+          "entries"
+        ],
+        "title": "RankingListOut"
+      },
+      "RankingsOut": {
+        "properties": {
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year",
+            "description": "The year they were published; null before the first"
+          },
+          "lists": {
+            "items": {
+              "$ref": "#/components/schemas/RankingListOut"
+            },
+            "type": "array",
+            "title": "Lists"
+          },
+          "years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Years",
+            "description": "Every year with rankings, newest first"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "lists",
+          "years"
+        ],
+        "title": "RankingsOut",
+        "description": "The latest January's industry rankings (30.4)."
+      },
       "RegionSegmentOut": {
         "properties": {
           "segment": {
@@ -31478,6 +31804,52 @@
         ],
         "title": "SafesOut"
       },
+      "SandboxIn": {
+        "properties": {
+          "start_year": {
+            "type": "integer",
+            "title": "Start Year"
+          },
+          "cash_dollars": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cash Dollars",
+            "description": "Omit for the background's"
+          },
+          "rivals": {
+            "type": "string",
+            "enum": [
+              "all",
+              "half",
+              "none"
+            ],
+            "title": "Rivals",
+            "default": "all"
+          },
+          "eras": {
+            "type": "string",
+            "enum": [
+              "historical",
+              "seeded"
+            ],
+            "title": "Eras",
+            "default": "historical"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start_year"
+        ],
+        "title": "SandboxIn",
+        "description": "Sandbox options (30.2)."
+      },
       "SaveNameIn": {
         "properties": {
           "name": {
@@ -31550,6 +31922,24 @@
             "type": "boolean",
             "title": "Busy",
             "description": "A turn, action or holiday is writing to it now"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "description": "campaign | sandbox | scenario (M15b)",
+            "default": "campaign"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score",
+            "description": "The latest company score; none for Sandbox games (M15b)"
           }
         },
         "type": "object",
