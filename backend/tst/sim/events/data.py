@@ -214,7 +214,7 @@ STAT_LABELS: Final[dict[str, str]] = {
 
 # What each trigger can name. Company, founder, product and board can always be asked for;
 # the director skips a template when the company has no product or board to name.
-ALWAYS: Final = frozenset({"company", "founder", "product", "board", "amount"})
+ALWAYS: Final = frozenset({"company", "founder", "product", "board", "amount", "persona"})
 _PERSON = frozenset({"person", "pair", "unit"})
 TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "low_morale": _PERSON,
@@ -275,6 +275,7 @@ PLACEHOLDERS: Final = (
     "era",  # M14b: the era the company caused
     "result",  # M14b: the quarter's result (beat, in line, miss)
     "promise",  # M14b: a broken promise, in words
+    "persona",  # M24 (32.4): the founder's strongest public trait, in words
 )
 
 

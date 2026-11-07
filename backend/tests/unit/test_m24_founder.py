@@ -382,7 +382,7 @@ def test_lobbying_builds_influence_and_risk() -> None:
     after = influence_of(out, CID, "north_america")
     assert after is not None
     assert after.value == pytest.approx(3 * math.sqrt(5))
-    assert after.risk == pytest.approx(500 * 0.002)
+    assert after.risk == pytest.approx(500 * B.influence.risk_rate)
     (entry,) = entries
     assert {line.account: line.amount for line in entry.lines} == {
         LOBBYING: 50_000_000,
@@ -465,3 +465,16 @@ def test_legacy_formula() -> None:
     assert out.total == round(expected)
     assert out.best_score == 500 and out.giving == pytest.approx(100.0)
     assert out.persona == pytest.approx(150.0)
+
+
+def test_persona_in_public_words_and_event_names() -> None:
+    """32.4: press, staff and rival texts name the strongest trait once it is above 20."""
+    from tst.events.drafts import event_names
+    from tst.sim.events.models import GameEvent
+
+    state = fresh_game(LOADED)
+    assert persona.public_words(state, CID, B) == persona.UNKNOWN_WORDS
+    state = _with_trait(state, "reckless", 35.0)
+    assert persona.public_words(state, CID, B) == "reckless"
+    event = GameEvent(1, CID, state.turn, "press_launch", "press", "major", "press", 1.0)
+    assert event_names(state, event, D, B)["persona"] == "reckless"

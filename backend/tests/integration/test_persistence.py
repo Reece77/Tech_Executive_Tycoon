@@ -83,7 +83,7 @@ def test_create_save(save: Path, loaded: LoadedData) -> None:
         # M13: 0030_public_company; M12b: 0031_hardware (re-parented after M13)
         # M14b: 0033_press
         # M14: 0034_mna
-        assert meta.schema_version == SCHEMA_VERSION == 35  # M15b: 0035_m15b
+        assert meta.schema_version == SCHEMA_VERSION == 36  # M24: 0036_founder
         assert company_cash(ledger_balances(session), state.player.id) == GARAGE_CASH
 
 

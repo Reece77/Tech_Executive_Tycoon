@@ -92,6 +92,26 @@ def strong(state: GameState, company_id: int, trait: str, balance: Balance) -> b
     return life is not None and life.trait(trait) >= balance.persona.effect_at
 
 
+PUBLIC_WORDS: dict[str, str] = {  # how the press describes the strongest trait
+    "visionary": "a visionary",
+    "ruthless": "ruthless",
+    "beloved": "well liked",
+    "reckless": "reckless",
+}
+UNKNOWN_WORDS = "little known to the public"
+
+
+def public_words(state: GameState, company_id: int, balance: Balance) -> str:
+    """The founder's strongest trait in the press's words (32.4), or "little known" while
+    no trait is above persona.start. Public: the traits are shown on the profile."""
+    founder = state.founder_of(company_id)
+    life = life_of(state, founder.id) if founder is not None else None
+    if life is None:
+        return UNKNOWN_WORDS
+    top = top_trait(life)
+    return PUBLIC_WORDS[top] if life.trait(top) > balance.persona.start else UNKNOWN_WORDS
+
+
 def top_trait(life: FounderLife) -> str:
     """The strongest trait; ties go to the first in TRAITS order."""
     return max(TRAITS, key=lambda t: (life.trait(t), -TRAITS.index(t)))

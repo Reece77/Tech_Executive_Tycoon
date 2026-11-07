@@ -68,6 +68,10 @@ def event_names(
     ) | loan_names(state, data, event.loan_id)
     if event.category == "press":  # M14b (29.1)
         names |= press_names(state, data, event.company_id, event.turn)
+    if balance is not None:  # M24 (32.4): the founder's strongest public trait
+        from tst.sim.founder.persona import public_words
+
+        names["persona"] = public_words(state, event.company_id, balance)
     if event.category == "public" and balance is not None:  # M13 (25)
         names |= public_names(state, data, balance, event.company_id)
     return names

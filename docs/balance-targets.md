@@ -464,3 +464,23 @@ M14b's own §29.7 targets (`tools/m14b_targets.py`, nightly), 10 seeds, all pass
 - **Tuning:** none needed; the synergy keys land it in band as given.
 - **Startups:** their figure mostly reflects departures, since they have few or no pool staff.
 - **Before the ruling:** the maintenance-line rule cut 87% (scripted) and 51% (startups).
+
+## M24: the founder's life (§32.7)
+
+### M24 The founder's life (2026-11-07, lane C, merges before M16)
+
+`tools/m24_targets.py` (nightly `tests/balance/test_m24_balance.py`), 10 seeds:
+
+| Target | Band | Value |
+| --- | --- | --- |
+| T1 nothing moves for a founder who never strains | no burnout at use <= 0.6 (property test); guards pass | the scripted strategies spend more than 0.6 of a month's energy in 3.9% of months and never burn out (0 in 20 ten-year runs); golden snapshots unchanged |
+| T2 all energy every month | first burnout in months 3–6 | month 4 on every seed |
+| T2 Holiday twice a year, use <= 0.8 | at most 1 burnout in 10 years | at most 1 |
+| T3 blitzscale's top trait at year 10 | Reckless or Ruthless on >= 6 | **0 of 10: not met** (every trait at 20: the script does nothing §32.4 counts as Ruthless or Reckless) |
+| T3 steady's top trait at year 10 | Beloved or Visionary on >= 6 | 10 of 10 (8 by value at Visionary 25, 2 by the tie order at 20) |
+| T4 antitrust blocks at $500k a month for 5 years | fall 20–40% | 38% (influence 73–100 at year 5) |
+| T4 a scandal in 10 years | on 3–7 seeds | 5 of 10 |
+| T5 $10M a year of grants | hiring appeal <= 0.03; Beloved +5 to +10 | +0.030; +6.0 |
+
+Tuned (M24's keys only): `foundation.beloved_k` 2 → 3 (at 2, $10M a year raised Beloved by 4); `influence.risk_rate` 0.002 → 0.0005 (at 0.002 a scandal broke on 8 of 10 seeds; 0.0015 and 0.001: 8; 0.0008: 7; 0.0006: 6; 0.0005: 5).
+

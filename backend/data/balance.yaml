@@ -1307,7 +1307,7 @@ influence: # 32.5: lobbying and influence over regulators by region
   decay: 0.03 # share of influence lost each month
   cap: 100 # influence points at most
   antitrust: 0.4 # an antitrust review's block probability x (1 - this x I / 100)
-  risk_rate: 0.002 # hidden scandal risk per $1k of lobbying a month
+  risk_rate: 0.0005 # hidden scandal risk per $1k of lobbying a month; 32.5 says 0.002, tuned for 32.7 target 4 (0.002: a scandal on 8 of 10 seeds; 0.0005: 5)
   risk_ruthless: 1.5 # risk builds x this while Ruthless is at persona.effect_at or more
   risk_decay: 0.02 # share of risk lost each month
   risk_scale: 1000 # a month's scandal chance is min(chance_cap, risk / this)
