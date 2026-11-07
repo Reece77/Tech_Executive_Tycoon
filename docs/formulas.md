@@ -2577,3 +2577,65 @@ Appended to `eras.yaml` as seeded windows (§26.4, stream `era_window` keyed by 
 2. **The scenario list** in §30.3.
 3. **The chief-of-staff advisor** stays in the backlog (v4), not M15.
 
+## 32. The founder's life (M24, lane C)
+
+Reece's decisions (2026-11-07): **burnout from overwork** with a visible stress meter; **political influence with scandal risk**; **a personal foundation** funded from a personal account; **a public persona built from choices**. Built in parallel with v3 as a third lane (numbered after v3). Principle: **the founder is a person, not only a budget of energy**; nothing here changes the company's rules except through the effects named below.
+
+### 32.1 Stress and burnout
+
+- **Stress** 0–100 on the founder, public, starting at 20. Each month: `+ stress.load × max(0, used − stress.comfort)` where `used` is the share of the month's energy spent (0–1), `stress.comfort` 0.6 and `stress.load` 40; `− stress.recover` (8) if `used ≤ 0.6`; `− 25` for a month on Holiday; `+5` for each critical event answered that month; floor 0.
+- **Burnout** when stress reaches 80: the monthly energy budget falls by `stress.burnout_cut` (30%), and a bold press answer's backfire chance doubles (§29.1). Burnout ends when stress falls below 40. A burnout raises a critical event the first month ("you are running on empty"), with choices: take a month off (Holiday 1 month), delegate more (opens the Executive team panel), or push on (stress +5).
+- **Shown** on the top bar beside energy, with the last six months' causes.
+- **Example.** Using all 60 energy (used 1.0) adds `40 × 0.4` = 16 a month: from 20, burnout in the fourth month. Using 45 of 60 (0.75) adds 6 a month: burnout after 10 months unless a light month or Holiday intervenes.
+
+### 32.2 The founder's personal account
+
+- A separate double-entry book for the founder (ADR-0003; integer cents), **never** mixed with a company's: `9100 personal cash`, `9200 foundation endowment`, `9300 personal spending`, `9400 personal income`.
+- **Income:** proceeds of the founder's secondary sales (§25.5), the founder's share of dividends (§25.5 and M16's), exit proceeds (§28.6, M15b's serial founder), and the founder's salary after tax at `personal.tax_rate` (35%).
+- **Spending:** gifts to the foundation (§32.3), and nothing else in M24 (personal investing is v5).
+- **API:** a Personal tab on the founder's profile (balance, income by source, gifts).
+- **Hook:** `founder.credit(state, person_id, cents, source)` is the only way money enters the book; M16 calls it for group dividends when it merges.
+
+### 32.3 The foundation
+
+- **Create** (energy 5) once the personal account holds `foundation.min_cents` ($1M), naming a **cause**: education, climate, health or local communities (a city).
+- **Gifts** move personal cash to the endowment. Each year the foundation grants `foundation.payout` (5%) of its endowment.
+- **Effects** of a year's grants `g` (dollars): persona *beloved* +`min(10, 2 × log10(g / 100,000))`; the cause adds: education, hiring appeal +`foundation.hiring` (≤ 0.03) in the founder's home region; climate, brand +2 on consumer products; health, staff morale +1; local, offices' hiring pools in that city +5%. Effects last 12 months.
+- **Legacy:** lifetime grants count toward the founder's **legacy score** (§32.6).
+
+### 32.4 Persona
+
+- Four public traits, 0–100, each starting at 20 and drifting 2 a month toward 20:
+
+| Trait | Raised by | Effects (at 60 or more) |
+| --- | --- | --- |
+| **Visionary** | causing an era (+15), bold press answers (+3), launches in new categories (+5), Most innovative top 10 (+5) | hiring appeal for builders +0.03; investor heat +0.05 in rounds |
+| **Ruthless** | layoffs of 10%+ (+10), hostile bids (+10), poaching a rival's key person (+3), breaking a no-layoffs promise (+15) | rival feuds build ×1.3; staff morale −2; regulators' antitrust strictness ×1.1 |
+| **Beloved** | kept promises (+4), foundation grants (§32.3), Best places to work top 10 (+5), raises across the company (+2) | resignations ×0.9; press bold answers +1 brand |
+| **Reckless** | broken promises (+6), covenant breaches (+8), failed tenders (+8), burnout months pushed through (+4) | lenders' rates +1 point; credibility drifts toward 45 instead of 50 |
+
+- Traits show on the founder's profile with their causes; press, staff and rival CEO texts (LLM within §16's budget, or templates) refer to the strongest one.
+
+### 32.5 Political influence
+
+- **Lobbying** (energy 5, a monthly company spend set per region, posted to `6950 lobbying`): influence in that region rises by `influence.rate × sqrt(spend / $100k)` (rate 3) a month, decays 3% a month, capped at 100.
+- **Effects:** an antitrust review's block probability × `(1 − influence.antitrust × I/100)` (`antitrust` 0.4); M22 will use the same influence for export licences and tariffs (hook: `influence.of(state, company_id, region)`).
+- **Scandal risk** (hidden): accumulates `risk += spend_k × influence.risk_rate` (0.002 per $1k a month), × 1.5 when Ruthless ≥ 60, decays 2% a month. Each month a scandal breaks with probability `min(0.2, risk / 1,000)` (stream `founder` id 46, key `(company_id,)`). The API shows exposure only as low, medium or high.
+- **A scandal** is a critical press event: credibility −15, brand −6 on every product, influence in that region reset to 0, a fine of 0.5% of revenue, persona Ruthless +10 and Reckless +5; the founder chooses to apologize (credibility −5 more, stress +10), fire the head of government affairs (if any) or fight it (a 50% chance of a second story). History records it.
+
+### 32.6 Legacy score
+
+At the game's end and in the Hall of Fame: `legacy = best company score reached (§30.1) + 100 × log10(1 + lifetime grants / $1M) + 2 × (Visionary + Beloved) − (Ruthless + Reckless)`, shown with its parts. A serial founder's companies (M15b) all count toward one legacy.
+
+### 32.7 Balance targets (M24 acceptance, printed)
+
+1. **Nothing moves for a founder who never strains.** A founder whose energy use stays at or below 0.6 never burns out, and every earlier guard passes (the scripted strategies use energy as before; record any strategy whose results move and why).
+2. **Burnout is real but avoidable.** A script that spends all its energy every month burns out within 3–6 months; one that takes a Holiday month twice a year with use ≤ 0.8 burns out at most once in 10 years.
+3. **Personas diverge.** Over 10 seeds at year 10, blitzscale's top trait is Reckless or Ruthless on at least 6, and steady's is Beloved or Visionary on at least 6.
+4. **Influence helps, with a price.** At $500k a month of lobbying in a region for 5 years, antitrust blocks there fall by 20–40%, and at least one scandal breaks in 10 years on 3–7 of 10 seeds.
+5. **Giving is visible but small:** a foundation granting $10M a year raises hiring appeal by at most 0.03 and Beloved by 5–10.
+
+### 32.8 What the API may show
+
+Stress and its causes, burnout state, the personal account, the foundation, persona traits with causes, influence by region, exposure as low, medium or high, scandals, and the legacy score with its parts. Never the scandal risk number or a scandal's probability.
+
