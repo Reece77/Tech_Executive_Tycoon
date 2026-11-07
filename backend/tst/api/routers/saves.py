@@ -74,6 +74,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         costs = repository.costs_for_turn(session, player.id, state.turn - 1)
         paid = repository.expenses_by_memo(session, player.id, state.turn)
         unread = inbox.unread_count(session, player.id)
+        balances = repository.current_balances(session, state.turn)
         newest = inbox.list_inbox(session, player.id, limit=LATEST_INBOX, archived=False)
     staff = state.staff(player.id)
     employees = [e for e in staff if not state.person(e.person_id).is_founder]
@@ -91,7 +92,10 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
     runway_warn = data.balance.morale.runway_warn_months
     month_total = sum(c.amount_cents for c in projected) + sum(c.amount_cents for c in month_paid)
     month_revenue = projected_revenue(state, player.id)
+    from tst.api.modes_views import score_out
+
     return OverviewOut(
+        score=score_out(state, player.id, balances, data),  # M15b (30.1)
         active_effects=views.active_effects(state),
         save_id=save_id,
         company_name=ov.company_name,

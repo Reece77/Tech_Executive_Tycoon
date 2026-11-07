@@ -8069,6 +8069,8 @@ export interface components {
         };
         /** OverviewOut */
         OverviewOut: {
+            /** @description The company score (M15b, 30.1) */
+            score?: components["schemas"]["ScoreOut"] | null;
             /** Save Id */
             save_id: string;
             /** Company Name */
@@ -10016,6 +10018,8 @@ export interface components {
         };
         /** RivalProfileOut */
         RivalProfileOut: {
+            /** @description The company score (M15b, 30.1) */
+            score?: components["schemas"]["ScoreOut"] | null;
             /** Company Id */
             company_id: number;
             /** Name */
@@ -10066,6 +10070,11 @@ export interface components {
         };
         /** RivalRowOut */
         RivalRowOut: {
+            /**
+             * Score
+             * @description The company score (M15b, 30.1)
+             */
+            score?: number | null;
             /** Company Id */
             company_id: number;
             /** Name */
@@ -10523,6 +10532,37 @@ export interface components {
             starting_cash_by_difficulty: {
                 [key: string]: number;
             };
+        };
+        /**
+         * ScoreOut
+         * @description A company's score now (30.1), from public inputs only, with its parts in points.
+         */
+        ScoreOut: {
+            /**
+             * Score
+             * @description 0-1,000
+             */
+            score: number;
+            /** Value Points */
+            value_points: number;
+            /** Growth Points */
+            growth_points: number;
+            /** Profit Points */
+            profit_points: number;
+            /** Leadership Points */
+            leadership_points: number;
+            /** Reputation Points */
+            reputation_points: number;
+            /**
+             * Estimate Cents
+             * @description Market cap if listed, else the displayed value range's midpoint (28.1)
+             */
+            estimate_cents: number;
+            /**
+             * Last December
+             * @description The score at the last December, if any
+             */
+            last_december: number | null;
         };
         /** ScoutOut */
         ScoutOut: {

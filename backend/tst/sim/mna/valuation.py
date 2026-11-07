@@ -17,6 +17,7 @@ from tst.sim.markets_public.value import growth_of, margin_of
 from tst.sim.mna import formulas as mf
 from tst.sim.mna.draws import fixed_draws
 from tst.sim.mna.models import RivalListing
+from tst.sim.people.models import FOUNDER_ROLE
 from tst.sim.rivals.models import ENTRANT_KEY, INCUMBENT_KEY, stream_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -64,7 +65,10 @@ def builders(state: GameState, company_id: int, data: GameData) -> float:
     """Builders on staff: the builder pool plus key people in builder roles (28.1)."""
     pool = sum(p.headcount for p in state.company_pools(company_id) if p.function == BUILDER)
     people = sum(
-        1 for e in state.staff(company_id) if data.role(e.role).product_function == BUILDER
+        1
+        for e in state.staff(company_id)
+        if e.role != FOUNDER_ROLE  # the player's founder holds no role in roles.yaml
+        and data.role(e.role).product_function == BUILDER
     )
     return pool + people
 

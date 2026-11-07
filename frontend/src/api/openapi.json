@@ -26102,6 +26102,17 @@
       },
       "OverviewOut": {
         "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoreOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The company score (M15b, 30.1)"
+          },
           "save_id": {
             "type": "string",
             "title": "Save Id"
@@ -30490,6 +30501,17 @@
       },
       "RivalProfileOut": {
         "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoreOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The company score (M15b, 30.1)"
+          },
           "company_id": {
             "type": "integer",
             "title": "Company Id"
@@ -30615,6 +30637,18 @@
       },
       "RivalRowOut": {
         "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score",
+            "description": "The company score (M15b, 30.1)"
+          },
           "company_id": {
             "type": "integer",
             "title": "Company Id"
@@ -31717,6 +31751,65 @@
           "starting_cash_by_difficulty"
         ],
         "title": "ScenarioOut"
+      },
+      "ScoreOut": {
+        "properties": {
+          "score": {
+            "type": "integer",
+            "title": "Score",
+            "description": "0-1,000"
+          },
+          "value_points": {
+            "type": "number",
+            "title": "Value Points"
+          },
+          "growth_points": {
+            "type": "number",
+            "title": "Growth Points"
+          },
+          "profit_points": {
+            "type": "number",
+            "title": "Profit Points"
+          },
+          "leadership_points": {
+            "type": "number",
+            "title": "Leadership Points"
+          },
+          "reputation_points": {
+            "type": "number",
+            "title": "Reputation Points"
+          },
+          "estimate_cents": {
+            "type": "integer",
+            "title": "Estimate Cents",
+            "description": "Market cap if listed, else the displayed value range's midpoint (28.1)"
+          },
+          "last_december": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last December",
+            "description": "The score at the last December, if any"
+          }
+        },
+        "type": "object",
+        "required": [
+          "score",
+          "value_points",
+          "growth_points",
+          "profit_points",
+          "leadership_points",
+          "reputation_points",
+          "estimate_cents",
+          "last_december"
+        ],
+        "title": "ScoreOut",
+        "description": "A company's score now (30.1), from public inputs only, with its parts in points."
       },
       "ScoutOut": {
         "properties": {

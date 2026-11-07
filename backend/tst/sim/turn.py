@@ -72,6 +72,7 @@ from tst.sim.rivals.startups import (
     record_failures,
 )
 from tst.sim.rng import RngFactory
+from tst.sim.score import snapshot_scores
 from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
 from tst.sim.state import (
     GameState,
@@ -405,6 +406,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
         state = with_company(state, replace(company, mrr_history=history))
     state = _rival_op_history(state, ctx, types)  # M14 (28.1): rivals' V_f margin
     state = _debt_history(state, ctx, types)  # M10 (20.3): covenants read completed months
+    state = snapshot_scores(state, ctx.balances, ctx.balance, ctx.data)  # M15b (30.1)
     # M10b (23.2): the month's choices in one line; modifiers whose last month this was expire.
     expiring = tuple(m for m in state.modifiers if m.end_turn <= state.turn + 1)
     summary = month_choices(state, expiring, state.player.id, ctx.balance)

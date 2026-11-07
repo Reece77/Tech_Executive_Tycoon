@@ -30,6 +30,7 @@ from tst.sim.facilities.config import (
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
+from tst.sim.modes.config import RankBalance, SandboxBalance, ScoreBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.org.voice_data import Voice
 from tst.sim.press.config import (
@@ -1210,6 +1211,9 @@ class Balance(_Frozen):
     antitrust: AntitrustBalance  # M14 (formulas.md 28.4)
     integration: IntegrationBalance  # M14 (formulas.md 28.5)
     press: PressBalance  # M14b (formulas.md 29.1, 29.3)
+    score: ScoreBalance  # M15b (formulas.md 30.1)
+    rank: RankBalance  # M15b (formulas.md 30.4)
+    sandbox: SandboxBalance  # M15b (formulas.md 30.2)
     promise: PromiseBalance  # M14b (formulas.md 29.2)
     feud: FeudBalance  # M14b (formulas.md 29.4)
     recruit: RecruitBalance  # M14b (formulas.md 29.5)

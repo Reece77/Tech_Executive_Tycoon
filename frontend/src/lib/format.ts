@@ -98,3 +98,22 @@ export function formatWhen(iso: string): string {
     minute: '2-digit',
   });
 }
+
+/** The company score's parts in a line (M15b, 30.1). */
+export function scoreNote(s: {
+  value_points: number;
+  growth_points: number;
+  profit_points: number;
+  leadership_points: number;
+  reputation_points: number;
+  last_december: number | null;
+}): string {
+  const parts = [
+    `value ${Math.round(s.value_points)}`,
+    `growth ${Math.round(s.growth_points)}`,
+    `profit ${Math.round(s.profit_points)}`,
+    `leading ${Math.round(s.leadership_points)}`,
+    `reputation ${Math.round(s.reputation_points)}`,
+  ].join(', ');
+  return s.last_december == null ? parts : `${parts}; last December ${s.last_december}`;
+}

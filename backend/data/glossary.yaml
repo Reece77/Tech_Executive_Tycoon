@@ -34,6 +34,7 @@ terms:
   kpi.rival_revenue: "A rival's monthly revenue in the markets you share."
   kpi.rival_money: "How well funded a rival looks, in words."
   kpi.rival_stance: "How a rival is behaving toward you lately."
+  kpi.company_score: "A public rating of a company from 0 to 1,000: value (up to 400), growth over three years (200), profitability (150), leading its markets (150) and reputation (100). Every company is scored the same way, each December."
   kpi.lasted: "How long the company ran before the game ended."
   kpi.peak_headcount: "The most people on the staff at any month end."
   kpi.arr_at_end: "Annual run rate in the last month played."

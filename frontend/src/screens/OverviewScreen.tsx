@@ -7,7 +7,13 @@ import { ActiveEffects } from '../components/ActiveEffects';
 import { PressPanels } from '../components/PressPanels';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOverview, type Overview, type OverviewBreakdowns } from '../hooks/api';
-import { formatMoneyShort, formatMoneyWhole, formatRunway, formatWhole } from '../lib/format';
+import {
+  formatMoneyShort,
+  formatMoneyWhole,
+  formatRunway,
+  formatWhole,
+  scoreNote,
+} from '../lib/format';
 import { formatFraction } from '../lib/finance';
 import { pct, MANAGER_LABELS } from '../lib/org';
 
@@ -74,6 +80,15 @@ export function OverviewScreen() {
           gap: 12,
         }}
       >
+        {data.score && (
+          <KpiTile
+            term="kpi.company_score"
+            label="Company score"
+            value={String(data.score.score)}
+            note={scoreNote(data.score)}
+            testId="kpi-score"
+          />
+        )}
         <KpiTile
           term="kpi.cash"
           drivers={tip('cash', "Last month's change in cash")}

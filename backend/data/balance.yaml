@@ -1178,3 +1178,38 @@ recruit:
   interest_pool: 4 # candidates generated per candidate kept, to find ones with the interest (M14b decision)
   fit_weights: { leadership: 0.35, mentoring: 0.25, communication: 0.25, temperament: 0.15 } # leadership fit from revealed values (29.5; M14b decision)
   fit_stars: [1, 5] # the fit's star scale (29.5)
+
+# --- Game modes: company score, rankings, Sandbox (formulas.md 30.1-30.4, M15b lane B) -----
+score:
+  value_floor_dollars: 1000000 # dollars; V (market cap, else V_f) at or below $1M scores 0 (30.1)
+  value_span_decades: 6 # decades above the floor to the full value part: $1T scores 400 (30.1)
+  weight_value: 400 # points (30.1)
+  weight_growth: 200 # points (30.1)
+  weight_profit: 150 # points (30.1)
+  weight_leadership: 150 # points (30.1)
+  weight_reputation: 100 # points (30.1)
+  growth_full: 0.5 # trailing 3-year revenue CAGR scoring the full growth part (30.1)
+  margin_floor: -0.2 # trailing operating margin scoring 0 (30.1)
+  margin_span: 0.5 # margin above the floor for the full part: +30% scores 1 (30.1)
+  reputation_span: 200 # mean brand + credibility points for the full reputation part (30.1)
+
+rank:
+  top_revenue: 50 # places in the Top 50 by revenue (30.4)
+  top_lists: 20 # places in Best places to work and in Most innovative (30.4)
+  places_min_staff: 50 # staff; smaller companies are not in Best places to work (30.4)
+  effect_places: 10 # a top-10 place earns the list's effect (30.4)
+  hiring: 0.03 # hiring appeal for the year from a top-10 Best places to work place (30.4)
+  brand: 2 # brand target points for the year from a top-10 Most innovative place (30.4)
+  effect_months: 12 # months the effects run, January to December (30.4)
+  years: 3 # Most innovative counts eras caused and launches in the last 3 years (30.4)
+  tenure_full_months: 60 # mean tenure scoring the full tenure measure (M15b decision)
+  places: { first: 0.4, second: 0.3, third: 0.3 } # weights on mean morale, pay against market, tenure (M15b decision)
+  innovative: { first: 0.4, second: 0.3, third: 0.3 } # weights on research leads, eras caused, launches (M15b decision)
+  lead_full: 60 # summed research lead points scoring the full lead measure (M15b decision)
+  eras_full: 2 # eras caused in the window for the full measure (M15b decision)
+  launches_full: 6 # launches in the window for the full measure (M15b decision)
+
+sandbox:
+  years: [2010, 2025] # start years offered (30.2)
+  cash_dollars: [100000, 100000000] # starting cash offered, dollars (M15b decision)
+  rival_share_half: 0.5 # "half the rivals" keeps this share of each category's incumbents (30.2)
