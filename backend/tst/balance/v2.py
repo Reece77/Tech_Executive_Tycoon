@@ -63,6 +63,9 @@ V5_ERAS: Final = 5
 V5_GROWTH: Final = 0.04
 V5_RIVALS: Final = 0.30
 V5_STAGE_4: Final = 5  # of 10 seeds
+V5_CELLS: Final = 0.90  # share of (run, category, decade after 2020) cells with a launch
+V5_MISS_RUNS: Final = 2  # of 10: the most runs in which a category may miss a decade
+V5_DECADES: Final = ("2020s", "2030s")
 
 
 # --- V1-V4: ten years -----------------------------------------------------------------------
@@ -229,6 +232,10 @@ def demand_value(state: GameState, game: Game) -> float:
     return home + away
 
 
+def _run(runs: Sequence[LongRun], seed: int) -> LongRun:
+    return next(r for r in runs if r.seed == seed)
+
+
 def _decade(turn: int) -> str:
     return next(label for start, label in reversed(DECADES) if turn >= start)
 
@@ -350,14 +357,36 @@ def long_rows(
                 share >= V5_RIVALS,
             )
         )
-        missing = _missing(mine, categories)
+        # Re-banded (product manager, 2026-11-07, third round): the old clause (no empty
+        # cell at all) failed on one empty cell of 160. Now: >= 90% of the (run, category,
+        # decade after 2020) cells have a rival launch, and no category misses a decade in
+        # more than 2 of 10 runs.
+        cells = [(r.seed, c, d) for r in mine for c in categories for d in V5_DECADES]
+        filled = sum(1 for seed, c, d in cells if _run(mine, seed).launches.get((c, d), 0))
+        share = filled / len(cells) if cells else 0.0
         rows.append(
             Row(
                 "V5",
-                f"{s}: categories with no rival launch in a decade",
-                ", ".join(missing) or "none",
+                f"{s}: (run, category, decade after 2020) cells with a rival launch",
+                f"{share:.0%} of {len(cells)}",
+                f">= {V5_CELLS:.0%}",
+                share >= V5_CELLS,
+            )
+        )
+        worst = {
+            (c, d): sum(1 for r in mine if r.launches.get((c, d), 0) == 0)
+            for c in categories
+            for d in V5_DECADES
+        }
+        cap = V5_MISS_RUNS * len(mine) / len(LONG_SEEDS)
+        over = sorted(f"{c} {d} ({n})" for (c, d), n in worst.items() if n > cap)
+        rows.append(
+            Row(
+                "V5",
+                f"{s}: category-decades empty in more than {cap:g} runs",
+                ", ".join(over) or "none",
                 "none",
-                not missing,
+                not over,
             )
         )
         if scheduled:

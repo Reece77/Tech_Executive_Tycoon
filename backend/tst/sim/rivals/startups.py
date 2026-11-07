@@ -275,7 +275,12 @@ def record_failures(
         if item.template != "rival_failed":
             continue
         company = state.company(item.company_id or 0)
-        state, move = _record(state, company, "failed", "ran out of money and closed")
+        why = (  # M15a: a startup small for rivals.startup.small_months closes with cash left
+            "closed after too long as a tiny team: shut down or acqui-hired"
+            if company.small_since_turn is not None and company.insolvent_months == 0
+            else "ran out of money and closed"
+        )
+        state, move = _record(state, company, "failed", why)
         moves.append(move)
     return state, tuple(moves)
 

@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 35
+SCHEMA_VERSION = 36
 
 
 class Base(DeclarativeBase):
@@ -1767,3 +1767,13 @@ class VentureRow(Base):
 
     company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class StartupSmallRow(Base):
+    """A rival startup's first month of its current run below rivals.startup.small_staff
+    people (formulas.md 30.7 V5, M15a, 0036). No row: not small."""
+
+    __tablename__ = "startup_small"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    since_turn: Mapped[int] = mapped_column(Integer, nullable=False)

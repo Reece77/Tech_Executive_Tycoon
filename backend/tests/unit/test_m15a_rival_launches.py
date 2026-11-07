@@ -1,11 +1,12 @@
 """M15a (formulas.md 30.7 V5): rivals keep launching after 2020. Regression tests for the three
 fixes: a late startup's product starts with a share of the market's learned features, a
 hardware startup launches without a contract (rivals' manufacturing is abstract, 26.1), and a
-startup down to one person closes so it no longer holds a startup place."""
+startup below three people for 24 months closes so it no longer holds a startup place."""
 
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -16,7 +17,7 @@ from tst.sim.calendar import ym_to_turn
 from tst.sim.finance.insolvency import insolvency
 from tst.sim.ledger import CASH
 from tst.sim.products import formulas as pf
-from tst.sim.rivals.startups import found_company, launch_ready
+from tst.sim.rivals.startups import found_company, launch_ready, record_failures
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_employment, with_product
 
@@ -69,15 +70,67 @@ def test_a_hardware_startup_launches_without_a_contract() -> None:
     assert any(m.action == "launched" for m in moves)
 
 
-def test_a_startup_down_to_one_person_closes() -> None:
+def test_a_startup_small_for_24_months_closes() -> None:
+    """Product manager's rule (2026-11-07): below rivals.startup.small_staff people for
+    rivals.startup.small_months consecutive month ends, a startup closes; History says why."""
+    sb = B.rivals.startup
     state, cid = _startup(fresh_game(LOADED), "b2b_saas")
     staff = state.staff(cid)
-    assert len(staff) > 1
+    assert len(staff) >= sb.small_staff
     balances = {(cid, CASH): 10**9}
     kept, _ = insolvency(state, balances, B, D)
-    assert kept.company(cid).alive  # a team and cash: still in business
-    for e in staff[1:]:
+    assert kept.company(cid).alive and kept.company(cid).small_since_turn is None
+    for e in staff[sb.small_staff - 1 :]:  # down to one fewer than small_staff
         state = with_employment(state, replace(e, status="ended", end_turn=state.turn))
-    closed, _ = insolvency(state, balances, B, D)
-    assert not closed.company(cid).alive
-    assert all(p.status == "retired" for p in closed.company_products(cid))
+    start = state.turn
+    for month in range(sb.small_months):
+        state = replace(state, turn=start + month)
+        state, _ = insolvency(state, balances, B, D)
+        alive = state.company(cid).alive
+        assert alive == (month < sb.small_months - 1), month
+    assert state.company(cid).small_since_turn == start
+    assert all(p.status == "retired" for p in state.company_products(cid))
+    _, moves = record_failures(state, _failed_logs(state, cid))
+    assert "tiny team" in moves[0].detail
+
+
+def test_growing_again_resets_the_small_count() -> None:
+    sb = B.rivals.startup
+    state, cid = _startup(fresh_game(LOADED), "b2b_saas")
+    staff = state.staff(cid)
+    small = state
+    for e in staff[sb.small_staff - 1 :]:
+        small = with_employment(small, replace(e, status="ended", end_turn=small.turn))
+    small, _ = insolvency(small, {(cid, CASH): 10**9}, B, D)
+    assert small.company(cid).small_since_turn == small.turn
+    grown = replace(small, employments=state.employments)  # the team is back
+    grown, _ = insolvency(grown, {(cid, CASH): 10**9}, B, D)
+    assert grown.company(cid).small_since_turn is None
+
+
+def _failed_logs(state: GameState, cid: int):  # type: ignore[no-untyped-def]
+    from tst.sim.log import inbox_item
+
+    return (inbox_item(state.turn, cid, "rival_failed", rival=state.company(cid).name),)
+
+
+def test_the_small_count_survives_a_save(tmp_path: Path) -> None:
+    """startup_small (migration 0036) round-trips small_since_turn."""
+    from tst.db.repository import create_save, open_session
+    from tst.db.state_io import load_state, sync_state
+    from tst.sim.state import with_company
+
+    path = create_save(
+        "small", 3, "funded_spinout", company_name="Co", data=LOADED, save_dir=tmp_path
+    )
+    with open_session(path) as session, session.begin():
+        before = load_state(session)
+        rival = next(c for c in before.companies if not c.is_player)
+        sync_state(session, before, with_company(before, replace(rival, small_since_turn=7)))
+    with open_session(path) as session:
+        assert load_state(session).company(rival.id).small_since_turn == 7
+    with open_session(path) as session, session.begin():
+        before = load_state(session)
+        sync_state(session, before, with_company(before, replace(rival, small_since_turn=None)))
+    with open_session(path) as session:
+        assert load_state(session).company(rival.id).small_since_turn is None
