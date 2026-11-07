@@ -1,7 +1,7 @@
 import { Alert, Button, Modal, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { CitiesTable } from '../components/CitiesTable';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
@@ -22,7 +22,8 @@ export function OfficesScreen() {
 
 function Body({ saveId, g }: { saveId: string; g: Geo }) {
   const act = useGeoAction(saveId);
-  const [leasing, setLeasing] = useState(false);
+  const [params] = useSearchParams(); // an office pitch's Modify (M15b)
+  const [leasing, setLeasing] = useState(params.get('lease') !== null);
   const [closing, setClosing] = useState<Office | null>(null);
   return (
     <>
@@ -235,8 +236,11 @@ function LeaseDialog({
   onLease: (city: string, seats: number) => void;
   busy: boolean;
 }) {
-  const [city, setCity] = useState(g.cities.find((c) => !c.is_hq)?.key ?? g.hq_city);
-  const [seats, setSeats] = useState(g.seat_sizes[0] ?? 25);
+  const [params] = useSearchParams();
+  const [city, setCity] = useState(
+    params.get('lease') ?? g.cities.find((c) => !c.is_hq)?.key ?? g.hq_city,
+  );
+  const [seats, setSeats] = useState(Number(params.get('seats')) || (g.seat_sizes[0] ?? 25));
   const preview = useLeasePreview(saveId, city, seats, true);
   return (
     <Modal opened onClose={onClose} title="Lease an office">

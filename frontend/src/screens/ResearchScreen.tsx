@@ -1,7 +1,7 @@
 import { Alert, Button, Modal, NumberInput, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { EraTimeline } from '../components/EraTimeline';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
@@ -35,7 +35,8 @@ export function ResearchScreen() {
 
 function Body({ saveId, r }: { saveId: string; r: Research }) {
   const act = useResearchAction(saveId);
-  const [starting, setStarting] = useState(false);
+  const [params] = useSearchParams(); // a research pitch's Modify (M15b)
+  const [starting, setStarting] = useState(params.get('start') !== null);
   const [domain, setDomain] = useState(r.domains[1]?.key ?? r.domains[0]?.key ?? '');
   const [licensing, setLicensing] = useState<{ rival: RivalLead; out: boolean } | null>(null);
   const run = (a: ResearchAction, done?: () => void) => act.mutate(a, { onSuccess: done });
@@ -482,8 +483,9 @@ function StartDialog({
   onClose: () => void;
   onStart: (unitId: number, domain: string) => void;
 }) {
+  const [params] = useSearchParams();
   const [unit, setUnit] = useState(String(r.units[0]?.unit_id ?? ''));
-  const [domain, setDomain] = useState(r.domains[1]?.key ?? '');
+  const [domain, setDomain] = useState(params.get('start') ?? r.domains[1]?.key ?? '');
   const chosen = r.units.find((u) => String(u.unit_id) === unit);
   return (
     <Modal opened onClose={onClose} title="Start a research project">

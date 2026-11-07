@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from tst.api.schemas.press import (
     CauseOut,
+    CeoProfileOut,
     CredibilityOut,
     FeudOut,
     MomentOut,
@@ -16,9 +17,13 @@ from tst.api.schemas.press import (
     RivalLeaderOut,
     StatementOut,
 )
+from tst.api.views import _personality, _skills
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.hiring.recruit import REPLACEABLE, leaver, replace_problem
+from tst.sim.people.formulas import potential_phrase
+from tst.sim.people.models import PA_KEY
+from tst.sim.people.reveal import revealed_range
 from tst.sim.press import promises
 from tst.sim.press.models import Cause, Promise
 from tst.sim.press.names import rival_ceo_id, rival_ceo_name
@@ -159,11 +164,45 @@ def feud_out(state: GameState, rival_id: int, data: LoadedData) -> FeudOut:
     )
 
 
+def ceo_profile(state: GameState, person_id: int | None, data: LoadedData) -> CeoProfileOut | None:
+    """A rival CEO's profile from the player's reveal record: displayed ranges only (ADR-0007,
+    M15b addendum 11)."""
+    if person_id is None:
+        return None
+    reveal = state.reveal(state.player.id, person_id)
+    if reveal is None:
+        return None
+    person = state.person(person_id)
+    initial = data.balance.reveal.initial_hw.skill
+    widths = [r.hw for k, r in reveal.attributes if k in set(data.game_data.skill_keys)]
+    known = 1 - (sum(widths) / len(widths)) / initial if widths and initial else 0.0
+    learned = next(label for bound, label in LEARNED_WORDS if known <= bound)
+    return CeoProfileOut(
+        skills=_skills(person, reveal, data),
+        personality=_personality(person, reveal, data),
+        potential_phrase=potential_phrase(
+            *revealed_range(person, reveal, PA_KEY), data.balance.reveal.pa_phrase_bounds
+        ),
+        learned_label=learned,
+    )
+
+
+# How much of a stranger's skill range the player has narrowed, as words (M15b, display only).
+LEARNED_WORDS = (
+    (0.15, "Known by reputation"),  # tunable-exempt: display bands
+    (0.4, "Seen in public a few times"),  # tunable-exempt: display bands
+    (0.7, "Studied closely"),  # tunable-exempt: display bands
+    (1.0, "Known well"),  # tunable-exempt: display bands
+)
+
+
 def rival_leader_out(state: GameState, rival_id: int, data: LoadedData) -> RivalLeaderOut:
+    ceo_id = rival_ceo_id(state, rival_id)
     return RivalLeaderOut(
         rival_id=rival_id,
         ceo=rival_ceo_name(state, rival_id),
-        ceo_person_id=rival_ceo_id(state, rival_id),
+        ceo_person_id=ceo_id,
+        profile=ceo_profile(state, ceo_id, data),
         statements=[
             StatementOut(label=format_turn(s.turn), kind=s.kind, text=s.text)
             for s in sorted(state.statements, key=lambda s: -s.id)

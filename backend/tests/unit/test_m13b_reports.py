@@ -138,3 +138,18 @@ def test_quarterly_reports_still_come_from_run_executives(loaded: LoadedData) ->
     _, _, logs, _ = _run(loaded, state, seed)
     reports = [i for i in logs if i.template == "exec_report"]
     assert reports and "$9,000" in str(dict(reports[0].params)["report"])
+
+
+def test_a_report_after_a_marked_quarter_shows_start_and_now(loaded: LoadedData) -> None:
+    """M15b (an M13b follow-up): with the last quarter's marks, a report reads "41 -> 47"."""
+    from tst.sim.org.reports import mark_quarter
+    from tst.sim.state import with_product as put
+
+    state = _quarter_end(loaded, "cmo")
+    marked = mark_quarter(state, loaded.balance)
+    product = marked.company_products(1)[0]
+    assert {m.product_id for m in marked.quarter_marks} == {product.id}
+    later = put(marked, replace(product, quality=product.quality + 6))
+    text = report_text(later, "cmo", EXEC, 5_000_000, loaded.balance, loaded.game_data)
+    assert f"quality {product.quality:.0f} -> {product.quality + 6:.0f}" in text, text
+    assert mark_quarter(replace(state, turn=3), loaded.balance).quarter_marks == ()  # April

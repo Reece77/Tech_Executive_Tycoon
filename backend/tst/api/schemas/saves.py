@@ -7,6 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.modes import ScoreOut
 from tst.api.schemas.people import ActiveEffectOut, EnergyOut, InboxItemOut
 from tst.db.repository import MAX_STORED_SEED
 from tst.sim.data_models import DEFAULT_DIFFICULTY
@@ -43,6 +44,15 @@ class FounderIn(BaseModel):
         )
 
 
+class SandboxIn(BaseModel):
+    """Sandbox options (30.2)."""
+
+    start_year: int
+    cash_dollars: int | None = Field(default=None, ge=0, description="Omit for the background's")
+    rivals: Literal["all", "half", "none"] = "all"
+    eras: Literal["historical", "seeded"] = "historical"
+
+
 class CreateSaveIn(BaseModel):
     name: str = Field(min_length=1, max_length=64, description="Save slug: a-z, 0-9, - or _")
     seed: int | None = Field(
@@ -57,6 +67,10 @@ class CreateSaveIn(BaseModel):
     )
     hq_city: str | None = Field(
         default=None, description="The HQ city (M9); omit for San Francisco"
+    )
+    sandbox: SandboxIn | None = Field(default=None, description="A Sandbox start (M15b, 30.2)")
+    historical: str | None = Field(
+        default=None, description="A historical scenario's key (M15b, 30.3)"
     )
 
 
@@ -73,6 +87,10 @@ class SaveOut(BaseModel):
     size_bytes: int
     ironman: bool = Field(description="No duplicate or restore (ADR-0004)")
     busy: bool = Field(description="A turn, action or holiday is writing to it now")
+    mode: str = Field(default="campaign", description="campaign | sandbox | scenario (M15b)")
+    score: int | None = Field(
+        default=None, description="The latest company score; none for Sandbox games (M15b)"
+    )
 
 
 class SaveNameIn(BaseModel):
@@ -160,6 +178,10 @@ class StageReachedOut(BaseModel):
 
 
 class OverviewOut(BaseModel):
+    score: ScoreOut | None = Field(default=None, description="The company score (M15b, 30.1)")
+    deals_due: int = Field(
+        default=0, description="Your deals under review, closing or blocked (M15b top bar)"
+    )
     save_id: str
     company_name: str
     turn: int

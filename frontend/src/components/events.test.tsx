@@ -86,3 +86,20 @@ describe('event card (M6)', () => {
     expect(renderToStaticMarkup(<KindBadge kind="critical_event" />)).toContain('>Critical<');
   });
 });
+
+describe("Reece's playtest 3 addendum 14", () => {
+  it('the launch press moment says a promise can follow', () => {
+    const launch: GameEventOut = {
+      ...EVENT,
+      template_id: 'press_launch',
+      category: 'press',
+      category_label: 'Press',
+      chosen: null,
+    };
+    const html = wrap(<EventCard saveId="s" event={launch} />);
+    expect(html).toContain('data-testid="press-promise-hint"');
+    expect(html).toContain('make a public promise about this launch');
+    const other = wrap(<EventCard saveId="s" event={{ ...launch, template_id: 'press_outage' }} />);
+    expect(other).not.toContain('press-promise-hint');
+  });
+});

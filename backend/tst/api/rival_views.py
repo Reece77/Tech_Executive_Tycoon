@@ -142,9 +142,13 @@ def move_out(m: RivalMove) -> RivalMoveOut:
 def rivals_out(
     state: GameState, balances: Balances, data: LoadedData, moves: list[RivalMove], view: str
 ) -> RivalsOut:
+    from tst.api.modes_views import score_out
+    from tst.sim.score import market_revenue
+
     mine = player_segments(state)
     rows = []
     rivals = [c for c in state.companies if not c.is_player]
+    markets = market_revenue(state, data.game_data, data.balance)
     for company in rivals:
         shared = sorted(
             data.game_data.segment(s).label for _, s in mine & rival_segments(state, company.id)
@@ -156,6 +160,9 @@ def rivals_out(
         last = next((m for m in reversed(moves) if m.company_id == company.id), None)
         rows.append(
             RivalRowOut(
+                score=None
+                if company.failed_turn is not None
+                else score_out(state, company.id, balances, data, markets).score,
                 company_id=company.id,
                 name=company.name,
                 is_startup=company.is_startup,
@@ -271,7 +278,12 @@ def rival_profile(
             )
         )
     stance_now, reason = stance(state, company.id, data)
+    from tst.api.modes_views import score_out
+
     return RivalProfileOut(
+        score=None
+        if company.failed_turn is not None
+        else score_out(state, company.id, balances, data),
         company_id=company.id,
         name=company.name,
         is_startup=company.is_startup,

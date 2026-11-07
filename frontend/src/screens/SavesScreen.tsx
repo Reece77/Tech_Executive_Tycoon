@@ -31,6 +31,9 @@ const STATE_LABELS: Record<string, string> = {
   active: 'Active',
   bankrupt: 'Bankrupt',
   founder_removed: 'Founder removed',
+  exit: 'Sold', // M14
+  scenario_done: 'Scenario judged', // M15b
+  retired: 'Retired',
 };
 
 const helper = createColumnHelper<GameTableFeatures, Save>();
@@ -58,6 +61,16 @@ function columns(scenarioName: (id: string) => string, open: (d: Dialog) => void
     helper.accessor('difficulty', {
       header: 'Difficulty',
       cell: ({ getValue }) => humanize(getValue()),
+    }),
+    helper.accessor('mode', {
+      header: 'Mode', // M15b (30.2-30.3)
+      meta: { term: 'game_mode' },
+      cell: ({ getValue }) => humanize(getValue() ?? 'campaign'),
+    }),
+    helper.accessor('score', {
+      header: 'Score', // M15b (30.1): none for Sandbox games
+      meta: { term: 'kpi.company_score' },
+      cell: ({ getValue }) => <span className="tst-num">{getValue() ?? '—'}</span>,
     }),
     helper.accessor('turn', {
       header: 'Date',

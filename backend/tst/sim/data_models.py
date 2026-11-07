@@ -30,6 +30,14 @@ from tst.sim.facilities.config import (
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
+from tst.sim.modes.config import (
+    HistoricalScenario,
+    RankBalance,
+    SandboxBalance,
+    ScoreBalance,
+    SerialBalance,
+    StoryBalance,
+)
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.org.voice_data import Voice
 from tst.sim.press.config import (
@@ -183,6 +191,10 @@ class PeopleBalance(_Frozen):
     region_weights: dict[str, float]
     retire_bp_per_year_over_60: int = Field(ge=0)
     retire_from_age: int = Field(gt=0)
+    # M15b (playtest 3 addendum 13): after this many months in the player's company these
+    # attributes show exactly (leadership fit becomes a single star value)
+    reveal_tenure_months: int = Field(default=12, ge=1)
+    reveal_tenure_attributes: tuple[str, ...] = ("leadership", "mentoring", "communication")
 
     @model_validator(mode="after")
     def _check(self) -> PeopleBalance:
@@ -224,6 +236,9 @@ REVEAL_ACTIONS = (
     "reference_check",
     "scouting_month",
     "employed_month",
+    "public_appearance",  # M15b: a rival CEO's public statement or feud (addendum 11)
+    "rival_approach",  # M15b: a poach search opened on the CEO's company
+    "rival_diligence",  # M15b: diligence done on the CEO's company
 )
 
 
@@ -1210,6 +1225,11 @@ class Balance(_Frozen):
     antitrust: AntitrustBalance  # M14 (formulas.md 28.4)
     integration: IntegrationBalance  # M14 (formulas.md 28.5)
     press: PressBalance  # M14b (formulas.md 29.1, 29.3)
+    score: ScoreBalance  # M15b (formulas.md 30.1)
+    rank: RankBalance  # M15b (formulas.md 30.4)
+    sandbox: SandboxBalance  # M15b (formulas.md 30.2)
+    story: StoryBalance  # M15b addendum 12: rival CEO storylines
+    serial: SerialBalance  # M15b addendum 10: founding again after an exit
     promise: PromiseBalance  # M14b (formulas.md 29.2)
     feud: FeudBalance  # M14b (formulas.md 29.4)
     recruit: RecruitBalance  # M14b (formulas.md 29.5)
@@ -1792,6 +1812,9 @@ INBOX_TEMPLATE_KEYS = (
     "pitch_went_ahead",  # M13b (27.1)
     "deal_update",  # M14 (28)
     "rival_acquired",  # M14 (28.6)
+    "rankings_published",  # M15b (30.4)
+    "rival_story",  # M15b addendum 12
+    "founded_again",  # M15b addendum 10
     "exit_sale",  # M14 (28.6)
     "era_report",  # M13b (27.3)
     # M4a (formulas.md 14)
@@ -1857,6 +1880,7 @@ def _dupes(keys: list[str]) -> list[str]:
 class GameData(_Frozen):
     accounts: tuple[Account, ...]
     scenarios: tuple[Scenario, ...]
+    historical: tuple[HistoricalScenario, ...] = ()  # M15b (30.3): scenarios.yaml's historical
     skills: tuple[SkillDef, ...]
     personality: tuple[TraitDef, ...]
     hidden: tuple[HiddenTraitDef, ...]
@@ -2130,6 +2154,9 @@ class GameData(_Frozen):
     @property
     def region_keys(self) -> list[str]:
         return [r.key for r in self.regions]
+
+    def historical_scenario(self, key: str) -> HistoricalScenario | None:
+        return next((h for h in self.historical if h.key == key), None)
 
     def scenario(self, scenario_id: str) -> Scenario | None:
         for scenario in self.scenarios:

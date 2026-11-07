@@ -196,6 +196,7 @@ from tst.sim.log import LogItem
 from tst.sim.mna.antitrust import AcceptRemedy
 from tst.sim.mna.deals import AbandonDeal, BidForCompany, SetDealMode, StartDiligence
 from tst.sim.mna.integration import SetDirective
+from tst.sim.modes.serial import FoundAgain, Retire, found_again, retire
 from tst.sim.org import ceo_rules
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
@@ -217,6 +218,8 @@ type Action = (
     | HardwareAction
     | PublicAction
     | MnaAction  # M14
+    | FoundAgain  # M15b addendum 10
+    | Retire
     | PressAction
     | ReplaceLeaver
 )
@@ -299,6 +302,8 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "license_in": LicenseIn,
     "license_out": LicenseOut,
     **MNA_ACTION_TYPES,  # M14
+    "found_again": FoundAgain,  # M15b addendum 10
+    "retire": Retire,
 }
 
 __all__ = [
@@ -410,6 +415,13 @@ def apply_action(
     `draws` makes the generator for any randomness inside the action; by default it is
     stream `actions` keyed by `seq` (player actions).
     """
+    if isinstance(action, Retire):  # M15b addendum 10: the choices after an exit
+        return ActionResult(retire(state), (), ())
+    if isinstance(action, FoundAgain):
+        new, entries, logs = found_again(
+            state, action.company_name, action.keep_cents, rng, balance, data
+        )
+        return ActionResult(new, entries, logs)
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
     if draws is None:

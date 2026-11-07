@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router';
 import { Alert, Button, Modal, TextInput } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
@@ -25,7 +26,10 @@ export function RegionsPanel({ saveId, productId }: { saveId: string; productId:
 
 function Body({ saveId, r }: { saveId: string; r: ProductRegions }) {
   const act = useRegionAction(saveId, r.product_id);
-  const [launching, setLaunching] = useState<ProductRegion | null>(null);
+  const [params] = useSearchParams(); // a region pitch's Modify (M15b)
+  const [launching, setLaunching] = useState<ProductRegion | null>(
+    r.regions.find((x) => x.region === params.get('region') && x.launch_cost_cents != null) ?? null,
+  );
   const [splitting, setSplitting] = useState(false);
   // The region's key, not a copy: the dialog reads the fresh row after each price (M10b).
   const [pricingKey, setPricingKey] = useState<string | null>(null);

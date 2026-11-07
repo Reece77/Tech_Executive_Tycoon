@@ -122,6 +122,13 @@ function PressNote({ saveId, event }: { saveId: string; event: GameEventOut }) {
           Make a public promise this month on the Overview
         </Link>
       )}
+      {!event.chosen && event.template_id === 'press_launch' && (
+        // playtest 3 addendum 14 (M15b): promises went unnoticed, so the launch card says so
+        <strong data-testid="press-promise-hint">
+          Answer measured or bold, then you can make a public promise about this launch (ship, beat
+          a rival, research) on the Overview.
+        </strong>
+      )}
     </span>
   );
 }

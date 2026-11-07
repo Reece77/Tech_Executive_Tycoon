@@ -24,6 +24,7 @@ import {
   type KpiPoint,
   type TimelineQuery,
 } from '../hooks/api';
+import { useHistoryCompanies } from '../hooks/modes';
 import { TABLE_SEARCH_ATTR } from '../hooks/useGameHotkeys';
 import { useTableViews } from '../hooks/useTableViews';
 import { formatMoneyShort, formatMoneyWhole, formatWhole, humanize } from '../lib/format';
@@ -44,10 +45,33 @@ const HISTORY_PAGE = 50; // timeline rows per page
 export function HistoryScreen() {
   const { saveId = '', tab = 'timeline' } = useParams();
   const current = TABS.find((t) => t.key === tab);
+  const companies = useHistoryCompanies(saveId);
+  const [company, setCompany] = useState<number | undefined>(undefined);
   if (!current) return <Navigate to={`/game/${saveId}/history/timeline`} replace />;
+  const ventures = companies.data ?? [];
   return (
     <>
       <ScreenTitle>History</ScreenTitle>
+      {ventures.length > 1 && (
+        <NativeSelect
+          label="Company"
+          data-testid="history-company"
+          value={String(company ?? ventures.find((v) => v.current)?.company_id ?? '')}
+          onChange={(e) => {
+            const picked = ventures.find((v) => String(v.company_id) === e.currentTarget.value);
+            setCompany(picked && !picked.current ? picked.company_id : undefined);
+          }}
+          data={ventures.map((v) => ({
+            value: String(v.company_id),
+            label: v.current
+              ? `${v.name} (now)`
+              : `${v.name}, sold to ${v.buyer ?? 'a buyer'} ${v.ended_label ?? ''}${
+                  v.score === null || v.score === undefined ? '' : ` · score ${v.score}`
+                }`,
+          }))}
+          style={{ maxWidth: 420, marginBottom: 8 }}
+        />
+      )}
       <div role="tablist" aria-label="History" className="tst-tabs">
         {TABS.map((t) => (
           <Link
@@ -62,10 +86,12 @@ export function HistoryScreen() {
           </Link>
         ))}
       </div>
-      {current.key === 'timeline' && <TimelineTab saveId={saveId} />}
-      {current.key === 'charts' && <ChartsTab saveId={saveId} />}
-      {current.key === 'storylines' && <StorylinesTab saveId={saveId} />}
-      {current.key === 'fame' && <FameTab saveId={saveId} />}
+      {current.key === 'timeline' && (
+        <TimelineTab key={company ?? 0} saveId={saveId} companyId={company} />
+      )}
+      {current.key === 'charts' && <ChartsTab saveId={saveId} companyId={company} />}
+      {current.key === 'storylines' && <StorylinesTab saveId={saveId} companyId={company} />}
+      {current.key === 'fame' && <FameTab saveId={saveId} companyId={company} />}
     </>
   );
 }
@@ -148,7 +174,7 @@ function WhatHappened({ saveId, row }: { saveId: string; row: HistoryRow }) {
   );
 }
 
-function TimelineTab({ saveId }: { saveId: string }) {
+function TimelineTab({ saveId, companyId }: { saveId: string; companyId?: number }) {
   const [search, setSearch] = useState('');
   const [year, setYear] = useState('');
   const [category, setCategory] = useState('');
@@ -163,6 +189,7 @@ function TimelineTab({ saveId }: { saveId: string }) {
     person_id: person ? Number(person) : undefined,
     offset,
     limit: HISTORY_PAGE,
+    company_id: companyId,
   };
   const timeline = useTimeline(saveId, query);
   const columns = useMemo(() => timelineColumns(saveId), [saveId]);
@@ -310,8 +337,8 @@ function lastN<T>(rows: T[], range: Range): T[] {
   return n === Infinity ? rows : rows.slice(-n);
 }
 
-function ChartsTab({ saveId }: { saveId: string }) {
-  const charts = useHistoryCharts(saveId);
+function ChartsTab({ saveId, companyId }: { saveId: string; companyId?: number }) {
+  const charts = useHistoryCharts(saveId, companyId);
   const [kpi, setKpi] = useState<KpiKey>('arr_cents');
   const [range, setRange] = useState<Range>('all');
   if (charts.isPending) return <Loading />;
@@ -470,8 +497,8 @@ function ChartsTab({ saveId }: { saveId: string }) {
 
 // --- Storylines -------------------------------------------------------------------------------
 
-function StorylinesTab({ saveId }: { saveId: string }) {
-  const stories = useHistoryStorylines(saveId);
+function StorylinesTab({ saveId, companyId }: { saveId: string; companyId?: number }) {
+  const stories = useHistoryStorylines(saveId, companyId);
   if (stories.isPending) return <Loading />;
   if (stories.error) return <LoadError title="Could not load storylines" error={stories.error} />;
   if (stories.data.length === 0) {
@@ -550,8 +577,8 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-function FameTab({ saveId }: { saveId: string }) {
-  const fame = useHallOfFame(saveId);
+function FameTab({ saveId, companyId }: { saveId: string; companyId?: number }) {
+  const fame = useHallOfFame(saveId, companyId);
   if (fame.isPending) return <Loading />;
   if (fame.error) return <LoadError title="Could not load the hall of fame" error={fame.error} />;
   const f = fame.data;

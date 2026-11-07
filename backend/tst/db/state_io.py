@@ -161,6 +161,7 @@ from tst.db.models import (
     UnitServicesRow,
     WorkforcePoolRow,
 )
+from tst.db.modes_io import load_modes, sync_modes
 from tst.sim.errors import SaveNotFoundError
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
 from tst.sim.finance.macro import MacroMonth
@@ -558,6 +559,7 @@ def load_state(session: Session) -> GameState:
     state = _load_exec(session, state)
     state = _load_pitches(session, state)
     state = load_mna(session, state, has_table)  # M14 (0034)
+    state = load_modes(session, state, has_table)  # M15b (0035)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
     state = _load_public(session, state)
@@ -1876,6 +1878,8 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_exec(session, old, new)
     _sync_pitches(session, old, new)
     sync_mna(session, old, new, has_table)  # M14 (0034)
+    session.flush()
+    sync_modes(session, old, new, has_table)  # M15b (0035)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
     _sync_public(session, old, new)

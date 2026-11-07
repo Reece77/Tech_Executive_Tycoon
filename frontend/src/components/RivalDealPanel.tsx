@@ -4,7 +4,7 @@
 // comes back as messages; nothing here computes a game value (CLAUDE.md section 7).
 import { Alert, Button, Checkbox, NumberInput, SegmentedControl } from '@mantine/core';
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { useMna, useMnaAction, type MnaActionResult, type MnaTarget } from '../hooks/api';
 import { formatMoneyWhole, humanize } from '../lib/format';
 import { Panel } from './ScreenState';
@@ -48,10 +48,12 @@ function DealBody({
   dealStatus: string | undefined;
 }) {
   const act = useMnaAction(saveId);
-  const [price, setPrice] = useState<number | string>('');
+  const [params] = useSearchParams(); // an acquisition pitch's Modify (M15b)
+  const offered = Number(params.get('offer') ?? 0);
+  const [price, setPrice] = useState<number | string>(offered ? Math.round(offered / 100) : '');
   const [cash, setCash] = useState<number | string>(100);
   const [mode, setMode] = useState<'integrate' | 'brand'>(
-    t.integrate_allowed ? 'integrate' : 'brand',
+    t.integrate_allowed && params.get('mode') !== 'brand' ? 'integrate' : 'brand',
   );
   const [hostile, setHostile] = useState(false);
   const [result, setResult] = useState<MnaActionResult | null>(null);

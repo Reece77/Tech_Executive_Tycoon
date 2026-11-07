@@ -53,7 +53,29 @@ class FounderRulesOut(BaseModel):
     mission_size: int
 
 
+class SandboxMetaOut(BaseModel):
+    """Sandbox options (30.2)."""
+
+    year_min: int
+    year_max: int
+    cash_min_dollars: int
+    cash_max_dollars: int
+
+
+class HistoricalOut(BaseModel):
+    """A historical scenario (30.3): its start, goal and deadline."""
+
+    key: str
+    label: str
+    description: str
+    year: int
+    goal: str
+    deadline_label: str
+
+
 class NewGameMetaOut(BaseModel):
+    sandbox: SandboxMetaOut | None = None  # M15b (30.2)
+    historical: list[HistoricalOut] = Field(default_factory=list)  # M15b (30.3)
     scenarios: list[ScenarioOut]  # selectable ones
     difficulties: list[str]
     backgrounds: list[BackgroundOut]

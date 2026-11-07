@@ -225,6 +225,10 @@ def text_prompt(kind: str, lines: list[str], company_name: str) -> tuple[str, st
         "voice, first person, at most 150 words, keeping the report's tone: what they did, "
         "what they are pitching, what worries them and the numbers (27.2). Use only these "
         "facts; keep every action and every number as given.",
+        "rival_story": "Rewrite this short press piece about a rival company's CEO (an "
+        "interview after a launch, a reply in their feud with the player's founder, or a "
+        "profile) in that CEO's voice, at most 80 words. Use only these facts; keep every "
+        "name and number as given and add no new facts.",
         "exit_line": "Write one line, in quotes, that this person said in their exit "
         "interview. Use only these facts; no numbers.",
     }

@@ -2486,9 +2486,13 @@ Rivals' scores use the same formula, so rankings and scenario goals compare like
 
 **Example.** A listed company worth $40B, 3-year CAGR 30%, margin 18%, leading markets with 35% of its revenue, brand 70 and credibility 62: `400 × (10.602 − 6)/6` = 306.8; `200 × 0.6` = 120; `150 × 0.76` = 114; `150 × 0.35` = 52.5; `100 × 0.66` = 66; score **659**.
 
+*M15b note.* `V` for a private company is the midpoint of its displayed value range (§28.1), not `V_f`, so the score reads public values only. `G` compares trailing 12-month revenue with the December snapshot three years back (or the oldest one at least a year back); `P` is the trailing 12 completed months' operating result over revenue (`score.trailing_margin`); `L` weights each market led by its revenue (`score.market_revenue`); `R` takes credibility as `press.cred_start` when it has no record. Snapshots live in `company_score` (data dictionary, `0035_m15b`). Code: `backend/tst/sim/score.py`.
+
 ### 30.2 Sandbox (M15b)
 
 A new-game mode (spec §3): choose the start year (2010–2025, with history to that date and the world built as it stood, as the fixture tools already do), starting cash, difficulty, how many rivals (none, half, all), and eras historical or all seeded. No campaign end (play past 2039 with seeded macro, supply and eras), the board cannot remove the founder (spec §17), and the company score is shown but the save is marked Sandbox and kept out of the Hall of Fame.
+
+*M15b note.* The world before the start month is played in memory with the player's company dormant, then the founder is rebuilt at the start (`tst/sim/modes/world.py`); a Y start's world matches a 2010 game's in Y (tested). "Half the rivals" keeps every other company in each category by id (`sandbox.rival_share_half`); removed rivals close as a failed rival does. "All seeded" gives each historical era due after the start a window of its month ± `sandbox.era_spread_months`, drawn from stream `era_window` as future eras are. The Saves list keeps a Sandbox score out of comparisons.
 
 ### 30.3 Historical scenarios (M15b)
 
@@ -2504,6 +2508,8 @@ Each scenario is a start (year, company, cash, staff, products, research, rivals
 
 The result screen shows success or failure, the company score at the deadline and a short History. Scenarios use difficulty "standard" and normal rules.
 
+*M15b note.* Starts are in `scenarios.yaml`'s `historical:` section; staff are generated from stream `scenario` (43). A reach goal (era or ARR, customers, unit share) ends the scenario a success in the month it holds; solvency and profit goals are judged only at the deadline's month end; any other game end (bankrupt, removed) is a failure. `save_meta.game_state` becomes `scenario_done`. Code: `tst/sim/modes/scenarios.py`.
+
 ### 30.4 Industry rankings (M15b)
 
 Each January, three lists are published as news and on a Rankings screen:
@@ -2513,9 +2519,13 @@ Each January, three lists are published as news and on a Rankings screen:
 
 Effects: a top-10 place in Best places to work adds `rank.hiring` (+0.03) to hiring appeal for the year; a top-10 place in Most innovative adds `rank.brand` (+2) to the brand target for the year.
 
+*M15b note.* Lists are built at December's month end and dated January. Best places to work uses revealed morale and pay against the market of key staff (pools count toward size, `rank.places_min_staff`); Most innovative sums research leads, eras caused and launches over `rank.years`, each capped. A rival CEO's profile piece follows a rival's first entry into the revenue list (addendum 12). Code: `tst/sim/modes/rankings.py`.
+
 ### 30.5 Continue until something needs me (M15b)
 
 A button and CLI flag that advances turn by turn until an item needs the player (a blocking inbox item, a pitch above the auto-approve limit, a critical event, a promise coming due, a deal decision) or up to 12 months. Unlike Holiday it delegates nothing: decisions not made wait in the inbox.
+
+*M15b note.* Stops, in order: the game ended, a critical event, a major event, a pitch above the auto-approve limit, an executive's proposal, a promise due, a deal waiting; otherwise after `modes.continue_until.MAX_MONTHS` (12). Each month runs as Continue does (one transaction a month). API `POST /continue-until`; CLI `tst advance --until-needed`.
 
 ### 30.6 v2 strategies (M15a, balance scripts only)
 

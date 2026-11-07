@@ -1,7 +1,7 @@
 import { Alert, Button, Modal, NumberInput, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
@@ -36,7 +36,8 @@ type Dialog = 'cm' | 'plant' | 'wafer' | null;
 
 function Body({ saveId, hw }: { saveId: string; hw: Hardware }) {
   const act = useHardwareAction(saveId);
-  const [dialog, setDialog] = useState<Dialog>(null);
+  const [params] = useSearchParams(); // a plant pitch's Modify (M15b)
+  const [dialog, setDialog] = useState<Dialog>(params.get('plant') !== null ? 'plant' : null);
   const run = (a: HardwareAction, done?: () => void) => act.mutate(a, { onSuccess: done });
   const devices = hw.products.filter((p) => !hw.chips.some((c) => c.product_id === p.product_id));
   return (
@@ -536,8 +537,9 @@ function PlantDialog({
   onClose: () => void;
   onBuild: (a: HardwareAction) => void;
 }) {
+  const [params] = useSearchParams();
   const [city, setCity] = useState(hw.cheap_city);
-  const [units, setUnits] = useState(String(hw.plant_sizes[0] ?? ''));
+  const [units, setUnits] = useState(params.get('plant') || String(hw.plant_sizes[0] ?? ''));
   const size = Number(units);
   return (
     <Modal opened onClose={onClose} title="Build an assembly plant">

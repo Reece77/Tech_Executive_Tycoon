@@ -1,7 +1,7 @@
 import { Alert, Button, Modal, NumberInput, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
@@ -34,7 +34,8 @@ export function InfrastructureScreen() {
 
 function Body({ saveId, infra }: { saveId: string; infra: Infrastructure }) {
   const act = useInfraAction(saveId);
-  const [building, setBuilding] = useState(false);
+  const [params] = useSearchParams(); // a data-centre pitch's Modify (M15b)
+  const [building, setBuilding] = useState(params.get('build') !== null);
   const [contracting, setContracting] = useState(false);
   const [selling, setSelling] = useState<Facility | null>(null);
   const run = (a: InfraAction, done?: () => void) => act.mutate(a, { onSuccess: done });
@@ -427,11 +428,17 @@ function BuildDialog({
   onClose: () => void;
   onBuild: (kind: string, region: string, units: number, contractId: number | null) => void;
 }) {
-  const [kind, setKind] = useState(infra.kinds[0]?.key ?? '');
+  const [params] = useSearchParams();
+  const [kind, setKind] = useState(params.get('build') ?? infra.kinds[0]?.key ?? '');
   const [region, setRegion] = useState(
-    infra.regions.find((r) => r.is_home)?.key ?? infra.regions[0]?.key ?? '',
+    params.get('region') ??
+      infra.regions.find((r) => r.is_home)?.key ??
+      infra.regions[0]?.key ??
+      '',
   );
-  const [units, setUnits] = useState(infra.sizes[1] ?? infra.sizes[0] ?? 100);
+  const [units, setUnits] = useState(
+    Number(params.get('units')) || (infra.sizes[1] ?? infra.sizes[0] ?? 100),
+  );
   const [contract, setContract] = useState<string>('none');
   const good = infra.kinds.find((k) => k.key === kind)?.input_good;
   const contracts = infra.contracts.filter(

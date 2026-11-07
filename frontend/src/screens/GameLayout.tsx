@@ -9,6 +9,7 @@ import { ScreenErrorBoundary } from '../components/ScreenErrorBoundary';
 import { ShortcutHelp } from '../components/ShortcutHelp';
 import { TopBar } from '../components/TopBar';
 import { useAdvance, useEvents, useFinanceSummary, useHoliday, useOverview } from '../hooks/api';
+import { useContinueUntil } from '../hooks/modes';
 import { useGameHotkeys } from '../hooks/useGameHotkeys';
 import { answerHref, NAV_ITEMS } from '../lib/nav';
 
@@ -19,6 +20,7 @@ export function GameLayout() {
   const overview = useOverview(saveId);
   const summary = useFinanceSummary(saveId);
   const advance = useAdvance(saveId);
+  const until = useContinueUntil(saveId); // M15b (30.5)
   const ended = overview.data !== undefined && overview.data.game_state !== 'active';
   const events = useEvents(saveId);
   // Open major and critical events block Continue until answered (23.1, M10b); a critical
@@ -41,6 +43,15 @@ export function GameLayout() {
         // The month that ends the game opens the game over screen (ADR-0018).
         onSuccess: (next) => {
           if (next.game_state !== 'active') void navigate(`/game/${saveId}/over`);
+        },
+      });
+    }
+  };
+  const onContinueUntil = () => {
+    if (overview.data && !advance.isPending && !until.isPending && !ended && !blocked && !away) {
+      until.mutate(undefined, {
+        onSuccess: (out) => {
+          if (out.stopped_for === 'game_over') void navigate(`/game/${saveId}/over`);
         },
       });
     }
@@ -68,6 +79,8 @@ export function GameLayout() {
         eventsHref={answerHref(saveId, events.data?.blocking_event_ids ?? [], proposals)}
         away={away}
         onContinue={onContinue}
+        onContinueUntil={onContinueUntil}
+        untilRunning={until.isPending}
         onHoliday={onHoliday}
         onCoo={() => setCooOpen(true)}
       />
@@ -93,6 +106,22 @@ export function GameLayout() {
           {ended && (
             <Alert color="warn" title="The game is over" data-testid="game-over-banner">
               The save stays readable. <Link to={`/game/${saveId}/over`}>See how it ended</Link>.
+            </Alert>
+          )}
+          {until.data && !until.isPending && (
+            <Alert
+              color="blue"
+              title={`Played ${until.data.months_played} month${until.data.months_played === 1 ? '' : 's'}, to ${until.data.date_label}`}
+              withCloseButton
+              onClose={until.reset}
+              data-testid="continue-until-stopped"
+            >
+              Stopped: {until.data.stopped_label}
+            </Alert>
+          )}
+          {until.error && (
+            <Alert color="red" title="Continue until failed" withCloseButton onClose={until.reset}>
+              {until.error.message}
             </Alert>
           )}
           {advance.error && (

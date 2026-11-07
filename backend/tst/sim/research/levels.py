@@ -68,16 +68,34 @@ def scheduled_month(t_start: int, months: int, u: float) -> int:
     return t_start + min(months - 1, math.floor(u * months))
 
 
-def scheduled_turn(era: EraDef, era_index: int, rng: RngFactory) -> int:
+def scheduled_turn(
+    era: EraDef,
+    era_index: int,
+    rng: RngFactory,
+    *,
+    seeded_after: int | None = None,
+    spread: int = 0,
+) -> int:
     """When an era is due: its historical month, or for a future era one uniform from stream
     `era_window` at turn 0, key (era_index,) with era_index its position in eras.yaml (26.4).
     A pure function of the seed: nothing is stored. Engine only: never sent to the API or a
-    prompt before the era arrives (ADR-0007)."""
+    prompt before the era arrives (ADR-0007).
+
+    `seeded_after` (Sandbox's "all seeded" eras, 30.2): a historical era due after that turn
+    gets a window of its month +- `spread` months instead, drawn the same way."""
     if era.window is None:
-        return historical_turn(era)
+        hist = historical_turn(era)
+        if seeded_after is None or hist <= seeded_after or spread <= 0:
+            return hist
+        start, n = max(seeded_after + 1, hist - spread), 2 * spread + 1
+        return scheduled_month(start, n, _window_draw(rng, era_index))
     start, n = window_span(era)
-    u = float(rng.stream(0, "era_window", era_index).random())
-    return scheduled_month(start, n, u)
+    return scheduled_month(start, n, _window_draw(rng, era_index))
+
+
+def _window_draw(rng: RngFactory, era_index: int) -> float:
+    """The era's one uniform: stream era_window at turn 0, key (era_index,) (26.4)."""
+    return float(rng.stream(0, "era_window", era_index).random())
 
 
 def eras_in(data: GameData, domain: str) -> tuple[EraDef, ...]:
