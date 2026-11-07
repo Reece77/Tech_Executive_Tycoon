@@ -29,9 +29,10 @@ pytestmark = [
     ),
 ]
 
+TURNS = 30  # as test_mna_perf: a warm-up, then three blocks of nine turns
 WARM_UP = 3
 BLOCKS = 3
-BLOCK_TURNS = 3
+BLOCK_TURNS = (TURNS - WARM_UP) // BLOCKS
 
 
 def test_a_2039_stage_4_company_keeps_the_turn_budget(tmp_path: Path, loaded: LoadedData) -> None:
@@ -52,7 +53,7 @@ def test_a_2039_stage_4_company_keeps_the_turn_budget(tmp_path: Path, loaded: Lo
         blocks.append((time.perf_counter() - start) / BLOCK_TURNS)
     per_turn = statistics.median(blocks)
     report = (
-        f"V6: a stage-{state.player.stage} company in {state.turn // 12 + 2010} with "
+        f"V6: a stage-{state.player.stage} company after December 2039 with "
         f"{len(state.staff(1))} staff: median {per_turn * 1000:.0f} ms per turn of blocks "
         f"{[round(b * 1000) for b in blocks]} ms"
     )
