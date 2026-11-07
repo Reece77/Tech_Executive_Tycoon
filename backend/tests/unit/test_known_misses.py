@@ -23,7 +23,12 @@ def _t2(most: int, seeds: int = 10) -> Row:
 def test_t2_is_known_to_m15() -> None:
     k = known_miss("T2")
     assert k is not None and k.owner == "M15"
-    assert [m.target for m in KNOWN_MISSES] == ["T2", "V3.ai"]  # M10.T3 closed by M15a
+    assert [m.target for m in KNOWN_MISSES] == [
+        "T2",
+        "V3.ai",
+        "V5.cells",
+        "V5.cats",
+    ]  # M10.T3 closed by M15a
 
 
 def test_the_covenant_guard_is_no_longer_known() -> None:

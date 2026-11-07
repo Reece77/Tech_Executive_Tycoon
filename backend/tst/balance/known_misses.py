@@ -38,6 +38,21 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         worse_than=0.02,
         reason="+0.7 pts in M15a: an AI-models company is about $7M ARR at year 10 (2020)",
     ),
+    KnownMiss(
+        target="V5.cells",  # 30.7 V5: >= 75% of (run, category, decade after 2020) cells
+        owner="v3",
+        # score: the empty share; known while at most 40% empty (product manager,
+        # 2026-11-07, fourth round: no further stop on V5)
+        worse_than=0.40,
+        reason="68-77% in M15a: long-lived startups hold rivals.startup.max_alive's places",
+    ),
+    KnownMiss(
+        target="V5.cats",  # 30.7 V5: no category misses a decade in more than 2 of 10 runs
+        owner="v3",
+        # score: the most runs a category-decade is empty in, as a share; known up to 70%
+        worse_than=0.70,
+        reason="2030s category-decades empty in up to 6 of 10 runs (M15a): as V5.cells",
+    ),
 )
 
 Verdict = Literal["ok", "printed", "known", "fail"]

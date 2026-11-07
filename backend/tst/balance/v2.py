@@ -63,7 +63,11 @@ V5_ERAS: Final = 5
 V5_GROWTH: Final = 0.04
 V5_RIVALS: Final = 0.30
 V5_STAGE_4: Final = 5  # of 10 seeds
-V5_CELLS: Final = 0.90  # share of (run, category, decade after 2020) cells with a launch
+# Re-banded 0.90 -> 0.75 (product manager, 2026-11-07, fourth round): about 11 startups a
+# decade over 6 categories is about 1.8 launches per category-decade, an empty-cell chance
+# of about e^-1.8 = 17-20%; a higher found_rate fills the startup places earlier and empties
+# the 2030s (63% at 0.05). Below 75%, a recorded known miss (V5.cells).
+V5_CELLS: Final = 0.75
 V5_MISS_RUNS: Final = 2  # of 10: the most runs in which a category may miss a decade
 V5_DECADES: Final = ("2020s", "2030s")
 
@@ -366,11 +370,12 @@ def long_rows(
         share = filled / len(cells) if cells else 0.0
         rows.append(
             Row(
-                "V5",
+                "V5.cells",
                 f"{s}: (run, category, decade after 2020) cells with a rival launch",
                 f"{share:.0%} of {len(cells)}",
                 f">= {V5_CELLS:.0%}",
                 share >= V5_CELLS,
+                score=1 - share,
             )
         )
         worst = {
@@ -382,11 +387,12 @@ def long_rows(
         over = sorted(f"{c} {d} ({n})" for (c, d), n in worst.items() if n > cap)
         rows.append(
             Row(
-                "V5",
+                "V5.cats",
                 f"{s}: category-decades empty in more than {cap:g} runs",
                 ", ".join(over) or "none",
                 "none",
                 not over,
+                score=max(worst.values(), default=0) / len(mine) if mine else None,
             )
         )
         if scheduled:
