@@ -30,6 +30,7 @@ New game systems. Scores and modes (M15b). The advisor and patents (backlog).
    - **V7 covenants:** re-measure M10.T3 as breaches while cash is still positive; tune `debt.*` if needed.
    - **T5:** apply Reece's §30.9 decision.
    - Carried follow-ups to check and fix where a key can: late-round sizing (blitzscale's idle billions: investors size Series C/D to 24 months of burn), rivals' feature pushes in fast categories (AMD's bankruptcy around 2020), score-8 CPOs' hit rate, the M8 support and seat targets, launches per category at exactly 1.00.
+4b. **Turn time at scale** (after M14's headcount work, 2026-11-06: 219 staff integrated 905 → 555 ms; timing tests now run serially in `check` via `make check-timing`). Carry it to a 2039 stage-4 company (V6): full garbage collections (250–580 ms at 220 staff, growing with object count) and reveal narrowing (about 6,900 rows rewritten a month at that size) are the next costs M14 measured. Fix with identical results (state-cache check, golden snapshots); keep the 1.0 s limit.
 5. **Known misses:** each one closed (removed from `known_misses.py`) or carried to v3 only with Reece's decision recorded.
 6. **Close-out:**
    - `docs/balance-targets.md`: a "v2 final" section with every target's value.

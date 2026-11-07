@@ -57,6 +57,7 @@ M15b also owns `backend/tst/sim/mna/` negotiation code and the rival CEO code fo
 12. **Rival CEOs with more character** (card 8). LLM-written storylines for rival CEOs (within §16's budget, engine facts only): an interview after their launches, a reply when the feud crosses 25 and 50, a profile piece when they enter the Top 50. Templates in their voice when the LLM is off.
 13. **Leadership fit for long-serving staff** (card 11). Knowledge of the player's own employees grows with tenure: leadership, mentoring and communication reveal fully after `people.reveal_tenure_months` (12) of working in the player's company, so long-serving staff show a single star value, not a range.
 14. **Promises** went untested (card 6); add a "make a promise" hint to the launch press moment's card so it's harder to miss.
+15. **From M14's follow-ups:** a Deals entry in the top bar when a review or closing is due; the acquirer's own overlapping product offered as a remedy.
 
 ## Decisions made
 
