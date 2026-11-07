@@ -40,3 +40,16 @@ class RankingsOut(BaseModel):
     year: int | None = Field(description="The year they were published; null before the first")
     lists: list[RankingListOut]
     years: list[int] = Field(description="Every year with rankings, newest first")
+
+
+class ContinueUntilOut(BaseModel):
+    """Continue until something needs me (30.5)."""
+
+    months_played: int
+    stopped_for: str = Field(
+        description="game_over | critical_event | event | pitch | proposal | promise | deal "
+        "| months"
+    )
+    stopped_label: str
+    turn: int
+    date_label: str

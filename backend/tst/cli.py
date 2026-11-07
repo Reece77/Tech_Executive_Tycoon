@@ -142,9 +142,24 @@ def new_game(
 def advance(
     save: Annotated[str, typer.Option(help="Save slug")],
     turns: Annotated[int, typer.Option(min=1, help="Turns to play")] = 1,
+    until_needed: Annotated[
+        bool, typer.Option(help="M15b (30.5): continue until something needs you, up to a year")
+    ] = False,
 ) -> None:
     """Play N monthly turns, each in its own transaction."""
     settings, data = _context()
+    if until_needed:
+        from tst.sim.modes.continue_until import LABELS
+
+        try:
+            path = repository.existing_save_path(settings.resolved_save_dir(), save)
+            played, why = repository.continue_until(path, data)
+        except SimError as exc:
+            raise _fail(exc.message) from exc
+        with repository.read_session(path) as session:
+            now = repository.read_state(session).turn
+        typer.echo(f"Played {played} month(s); now {format_turn(now)}. Stopped: {LABELS[why]}.")
+        return
     try:
         path = repository.existing_save_path(settings.resolved_save_dir(), save)
         result = None

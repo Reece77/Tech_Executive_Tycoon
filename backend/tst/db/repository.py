@@ -82,6 +82,7 @@ from tst.sim.errors import (
 )
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss, projected_runway
 from tst.sim.ledger import AccountCode, apply_entries
+from tst.sim.modes.continue_until import MAX_MONTHS, StopReason, needs_player
 from tst.sim.modes.world import ModeSpec, start_mode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
@@ -894,6 +895,24 @@ def run_turn(
         if token is not None:
             release(save_path, token)
     return result
+
+
+def continue_until(
+    save_path: Path, data: LoadedData, max_months: int = MAX_MONTHS
+) -> tuple[int, StopReason]:
+    """Play months as the player's Continue does until something needs the player, or
+    `max_months` (30.5). Returns the months played and why it stopped; it decides nothing."""
+    played = 0
+    while True:
+        with read_session(save_path) as session:
+            state = read_state(session)
+        reason = needs_player(state)
+        if reason is not None:
+            return played, reason
+        if played >= max_months:
+            return played, "months"
+        run_turn(save_path, data, block_major=True)
+        played += 1
 
 
 def _after_commit(
