@@ -1,6 +1,6 @@
 # v3 outline: Conglomerate
 
-**Status: OUTLINE (2026-11-02).** Scope and rough milestones only, written during v2 so that v2's systems are built to extend. Full briefs and formulas come at the v2 retrospective after M15, as v2's did after v1. The forward-compatibility rules v2 must follow now are in ADR-0020.
+**Status: OUTLINE (2026-11-02; decisions added 2026-11-06).** Scope and rough milestones only, written during v2 so that v2's systems are built to extend. Full briefs and formulas come at the v2 retrospective after M15, as v2's did after v1. The forward-compatibility rules v2 must follow now are in ADR-0020.
 
 ## What v3 is for
 
@@ -11,6 +11,13 @@ The spec's v3 fantasy is a vertically integrated empire, "from quartz mines to c
 - **Subsidiaries are real legal entities:** separate books, their own cap table and board, minority investors. They can be sold in part, spun off or listed. The parent consolidates them.
 - **Geopolitics follows history, then is seeded:** export controls, tariffs and regional risk follow real events to 2025, then seeded. Examples: entity-list restrictions from 2019; chip export rules from 2022; gallium and germanium export licensing from 2023. They restrict where a company can sell, build, or buy chips, equipment and minerals.
 - **Exploration has hidden grades revealed by drilling:** each deposit has a hidden true grade, tonnage and metallurgy. Surveys, sampling and drilling narrow the estimate ranges, using the same reveal mechanic as people (ADR-0007). Discovery to production takes years (spec §11).
+
+## Reece's decisions (2026-11-06)
+
+- **Fabs use named process nodes on their historical timeline** (65nm through 2nm, arriving on the real dates for each foundry, then seeded): each node needs research in the process domain, EUV-class tools from 7nm, and rising capex.
+- **The mineral and refining chain feeds chips and devices first** (wafers, chips, batteries, devices). Software and cloud keep their v2 inputs. Extending the chain to other products is a later choice, once v3's chain is playing well.
+- **Critical mine events** (they stop the game for a decision): accidents and spills (tailings failures, fatal accidents), protests and permits (blockades, permits revoked or delayed), nationalization (seizure or forced stakes, history then seeded) and commodity price crashes.
+- **v3 starts after a v2 retrospective:** M15a and M15b, Reece's last v2 playtest, a short retrospective and Codex review 4, then M16. v3 briefs, formulas and historical data are prepared in the meantime.
 
 ## Rough milestones (numbering continues from v2)
 
@@ -29,7 +36,4 @@ The spec's v3 fantasy is a vertically integrated empire, "from quartz mines to c
 
 ## Open until the v2 retrospective
 
-- How deep fabs go (process nodes as levels, or named nodes like 28nm, 7nm and 3nm on a historical timeline).
-- Whether minerals and refining feed real input-output chains for every v2 product, or only for chips and devices.
-- Environmental and community events: which are critical.
 - Which real mining, refining and foundry companies join the rival roster (for example Freeport-McMoRan, Albemarle, Wacker, Shin-Etsu, TSMC, Samsung, Intel Foundry).
