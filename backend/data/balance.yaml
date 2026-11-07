@@ -526,8 +526,8 @@ rivals:
   key_people_levels: { senior: 50, staff: 35, principal: 15 } # percent level mix of key people (15.1: senior to principal)
   free_agent_months: 6 # months a failed rival's people stay in the free-agent pool for the player's searches (M6 sub-task 0)
   startup:
-    found_rate: 0.03 # probability per category per month before climate and growth (15.4; M7a: 0.02 -> 0.03, keeps M5 target 1 at one launch per category now that fewer startups refinance)
-    max_alive: 8 # rival startups alive at once (15.4)
+    found_rate: 0.05 # M15a: 0.03 -> 0.05 for 30.7 V5 (product manager 2026-11-07, fourth round); probability per category per month before climate and growth (15.4; M7a: 0.02 -> 0.03, keeps M5 target 1 at one launch per category now that fewer startups refinance)
+    max_alive: 12 # rival startups alive at once (15.4; M15a: 8 -> 12 for 30.7 V5, fourth round)
     team: [3, 8] # individual employees besides the founder (15.4)
     cash_cents: [100000000, 300000000] # cents [min, max] of starting cash (15.4)
     raise_months: 12 # months of costs raised when funding comes (15.4; M7a: 18 -> 12, T7)

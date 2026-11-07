@@ -318,14 +318,30 @@ def research_domain(game: Game) -> str | None:
     return max(totals, key=lambda d: (totals[d], -order.index(d))) if totals else None
 
 
+RESEARCH_RUNWAY: Final = 18  # months of runway that also let the research unit start
+
+
+def research_ready(game: Game) -> bool:
+    """The research unit starts after a Series A closes, or once runway covers 18 months
+    (product manager, 2026-11-07, fourth round: started after the seed, its salaries
+    bankrupted seed 5 before a Series A)."""
+    if game.notes.get("research_on"):
+        return True
+    closed = {r.series for r in game.state.company_rounds(PLAYER) if r.status == "closed"}
+    months = runway(game)
+    if "a" in closed or months is None or months >= RESEARCH_RUNWAY:
+        game.notes["research_on"] = 1
+        return True
+    return False
+
+
 def research_heavy(game: Game) -> None:
     """steady_regions plus a research unit of 6 (12 from stage 3) on the domain feeding its
-    products, from the seed's close; a fully funded project, so it pulls that domain's eras
-    early when its level reaches their thresholds (21.4)."""
+    products, from a Series A or 18 months of runway (research_ready); a fully funded
+    project, so it pulls that domain's eras early when its level reaches their thresholds
+    (21.4)."""
     steady_regions(game)
-    if not any(
-        r.series == "seed" and r.status == "closed" for r in game.state.company_rounds(PLAYER)
-    ):
+    if not research_ready(game):
         return
     domain = research_domain(game)
     if domain is None:
