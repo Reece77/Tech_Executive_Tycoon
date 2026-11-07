@@ -17037,6 +17037,43 @@
         ],
         "title": "CeoOut"
       },
+      "CeoProfileOut": {
+        "properties": {
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "personality": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Personality"
+          },
+          "potential_phrase": {
+            "type": "string",
+            "title": "Potential Phrase",
+            "description": "Potential as a phrase from its revealed range"
+          },
+          "learned_label": {
+            "type": "string",
+            "title": "Learned Label",
+            "description": "How much is known, as words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skills",
+          "personality",
+          "potential_phrase",
+          "learned_label"
+        ],
+        "title": "CeoProfileOut",
+        "description": "What the player has learned of a rival CEO (M15b addendum 11): ranges only, narrowed\nby public appearances, poach approaches and diligence. Never true values."
+      },
       "ChangePreviewOut": {
         "properties": {
           "allowed": {
@@ -30729,6 +30766,17 @@
               }
             ],
             "title": "Ceo Person Id"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CeoProfileOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ranges the player has learned; null before anything is known"
           },
           "statements": {
             "items": {

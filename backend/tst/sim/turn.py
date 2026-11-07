@@ -65,6 +65,7 @@ from tst.sim.research.licensing import leaks, royalties
 from tst.sim.research.projects import decay_leads, run_projects
 from tst.sim.research.rivals import month_start as rival_research_start
 from tst.sim.research.rivals import rival_research_month
+from tst.sim.rivals.ceo_knowledge import ceo_knowledge_month
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rivals.poaching import answer_approaches, join_rivals
@@ -412,6 +413,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
         state = with_company(state, replace(company, mrr_history=history))
     state = _rival_op_history(state, ctx, types)  # M14 (28.1): rivals' V_f margin
     state = _debt_history(state, ctx, types)  # M10 (20.3): covenants read completed months
+    state = ceo_knowledge_month(state, ctx.rng, ctx.balance, ctx.data)  # M15b addendum 11
     state = judge_scenario(state, ctx.balances, ctx.balance, ctx.data)  # M15b (30.3)
     state, ranked = publish_rankings(state, ctx.balance, ctx.data)  # M15b (30.4)
     items += ranked

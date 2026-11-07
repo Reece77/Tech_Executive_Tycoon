@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from tst.api.schemas.people import EnergyOut
+from tst.api.schemas.people import AttributeOut, EnergyOut
 
 
 class CauseOut(BaseModel):
@@ -97,10 +97,23 @@ class FeudOut(BaseModel):
     causes: list[CauseOut]
 
 
+class CeoProfileOut(BaseModel):
+    """What the player has learned of a rival CEO (M15b addendum 11): ranges only, narrowed
+    by public appearances, poach approaches and diligence. Never true values."""
+
+    skills: list[AttributeOut]
+    personality: list[AttributeOut]
+    potential_phrase: str = Field(description="Potential as a phrase from its revealed range")
+    learned_label: str = Field(description="How much is known, as words")
+
+
 class RivalLeaderOut(BaseModel):
     rival_id: int
     ceo: str | None = Field(description="Their CEO: the founder at a startup")
     ceo_person_id: int | None
+    profile: CeoProfileOut | None = Field(
+        default=None, description="Ranges the player has learned; null before anything is known"
+    )
     statements: list[StatementOut]
     feud: FeudOut
 

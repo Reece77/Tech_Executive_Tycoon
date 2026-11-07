@@ -4296,6 +4296,27 @@ export interface components {
             /** Chair Energy */
             chair_energy: number;
         };
+        /**
+         * CeoProfileOut
+         * @description What the player has learned of a rival CEO (M15b addendum 11): ranges only, narrowed
+         *     by public appearances, poach approaches and diligence. Never true values.
+         */
+        CeoProfileOut: {
+            /** Skills */
+            skills: components["schemas"]["AttributeOut"][];
+            /** Personality */
+            personality: components["schemas"]["AttributeOut"][];
+            /**
+             * Potential Phrase
+             * @description Potential as a phrase from its revealed range
+             */
+            potential_phrase: string;
+            /**
+             * Learned Label
+             * @description How much is known, as words
+             */
+            learned_label: string;
+        };
         /** ChangePreviewOut */
         ChangePreviewOut: {
             /** Allowed */
@@ -10098,6 +10119,8 @@ export interface components {
             ceo: string | null;
             /** Ceo Person Id */
             ceo_person_id: number | null;
+            /** @description Ranges the player has learned; null before anything is known */
+            profile?: components["schemas"]["CeoProfileOut"] | null;
             /** Statements */
             statements: components["schemas"]["StatementOut"][];
             feud: components["schemas"]["FeudOut"];

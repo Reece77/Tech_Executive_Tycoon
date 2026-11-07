@@ -130,6 +130,9 @@ reveal: # revealed ranges (formulas.md section 4, ADR-0007)
     reference_check: 0.30
     scouting_month: 0.25
     employed_month: 0.08
+    public_appearance: 0.04 # M15b: a rival CEO's statement or feud reveals a little (addendum 11)
+    rival_approach: 0.12 # M15b: a poach search on the CEO's company reveals more
+    rival_diligence: 0.20 # M15b: diligence on the CEO's company reveals the most from outside
   scout_base: 0.5 # scout_factor = scout_base + judgment_of_talent / scout_divisor
   scout_divisor: 40 # attribute points
   founder_pa_hw: 40 # CA points; initial PA half-width of the founding company's view of its founder (M2b, 4-5)
@@ -142,6 +145,9 @@ reveal: # revealed ranges (formulas.md section 4, ADR-0007)
     reference_check: 0.30
     scouting_month: 0.60 # a scouting month is where a good scout earns their keep
     employed_month: 0.08
+    public_appearance: 0.0 # M15b: a statement says nothing about potential
+    rival_approach: 0.05 # M15b: an approach says a little
+    rival_diligence: 0.10 # M15b: diligence says a little more
   pa_phrase_bounds: [70, 100, 130, 160] # CA points; limited/decent/good/excellent/outstanding (M1b)
 
 founder: # founder build (formulas.md section 5)

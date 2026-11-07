@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Final
 
+from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.modes.config import RankWeights
@@ -133,7 +134,7 @@ def publish(
                 "rankings_published",
                 link_kind="finance",
                 link_id=0,
-                year=str(2010 + january // MONTHS_A_YEAR),
+                year=str(turn_to_ym(january)[0]),
                 places=places,
                 leader=leader,
                 revenue=format_money(round(top.value)) if top else "-",

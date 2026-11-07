@@ -234,6 +234,9 @@ REVEAL_ACTIONS = (
     "reference_check",
     "scouting_month",
     "employed_month",
+    "public_appearance",  # M15b: a rival CEO's public statement or feud (addendum 11)
+    "rival_approach",  # M15b: a poach search opened on the CEO's company
+    "rival_diligence",  # M15b: diligence done on the CEO's company
 )
 
 

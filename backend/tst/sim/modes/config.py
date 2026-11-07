@@ -136,7 +136,7 @@ class HistoricalScenario(_Frozen):
     year: int
     background: str  # a scenarios.yaml start: cap table and equity account
     cash_dollars: int = Field(ge=0)
-    stage: int = Field(ge=0, le=5)
+    stage: int = Field(ge=0, le=5)  # tunable-exempt: the stage scale is 0-5
     staff: tuple[StaffSpec, ...] = ()
     products: tuple[ProductSpec, ...] = ()
     research: tuple[LeadSpec, ...] = ()
