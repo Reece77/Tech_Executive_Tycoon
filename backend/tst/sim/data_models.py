@@ -35,6 +35,8 @@ from tst.sim.modes.config import (
     RankBalance,
     SandboxBalance,
     ScoreBalance,
+    SerialBalance,
+    StoryBalance,
 )
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.org.voice_data import Voice
@@ -1226,6 +1228,8 @@ class Balance(_Frozen):
     score: ScoreBalance  # M15b (formulas.md 30.1)
     rank: RankBalance  # M15b (formulas.md 30.4)
     sandbox: SandboxBalance  # M15b (formulas.md 30.2)
+    story: StoryBalance  # M15b addendum 12: rival CEO storylines
+    serial: SerialBalance  # M15b addendum 10: founding again after an exit
     promise: PromiseBalance  # M14b (formulas.md 29.2)
     feud: FeudBalance  # M14b (formulas.md 29.4)
     recruit: RecruitBalance  # M14b (formulas.md 29.5)
@@ -1809,6 +1813,8 @@ INBOX_TEMPLATE_KEYS = (
     "deal_update",  # M14 (28)
     "rival_acquired",  # M14 (28.6)
     "rankings_published",  # M15b (30.4)
+    "rival_story",  # M15b addendum 12
+    "founded_again",  # M15b addendum 10
     "exit_sale",  # M14 (28.6)
     "era_report",  # M13b (27.3)
     # M4a (formulas.md 14)

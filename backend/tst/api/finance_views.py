@@ -871,12 +871,15 @@ def game_over_out(
         )
     bb = data.balance.board
     first_news = last - TIMELINE_MONTHS + 1
-    sale = sale_of(state, company.id) if meta.game_state == "exit" else None  # M14 (28.6)
+    sold = meta.game_state in ("exit", "retired")  # M14 (28.6), M15b addendum 10
+    sale = sale_of(state, company.id) if sold else None
     per_share = sale.price_cents // fd if sale is not None and fd else 0
     return GameOverOut(
         game_state=meta.game_state,
         company_name=company.name,
         ended_turn=ended,
+        can_found_again=meta.game_state == "exit",
+        min_new_cash_cents=data.balance.serial.min_cash_dollars * 100,  # tunable-exempt: cents
         exit_buyer=state.company(sale.acquirer_id).name if sale is not None else None,
         exit_price_cents=sale.price_cents if sale is not None else None,
         exit_proceeds_cents=own * per_share if sale is not None else None,

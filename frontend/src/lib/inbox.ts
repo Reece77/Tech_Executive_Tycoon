@@ -87,6 +87,8 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   deal_update: { label: 'Finance', group: 'finance' }, // M14 (28): offers, reviews, closings
   rival_acquired: { label: 'News', group: 'company' }, // M14 (28.6)
   rankings_published: { label: 'News', group: 'company' }, // M15b (30.4)
+  rival_story: { label: 'Press', group: 'company' }, // M15b addendum 12
+  founded_again: { label: 'Finance', group: 'finance' }, // M15b addendum 10
   exit_sale: { label: 'Finance', group: 'finance' }, // M14 (28.6)
   // M13: the IPO, the public company and the CEO (25)
   banks_hired: { label: 'Finance', group: 'finance' },

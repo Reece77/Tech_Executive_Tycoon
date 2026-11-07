@@ -11,8 +11,8 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from tst.db.mna_io import from_data, to_data
-from tst.db.models import CompanyScoreRow, GameModeRow, QuarterMarkRow, RankingRow
-from tst.sim.modes.models import CompanyScore, GameMode, QuarterMark, Ranking
+from tst.db.models import CompanyScoreRow, GameModeRow, QuarterMarkRow, RankingRow, VentureRow
+from tst.sim.modes.models import CompanyScore, GameMode, QuarterMark, Ranking, Venture
 from tst.sim.state import GameState
 
 
@@ -40,18 +40,25 @@ def load_modes(
         from_data(QuarterMark, r.data, product_id=r.product_id)
         for r in session.scalars(select(QuarterMarkRow).order_by(QuarterMarkRow.product_id))
     )
-    return replace(state, scores=scores, mode=mode, rankings=rankings, quarter_marks=marks)
+    ventures = tuple(
+        from_data(Venture, r.data, company_id=r.company_id)
+        for r in session.scalars(select(VentureRow).order_by(VentureRow.company_id))
+    )
+    return replace(
+        state, scores=scores, mode=mode, rankings=rankings, quarter_marks=marks, ventures=ventures
+    )
 
 
 def sync_modes(
     session: Session, old: GameState, new: GameState, has_table: Callable[[Session, Any], bool]
 ) -> None:
     """Append new scores and rankings (they are never changed) and write the mode."""
-    if (old.scores, old.mode, old.rankings, old.quarter_marks) == (
+    if (old.scores, old.mode, old.rankings, old.quarter_marks, old.ventures) == (
         new.scores,
         new.mode,
         new.rankings,
         new.quarter_marks,
+        new.ventures,
     ):
         return
     if not has_table(session, CompanyScoreRow):
@@ -75,6 +82,9 @@ def sync_modes(
             QuarterMarkRow(product_id=m.product_id, data=to_data(m, ("product_id",)))
             for m in new.quarter_marks
         )
+    if new.ventures != old.ventures:
+        for v in new.ventures:
+            session.merge(VentureRow(company_id=v.company_id, data=to_data(v, ("company_id",))))
     placed = {(r.turn, r.kind, r.place) for r in old.rankings}
     session.add_all(
         RankingRow(

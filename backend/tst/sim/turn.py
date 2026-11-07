@@ -75,6 +75,7 @@ from tst.sim.rivals.startups import (
     launch_ready,
     record_failures,
 )
+from tst.sim.rivals.stories import STORY, month_stories
 from tst.sim.rng import RngFactory
 from tst.sim.score import snapshot_scores
 from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
@@ -417,6 +418,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     state = judge_scenario(state, ctx.balances, ctx.balance, ctx.data)  # M15b (30.3)
     state, ranked = publish_rankings(state, ctx.balance, ctx.data)  # M15b (30.4)
     items += ranked
+    items += month_stories(ctx.start, state, ctx.balance)  # M15b addendum 12
     state = snapshot_scores(state, ctx.balances, ctx.balance, ctx.data)  # M15b (30.1)
     # M10b (23.2): the month's choices in one line; modifiers whose last month this was expire.
     expiring = tuple(m for m in state.modifiers if m.end_turn <= state.turn + 1)
@@ -532,6 +534,11 @@ def text_requests(logs: tuple[LogItem, ...], player: int, turn: int) -> tuple[Te
         TextRequest("exec_report", player, turn, i.link_id)
         for i in mine
         if i.template == EXEC_REPORT and i.link_id is not None
+    ]
+    out += [  # M15b addendum 12: rival CEO pieces, one per rival a month
+        TextRequest("rival_story", player, turn, i.link_id)
+        for i in mine
+        if i.template == STORY and i.link_id is not None
     ]
     return tuple(out)
 

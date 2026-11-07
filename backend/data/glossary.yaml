@@ -325,6 +325,8 @@ terms:
   promise.no_price_rise: "No price rise on a product for 12 months. Raising any of its prices breaks it."
   rival_ceo: "The person who speaks for a rival: its founder at a startup, the key person with the most leadership at an incumbent. They make public statements and can jab at you."
   rival_ceo_profile: "What you have learned of a rival CEO, as ranges: each public statement or feud answer narrows them a little, a poach search on their company more, diligence on it the most. Never their true values."
+  serial_founder: "After an exit you can found a new company in the same world and month. You keep your skills, reputation and network; your proceeds, less what you keep, become its starting cash. Your sold company carries on as part of its buyer. Or retire, which ends the game."
+  game_mode: "How the game plays. Campaign: the standard 30-year game from January 2010. Sandbox: start in any year with the world as it then stood, your own cash and how many rivals, and no company score or board removal. Historical scenario: a set start with a goal and a deadline."
   feud: "Bad blood between your founder and a rival's CEO, 0 to 100: bold answers naming them, head-to-head launches and poaching each other's people raise it; it fades a little each month."
   rivalry: "A feud at 50 or more. The rival aims its moves at your products, tries your people first when it poaches, and the press follows the story."
   replace: "Replace someone who resigned or was poached lately: your recruiter opens a hiring plan for the same role and level, and it fills faster than a normal search. Needs a recruiter on staff."

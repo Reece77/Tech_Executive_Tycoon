@@ -60,3 +60,22 @@ class QuarterMark:
     turn: int
     quality: float
     customers: float
+
+
+type VentureOutcome = Literal["exit"]
+
+
+@dataclass(frozen=True, slots=True)
+class Venture:
+    """A company the player ran and sold (M15b addendum 10): History, the score and the Hall
+    of Fame show each apart."""
+
+    company_id: int
+    name: str
+    founded_turn: int
+    ended_turn: int
+    outcome: VentureOutcome
+    buyer_id: int | None = None
+    price_cents: int = 0  # the sale price, every share
+    proceeds_cents: int = 0  # the founder's share of it
+    kept_cents: int = 0  # what the founder kept rather than put into the next company

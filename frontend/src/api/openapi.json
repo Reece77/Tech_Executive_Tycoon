@@ -8610,6 +8610,22 @@
               "default": 50,
               "title": "Limit"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Company Id"
+            }
           }
         ],
         "responses": {
@@ -8682,6 +8698,22 @@
             "schema": {
               "type": "string",
               "title": "Save Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Company Id"
             }
           }
         ],
@@ -8756,6 +8788,22 @@
               "type": "string",
               "title": "Save Id"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Company Id"
+            }
           }
         ],
         "responses": {
@@ -8822,8 +8870,97 @@
           "history"
         ],
         "summary": "Get Hall Of Fame",
-        "description": "Records computed from history when the screen opens; shown values only.",
+        "description": "Records computed from history when the screen opens; shown values only. A company the\nplayer sold is judged up to its sale (M15b addendum 10).",
         "operationId": "getHallOfFame",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HallOfFameOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/history/companies": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Get Companies",
+        "description": "Every company the player has run, oldest first: History, the score and the Hall of\nFame show each apart (M15b addendum 10).",
+        "operationId": "getHistoryCompanies",
         "parameters": [
           {
             "name": "save_id",
@@ -8841,7 +8978,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HallOfFameOut"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VentureOut"
+                  },
+                  "title": "Response Gethistorycompanies"
                 }
               }
             }
@@ -14668,6 +14809,162 @@
         }
       }
     },
+    "/api/saves/{save_id}/exit/found-again": {
+      "post": {
+        "tags": [
+          "modes"
+        ],
+        "summary": "Found Again",
+        "description": "After an exit: found a new company in the same world and month (M15b addendum 10).",
+        "operationId": "foundAgain",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoundAgainIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExitChoiceOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/exit/retire": {
+      "post": {
+        "tags": [
+          "modes"
+        ],
+        "summary": "Retire",
+        "description": "After an exit: retire, which ends the game (M15b addendum 10).",
+        "operationId": "retire",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExitChoiceOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -20105,6 +20402,31 @@
         ],
         "title": "EventsOut"
       },
+      "ExitChoiceOut": {
+        "properties": {
+          "game_state": {
+            "type": "string",
+            "title": "Game State",
+            "description": "active (founded again) | retired"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "game_state",
+          "company_id",
+          "company_name"
+        ],
+        "title": "ExitChoiceOut",
+        "description": "After the choice: the game's state and the company the player now runs."
+      },
       "FacilityOut": {
         "properties": {
           "facility_id": {
@@ -20773,6 +21095,29 @@
         "title": "FormerProfileOut",
         "description": "A person who has left the company (M7c): read-only, as the player knew them at\ndeparture. Displayed ranges and noticed tags only (ADR-0007)."
       },
+      "FoundAgainIn": {
+        "properties": {
+          "company_name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Company Name"
+          },
+          "keep_cents": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Keep Cents",
+            "description": "Proceeds the founder keeps",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_name"
+        ],
+        "title": "FoundAgainIn",
+        "description": "Found a new company after an exit (M15b addendum 10)."
+      },
       "FounderIn": {
         "properties": {
           "background": {
@@ -21135,7 +21480,7 @@
           "game_state": {
             "type": "string",
             "title": "Game State",
-            "description": "active | bankrupt | founder_removed | exit"
+            "description": "active | bankrupt | founder_removed | exit | scenario_done | retired"
           },
           "company_name": {
             "type": "string",
@@ -21151,6 +21496,18 @@
               }
             ],
             "title": "Ended Turn"
+          },
+          "can_found_again": {
+            "type": "boolean",
+            "title": "Can Found Again",
+            "description": "After an exit: Found a new company or Retire (M15b)",
+            "default": false
+          },
+          "min_new_cash_cents": {
+            "type": "integer",
+            "title": "Min New Cash Cents",
+            "description": "The least of the proceeds a new company takes (M15b)",
+            "default": 0
           },
           "exit_buyer": {
             "anyOf": [
@@ -22388,6 +22745,45 @@
         "type": "object",
         "title": "HiringPlanPatchIn",
         "description": "Fields to change; omitted fields keep their value. `unit_id: null` means the root."
+      },
+      "HistoricalOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal"
+          },
+          "deadline_label": {
+            "type": "string",
+            "title": "Deadline Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "description",
+          "year",
+          "goal",
+          "deadline_label"
+        ],
+        "title": "HistoricalOut",
+        "description": "A historical scenario (30.3): its start, goal and deadline."
       },
       "HistoryRowOut": {
         "properties": {
@@ -25373,6 +25769,23 @@
       },
       "NewGameMetaOut": {
         "properties": {
+          "sandbox": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SandboxMetaOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "historical": {
+            "items": {
+              "$ref": "#/components/schemas/HistoricalOut"
+            },
+            "type": "array",
+            "title": "Historical"
+          },
           "scenarios": {
             "items": {
               "$ref": "#/components/schemas/ScenarioOut"
@@ -31927,6 +32340,35 @@
         "title": "SandboxIn",
         "description": "Sandbox options (30.2)."
       },
+      "SandboxMetaOut": {
+        "properties": {
+          "year_min": {
+            "type": "integer",
+            "title": "Year Min"
+          },
+          "year_max": {
+            "type": "integer",
+            "title": "Year Max"
+          },
+          "cash_min_dollars": {
+            "type": "integer",
+            "title": "Cash Min Dollars"
+          },
+          "cash_max_dollars": {
+            "type": "integer",
+            "title": "Cash Max Dollars"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year_min",
+          "year_max",
+          "cash_min_dollars",
+          "cash_max_dollars"
+        ],
+        "title": "SandboxMetaOut",
+        "description": "Sandbox options (30.2)."
+      },
       "SaveNameIn": {
         "properties": {
           "name": {
@@ -34721,6 +35163,96 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VentureOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          },
+          "founded_label": {
+            "type": "string",
+            "title": "Founded Label"
+          },
+          "ended_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Label"
+          },
+          "buyer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "proceeds_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proceeds Cents"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score",
+            "description": "The company score at its sale, or the latest (30.1)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "current",
+          "founded_label",
+          "ended_label",
+          "buyer",
+          "price_cents",
+          "proceeds_cents",
+          "score"
+        ],
+        "title": "VentureOut",
+        "description": "A company the player ran (M15b addendum 10): the current one, or one they sold."
       },
       "WaferContractIn": {
         "properties": {

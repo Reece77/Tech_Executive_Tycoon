@@ -1758,3 +1758,12 @@ class QuarterMarkRow(Base):
 
     product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class VentureRow(Base):
+    """A company the player sold before founding again (M15b addendum 10, migration 0035)."""
+
+    __tablename__ = "venture"
+
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

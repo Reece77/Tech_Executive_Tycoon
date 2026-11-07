@@ -1,4 +1,5 @@
 import { Link, Navigate, useParams } from 'react-router';
+import { ExitChoicePanel } from '../components/ExitChoicePanel';
 import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading } from '../components/ScreenState';
 import { Sparkline } from '../components/Sparkline';
@@ -14,10 +15,10 @@ const LINKS = [
 ];
 
 function headline(g: GameOver): { kicker: string; title: string; text: string } {
-  if (g.game_state === 'exit') {
-    // M14 (28.6): the company was sold
+  if (g.game_state === 'exit' || g.game_state === 'retired') {
+    // M14 (28.6): the company was sold; M15b: then retired
     return {
-      kicker: `Exit · ${g.ended_label ?? ''}`,
+      kicker: `${g.game_state === 'retired' ? 'Retired' : 'Exit'} · ${g.ended_label ?? ''}`,
       title: `You sold ${g.company_name} to ${g.exit_buyer ?? 'a buyer'}`,
       text: `The buyer paid ${formatMoneyWhole(g.exit_price_cents ?? 0)} for every share. Your stake came to ${formatMoneyWhole(g.exit_proceeds_cents ?? 0)}.`,
     };
@@ -198,6 +199,7 @@ export function GameOverScreen() {
             testId="over-ownership"
           />
         </div>
+        {g.can_found_again && <ExitChoicePanel saveId={saveId} over={g} />}
         {g.game_state === 'founder_removed' && g.directors.length > 0 && (
           <section className="tst-panel" aria-label="The directors">
             <h2 className="tst-ptitle">The directors</h2>

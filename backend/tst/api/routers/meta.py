@@ -11,10 +11,12 @@ from tst.api.schemas.meta import (
     FounderRulesOut,
     FounderSkillOut,
     HiringMetaOut,
+    HistoricalOut,
     LabelOut,
     NewGameMetaOut,
     PresetOut,
     RoleOut,
+    SandboxMetaOut,
     ScenarioOut,
     SkillMetaOut,
 )
@@ -22,6 +24,7 @@ from tst.api.schemas.org import OrgMetaOut
 from tst.api.schemas.products import ProductsMetaOut
 from tst.api.schemas.saves import FounderIn
 from tst.sim.actions.org import DEPARTMENT_STAGE, PROMOTION_LADDER
+from tst.sim.calendar import format_turn, ym_to_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY, DIFFICULTY_LEVELS
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.hiring.phases import ONE_BATCH
@@ -60,7 +63,25 @@ def list_scenarios(data: DataDep) -> list[ScenarioOut]:
 def new_game_meta(data: DataDep) -> NewGameMetaOut:
     """Everything the new-game setup screen needs (M1c)."""
     game, founder = data.game_data, data.balance.founder
+    sb = data.balance.sandbox
     return NewGameMetaOut(
+        sandbox=SandboxMetaOut(
+            year_min=sb.years[0],
+            year_max=sb.years[1],
+            cash_min_dollars=sb.cash_dollars[0],
+            cash_max_dollars=sb.cash_dollars[1],
+        ),
+        historical=[
+            HistoricalOut(
+                key=h.key,
+                label=h.label,
+                description=h.description,
+                year=h.year,
+                goal=h.goal.text,
+                deadline_label=format_turn(ym_to_turn(*h.deadline)),
+            )
+            for h in game.historical
+        ],
         scenarios=[s for s in _scenarios(data) if s.selectable],
         difficulties=list(DIFFICULTY_LEVELS),
         backgrounds=[

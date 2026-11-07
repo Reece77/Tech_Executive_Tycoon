@@ -56,6 +56,20 @@ class RankBalance(_Frozen):
     launches_full: int = Field(ge=1)
 
 
+class SerialBalance(_Frozen):
+    """Founding again after an exit (M15b addendum 10)."""
+
+    background: str  # the scenarios.yaml start whose cap table and equity account it uses
+    min_cash_dollars: int = Field(ge=0)  # the least the founder can put into the new company
+
+
+class StoryBalance(_Frozen):
+    """Rival CEO storylines (M15b addendum 12)."""
+
+    feud_marks: tuple[float, ...]  # feud lines whose crossing brings a reply piece
+    max_per_month: int = Field(ge=0)  # pieces a month at most
+
+
 class SandboxBalance(_Frozen):
     """Sandbox starts (30.2)."""
 

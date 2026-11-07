@@ -1226,3 +1226,11 @@ sandbox:
   cash_dollars: [100000, 100000000] # starting cash offered, dollars (M15b decision)
   rival_share_half: 0.5 # "half the rivals" keeps this share of each category's incumbents (30.2)
   era_spread_months: 24 # months; with eras "all seeded", a later historical era arrives in its month +- this, drawn (M15b decision for 30.2)
+
+story: # rival CEO storylines (M15b addendum 12): press pieces from engine facts, LLM-worded within the budget (16.8)
+  feud_marks: [25, 50] # feud points; crossing one brings a reply from their CEO (addendum 12)
+  max_per_month: 2 # pieces a month at most, one per rival (keeps the LLM spend small)
+
+serial: # founding again after an exit (M15b addendum 10)
+  background: garage_bootstrap # scenarios.yaml start: the new company's cap table (founder 90%, pool 10%) and equity account
+  min_cash_dollars: 10000 # dollars; the least of the proceeds the founder can put into the new company

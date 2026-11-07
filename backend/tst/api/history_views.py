@@ -30,6 +30,7 @@ from tst.api.schemas.history import (
     StorylineHistoryOut,
     StoryStepOut,
     TimelineOut,
+    VentureOut,
 )
 from tst.db.models import (
     CompanyRow,
@@ -51,6 +52,7 @@ from tst.db.state_io import has_table
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.money import format_money
+from tst.sim.state import GameState
 
 CATEGORIES = ("people", "products", "finance", "rivals", "events")
 SOURCES = ("player", "delegate", "default")
@@ -136,6 +138,8 @@ INBOX_CATEGORY: dict[str, str] = {
     "deal_update": "finance",  # M14 (28)
     "rival_acquired": "products",  # M14 (28.6): market news
     "rankings_published": "rivals",  # M15b (30.4)
+    "rival_story": "rivals",  # M15b addendum 12
+    "founded_again": "finance",  # M15b addendum 10
     "promise_made": "events",  # M14b (29.2), into History by the M15b audit
     "promise_kept": "events",
     "promise_broken": "events",
@@ -965,3 +969,42 @@ def _outlasted(session: Session, company: int, names: _Names) -> list[RivalOutla
                 )
             )
     return sorted(out, key=lambda r: r.turn)
+
+
+def ventures_out(state: GameState) -> list[VentureOut]:
+    """The companies the player has run, oldest first (M15b addendum 10)."""
+
+    def score(company_id: int, until: int) -> int | None:
+        mine = [s for s in state.scores if s.company_id == company_id and s.turn <= until]
+        return max(mine, key=lambda s: s.turn).score if mine else None
+
+    out = [
+        VentureOut(
+            company_id=v.company_id,
+            name=v.name,
+            current=False,
+            founded_label=format_turn(v.founded_turn),
+            ended_label=format_turn(v.ended_turn),
+            buyer=state.company(v.buyer_id).name if v.buyer_id is not None else None,
+            price_cents=v.price_cents,
+            proceeds_cents=v.proceeds_cents,
+            score=score(v.company_id, v.ended_turn),
+        )
+        for v in sorted(state.ventures, key=lambda v: v.founded_turn)
+    ]
+    if all(v.company_id != state.player.id for v in state.ventures):
+        player = state.player
+        out.append(
+            VentureOut(
+                company_id=player.id,
+                name=player.name,
+                current=True,
+                founded_label=format_turn(player.founded_turn),
+                ended_label=None,
+                buyer=None,
+                price_cents=None,
+                proceeds_cents=None,
+                score=score(player.id, state.turn),
+            )
+        )
+    return out

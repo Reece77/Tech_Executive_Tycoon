@@ -1417,6 +1417,7 @@ export interface TimelineQuery {
   product_id?: number;
   offset?: number;
   limit?: number;
+  company_id?: number; // M15b addendum 10: a company the player sold
 }
 
 export function useTimeline(saveId: string, query: TimelineQuery) {
@@ -1432,26 +1433,39 @@ export function useTimeline(saveId: string, query: TimelineQuery) {
   });
 }
 
-export function useHistoryCharts(saveId: string) {
+/** A company the player ran (M15b addendum 10); undefined: the current one. */
+const companyQuery = (saveId: string, companyId?: number) => ({
+  params: {
+    path: { save_id: saveId },
+    query: companyId === undefined ? {} : { company_id: companyId },
+  },
+});
+
+export function useHistoryCharts(saveId: string, companyId?: number) {
   return useQuery({
-    queryKey: ['saves', saveId, 'history', 'charts'],
-    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/history/charts', path(saveId))),
+    queryKey: ['saves', saveId, 'history', 'charts', companyId ?? null],
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/history/charts', companyQuery(saveId, companyId))),
   });
 }
 
-export function useHistoryStorylines(saveId: string) {
+export function useHistoryStorylines(saveId: string, companyId?: number) {
   return useQuery({
-    queryKey: ['saves', saveId, 'history', 'storylines'],
+    queryKey: ['saves', saveId, 'history', 'storylines', companyId ?? null],
     queryFn: async () =>
-      unwrap(await api.GET('/api/saves/{save_id}/history/storylines', path(saveId))),
+      unwrap(
+        await api.GET('/api/saves/{save_id}/history/storylines', companyQuery(saveId, companyId)),
+      ),
   });
 }
 
-export function useHallOfFame(saveId: string) {
+export function useHallOfFame(saveId: string, companyId?: number) {
   return useQuery({
-    queryKey: ['saves', saveId, 'history', 'hall-of-fame'],
+    queryKey: ['saves', saveId, 'history', 'hall-of-fame', companyId ?? null],
     queryFn: async () =>
-      unwrap(await api.GET('/api/saves/{save_id}/history/hall-of-fame', path(saveId))),
+      unwrap(
+        await api.GET('/api/saves/{save_id}/history/hall-of-fame', companyQuery(saveId, companyId)),
+      ),
   });
 }
 

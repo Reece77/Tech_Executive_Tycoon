@@ -974,8 +974,8 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
         sync_state(session, state, result.new_state)
         insert_entries(session, result.ledger_entries)
         session.add_all(log_item_to_row(i) for i in result.log_items)
-        session.add_all(
-            inbox_rows(result.log_items, state.player.id, data.game_data.inbox_templates)
+        session.add_all(  # the new state's player: founding again changes it (M15b)
+            inbox_rows(result.log_items, result.new_state.player.id, data.game_data.inbox_templates)
         )
         employment = state.employment_of(action.actor_id)
         company_id = employment.company_id if employment else state.player.id

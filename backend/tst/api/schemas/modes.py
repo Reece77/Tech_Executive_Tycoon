@@ -53,3 +53,18 @@ class ContinueUntilOut(BaseModel):
     stopped_label: str
     turn: int
     date_label: str
+
+
+class FoundAgainIn(BaseModel):
+    """Found a new company after an exit (M15b addendum 10)."""
+
+    company_name: str = Field(min_length=1, max_length=60)
+    keep_cents: int = Field(default=0, ge=0, description="Proceeds the founder keeps")
+
+
+class ExitChoiceOut(BaseModel):
+    """After the choice: the game's state and the company the player now runs."""
+
+    game_state: str = Field(description="active (founded again) | retired")
+    company_id: int
+    company_name: str
