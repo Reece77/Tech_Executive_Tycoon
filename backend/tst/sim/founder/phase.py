@@ -158,6 +158,10 @@ def _sources(
             life = add(life, "broken_promise", turn, balance)
             if p.kind == "no_layoffs":
                 life = add(life, "broke_no_layoffs", turn, balance)
+    staff = [e for e in state.staff(cid) if e.role != "founder"]
+    raised = sum(1 for e in staff if e.last_raise_turn == turn)
+    if staff and raised / len(staff) >= pb.raise_share:
+        life = add(life, "raises", turn, balance)
     breaches = sum(1 for loan in state.loans if loan.company_id == cid and loan.breach_turn == turn)
     if breaches:
         life = add(life, "covenant_breach", turn, balance, breaches)

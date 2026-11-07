@@ -67,8 +67,6 @@ class FounderLife:
     recovered_turn: int | None = None  # the month the last burnout ended
     budget: int | None = None  # this month's energy budget when it reset
     rest_turn: int | None = None  # a month off taken at a burnout event
-    raise_turn: int | None = None  # the month of `raised`: raises given (32.4's raises source)
-    raised: tuple[int, ...] = ()  # people given a raise that month
     causes: tuple[Cause, ...] = ()  # stress's last changes
     trait_causes: tuple[TraitCause, ...] = ()
     holiday_months: int = 0  # months on Holiday or off, for the record

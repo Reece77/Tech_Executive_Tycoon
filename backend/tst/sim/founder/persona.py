@@ -66,9 +66,9 @@ def apply_source(
 
 def note(state: GameState, person_id: int, source: str, balance: Balance) -> GameState:
     """A source that happened in an action (a hostile tender, a failed one, a raise)."""
-    life = life_of(state, person_id)
-    if life is None:
-        return state
+    from tst.sim.founder.stress import new_life
+
+    life = life_of(state, person_id) or new_life(person_id, balance)
     return with_life(state, apply_source(life, source, state.turn, balance))
 
 

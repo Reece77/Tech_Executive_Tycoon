@@ -21,20 +21,23 @@ from tst.sim.events.data import (
 
 def test_the_library(loaded: LoadedData) -> None:
     templates = loaded.game_data.event_templates
-    assert Counter(t.category for t in templates) == {
-        "personnel": 25,  # M6: 20; M7a: +4; M10b: key exit (23.3)
-        "market": 16,  # M6: 12; M7a: +2; M10b: the press storyline (23.3)
-        "operations": 15,  # M6: 10; M7a: +2; M10b: breach and outage (23.3); M12a: 22.5
-        "finance": 8,
-        "board": 6,
-        "rivals": 4,
-        "founder": 17,  # M7a: early days (trigger early_days); M24: burnout, scandal, first grants (32)
-        "lender": 2,  # M10: queued by the debt phase (20.3)
-        "public": 11,  # M13: IPO chain and public life (25); M14: takeover_offer
-        "press": 10,  # M14b: press moments, queued by the engine (29.1)
-        "executive": 5,  # M10c: executives ask and clash (24.3)
-        "research": 4,  # M11: breakthroughs and dead ends (21.3)
-    }
+    assert (
+        Counter(t.category for t in templates)
+        == {
+            "personnel": 25,  # M6: 20; M7a: +4; M10b: key exit (23.3)
+            "market": 16,  # M6: 12; M7a: +2; M10b: the press storyline (23.3)
+            "operations": 15,  # M6: 10; M7a: +2; M10b: breach and outage (23.3); M12a: 22.5
+            "finance": 8,
+            "board": 6,
+            "rivals": 4,
+            "founder": 17,  # M7a: early days (trigger early_days); M24: burnout, scandal, first grants (32)
+            "lender": 2,  # M10: queued by the debt phase (20.3)
+            "public": 11,  # M13: IPO chain and public life (25); M14: takeover_offer
+            "press": 10,  # M14b: press moments, queued by the engine (29.1)
+            "executive": 5,  # M10c: executives ask and clash (24.3)
+            "research": 4,  # M11: breakthroughs and dead ends (21.3)
+        }
+    )
     for trigger in TRIGGERS:
         assert any(t.trigger == trigger and "minor" in t.severities for t in templates), trigger
     for trigger in CRITICAL_TRIGGERS:

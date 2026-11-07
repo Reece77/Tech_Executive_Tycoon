@@ -1257,7 +1257,7 @@ foundation: # 32.3
   min_cents: 100000000 # cents ($1M) of personal cash needed to create a foundation
   energy: 5 # energy to create one
   payout: 0.05 # share of the endowment granted each December
-  beloved_k: 2 # Beloved points per decade of a year's grants: min(beloved_cap, k x log10(g / unit))
+  beloved_k: 3 # Beloved points per decade of a year's grants: min(beloved_cap, k x log10(g / unit)); 32.3 says 2, tuned to 3 for 32.7 target 5 ($10M a year raises Beloved 5-10: 2 x 2 = 4 missed it)
   beloved_cap: 10 # Beloved points at most from one year's grants
   beloved_unit_dollars: 100000 # dollars; a year's grants below this raise no Beloved
   hiring: 0.03 # offer-score points at most (education) in the founder's home region
