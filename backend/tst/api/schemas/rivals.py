@@ -51,6 +51,17 @@ class RivalSegmentOut(BaseModel):
     running_until_label: str | None
 
 
+class RivalProductMarketOut(BaseModel):
+    """Where one rival product sells (Reece's playtest 3): its category, segments and
+    regions, in words."""
+
+    product_id: int
+    name: str
+    category_label: str
+    segment_labels: list[str]
+    region_labels: list[str]
+
+
 class KeyPersonOut(BaseModel):
     person_id: int
     name: str
@@ -87,6 +98,9 @@ class RivalProfileOut(BaseModel):
     stance_reason: str
     failed: bool
     segments: list[RivalSegmentOut]
+    products: list[RivalProductMarketOut] = Field(
+        description="Each product's market: category, segments and regions"
+    )
     key_people: list[KeyPersonOut]
     recent_moves: list[RivalMoveOut]
     poach_energy: int

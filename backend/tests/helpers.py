@@ -331,10 +331,12 @@ def answer_critical(path: Path, loaded: LoadedData) -> None:
     from sqlalchemy import select
 
     from tst.db.models import EventRow
-    from tst.db.repository import load_state, open_session, run_action
+    from tst.db.repository import read_session, read_state, run_action
     from tst.sim.actions import ChooseEvent
 
-    with open_session(path) as session:  # most months have none: skip loading the state
+    # most months have none: skip the state; else the remembered one, as the app's screens
+    # read it (a full reload of a 200-person save took most of a second; M14 turn time)
+    with read_session(path) as session:
         if (
             session.scalar(
                 select(EventRow.id)
@@ -344,7 +346,7 @@ def answer_critical(path: Path, loaded: LoadedData) -> None:
             is None
         ):
             return
-        state = load_state(session)
+        state = read_state(session)
     founder = state.founder_of(state.player.id)
     for event in state.open_events(state.player.id):
         if event.severity == "critical" and event.status == "open" and founder is not None:
@@ -354,12 +356,12 @@ def answer_critical(path: Path, loaded: LoadedData) -> None:
 def answer_events(path: Path, loaded: LoadedData) -> None:
     """Answer every open major and critical event with its first choice, as the player must
     before their own Continue (23.1, M10b)."""
-    from tst.db.repository import load_state, open_session, run_action
+    from tst.db.repository import read_session, read_state, run_action
     from tst.sim.actions import ChooseEvent
     from tst.sim.events.effects import blocking_events
 
-    with open_session(path) as session:
-        state = load_state(session)
+    with read_session(path) as session:  # the remembered state, as the app reads it
+        state = read_state(session)
     founder = state.founder_of(state.player.id)
     for event in blocking_events(state):
         if founder is not None:

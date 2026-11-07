@@ -20,6 +20,7 @@ from tst.sim.geo.cities import home_region
 from tst.sim.geo.models import ProductRegion, RegionalSegment
 from tst.sim.ledger import CASH, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.mna.style import style  # M14 (28.5): a kept brand's directive
 from tst.sim.people.models import current_ability
 from tst.sim.products import formulas as pf
 from tst.sim.products.models import SELLING, Product, ProductSegment
@@ -407,7 +408,7 @@ def choose(
 ) -> tuple[Candidate, float] | None:
     """The best action by utility, if at least act_threshold (15.3)."""
     rv = balance.rivals
-    weights = rv.weights[company.personality or "fast_follower"]
+    weights = rv.weights[style(state, company)]
     best: tuple[Candidate, float] | None = None
     # M14b (29.4): a rival in a rivalry weights actions against the player's products (and
     # poaching from the player) x feud.target_mult.
@@ -418,7 +419,7 @@ def choose(
         if c.need <= 0 or _cooling(state, company.id, c, balance):
             continue
         weight = (
-            balance.rnd.rival.weights.get(company.personality or "fast_follower", 1.0)
+            balance.rnd.rival.weights.get(style(state, company), 1.0)
             if c.action == RESEARCH  # M11 (21.6)
             else weights.get(c.action, weights["enter_segment"])
         )
@@ -512,9 +513,7 @@ def act(
         return state, f"started a brand push on {product.name}"
     if c.action == "enter_segment" and product is not None and c.segment is not None:
         market = data.category(product.category).market(c.segment)
-        price = round(
-            market.reference_price_cents * rv.price_factor[company.personality or "fast_follower"]
-        )
+        price = round(market.reference_price_cents * rv.price_factor[style(state, company)])
         state = with_product_segment(
             state,
             ProductSegment(
@@ -537,6 +536,8 @@ def act(
         state = _effect(state, company.id, "cut_costs", None, balance)
         return state, "cut costs"
     if c.action == "poach":
+        if company.parent_id is not None:  # M14 (28.5): a kept brand never poaches its parent
+            return state, ""
         u = None
         if rng is not None:  # keyed by the rival's identity (M10d; ADR-0013 amendment)
             u = poach_draw(rng, state.turn, *stream_key(company.id, company.rival_key), TARGET_KEY)
@@ -562,7 +563,7 @@ def enter_region(
     anywhere, at p_ref x price index x its personality's price factor (19.6). Rivals have
     no offices and do not localize (M9 brief)."""
     home = home_region(state, balance, data)
-    factor = balance.rivals.price_factor[company.personality or "fast_follower"]
+    factor = balance.rivals.price_factor[style(state, company)]
     category = data.category(product.category)
     for seg in product_segment_keys(state, product, data):
         reference = category.market(seg).reference_price_cents

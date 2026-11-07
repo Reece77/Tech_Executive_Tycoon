@@ -35,6 +35,8 @@ DEPRECIATION: Final = "6700_depreciation"  # facilities' depreciation and losses
 RESEARCH: Final = "6500_research_development"  # localization (M9, 19.5); research (M11, 21.3)
 LICENSE_REVENUE: Final = "4100_revenue_licenses"  # licence prices and royalties (M11, 21.5)
 COGS: Final = "5000_cogs"  # hardware: bills of materials, chips and assembly at sale (M12b, 26.2)
+GOODWILL: Final = "1800_goodwill"  # price - the target's book equity at closing (M14, 28.3)
+INVESTMENT_SUBSIDIARIES: Final = "1810_investment_subsidiaries"  # kept brands (M14, 28.5)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -56,6 +58,8 @@ ENGINE_ACCOUNTS: Final = (
     ACCUMULATED_DEPRECIATION,
     DEPRECIATION,
     LICENSE_REVENUE,
+    GOODWILL,
+    INVESTMENT_SUBSIDIARIES,
 )
 
 

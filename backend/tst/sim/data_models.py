@@ -29,6 +29,7 @@ from tst.sim.facilities.config import (
 )
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
+from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.org.voice_data import Voice
 from tst.sim.press.config import (
@@ -1205,6 +1206,9 @@ class Balance(_Frozen):
     ipo: IpoBalance  # M13 (formulas.md 25.1-25.2)
     public: PublicBalance  # M13 (formulas.md 25.3-25.5, 25.7)
     ceo: CeoBalance  # M13 (formulas.md 25.6)
+    mna: MnaBalance  # M14 (formulas.md 28.1-28.3, 28.6-28.7)
+    antitrust: AntitrustBalance  # M14 (formulas.md 28.4)
+    integration: IntegrationBalance  # M14 (formulas.md 28.5)
     press: PressBalance  # M14b (formulas.md 29.1, 29.3)
     promise: PromiseBalance  # M14b (formulas.md 29.2)
     feud: FeudBalance  # M14b (formulas.md 29.4)
@@ -1591,6 +1595,8 @@ class IncumbentCompany(_Frozen):
     products: tuple[IncumbentProduct, ...] = Field(min_length=1)
     # M12b: named key people for this incumbent; None = rivals.key_people (15.1)
     key_people: int | None = Field(default=None, ge=1)
+    # M14 (28.1): (year, month) the company is listed from, following history; None = private
+    listed_from: tuple[int, int] | None = None
 
 
 DEFAULT_INCUMBENT_REGIONS = ("north_america", "europe")  # 19.5: v1 incumbents' regions
@@ -1737,6 +1743,7 @@ class EntrantDef(_Frozen):
     staff: int = Field(ge=1)  # people, the founder included
     category: str
     segments: tuple[str, ...] = Field(min_length=1)
+    listed_from: tuple[int, int] | None = None  # M14 (28.1): as IncumbentCompany's
 
 
 class EntrantsFile(_Frozen):
@@ -1783,6 +1790,9 @@ INBOX_TEMPLATE_KEYS = (
     "exec_proposal",  # M10c (24.1)
     "exec_pitch",  # M13b (27.1)
     "pitch_went_ahead",  # M13b (27.1)
+    "deal_update",  # M14 (28)
+    "rival_acquired",  # M14 (28.6)
+    "exit_sale",  # M14 (28.6)
     "era_report",  # M13b (27.3)
     # M4a (formulas.md 14)
     "safe_filled",

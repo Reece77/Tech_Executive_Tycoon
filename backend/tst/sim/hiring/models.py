@@ -131,6 +131,7 @@ class NextIds:
     ceo: int = 1  # M13: loaded as max(id) + 1 of the ceo table
     ceo_decision: int = 1  # M13: loaded as max(id) + 1 of the ceo_decision table
     pitch: int = 1  # M13b: loaded as max(id) + 1 of the exec_pitch table
+    deal: int = 1  # M14: loaded as max(id) + 1 of the mna_deal table
     # M14b: loaded as max(id) + 1 of the press_moment, press_promise and rival_statement tables
     press_moment: int = 1
     promise: int = 1
@@ -174,6 +175,7 @@ class NextIds:
             "ceo",
             "ceo_decision",
             "pitch",
+            "deal",
             "press_moment",
             "promise",
             "statement",

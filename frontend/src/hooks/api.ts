@@ -227,6 +227,7 @@ export const keys = {
     contract: number | null,
   ) => ['saves', saveId, 'build-preview', kind, region, units, contract] as const,
   research: (saveId: string) => ['saves', saveId, 'research'] as const, // M11
+  mna: (saveId: string) => ['saves', saveId, 'mna'] as const, // M14
   eras: (saveId: string) => ['saves', saveId, 'eras'] as const,
   leasePreview: (saveId: string, city: string, seats: number) =>
     ['saves', saveId, 'lease-preview', city, seats] as const,
@@ -1896,6 +1897,93 @@ export function useResearchAction(saveId: string) {
   const invalidate = useInvalidateSave(saveId);
   return useMutation({
     mutationFn: (a: ResearchAction) => applyResearch(saveId, a),
+    onSuccess: invalidate,
+  });
+}
+
+// --- Mergers and acquisitions (M14, formulas.md 28) -----------------------------------------
+
+export type Mna = Schemas['MnaOut'];
+export type MnaTarget = Schemas['TargetOut'];
+export type MnaDeal = Schemas['DealOut'];
+export type MnaActionResult = Schemas['MnaActionOut'];
+
+export function useMna(saveId: string) {
+  return useQuery({
+    queryKey: keys.mna(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/mna', path(saveId))),
+  });
+}
+
+export type MnaAction =
+  | { kind: 'diligence'; companyId: number }
+  | {
+      kind: 'bid';
+      companyId: number;
+      priceCents: number;
+      cashShare: number;
+      hostile: boolean;
+      mode: 'brand' | 'integrate';
+    }
+  | { kind: 'mode'; dealId: number; mode: 'brand' | 'integrate' }
+  | { kind: 'abandon' | 'remedy'; dealId: number }
+  | { kind: 'directive'; companyId: number; directive: 'grow' | 'harvest' | 'defend' };
+
+async function applyMna(saveId: string, a: MnaAction): Promise<MnaActionResult> {
+  switch (a.kind) {
+    case 'diligence':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/mna/diligence', {
+          ...path(saveId),
+          body: { company_id: a.companyId },
+        }),
+      );
+    case 'bid':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/mna/offers', {
+          ...path(saveId),
+          body: {
+            company_id: a.companyId,
+            price_cents: a.priceCents,
+            cash_share: a.cashShare,
+            hostile: a.hostile,
+            mode: a.mode,
+          },
+        }),
+      );
+    case 'mode':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/mna/deals/{deal_id}/mode', {
+          params: { path: { save_id: saveId, deal_id: a.dealId } },
+          body: { mode: a.mode },
+        }),
+      );
+    case 'abandon':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/mna/deals/{deal_id}/abandon', {
+          params: { path: { save_id: saveId, deal_id: a.dealId } },
+        }),
+      );
+    case 'remedy':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/mna/deals/{deal_id}/remedy', {
+          params: { path: { save_id: saveId, deal_id: a.dealId } },
+        }),
+      );
+    case 'directive':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/mna/subsidiaries/{company_id}/directive', {
+          params: { path: { save_id: saveId, company_id: a.companyId } },
+          body: { directive: a.directive },
+        }),
+      );
+  }
+}
+
+export function useMnaAction(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: (a: MnaAction) => applyMna(saveId, a),
     onSuccess: invalidate,
   });
 }

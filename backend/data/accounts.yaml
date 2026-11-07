@@ -8,6 +8,8 @@ accounts:
   - { code: 1200_prepaid, name: Prepaid expenses, type: asset }
   - { code: 1500_ppe, name: "Property, plant and equipment", type: asset }
   - { code: 1510_accumulated_depreciation, name: Accumulated depreciation, type: asset } # M12a: contra-asset, credit balance
+  - { code: 1800_goodwill, name: Goodwill, type: asset } # M14 (28.3): price - the target's book equity at closing; no amortization
+  - { code: 1810_investment_subsidiaries, name: Investment in subsidiaries, type: asset } # M14 (28.5): a kept brand's book equity at closing, less cash swept since; replaced by its net assets in consolidation
   # Liabilities
   - { code: 2000_payables, name: Accounts payable, type: liability }
   - { code: 2100_accrued_payroll, name: Accrued payroll, type: liability }

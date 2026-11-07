@@ -432,3 +432,35 @@ The full nightly suite on `m14b-press` (main at `44b9fe3` plus M14b): 30 passed,
 Reading: over 30 seeds `main` and M14b agree (70%), above the band on both. On the standard seeds `main` sits at the band's top and M14b's press events (they join the event flow and move later draws) flip seed 6. **Ruling (product manager, 2026-11-04):** a pre-existing miss, not M14b's. It is a known miss (`M10.T3` in `backend/tst/balance/known_misses.py`, owner M15) that fails only at 90% or more of seeds, M10's original measured value; `test_3_covenants_bite_sometimes` xfails while the rate is above 60% and under 90%. See Known misses above.
 
 M14b's own §29.7 targets (`tools/m14b_targets.py`, nightly), 10 seeds, all pass: T2 three kept promises +10.7 brand at 24 months (+5 to +15), three broken −11.1 (−10 to −25) with sentiment 10% lower (5–15%); T3 1.2 press moments a year (≤ 6); T4 rivalry on 7/10 bold steady runs (5–9), that rival's moves against the player +26% (20–60%); T5 Replace fills 50% sooner (30–50%). Tuned (`press.*` and `feud.*` only): `feud.bold_mention` 10 → 20, `feud.decay` 2 → 1, `press.statement_chance` 0.6, `press.jab_base` 0.3; releases count as speaking moves.
+
+## M14: mergers and acquisitions (§28.9)
+
+`tools/m14_targets.py`, nightly `tests/balance/test_m14_balance.py`, 10 seeds, measured 2026-11-05 on `m14-mna` after the product manager's ruling on target 4.
+- **Scripted deals (targets 2-4):** each seed's steady game at month 36, funded for the deals, bids for up to three private companies (the displayed midpoint, then the counter; two integrated, which must have at most `integration.max_staff` staff; one kept as a brand) and one listed company (stepping the premium by 5 points until its board agrees, integrated if within the limit), then plays 12 months.
+- **Target 5:** "steady + regions" against "acquirer" (plus one startup a year when cash covers 18 months), 120 months.
+- **Target 6:** a deal at 40% combined share in January 2021, reviewed on each seed.
+- **Target 7:** do-nothing games, 120 months.
+
+| Target | Value | Band | Result |
+| --- | --- | --- | --- |
+| 1 nothing moves without deals | golden snapshots unchanged; earlier targets as before (re-run on the combined code at the lane merge) | as before | pass |
+| 2 private deals, price / V_f (median) | 1.37 | 1.0-1.6 | pass |
+| 2 listed friendly deals, premium (median) | 35% | 25-50% | pass |
+| 3 key people lost within 12 months, integrated (median) | 25% | 10-30% | pass |
+| 3 the same, kept brands | 0% | <= 10% | pass |
+| 4 payroll cut by integration, every integrated deal (median) | 24% (scripted 23%, the acquirer's startups 52%) | 15-35% | pass |
+| 5 acquirer / steady + regions, median ARR at year 10 | 1.05 | 1.0-1.4 | pass |
+| 6 deals at 40% blocked after review, after 2020 | 4 of 10 seeds (40%) | 15-50% | pass |
+| 7 incumbents' startup purchases a decade (median) | 2 | 1-4 | pass |
+
+**Tuned keys:**
+- `integration.flight_brand` 0.03 -> 0.007;
+- `integration.flight_base` 0.02 -> 0.01;
+- `mna.rival_rate` 0.04 -> 0.008, then 0.005 at the lane merge: M12a's living-market guard read 0.97 launches per category (39 of 40) at 0.008 and passes at 0.005 (1.00, as `main`). The guard is on its floor on `main`, so it is not monotonic in the rate (0.004 and 0.006 read 0.97). The table above is measured at 0.005.
+
+**Target 4 (2026-11-05 ruling).**
+- **The rule:** each acquired product keeps its revenue share of the target's staff, less a synergy by function (sellers and marketers 0.40 where the acquirer already sells in the category, else 0.15; builders 0.10; other key people 0.30).
+- **The limit:** only targets with at most 250 staff integrate.
+- **Tuning:** none needed; the synergy keys land it in band as given.
+- **Startups:** their figure mostly reflects departures, since they have few or no pool staff.
+- **Before the ruling:** the maintenance-line rule cut 87% (scripted) and 51% (startups).

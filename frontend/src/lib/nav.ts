@@ -17,3 +17,10 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { path: 'history', label: 'History', arrivesIn: null },
   { path: 'saves', label: 'Saves', arrivesIn: null }, // M7b, key 0
 ];
+
+/** Where the top bar's "Answer ... first" link goes (Reece's playtest 3): the first event
+ * that needs answering, else the Org screen for proposals and pitches, else the inbox. */
+export function answerHref(saveId: string, blockingEventIds: readonly number[], proposals: number) {
+  if (blockingEventIds.length > 0) return `/game/${saveId}/events/${blockingEventIds[0]}`;
+  return proposals > 0 ? `/game/${saveId}/org` : `/game/${saveId}/inbox`;
+}

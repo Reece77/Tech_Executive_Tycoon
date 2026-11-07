@@ -45,6 +45,7 @@ from tst.sim.state import (
 EARNINGS_MISS = "earnings_miss"
 ACTIVIST = "activist_stake"
 TAKEOVER = "takeover_bid"
+TAKEOVER_OFFER = "takeover_offer"  # M14 (28.6): data/events/deals.yaml
 CEO_VOTE = "ceo_vote"
 RESULTS_KEPT = 8  # tunable-exempt: two years of reports, enough for any trigger window
 QUARTER = ipo.QUARTER_MONTHS
@@ -108,6 +109,12 @@ def guidance_problem(
 # --- The phase ---------------------------------------------------------------------------------
 
 
+def sentiment_draws(rng: RngFactory, turn: int, *key: int) -> np.random.Generator:
+    """The one call site of stream market_sentiment (25.3): the player keyed by its id, a
+    listed rival (M14, 28.1) by its stable key."""
+    return rng.stream(turn, "market_sentiment", *key)
+
+
 def public_month(
     state: GameState,
     rng: RngFactory,
@@ -128,7 +135,7 @@ def public_month(
         f = fundamentals(state, cid, revenue.get(cid, 0), op.get(cid, 0), balance, data)
         # One generator a month per listed company: the sentiment shock and the analysts'
         # targets, at the listing and after each report (stream market_sentiment, 25.3).
-        gen = rng.stream(state.turn, "market_sentiment", cid)
+        gen = sentiment_draws(rng, state.turn, cid)
         if public is None and listing is not None:
             if ipo.roadshow_done(listing) and listing.demand is None:
                 climate = macro.venture_climate(state, data)
@@ -385,6 +392,8 @@ def apply_public_step(
         bounds = balance.public.sentiment.bounds
         sentiment = bounds.clamp(public.sentiment * (1 + tb.premium * tb.talks_share))
         state = with_public(state, replace(public, sentiment=sentiment))
+        # M14 (28.6): next month the buyer names its price, which can be accepted (an exit)
+        state = ipo.queue_public(state, company_id, TAKEOVER_OFFER, state.turn + 1)
     elif step == "ceo_replace":
         ceo = ceo_of(state, company_id)
         if ceo is not None:
@@ -402,7 +411,12 @@ def apply_public_step(
         ceo = ceo_of(state, company_id)
         if ceo is not None:
             state = with_ceo(state, replace(ceo, low_months=0))
-    # takeover_reject: the template's board effect is all (acquisitions are M14)
+    elif step == "takeover_accept" and public is not None:  # M14 (28.6): an exit
+        from tst.sim.mna.exit import sell_company
+
+        state, sold = sell_company(state, company_id, balance)
+        logs += sold
+    # takeover_reject: the template's board effect is all
     return state, logs
 
 

@@ -42,7 +42,11 @@ def test_balance_targets(results: list[RunResult]) -> None:
 
 
 @pytest.mark.nightly
-@pytest.mark.parametrize("known", KNOWN_MISSES, ids=lambda k: k.target)
+# A milestone-prefixed miss (M10.T3) is not a row of this table: its own milestone test
+# measures it and xfails it within the same bound (tests/balance/test_m10_balance.py).
+@pytest.mark.parametrize(
+    "known", [k for k in KNOWN_MISSES if "." not in k.target], ids=lambda k: k.target
+)
 def test_known_misses(results: list[RunResult], known: KnownMiss) -> None:
     """Each recorded known miss on its own (T2 since M12a): passes if met, xfails while within
     its bound, fails if worse."""

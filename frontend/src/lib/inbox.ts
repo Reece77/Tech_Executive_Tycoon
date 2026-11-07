@@ -84,6 +84,9 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   // M13b (27.3): an era's arrival (critical) and its report at the window's end
   era_arrived: { label: 'Critical', group: 'company' },
   era_report: { label: 'Product', group: 'company' },
+  deal_update: { label: 'Finance', group: 'finance' }, // M14 (28): offers, reviews, closings
+  rival_acquired: { label: 'News', group: 'company' }, // M14 (28.6)
+  exit_sale: { label: 'Finance', group: 'finance' }, // M14 (28.6)
   // M13: the IPO, the public company and the CEO (25)
   banks_hired: { label: 'Finance', group: 'finance' },
   ipo_listed: { label: 'Finance', group: 'finance' },

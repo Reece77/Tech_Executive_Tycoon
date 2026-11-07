@@ -77,4 +77,5 @@ testpaths = ["tests"]
 addopts = "-ra"
 markers = [
     "nightly: long statistical balance runs; CI runs them nightly, `make check` runs everything (M7a, D4a)",
+    "timing: turn-time budgets; run alone without xdist after the parallel suite (`make check-timing`, M14)",
 ]

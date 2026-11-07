@@ -36,6 +36,7 @@ from tst.api.schemas.finance import (
     StatementLineOut,
     StatementPeriodOut,
     StatementsOut,
+    SubsidiaryColumnOut,
     TermSheetOut,
     TimelineItemOut,
 )
@@ -65,6 +66,7 @@ from tst.sim.finance.captable import (
     share_price,
     unallocated,
 )
+from tst.sim.finance.consolidation import consolidated_lines
 from tst.sim.finance.fundraising import (
     arr_cents,
     base_value,
@@ -86,6 +88,8 @@ from tst.sim.finance.models import (
 )
 from tst.sim.finance.options import at_cliff, next_vesting, pool_left_bp
 from tst.sim.hiring.formulas import energy_cost
+from tst.sim.ledger import CASH
+from tst.sim.mna.exit import sale_of
 from tst.sim.money import Cents
 from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState
@@ -129,10 +133,21 @@ def _label(period: fs.Period, first: int) -> str:
 
 
 def statements_out(
-    state: GameState, lines: Lines, period: fs.Period, data: LoadedData
+    state: GameState,
+    lines: Lines,
+    period: fs.Period,
+    data: LoadedData,
+    brands: Sequence[tuple[int, Lines]] = (),
 ) -> StatementsOut:
-    """Every closed month, quarter or year from January 2010, oldest first."""
+    """Every closed month, quarter or year from January 2010, oldest first; with kept brands,
+    the group's consolidated statements and a column per brand (M14, 28.5)."""
     types: dict[str, AccountType] = {a.code: a.type for a in data.game_data.accounts}
+    closed = {a.target_id: a.closed_turn for a in state.acquisitions}
+    own = lines
+    if brands:
+        lines = consolidated_lines(
+            lines, [(brand, closed.get(cid, 0)) for cid, brand in brands], types
+        )
     names = {a.code: a.name for a in data.game_data.accounts}
     last_closed = state.turn - 1
     periods = []
@@ -179,7 +194,27 @@ def statements_out(
                     ),
                 )
             )
-    return StatementsOut(period=period, periods=periods)
+    columns = []
+    for cid, brand in brands:
+        revenue, result, cash = [], [], []
+        for x in periods:
+            pnl = fs.profit_and_loss(brand, types, x.first_turn, x.last_turn)
+            revenue.append(pnl.total_revenue)
+            result.append(pnl.operating_result)
+            cash.append(sum(a for t, acc, a in brand if acc == CASH and t <= x.last_turn))
+        columns.append(
+            SubsidiaryColumnOut(
+                company_id=cid,
+                name=state.company(cid).name,
+                revenue_cents=revenue,
+                operating_result_cents=result,
+                cash_cents=cash,
+            )
+        )
+    del own
+    return StatementsOut(
+        period=period, periods=periods, consolidated=bool(brands), subsidiaries=columns
+    )
 
 
 # --- Cap table -------------------------------------------------------------------------------
@@ -836,10 +871,15 @@ def game_over_out(
         )
     bb = data.balance.board
     first_news = last - TIMELINE_MONTHS + 1
+    sale = sale_of(state, company.id) if meta.game_state == "exit" else None  # M14 (28.6)
+    per_share = sale.price_cents // fd if sale is not None and fd else 0
     return GameOverOut(
         game_state=meta.game_state,
         company_name=company.name,
         ended_turn=ended,
+        exit_buyer=state.company(sale.acquirer_id).name if sale is not None else None,
+        exit_price_cents=sale.price_cents if sale is not None else None,
+        exit_proceeds_cents=own * per_share if sale is not None else None,
         ended_label=format_turn(ended) if ended is not None else None,
         founded_label=format_turn(company.founded_turn),
         months_lasted=max(last - company.founded_turn + 1, 0),

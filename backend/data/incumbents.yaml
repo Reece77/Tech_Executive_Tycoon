@@ -6,6 +6,9 @@
 # file's order after the player (2, 3, ...); product ids follow it too, so append new
 # entries and never reorder.
 # - stage: company stage (spec section 3); founded_year: shown only.
+# - listed_from (M14, formulas.md 28.1, optional): [year, month] the company is listed from,
+#   following history (an IPO or a spin-off); listed rivals show a public market cap. Private
+#   companies have no field and show an estimated value range.
 # - M5 (formulas.md 15.1): personality (aggressive, fast_follower, premium, cost_leader),
 #   builder_skill (the builder pool's skill d, attribute points), target_margin_bp (the
 #   margin its staff is sized for, bp of revenue) and cash_months (starting cash in months
@@ -29,6 +32,7 @@ companies:
   - name: Salesforce
     stage: 4
     founded_year: 1999
+    listed_from: [2004, 6] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 14
     target_margin_bp: 1500
@@ -47,6 +51,7 @@ companies:
   - name: Oracle
     stage: 4
     founded_year: 1977
+    listed_from: [1986, 3] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 12
     target_margin_bp: 2500
@@ -81,6 +86,7 @@ companies:
   - name: Atlassian
     stage: 3
     founded_year: 2002
+    listed_from: [2015, 12] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 14
     target_margin_bp: 2000
@@ -99,6 +105,7 @@ companies:
   - name: Microsoft
     stage: 4
     founded_year: 1975
+    listed_from: [1986, 3] # M14 (28.1): listed from this month, following history
     personality: aggressive
     builder_skill: 13
     target_margin_bp: 3000
@@ -133,6 +140,7 @@ companies:
   - name: Facebook
     stage: 3
     founded_year: 2004
+    listed_from: [2012, 5] # M14 (28.1): listed from this month, following history
     personality: aggressive
     builder_skill: 13
     target_margin_bp: 2000
@@ -149,6 +157,7 @@ companies:
   - name: Zynga
     stage: 3
     founded_year: 2007
+    listed_from: [2011, 12] # M14 (28.1): listed from this month, following history
     personality: aggressive
     builder_skill: 11
     target_margin_bp: 1500
@@ -181,6 +190,7 @@ companies:
   - name: Symantec
     stage: 4
     founded_year: 1982
+    listed_from: [1989, 6] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 12
     target_margin_bp: 2500
@@ -199,6 +209,7 @@ companies:
   - name: McAfee
     stage: 4
     founded_year: 1987
+    listed_from: [1992, 10] # M14 (28.1): listed from this month, following history
     personality: cost_leader
     builder_skill: 11
     target_margin_bp: 2000
@@ -217,6 +228,7 @@ companies:
   - name: Check Point
     stage: 4
     founded_year: 1993
+    listed_from: [1996, 6] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 14
     target_margin_bp: 3000
@@ -238,6 +250,7 @@ companies:
   - name: PayPal
     stage: 4
     founded_year: 1998
+    listed_from: [2015, 7] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 12
     target_margin_bp: 2000
@@ -255,6 +268,7 @@ companies:
   - name: Intuit
     stage: 4
     founded_year: 1983
+    listed_from: [1993, 3] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 13
     target_margin_bp: 2500
@@ -272,6 +286,7 @@ companies:
   - name: Fiserv
     stage: 4
     founded_year: 1984
+    listed_from: [1986, 9] # M14 (28.1): listed from this month, following history
     personality: cost_leader
     builder_skill: 11
     target_margin_bp: 2500
@@ -289,6 +304,7 @@ companies:
   - name: IBM
     stage: 4
     founded_year: 1911
+    listed_from: [1916, 11] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 13
     target_margin_bp: 2000
@@ -306,6 +322,7 @@ companies:
   - name: Nuance
     stage: 4
     founded_year: 1992
+    listed_from: [1995, 4] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 12
     target_margin_bp: 1500
@@ -325,6 +342,7 @@ companies:
   - name: SAP
     stage: 4
     founded_year: 1972
+    listed_from: [1988, 11] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 13
     target_margin_bp: 2500
@@ -361,6 +379,7 @@ companies:
   - name: Tencent
     stage: 4
     founded_year: 1998
+    listed_from: [2004, 6] # M14 (28.1): listed from this month, following history
     personality: aggressive
     builder_skill: 13
     target_margin_bp: 2500
@@ -378,6 +397,7 @@ companies:
   - name: Alibaba
     stage: 4
     founded_year: 1999
+    listed_from: [2014, 9] # M14 (28.1): listed from this month, following history
     personality: aggressive
     builder_skill: 12
     target_margin_bp: 2000
@@ -396,6 +416,7 @@ companies:
   - name: Baidu
     stage: 4
     founded_year: 2000
+    listed_from: [2005, 8] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 12
     target_margin_bp: 2000
@@ -414,6 +435,7 @@ companies:
   - name: Infosys
     stage: 4
     founded_year: 1981
+    listed_from: [1993, 6] # M14 (28.1): listed from this month, following history
     personality: cost_leader
     builder_skill: 11
     target_margin_bp: 2500
@@ -435,6 +457,7 @@ companies:
   - name: Amazon Web Services
     stage: 4
     founded_year: 2006
+    listed_from: [1997, 5] # M14 (28.1): listed from this month, following history
     personality: aggressive
     builder_skill: 15
     target_margin_bp: 2500
@@ -454,6 +477,7 @@ companies:
   - name: Microsoft Azure
     stage: 4
     founded_year: 2010
+    listed_from: [1986, 3] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 13
     target_margin_bp: 2000
@@ -473,6 +497,7 @@ companies:
   - name: Rackspace
     stage: 4
     founded_year: 1998
+    listed_from: [2008, 8] # M14 (28.1): listed from this month, following history
     personality: cost_leader
     builder_skill: 12
     target_margin_bp: 1500
@@ -517,6 +542,7 @@ companies:
   - name: NVIDIA
     stage: 4
     founded_year: 1993
+    listed_from: [1999, 1] # M14 (28.1): listed from this month, following history
     personality: aggressive
     builder_skill: 15
     target_margin_bp: 2500
@@ -535,6 +561,7 @@ companies:
   - name: Intel
     stage: 4
     founded_year: 1968
+    listed_from: [1971, 10] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 14
     target_margin_bp: 2500
@@ -553,6 +580,7 @@ companies:
   - name: AMD
     stage: 4
     founded_year: 1969
+    listed_from: [1972, 9] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 12
     target_margin_bp: 1500
@@ -579,6 +607,7 @@ companies:
   - name: Qualcomm
     stage: 4
     founded_year: 1985
+    listed_from: [1991, 12] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 14
     target_margin_bp: 2500
@@ -596,6 +625,7 @@ companies:
   - name: Apple
     stage: 4
     founded_year: 1976
+    listed_from: [1980, 12] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 16
     target_margin_bp: 2500
@@ -614,6 +644,7 @@ companies:
   - name: Samsung
     stage: 4
     founded_year: 1938
+    listed_from: [1975, 6] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 13
     target_margin_bp: 1500
@@ -633,6 +664,7 @@ companies:
   - name: Lenovo
     stage: 4
     founded_year: 1984
+    listed_from: [1994, 2] # M14 (28.1): listed from this month, following history
     personality: cost_leader
     builder_skill: 11
     target_margin_bp: 1000
@@ -652,6 +684,7 @@ companies:
   - name: Dell
     stage: 4
     founded_year: 1984
+    listed_from: [1988, 6] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 12
     target_margin_bp: 1500
@@ -670,6 +703,7 @@ companies:
   - name: HPE
     stage: 4
     founded_year: 1939
+    listed_from: [2015, 11] # M14 (28.1): listed from this month, following history
     personality: premium
     builder_skill: 13
     target_margin_bp: 2000
@@ -688,6 +722,7 @@ companies:
   - name: Supermicro
     stage: 3
     founded_year: 1993
+    listed_from: [2007, 3] # M14 (28.1): listed from this month, following history
     personality: cost_leader
     builder_skill: 11
     target_margin_bp: 1000
@@ -706,6 +741,7 @@ companies:
   - name: Foxconn
     stage: 4
     founded_year: 1974
+    listed_from: [1991, 6] # M14 (28.1): listed from this month, following history
     personality: cost_leader
     builder_skill: 12
     target_margin_bp: 1000
@@ -723,6 +759,7 @@ companies:
   - name: Pegatron
     stage: 4
     founded_year: 2008
+    listed_from: [2010, 6] # M14 (28.1): listed from this month, following history
     personality: fast_follower
     builder_skill: 11
     target_margin_bp: 1000

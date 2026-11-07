@@ -18,7 +18,14 @@ from tst.sim.press.models import Feud, Statement
 from tst.sim.press.names import rival_ceo_id, rival_ceo_name
 from tst.sim.rivals.models import RivalMove, stream_key
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, feud_of, player_companies, with_feud, with_statement
+from tst.sim.state import (
+    GameState,
+    feud_of,
+    group_companies,
+    player_companies,
+    with_feud,
+    with_statement,
+)
 
 SELLING = ("live", "sunset")
 # A CEO speaks at their company's launches, releases (quality and feature pushes) and price cuts
@@ -53,6 +60,31 @@ VOICE: dict[str, dict[str, str]] = {
 }
 
 
+def in_player_group(state: GameState, company_id: int) -> bool:
+    """A player's company or one of its kept brands (28.5): never a rival for feuds,
+    statements, jabs or head-to-head launches (product manager, 2026-11-05)."""
+    company = state.company(company_id)
+    if company.is_player:
+        return True
+    return company.parent_id is not None and state.company(company.parent_id).is_player
+
+
+def _outside_group(state: GameState, company_id: int, other_id: int) -> bool:
+    """`other_id` is a rival of `company_id`'s group: not the company or one of its brands."""
+    return other_id not in {c.id for c in group_companies(state, company_id)} and not (
+        in_player_group(state, other_id)
+    )
+
+
+def reset_feud(state: GameState, company_id: int) -> GameState:
+    """Every player's feud with `company_id` returns to 0 when the player's group takes it over
+    (28.5 closing; product manager, 2026-11-05). Its causes stay as history."""
+    for feud in state.feuds:
+        if feud.rival_id == company_id and feud.score > 0:
+            state = with_feud(state, replace(feud, score=0.0))
+    return state
+
+
 def _voice(state: GameState, rival_id: int, kind: str) -> str:
     personality = state.company(rival_id).personality or "aggressive"
     return VOICE.get(personality, VOICE["aggressive"])[kind]
@@ -73,6 +105,8 @@ def add_feud(
     reaching rivalry raises a `rivalry` press moment. M14 calls this for a hostile bid
     (`balance.feud.hostile_bid`)."""
     fb = balance.feud
+    if not _outside_group(state, company_id, rival_id):
+        return state
     feud = feud_of(state, company_id, rival_id) or Feud(company_id, rival_id)
     score = max(0.0, min(float(SCALE), feud.score + delta))
     causes = feud.causes
@@ -199,7 +233,7 @@ def feud_month(
                 and other.category == p.category
                 and other.status in SELLING
                 and state.product_segment(other.id, seg.segment) is not None
-                and state.company(other.company_id).is_rival
+                and _outside_group(state, cid, other.company_id)
             }
             for rival_id in sorted(rivals):
                 state = add_feud(
@@ -224,7 +258,7 @@ def feud_month(
                 ),
                 None,
             )
-            if new is not None and state.company(new.company_id).is_rival:
+            if new is not None and _outside_group(state, cid, new.company_id):
                 state = add_feud(
                     state, cid, new.company_id, fb.poach, "they poached one of your people", balance
                 )
@@ -238,10 +272,11 @@ def feud_month(
                     if x.person_id == e.person_id
                     and x.company_id != cid
                     and x.end_turn == state.turn
+                    and x.end_reason != "acquired"  # an acquisition's move is not poaching
                 ),
                 None,
             )
-            if old is not None and state.company(old.company_id).is_rival:
+            if old is not None and _outside_group(state, cid, old.company_id):
                 state = add_feud(
                     state, cid, old.company_id, fb.poach, "you hired one of their people", balance
                 )
@@ -251,7 +286,11 @@ def feud_month(
             if move.action not in SPEAKING_MOVES or move.company_id in spoken:
                 continue
             rival = state.company(move.company_id)
-            if not rival.is_rival or not rival.alive or rival_ceo_id(state, rival.id) is None:
+            if (
+                in_player_group(state, rival.id)
+                or not rival.alive
+                or rival_ceo_id(state, rival.id) is None
+            ):
                 continue
             spoken.add(rival.id)
             gen = press_gen(rng, state.turn, *stream_key(rival.id, rival.rival_key))

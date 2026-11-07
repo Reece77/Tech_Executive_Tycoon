@@ -253,6 +253,26 @@ EVENT_FORBIDDEN_NAMES = frozenset(
 )
 
 
+# formulas.md 28.8 (M14): never a private company's V_f or its parts, a reservation, a board's
+# bar, a tender's chance, a review's block probability or its draw, or problems before
+# diligence (TargetOut calls revealed ones `findings`).
+MNA_FORBIDDEN_NAMES = frozenset(
+    {
+        "reservation_cents",
+        "reservation",
+        "board_bar",
+        "tender_chance",
+        "block_probability",
+        "blocked_draw",
+        "fundamental_value_cents",
+        "value_cents",
+        "multiple",
+        "premium",
+        "distressed",
+    }
+)
+
+
 def forbidden(name: str) -> bool:
     """ADR-0007 exact-name rule (potential_phrase is allowed), plus the 11.13 names."""
     return (
@@ -261,6 +281,7 @@ def forbidden(name: str) -> bool:
         or name in FINANCE_FORBIDDEN_NAMES
         or name in RIVAL_FORBIDDEN_NAMES
         or name in EVENT_FORBIDDEN_NAMES
+        or name in MNA_FORBIDDEN_NAMES
         or name.startswith(FORBIDDEN_PREFIXES)
     )
 

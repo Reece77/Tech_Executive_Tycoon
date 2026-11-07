@@ -101,6 +101,11 @@ def apply_knowledge_action(
         raise UnknownKnowledgeActionError(f"unknown knowledge action {action!r}")
     cfg = balance.reveal
     groups = ACTION_GROUPS[action]
+    # narrow() is hw x a factor that depends only on the action and the judgment: computed
+    # once, and applied as narrow() does (M14 turn time: 41,000 calls a month at 220 staff)
+    unit = (
+        narrow(1.0, cfg.strength[action], scout_judgment, cfg) if action in cfg.strength else None
+    )
 
     def narrowed(key: str, rec: RevealRecord) -> RevealRecord:
         if _group(key, skill_keys) not in groups:
@@ -108,8 +113,12 @@ def apply_knowledge_action(
         if key == PA_KEY:  # potential uses its own strength and scout factor (M2b)
             hw = narrow_pa(rec.hw, cfg.pa_strength[action], scout_judgment, cfg)
         else:
-            hw = narrow(rec.hw, cfg.strength[action], scout_judgment, cfg)
-        return replace(rec, hw=hw, last_updated_turn=turn)
+            hw = (
+                rec.hw * unit
+                if unit is not None
+                else narrow(rec.hw, cfg.strength[action], scout_judgment, cfg)
+            )
+        return RevealRecord(hw, rec.offset, turn)
 
     attributes = tuple((key, narrowed(key, rec)) for key, rec in reveal.attributes)
     profile = reveal.profile_revealed_turn

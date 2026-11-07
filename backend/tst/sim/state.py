@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from bisect import bisect_left
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from operator import attrgetter
-from typing import Any
+from types import MappingProxyType
+from typing import Any, Final
 
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
@@ -39,6 +40,7 @@ from tst.sim.markets_public.models import (
     PublicCompany,
     ShareMonth,
 )
+from tst.sim.mna.models import AcquiredPerson, Acquisition, Deal, RivalListing, TargetFile
 from tst.sim.money import Cents
 from tst.sim.org.models import (
     Authority,
@@ -79,6 +81,11 @@ from tst.sim.rivals.models import (
 )
 
 _ID = attrgetter("id")  # sort key of id-sorted collections (C speed for bisect)
+
+
+# relationship_map's memo: the tuple is kept with its map, so an id is never reused while cached
+_REL_MAPS: dict[int, tuple[tuple[Relationship, ...], Mapping[tuple[int, int], Relationship]]] = {}
+_REL_MAPS_KEPT: Final = 4  # tunable-exempt: memo size (the turn's old and new tuples)
 
 
 @dataclass(frozen=True, slots=True)
@@ -125,6 +132,8 @@ class CompanyState:
     # entrants.yaml; (2, category_index, n) for the nth startup founded in a category.
     # Empty for the player and for rivals of saves made before M12a (keyed by company id).
     rival_key: tuple[int, ...] = ()
+    # M14 (28.5, ADR-0020): the company that owns this one as a kept brand; None otherwise
+    parent_id: int | None = None
 
     @property
     def is_rival(self) -> bool:
@@ -229,6 +238,14 @@ class GameState:
     share_months: tuple[ShareMonth, ...] = ()
     ceos: tuple[Ceo, ...] = ()
     ceo_decisions: tuple[CeoDecision, ...] = ()
+    # M14 (28): listed rivals' sentiment by company id; what each acquirer knows of each
+    # target by (acquirer_id, target_id); deals by id; closed acquisitions by deal id; acquired
+    # key people during culture clash by person id.
+    rival_listings: tuple[RivalListing, ...] = ()
+    target_files: tuple[TargetFile, ...] = ()
+    deals: tuple[Deal, ...] = ()
+    acquisitions: tuple[Acquisition, ...] = ()
+    acquired_people: tuple[AcquiredPerson, ...] = ()
     # M14b (29): press moments (pending, queued, or answered in the last 12 months) and every
     # promise, by id; credibility by company id; the player's feuds by (company_id, rival_id);
     # rival CEOs' statements of the last 24 months, by id.
@@ -476,8 +493,18 @@ class GameState:
     def storyline(self, storyline_id: int) -> Storyline | None:
         return next((s for s in self.storylines if s.id == storyline_id), None)
 
-    def relationship_map(self) -> dict[tuple[int, int], Relationship]:
-        return {r.key: r for r in self.relationships}
+    def relationship_map(self) -> Mapping[tuple[int, int], Relationship]:
+        """The pairs by key, built once per relationships tuple (read-only; M14 turn time:
+        morale, events and the phase all ask, and a 200-person unit has 18,000 pairs)."""
+        rels = self.relationships
+        hit = _REL_MAPS.get(id(rels))
+        if hit is not None and hit[0] is rels:
+            return hit[1]
+        built = MappingProxyType({r.key: r for r in rels})
+        if len(_REL_MAPS) >= _REL_MAPS_KEPT:
+            _REL_MAPS.pop(next(iter(_REL_MAPS)))
+        _REL_MAPS[id(rels)] = (rels, built)
+        return built
 
     def relationships_of(self, person_id: int) -> tuple[Relationship, ...]:
         return tuple(r for r in self.relationships if person_id in r.key)
@@ -588,6 +615,13 @@ class GameState:
             if company.is_player:
                 return company
         raise LookupError("game state has no player company")
+
+
+def group_companies(state: GameState, parent_id: int) -> tuple[CompanyState, ...]:
+    """A parent and the kept brands it owns (M14, 28.5; ADR-0020): consolidation iterates
+    these. M16 extends this to deeper groups."""
+    parent = state.company(parent_id)
+    return (parent, *(c for c in state.companies if c.parent_id == parent_id and c.alive))
 
 
 def player_companies(state: GameState) -> tuple[CompanyState, ...]:
@@ -788,6 +822,16 @@ def with_person_state(state: GameState, person_state: PersonState) -> GameState:
     )
 
 
+def with_person_states(state: GameState, person_states: list[PersonState]) -> GameState:
+    """`with_person_state` for many at once: one rebuild (M14 turn time)."""
+    if not person_states:
+        return state
+    return replace(
+        state,
+        person_states=_upsert_many(state.person_states, person_states, lambda p: p.person_id),
+    )
+
+
 def with_exec_seat(state: GameState, seat: ExecSeat) -> GameState:
     return replace(
         state, exec_seats=_upsert(state.exec_seats, seat, lambda s: (s.company_id, s.seat))
@@ -961,6 +1005,55 @@ def with_ceo(state: GameState, ceo: Ceo) -> GameState:
 
 def with_ceo_decision(state: GameState, decision: CeoDecision) -> GameState:
     return replace(state, ceo_decisions=_upsert(state.ceo_decisions, decision, lambda d: d.id))
+
+
+# --- M14 (28): mergers and acquisitions ----------------------------------------------------
+
+
+def with_rival_listing(state: GameState, listing: RivalListing) -> GameState:
+    return replace(
+        state, rival_listings=_upsert(state.rival_listings, listing, lambda x: x.company_id)
+    )
+
+
+def with_target_file(state: GameState, file: TargetFile) -> GameState:
+    return replace(
+        state,
+        target_files=_upsert(state.target_files, file, lambda f: (f.acquirer_id, f.target_id)),
+    )
+
+
+def with_deal(state: GameState, deal: Deal) -> GameState:
+    return replace(state, deals=_upsert(state.deals, deal, lambda d: d.id))
+
+
+def with_acquisition(state: GameState, acquisition: Acquisition) -> GameState:
+    return replace(
+        state, acquisitions=_upsert(state.acquisitions, acquisition, lambda a: a.deal_id)
+    )
+
+
+def with_acquired_person(state: GameState, person: AcquiredPerson) -> GameState:
+    return replace(
+        state, acquired_people=_upsert(state.acquired_people, person, lambda p: p.person_id)
+    )
+
+
+def without_acquired_person(state: GameState, person_id: int) -> GameState:
+    return replace(
+        state, acquired_people=tuple(p for p in state.acquired_people if p.person_id != person_id)
+    )
+
+
+def target_file(state: GameState, acquirer_id: int, target_id: int) -> TargetFile | None:
+    return next(
+        (f for f in state.target_files if (f.acquirer_id, f.target_id) == (acquirer_id, target_id)),
+        None,
+    )
+
+
+def rival_listing(state: GameState, company_id: int) -> RivalListing | None:
+    return next((x for x in state.rival_listings if x.company_id == company_id), None)
 
 
 # --- M14b (formulas.md 29) ---------------------------------------------------------------------
