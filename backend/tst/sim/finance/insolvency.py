@@ -79,6 +79,15 @@ def bridge_amount(
     return round(balance.bankruptcy.bridge_burn_months * max(burn, 0)) + max(0, -cash)
 
 
+LAST_PERSON = 1  # tunable-exempt: a startup down to one person, its founder, has no team
+
+
+def _founder_only(state: GameState, company_id: int) -> bool:
+    """One person or no one left on staff: a rival startup's founder is not flagged
+    `is_founder` (only the player's is), so one person stands for the founder alone."""
+    return len(state.staff(company_id)) <= LAST_PERSON
+
+
 def insolvency(
     state: GameState,
     balances: Mapping[tuple[int, AccountCode], Cents],
@@ -89,6 +98,17 @@ def insolvency(
     bk = balance.bankruptcy
     logs: list[LogItem] = []
     for company in state.ledger_companies():
+        if company.is_startup and company.alive and _founder_only(state, company.id):
+            # M15a fix (30.7 V5): a rival startup whose hires have all left closes, so it no
+            # longer holds one of rivals.startup.max_alive's places for decades
+            state, failed = fail_rival(
+                state,
+                company,
+                balance.hiring.candidate_shelf_turns,
+                balance.rivals.free_agent_months,
+            )
+            logs += failed
+            continue
         cash = account_balance(balances, company.id, CASH)
         parent = company.parent_id
         covered = parent is not None and account_balance(balances, parent, CASH) >= -cash

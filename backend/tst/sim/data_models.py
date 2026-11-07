@@ -770,6 +770,7 @@ class StartupBalance(_Frozen):
     low_cash_months: float = Field(ge=0)
     salary_mult: float = Field(gt=0)
     personalities: tuple[str, ...] = Field(min_length=1)
+    start_feature_share: float = Field(ge=0, le=1)  # M15a: of F_exp(t) - F0 at founding
 
 
 class PoachBalance(_Frozen):

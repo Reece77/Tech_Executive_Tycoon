@@ -269,7 +269,24 @@ def run_long(
         return list(pool.map(play_long, plan))
 
 
-def long_rows(runs: Sequence[LongRun], categories: Sequence[str]) -> list[Row]:
+def _missing(runs: Sequence[LongRun], categories: Sequence[str]) -> list[str]:
+    return sorted(
+        {
+            f"{c} {d}"
+            for r in runs
+            for c in categories
+            for _, d in DECADES
+            if r.launches.get((c, d), 0) == 0
+        }
+    )
+
+
+def long_rows(
+    runs: Sequence[LongRun], categories: Sequence[str], scheduled: Sequence[str] = ()
+) -> list[Row]:
+    """V5. The rival-launch clause is checked over `categories`, where rival startups may be
+    founded (15.4); `scheduled` categories (hardware, capacity: entrants.yaml only, 18.7, 26)
+    are printed (M15a decision, product manager's review)."""
     rows: list[Row] = []
     years = (LONG_TURNS - DEMAND_FROM) / 12
     for s in sorted({r.strategy for r in runs}, key=LONG_STRATEGIES.index):
@@ -310,15 +327,7 @@ def long_rows(runs: Sequence[LongRun], categories: Sequence[str]) -> list[Row]:
                 share >= V5_RIVALS,
             )
         )
-        missing = sorted(
-            {
-                f"{c} {d}"
-                for r in mine
-                for c in categories
-                for _, d in DECADES
-                if r.launches.get((c, d), 0) == 0
-            }
-        )
+        missing = _missing(mine, categories)
         rows.append(
             Row(
                 "V5",
@@ -328,6 +337,16 @@ def long_rows(runs: Sequence[LongRun], categories: Sequence[str]) -> list[Row]:
                 not missing,
             )
         )
+        if scheduled:
+            rows.append(
+                Row(
+                    "V5",
+                    f"{s}: scheduled-only categories with no rival launch in a decade",
+                    ", ".join(_missing(mine, scheduled)) or "none",
+                    "printed",
+                    None,
+                )
+            )
         if ended:
             rows.append(Row("V5", f"{s}: runs that ended before 2039", str(ended), "printed", None))
         if s == BASE:

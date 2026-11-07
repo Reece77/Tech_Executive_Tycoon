@@ -527,6 +527,7 @@ rivals:
     low_cash_months: 6 # months of costs in cash below which a startup tries to raise (15.4)
     salary_mult: 1.0 # multiplier on market rate for startup salaries (15.4)
     personalities: [aggressive, fast_follower, cost_leader] # 15.4: any but premium
+    start_feature_share: 0.3 # fraction of the features the category's market expectation gained since January 2010 (F_exp(t) - F0, 11.4) a new startup's product starts with (M15a, 30.7 V5: from 0, late founders never reached the 30% launch bar)
   poach:
     offer_mult: 1.0 # multiplier on market rate a rival offers the player's employee (15.6)
     top_fraction: 0.30 # top share of the player's staff by CA a rival may approach (15.6)

@@ -39,8 +39,14 @@ def main() -> int:
         runs = v2.run_long(seeds, jobs=args.jobs)
         if args.runs:
             print(v2.long_table(runs), end="\n\n")
-        cats = [c.key for c in _loaded("data").game_data.categories]
-        rows = v2.long_rows(runs, cats)
+        data = _loaded("data").game_data
+        open_ = [  # categories rival startups may be founded in (15.4); the rest are scheduled
+            c.key
+            for c in data.categories
+            if not (c.capacity_market or c.sells_units or c.assembly_market)
+        ]
+        scheduled = [c.key for c in data.categories if c.key not in open_]
+        rows = v2.long_rows(runs, open_, scheduled)
     else:
         seeds = args.seeds or list(v2.SEEDS_30 if args.seeds_30 else v2.SEEDS)
         results = run_all(
