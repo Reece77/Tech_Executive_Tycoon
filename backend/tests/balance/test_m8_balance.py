@@ -9,7 +9,10 @@ import pytest
 
 from tst.balance import m8
 
-NEEDED = {"seats": 1.15, "support": 1.08, "blitz": 1.2}
+# 18.9 target 5 ("blitz") 1.2 -> 1.14 (product manager, 2026-11-07, M15a): rival fintech
+# startups now launch with features (rivals.startup.start_feature_share), so the scripted
+# second product meets real competition; main read 1.224, M15a reads 1.145.
+NEEDED = {"seats": 1.15, "support": 1.08, "blitz": 1.14}
 
 
 @pytest.mark.nightly

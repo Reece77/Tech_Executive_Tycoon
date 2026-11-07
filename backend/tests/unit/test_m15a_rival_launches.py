@@ -134,3 +134,27 @@ def test_the_small_count_survives_a_save(tmp_path: Path) -> None:
         sync_state(session, before, with_company(before, replace(rival, small_since_turn=None)))
     with open_session(path) as session:
         assert load_state(session).company(rival.id).small_since_turn is None
+
+
+def test_ranking_ties_never_favour_the_player() -> None:
+    """M15a fix (ruling 5): a tie on a list goes by revenue, then by the stable rival key, and
+    the player comes after a rival it ties with (ties went to the lowest id, the player's)."""
+    from tst.sim.modes.rankings import lists
+    from tst.sim.state import with_company
+
+    state = fresh_game(LOADED)
+    rival = next(c for c in state.companies if c.is_rival and state.company_products(c.id))
+    same = (100_000,) * 12
+    state = with_company(state, replace(state.player, mrr_history=same))
+    state = with_company(state, replace(rival, mrr_history=same))
+    copy = replace(state.company_products(rival.id)[0], id=10_000, company_id=state.player.id)
+    state = with_product(state, copy)  # the player sells the same kind of product
+    for p in state.products:
+        if p.company_id in (state.player.id, rival.id):
+            state = with_product(state, replace(p, status="live", launched_turn=state.turn))
+    others = [c for c in state.companies if c.id not in (state.player.id, rival.id)]
+    state = replace(state, companies=(state.player, state.company(rival.id), *others))
+    innovative = dict(lists(state, B, D)["innovative"])
+    assert innovative[state.player.id] == innovative[rival.id]
+    order = [cid for cid, _ in lists(state, B, D)["innovative"]]
+    assert order.index(rival.id) < order.index(state.player.id)

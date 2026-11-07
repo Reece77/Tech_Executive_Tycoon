@@ -1,6 +1,6 @@
 """The recorded known misses (tst/balance/known_misses.py): within the bound a miss is known,
 beyond it or unlisted it fails (2026-11-05). M15a closed T2 and M10.T3 and recorded V3.ai
-(owner M23) and V5's launch clauses (owner v3)."""
+(owner M23) and V5's launch clauses (owner M23)."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def _ai(gap: float) -> Row:
 def test_the_list_after_m15a() -> None:
     assert [m.target for m in KNOWN_MISSES] == ["V3.ai", "V5.cells", "V5.cats"]
     owners = {m.target: m.owner for m in KNOWN_MISSES}
-    assert owners == {"V3.ai": "M23", "V5.cells": "v3", "V5.cats": "v3"}
+    assert owners == {"V3.ai": "M23", "V5.cells": "M23", "V5.cats": "M23"}
     assert known_miss("T2") is None and known_miss("M10.T3") is None
 
 
