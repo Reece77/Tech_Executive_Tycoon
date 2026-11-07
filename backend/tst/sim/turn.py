@@ -505,7 +505,13 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
     ctx = ctx.log(*press_logs)
     # M24 (32): stress, persona, the foundation's grants, lobbying and scandals.
     state, founder_entries, founder_logs = founder_month(
-        state, ctx.start or ctx.state, ctx.rng, ctx.balance, ctx.data, holiday=ctx.decisions.holiday
+        state,
+        ctx.start or ctx.state,
+        ctx.rng,
+        ctx.balance,
+        ctx.data,
+        holiday=ctx.decisions.holiday,
+        cash_cents=account_balance(ctx.balances, state.player.id, CASH),
     )
     ctx = ctx.post(*founder_entries).log(*founder_logs)
     player = state.player.id

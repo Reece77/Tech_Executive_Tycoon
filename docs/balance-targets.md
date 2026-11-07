@@ -476,11 +476,11 @@ M14b's own §29.7 targets (`tools/m14b_targets.py`, nightly), 10 seeds, all pass
 | T1 nothing moves for a founder who never strains | no burnout at use <= 0.6 (property test); guards pass | the scripted strategies spend more than 0.6 of a month's energy in 3.9% of months and never burn out (0 in 20 ten-year runs); golden snapshots unchanged |
 | T2 all energy every month | first burnout in months 3–6 | month 4 on every seed |
 | T2 Holiday twice a year, use <= 0.8 | at most 1 burnout in 10 years | at most 1 |
-| T3 blitzscale's top trait at year 10 | Reckless or Ruthless on >= 6 | **0 of 10: not met** (every trait at 20: the script does nothing §32.4 counts as Ruthless or Reckless) |
-| T3 steady's top trait at year 10 | Beloved or Visionary on >= 6 | 10 of 10 (8 by value at Visionary 25, 2 by the tie order at 20) |
+| T3 blitzscale's top trait at year 10, leading the next by 5 or more | Reckless or Ruthless on >= 6 | 8 of 10 (Reckless; seeds 4 and 5 have no clear top). First build: 0 of 10 |
+| T3 steady's top trait at year 10, leading the next by 5 or more | Beloved or Visionary on >= 6 | 8 of 10 (Visionary 25; seeds 9 and 10 have no clear top) |
 | T4 antitrust blocks at $500k a month for 5 years | fall 20–40% | 38% (influence 73–100 at year 5) |
 | T4 a scandal in 10 years | on 3–7 seeds | 5 of 10 |
 | T5 $10M a year of grants | hiring appeal <= 0.03; Beloved +5 to +10 | +0.030; +6.0 |
 
-Tuned (M24's keys only): `foundation.beloved_k` 2 → 3 (at 2, $10M a year raised Beloved by 4); `influence.risk_rate` 0.002 → 0.0005 (at 0.002 a scandal broke on 8 of 10 seeds; 0.0015 and 0.001: 8; 0.0008: 7; 0.0006: 6; 0.0005: 5).
+T3 follows the product manager's ruling of 2026-11-07: three new Reckless sources (runway under 6 months while burning, a down round, headcount doubled in a year) and the 5-point lead in the measure. Tuned (M24's keys only): `persona.sources.down_round` 8 → 70 (blitzscale's down rounds close in months 87–99, and the drift leaves `20 + S − 2 × (119 − t)` at year 10; 6 seeds need S ≥ 59); `foundation.beloved_k` 2 → 3 (at 2, $10M a year raised Beloved by 4); `influence.risk_rate` 0.002 → 0.0005 (at 0.002 a scandal broke on 8 of 10 seeds; 0.0015 and 0.001: 8; 0.0008: 7; 0.0006: 6; 0.0005: 5).
 

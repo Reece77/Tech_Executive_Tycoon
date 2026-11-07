@@ -70,6 +70,9 @@ class FounderLife:
     causes: tuple[Cause, ...] = ()  # stress's last changes
     trait_causes: tuple[TraitCause, ...] = ()
     holiday_months: int = 0  # months on Holiday or off, for the record
+    burn_year: int | None = None  # the calendar year of `burn_points` (runway_burn's cap)
+    burn_points: float = 0.0  # runway_burn points raised that year
+    headcount_mark: int | None = None  # headcount at the last December (headcount_doubled)
 
     def trait(self, key: str) -> float:
         value: float = getattr(self, key)

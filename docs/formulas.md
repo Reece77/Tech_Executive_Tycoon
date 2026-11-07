@@ -2614,6 +2614,7 @@ Reece's decisions (2026-11-07): **burnout from overwork** with a visible stress 
 | **Beloved** | kept promises (+4), foundation grants (§32.3), Best places to work top 10 (+5), raises across the company (+2) | resignations ×0.9; press bold answers +1 brand |
 | **Reckless** | broken promises (+6), covenant breaches (+8), failed tenders (+8), burnout months pushed through (+4) | lenders' rates +1 point; credibility drifts toward 45 instead of 50 |
 
+- **Reckless also rises (product manager's ruling, 2026-11-07, for §32.7 target 3):** +2 a month while burning cash with runway under 6 months (at most +12 a calendar year; `persona.sources.runway_burn`, `persona.burn_runway_months`, `persona.burn_year_cap`); a down round (`persona.sources.down_round`: the ruling's +8, tuned to 70 so a down round in years 7–8 still shows at year 10 through the 2-a-month drift); +5 once a year, in December, when headcount grew by more than 100% over the year (`persona.sources.headcount_doubled`, `persona.headcount_growth`; the first year counts from the founding headcount).
 - Traits show on the founder's profile with their causes; press, staff and rival CEO texts (LLM within §16's budget, or templates) refer to the strongest one.
 
 ### 32.5 Political influence
@@ -2631,7 +2632,7 @@ At the game's end and in the Hall of Fame: `legacy = best company score reached 
 
 1. **Nothing moves for a founder who never strains.** A founder whose energy use stays at or below 0.6 never burns out, and every earlier guard passes (the scripted strategies use energy as before; record any strategy whose results move and why).
 2. **Burnout is real but avoidable.** A script that spends all its energy every month burns out within 3–6 months; one that takes a Holiday month twice a year with use ≤ 0.8 burns out at most once in 10 years.
-3. **Personas diverge.** Over 10 seeds at year 10, blitzscale's top trait is Reckless or Ruthless on at least 6, and steady's is Beloved or Visionary on at least 6.
+3. **Personas diverge.** Over 10 seeds at year 10, blitzscale's top trait is Reckless or Ruthless on at least 6, and steady's is Beloved or Visionary on at least 6. A top trait counts only when it leads the next by at least 5; ties count for neither (product manager, 2026-11-07: with every trait at 20, the tie order alone had made steady "Visionary").
 4. **Influence helps, with a price.** At $500k a month of lobbying in a region for 5 years, antitrust blocks there fall by 20–40%, and at least one scandal breaks in 10 years on 3–7 of 10 seeds.
 5. **Giving is visible but small:** a foundation granting $10M a year raises hiring appeal by at most 0.03 and Beloved by 5–10.
 

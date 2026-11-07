@@ -478,3 +478,65 @@ def test_persona_in_public_words_and_event_names() -> None:
     assert persona.public_words(state, CID, B) == "reckless"
     event = GameEvent(1, CID, state.turn, "press_launch", "press", "major", "press", 1.0)
     assert event_names(state, event, D, B)["persona"] == "reckless"
+
+
+# --- Reckless sources of the product manager's ruling (2026-11-07, 32.7 target 3) -----------
+
+
+def _burning(state: GameState, burn: int = 1_000_000) -> GameState:
+    from tst.sim.state import with_company
+
+    return with_company(state, replace(state.player, burn_history=(burn,)))
+
+
+def _month(state: GameState, cash: int) -> GameState:
+    out, _, _ = founder_month(state, state, RngFactory(1), B, D, holiday=False, cash_cents=cash)
+    return out
+
+
+def test_runway_burn_raises_reckless_capped_each_year() -> None:
+    state = _burning(fresh_game(LOADED))
+    fid = _fid(state)
+    size, cap = B.persona.sources["runway_burn"], B.persona.burn_year_cap
+    assert life_of(_month(state, 7_000_000), fid).reckless == B.persona.start  # type: ignore[union-attr]
+    raised = _month(state, 5_000_000)  # 5 months of runway
+    assert life_of(raised, fid).reckless == B.persona.start + size  # type: ignore[union-attr]
+    assert life_of(_month(_burning(state, 0), 0), fid).reckless == B.persona.start  # type: ignore[union-attr]
+    # The cap: at most burn_year_cap points in a calendar year (drift aside).
+    total = 0.0
+    for t in range(12):
+        state = _month(replace(state, turn=t), 1)
+        total = life_of(state, fid).burn_points  # type: ignore[union-attr]
+    assert total == cap
+    state = _month(replace(state, turn=12), 1)  # a new year
+    assert life_of(state, fid).burn_points == size  # type: ignore[union-attr]
+
+
+def test_down_round_raises_reckless() -> None:
+    from tst.sim.finance.models import FundingRound
+
+    state = fresh_game(LOADED)
+    fid = _fid(state)
+    down = FundingRound(99, CID, "a", "closed", 1, 0, 1, closed_turn=state.turn, down_round=True)
+    state = replace(state, rounds=(*state.rounds, down))
+    life = life_of(_month(state, 10**10), fid)
+    assert life is not None and life.reckless == B.persona.start + B.persona.sources["down_round"]
+    flat = replace(state, rounds=(*state.rounds[:-1], replace(down, down_round=False)))
+    assert life_of(_month(flat, 10**10), fid).reckless == B.persona.start  # type: ignore[union-attr]
+
+
+def test_headcount_doubled_in_a_year() -> None:
+    state = fresh_game(LOADED)
+    fid = _fid(state)
+    state = with_life(state, replace(stress.new_life(fid, B), headcount_mark=2))
+    december = replace(state, turn=11)
+    same = life_of(_month(december, 10**10), fid)
+    assert same is not None and same.reckless == B.persona.start  # 1 (the founder) of 2
+    for pid in range(2, 7):
+        december = with_employee(LOADED, december, make_person(LOADED, pid), 9_000_000)
+    grown = life_of(_month(december, 10**10), fid)  # 6 > 2 x 2
+    assert grown is not None
+    assert grown.reckless == B.persona.start + B.persona.sources["headcount_doubled"]
+    assert grown.headcount_mark == 6
+    # Not in other months, and not without last December's mark.
+    assert life_of(_month(replace(december, turn=10), 10**10), fid).headcount_mark == 2  # type: ignore[union-attr]

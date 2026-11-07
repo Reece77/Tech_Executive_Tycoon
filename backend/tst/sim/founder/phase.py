@@ -29,6 +29,8 @@ from tst.sim.state import (
 )
 
 BURNOUT_TEMPLATE: Final = "founder_burnout"
+MONTHS_A_YEAR: Final = 12  # tunable-exempt: calendar
+DECEMBER: Final = 11  # tunable-exempt: calendar (turn % 12)
 FOUNDER_STEPS: Final = (  # events.data's founder_step stats
     "rest",
     "delegate",
@@ -44,8 +46,9 @@ def ensure_life(state: GameState, balance: Balance) -> tuple[GameState, FounderL
     if founder is None:
         return state, None
     life = life_of(state, founder.id)
-    if life is None:
-        life = stress.new_life(founder.id, balance)
+    if life is None:  # headcount_doubled's first year counts from the founding headcount
+        heads = len(state.staff(state.player.id))
+        life = replace(stress.new_life(founder.id, balance), headcount_mark=heads)
         state = with_life(state, life)
     return state, life
 
@@ -58,6 +61,7 @@ def founder_month(
     data: GameData,
     *,
     holiday: bool,
+    cash_cents: int = 0,
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...]]:
     if state.ended:
         return state, (), ()
@@ -68,7 +72,7 @@ def founder_month(
     turn = state.turn
     cid = state.player.id
     life = persona.drift(life, balance)
-    life = _sources(state, start, life, balance)
+    life = _sources(state, start, life, balance, cash_cents)
     state = with_life(state, life)
     state = _bold_effects(state, life, balance)
     # 32.1: stress from the month's energy use.
@@ -103,7 +107,7 @@ def founder_month(
 
 
 def _sources(
-    state: GameState, start: GameState, life: FounderLife, balance: Balance
+    state: GameState, start: GameState, life: FounderLife, balance: Balance, cash_cents: int
 ) -> FounderLife:
     """The month's persona sources (32.4) from records stamped with this month."""
     turn, cid = state.turn, state.player.id
@@ -165,6 +169,45 @@ def _sources(
     breaches = sum(1 for loan in state.loans if loan.company_id == cid and loan.breach_turn == turn)
     if breaches:
         life = add(life, "covenant_breach", turn, balance, breaches)
+    return _reckless_growth(state, life, cash_cents, balance)
+
+
+def _reckless_growth(
+    state: GameState, life: FounderLife, cash_cents: int, balance: Balance
+) -> FounderLife:
+    """The product manager's Reckless sources (2026-11-07, 32.7 target 3): a month burning
+    cash with runway under persona.burn_runway_months (at most persona.burn_year_cap points a
+    calendar year), a down round closed this month, and, each December, headcount up more
+    than persona.headcount_growth over the year."""
+    pb = balance.persona
+    turn, company = state.turn, state.player
+    year = turn // MONTHS_A_YEAR
+    if life.burn_year != year:
+        life = replace(life, burn_year=year, burn_points=0.0)
+    burn = company.burn_history[-1] if company.burn_history else 0
+    size = pb.sources["runway_burn"]
+    if (
+        burn > 0
+        and cash_cents < pb.burn_runway_months * burn
+        and life.burn_points + size <= pb.burn_year_cap
+    ):
+        life = persona.apply_source(life, "runway_burn", turn, balance)
+        life = replace(life, burn_points=life.burn_points + size)
+    downs = sum(
+        1
+        for r in state.company_rounds(company.id)
+        if r.status == "closed" and r.closed_turn == turn and r.down_round
+    )
+    if downs:
+        life = persona.apply_source(life, "down_round", turn, balance, downs)
+    if turn % MONTHS_A_YEAR == DECEMBER:
+        heads = len(state.staff(company.id)) + round(
+            sum(p.headcount for p in state.company_pools(company.id))
+        )
+        mark = life.headcount_mark
+        if mark and heads > mark * (1 + pb.headcount_growth):
+            life = persona.apply_source(life, "headcount_doubled", turn, balance)
+        life = replace(life, headcount_mark=heads)
     return life
 
 

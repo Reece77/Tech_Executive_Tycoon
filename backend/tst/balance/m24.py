@@ -7,7 +7,8 @@ above stress.comfort and their burnouts.
   a share of each month's energy (do-nothing's company, so only stress differs): `all` spends
   everything every month; `holiday` spends at most 0.8 and takes a Holiday month twice a
   year (months 5 and 11). Months to the first burnout; burnouts in 10 years.
-- T3 personas diverge: blitzscale and steady, 10 seeds, the top trait at year 10.
+- T3 personas diverge: blitzscale and steady, 10 seeds, the top trait at year 10, counted
+  only when it leads the next trait by T3_LEAD (5) points (product manager, 2026-11-07).
 - T4 influence helps, with a price: $500k a month of lobbying in North America for 5 years
   (then stopped) on 10 seeds: the antitrust cut there at year 5, and seeds with a scandal in
   10 years. Lobbying's phase alone (it reads only the company and its founder's traits).
@@ -26,7 +27,7 @@ from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.m13 import _loaded
 from tst.balance.strategies import STRATEGIES
 from tst.sim.decisions import Decisions
-from tst.sim.founder import foundation, influence, persona
+from tst.sim.founder import foundation, influence
 from tst.sim.founder.effects import education_points
 from tst.sim.founder.models import Foundation, Influence
 from tst.sim.founder.stress import new_life
@@ -51,6 +52,10 @@ LOBBY_DOLLARS = 500_000
 LOBBY_YEARS = 5
 LOBBY_REGION = "north_america"
 GRANT_CENTS = 10_000_000_00  # $10M a year (T5)
+# T3's measure (product manager, 2026-11-07): a top trait counts only when it leads the next
+# by at least this many points; a tie or a near-tie counts for neither half. Without it, a
+# founder whose traits all sat at 20 "had" Visionary by the tie order.
+T3_LEAD = 5.0
 REAL = ("reckless", "ruthless")
 KIND = ("beloved", "visionary")
 
@@ -122,7 +127,7 @@ def play_burnout(arm: str, seed: int) -> BurnRun:
 class PersonaRun:
     strategy: str
     seed: int
-    top: str
+    top: str | None  # None: no trait leads the next by T3_LEAD
     traits: tuple[tuple[str, float], ...]
     strained: int  # months above stress.comfort (T1)
     months: int
@@ -148,9 +153,21 @@ def play_persona(strategy: str, seed: int) -> PersonaRun:
     traits = tuple(
         (t, round(life.trait(t), 1)) for t in ("visionary", "ruthless", "beloved", "reckless")
     )
-    return PersonaRun(
-        strategy, seed, persona.top_trait(life), traits, strained, months, life.burnouts
-    )
+    return PersonaRun(strategy, seed, clear_top(traits), traits, strained, months, life.burnouts)
+
+
+def clear_top(traits: Sequence[tuple[str, float]]) -> str | None:
+    """The top trait when it leads the next by at least T3_LEAD, else None (T3)."""
+    ranked = sorted(traits, key=lambda kv: -kv[1])
+    if len(ranked) < 2 or ranked[0][1] - ranked[1][1] < T3_LEAD:
+        return None
+    return ranked[0][0]
+
+
+def run_personas(seeds: Sequence[int] = SEEDS, jobs: int = os.cpu_count() or 1) -> list[PersonaRun]:
+    persona_jobs = [(st, s) for st in ("blitzscale", "steady") for s in seeds]
+    with ProcessPoolExecutor(max(1, jobs)) as ex:
+        return list(ex.map(_persona, persona_jobs))
 
 
 # --- T4: lobbying --------------------------------------------------------------------------------

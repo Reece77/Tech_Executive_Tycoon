@@ -1289,6 +1289,9 @@ persona: # 32.4: four public traits 0-100
     covenant_breach: 8
     failed_tender: 8
     pushed_on: 4
+    runway_burn: 2 # a month burning cash with runway under burn_runway_months (product manager, 2026-11-07)
+    down_round: 70 # a priced round closed below the last (product manager, 2026-11-07: +8; tuned to 70 for 32.7 target 3, see the M24 brief)
+    headcount_doubled: 5 # once a year: headcount up more than headcount_growth (product manager, 2026-11-07)
   raise_share: 0.25 # raises to this share of staff in one month count as raises across the company (M24 decision)
   layoff_share: 0.10 # firing this share of staff in a month is a layoff (32.4)
   builder_hiring: 0.03 # Visionary: offer-score points for builder roles
@@ -1298,6 +1301,9 @@ persona: # 32.4: four public traits 0-100
   resign_mult: 0.9 # Beloved: resignation chance x this
   bold_brand: 1 # Beloved: brand-target points after a bold press answer
   bold_months: 3 # months Beloved's bold-answer brand point lasts (M24 decision: press.bold_months)
+  burn_runway_months: 6 # months; runway_burn counts a burning month with runway under this
+  burn_year_cap: 12 # trait points; runway_burn raises Reckless at most this much a calendar year
+  headcount_growth: 1.0 # share; headcount_doubled when December's headcount is above (1 + this) x last December's
   reckless_cred_target: 45 # Reckless: credibility drifts toward this instead of press.cred_start
 
 influence: # 32.5: lobbying and influence over regulators by region

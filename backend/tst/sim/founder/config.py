@@ -27,6 +27,10 @@ SOURCES: Final[dict[str, str]] = {
     "covenant_breach": "reckless",  # a covenant breach (20.3)
     "failed_tender": "reckless",  # a hostile tender that failed (28.3)
     "pushed_on": "reckless",  # pushing on through a burnout month (32.1)
+    # Product manager's ruling (2026-11-07, 32.7 target 3):
+    "runway_burn": "reckless",  # a month burning cash with runway under persona.burn_runway_months
+    "down_round": "reckless",  # a priced round closed below the last one (14.5)
+    "headcount_doubled": "reckless",  # December: headcount up more than persona.headcount_growth
 }
 
 
@@ -99,6 +103,9 @@ class PersonaBalance(_Frozen):
     bold_brand: float = Field(ge=0)  # Beloved: brand-target points after a bold answer
     reckless_cred_target: float = Field(ge=0, le=100)  # Reckless: credibility drifts here
     bold_months: int = Field(ge=1)  # Beloved's bold-answer brand effect lasts this long
+    burn_runway_months: float = Field(gt=0)  # runway_burn: a burning month under this runway
+    burn_year_cap: float = Field(ge=0)  # runway_burn points at most in a calendar year
+    headcount_growth: float = Field(gt=0)  # headcount_doubled: growth over the year above this
 
     @model_validator(mode="after")
     def _check(self) -> PersonaBalance:

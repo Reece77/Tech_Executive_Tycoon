@@ -31,6 +31,9 @@ SOURCE_WORDS: dict[str, str] = {
     "covenant_breach": "a covenant breach",
     "failed_tender": "a failed tender",
     "pushed_on": "pushed on through burnout",
+    "runway_burn": "burned cash with little runway",
+    "down_round": "a down round",
+    "headcount_doubled": "doubled the headcount in a year",
 }
 
 
