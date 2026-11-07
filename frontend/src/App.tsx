@@ -20,6 +20,7 @@ import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { ProductScreen } from './screens/ProductScreen';
 import { ProductsScreen } from './screens/ProductsScreen';
 import { RecruitmentScreen } from './screens/RecruitmentScreen';
+import { RankingsScreen } from './screens/RankingsScreen';
 import { RivalScreen } from './screens/RivalScreen';
 import { SavesScreen } from './screens/SavesScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="finance" element={<FinanceScreen />} />
           <Route path="finance/:tab" element={<FinanceScreen />} />
           <Route path="competitors" element={<CompetitorsScreen />} />
+          <Route path="competitors/rankings" element={<RankingsScreen />} />
           <Route path="competitors/:rivalId" element={<RivalScreen />} />
           <Route path="settings" element={<SettingsScreen />} />
           <Route path="saves" element={<SavesScreen />} />

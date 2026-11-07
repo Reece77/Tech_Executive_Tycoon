@@ -27,6 +27,7 @@ class EventStorylineOut(BaseModel):
 
 
 class EventOut(BaseModel):
+    template_id: str = Field(default="", description="The event template's key (M15b)")
     event_id: int
     turn: int
     date_label: str

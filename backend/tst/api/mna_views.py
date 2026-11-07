@@ -20,7 +20,7 @@ from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.mna import deals, valuation
 from tst.sim.mna import formulas as mf
 from tst.sim.mna.draws import fixed_draws
-from tst.sim.mna.models import Acquisition
+from tst.sim.mna.models import Acquisition, Deal
 from tst.sim.products.models import SELLING
 from tst.sim.products.phases import current_feature
 from tst.sim.state import GameState, public_of, target_file
@@ -158,6 +158,7 @@ def _deal_out(state: GameState, d: object) -> DealOut:
         combined_share=d.combined_share,
         market=d.market,
         remedy_product=remedy.name if remedy is not None and d.status == "blocked" else None,
+        own_remedy_product=_own_remedy(state, d),
     )
 
 
@@ -209,3 +210,11 @@ def mna_out(state: GameState, balances: LedgerBalances, data: LoadedData) -> Mna
         subsidiaries=subsidiaries,
         listed=public_of(state, player) is not None,
     )
+
+
+def _own_remedy(state: GameState, d: Deal) -> str | None:
+    """The acquirer's own overlapping product, a blocked deal's other remedy (M15b)."""
+    if d.status != "blocked" or d.own_remedy_product_id is None:
+        return None
+    product = state.product(d.own_remedy_product_id)
+    return product.name if product is not None else None

@@ -14,6 +14,8 @@ interface Props {
   eventsHref?: string; // where they are answered
   away?: boolean; // a holiday is running (M7b)
   onContinue: () => void;
+  onContinueUntil?: () => void; // M15b (30.5): months until something needs the player
+  untilRunning?: boolean;
   onHoliday?: () => void;
   onCoo?: () => void;
 }
@@ -112,6 +114,8 @@ export function TopBar({
   eventsHref,
   away = false,
   onContinue,
+  onContinueUntil,
+  untilRunning = false,
   onHoliday,
   onCoo,
 }: Props) {
@@ -191,6 +195,16 @@ export function TopBar({
         {overview && !ended && overview.cash_cents < 0 && (
           <InsolventBadge saveId={overview.save_id} summary={summary} />
         )}
+        {overview && !ended && (overview.deals_due ?? 0) > 0 && (
+          // an M14 follow-up (M15b): a review, closing or blocked deal is one click away
+          <Link
+            to={`/game/${overview.save_id}/finance/deals`}
+            data-testid="top-deals"
+            style={{ fontSize: 13 }}
+          >
+            Deals: {overview.deals_due} due
+          </Link>
+        )}
         <Stat label={<Term term="kpi.runway">Runway</Term>}>
           {overview ? (
             <OverviewTip saveId={overview.save_id} which="runway" title="Runway">
@@ -246,6 +260,19 @@ export function TopBar({
             data-testid="holiday-button"
           >
             Holiday <span style={{ fontWeight: 400, opacity: 0.75, marginLeft: 6 }}>· H</span>
+          </Button>
+        )}
+        {onContinueUntil && (
+          <Button
+            variant="default"
+            h={44}
+            onClick={onContinueUntil}
+            disabled={!overview || advancing || untilRunning || ended || blocked || away}
+            title="Play months until something needs you, up to a year"
+            leftSection={untilRunning ? <Loader size="xs" /> : undefined}
+            data-testid="continue-until"
+          >
+            <Term term="continue_until">Until needed</Term>
           </Button>
         )}
         <Button

@@ -385,31 +385,116 @@ def make_offer(
             target,
         )
         return DealOutcome(with_target_file(state, found), (), (log,), "rejected")
+    return _negotiate(state, found, action, acquirer_id, balances, rng, balance, data)
+
+
+def _negotiate(
+    state: GameState,
+    found: TargetFile,
+    action: BidForCompany,
+    acquirer_id: int,
+    balances: LedgerBalances,
+    rng: RngFactory,
+    balance: Balance,
+    data: GameData,
+) -> DealOutcome:
+    """A private target negotiates (playtest 3 addendum 9, M15b): its first counter is
+    anchored above its reservation (mna.counter_anchor by personality), each later one moves
+    half the gap toward it, for up to mna.max_rounds rounds; an offer at or above the counter
+    as shown is accepted. A lowball (below the last counter x mna.lowball) uses up patience:
+    mna.strikes of them end talks. Counters are shown rounded up to two significant figures,
+    so no run of offers pins the reservation down; the reservation is never shown."""
+    mb = balance.mna
+    target = action.target_id
+    name = state.company(target).name
+    price = action.price_cents
     reservation = reservation_cents(state, target, balances, balance, data)
-    bar = reservation if found.counter_cents is None else found.counter_cents  # 28.3
-    if price >= bar:
-        return _accept(state, found, action, acquirer_id, rng, balance, data)
-    if found.counter_cents is None:
+    if found.counter_exact is None:
+        personality = state.company(target).personality or ""
+        anchor = mb.counter_anchor.get(personality, max(mb.counter_anchor.values()))
+        key = key_of(state, target)
         z = float(mna_draws(rng, state.turn, *key, COUNTER_TAG).standard_normal())
-        counter = mf.counter_cents(reservation, z, mb)
-        found = replace(found, counter_cents=counter)
+        exact = mf.first_counter_exact(reservation, anchor, z, mb)
+        if price >= mf.shown_counter(exact):
+            return _accept(state, found, action, acquirer_id, rng, balance, data)
+        return _counter(state, replace(found, rounds=0), exact, price, acquirer_id, balance)
+    shown = found.counter_cents or mf.shown_counter(found.counter_exact)
+    if price >= shown:
+        return _accept(state, found, action, acquirer_id, rng, balance, data)
+    if price < shown * mb.lowball:
+        strikes = found.strikes + 1
+        if strikes >= mb.strikes:
+            return _end_talks(state, found, acquirer_id, name, "lowballed twice", balance)
         log = _update(
             state,
             acquirer_id,
-            f"{name} counters at {format_money(counter)}",
-            f"{name} turned down {format_money(price)} and would sell for "
-            f"{format_money(counter)}. Another offer below that ends talks for "
-            f"{mb.talks_block_months} months.",
+            f"{name} won't move for that",
+            f"{format_money(price)} is far below their {format_money(shown)}. One more offer "
+            f"like it ends talks for {mb.talks_block_months} months.",
             target,
         )
-        return DealOutcome(with_target_file(state, found), (), (log,), "countered")
-    found = replace(found, blocked_until=state.turn + mb.talks_block_months, counter_cents=None)
+        return DealOutcome(
+            with_target_file(state, replace(found, strikes=strikes)), (), (log,), "countered"
+        )
+    if found.rounds >= mb.max_rounds:
+        return _end_talks(state, found, acquirer_id, name, "below their final counter", balance)
+    exact = mf.next_counter_exact(found.counter_exact, reservation)
+    return _counter(state, found, exact, price, acquirer_id, balance)
+
+
+def _counter(
+    state: GameState,
+    found: TargetFile,
+    exact: int,
+    price: int,
+    acquirer_id: int,
+    balance: Balance,
+) -> DealOutcome:
+    mb = balance.mna
+    target = found.target_id
+    name = state.company(target).name
+    shown = mf.shown_counter(exact)
+    rounds = found.rounds + 1
+    found = replace(found, counter_exact=exact, counter_cents=shown, rounds=rounds)
+    final = rounds >= mb.max_rounds
+    log = _update(
+        state,
+        acquirer_id,
+        f"{name} counters at {format_money(shown)}",
+        f"{name} turned down {format_money(price)} and would sell for {format_money(shown)}"
+        + (
+            ". That is their final counter: an offer below it ends talks."
+            if final
+            else f" (round {rounds} of {mb.max_rounds}). You can offer again."
+        ),
+        target,
+    )
+    return DealOutcome(with_target_file(state, found), (), (log,), "countered")
+
+
+def _end_talks(
+    state: GameState,
+    found: TargetFile,
+    acquirer_id: int,
+    name: str,
+    why: str,
+    balance: Balance,
+) -> DealOutcome:
+    mb = balance.mna
+    found = replace(
+        found,
+        blocked_until=state.turn + mb.talks_block_months,
+        counter_cents=None,
+        counter_exact=None,
+        rounds=0,
+        strikes=0,
+    )
     log = _update(
         state,
         acquirer_id,
         f"{name} ended talks",
-        f"The offer was below their counter. No new offer for {mb.talks_block_months} months.",
-        target,
+        f"The offer was {why}. No new offer for {mb.talks_block_months} months.",
+        found.target_id,
     )
     return DealOutcome(with_target_file(state, found), (), (log,), "talks_ended")
 
@@ -439,7 +524,9 @@ def _accept(
         mode=action.mode,
     )
     deal, logs = antitrust.screen(state, deal, rng, balance, data)
-    found = replace(found, counter_cents=None, board_bar=None)
+    found = replace(
+        found, counter_cents=None, counter_exact=None, rounds=0, strikes=0, board_bar=None
+    )
     state = with_deal(with_target_file(state, found), deal)
     from tst.sim.press.moments import queue_moment  # 29.1: the announcement is a press moment
 

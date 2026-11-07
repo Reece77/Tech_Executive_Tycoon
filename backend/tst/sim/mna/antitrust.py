@@ -20,7 +20,7 @@ from tst.sim.mna.draws import mna_draws
 from tst.sim.mna.models import Deal
 from tst.sim.products.models import SELLING
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, with_deal, with_product
+from tst.sim.state import GameState, with_company, with_deal, with_product
 
 FIRST_YEAR = 2010  # tunable-exempt: turn 0 is January 2010
 MONTHS_A_YEAR = 12  # tunable-exempt: calendar
@@ -36,6 +36,7 @@ class AcceptRemedy:
 
     actor_id: int
     deal_id: int
+    own: bool = False  # M15b (an M14 follow-up): divest the acquirer's own product instead
     kind: Literal["accept_remedy"] = "accept_remedy"
 
 
@@ -191,7 +192,17 @@ def _screened(
         )
         return deal, []
     remedy = _remedy_product(state, deal.target_id, market)
-    return replace(deal, status="blocked", close_turn=None, remedy_product_id=remedy), []
+    own = _remedy_product(state, deal.acquirer_id, market)  # M15b: or the acquirer's own
+    return (
+        replace(
+            deal,
+            status="blocked",
+            close_turn=None,
+            remedy_product_id=remedy,
+            own_remedy_product_id=own,
+        ),
+        [],
+    )
 
 
 def review_month(
@@ -233,9 +244,10 @@ def accept_remedy(
     deal = next((d for d in state.deals if d.id == action.deal_id), None)
     if deal is None or deal.acquirer_id != acquirer_id or deal.status != "blocked":
         raise MnaRuleError(f"deal {action.deal_id} has no remedy to accept")
-    if deal.remedy_product_id is None:
+    chosen = deal.own_remedy_product_id if action.own else deal.remedy_product_id
+    if chosen is None:
         raise MnaRuleError("no product can be divested to clear this deal")
-    product = state.product(deal.remedy_product_id)
+    product = state.product(chosen)
     assert product is not None
     market = tuple(deal.market.split("/"))
     owners = customers_by_market(state, balance, data).get(market, {})  # type: ignore[arg-type]
@@ -248,6 +260,17 @@ def accept_remedy(
         raise MnaRuleError("no other company sells there to take the divested product")
     buyer = buyers[0][0]
     state = with_product(state, replace(product, company_id=buyer))
+    if action.own:  # the acquirer's teams stop working on what it sold
+        state = replace(
+            state,
+            units=tuple(
+                replace(u, product_id=None) if u.product_id == product.id else u
+                for u in state.units
+            ),
+        )
+        seller = state.company(acquirer_id)
+        if seller.root_product_id == product.id:
+            state = with_company(state, replace(seller, root_product_id=None))
     rescreened, logs = screen(state, replace(deal, status="accepted"), rng, balance, data)
     if rescreened.status == "accepted":
         rescreened = replace(rescreened, close_turn=state.turn + balance.mna.closing_months)

@@ -8,10 +8,12 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.modes import ScoreOut
 from tst.api.schemas.people import AttributeOut
 
 
 class RivalRowOut(BaseModel):
+    score: int | None = Field(default=None, description="The company score (M15b, 30.1)")
     company_id: int
     name: str
     is_startup: bool
@@ -83,6 +85,7 @@ class RivalMoveOut(BaseModel):
 
 
 class RivalProfileOut(BaseModel):
+    score: ScoreOut | None = Field(default=None, description="The company score (M15b, 30.1)")
     company_id: int
     name: str
     is_startup: bool

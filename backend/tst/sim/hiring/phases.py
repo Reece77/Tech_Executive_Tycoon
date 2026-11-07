@@ -50,6 +50,7 @@ from tst.sim.ledger import (
     account_balance,
 )
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.modes.rankings import hiring_bonus
 from tst.sim.money import Cents
 from tst.sim.org.divisions import division_of_unit, is_scaleup
 from tst.sim.org.executives import exec_energy_holders
@@ -57,7 +58,7 @@ from tst.sim.org.morale import morale_terms
 from tst.sim.org.rules import is_remote, org_view
 from tst.sim.org.scaleup import delegate_energy_factor, support_morale_terms
 from tst.sim.people.generator import generate_pool, people_gen_stream
-from tst.sim.people.models import Employment, Person
+from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.reveal import apply_knowledge_action, new_reveal_state
 from tst.sim.press.moments import hiring_appeal
 from tst.sim.products.phases import product_costs_by_division
@@ -176,7 +177,8 @@ def resolve_offers(
                 stage=company.stage,
                 offer=hiring.offer,
                 pitch=offer_pitch(state, offer.actor_id, hiring)
-                + hiring_appeal(state, company.id, balance),  # M14b (29.3)
+                + hiring_appeal(state, company.id, balance)  # M14b (29.3)
+                + hiring_bonus(state, company.id, balance),  # M15b (30.4)
             )
             if candidate.channel == "poach":  # leaving an employer (M5, 15.6)
                 score += balance.rivals.poach.leave_penalty
@@ -574,13 +576,31 @@ def employed_month(state: GameState, balance: Balance, data: GameData) -> GameSt
             reveal = state.reveal(company.id, e.person_id)
             if reveal is None:
                 continue
-            state = with_reveal(
-                state,
-                apply_knowledge_action(
-                    reveal, "employed_month", scout, balance, turn=state.turn, skill_keys=skill_keys
-                ),
+            reveal = apply_knowledge_action(
+                reveal, "employed_month", scout, balance, turn=state.turn, skill_keys=skill_keys
             )
+            if (
+                company.is_player
+                and state.turn - e.start_turn >= balance.people.reveal_tenure_months
+            ):
+                reveal = known_by_tenure(reveal, balance, state.turn)
+            state = with_reveal(state, reveal)
     return state
+
+
+def known_by_tenure(reveal: RevealState, balance: Balance, turn: int) -> RevealState:
+    """Long-serving staff (playtest 3 addendum 13, M15b): after people.reveal_tenure_months
+    in the player's company, their leadership, mentoring and communication show exactly."""
+    keys = set(balance.people.reveal_tenure_attributes)
+    if all(rec.hw == 0 for key, rec in reveal.attributes if key in keys):
+        return reveal
+    return replace(
+        reveal,
+        attributes=tuple(
+            (key, replace(rec, hw=0.0, last_updated_turn=turn) if key in keys else rec)
+            for key, rec in reveal.attributes
+        ),
+    )
 
 
 # --- Phase 10: stage -----------------------------------------------------------------------

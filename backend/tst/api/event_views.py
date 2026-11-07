@@ -46,6 +46,7 @@ def event_out(state: GameState, event: GameEvent, data: LoadedData) -> EventOut:
         else None
     )
     return EventOut(
+        template_id=event.template_id,
         event_id=event.id,
         turn=event.turn,
         date_label=format_turn(event.turn),

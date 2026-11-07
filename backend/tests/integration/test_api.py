@@ -52,6 +52,8 @@ def test_create_list_get(client: TestClient) -> None:
         "game_state": "active",
         "ironman": False,
         "busy": False,
+        "mode": "campaign",  # M15b (30.2-30.3): a campaign has no score until December
+        "score": None,
     }
 
     def stable(body: dict[str, Any]) -> dict[str, Any]:

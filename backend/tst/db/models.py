@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 34
+SCHEMA_VERSION = 35
 
 
 class Base(DeclarativeBase):
@@ -1716,3 +1716,54 @@ class HiringPlanDetailRow(Base):
     interest: Mapped[str | None] = mapped_column(String(32), nullable=True)
     replace_of: Mapped[int | None] = mapped_column(Integer, nullable=True)
     level: Mapped[str | None] = mapped_column(String(16), nullable=True)
+
+
+# --- Game modes and polish (M15b, formulas.md 30; 0035) -------------------------------------
+
+
+class CompanyScoreRow(Base):
+    """A company's score at a December or a game's end (30.1). `data` holds the parts."""
+
+    __tablename__ = "company_score"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class GameModeRow(Base):
+    """The save's mode, Sandbox or a scenario (30.2-30.3); no row: a campaign."""
+
+    __tablename__ = "game_mode"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)  # always 1
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class RankingRow(Base):
+    """One place in one January's list (30.4). `data` holds company_id and value."""
+
+    __tablename__ = "ranking"
+
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String(16), primary_key=True)
+    place: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class QuarterMarkRow(Base):
+    """A product's quality and customers at the last quarterly reports (M15b; 0035)."""
+
+    __tablename__ = "product_quarter_mark"
+
+    product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class VentureRow(Base):
+    """A company the player sold before founding again (M15b addendum 10, migration 0035)."""
+
+    __tablename__ = "venture"
+
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

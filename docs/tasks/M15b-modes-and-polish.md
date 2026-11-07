@@ -61,8 +61,40 @@ M15b also owns `backend/tst/sim/mna/` negotiation code and the rival CEO code fo
 
 ## Decisions made
 
-_(Agent fills in.)_
+Reece's §30.9 decisions are the defaults throughout. Engineering choices the brief left open:
+
+1. **Score value for a private company** (30.1): the midpoint of the displayed value range (§28.1), never V_f, so the score uses public inputs only. The API field is `estimate_cents`.
+2. **Growth window** (30.1): trailing 12-month revenue against the December snapshot three years back, or the oldest snapshot at least a year back; no snapshot, no growth points.
+3. **World at any start year** (sub-task 2): the world is played in memory from 2010 with the player dormant (`DORMANT_CASH`), then the founder is built at the start; the player's dormant events, modifiers, press records and scores are dropped. Tested: a 2013 start's world equals a 2010 game's in 2013.
+4. **Sandbox** (30.2): "half the rivals" keeps every other company per category by id; removed rivals close as failed rivals do. "All seeded" draws later historical eras within ± `sandbox.era_spread_months` (24) from stream `era_window` (single call site). The board cannot remove the founder. A Sandbox score shows on Overview and the CLI but is kept out of the Saves list.
+5. **Scenarios** (30.3): stream `scenario` (43) for generated staff. Reach goals succeed the month they hold; solvency and profit goals are judged at the deadline only; any other ending is a failure (`game_state` `scenario_done`).
+6. **Rankings** (30.4): built at December's month end, dated January; the inbox item sits under History's "rivals" category.
+   **Most innovative brand effect off for now** (product manager, 2026-11-07, option 1): `rank.brand` is 0 until M15a restores and tunes it; the lists, the news and the Best places to work hiring bonus stay. At +2 the scripted player is a top-3 Most innovative company most years, and three nightly guards that pass on main failed (bisected to the rankings commit; probe runs on the branch):
+
+   | Guard | `rank.brand` 2 | `rank.brand` 0 | Bound |
+   | --- | --- | --- | --- |
+   | M8 target 5, blitz ceiling | 1.154 | 1.224 | ≥ 1.2 |
+   | M13 T2, blitzscale listings | 3 | passes | ≥ 4 |
+   | M13b target 1 | 6 | passes | ≥ 7 |
+
+   `rank.brand` 1 gave 1.131 on M8 and `rank.effect_places` 3 left it at 1.154; the hiring bonus moves none of them.
+7. **Continue until** (30.5): stop order is game over, critical event, major event, pitch, proposal, promise, deal, else 12 months.
+8. **IPO conversion** (sub-task 7): every non-common cap entry becomes common at listing, with a ledger entry from preferred to common equity.
+9. **Negotiation** (addendum 9): the first counter is the reservation × `mna.counter_anchor` (1.15 aggressive, 1.10 premium, 1.06 fast follower, 1.03 cost leader; first set at 1.30–1.15, lowered when the nightly 28.9 target 2 measured 1.73 × V_f for deals struck at the first counter) with noise; each next counter moves half the gap; counters are shown rounded up to two significant figures, so no run of offers reveals the reservation. At most `mna.max_rounds` (3) rounds; an offer below `mna.lowball` × the shown counter is a strike, and `mna.strikes` (2) end the talks.
+10. **Serial founder** (addendum 10): the sold company becomes a kept brand of its buyer (it keeps its books, products and people, is delisted, loses its board and founder). The new company uses `serial.background` (`garage_bootstrap`) for its cap table (founder 90%, pool 10%) and equity account, and must take at least `serial.min_cash_dollars` ($10,000). Credibility, feuds (except with the buyer) and the old company's knowledge of people go with the founder. Ventures (`venture` table) keep each company's sale; History, the Hall of Fame and the score take a `company_id`. "Retire" sets `game_state` `retired`.
+11. **Rival CEO profiles** (addendum 11): three knowledge actions narrow the player's ranges on a rival CEO, read by the player's founder's judgment of talent: `public_appearance` (each statement, jab or feud answer: 0.04 skill, 0 potential), `rival_approach` (a poach search opened on their company: 0.12 / 0.05) and `rival_diligence` (diligence done on their company: 0.20 / 0.10). Applied at month end. The profile shows ranges only, in the Rival screen's CEO panel.
+12. **Rival CEO storylines** (addendum 12): at most `story.max_per_month` (2) pieces a month and one per rival, a feud reply first, then a profile, then an interview; feud lines `story.feud_marks` [25, 50]. The template text, in the rival's voice, is the fallback and the facts; the LLM may only reword it within the monthly budget (16.8).
+13. **Tenure reveal** (addendum 13): after `people.reveal_tenure_months` (12) leadership, mentoring and communication show exactly.
+14. **Deals in the top bar and the acquirer's own remedy** (addendum 15): the top bar counts deals under review, closing or blocked; a blocked deal offers divesting the acquirer's own overlapping product as the other remedy.
+15. **Literal guard**: `modes/config.py`'s stage bound is marked exempt and the rankings year comes from the calendar.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- M15a: restore and tune `rank.brand` (the Most innovative brand effect, 30.4) against M8 T5, M13 T2 and M13b T1.
+
+- M14 target 2: `tst/balance/m14.py` (lane A's) accepts the first counter; with the lowered anchors it passes. A script that negotiates over rounds would pay less.
+- A serial founder's network beyond people known (former colleagues as a hiring channel) and a cross-save Hall of Fame are not built.
+- Rival CEO profile: a link from a rival CEO to a full person screen would reuse `PersonScreen`; today the ranges sit in the Rival screen's CEO panel.
+- Continue until could take a stop list from the player (for example "also stop at hiring offers").
+- The serial founder flow has API and unit tests but no Playwright flow.
+

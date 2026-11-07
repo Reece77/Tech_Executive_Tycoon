@@ -71,6 +71,10 @@ ACTION_GROUPS: Final = MappingProxyType(
         "reference_check": frozenset({PERSONALITY, PA}),
         "scouting_month": frozenset({SKILLS, PERSONALITY, PA}),
         "employed_month": frozenset({SKILLS, PERSONALITY, PA}),
+        # M15b (addendum 11): what the player learns of a rival CEO from outside
+        "public_appearance": frozenset({SKILLS, PERSONALITY}),
+        "rival_approach": frozenset({SKILLS, PERSONALITY, PA}),
+        "rival_diligence": frozenset({SKILLS, PERSONALITY, PA}),
     }
 )
 # Interests and work style are shown exactly after the first of these (formulas.md section 4).

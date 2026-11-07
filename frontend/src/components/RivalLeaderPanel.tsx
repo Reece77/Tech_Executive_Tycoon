@@ -2,6 +2,7 @@
 // statements, and the feud with your founder (score, the rivalry line and its causes). All
 // public; never the rival's decision weights (29.6).
 import { useRivalLeader, type RivalLeader } from '../hooks/press';
+import { AttributeRange } from './AttributeRange';
 import { formatWhole } from '../lib/format';
 import { signed, STATEMENT_KINDS } from '../lib/press';
 import { Panel } from './ScreenState';
@@ -106,6 +107,7 @@ export function RivalLeaderBody({ leader }: { leader: RivalLeader }) {
           </span>
         )}
       </div>
+      {leader.profile && <CeoProfile profile={leader.profile} />}
       <div style={{ flex: '2 1 360px', display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span className="tst-muted" style={{ fontSize: 12 }}>
           Recent statements
@@ -139,5 +141,40 @@ export function RivalLeaderBody({ leader }: { leader: RivalLeader }) {
         ))}
       </div>
     </Panel>
+  );
+}
+
+type CeoProfileData = NonNullable<RivalLeader['profile']>;
+
+// What you have learned of their CEO (M15b addendum 11): ranges only, narrowed by their public
+// appearances, your poach approaches and diligence. Never their true values.
+function CeoProfile({ profile }: { profile: CeoProfileData }) {
+  const rows = [...profile.skills, ...profile.personality];
+  return (
+    <div
+      style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 4 }}
+      data-testid="rival-ceo-profile"
+    >
+      <span className="tst-muted" style={{ fontSize: 12 }}>
+        <Term term="rival_ceo_profile">{profile.learned_label}</Term>
+        {' · potential '}
+        {profile.potential_phrase}
+      </span>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+          gap: '2px 12px',
+          fontSize: 12,
+        }}
+      >
+        {rows.map((a) => (
+          <span key={a.key} style={{ display: 'flex', justifyContent: 'space-between', gap: 6 }}>
+            <span style={{ color: 'var(--tst-text-2)' }}>{a.short_label}</span>
+            <AttributeRange range={a.range} label={a.label} />
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

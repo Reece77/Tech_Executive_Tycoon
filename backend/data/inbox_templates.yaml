@@ -249,6 +249,15 @@ templates:
   exit_sale: # M14 (28.6): the player's company was sold; the game ends with an exit
     title: "You sold the company to {buyer}"
     body: "{buyer} bought the company for {price}. Your stake came to {proceeds}. The game is over: this is your exit."
+  rankings_published: # M15b (30.4): each January's industry rankings
+    title: "The {year} industry rankings"
+    body: "{leader} tops the revenue list at {revenue} a year. Your places: {places}. See the Rankings screen."
+  founded_again: # M15b addendum 10: a serial founder's next company
+    title: "You founded {name}"
+    body: "After selling {old} to {buyer}, you put {cash} of your proceeds into {name} and kept {kept}. {old} carries on as part of {buyer}."
+  rival_story: # M15b addendum 12: a press piece about a rival CEO (interview, feud reply, profile)
+    title: "{title}"
+    body: "{text}"
   rival_acquired: # M14 (28.6): a rival bought a startup
     title: "{acquirer} buys {target}"
     body: "{acquirer} bought {target} for about {price}. Its products and people are now {acquirer}'s."

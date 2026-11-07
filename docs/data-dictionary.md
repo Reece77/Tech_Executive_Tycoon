@@ -1596,3 +1596,17 @@ The M&A records keep their fields in a JSON `data` column: each is the frozen re
 | `mna_acquired_person` | `person_id` | `data`: `deal_id`, `until_turn`, `brand`, `flight_mult` | An acquired key person during culture clash (28.5); the row goes when clash ends or they leave. |
 
 Rivals now also get a `finance_history` row: their monthly operating result in `op_history`, as the player's, for V_f's trailing margin (28.1). Accounts `1800_goodwill` and `1810_investment_subsidiaries` are new in `accounts.yaml`.
+
+## Modes, scores, rankings and ventures (migration `0035_m15b`, M15b)
+
+Each record keeps its fields in a JSON `data` column: the frozen record in `backend/tst/sim/modes/models.py` without its key columns. Saves made before M15b have no rows: a campaign with no score history, no rankings and no ventures. `save_meta.schema_version` is 35.
+
+| Table | Key | Columns | Notes |
+| --- | --- | --- | --- |
+| `company_score` | `company_id`, `turn` | `data`: `score` (0–1,000), `value_cents` (market cap if listed, else the displayed value range's midpoint; never V_f), `growth`, `profit`, `leadership`, `reputation` (each 0–1), `revenue_cents` (trailing 12 months) | Every December's snapshot and the month a game ends (30.1). Public inputs only. |
+| `game_mode` | `id` (always 1) | `data`: `kind` (`campaign`, `sandbox`, `scenario`), `start_turn`, `scenario` (a `scenarios.yaml` `historical` key), `rivals` (`all`, `half`, `none`), `eras` (`historical`, `seeded`), `result` (`success`, `failure`), `result_turn` | How the save plays (30.2–30.3). No row: a standard campaign. |
+| `ranking` | `turn`, `kind`, `place` | `data`: `company_id`, `value` (revenue cents, or the list's 0–1 measure) | Each January's lists (30.4): `revenue` (top 50), `places`, `innovative`. |
+| `product_quarter_mark` | `product_id` | `data`: `turn`, `quality`, `customers` | A product at the last quarterly reports: the next reports' starting values. Replaced each quarter. |
+| `venture` | `company_id` | `data`: `name`, `founded_turn`, `ended_turn`, `outcome` (`exit`), `buyer_id`, `price_cents`, `proceeds_cents` (the founder's share), `kept_cents` (what they kept rather than invest) | A company the player sold (addendum 10). History, the score and the Hall of Fame show each apart. |
+
+Also new: `save_meta.game_state` values `scenario_done` (a historical scenario judged) and `retired` (the founder retired after an exit); the knowledge actions `public_appearance`, `rival_approach` and `rival_diligence` in reveal records of rival CEOs (addendum 11); the `llm_text.kind` value `rival_story` (addendum 12); `mna_target_file.data` gains `counter_exact` (**hidden**), `rounds` and `strikes` (negotiation, addendum 9) and `mna_deal.data` gains `own_remedy_product_id` (addendum 15).

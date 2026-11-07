@@ -51,8 +51,13 @@ class TargetFile:
     diligence_turn: int | None = None  # diligence started
     diligence_done_turn: int | None = None  # findings revealed from this turn
     board_bar: float | None = None
-    counter_cents: int | None = None
+    counter_cents: int | None = None  # the counter as shown: rounded up (M15b negotiation)
     blocked_until: int | None = None  # no new bid before this turn (talks ended, tender failed)
+    # M15b (negotiation, playtest 3): the counter before rounding (hidden), the rounds of
+    # counters so far, and the lowballs that used up the target's patience
+    counter_exact: int | None = None
+    rounds: int = 0
+    strikes: int = 0
 
     @property
     def diligenced(self) -> bool:
@@ -77,6 +82,7 @@ class Deal:
     market: str = ""  # the market that share is in, "category/segment/region"
     blocked_draw: float | None = None  # the review's uniform, hidden; blocked if below p
     remedy_product_id: int | None = None  # the overlapping product a remedy would divest
+    own_remedy_product_id: int | None = None  # M15b: the acquirer's own overlapping product
     mode: Mode | None = None  # chosen at closing
     resolved_turn: int | None = None
     loan_cents: int = 0  # a bank loan taken first to pay the cash part (20.3)

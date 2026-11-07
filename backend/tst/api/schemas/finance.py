@@ -410,9 +410,21 @@ class GameOverDirectorOut(BaseModel):
 class GameOverOut(BaseModel):
     """How the game ended (ADR-0018), for the game over screen."""
 
-    game_state: str = Field(description="active | bankrupt | founder_removed | exit")
+    game_state: str = Field(
+        description="active | bankrupt | founder_removed | exit | scenario_done | retired"
+    )
     company_name: str
     ended_turn: int | None
+    can_found_again: bool = Field(
+        default=False, description="After an exit: Found a new company or Retire (M15b)"
+    )
+    min_new_cash_cents: int = Field(
+        default=0, description="The least of the proceeds a new company takes (M15b)"
+    )
+    scenario_label: str | None = Field(default=None, description="A historical scenario (M15b)")
+    scenario_goal: str | None = None
+    scenario_deadline_label: str | None = None
+    scenario_result: str | None = Field(default=None, description="success | failure, once judged")
     exit_buyer: str | None = Field(default=None, description="Exit (M14, 28.6): who bought it")
     exit_price_cents: int | None = None
     exit_proceeds_cents: int | None = Field(default=None, description="The founder's stake")

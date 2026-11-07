@@ -13,6 +13,7 @@ import os
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Final
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -30,6 +31,7 @@ from tst.sim.events.models import GameEvent
 from tst.sim.finance.statements import projected_runway
 from tst.sim.ledger import CASH, account_balance
 from tst.sim.org.reports import EXEC_REPORT
+from tst.sim.rivals.stories import STORY
 from tst.sim.state import GameState, with_event
 
 log = logging.getLogger(__name__)
@@ -127,11 +129,14 @@ def _copy(session: Session, state: GameState, source: Path) -> GameState:
     return state
 
 
+WRITTEN_OVER: Final = (EXEC_REPORT, STORY)  # texts whose inbox item the writing rewords
+
+
 def _report_row(session: Session, text: LLMTextRow) -> InboxItemRow | None:
-    """The inbox item an executive's report request came from (24.3)."""
+    """The inbox item an executive's report (24.3) or a rival CEO piece (M15b) came from."""
     return session.scalars(
         select(InboxItemRow).where(
-            InboxItemRow.template == EXEC_REPORT,
+            InboxItemRow.template == text.kind,
             InboxItemRow.turn == text.turn,
             InboxItemRow.link_id == text.ref_id,
         )
@@ -180,14 +185,14 @@ def write_pending(
             for text in session.scalars(
                 select(LLMTextRow).where(LLMTextRow.status == "pending").order_by(LLMTextRow.id)
             ):
-                report = _report_row(session, text) if text.kind == EXEC_REPORT else None
+                report = _report_row(session, text) if text.kind in WRITTEN_OVER else None
                 given = (report.body, [report.title, report.body]) if report else None
                 text.text, text.source = write_text(
                     state, text.kind, text.turn, text.ref_id, writer, given
                 )
                 text.status = "written"
                 if report is not None and text.source != "template":
-                    report.body = text.text  # the inbox shows the written report (24.3)
+                    report.body = text.text  # the inbox shows the written text (24.3, M15b)
             now = datetime.now(UTC).isoformat(timespec="seconds")
             session.add_all(
                 LLMCallLogRow(

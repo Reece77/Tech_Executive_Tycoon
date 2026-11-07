@@ -162,7 +162,7 @@ class TextRequest:
     exit-interview line, an executive's quarterly report (M10c, 24.3). `ref_id` is the person
     for an exit line or a report."""
 
-    kind: Literal["headlines", "minutes", "exit_line", "exec_report"]
+    kind: Literal["headlines", "minutes", "exit_line", "exec_report", "rival_story"]
     company_id: int
     turn: int
     ref_id: int | None = None

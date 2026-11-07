@@ -43,6 +43,7 @@ from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_prob
 from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.ledger import ENGINE_ACCOUNTS
 from tst.sim.markets_public.config import BanksFile
+from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 
@@ -411,9 +412,22 @@ def load_all(path: Path) -> LoadedData:
         _validate(Account, item, ACCOUNTS_FILE)
         for item in _list_of(parsed[ACCOUNTS_FILE], "accounts", ACCOUNTS_FILE)
     ]
+    if extra := set(parsed[SCENARIOS_FILE] or {}) - {"scenarios", "historical"}:
+        raise DataLoadError(
+            f"{SCENARIOS_FILE}: expected a single top-level key 'scenarios' (with 'historical' "
+            f"beside it, M15b); unknown keys {sorted(extra)}"
+        )
     scenarios = [
         _validate(Scenario, item, SCENARIOS_FILE)
-        for item in _list_of(parsed[SCENARIOS_FILE], "scenarios", SCENARIOS_FILE)
+        for item in _list_of(
+            {"scenarios": (parsed[SCENARIOS_FILE] or {}).get("scenarios")},  # beside `historical`
+            "scenarios",
+            SCENARIOS_FILE,
+        )
+    ]
+    historical = [  # M15b (30.3)
+        _validate(HistoricalScenario, item, SCENARIOS_FILE)
+        for item in (parsed[SCENARIOS_FILE] or {}).get("historical", [])
     ]
     skills = _validate(SkillsFile, parsed[SKILLS_FILE], SKILLS_FILE)
     personality = _validate(PersonalityFile, parsed[PERSONALITY_FILE], PERSONALITY_FILE)
@@ -441,6 +455,7 @@ def load_all(path: Path) -> LoadedData:
         {
             "accounts": accounts,
             "scenarios": scenarios,
+            "historical": historical,
             "skills": skills.skills,
             "personality": personality.personality,
             "hidden": personality.hidden,

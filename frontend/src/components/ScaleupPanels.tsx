@@ -575,19 +575,25 @@ function modifyPath(saveId: string, p: Pitch): string {
     case 'new_product':
       return `${base}/products?new=${params.category}&segment=${params.segment}`;
     case 'sunset':
-    case 'region':
-    case 'campaign':
       return `${base}/products/${params.product_id}`;
+    case 'region':
+      return `${base}/products/${params.product_id}?region=${params.region}`;
+    case 'campaign':
+      return `${base}/products/${params.product_id}?campaign=${p.monthly_cents}`;
     case 'research':
-      return `${base}/products/research`;
+      return `${base}/products/research?start=${params.domain}`;
     case 'data_centre':
-      return `${base}/products/infrastructure`;
+      return `${base}/products/infrastructure?build=${params.facility_kind}&region=${params.region}&units=${params.units}`;
     case 'plant':
-      return `${base}/products/hardware`;
+      return `${base}/products/hardware?plant=${params.units}`;
     case 'office':
-      return `${base}/org/offices`;
+      return `${base}/org/offices?lease=${params.city}&seats=${params.seats}`;
+    case 'acquisition':
+      return `${base}/competitors/${params.company_id}?offer=${params.price_cents}&mode=${params.mode}`;
+    case 'dividend':
+      return `${base}/finance/stock?dividend=${params.per_share_cents ?? ''}`;
     default:
-      return `${base}/finance/stock`;
+      return `${base}/finance/stock?buyback=${params.amount_cents ?? ''}`;
   }
 }
 

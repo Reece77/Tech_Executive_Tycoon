@@ -152,3 +152,17 @@ class HallOfFameOut(BaseModel):
     best_product_mrr: ProductRecordOut | None
     best_product_quality: ProductRecordOut | None
     rivals_outlasted: list[RivalOutlastedOut]
+
+
+class VentureOut(BaseModel):
+    """A company the player ran (M15b addendum 10): the current one, or one they sold."""
+
+    company_id: int
+    name: str
+    current: bool
+    founded_label: str
+    ended_label: str | None
+    buyer: str | None
+    price_cents: int | None
+    proceeds_cents: int | None
+    score: int | None = Field(description="The company score at its sale, or the latest (30.1)")

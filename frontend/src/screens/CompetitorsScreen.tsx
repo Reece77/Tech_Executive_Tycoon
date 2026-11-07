@@ -50,6 +50,9 @@ export function CompetitorsScreen() {
               {r.established} established · {r.startups_alive} startups alive · {r.startups_failed}{' '}
               failed
             </span>
+            <Link to={`/game/${saveId}/competitors/rankings`} data-testid="rankings-link">
+              Rankings
+            </Link>
             <div
               role="group"
               aria-label="Filter rivals"
