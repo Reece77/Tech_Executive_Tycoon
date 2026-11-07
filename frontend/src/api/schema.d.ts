@@ -6128,6 +6128,20 @@ export interface components {
              */
             min_new_cash_cents?: number;
             /**
+             * Scenario Label
+             * @description A historical scenario (M15b)
+             */
+            scenario_label?: string | null;
+            /** Scenario Goal */
+            scenario_goal?: string | null;
+            /** Scenario Deadline Label */
+            scenario_deadline_label?: string | null;
+            /**
+             * Scenario Result
+             * @description success | failure, once judged
+             */
+            scenario_result?: string | null;
+            /**
              * Exit Buyer
              * @description Exit (M14, 28.6): who bought it
              */

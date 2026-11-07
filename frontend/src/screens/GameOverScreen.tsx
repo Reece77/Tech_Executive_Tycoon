@@ -15,6 +15,17 @@ const LINKS = [
 ];
 
 function headline(g: GameOver): { kicker: string; title: string; text: string } {
+  if (g.game_state === 'scenario_done') {
+    // M15b (30.3): a historical scenario judged, early on success or at its deadline
+    const won = g.scenario_result === 'success';
+    return {
+      kicker: `Scenario ${won ? 'won' : 'lost'} · ${g.ended_label ?? ''}`,
+      title: `${g.scenario_label ?? 'Scenario'}: ${won ? 'goal reached' : 'goal missed'}`,
+      text: `The goal: ${g.scenario_goal ?? ''} by ${g.scenario_deadline_label ?? ''}. ${
+        won ? `${g.company_name} did it.` : `${g.company_name} did not get there in time.`
+      }`,
+    };
+  }
   if (g.game_state === 'exit' || g.game_state === 'retired') {
     // M14 (28.6): the company was sold; M15b: then retired
     return {
@@ -168,6 +179,24 @@ export function GameOverScreen() {
           <p style={{ margin: 0, fontSize: 16, lineHeight: 1.6, color: 'var(--tst-text-2)' }}>
             {h.text}
           </p>
+          {g.scenario_result && (
+            <span
+              data-testid="scenario-result"
+              data-result={g.scenario_result}
+              style={{
+                alignSelf: 'flex-start',
+                fontSize: 13,
+                fontWeight: 700,
+                borderRadius: 4,
+                padding: '4px 10px',
+                color: 'var(--tst-bg)',
+                background:
+                  g.scenario_result === 'success' ? 'var(--tst-good)' : 'var(--tst-warn)',
+              }}
+            >
+              {g.scenario_label}: {g.scenario_result === 'success' ? 'success' : 'failure'}
+            </span>
+          )}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <KpiTile

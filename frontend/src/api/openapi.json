@@ -21509,6 +21509,52 @@
             "description": "The least of the proceeds a new company takes (M15b)",
             "default": 0
           },
+          "scenario_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Label",
+            "description": "A historical scenario (M15b)"
+          },
+          "scenario_goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Goal"
+          },
+          "scenario_deadline_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Deadline Label"
+          },
+          "scenario_result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Result",
+            "description": "success | failure, once judged"
+          },
           "exit_buyer": {
             "anyOf": [
               {

@@ -10,9 +10,9 @@ import pytest
 from tests.helpers import fresh_game
 from tests.unit.test_hiring_phases import Game
 from tst.loader import LoadedData
+from tst.sim.actions.hiring import OpenSearch
 from tst.sim.errors import GameOverError, InvalidModeError
 from tst.sim.finance.captable import fd_shares, person_shares
-from tst.sim.actions.hiring import OpenSearch
 from tst.sim.ledger import CASH
 from tst.sim.mna.exit import buyer_of
 from tst.sim.mna.models import Deal
