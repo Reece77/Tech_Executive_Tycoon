@@ -1214,7 +1214,7 @@ rank:
   places_min_staff: 50 # staff; smaller companies are not in Best places to work (30.4)
   effect_places: 10 # a top-10 place earns the list's effect (30.4)
   hiring: 0.03 # hiring appeal for the year from a top-10 Best places to work place (30.4)
-  brand: 0.5 # brand target points for the year from a top-10 Most innovative place (30.4); M15a: 0 -> 0.5, the most M13 25.9 T2 (blitzscale lists on 4/10 at 0 and 0.5) and M13b 27.5 T5 allow; 1 failed both (at +2 the player wins it most years and M8 T5, M13 T2 and M13b T1 failed: ties on a sparse list go to the lowest company id, the player)
+  brand: 0 # brand target points for the year from a top-10 Most innovative place (30.4); 0 (product manager, 2026-11-07, M15a): with the tie-break fixed, 0.5 still moved V1/V2 (research_heavy 6 wins), V3 (-8.6 pts) and V4 (1.44x) out of band; an M23 follow-up
   effect_months: 12 # months the effects run, January to December (30.4)
   years: 3 # Most innovative counts eras caused and launches in the last 3 years (30.4)
   tenure_full_months: 60 # mean tenure scoring the full tenure measure (M15b decision)
