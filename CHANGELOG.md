@@ -4,6 +4,14 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M15a v2 balance and long campaigns (formulas.md §30.6–30.9, lane A, merges second):
+  - Five v2 strategies in the balance scripts (`tst/balance/strategies_v2.py`): steady_regions, research_heavy, acquirer, integrator and ceo; with v1's four, nine. steady_regions and its family also launch the CPO scoring's best new-category product at most once per 36 months and split steady's marketing over their products. AI-models arms `ai_regions` and `integrator_ai` for V3.
+  - Five eras to 2039 appended as seeded windows (post-quantum security, AR glasses, humanoid robotics, photonic interconnect, practical quantum computing).
+  - The v2 targets (`tst/balance/v2.py`, `tools/v2_targets.py`): V1–V4 nightly; V1 over 30 seeds, V5's 30-year runs and V6's 2039 turn time in a weekly workflow (`.github/workflows/weekly.yml`, `make weekly-v1/-v5/-v6`; tests marked `weekly`); `tools/v6_save.py` builds a 2039 stage-4 save through the save path.
+  - Rivals keep launching after 2020: `rivals.startup.start_feature_share` (new, 0.2); rival startups need no manufacturing contract to launch (bug: rivals' manufacturing is abstract, 26.1); a rival startup below 3 people for 24 months closes (`rivals.startup.small_staff`, `small_months`; migration `0036_m15a`, `startup_small`).
+  - Tuned: `rnd.rate` 0.4 → 0.3 (V2), `debt.venture.covenant_burn_months` 3 → 2 (V7), `rank.brand` 0 → 0.5 (ruling 5). M10.T3 leaves the known misses; V3.ai (M23), V5.cells and V5.cats (v3) join them; T2 stays (see docs/balance-targets.md).
+  - Golden snapshots regenerated once for both milestones: M15b's rankings are unchanged in themselves, but the Most innovative brand effect (`rank.brand` 0.5) moves brand targets from February 2011; M15a's rival startups (the feature start, the launch rule, small startups closing) change rival products and moves from the first startup's founding.
+
 - M15b Modes and polish (formulas.md §30.1–30.5, lane B, merges first):
   - Company score 0–1,000 from public inputs (value from market cap or the displayed value range's midpoint, growth, profit, market leadership, reputation): December and game-end snapshots, `score` on Overview, Rival and Saves, `tst score`.
   - A world built at any start year (the world plays from 2010 with the player dormant); Sandbox starts (year, cash, all/half/no rivals, historical or seeded eras; no board removal); five historical scenarios with goals judged early or at the deadline and a result screen (stream `scenario`, 43).
