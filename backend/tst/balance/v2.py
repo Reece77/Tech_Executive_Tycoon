@@ -23,7 +23,7 @@ from typing import Final
 
 from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.report import SCENARIO, Row, RunResult, _loaded, _runs, winners
-from tst.balance.strategies_v2 import STRATEGIES
+from tst.balance.strategies_v2 import DELEGATED, STRATEGIES
 from tst.sim.calendar import ym_to_turn
 from tst.sim.state import GameState
 
@@ -56,9 +56,7 @@ V3_ARR: Final = (0.85, 1.25)
 # V4 re-banded 1.2 -> 1.4 (product manager, 2026-11-07, second round): delegation with full
 # authority stays within 40% of the hands-on script (1.39x after ruling 1's new products).
 V4_BAND: Final = (0.85, 1.4)
-# V1 counts wins among the founder-played strategies (product manager, 2026-11-07): the ceo
-# arm is a delegation benchmark, measured by V4.
-DELEGATED: Final = ("ceo",)
+# V1 counts wins among the founder-played strategies (strategies_v2.DELEGATED).
 V5_ERAS: Final = 5
 V5_GROWTH: Final = 0.04
 V5_RIVALS: Final = 0.30

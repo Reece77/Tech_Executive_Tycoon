@@ -507,6 +507,9 @@ V2: Final[dict[str, Strategy]] = {
     "ceo": ceo,
 }
 STRATEGIES: Final[dict[str, Strategy]] = {**V1, **V2}  # the nine (30.6)
+# Delegation benchmarks (product manager, 2026-11-07): measured by V4, not among the strategies
+# whose wins V1 and T2 count
+DELEGATED: Final = ("ceo",)
 # V3's AI arms (product manager's ruling, 2026-11-07): measured, not among the nine
 ARMS: Final[dict[str, Strategy]] = {"ai_regions": ai_regions, "integrator_ai": integrator_ai}
 PLAYABLE: Final[dict[str, Strategy]] = {**STRATEGIES, **ARMS}

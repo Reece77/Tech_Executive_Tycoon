@@ -18,7 +18,7 @@ from typing import Final
 
 from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.known_misses import known_miss, verdict
-from tst.balance.strategies_v2 import PLAYABLE, STRATEGIES
+from tst.balance.strategies_v2 import DELEGATED, PLAYABLE, STRATEGIES
 from tst.loader import LoadedData, load_all
 from tst.sim.rivals.startups import is_entrant
 
@@ -261,9 +261,11 @@ def evaluate(results: Sequence[RunResult]) -> list[Row]:
                 True,
             )
         )
-    wins = winners(results)
+    # Founder-played strategies only, as 30.7 V1 (product manager, 2026-11-07): the ceo arm
+    # is a delegation benchmark measured by V4.
+    wins = winners([r for r in results if r.strategy not in DELEGATED])
     most = max(wins.values(), default=0)
-    detail = ", ".join(f"{s} {wins.get(s, 0)}" for s in STRATEGIES)
+    detail = ", ".join(f"{s} {wins.get(s, 0)}" for s in STRATEGIES if s not in DELEGATED)
     cap = 6 * seeds / 10
     rows.append(
         Row(

@@ -23,14 +23,6 @@ class KnownMiss:
 
 KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     KnownMiss(
-        target="T2",
-        owner="M15",
-        # score: the most wins of any one strategy as a share of the seeds; 0.9 = 9/10, so
-        # it fails only if one strategy wins every seed (Reece, 2026-11-05)
-        worse_than=0.9,
-        reason="steady wins 8/10 on main; M15's v2 strategies should split wins",
-    ),
-    KnownMiss(
         target="V3.ai",  # docs/formulas.md 30.7 V3's AI arm: integrator_ai +3 to +10 points
         owner="M23",
         # score: minus the margin gap (larger is worse); known while the AI integrator is no
