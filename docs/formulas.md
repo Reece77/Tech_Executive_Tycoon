@@ -2464,3 +2464,106 @@ Press moments and choices, open promises with their displayed progress and deadl
 
 **A broken no-layoffs promise, stage 3.** `a` = 1.0: brand target −8, credibility −10, every employee's morale −5.
 
+## 30. v2 close-out: balance, long campaigns and game modes (M15a, M15b)
+
+M15 closes v2 in two lanes (Reece, 2026-11-05: "build as much as we can at the same time"). **M15b** (lane B, merges first) adds the game modes and polish: the company score, Sandbox, historical scenarios, industry rankings, "continue until something needs me", and the History and glossary audit. **M15a** (lane A, merges second) is the v2 balance pass: new strategies, 30-year runs, eras to 2039, the known misses and the research check, measured on the combined code. Reece's playtest 3 notes (after `m14-done`) are added as an addendum to whichever lane they touch.
+
+### 30.1 Company score (M15b)
+
+A public score, 0–1,000, for any company, computed each December and at a game's end:
+
+```latex
+score = 400\,\frac{\log_{10}(\max(V, 10^6)) - 6}{6} + 200\,G + 150\,P + 150\,L + 100\,R
+```
+
+- `V`: market cap if listed, else `V_f` (§28.1), in dollars; $1M scores 0, $1T scores 400 (clamped to 0–400).
+- `G`: growth, `clamp(trailing 3-year revenue CAGR / 0.5, 0, 1)`.
+- `P`: profitability, `clamp((trailing operating margin + 0.2) / 0.5, 0, 1)` (−20% scores 0, +30% scores 1).
+- `L`: leadership, the share of the company's markets (segment × region × category it sells in) where it holds the largest share, weighted by market revenue.
+- `R`: reputation, `(mean brand + credibility) / 200`, from public values.
+
+Rivals' scores use the same formula, so rankings and scenario goals compare like with like. **The founder's personal outcome** (the founder value used by T2) stays separate: the score rates the company, T2 rates the founder's result.
+
+**Example.** A listed company worth $40B, 3-year CAGR 30%, margin 18%, leading markets with 35% of its revenue, brand 70 and credibility 62: `400 × (10.602 − 6)/6` = 306.8; `200 × 0.6` = 120; `150 × 0.76` = 114; `150 × 0.35` = 52.5; `100 × 0.66` = 66; score **659**.
+
+### 30.2 Sandbox (M15b)
+
+A new-game mode (spec §3): choose the start year (2010–2025, with history to that date and the world built as it stood, as the fixture tools already do), starting cash, difficulty, how many rivals (none, half, all), and eras historical or all seeded. No campaign end (play past 2039 with seeded macro, supply and eras), the board cannot remove the founder (spec §17), and the company score is shown but the save is marked Sandbox and kept out of the Hall of Fame.
+
+### 30.3 Historical scenarios (M15b)
+
+Each scenario is a start (year, company, cash, staff, products, research, rivals' state) and a goal with a deadline, data in `backend/data/scenarios.yaml`, built with the same world-building code as Sandbox:
+
+| Scenario | Start | Goal |
+| --- | --- | --- |
+| The AI lab | Jan 2015, a 12-person AI research startup with a Series A | cause the Transformers era first, or $100M ARR, by Dec 2020 |
+| Mobile first | Jan 2011, a consumer-app startup of 4 | 1M consumer customers by Dec 2014 |
+| Survive 2022 | Jan 2021, a growth-stage SaaS with venture debt and 20 months of runway | still solvent with a positive operating margin in Dec 2023 |
+| The chip startup | Jan 2016, a fabless chip startup with a Series B | 10% of AI accelerator units by Dec 2023 |
+| The turnaround | Jan 2018, a stage-3 company losing money with a weak executive team | an operating profit by Dec 2020 without a down round |
+
+The result screen shows success or failure, the company score at the deadline and a short History. Scenarios use difficulty "standard" and normal rules.
+
+### 30.4 Industry rankings (M15b)
+
+Each January, three lists are published as news and on a Rankings screen:
+- **Top 50 by revenue**: every company.
+- **Best places to work**: the top 20 by mean morale, pay against market and tenure (companies of 50+ staff).
+- **Most innovative**: the top 20 by research leads, eras caused and launches in the last 3 years.
+
+Effects: a top-10 place in Best places to work adds `rank.hiring` (+0.03) to hiring appeal for the year; a top-10 place in Most innovative adds `rank.brand` (+2) to the brand target for the year.
+
+### 30.5 Continue until something needs me (M15b)
+
+A button and CLI flag that advances turn by turn until an item needs the player (a blocking inbox item, a pitch above the auto-approve limit, a critical event, a promise coming due, a deal decision) or up to 12 months. Unlike Holiday it delegates nothing: decisions not made wait in the inbox.
+
+### 30.6 v2 strategies (M15a, balance scripts only)
+
+| Strategy | Plays as |
+| --- | --- |
+| steady_regions | M13b's arm: steady plus region launches |
+| research_heavy | steady_regions, plus a research unit of 6 (12 from stage 3) on the domain feeding its products, pulling eras when it can |
+| acquirer | M14's arm: steady_regions plus one startup a year in its categories when cash covers 18 months, integrated |
+| integrator | steady_regions, plus its own data centre when compute spend passes $200k a month, and devices with its own plant when it sells hardware (the partial vertical integrator) |
+| ceo | steady_regions with all seats given authority and a CEO appointed at stage 3, the founder as Chair (auto-approve at 5% of cash) |
+
+With v1's do_nothing, bootstrap_frugal, steady and blitzscale, nine strategies.
+
+### 30.7 v2 balance targets (M15a, printed)
+
+**V1. Strategies split the wins.** By founder value at year 10 (T2's measure) over the nine strategies on 10 seeds, no strategy wins more than 5; at least four strategies win at least once over 30 seeds. T2 then leaves the known-miss list.
+
+**V2. Research is strong, not dominant.** research_heavy's median ARR at year 10 is 1.0–1.4 × steady_regions, and it wins at most 4 of 10 seeds. Tune `rnd.*` (cap per point, rate, era keys) if not.
+
+**V3. Integration pays modestly.** integrator's operating margin at year 10 is 3–10 points above steady_regions, with ARR 0.85–1.25×.
+
+**V4. Delegation stays below good play.** ceo's median ARR at year 10 is 0.85–1.2 × steady_regions (M13b's target 7, at 10 years).
+
+**V5. 30-year campaigns stay alive** (steady_regions and research_heavy, 10 seeds, to Dec 2039):
+- at least 5 era arrivals from 2026 to 2039 per run (median);
+- total market demand grows at least 4% a year in the 2030s;
+- at least 30% of the 2026 rivals are still alive in 2039, and every category has at least one rival launch per decade;
+- steady_regions reaches stage 4 (listed) on at least 5 of 10 seeds by 2039.
+
+**V6. The late game stays quick.** A stage-4 company in 2039 (a 30-year research_heavy run's save) advances at a median of at most 1.0 s a turn on CI (median of three blocks after a warm-up, as M12r).
+
+**V7. The known misses close.** M10.T3 (covenants) is re-measured as "breaches while cash is still positive", band 20–60%, and leaves the known-miss list; T5's bootstrap band is decided by Reece (§30.9); `docs/balance-targets.md` ends v2 with no known misses, or with any remaining one carried to v3 by Reece's explicit decision.
+
+### 30.8 Eras to 2039 (M15a, data)
+
+Appended to `eras.yaml` as seeded windows (§26.4, stream `era_window` keyed by index, so earlier eras' months don't move):
+
+| Era | Domain | Window | Accelerates |
+| --- | --- | --- | --- |
+| Post-quantum security | infrastructure | Jan 2028 – Dec 2031 | cybersecurity demand growth +15 points for 36 months |
+| AR glasses | devices | Jan 2028 – Dec 2032 | a consumer device segment opens; devices demand +15 points for 36 months |
+| Humanoid robotics | AI and devices | Jan 2030 – Dec 2035 | AI models and devices demand +20 points for 36 months |
+| Photonic interconnect | chip design and infrastructure | Jan 2031 – Dec 2035 | data-centre cost per CU −15% from arrival; server CPU and accelerator demand +10 points |
+| Practical quantum computing | infrastructure | Jan 2034 – Dec 2039 | cloud hosting demand +15 points for 36 months; a late frontier for research |
+
+### 30.9 Decisions for Reece (defaults stand if not changed)
+
+1. **T5 bootstrap risk:** default keep 0–50% (bootstrapping is a safe, slow path), rather than restore 20–50%.
+2. **The scenario list** in §30.3.
+3. **The chief-of-staff advisor** stays in the backlog (v4), not M15.
+

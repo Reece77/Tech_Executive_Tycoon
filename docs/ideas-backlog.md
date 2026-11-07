@@ -15,7 +15,7 @@ Placement key: **v2** = a v2 milestone before the v2 retrospective; **v3** = alo
 | Candidate search by interest | Filter recruitment by interests, at extra cost (playtest 2) | Yes | **M14b** (scheduled) |
 | Leadership fit in the org chart | Show who would make a good team lead or manager, from revealed traits (playtest 2) | Yes | **M14b** (scheduled) |
 | Rival founders as characters | Named rival CEOs with personalities, grudges and public feuds; LLM-written storylines through the event director (ADR-0005) | Yes | **M14b** (scheduled) |
-| Industry rankings | Yearly Fortune 500, Best Places to Work and Most Innovative lists; goals to chase; rankings affect hiring and brand | Yes | M15, with the company score |
+| Industry rankings | Yearly Fortune 500, Best Places to Work and Most Innovative lists; goals to chase; rankings affect hiring and brand | Yes | **M15b** (scheduled) |
 
 ## Capitalism Lab: economic depth
 
@@ -31,7 +31,7 @@ Placement key: **v2** = a v2 milestone before the v2 retrospective; **v3** = alo
 
 | Idea | What it adds | Reece | Placement |
 | --- | --- | --- | --- |
-| **Historical scenarios** | Short challenges with goals: "found an AI lab in 2015", "survive the 2022 rate shock", "turn around a failing chipmaker". Built on the history-then-seeded systems (macro, supply, eras) | Yes | M15, with Sandbox |
+| **Historical scenarios** | Short challenges with goals: "found an AI lab in 2015", "survive the 2022 rate shock", "turn around a failing chipmaker". Built on the history-then-seeded systems (macro, supply, eras) | Yes | **M15b** (scheduled) |
 | Career mode | The founder ages, retires or is pushed out; continue as a successor, or start again at a new company | Yes | v4 |
 | Achievements and a legacy score | Built on M15's company score | Yes | M15 or v4 |
 
@@ -40,7 +40,7 @@ Placement key: **v2** = a v2 milestone before the v2 retrospective; **v3** = alo
 | Idea | What it adds | Reece | Placement |
 | --- | --- | --- | --- |
 | Chief-of-staff advisor | Ask "why did churn rise?" and get an answer from the engine's driver breakdowns, worded by the LLM (it explains, never decides; ADR-0005) | Yes | M15 or v4 |
-| Skip to the next decision | Time runs until something needs you; for the long late game | Yes | M15 |
+| Skip to the next decision | Time runs until something needs you; for the long late game | Yes | **M15b** (scheduled) |
 | In-game data editor | Edit rivals, prices and balance without touching YAML, validated by the loader | Yes | v4 |
 
 ## Carried from milestone follow-ups
