@@ -30,14 +30,6 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         worse_than=0.9,
         reason="steady wins 8/10 on main; M15's v2 strategies should split wins",
     ),
-    KnownMiss(
-        target="M10.T3",  # docs/formulas.md 20.5 target 3: covenants bite sometimes (20-60%)
-        owner="M15",
-        # score: the share of blitz_debt seeds that breach a covenant; known while below 90%,
-        # M10's original measured value (product manager, 2026-11-04)
-        worse_than=0.89,
-        reason="70% of blitz_debt seeds breach on main over seeds 11-40 (60% on 1-10 was luck)",
-    ),
 )
 
 Verdict = Literal["ok", "printed", "known", "fail"]

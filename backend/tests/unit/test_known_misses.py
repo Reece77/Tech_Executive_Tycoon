@@ -23,18 +23,13 @@ def _t2(most: int, seeds: int = 10) -> Row:
 def test_t2_is_known_to_m15() -> None:
     k = known_miss("T2")
     assert k is not None and k.owner == "M15"
-    assert [m.target for m in KNOWN_MISSES] == ["T2", "M10.T3"]
+    assert [m.target for m in KNOWN_MISSES] == ["T2"]  # M10.T3 closed by M15a (30.7 V7)
 
 
-def test_covenant_guard_known_until_90_percent() -> None:
-    """M10's 20.5 target 3 (product manager, 2026-11-04): known while under 90%."""
-
-    def row(rate: float) -> Row:
-        return Row("M10.T3", "covenants", f"{rate:.0%}", "20-60%", rate <= 0.6, True, score=rate)
-
-    assert verdict(row(0.6)) == "ok"
-    assert [verdict(row(r)) for r in (0.7, 0.8, 21 / 30)] == ["known"] * 3
-    assert verdict(row(0.9)) == "fail"
+def test_the_covenant_guard_is_no_longer_known() -> None:
+    """M10.T3 left the list in M15a (30.7 V7): a miss now fails."""
+    row = Row("M10.T3", "covenants", "70%", "20-60%", False, True, score=0.7)
+    assert verdict(row) == "fail"
 
 
 def test_t2_fails_only_when_one_strategy_wins_every_seed() -> None:

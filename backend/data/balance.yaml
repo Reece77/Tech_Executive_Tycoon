@@ -729,7 +729,7 @@ debt:
     term_months: 36 # months to repay (20.3)
     interest_only_months: 12 # months of interest only before equal principal (20.3)
     warrant_bp: 25 # bp of fully diluted shares (after issue) granted to the lender at signing (20.3)
-    covenant_burn_months: 3 # cash must cover this many months of last month's burn (20.3)
+    covenant_burn_months: 2 # cash must cover this many months of last month's burn (20.3; M15a, 30.7 V7: 3 -> 2, product manager 2026-11-07: covenants bit on 70% of blitz_debt seeds on 1-10 and 11-40)
   bank:
     stage: 3 # company stage needed for a bank loan (20.3)
     profit_months: 3 # months of positive operating profit needed, each (20.3)
