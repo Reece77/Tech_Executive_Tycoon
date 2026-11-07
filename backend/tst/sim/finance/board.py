@@ -287,7 +287,8 @@ def board_month(
         seats = state.board(company.id)
         votes = sum(1 for s in seats if s.votes and s.months_below >= bb.removal_months)
         # a majority of all seats; a tie keeps the founder, and so do dual-class shares (M13)
-        if 2 * votes > len(seats) and not founder_protected(state, company.id):
+        sandbox = state.mode is not None and state.mode.kind == "sandbox"  # spec 17 (M15b)
+        if 2 * votes > len(seats) and not founder_protected(state, company.id) and not sandbox:
             state = replace(
                 state,
                 save_meta=replace(

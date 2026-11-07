@@ -30,7 +30,12 @@ from tst.sim.facilities.config import (
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
-from tst.sim.modes.config import RankBalance, SandboxBalance, ScoreBalance
+from tst.sim.modes.config import (
+    HistoricalScenario,
+    RankBalance,
+    SandboxBalance,
+    ScoreBalance,
+)
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.org.voice_data import Voice
 from tst.sim.press.config import (
@@ -1861,6 +1866,7 @@ def _dupes(keys: list[str]) -> list[str]:
 class GameData(_Frozen):
     accounts: tuple[Account, ...]
     scenarios: tuple[Scenario, ...]
+    historical: tuple[HistoricalScenario, ...] = ()  # M15b (30.3): scenarios.yaml's historical
     skills: tuple[SkillDef, ...]
     personality: tuple[TraitDef, ...]
     hidden: tuple[HiddenTraitDef, ...]
@@ -2134,6 +2140,9 @@ class GameData(_Frozen):
     @property
     def region_keys(self) -> list[str]:
         return [r.key for r in self.regions]
+
+    def historical_scenario(self, key: str) -> HistoricalScenario | None:
+        return next((h for h in self.historical if h.key == key), None)
 
     def scenario(self, scenario_id: str) -> Scenario | None:
         for scenario in self.scenarios:

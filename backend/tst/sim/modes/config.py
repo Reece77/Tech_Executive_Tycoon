@@ -4,6 +4,8 @@ them without a cycle."""
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -60,9 +62,84 @@ class SandboxBalance(_Frozen):
     years: tuple[int, int]  # the first and last start year offered
     cash_dollars: tuple[int, int]  # the starting cash range offered
     rival_share_half: float = Field(gt=0, lt=1)  # "half the rivals": the share kept
+    era_spread_months: int = Field(ge=1)  # "all seeded": a historical era's window +- this
 
     @model_validator(mode="after")
     def _ordered(self) -> SandboxBalance:
         if self.years[0] > self.years[1] or self.cash_dollars[0] > self.cash_dollars[1]:
             raise ValueError("sandbox ranges must be (low, high)")
         return self
+
+
+# --- Historical scenarios (30.3; data in scenarios.yaml's `historical`) --------------------
+
+
+class StaffSpec(_Frozen):
+    role: str
+    level: str
+    count: int = Field(ge=1)
+
+
+class SegmentSpec(_Frozen):
+    price_dollars: float = Field(ge=0)
+    customers: float = Field(ge=0)
+
+
+class ProductSpec(_Frozen):
+    name: str
+    category: str
+    quality: float = Field(ge=0, le=100)
+    features: float = Field(ge=0)  # feature points
+    brand: float = Field(ge=0, le=100)
+    segments: dict[str, SegmentSpec]
+
+
+class LeadSpec(_Frozen):
+    domain: str
+    lead: float = Field(ge=0)
+
+
+class LoanSpec(_Frozen):
+    lender: str  # investors.yaml lenders key
+    principal_dollars: int = Field(gt=0)
+    rate_bp: int = Field(ge=0)
+    term_months: int = Field(ge=1)
+    interest_only_months: int = Field(ge=0)
+
+
+type GoalKind = Literal[
+    "era_or_arr",  # cause `era` first, or reach `arr_dollars`
+    "customers",  # `customers` in `category`'s `segment`
+    "solvent_margin",  # cash at least 0 and a positive trailing operating margin at the end
+    "unit_share",  # `share` of `category`'s customers
+    "profit_no_down_round",  # an operating profit (trailing 12 months), no down round
+]
+
+
+class GoalSpec(_Frozen):
+    kind: GoalKind
+    text: str  # the goal in words, for the New game and result screens
+    era: str | None = None
+    arr_dollars: int | None = None
+    category: str | None = None
+    segment: str | None = None
+    customers: int | None = None
+    share: float | None = None
+
+
+class HistoricalScenario(_Frozen):
+    """One historical scenario (30.3): a start and a goal with a deadline."""
+
+    key: str
+    label: str
+    description: str
+    year: int
+    background: str  # a scenarios.yaml start: cap table and equity account
+    cash_dollars: int = Field(ge=0)
+    stage: int = Field(ge=0, le=5)
+    staff: tuple[StaffSpec, ...] = ()
+    products: tuple[ProductSpec, ...] = ()
+    research: tuple[LeadSpec, ...] = ()
+    loans: tuple[LoanSpec, ...] = ()
+    goal: GoalSpec
+    deadline: tuple[int, int]  # (year, month): judged at that month's end

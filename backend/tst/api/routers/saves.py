@@ -23,11 +23,14 @@ from tst.api.schemas.saves import (
 )
 from tst.db import inbox, repository
 from tst.db import saves as saves_db
+from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
+from tst.sim.errors import InvalidModeError
 from tst.sim.finance.options import pool_left_bp
 from tst.sim.geo.offices import employee_office_cents
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
+from tst.sim.modes.world import ModeSpec
 from tst.sim.org.rules import is_remote
 from tst.sim.products.phases import projected_revenue
 from tst.sim.setup import DEFAULT_FOUNDER
@@ -61,6 +64,8 @@ def _save_out(save: saves_db.SaveFile) -> SaveOut:
         size_bytes=save.size_bytes,
         ironman=save.difficulty == saves_db.IRONMAN,
         busy=save.busy,
+        mode=save.mode,
+        score=save.score,
     )
 
 
@@ -218,8 +223,24 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         hq_city=body.hq_city,
         data=data,
         save_dir=settings.resolved_save_dir(),
+        mode=_mode_spec(body, data),
     )
     return _save_out(saves_db.describe(path))
+
+
+def _mode_spec(body: CreateSaveIn, data: LoadedData) -> ModeSpec | None:
+    """A Sandbox or historical scenario start (M15b, 30.2-30.3), else None (a campaign)."""
+    from tst.sim.modes.scenarios import scenario_spec
+
+    if body.sandbox is not None and body.historical is not None:
+        raise InvalidModeError("choose a Sandbox or a scenario, not both")
+    if body.historical is not None:
+        return scenario_spec(body.historical, data.game_data)
+    if body.sandbox is None:
+        return None
+    sb = body.sandbox
+    cash = None if sb.cash_dollars is None else sb.cash_dollars * 100
+    return ModeSpec("sandbox", sb.start_year, cash, sb.rivals, sb.eras)
 
 
 def _existing(settings: SettingsDep, save_id: str) -> Path:

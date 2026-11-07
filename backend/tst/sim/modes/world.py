@@ -25,6 +25,7 @@ from tst.sim.people.reveal import new_reveal_state
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_company, with_employment, with_person
 
+CENTS_A_DOLLAR: Final = 100  # tunable-exempt: cents in a dollar
 DORMANT_CASH: Final = 10**15  # tunable-exempt: the dormant player's cash while the world plays
 JANUARY: Final = 1  # tunable-exempt: calendar
 
@@ -40,6 +41,25 @@ class ModeSpec:
     rivals: RivalsOption = "all"
     eras: ErasOption = "historical"
     scenario: str | None = None
+
+
+def validate(spec: ModeSpec, balance: Balance) -> None:
+    """A Sandbox start within what the game offers (30.2); InvalidModeError otherwise."""
+    from tst.sim.errors import InvalidModeError
+
+    sb = balance.sandbox
+    if spec.kind == "sandbox":
+        lo, hi = sb.years
+        if not lo <= spec.start_year <= hi:
+            raise InvalidModeError(f"a Sandbox starts in {lo}-{hi}, not {spec.start_year}")
+        if spec.cash_cents is not None:
+            low, high = (d * CENTS_A_DOLLAR for d in sb.cash_dollars)
+            if not low <= spec.cash_cents <= high:
+                raise InvalidModeError(
+                    f"Sandbox cash is ${sb.cash_dollars[0]:,}-${sb.cash_dollars[1]:,}"
+                )
+    if spec.kind == "campaign":
+        raise InvalidModeError("a campaign needs no mode")
 
 
 def play_world(
@@ -185,6 +205,7 @@ def start_mode(
 ) -> tuple[GameState, tuple[LedgerEntry, ...]]:
     """A new game's turn-0 state and entries turned into a Sandbox or scenario start: the
     world played to January of the start year, the company founded then with its cash."""
+    validate(spec, balance)
     start_turn = ym_to_turn(spec.start_year, JANUARY)
     player = state.player.id
     starting = [e for e in entries if e.company_id == player]
@@ -194,6 +215,11 @@ def start_mode(
     world, balances = play_world(state, apply_entries({}, entries), start_turn, rng, balance, data)
     world = found_player(world, founder, rng, balance, data)
     world = thin_rivals(world, spec.rivals, balance)
+    extra: tuple[LedgerEntry, ...] = ()
+    if spec.kind == "scenario" and spec.scenario is not None:
+        from tst.sim.modes.scenarios import apply_start
+
+        world, extra = apply_start(world, spec.scenario, rng, balance, data)
     world = replace(
         world,
         mode=GameMode(
@@ -218,4 +244,4 @@ def start_mode(
                 amount=cash,
             ),
         )
-    return world, tuple(opening)
+    return world, (*opening, *extra)

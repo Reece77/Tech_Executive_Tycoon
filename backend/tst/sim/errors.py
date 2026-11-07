@@ -274,3 +274,9 @@ class MnaRuleError(SimError):
     message never names a hidden value: no reservation, board bar or tender chance (28.8)."""
 
     code = "mna_rule"
+
+
+class InvalidModeError(SimError):
+    """A Sandbox or scenario start outside what the game offers (M15b, 30.2-30.3)."""
+
+    code = "invalid_mode"

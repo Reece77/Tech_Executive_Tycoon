@@ -59,6 +59,7 @@ STREAM_IDS: Final = MappingProxyType(
         # key (company_id,) for the player, the rival's stable key for a rival: press moments'
         # reminders, rival CEOs' statements and jabs (M14b, 29.4); 41-42 reserved for lane B
         "press": 40,
+        "scenario": 43,  # key (index,): a historical scenario's staff, start month (M15b, 30.3)
         "misc": 99,
     }
 )

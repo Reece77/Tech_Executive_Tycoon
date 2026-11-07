@@ -44,6 +44,7 @@ from tst.sim.mna.closing import mna_month
 from tst.sim.mna.integration import integration_month
 from tst.sim.mna.rivals import rival_deals
 from tst.sim.mna.valuation import listed_rivals_month
+from tst.sim.modes.scenarios import judge as judge_scenario
 from tst.sim.money import Cents
 from tst.sim.org.authority import run_executives
 from tst.sim.org.ceo import run_ceo
@@ -406,6 +407,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
         state = with_company(state, replace(company, mrr_history=history))
     state = _rival_op_history(state, ctx, types)  # M14 (28.1): rivals' V_f margin
     state = _debt_history(state, ctx, types)  # M10 (20.3): covenants read completed months
+    state = judge_scenario(state, ctx.balances, ctx.balance, ctx.data)  # M15b (30.3)
     state = snapshot_scores(state, ctx.balances, ctx.balance, ctx.data)  # M15b (30.1)
     # M10b (23.2): the month's choices in one line; modifiers whose last month this was expire.
     expiring = tuple(m for m in state.modifiers if m.end_turn <= state.turn + 1)

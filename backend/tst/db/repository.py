@@ -394,6 +394,10 @@ def create_save(
         raise SaveExistsError(f"a save named {name!r} already exists")
     if isinstance(seed, bool) or not 0 <= seed <= MAX_STORED_SEED:
         raise InvalidSeedError(f"seed must be in 0..2**63-1, got {seed}")
+    if mode is not None and mode.kind == "scenario" and mode.scenario is not None:
+        from tst.sim.modes.scenarios import scenario as historical
+
+        scenario = historical(data.game_data, mode.scenario).background  # its start (30.3)
     scenario_def = data.game_data.scenario(scenario)
     if scenario_def is None:
         raise UnknownScenarioError(f"unknown scenario {scenario!r}")

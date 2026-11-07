@@ -1213,3 +1213,4 @@ sandbox:
   years: [2010, 2025] # start years offered (30.2)
   cash_dollars: [100000, 100000000] # starting cash offered, dollars (M15b decision)
   rival_share_half: 0.5 # "half the rivals" keeps this share of each category's incumbents (30.2)
+  era_spread_months: 24 # months; with eras "all seeded", a later historical era arrives in its month +- this, drawn (M15b decision for 30.2)
