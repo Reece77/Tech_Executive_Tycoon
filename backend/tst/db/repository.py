@@ -82,6 +82,8 @@ from tst.sim.errors import (
 )
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss, projected_runway
 from tst.sim.ledger import AccountCode, apply_entries
+from tst.sim.modes.continue_until import MAX_MONTHS, StopReason, needs_player
+from tst.sim.modes.world import ModeSpec, start_mode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
 from tst.sim.people.reveal import shown_rating
@@ -383,14 +385,20 @@ def create_save(
     founder: FounderSpec = DEFAULT_FOUNDER,
     mission: tuple[str, ...] | None = None,
     hq_city: str | None = None,
+    mode: ModeSpec | None = None,
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state.
-    `hq_city` (M9, 19.1): None for geo.default_hq_city."""
+    `hq_city` (M9, 19.1): None for geo.default_hq_city. `mode` (M15b, 30.2-30.3): a Sandbox
+    or scenario start, the world built to its start month."""
     path = save_path(save_dir, name)
     if path.exists():
         raise SaveExistsError(f"a save named {name!r} already exists")
     if isinstance(seed, bool) or not 0 <= seed <= MAX_STORED_SEED:
         raise InvalidSeedError(f"seed must be in 0..2**63-1, got {seed}")
+    if mode is not None and mode.kind == "scenario" and mode.scenario is not None:
+        from tst.sim.modes.scenarios import scenario as historical
+
+        scenario = historical(data.game_data, mode.scenario).background  # its start (30.3)
     scenario_def = data.game_data.scenario(scenario)
     if scenario_def is None:
         raise UnknownScenarioError(f"unknown scenario {scenario!r}")
@@ -406,6 +414,10 @@ def create_save(
         mission=mission,
         hq_city=hq_city,
     )
+    if mode is not None:
+        state, entries = start_mode(
+            state, entries, mode, founder, RngFactory(seed), data.balance, data.game_data
+        )
 
     save_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -449,6 +461,7 @@ def create_save(
                         founder,
                         state.player.mission,
                         state.player.hq_city,
+                        mode,
                     ),
                     seq=0,
                 )
@@ -884,6 +897,24 @@ def run_turn(
     return result
 
 
+def continue_until(
+    save_path: Path, data: LoadedData, max_months: int = MAX_MONTHS
+) -> tuple[int, StopReason]:
+    """Play months as the player's Continue does until something needs the player, or
+    `max_months` (30.5). Returns the months played and why it stopped; it decides nothing."""
+    played = 0
+    while True:
+        with read_session(save_path) as session:
+            state = read_state(session)
+        reason = needs_player(state)
+        if reason is not None:
+            return played, reason
+        if played >= max_months:
+            return played, "months"
+        run_turn(save_path, data, block_major=True)
+        played += 1
+
+
 def _after_commit(
     save_path: Path,
     data: LoadedData,
@@ -943,8 +974,8 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
         sync_state(session, state, result.new_state)
         insert_entries(session, result.ledger_entries)
         session.add_all(log_item_to_row(i) for i in result.log_items)
-        session.add_all(
-            inbox_rows(result.log_items, state.player.id, data.game_data.inbox_templates)
+        session.add_all(  # the new state's player: founding again changes it (M15b)
+            inbox_rows(result.log_items, result.new_state.player.id, data.game_data.inbox_templates)
         )
         employment = state.employment_of(action.actor_id)
         company_id = employment.company_id if employment else state.player.id
@@ -971,6 +1002,7 @@ def new_game_payload(
     founder: FounderSpec,
     mission: tuple[str, ...],
     hq_city: str | None = None,
+    mode: ModeSpec | None = None,
 ) -> dict[str, Any]:
     spec = asdict(founder)
     spec["allocation"] = None if founder.allocation is None else dict(founder.allocation)
@@ -982,6 +1014,7 @@ def new_game_payload(
         "founder": spec,
         "mission": list(mission),
         "hq_city": hq_city,  # M9; older saves' payloads lack it (San Francisco)
+        "mode": None if mode is None else asdict(mode),  # M15b; older payloads lack it
     }
 
 
@@ -995,6 +1028,7 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
     with open_session(source) as session:
         meta = read_meta(session)
         seed, target_turn = meta.master_seed, meta.current_turn
+        first_turn = meta.created_turn  # a Sandbox or scenario save starts later (M15b)
         start = session.scalars(
             select(DecisionLogRow).where(DecisionLogRow.kind == NEW_GAME_KIND)
         ).one()
@@ -1033,8 +1067,9 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         founder=FounderSpec(**founder),
         mission=tuple(setup["mission"]),
         hq_city=setup.get("hq_city"),
+        mode=ModeSpec(**setup["mode"]) if setup.get("mode") else None,
     )
-    for turn in range(target_turn + 1):
+    for turn in range(first_turn, target_turn + 1):
         for _, action in (a for a in actions if a[0] == turn):
             run_action(path, data, action)
         if turn < target_turn:

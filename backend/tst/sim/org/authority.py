@@ -51,7 +51,7 @@ from tst.sim.org.divisions import support_pools
 from tst.sim.org.executives import acting_seats, true_score
 from tst.sim.org.formulas import decision_quality
 from tst.sim.org.models import Authority, ExecDecision, Proposal, ProposalKind
-from tst.sim.org.reports import quarterly_reports
+from tst.sim.org.reports import mark_quarter, quarterly_reports
 from tst.sim.org.rules import org_view
 from tst.sim.products.estimates import shown_team
 from tst.sim.products.models import SELLING, Product
@@ -482,4 +482,5 @@ def run_executives(
         )
     cash = account_balance(run.balances, company, CASH)
     run.logs.extend(quarterly_reports(run.state, cash, balance, data))  # 24.3
+    run.state = mark_quarter(run.state, balance)  # the next reports' starting values (M15b)
     return run.state, tuple(run.entries), tuple(run.logs), tuple(run.taken)

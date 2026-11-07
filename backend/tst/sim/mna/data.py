@@ -66,6 +66,12 @@ class MnaBalance(_Frozen):
     distress_discount: float = Field(ge=0)
     distress_months: float = Field(ge=0)  # cash covering fewer months of costs than this
     counter_sd: float = Field(ge=0)
+    # M15b (negotiation, playtest 3): the first counter is the reservation x the anchor by
+    # personality; each later round moves half the gap toward the reservation
+    counter_anchor: dict[str, float]
+    max_rounds: int = Field(ge=1)
+    lowball: float = Field(gt=0, le=1)  # an offer below the last counter x this is a lowball
+    strikes: int = Field(ge=1)  # lowballs that end talks
     talks_block_months: int = Field(ge=0)
     board: BoardBalance
     tender: TenderBalance

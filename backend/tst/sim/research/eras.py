@@ -113,7 +113,7 @@ def arrive_eras(
     for index, era in enumerate(data.eras.eras):
         if state.era_arrival(era.key) is not None:
             continue
-        hist = levels.scheduled_turn(era, index, rng)
+        hist = levels.scheduled_turn(era, index, rng, **_seeded(state, balance))
         found = causer(state, data, balance, era) if state.turn < hist else None
         if state.turn < hist and found is None:
             continue
@@ -128,6 +128,14 @@ def arrive_eras(
             state = queue_moment(state, cid, "era", {"era": era.label})  # M14b (29.1)
     state, reports = era_reports(state, data, balance)
     return state, (*logs, *reports)
+
+
+def _seeded(state: GameState, balance: Balance) -> dict[str, int]:
+    """A Sandbox with seeded eras (30.2): historical eras after its start get windows."""
+    mode = state.mode
+    if mode is None or mode.eras != "seeded":
+        return {}
+    return {"seeded_after": mode.start_turn, "spread": balance.sandbox.era_spread_months}
 
 
 def _mrr(state: GameState, product_id: int) -> int:

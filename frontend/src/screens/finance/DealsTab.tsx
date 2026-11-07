@@ -134,6 +134,16 @@ function OpenDeal({ saveId, d, allowed }: { saveId: string; d: MnaDeal; allowed:
             Accept the remedy: divest {d.remedy_product}
           </Button>
         )}
+        {d.status === 'blocked' && d.own_remedy_product && (
+          <Button
+            size="xs"
+            variant="light"
+            data-testid="accept-own-remedy"
+            onClick={() => act.mutate({ kind: 'remedy', dealId: d.deal_id, own: true })}
+          >
+            Or divest your own {d.own_remedy_product}
+          </Button>
+        )}
         <Button
           size="xs"
           variant="subtle"

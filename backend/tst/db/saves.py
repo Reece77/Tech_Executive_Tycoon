@@ -15,7 +15,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from sqlalchemy import select
 
@@ -61,6 +61,8 @@ class SaveFile:
     last_played: datetime
     size_bytes: int
     busy: bool
+    mode: str = "campaign"  # M15b: campaign, sandbox or scenario
+    score: int | None = None  # the player's latest company score; never a Sandbox's (30.2)
 
 
 @dataclass(frozen=True, slots=True)
@@ -140,7 +142,10 @@ def describe(path: Path) -> SaveFile:
         meta = session.get(SaveMetaRow, META_ID)
         assert meta is not None
         display, state = meta.display_name, meta.game_state
+        mode, score = _mode_and_score(session)
     return SaveFile(
+        mode=mode,
+        score=score,
         slug=summary.slug,
         display_name=display or summary.slug,
         company_name=summary.company_name,
@@ -152,6 +157,29 @@ def describe(path: Path) -> SaveFile:
         size_bytes=file_size(path),
         busy=is_busy(path),
     )
+
+
+def _mode_and_score(session: Any) -> tuple[str, int | None]:
+    """The save's mode and the player's latest company score (M15b, 30.1-30.2): a Sandbox
+    game is kept out of the scores (spec 3)."""
+    from sqlalchemy import inspect, select
+
+    from tst.db.models import CompanyRow, CompanyScoreRow, GameModeRow
+
+    if not inspect(session.get_bind()).has_table(GameModeRow.__tablename__):
+        return "campaign", None
+    row = session.get(GameModeRow, 1)
+    mode = str(row.data.get("kind", "campaign")) if row is not None else "campaign"
+    if mode == "sandbox":
+        return mode, None
+    player = session.scalar(select(CompanyRow.id).where(CompanyRow.is_player.is_(True)))
+    best = session.scalars(
+        select(CompanyScoreRow)
+        .where(CompanyScoreRow.company_id == player)
+        .order_by(CompanyScoreRow.turn.desc())
+        .limit(1)
+    ).first()
+    return mode, int(best.data["score"]) if best is not None else None
 
 
 def list_files(save_dir: Path) -> list[SaveFile]:

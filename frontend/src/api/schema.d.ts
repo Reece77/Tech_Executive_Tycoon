@@ -1908,9 +1908,31 @@ export interface paths {
         };
         /**
          * Get Hall Of Fame
-         * @description Records computed from history when the screen opens; shown values only.
+         * @description Records computed from history when the screen opens; shown values only. A company the
+         *     player sold is judged up to its sale (M15b addendum 10).
          */
         get: operations["getHallOfFame"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/history/companies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Companies
+         * @description Every company the player has run, oldest first: History, the score and the Hall of
+         *     Fame show each apart (M15b addendum 10).
+         */
+        get: operations["getHistoryCompanies"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3000,7 +3022,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Accept Remedy */
+        /**
+         * Accept Remedy
+         * @description Divest the target's overlapping product, or with `own` your own (M15b).
+         */
         post: operations["acceptRemedy"];
         delete?: never;
         options?: never;
@@ -3136,6 +3161,87 @@ export interface paths {
          * @description Replace with a recruiter (29.5).
          */
         post: operations["replaceLeaver"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/rankings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rankings
+         * @description The industry rankings of `year` (default the latest January's), 30.4.
+         */
+        get: operations["getRankings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/continue-until": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Continue Until
+         * @description Play months as Continue does until something needs the player, up to a year (30.5).
+         *     It decides nothing: what it stops for waits in the inbox.
+         */
+        post: operations["continueUntil"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/exit/found-again": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Found Again
+         * @description After an exit: found a new company in the same world and month (M15b addendum 10).
+         */
+        post: operations["foundAgain"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/exit/retire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retire
+         * @description After an exit: retire, which ends the game (M15b addendum 10).
+         */
+        post: operations["retire"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4252,6 +4358,27 @@ export interface components {
             /** Chair Energy */
             chair_energy: number;
         };
+        /**
+         * CeoProfileOut
+         * @description What the player has learned of a rival CEO (M15b addendum 11): ranges only, narrowed
+         *     by public appearances, poach approaches and diligence. Never true values.
+         */
+        CeoProfileOut: {
+            /** Skills */
+            skills: components["schemas"]["AttributeOut"][];
+            /** Personality */
+            personality: components["schemas"]["AttributeOut"][];
+            /**
+             * Potential Phrase
+             * @description Potential as a phrase from its revealed range
+             */
+            potential_phrase: string;
+            /**
+             * Learned Label
+             * @description How much is known, as words
+             */
+            learned_label: string;
+        };
         /** ChangePreviewOut */
         ChangePreviewOut: {
             /** Allowed */
@@ -4653,6 +4780,25 @@ export interface components {
              */
             history: components["schemas"]["IndexPointOut"][];
         };
+        /**
+         * ContinueUntilOut
+         * @description Continue until something needs me (30.5).
+         */
+        ContinueUntilOut: {
+            /** Months Played */
+            months_played: number;
+            /**
+             * Stopped For
+             * @description game_over | critical_event | event | pitch | proposal | promise | deal | months
+             */
+            stopped_for: string;
+            /** Stopped Label */
+            stopped_label: string;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+        };
         /** ContractIn */
         ContractIn: {
             /** Good */
@@ -4845,6 +4991,13 @@ export interface components {
              * @description The HQ city (M9); omit for San Francisco
              */
             hq_city?: string | null;
+            /** @description A Sandbox start (M15b, 30.2) */
+            sandbox?: components["schemas"]["SandboxIn"] | null;
+            /**
+             * Historical
+             * @description A historical scenario's key (M15b, 30.3)
+             */
+            historical?: string | null;
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -4934,6 +5087,11 @@ export interface components {
              * @description The product a remedy would divest
              */
             remedy_product: string | null;
+            /**
+             * Own Remedy Product
+             * @description Your own overlapping product, offered instead (M15b)
+             */
+            own_remedy_product?: string | null;
         };
         /**
          * DecisionOut
@@ -5414,6 +5572,12 @@ export interface components {
         };
         /** EventOut */
         EventOut: {
+            /**
+             * Template Id
+             * @description The event template's key (M15b)
+             * @default
+             */
+            template_id?: string;
             /** Event Id */
             event_id: number;
             /** Turn */
@@ -5503,6 +5667,21 @@ export interface components {
             ai_spend_cents: number;
             /** Ai Budget Cents */
             ai_budget_cents: number;
+        };
+        /**
+         * ExitChoiceOut
+         * @description After the choice: the game's state and the company the player now runs.
+         */
+        ExitChoiceOut: {
+            /**
+             * Game State
+             * @description active (founded again) | retired
+             */
+            game_state: string;
+            /** Company Id */
+            company_id: number;
+            /** Company Name */
+            company_name: string;
         };
         /** FacilityOut */
         FacilityOut: {
@@ -5783,6 +5962,20 @@ export interface components {
             led: components["schemas"]["LedOut"][];
         };
         /**
+         * FoundAgainIn
+         * @description Found a new company after an exit (M15b addendum 10).
+         */
+        FoundAgainIn: {
+            /** Company Name */
+            company_name: string;
+            /**
+             * Keep Cents
+             * @description Proceeds the founder keeps
+             * @default 0
+             */
+            keep_cents?: number;
+        };
+        /**
          * FounderIn
          * @description Founder build (docs/formulas.md section 5). Omitted fields use the defaults.
          */
@@ -5915,13 +6108,39 @@ export interface components {
         GameOverOut: {
             /**
              * Game State
-             * @description active | bankrupt | founder_removed | exit
+             * @description active | bankrupt | founder_removed | exit | scenario_done | retired
              */
             game_state: string;
             /** Company Name */
             company_name: string;
             /** Ended Turn */
             ended_turn: number | null;
+            /**
+             * Can Found Again
+             * @description After an exit: Found a new company or Retire (M15b)
+             * @default false
+             */
+            can_found_again?: boolean;
+            /**
+             * Min New Cash Cents
+             * @description The least of the proceeds a new company takes (M15b)
+             * @default 0
+             */
+            min_new_cash_cents?: number;
+            /**
+             * Scenario Label
+             * @description A historical scenario (M15b)
+             */
+            scenario_label?: string | null;
+            /** Scenario Goal */
+            scenario_goal?: string | null;
+            /** Scenario Deadline Label */
+            scenario_deadline_label?: string | null;
+            /**
+             * Scenario Result
+             * @description success | failure, once judged
+             */
+            scenario_result?: string | null;
             /**
              * Exit Buyer
              * @description Exit (M14, 28.6): who bought it
@@ -6386,6 +6605,24 @@ export interface components {
             unit_id?: number | null;
             /** Focus */
             focus?: string | null;
+        };
+        /**
+         * HistoricalOut
+         * @description A historical scenario (30.3): its start, goal and deadline.
+         */
+        HistoricalOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Description */
+            description: string;
+            /** Year */
+            year: number;
+            /** Goal */
+            goal: string;
+            /** Deadline Label */
+            deadline_label: string;
         };
         /** HistoryRowOut */
         HistoryRowOut: {
@@ -7659,6 +7896,9 @@ export interface components {
         };
         /** NewGameMetaOut */
         NewGameMetaOut: {
+            sandbox?: components["schemas"]["SandboxMetaOut"] | null;
+            /** Historical */
+            historical?: components["schemas"]["HistoricalOut"][];
             /** Scenarios */
             scenarios: components["schemas"]["ScenarioOut"][];
             /** Difficulties */
@@ -8069,6 +8309,14 @@ export interface components {
         };
         /** OverviewOut */
         OverviewOut: {
+            /** @description The company score (M15b, 30.1) */
+            score?: components["schemas"]["ScoreOut"] | null;
+            /**
+             * Deals Due
+             * @description Your deals under review, closing or blocked (M15b top bar)
+             * @default 0
+             */
+            deals_due?: number;
             /** Save Id */
             save_id: string;
             /** Company Name */
@@ -9718,6 +9966,52 @@ export interface components {
             /** Max */
             max: number;
         };
+        /** RankingEntryOut */
+        RankingEntryOut: {
+            /** Place */
+            place: number;
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Is You */
+            is_you: boolean;
+            /**
+             * Value Label
+             * @description Revenue a year, or the list's 0-100 measure
+             */
+            value_label: string;
+        };
+        /** RankingListOut */
+        RankingListOut: {
+            /**
+             * Kind
+             * @description revenue | places | innovative
+             */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Entries */
+            entries: components["schemas"]["RankingEntryOut"][];
+        };
+        /**
+         * RankingsOut
+         * @description The latest January's industry rankings (30.4).
+         */
+        RankingsOut: {
+            /**
+             * Year
+             * @description The year they were published; null before the first
+             */
+            year: number | null;
+            /** Lists */
+            lists: components["schemas"]["RankingListOut"][];
+            /**
+             * Years
+             * @description Every year with rankings, newest first
+             */
+            years: number[];
+        };
         /** RegionSegmentOut */
         RegionSegmentOut: {
             /** Segment */
@@ -9963,6 +10257,8 @@ export interface components {
             ceo: string | null;
             /** Ceo Person Id */
             ceo_person_id: number | null;
+            /** @description Ranges the player has learned; null before anything is known */
+            profile?: components["schemas"]["CeoProfileOut"] | null;
             /** Statements */
             statements: components["schemas"]["StatementOut"][];
             feud: components["schemas"]["FeudOut"];
@@ -10016,6 +10312,8 @@ export interface components {
         };
         /** RivalProfileOut */
         RivalProfileOut: {
+            /** @description The company score (M15b, 30.1) */
+            score?: components["schemas"]["ScoreOut"] | null;
             /** Company Id */
             company_id: number;
             /** Name */
@@ -10066,6 +10364,11 @@ export interface components {
         };
         /** RivalRowOut */
         RivalRowOut: {
+            /**
+             * Score
+             * @description The company score (M15b, 30.1)
+             */
+            score?: number | null;
             /** Company Id */
             company_id: number;
             /** Name */
@@ -10397,6 +10700,45 @@ export interface components {
             /** Energy Cost */
             energy_cost: number;
         };
+        /**
+         * SandboxIn
+         * @description Sandbox options (30.2).
+         */
+        SandboxIn: {
+            /** Start Year */
+            start_year: number;
+            /**
+             * Cash Dollars
+             * @description Omit for the background's
+             */
+            cash_dollars?: number | null;
+            /**
+             * Rivals
+             * @default all
+             * @enum {string}
+             */
+            rivals?: "all" | "half" | "none";
+            /**
+             * Eras
+             * @default historical
+             * @enum {string}
+             */
+            eras?: "historical" | "seeded";
+        };
+        /**
+         * SandboxMetaOut
+         * @description Sandbox options (30.2).
+         */
+        SandboxMetaOut: {
+            /** Year Min */
+            year_min: number;
+            /** Year Max */
+            year_max: number;
+            /** Cash Min Dollars */
+            cash_min_dollars: number;
+            /** Cash Max Dollars */
+            cash_max_dollars: number;
+        };
         /** SaveNameIn */
         SaveNameIn: {
             /**
@@ -10450,6 +10792,17 @@ export interface components {
              * @description A turn, action or holiday is writing to it now
              */
             busy: boolean;
+            /**
+             * Mode
+             * @description campaign | sandbox | scenario (M15b)
+             * @default campaign
+             */
+            mode?: string;
+            /**
+             * Score
+             * @description The latest company score; none for Sandbox games (M15b)
+             */
+            score?: number | null;
         };
         /** ScaleupActionOut */
         ScaleupActionOut: {
@@ -10523,6 +10876,37 @@ export interface components {
             starting_cash_by_difficulty: {
                 [key: string]: number;
             };
+        };
+        /**
+         * ScoreOut
+         * @description A company's score now (30.1), from public inputs only, with its parts in points.
+         */
+        ScoreOut: {
+            /**
+             * Score
+             * @description 0-1,000
+             */
+            score: number;
+            /** Value Points */
+            value_points: number;
+            /** Growth Points */
+            growth_points: number;
+            /** Profit Points */
+            profit_points: number;
+            /** Leadership Points */
+            leadership_points: number;
+            /** Reputation Points */
+            reputation_points: number;
+            /**
+             * Estimate Cents
+             * @description Market cap if listed, else the displayed value range's midpoint (28.1)
+             */
+            estimate_cents: number;
+            /**
+             * Last December
+             * @description The score at the last December, if any
+             */
+            last_december: number | null;
         };
         /** ScoutOut */
         ScoutOut: {
@@ -11543,6 +11927,33 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * VentureOut
+         * @description A company the player ran (M15b addendum 10): the current one, or one they sold.
+         */
+        VentureOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Current */
+            current: boolean;
+            /** Founded Label */
+            founded_label: string;
+            /** Ended Label */
+            ended_label: string | null;
+            /** Buyer */
+            buyer: string | null;
+            /** Price Cents */
+            price_cents: number | null;
+            /** Proceeds Cents */
+            proceeds_cents: number | null;
+            /**
+             * Score
+             * @description The company score at its sale, or the latest (30.1)
+             */
+            score: number | null;
         };
         /** WaferContractIn */
         WaferContractIn: {
@@ -17821,6 +18232,7 @@ export interface operations {
                 product_id?: number | null;
                 offset?: number;
                 limit?: number;
+                company_id?: number | null;
             };
             header?: never;
             path: {
@@ -17879,7 +18291,9 @@ export interface operations {
     };
     getHistoryCharts: {
         parameters: {
-            query?: never;
+            query?: {
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -17937,7 +18351,9 @@ export interface operations {
     };
     getHistoryStorylines: {
         parameters: {
-            query?: never;
+            query?: {
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -17995,7 +18411,9 @@ export interface operations {
     };
     getHallOfFame: {
         parameters: {
-            query?: never;
+            query?: {
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -18011,6 +18429,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HallOfFameOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getHistoryCompanies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VentureOut"][];
                 };
             };
             /** @description Bad Request */
@@ -21645,7 +22121,9 @@ export interface operations {
     };
     acceptRemedy: {
         parameters: {
-            query?: never;
+            query?: {
+                own?: boolean;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -22082,6 +22560,244 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PressActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getRankings: {
+        parameters: {
+            query?: {
+                year?: number | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RankingsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    continueUntil: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContinueUntilOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    foundAgain: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FoundAgainIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExitChoiceOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    retire: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExitChoiceOut"];
                 };
             };
             /** @description Bad Request */

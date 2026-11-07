@@ -478,8 +478,14 @@ def _m14_items(loaded: LoadedData) -> list[LogItem]:
     _energy(game)
     game.act(BidForCompany(_founder(game), _id(game.state, "Evernote"), 10**12, mode="brand"))
     game.turn()
-    _, sold = apply_public_step(listed(), 1, "takeover_accept", loaded.balance)
-    items = [*game.action_logs, *(i for r in game.results for i in r.log_items), *sold]
+    exited, sold = apply_public_step(listed(), 1, "takeover_accept", loaded.balance)
+    from tst.sim.modes.serial import found_again  # M15b addendum 10: after the exit
+    from tst.sim.rng import RngFactory
+
+    _, _, again = found_again(
+        exited, "Second Act", 0, RngFactory(1), loaded.balance, loaded.game_data
+    )
+    items = [*game.action_logs, *(i for r in game.results for i in r.log_items), *sold, *again]
     return items
 
 

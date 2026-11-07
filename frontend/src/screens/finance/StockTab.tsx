@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router';
 import { Alert, Button, NumberInput } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState, type ReactNode } from 'react';
@@ -447,8 +448,9 @@ export function Analysts({ stock }: { stock: Stock }) {
 function Capital({ saveId, stock }: { saveId: string; stock: Stock }) {
   const c = stock.capital;
   const act = usePublicAction(saveId);
-  const [buyback, setBuyback] = useState<number>(0);
-  const [dividend, setDividend] = useState<number>(0);
+  const [params] = useSearchParams(); // a buyback or dividend pitch's Modify (M15b)
+  const [buyback, setBuyback] = useState<number>(Number(params.get('buyback') ?? 0) / 100);
+  const [dividend, setDividend] = useState<number>(Number(params.get('dividend') ?? 0) / 100);
   const [shares, setShares] = useState<number>(0);
   return (
     <Panel title="Capital" label="Capital actions">

@@ -19,7 +19,7 @@ from tst.sim.events.models import QueuedEvent
 from tst.sim.finance.board import _add_seat, average_confidence
 from tst.sim.finance.captable import fd_shares, person_shares
 from tst.sim.finance.models import CapEntry
-from tst.sim.ledger import CASH, COMMON_EQUITY, GENERAL_ADMIN, LedgerEntry
+from tst.sim.ledger import CASH, COMMON_EQUITY, GENERAL_ADMIN, PREFERRED_EQUITY, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public import formulas as pf
 from tst.sim.markets_public.models import Analyst, Listing, PublicCompany, ShareMonth
@@ -269,9 +269,14 @@ def list_company(
     rng: RngFactory,
     balance: Balance,
     data: GameData,
+    preferred_cents: int = 0,
 ) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
     """Listing day (25.2 step 5, 25.7): new shares, the net raise, stage 4, the public board,
-    the first day's close, and analysts' first targets (from `gen`, stream market_sentiment)."""
+    the first day's close, and analysts' first targets (from `gen`, stream market_sentiment).
+
+    M15b (an M13 follow-up): every preferred share and converted SAFE becomes common, as it
+    does at a real IPO; `preferred_cents` (the preferred equity account's credit balance)
+    moves to common equity with it."""
     ib, pb = balance.ipo, balance.public
     listing = listing_of(state, company_id)
     assert listing is not None and listing.status == "priced"
@@ -292,6 +297,20 @@ def list_company(
             amount=gross - fee,
         )
     ]
+    for held in state.cap_entries:
+        if held.company_id == company_id and held.share_class != "common":
+            state = with_cap_entry(state, replace(held, share_class="common"))
+    if preferred_cents > 0:
+        entries.append(
+            LedgerEntry.transfer(
+                turn=turn,
+                company_id=company_id,
+                memo="IPO: preferred shares convert to common",
+                debit=PREFERRED_EQUITY,
+                credit=COMMON_EQUITY,
+                amount=preferred_cents,
+            )
+        )
     entry_id, ids = state.next_ids.take("cap_entry")
     state = with_cap_entry(
         replace(state, next_ids=ids),

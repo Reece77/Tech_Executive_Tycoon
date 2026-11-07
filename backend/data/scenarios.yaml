@@ -49,3 +49,126 @@ scenarios:
     available_in: v3
     starting_equity_account: 3000_common_equity
     cap_table: { founder: 9000000, pool: 1000000 }
+
+# Historical scenarios (M15b, formulas.md 30.3): a start in a later year, built on the world as
+# it stood then (the same world a 2010 game has that month), and a goal with a deadline judged
+# at that month's end. `background` is one of the starts above (cap table, equity account);
+# staff are generated in the start month (stream `scenario`); products start live with the
+# segments listed. Reece's 30.9 decision 2: this list stands.
+historical:
+  - key: ai_lab
+    label: The AI lab
+    description: >-
+      January 2015. A twelve-person AI research startup with a Series A behind it and
+      a model people are starting to talk about.
+    year: 2015
+    background: funded_spinout
+    cash_dollars: 12000000
+    stage: 2
+    staff:
+      - { role: data_scientist, level: senior, count: 5 }
+      - { role: data_scientist, level: mid, count: 3 }
+      - { role: software_engineer, level: mid, count: 2 }
+      - { role: devops_engineer, level: mid, count: 1 }
+    products:
+      - name: Cortex
+        category: ai_models
+        quality: 45
+        features: 120
+        brand: 20
+        segments: { smb: { price_dollars: 100, customers: 40 }, mid_market: { price_dollars: 2000, customers: 3 } }
+    research: [{ domain: ai, lead: 12 }]
+    goal: { kind: era_or_arr, era: transformers, arr_dollars: 100000000, text: "Cause the Transformers era first, or reach $100M ARR" }
+    deadline: [2020, 12]
+
+  - key: mobile_first
+    label: Mobile first
+    description: >-
+      January 2011. Four people, a consumer app and a phone in every pocket on the way.
+    year: 2011
+    background: ex_big_tech_founders
+    cash_dollars: 1500000
+    stage: 1
+    staff:
+      - { role: software_engineer, level: mid, count: 2 }
+      - { role: designer, level: mid, count: 1 }
+    products:
+      - name: Snapline
+        category: consumer_apps
+        quality: 40
+        features: 60
+        brand: 15
+        segments: { consumer: { price_dollars: 0.4, customers: 20000 } }
+    goal: { kind: customers, category: consumer_apps, segment: consumer, customers: 1000000, text: "Reach 1M consumer customers" }
+    deadline: [2014, 12]
+
+  - key: survive_2022
+    label: Survive 2022
+    description: >-
+      January 2021. A growth-stage SaaS company with venture debt, a big team and about
+      twenty months of runway, just before money gets expensive.
+    year: 2021
+    background: funded_spinout
+    cash_dollars: 30000000
+    stage: 3
+    staff:
+      - { role: software_engineer, level: mid, count: 25 }
+      - { role: software_engineer, level: senior, count: 8 }
+      - { role: product_manager, level: mid, count: 4 }
+      - { role: sales_representative, level: mid, count: 12 }
+      - { role: account_executive, level: senior, count: 4 }
+      - { role: marketer, level: mid, count: 5 }
+      - { role: finance_manager, level: mid, count: 2 }
+    products:
+      - name: Ledgerly
+        category: b2b_saas
+        quality: 65
+        features: 300
+        brand: 45
+        segments: { smb: { price_dollars: 300, customers: 1200 }, mid_market: { price_dollars: 2500, customers: 150 } }
+    loans: [{ lender: svb, principal_dollars: 10000000, rate_bp: 900, term_months: 36, interest_only_months: 12 }]
+    goal: { kind: solvent_margin, text: "Still solvent, with a positive operating margin" }
+    deadline: [2023, 12]
+
+  - key: chip_startup
+    label: The chip startup
+    description: >-
+      January 2016. A fabless chip startup with a Series B and a design team betting that
+      AI will need its own silicon.
+    year: 2016
+    background: funded_spinout
+    cash_dollars: 40000000
+    stage: 2
+    staff:
+      - { role: chip_designer, level: senior, count: 6 }
+      - { role: chip_designer, level: mid, count: 6 }
+      - { role: hardware_engineer, level: mid, count: 3 }
+      - { role: software_engineer, level: mid, count: 3 }
+    research: [{ domain: chip_design, lead: 10 }]
+    goal: { kind: unit_share, category: chips_ai_accelerator, share: 0.10, text: "10% of AI accelerator units" }
+    deadline: [2023, 12]
+
+  - key: turnaround
+    label: The turnaround
+    description: >-
+      January 2018. A stage-3 company that is losing money, with a thin and junior
+      leadership bench. Turn it around without a down round.
+    year: 2018
+    background: funded_spinout
+    cash_dollars: 15000000
+    stage: 3
+    staff:
+      - { role: software_engineer, level: junior, count: 20 }
+      - { role: software_engineer, level: mid, count: 10 }
+      - { role: sales_representative, level: junior, count: 12 }
+      - { role: marketer, level: junior, count: 6 }
+      - { role: product_manager, level: junior, count: 3 }
+    products:
+      - name: Workbench
+        category: dev_tools
+        quality: 50
+        features: 200
+        brand: 30
+        segments: { smb: { price_dollars: 150, customers: 900 }, mid_market: { price_dollars: 1500, customers: 60 } }
+    goal: { kind: profit_no_down_round, text: "An operating profit, without a down round" }
+    deadline: [2020, 12]

@@ -68,6 +68,9 @@ class DealOut(BaseModel):
     combined_share: float = Field(description="The highest combined share antitrust saw")
     market: str
     remedy_product: str | None = Field(description="The product a remedy would divest")
+    own_remedy_product: str | None = Field(
+        default=None, description="Your own overlapping product, offered instead (M15b)"
+    )
 
 
 class AcquisitionOut(BaseModel):

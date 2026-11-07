@@ -30,6 +30,7 @@ from tst.api.schemas.history import (
     StorylineHistoryOut,
     StoryStepOut,
     TimelineOut,
+    VentureOut,
 )
 from tst.db.models import (
     CompanyRow,
@@ -51,6 +52,7 @@ from tst.db.state_io import has_table
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.money import format_money
+from tst.sim.state import GameState
 
 CATEGORIES = ("people", "products", "finance", "rivals", "events")
 SOURCES = ("player", "delegate", "default")
@@ -60,6 +62,36 @@ ENTERPRISE = "enterprise"  # the segment of "first enterprise customer"
 
 # Inbox kinds the timeline shows (17.2: hire, departure, launch, round, board, rival news),
 # by category. Month-end shows as the month lines.
+# Inbox kinds that are routine notices or prompts, not the story (the M15b audit: every kind
+# is in History or here, tests/unit/test_glossary_audit.py).
+NOT_HISTORY: frozenset[str] = frozenset(
+    {
+        "candidates_arrived",  # a search's batch: the hire is the History line
+        "offer_declined",
+        "fired",  # the departure shows as employee_left
+        "tag_revealed",
+        "unit_leader_left",
+        "plan_paused",
+        "plan_filled",
+        "plan_activity",
+        "sales_capacity_limited",
+        "product_rotting",
+        "product_understaffed",
+        "choices_month",  # the month's choices: History shows the events themselves
+        "retained",
+        "exec_decisions",  # executives' routine decisions, each in the Decisions log
+        "safe_declined",
+        "term_sheets_arrived",  # the round's close is the History line
+        "no_term_sheets",
+        "round_lapsed",
+        "board_seat_empty",
+        "nominee_left",
+        "insolvent",  # bankruptcy itself ends the game
+        "bridge_offered",
+        "bridge_lapsed",
+        "replace_started",  # the hire is the History line
+    }
+)
 INBOX_CATEGORY: dict[str, str] = {
     "offer_accepted": "people",
     "resigned": "people",
@@ -105,6 +137,13 @@ INBOX_CATEGORY: dict[str, str] = {
     "era_report": "products",  # M13b (27.3)
     "deal_update": "finance",  # M14 (28)
     "rival_acquired": "products",  # M14 (28.6): market news
+    "rankings_published": "rivals",  # M15b (30.4)
+    "rival_story": "rivals",  # M15b addendum 12
+    "founded_again": "finance",  # M15b addendum 10
+    "promise_made": "events",  # M14b (29.2), into History by the M15b audit
+    "promise_kept": "events",
+    "promise_broken": "events",
+    "rival_statement": "rivals",  # M14b (29.4)
     "exit_sale": "finance",  # M14 (28.6)
     # M12a: data centres, contracts, Cloud hosting and outages (22.6)
     "facility_ordered": "products",
@@ -930,3 +969,42 @@ def _outlasted(session: Session, company: int, names: _Names) -> list[RivalOutla
                 )
             )
     return sorted(out, key=lambda r: r.turn)
+
+
+def ventures_out(state: GameState) -> list[VentureOut]:
+    """The companies the player has run, oldest first (M15b addendum 10)."""
+
+    def score(company_id: int, until: int) -> int | None:
+        mine = [s for s in state.scores if s.company_id == company_id and s.turn <= until]
+        return max(mine, key=lambda s: s.turn).score if mine else None
+
+    out = [
+        VentureOut(
+            company_id=v.company_id,
+            name=v.name,
+            current=False,
+            founded_label=format_turn(v.founded_turn),
+            ended_label=format_turn(v.ended_turn),
+            buyer=state.company(v.buyer_id).name if v.buyer_id is not None else None,
+            price_cents=v.price_cents,
+            proceeds_cents=v.proceeds_cents,
+            score=score(v.company_id, v.ended_turn),
+        )
+        for v in sorted(state.ventures, key=lambda v: v.founded_turn)
+    ]
+    if all(v.company_id != state.player.id for v in state.ventures):
+        player = state.player
+        out.append(
+            VentureOut(
+                company_id=player.id,
+                name=player.name,
+                current=True,
+                founded_label=format_turn(player.founded_turn),
+                ended_label=None,
+                buyer=None,
+                price_cents=None,
+                proceeds_cents=None,
+                score=score(player.id, state.turn),
+            )
+        )
+    return out

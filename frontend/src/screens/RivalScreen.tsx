@@ -10,7 +10,13 @@ import { RivalLeaderPanel } from '../components/RivalLeaderPanel';
 import { Term } from '../components/Term';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOpenSearch, useRival, type RivalProfile } from '../hooks/api';
-import { formatMoneyShort, formatMoneyWhole, formatWhole, humanize } from '../lib/format';
+import {
+  formatMoneyShort,
+  formatMoneyWhole,
+  formatWhole,
+  humanize,
+  scoreNote,
+} from '../lib/format';
 import { MoveTag, ProductMarkets, StartupChip, StyleChip } from '../lib/rivals';
 
 export function RivalScreen() {
@@ -65,6 +71,15 @@ function RivalBody({ saveId, r }: { saveId: string; r: RivalProfile }) {
           note="a month, from public prices"
         />
         <KpiTile term="kpi.rival_money" label="Money" value={r.money_label ?? '—'} small />
+        {r.score && (
+          <KpiTile
+            term="kpi.company_score"
+            label="Company score"
+            value={String(r.score.score)}
+            note={scoreNote(r.score)}
+            testId="rival-score"
+          />
+        )}
         <KpiTile
           term="kpi.rival_stance"
           label="Stance"

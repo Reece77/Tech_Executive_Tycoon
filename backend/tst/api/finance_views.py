@@ -44,7 +44,7 @@ from tst.api.schemas.saves import FundingTileOut
 from tst.api.views import STAGE_LABELS, person_name, role_label
 from tst.db.inbox import InboxMessage
 from tst.loader import LoadedData
-from tst.sim.calendar import MONTHS_PER_YEAR, format_turn, turn_to_ym
+from tst.sim.calendar import MONTHS_PER_YEAR, format_turn, turn_to_ym, ym_to_turn
 from tst.sim.data_models import LEVELS, AccountType, FinanceBalance
 from tst.sim.errors import FinanceRuleError
 from tst.sim.finance import formulas as f
@@ -838,6 +838,22 @@ def funding_summary(state: GameState) -> str | None:
     return f"after {words}"
 
 
+def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | None]:
+    """A historical scenario's goal and verdict for the result screen (M15b, 30.3)."""
+    mode = state.mode
+    if mode is None or mode.kind != "scenario" or mode.scenario is None:
+        return {}
+    h = data.game_data.historical_scenario(mode.scenario)
+    if h is None:
+        return {}
+    return {
+        "scenario_label": h.label,
+        "scenario_goal": h.goal.text,
+        "scenario_deadline_label": format_turn(ym_to_turn(*h.deadline)),
+        "scenario_result": mode.result,
+    }
+
+
 def game_over_out(
     state: GameState,
     cash_cents: Cents,
@@ -871,12 +887,16 @@ def game_over_out(
         )
     bb = data.balance.board
     first_news = last - TIMELINE_MONTHS + 1
-    sale = sale_of(state, company.id) if meta.game_state == "exit" else None  # M14 (28.6)
+    sold = meta.game_state in ("exit", "retired")  # M14 (28.6), M15b addendum 10
+    sale = sale_of(state, company.id) if sold else None
     per_share = sale.price_cents // fd if sale is not None and fd else 0
     return GameOverOut(
         game_state=meta.game_state,
         company_name=company.name,
         ended_turn=ended,
+        can_found_again=meta.game_state == "exit",
+        **_scenario_fields(state, data),
+        min_new_cash_cents=data.balance.serial.min_cash_dollars * 100,  # tunable-exempt: cents
         exit_buyer=state.company(sale.acquirer_id).name if sale is not None else None,
         exit_price_cents=sale.price_cents if sale is not None else None,
         exit_proceeds_cents=own * per_share if sale is not None else None,

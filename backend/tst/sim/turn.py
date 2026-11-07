@@ -32,6 +32,7 @@ from tst.sim.geo.cities import settle_home_cities
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
+    PREFERRED_EQUITY,
     AccountCode,
     LedgerBalances,
     LedgerEntry,
@@ -44,6 +45,8 @@ from tst.sim.mna.closing import mna_month
 from tst.sim.mna.integration import integration_month
 from tst.sim.mna.rivals import rival_deals
 from tst.sim.mna.valuation import listed_rivals_month
+from tst.sim.modes.rankings import publish as publish_rankings
+from tst.sim.modes.scenarios import judge as judge_scenario
 from tst.sim.money import Cents
 from tst.sim.org.authority import run_executives
 from tst.sim.org.ceo import run_ceo
@@ -62,6 +65,7 @@ from tst.sim.research.licensing import leaks, royalties
 from tst.sim.research.projects import decay_leads, run_projects
 from tst.sim.research.rivals import month_start as rival_research_start
 from tst.sim.research.rivals import rival_research_month
+from tst.sim.rivals.ceo_knowledge import ceo_knowledge_month
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rivals.poaching import answer_approaches, join_rivals
@@ -71,7 +75,9 @@ from tst.sim.rivals.startups import (
     launch_ready,
     record_failures,
 )
+from tst.sim.rivals.stories import STORY, month_stories
 from tst.sim.rng import RngFactory
+from tst.sim.score import snapshot_scores
 from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
 from tst.sim.state import (
     GameState,
@@ -280,8 +286,11 @@ def financing(ctx: TurnContext) -> TurnContext:
         players = player_companies(ctx.state)
         op = {c.id: _month_operating(ctx, c.id, types) for c in players}
         cash = {c.id: account_balance(ctx.balances, c.id, CASH) for c in players}
+        preferred = {  # credit balances, positive (M15b: they convert at the IPO)
+            c.id: -account_balance(ctx.balances, c.id, PREFERRED_EQUITY) for c in players
+        }
         state, public_entries, public_logs = public_month(
-            ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.revenue, op, cash
+            ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.revenue, op, cash, preferred
         )
         ctx = replace(ctx, state=state).post(*public_entries).log(*public_logs)
     # M14 (28.1): listed rivals' sentiment (their market cap is V_f x S).
@@ -405,6 +414,12 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
         state = with_company(state, replace(company, mrr_history=history))
     state = _rival_op_history(state, ctx, types)  # M14 (28.1): rivals' V_f margin
     state = _debt_history(state, ctx, types)  # M10 (20.3): covenants read completed months
+    state = ceo_knowledge_month(state, ctx.rng, ctx.balance, ctx.data)  # M15b addendum 11
+    state = judge_scenario(state, ctx.balances, ctx.balance, ctx.data)  # M15b (30.3)
+    state, ranked = publish_rankings(state, ctx.balance, ctx.data)  # M15b (30.4)
+    items += ranked
+    items += month_stories(ctx.start, state, ctx.balance)  # M15b addendum 12
+    state = snapshot_scores(state, ctx.balances, ctx.balance, ctx.data)  # M15b (30.1)
     # M10b (23.2): the month's choices in one line; modifiers whose last month this was expire.
     expiring = tuple(m for m in state.modifiers if m.end_turn <= state.turn + 1)
     summary = month_choices(state, expiring, state.player.id, ctx.balance)
@@ -519,6 +534,11 @@ def text_requests(logs: tuple[LogItem, ...], player: int, turn: int) -> tuple[Te
         TextRequest("exec_report", player, turn, i.link_id)
         for i in mine
         if i.template == EXEC_REPORT and i.link_id is not None
+    ]
+    out += [  # M15b addendum 12: rival CEO pieces, one per rival a month
+        TextRequest("rival_story", player, turn, i.link_id)
+        for i in mine
+        if i.template == STORY and i.link_id is not None
     ]
     return tuple(out)
 

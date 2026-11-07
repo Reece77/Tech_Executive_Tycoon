@@ -23,11 +23,14 @@ from tst.api.schemas.saves import (
 )
 from tst.db import inbox, repository
 from tst.db import saves as saves_db
+from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
+from tst.sim.errors import InvalidModeError
 from tst.sim.finance.options import pool_left_bp
 from tst.sim.geo.offices import employee_office_cents
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
+from tst.sim.modes.world import ModeSpec
 from tst.sim.org.rules import is_remote
 from tst.sim.products.phases import projected_revenue
 from tst.sim.setup import DEFAULT_FOUNDER
@@ -61,6 +64,8 @@ def _save_out(save: saves_db.SaveFile) -> SaveOut:
         size_bytes=save.size_bytes,
         ironman=save.difficulty == saves_db.IRONMAN,
         busy=save.busy,
+        mode=save.mode,
+        score=save.score,
     )
 
 
@@ -74,6 +79,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         costs = repository.costs_for_turn(session, player.id, state.turn - 1)
         paid = repository.expenses_by_memo(session, player.id, state.turn)
         unread = inbox.unread_count(session, player.id)
+        balances = repository.current_balances(session, state.turn)
         newest = inbox.list_inbox(session, player.id, limit=LATEST_INBOX, archived=False)
     staff = state.staff(player.id)
     employees = [e for e in staff if not state.person(e.person_id).is_founder]
@@ -91,7 +97,15 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
     runway_warn = data.balance.morale.runway_warn_months
     month_total = sum(c.amount_cents for c in projected) + sum(c.amount_cents for c in month_paid)
     month_revenue = projected_revenue(state, player.id)
+    from tst.api.modes_views import score_out
+
     return OverviewOut(
+        score=score_out(state, player.id, balances, data),  # M15b (30.1)
+        deals_due=sum(
+            1
+            for d in state.deals
+            if d.acquirer_id == player.id and d.status in ("accepted", "review", "blocked")
+        ),
         active_effects=views.active_effects(state),
         save_id=save_id,
         company_name=ov.company_name,
@@ -214,8 +228,24 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         hq_city=body.hq_city,
         data=data,
         save_dir=settings.resolved_save_dir(),
+        mode=_mode_spec(body, data),
     )
     return _save_out(saves_db.describe(path))
+
+
+def _mode_spec(body: CreateSaveIn, data: LoadedData) -> ModeSpec | None:
+    """A Sandbox or historical scenario start (M15b, 30.2-30.3), else None (a campaign)."""
+    from tst.sim.modes.scenarios import scenario_spec
+
+    if body.sandbox is not None and body.historical is not None:
+        raise InvalidModeError("choose a Sandbox or a scenario, not both")
+    if body.historical is not None:
+        return scenario_spec(body.historical, data.game_data)
+    if body.sandbox is None:
+        return None
+    sb = body.sandbox
+    cash = None if sb.cash_dollars is None else sb.cash_dollars * 100
+    return ModeSpec("sandbox", sb.start_year, cash, sb.rivals, sb.eras)
 
 
 def _existing(settings: SettingsDep, save_id: str) -> Path:

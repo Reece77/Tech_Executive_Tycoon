@@ -114,9 +114,12 @@ def abandon_deal(save_id: str, deal_id: int, settings: SettingsDep, data: DataDe
     responses=ERRORS,
     operation_id="acceptRemedy",
 )
-def accept_remedy(save_id: str, deal_id: int, settings: SettingsDep, data: DataDep) -> MnaActionOut:
+def accept_remedy(
+    save_id: str, deal_id: int, settings: SettingsDep, data: DataDep, own: bool = False
+) -> MnaActionOut:
+    """Divest the target's overlapping product, or with `own` your own (M15b)."""
     path = _path(settings, save_id)
-    return _act(path, data, AcceptRemedy(_founder_id(_state(path)), deal_id))
+    return _act(path, data, AcceptRemedy(_founder_id(_state(path)), deal_id, own))
 
 
 @router.post(

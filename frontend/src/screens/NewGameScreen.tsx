@@ -10,6 +10,7 @@ import {
 import { useDebouncedValue } from '@mantine/hooks';
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { ModePicker, type ModeChoice } from '../components/ModePicker';
 import { LoadError, Loading } from '../components/ScreenState';
 import {
   useCreateSave,
@@ -159,6 +160,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
   const [hq, setHq] = useState<string | null>(meta.default_hq_city ?? null); // M9
   const [seed, setSeed] = useState('');
   const [showSeed, setShowSeed] = useState(false);
+  const [mode, setMode] = useState<ModeChoice>({ kind: 'campaign' }); // M15b (30.2-30.3)
 
   const backgroundDef = meta.backgrounds.find((b) => b.key === background) ?? firstBackground;
   const skillLabel = useMemo(
@@ -224,6 +226,8 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
         founder,
         mission: mission.length ? mission : null,
         hq_city: hq,
+        sandbox: mode.kind === 'sandbox' ? mode.sandbox : null,
+        historical: mode.kind === 'historical' ? mode.key : null,
       },
       { onSuccess: (save) => void navigate(`/game/${save.save_id}`) },
     );
@@ -318,6 +322,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
             </button>
           ))}
         </CardGrid>
+        <ModePicker meta={meta} value={mode} onChange={setMode} />
         <UnstyledButton
           type="button"
           onClick={() => setShowSeed((v) => !v)}
