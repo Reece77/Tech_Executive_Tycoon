@@ -18,7 +18,7 @@ from typing import Final
 
 from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.known_misses import known_miss, verdict
-from tst.balance.strategies import STRATEGIES
+from tst.balance.strategies_v2 import STRATEGIES
 from tst.loader import LoadedData, load_all
 from tst.sim.rivals.startups import is_entrant
 
