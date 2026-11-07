@@ -57,29 +57,91 @@ def _energy(game: Game) -> None:
     game.state = with_person_state(game.state, replace(ps, energy=100))
 
 
-def _reservation(game: Game, target: int) -> int:
+def _true_reservation(game: Game, target: int) -> int:
     b, d = game.loaded.balance, game.loaded.game_data
     return deals.reservation_cents(game.state, target, game.balances, b, d)
 
 
-def test_private_offer_counter_then_talks_end(loaded: LoadedData) -> None:
+def _reservation(game: Game, target: int) -> int:
+    """A price the target accepts at the first offer: above any anchored first counter
+    (M15b negotiation: reservation x at most 1.30 x (1 + 3 sd))."""
+    return 2 * _true_reservation(game, target)
+
+
+def _title(game: Game) -> str:
+    return str(dict(game.action_logs[-1].params)["title"])
+
+
+def test_negotiation_runs_rounds_toward_the_reservation(loaded: LoadedData) -> None:
+    """Playtest 3 addendum 9: an anchored first counter, then each round half the gap closer,
+    for mna.max_rounds rounds; then an offer below the final counter ends talks."""
+    mb = loaded.balance.mna
     game = _game(loaded)
     zoho = _id(game.state, "Zoho")
-    res = _reservation(game, zoho)
+    res = _true_reservation(game, zoho)
+    counters = []
+    for _ in range(mb.max_rounds):
+        _energy(game)
+        last = counters[-1] if counters else res
+        game.act(BidForCompany(_founder(game), zoho, round(last * 0.95), mode="brand"))
+        assert "counters at" in _title(game), _title(game)
+        counters.append(game.state.target_files[0].counter_cents)
+    assert counters == sorted(counters, reverse=True)  # each round lower
+    assert all(c >= res for c in counters)  # never below the reservation
+    assert counters[0] >= res * min(mb.counter_anchor.values()) * 0.85  # anchored above it
+    assert all(str(res) not in str(i.params) for i in game.action_logs)
     _energy(game)
-    game.act(BidForCompany(_founder(game), zoho, res // 2, mode="brand"))
-    found = game.state.target_files[0]
-    assert (
-        found.counter_cents is not None
-        and "counters at" in dict(game.action_logs[-1].params)["title"]
-    )
-    assert str(res) not in str(game.action_logs[-1].params)  # the reservation is never named
-    _energy(game)
-    game.act(BidForCompany(_founder(game), zoho, found.counter_cents - 100, mode="brand"))
-    assert "ended talks" in str(dict(game.action_logs[-1].params)["title"])
+    game.act(BidForCompany(_founder(game), zoho, round(counters[-1] * 0.95), mode="brand"))
+    assert "ended talks" in _title(game)
     _energy(game)
     with pytest.raises(MnaRuleError, match="closed for now"):
-        game.act(BidForCompany(_founder(game), zoho, res * 2, mode="brand"))
+        game.act(BidForCompany(_founder(game), zoho, res * 3, mode="brand"))
+
+
+def test_two_lowballs_end_talks_and_the_counter_as_shown_buys(loaded: LoadedData) -> None:
+    mb = loaded.balance.mna
+    game = _game(loaded)
+    zoho = _id(game.state, "Zoho")
+    res = _true_reservation(game, zoho)
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, res // 4, mode="brand"))
+    shown = game.state.target_files[0].counter_cents
+    assert shown is not None
+    for strike in range(1, mb.strikes + 1):
+        _energy(game)
+        game.act(BidForCompany(_founder(game), zoho, round(shown * mb.lowball) - 100, mode="brand"))
+        assert ("ended talks" in _title(game)) == (strike == mb.strikes)
+    # a fresh game: bidding the counter as shown is accepted, at no less than the reservation
+    game = _game(loaded)
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, res // 4, mode="brand"))
+    shown = game.state.target_files[0].counter_cents
+    assert shown is not None and shown >= res
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, shown, mode="brand"))
+    assert game.state.deals and game.state.deals[0].price_cents == shown
+
+
+def test_no_run_of_offers_reveals_the_reservation(loaded: LoadedData) -> None:
+    """Differential: two targets whose reservations differ by less than the counters'
+    rounding answer the same offers with the same counters, so the counters cannot pin the
+    reservation down."""
+    from tst.sim.mna import formulas as mf
+
+    mb = loaded.balance.mna
+    for res in (183_456_789_00, 9_876_543_21, 412_000_000):
+        twin = res + res // 1000  # 0.1% apart
+        for anchor in mb.counter_anchor.values():
+            a = mf.first_counter_exact(res, anchor, 0.3, mb)
+            b = mf.first_counter_exact(twin, anchor, 0.3, mb)
+            shown_a, shown_b = [mf.shown_counter(a)], [mf.shown_counter(b)]
+            for _ in range(mb.max_rounds - 1):
+                a, b = mf.next_counter_exact(a, res), mf.next_counter_exact(b, twin)
+                shown_a.append(mf.shown_counter(a))
+                shown_b.append(mf.shown_counter(b))
+            same = sum(x == y for x, y in zip(shown_a, shown_b, strict=True))
+            assert same >= len(shown_a) - 1, (res, anchor, shown_a, shown_b)
+            assert all(s >= res for s in shown_a)  # a shown counter never undercuts it
 
 
 def test_an_accepted_offer_closes_next_month_with_goodwill(loaded: LoadedData) -> None:

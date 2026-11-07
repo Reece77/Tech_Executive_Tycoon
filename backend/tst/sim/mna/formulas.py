@@ -72,10 +72,27 @@ def distressed(cash_cents: int, monthly_costs_cents: int, mb: MnaBalance) -> boo
 
 
 def counter_cents(reservation: int, z: float, mb: MnaBalance) -> int:
-    """The private target's one counter: reservation x (1 + N(0, sd)), z a standard normal,
-    in whole dollars (rounded up), so bidding the counter as shown is accepted."""
+    """M14's single counter: reservation x (1 + N(0, sd)), z a standard normal, in whole
+    dollars (rounded up), so bidding the counter as shown is accepted."""
     cents = round(reservation * (1 + mb.counter_sd * z))
     return -(-cents // 100) * 100  # tunable-exempt: cents in a dollar
+
+
+def first_counter_exact(reservation: int, anchor: float, z: float, mb: MnaBalance) -> int:
+    """M15b negotiation: the opening counter, reservation x anchor x (1 + N(0, sd)), never
+    below the reservation."""
+    return max(reservation, round(reservation * anchor * (1 + mb.counter_sd * z)))
+
+
+def next_counter_exact(counter: int, reservation: int) -> int:
+    """Each later round: half the gap to the reservation, never below it."""
+    return max(reservation, counter - (counter - reservation) // 2)
+
+
+def shown_counter(exact: int) -> int:
+    """The counter as the seller says it: rounded up to two significant figures (as M14's
+    value ranges), so it is at least the exact one and nearby reservations read the same."""
+    return displayed_range((exact, exact))[1]
 
 
 def board_bar(z: float, mb: MnaBalance) -> float:

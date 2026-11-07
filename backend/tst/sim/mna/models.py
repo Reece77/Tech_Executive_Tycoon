@@ -51,8 +51,13 @@ class TargetFile:
     diligence_turn: int | None = None  # diligence started
     diligence_done_turn: int | None = None  # findings revealed from this turn
     board_bar: float | None = None
-    counter_cents: int | None = None
+    counter_cents: int | None = None  # the counter as shown: rounded up (M15b negotiation)
     blocked_until: int | None = None  # no new bid before this turn (talks ended, tender failed)
+    # M15b (negotiation, playtest 3): the counter before rounding (hidden), the rounds of
+    # counters so far, and the lowballs that used up the target's patience
+    counter_exact: int | None = None
+    rounds: int = 0
+    strikes: int = 0
 
     @property
     def diligenced(self) -> bool:
