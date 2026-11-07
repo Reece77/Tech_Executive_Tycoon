@@ -66,6 +66,15 @@ class RunResult:
     startups: tuple[tuple[int, int | None], ...]  # (founded_turn, failed_turn)
     events: tuple[tuple[int, str, str], ...]  # (turn, template id, trigger), the player's
     refused: dict[str, int] = field(default_factory=dict)
+    # M15a (30.7 V3): the last 12 months' revenue and operating result, cents
+    revenue_year: int = 0
+    operating_year: int = 0
+    stage: int = 1  # the player's stage at the end
+
+    @property
+    def margin(self) -> float | None:
+        """Operating margin over the last 12 months (V3); None without revenue."""
+        return self.operating_year / self.revenue_year if self.revenue_year > 0 else None
 
     @property
     def bankrupt(self) -> bool:
@@ -157,6 +166,9 @@ def _result(
             (e.turn, e.template_id, e.trigger) for e in state.events if e.company_id == PLAYER
         ),
         refused=dict(game.refused),
+        revenue_year=sum(game.pnl.get(t, (0, 0))[0] for t in range(last - 12, last)),
+        operating_year=sum(game.pnl.get(t, (0, 0))[1] for t in range(last - 12, last)),
+        stage=state.player.stage,
     )
 
 

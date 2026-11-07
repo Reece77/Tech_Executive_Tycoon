@@ -1,0 +1,40 @@
+# The v2 30-year balance targets (M15a, docs/formulas.md 30.7): V1 over 30 seeds, V5's
+# steady_regions and research_heavy runs to December 2039, and V6's turn time on a 2039
+# stage-4 save built from a 30-year run. The nightly keeps the 10-year targets. Sundays, and on
+# demand from the Actions tab.
+name: weekly
+
+on:
+  schedule:
+    - cron: "41 4 * * 0" # 04:41 UTC on Sundays
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  weekly:
+    name: weekly (${{ matrix.part }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [weekly-v1, weekly-v5, weekly-v6]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install backend dependencies
+        run: uv sync --project backend --locked
+
+      - name: make ${{ matrix.part }}
+        run: make ${{ matrix.part }}
