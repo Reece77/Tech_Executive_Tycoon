@@ -16,14 +16,33 @@ from dataclasses import replace
 from typing import Final
 
 from tst.balance.game import PLAYER, Game
+from tst.balance.strategies import (
+    STEADY_MARKETING,
+    STEADY_MARKETING_MIN,
+    STEADY_RUNWAY,
+    Strategy,
+    last_revenue,
+    runway,
+    set_marketing,
+    steady,
+)
 from tst.balance.strategies import STRATEGIES as V1
-from tst.balance.strategies import Strategy, steady
-from tst.sim.actions import AppointCeo, CreateUnit, Interview, MakeOffer, MovePerson, OpenSearch
+from tst.sim.actions import (
+    AppointCeo,
+    AssignUnit,
+    CreateProduct,
+    CreateUnit,
+    Interview,
+    MakeOffer,
+    MovePerson,
+    OpenSearch,
+    SetPrice,
+)
 from tst.sim.actions.authority import SetAuthority
 from tst.sim.actions.facilities import BuildFacility, StaffFacility
 from tst.sim.actions.geo import LaunchInRegion
 from tst.sim.actions.research import StartProject
-from tst.sim.facilities import compute
+from tst.sim.facilities import compute, lifecycle
 from tst.sim.mna import deals, valuation
 from tst.sim.mna.deals import BidForCompany
 from tst.sim.mna.models import Deal
@@ -200,10 +219,74 @@ def _stage(game: Game) -> int:
 # --- The strategies --------------------------------------------------------------------------
 
 
+NEW_PRODUCT_GAP: Final = 36  # months between the founder's new-category products (2026-11-07)
+BUILDER_ROLE: Final = "software_engineer"  # the CPO's builders (27.1)
+
+
+def new_category_step(game: Game) -> None:
+    """The founder's own version of the CPO's new-product pitch (product manager's ruling,
+    2026-11-07): from the first product's launch, while steady would grow (profitable, or
+    runway above STEADY_RUNWAY months), the best candidate the CPO's scoring finds (27.1),
+    at most once per NEW_PRODUCT_GAP months: a team unit, the product at its reference
+    price, and the candidate's builders hired into the unit. Launched by launch_ready."""
+    count = game.notes.get("np_count", 0)
+    for i in range(count):  # keep hiring each new product's team
+        staff_unit(game, f"New product {i + 1} team", BUILDER_ROLE, game.notes[f"np_team:{i}"])
+    state = game.state
+    if not any(p.launched_turn is not None for p in state.company_products(PLAYER)):
+        return
+    last = game.notes.get("np_turn")
+    if last is not None and state.turn - last < NEW_PRODUCT_GAP:
+        return
+    months = runway(game)
+    if months is not None and months <= STEADY_RUNWAY:
+        return
+    b, g = game.loaded.balance, game.loaded.game_data
+    ranked = pitches.candidates(state, PLAYER, ("new_product",), game.cash, b, g)
+    if not ranked:
+        return
+    p = dict(ranked[0].params)
+    cat = g.category(str(p["category"]))
+    segment = str(p["segment"])
+    refill_energy(game)
+    name = f"New product {count + 1} team"
+    uid = _unit(game, name)
+    product_id = game.state.next_ids.product
+    if uid is None or not game.act(
+        CreateProduct(
+            game.founder_id, pitches.new_product_name(game.state, PLAYER, cat), cat.key, (segment,)
+        )
+    ):
+        return
+    game.act(
+        SetPrice(game.founder_id, product_id, segment, cat.market(segment).reference_price_cents)
+    )
+    game.act(AssignUnit(game.founder_id, product_id, uid))
+    game.notes["np_count"] = count + 1
+    game.notes[f"np_team:{count}"] = int(p["team"])
+    game.notes["np_turn"] = state.turn
+    staff_unit(game, name, BUILDER_ROLE, int(p["team"]))
+
+
+def split_marketing(game: Game) -> None:
+    """steady's 20% of last month's revenue as one company budget, split equally over its
+    products (each at least STEADY_MARKETING_MIN): steady sets the whole 20% on every product,
+    which with new-category products spent about 80% of revenue (M15a decision)."""
+    products = [p for p in game.state.company_products(PLAYER) if p.status != "retired"]
+    if not products:
+        return
+    share = round(STEADY_MARKETING * last_revenue(game) / len(products))
+    set_marketing(game, max(STEADY_MARKETING_MIN, share))
+
+
 def steady_regions(game: Game) -> None:
-    """M13b's arm: steady plus a region launch whenever one is due (30.6)."""
+    """M13b's arm: steady plus a region launch whenever one is due (30.6), and from
+    2026-11-07 a new-category product when one is due (new_category_step), with steady's
+    marketing split over the products (split_marketing)."""
     steady(game, keep=_kept(game))
     regions_step(game)
+    new_category_step(game)
+    split_marketing(game)
 
 
 RESEARCH_UNIT: Final = "Research"
@@ -286,32 +369,84 @@ def compute_spend_cents(game: Game) -> int:
     )
 
 
-def integrator(game: Game) -> None:
-    """steady_regions plus its own general data centre in its home region once compute spend
-    passes $200k a month: the smallest size covering its general CU, staffed by an
-    infrastructure team of its own; another when the uncovered spend passes $200k again
-    (30.6). Device plants follow only a hardware product, which these scripts never make."""
-    steady_regions(game)
+def _own_compute(game: Game, kind_key: str) -> None:
+    """Data centres of `kind_key` in the home region once the spot spend they could serve
+    (the home region and its neighbour) passes $200k a month: the smallest size covering the
+    uncovered CU, built only when its cost per CU at full use is below spot, staffed by an
+    infrastructure
+    team of its own; another whenever the uncovered spend passes $200k again (30.6)."""
     b, g = game.loaded.balance, game.loaded.game_data
     state = game.state
-    kind = b.facility.kinds[DC_KIND]
-    mine = [f for f in state.facilities if f.company_id == PLAYER and f.kind == DC_KIND]
+    kind = b.facility.kinds[kind_key]
+    mine = [f for f in state.facilities if f.company_id == PLAYER and f.kind == kind_key]
     built = sum(f.capacity for f in mine)
-    general = sum(n.units for n in compute.needs(state, PLAYER, b, g) if n.good == kind.output_good)
+    home = compute.home_region_of(state, b, g)
+    need = sum(  # only what a home data centre can serve: home and its neighbour (19.5)
+        n.units
+        for n in compute.needs(state, PLAYER, b, g)
+        if n.good == kind.output_good and compute.serves(n.region, home, g)
+    )
     spot = compute.spot_unit_cents(state, kind.output_good, b, g)
     for i, f in enumerate(sorted(mine, key=lambda f: f.id)):  # a unit staffs one data centre
         uid = staff_unit(
-            game, f"{DC_UNIT} {i + 1}", DC_ROLE, math.ceil(f.capacity / kind.staff_per)
+            game, f"{kind.label} {i + 1}", DC_ROLE, math.ceil(f.capacity / kind.staff_per)
         )
         if uid is not None and f.unit_id != uid:
             game.act(StaffFacility(game.founder_id, f.id, uid))
-    if (general - built) * spot < DC_SPEND_CENTS:
+    if (need - built) * spot < DC_SPEND_CENTS:
         return
     sizes = sorted(kind.sizes or b.facility.sizes)
-    size = next((s for s in sizes if s >= general - built), sizes[-1])
-    region = compute.home_region_of(state, b, g)
+    size = next((s for s in sizes if s >= need - built), sizes[-1])
+    q = lifecycle.quote(state, PLAYER, kind_key, home, size, b, g)
+    per_cu = q.capex_cents / (size * kind.life_months) + kind.opex_per_unit_cents
+    if per_cu >= spot:  # only when its own CU, fully used, costs less than spot (22.2)
+        return
     refill_energy(game)
-    game.act(BuildFacility(game.founder_id, DC_KIND, region, size))
+    game.act(BuildFacility(game.founder_id, kind_key, home, size))
+
+
+def integrator(game: Game) -> None:
+    """steady_regions plus its own general data centres in its home region once compute spend
+    passes $200k a month (30.6, _own_compute). Device plants follow only a hardware product,
+    which these scripts never make."""
+    steady_regions(game)
+    _own_compute(game, DC_KIND)
+
+
+AI_PRODUCT: Final = ("Oracle", "ai_models", ("smb", "mid_market"))
+GPU_KIND: Final = "data_centre_gpu"
+
+
+def _ai_first(game: Game) -> None:
+    """The company's first product is in AI models (product manager's ruling, 2026-11-07):
+    made before steady's own first product, which then finds it and builds it."""
+    if game.state.company_products(PLAYER):
+        return
+    name, category, segments = AI_PRODUCT
+    product_id = game.state.next_ids.product
+    if not game.act(CreateProduct(game.founder_id, name, category, segments)):
+        return
+    cat = game.loaded.game_data.category(category)
+    for segment in segments:
+        game.act(
+            SetPrice(
+                game.founder_id, product_id, segment, cat.market(segment).reference_price_cents
+            )
+        )
+    game.act(AssignUnit(game.founder_id, product_id, None))
+
+
+def ai_regions(game: Game) -> None:
+    """V3's AI baseline: steady_regions with an AI-models first product, no data centres."""
+    _ai_first(game)
+    steady_regions(game)
+
+
+def integrator_ai(game: Game) -> None:
+    """V3's AI arm: ai_regions plus its own GPU and general data centres (_own_compute)."""
+    ai_regions(game)
+    _own_compute(game, GPU_KIND)
+    _own_compute(game, DC_KIND)
 
 
 def _ceo_candidate(game: Game) -> int | None:
@@ -356,3 +491,6 @@ V2: Final[dict[str, Strategy]] = {
     "ceo": ceo,
 }
 STRATEGIES: Final[dict[str, Strategy]] = {**V1, **V2}  # the nine (30.6)
+# V3's AI arms (product manager's ruling, 2026-11-07): measured, not among the nine
+ARMS: Final[dict[str, Strategy]] = {"ai_regions": ai_regions, "integrator_ai": integrator_ai}
+PLAYABLE: Final[dict[str, Strategy]] = {**STRATEGIES, **ARMS}

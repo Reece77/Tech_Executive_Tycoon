@@ -47,6 +47,10 @@ V1_MAX_WINS: Final = 5  # of 10 seeds
 V1_WINNERS: Final = 4  # strategies with a win over 30 seeds
 V2_BAND: Final = (1.0, 1.4)
 V2_MAX_WINS: Final = 4
+# V3 re-banded (product manager, 2026-11-07): compute is about 12% of a software company's
+# revenue, so its data centres can save little; the software integrator's gap must be at
+# least -1 point, and the AI-models arm (compute a large share of revenue) +3 to +10.
+V3_SOFTWARE_GAP: Final = -0.01
 V3_POINTS: Final = (0.03, 0.10)
 V3_ARR: Final = (0.85, 1.25)
 V4_BAND: Final = (0.85, 1.2)
@@ -86,7 +90,7 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
     """V1 (10 seeds), V2, V3 and V4 over the runner's results."""
     rows: list[Row] = []
     seeds = len({r.seed for r in results if r.difficulty == "standard"})
-    wins = winners(results)
+    wins = winners([r for r in results if r.strategy in STRATEGIES])  # the nine, not the arms
     most = max(wins.values(), default=0)
     detail = ", ".join(f"{s} {wins[s]}" for s in STRATEGIES if wins.get(s))
     cap = V1_MAX_WINS * seeds / 10
@@ -114,17 +118,29 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
     rows.append(
         Row("V2", "research_heavy wins", f"{rh_wins}/{seeds}", f"<= {cap2:g}", rh_wins <= cap2)
     )
-    mi, mb = _median_margin(results, "integrator"), _median_margin(results, BASE)
-    gap = mi - mb if mi is not None and mb is not None else None
-    rows.append(
-        Row(
-            "V3",
-            "integrator - steady_regions operating margin",
-            "-" if gap is None else f"{gap * 100:+.1f} pts ({mi:.1%} vs {mb:.1%})",
-            f"+{V3_POINTS[0] * 100:g} to +{V3_POINTS[1] * 100:g} pts",
-            _in(gap, V3_POINTS),
+    for arm, base, band in (
+        ("integrator", BASE, (V3_SOFTWARE_GAP, 1.0)),
+        ("integrator_ai", "ai_regions", V3_POINTS),
+    ):
+        mi, mb = _median_margin(results, arm), _median_margin(results, base)
+        if mi is None or mb is None:
+            continue
+        gap = mi - mb
+        shown = (
+            f"{band[0] * 100:+g} pts or more"
+            if band[1] >= 1
+            else (f"+{band[0] * 100:g} to +{band[1] * 100:g} pts")
         )
-    )
+        rows.append(
+            Row(
+                "V3" if arm == "integrator" else "V3.ai",
+                f"{arm} - {base} operating margin",
+                f"{gap * 100:+.1f} pts ({mi:.1%} vs {mb:.1%})",
+                shown,
+                _in(gap, band),
+                score=gap,
+            )
+        )
     ratio3 = _ratio(results, "integrator")
     rows.append(
         Row(

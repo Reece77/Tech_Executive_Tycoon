@@ -31,7 +31,7 @@ def main() -> int:
     from tst.balance import v2
     from tst.balance.known_misses import verdict
     from tst.balance.report import _loaded, run_all, runs_table, table
-    from tst.balance.strategies_v2 import STRATEGIES
+    from tst.balance.strategies_v2 import ARMS, STRATEGIES
 
     started = time.perf_counter()
     if args.long:
@@ -49,9 +49,8 @@ def main() -> int:
         rows = v2.long_rows(runs, open_, scheduled)
     else:
         seeds = args.seeds or list(v2.SEEDS_30 if args.seeds_30 else v2.SEEDS)
-        results = run_all(
-            seeds=seeds, strategies=list(STRATEGIES), difficulty_runs=False, jobs=args.jobs
-        )
+        played = list(STRATEGIES) + ([] if args.seeds_30 else list(ARMS))
+        results = run_all(seeds=seeds, strategies=played, difficulty_runs=False, jobs=args.jobs)
         if args.runs:
             print(runs_table(results), end="\n\n")
         rows = [v2.winners_row_30(results)] if args.seeds_30 else v2.ten_year_rows(results)

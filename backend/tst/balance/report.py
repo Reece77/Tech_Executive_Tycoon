@@ -18,7 +18,7 @@ from typing import Final
 
 from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.known_misses import known_miss, verdict
-from tst.balance.strategies_v2 import STRATEGIES
+from tst.balance.strategies_v2 import PLAYABLE, STRATEGIES
 from tst.loader import LoadedData, load_all
 from tst.sim.rivals.startups import is_entrant
 
@@ -104,7 +104,7 @@ def play(
     """One strategy on one seed. Picklable arguments and result (worker processes)."""
     started = time.perf_counter()
     game = start_game(_loaded(data_dir), seed, SCENARIO, difficulty)
-    script = STRATEGIES[strategy]
+    script = PLAYABLE[strategy]
     launch: int | None = None
     for _ in range(turns):
         if game.state.ended:
