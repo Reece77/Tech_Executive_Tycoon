@@ -437,6 +437,7 @@ terms:
   field.interest_paid_cents: "Interest paid on the loan so far."
   field.internal_units: "Chips your own devices used."
   field.key_people: "Named people the company employs (not its anonymous staff pools)."
+  field.keep_cents: "What you keep of your exit proceeds rather than put into the new company."
   field.last_december: "The company score last December."
   field.last_month_gain: "Research lead gained last month."
   field.late: "Whether the build is running late."

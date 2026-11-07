@@ -120,6 +120,7 @@ def publish(
             Ranking(turn=january, kind=kind, place=i + 1, company_id=cid, value=value)
             for i, (cid, value) in enumerate(ranked)
         ]
+    new.sort(key=lambda r: (r.kind, r.place))  # the order a save loads them in
     state = replace(state, rankings=(*state.rankings, *new))
     logs = []
     for company in player_companies(state):
