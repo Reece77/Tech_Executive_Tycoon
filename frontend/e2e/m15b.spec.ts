@@ -47,6 +47,7 @@ test('(a) a Sandbox start in 2018 with no rivals sees the 2018 world', async ({ 
 });
 
 test('(b) Survive 2022 to its deadline: the scenario result screen', async ({ page }) => {
+  test.setTimeout(150_000); // the fixture save is built first (tools/e2e_m15b_save.py)
   const save = `m15b-survive-${stamp}`;
   tool('e2e_m15b_save.py', ['deadline', save]);
   await page.goto(`/game/${save}/overview`);
@@ -60,6 +61,7 @@ test('(b) Survive 2022 to its deadline: the scenario result screen', async ({ pa
 });
 
 test('(c) January rankings arrive as news and on the Rankings screen', async ({ page }) => {
+  test.setTimeout(150_000); // the fixture save is built first (tools/e2e_m15b_save.py)
   const save = `m15b-rankings-${stamp}`;
   tool('e2e_m15b_save.py', ['december', save]);
   await page.goto(`/game/${save}/overview`);
@@ -79,6 +81,7 @@ test('(c) January rankings arrive as news and on the Rankings screen', async ({ 
 });
 
 test('(d) Continue until stops at a pitch', async ({ page }) => {
+  test.setTimeout(150_000); // the fixture save is built first (tools/e2e_m15b_save.py)
   const save = `m15b-until-${stamp}`;
   tool('e2e_m15b_save.py', ['pitch', save]);
   await page.goto(`/game/${save}/inbox`);
