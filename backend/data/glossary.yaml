@@ -330,7 +330,7 @@ terms:
   continue_until: "Play months as Continue does until something needs you (an event to answer, a pitch or proposal, a promise or deal due, or the game ending), up to a year. It decides nothing for you."
   rank.revenue: "Top 50 by revenue: every company's revenue over the last 12 months, published each January."
   rank.places: "Best places to work: mean morale, pay against the market and tenure of a company's key people, for companies with enough staff. A top place adds to your hiring appeal for the year."
-  rank.innovative: "Most innovative: research leads, eras caused first and launches over the last years. A top place adds to your brand target for the year."
+  rank.innovative: "Most innovative: research leads, eras caused first and launches over the last years. (A top place's brand effect is off for now.)"
   rank.place: "The company's place in this January's list, 1 = first."
   rank.value: "What the list ranks by: revenue over the last 12 months, or the list's 0-100 measure."
   feud: "Bad blood between your founder and a rival's CEO, 0 to 100: bold answers naming them, head-to-head launches and poaching each other's people raise it; it fades a little each month."
