@@ -56,8 +56,27 @@ _(Product manager adds items from Reece's playtest 3 that touch this lane.)_
 
 ## Decisions made
 
-_(Agent fills in.)_
+1. **Strategies** (§30.6) live in `backend/tst/balance/strategies_v2.py`, which imports only the game wrapper, the v1 scripts and the sim, so `tst.balance.report` can list all nine without an import cycle. `hire()` gained a `keep` set so a v2 script's own job posts (researchers, data-centre staff) stay open.
+2. **The ceo strategy appoints its CEO at stage 4,** as soon as `ceo.min_stage` allows (§30.6 says stage 3; seats get authority from stage 3). Accepted by the product manager (2026-11-07).
+3. **research_heavy** starts its research unit once the seed closes, on the domain with the largest summed `tech_weights` over its selling products, hiring the role whose skills that domain's research weighs most.
+4. **integrator** builds general data centres in its home region, sized to the need a home data centre can serve (home and its neighbour), only when its cost per CU at full use is below spot; each is staffed by its own unit. Device plants follow only a hardware product, which the scripts never make. Placing builds in the region with the most uncovered need lowered the median margin from 43.7% to 34.2% and was reverted.
+5. **New-category products** (product manager, 2026-11-07): steady_regions and every strategy built on it launch the CPO scoring's best new-category candidate (§27.1) at most once per 36 months, from the first launch and while steady would grow (profitable, or runway above 24 months).
+6. **steady_regions splits steady's marketing:** 20% of last month's revenue as one budget over its products (each at least $10,000). steady sets the whole 20% on every product, which with four products spent about 80% of revenue; the v1 `steady` script is unchanged.
+7. **Eras to 2039** (§30.8): appended as seeded windows. A two-domain era uses its first domain (humanoid robotics: AI; photonic interconnect: chip design). Effects the era model cannot express (the AR-glasses segment opening, the photonic data-centre cost cut) are left out (follow-ups).
+8. **V5's total demand** is addressable customers × the category's reference price, home and other regions.
+9. **V5's rival-launch clause** is checked over the categories rival startups may be founded in (§15.4); hardware and capacity categories are scheduled entrants only (§18.7, §26) and are printed (product manager, 2026-11-07).
+10. **Rival launches after 2020** (ruling 3): `rivals.startup.start_feature_share` 0.3 (new key: a startup's product starts with that share of the features its market gained since January 2010; from 0, no late founder reached the 30% launch bar); a rival startup needs no manufacturing contract to launch (bug: rivals' manufacturing is abstract, §26.1); a rival startup down to one person closes (one-person startups held every `max_alive` place for decades). Regression tests: `tests/unit/test_m15a_rival_launches.py`.
+11. **V3 re-banded** (product manager, 2026-11-07): the software integrator's margin gap at least −1 point (compute is about 12% of its revenue); a new `integrator_ai` arm against `ai_regions` (an AI-models first product) must show +3 to +10 points, a known miss owned by M23 (`V3.ai`).
+12. **V4 re-banded to ≤ 1.4×** (product manager, 2026-11-07, second round): delegation with full authority stays within 40% of the hands-on script. `pitch.base` stays 0.15.
+13. **V1 counts wins among the founder-played strategies;** the ceo arm is a delegation benchmark measured by V4 (product manager, 2026-11-07, second round).
+14. **V7:** M10's §20.5 target 3 is measured as breaches in a month whose closing cash is still positive; `debt.venture.covenant_burn_months` 3 → 2 (60% on seeds 1–10 and 11–40, was 70%; blitz_debt bankruptcy 0%, was 20%); M10's §20.5 targets 2–5 pass. M10.T3 leaves the known misses.
+15. **The weekly targets** (V1 over 30 seeds, V5, V6) run in `.github/workflows/weekly.yml` (Sundays and on demand); the nightly keeps the ten-year targets. Tests marked `weekly` are left out of `make check` and the nightly.
+16. **The V6 save** is built by `tools/v6_save.py` playing research_heavy for 360 months through the normal save path. Writing only the final state to a save failed the state-cache check: the next turn rebuilt the macro history it did not have.
+17. **Game records** each month's revenue and operating result (`Game.pnl`) for V3's margin, the last 12 months.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- v3 (devices): the AR-glasses era's new consumer device segment (§30.8).
+- v3 (fabs): the photonic-interconnect era's data-centre cost per CU −15% (§30.8).
+- v3: seeded future entrants for hardware and cloud after 2025 (V5's scheduled-only categories).
+- M23: `integrator_ai` (V3.ai): an AI-models company's own GPU data centres add under 1 point of margin at year 10.

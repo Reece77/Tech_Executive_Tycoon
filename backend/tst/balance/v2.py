@@ -53,7 +53,12 @@ V2_MAX_WINS: Final = 4
 V3_SOFTWARE_GAP: Final = -0.01
 V3_POINTS: Final = (0.03, 0.10)
 V3_ARR: Final = (0.85, 1.25)
-V4_BAND: Final = (0.85, 1.2)
+# V4 re-banded 1.2 -> 1.4 (product manager, 2026-11-07, second round): delegation with full
+# authority stays within 40% of the hands-on script (1.39x after ruling 1's new products).
+V4_BAND: Final = (0.85, 1.4)
+# V1 counts wins among the founder-played strategies (product manager, 2026-11-07): the ceo
+# arm is a delegation benchmark, measured by V4.
+DELEGATED: Final = ("ceo",)
 V5_ERAS: Final = 5
 V5_GROWTH: Final = 0.04
 V5_RIVALS: Final = 0.30
@@ -90,7 +95,9 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
     """V1 (10 seeds), V2, V3 and V4 over the runner's results."""
     rows: list[Row] = []
     seeds = len({r.seed for r in results if r.difficulty == "standard"})
-    wins = winners([r for r in results if r.strategy in STRATEGIES])  # the nine, not the arms
+    wins = winners(  # founder-played strategies only: not the AI arms, not the ceo benchmark
+        [r for r in results if r.strategy in STRATEGIES and r.strategy not in DELEGATED]
+    )
     most = max(wins.values(), default=0)
     detail = ", ".join(f"{s} {wins[s]}" for s in STRATEGIES if wins.get(s))
     cap = V1_MAX_WINS * seeds / 10
@@ -138,7 +145,7 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
                 f"{gap * 100:+.1f} pts ({mi:.1%} vs {mb:.1%})",
                 shown,
                 _in(gap, band),
-                score=gap,
+                score=-gap,  # a known miss's bound reads larger as worse
             )
         )
     ratio3 = _ratio(results, "integrator")
@@ -177,7 +184,7 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
 
 def winners_row_30(results: Sequence[RunResult]) -> Row:
     """V1's second clause: at least four strategies win at least once over 30 seeds."""
-    wins = winners(results)
+    wins = winners([r for r in results if r.strategy not in DELEGATED])
     n = sum(1 for v in wins.values() if v > 0)
     seeds = len({r.seed for r in results if r.difficulty == "standard"})
     detail = ", ".join(f"{s} {wins[s]}" for s in STRATEGIES if wins.get(s))

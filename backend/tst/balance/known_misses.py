@@ -30,6 +30,14 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         worse_than=0.9,
         reason="steady wins 8/10 on main; M15's v2 strategies should split wins",
     ),
+    KnownMiss(
+        target="V3.ai",  # docs/formulas.md 30.7 V3's AI arm: integrator_ai +3 to +10 points
+        owner="M23",
+        # score: minus the margin gap (larger is worse); known while the AI integrator is no
+        # more than 2 points below ai_regions (product manager, 2026-11-07)
+        worse_than=0.02,
+        reason="+0.7 pts in M15a: an AI-models company is about $7M ARR at year 10 (2020)",
+    ),
 )
 
 Verdict = Literal["ok", "printed", "known", "fail"]
