@@ -317,6 +317,24 @@ def test_over_half_is_blocked_until_a_remedy(loaded: LoadedData) -> None:
     assert product is not None and product.company_id not in (1, zoho)
 
 
+def test_the_acquirer_may_divest_its_own_product_instead(loaded: LoadedData) -> None:
+    """M15b (an M14 follow-up): the acquirer's own overlapping product is the other remedy;
+    divesting it unlinks the acquirer's teams from it."""
+    game, zoho = _overlap(loaded, 10**7)
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, _reservation(game, zoho), mode="brand"))
+    (deal,) = game.state.deals
+    mine = deal.own_remedy_product_id
+    assert deal.status == "blocked" and mine is not None
+    assert game.state.product(mine).company_id == 1  # type: ignore[union-attr]
+    game.act(AcceptRemedy(_founder(game), deal.id, own=True))
+    assert game.state.product(mine).company_id not in (1, zoho)  # type: ignore[union-attr]
+    assert game.state.player.root_product_id != mine
+    assert all(u.product_id != mine for u in game.state.units if u.company_id == 1)
+    after = game.state.deals[0]
+    assert after.status != "blocked"  # its share went with it
+
+
 def _at_share(loaded: LoadedData, target_share: float) -> tuple[Game, int]:
     """The player's mid-market product sized so the combined share with Zoho (about 32% of
     North American mid-market) is `target_share`."""

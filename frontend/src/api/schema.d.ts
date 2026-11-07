@@ -3000,7 +3000,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Accept Remedy */
+        /**
+         * Accept Remedy
+         * @description Divest the target's overlapping product, or with `own` your own (M15b).
+         */
         post: operations["acceptRemedy"];
         delete?: never;
         options?: never;
@@ -5001,6 +5004,11 @@ export interface components {
              * @description The product a remedy would divest
              */
             remedy_product: string | null;
+            /**
+             * Own Remedy Product
+             * @description Your own overlapping product, offered instead (M15b)
+             */
+            own_remedy_product?: string | null;
         };
         /**
          * DecisionOut
@@ -8144,6 +8152,12 @@ export interface components {
         OverviewOut: {
             /** @description The company score (M15b, 30.1) */
             score?: components["schemas"]["ScoreOut"] | null;
+            /**
+             * Deals Due
+             * @description Your deals under review, closing or blocked (M15b top bar)
+             * @default 0
+             */
+            deals_due?: number;
             /** Save Id */
             save_id: string;
             /** Company Name */
@@ -21840,7 +21854,9 @@ export interface operations {
     };
     acceptRemedy: {
         parameters: {
-            query?: never;
+            query?: {
+                own?: boolean;
+            };
             header?: never;
             path: {
                 save_id: string;

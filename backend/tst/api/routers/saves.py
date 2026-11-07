@@ -101,6 +101,11 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
 
     return OverviewOut(
         score=score_out(state, player.id, balances, data),  # M15b (30.1)
+        deals_due=sum(
+            1
+            for d in state.deals
+            if d.acquirer_id == player.id and d.status in ("accepted", "review", "blocked")
+        ),
         active_effects=views.active_effects(state),
         save_id=save_id,
         company_name=ov.company_name,

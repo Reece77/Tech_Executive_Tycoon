@@ -179,6 +179,9 @@ class StageReachedOut(BaseModel):
 
 class OverviewOut(BaseModel):
     score: ScoreOut | None = Field(default=None, description="The company score (M15b, 30.1)")
+    deals_due: int = Field(
+        default=0, description="Your deals under review, closing or blocked (M15b top bar)"
+    )
     save_id: str
     company_name: str
     turn: int

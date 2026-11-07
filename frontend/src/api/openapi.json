@@ -13855,6 +13855,7 @@
           "mna"
         ],
         "summary": "Accept Remedy",
+        "description": "Divest the target's overlapping product, or with `own` your own (M15b).",
         "operationId": "acceptRemedy",
         "parameters": [
           {
@@ -13873,6 +13874,16 @@
             "schema": {
               "type": "integer",
               "title": "Deal Id"
+            }
+          },
+          {
+            "name": "own",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Own"
             }
           }
         ],
@@ -18692,6 +18703,18 @@
             ],
             "title": "Remedy Product",
             "description": "The product a remedy would divest"
+          },
+          "own_remedy_product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Own Remedy Product",
+            "description": "Your own overlapping product, offered instead (M15b)"
           }
         },
         "type": "object",
@@ -26338,6 +26361,12 @@
               }
             ],
             "description": "The company score (M15b, 30.1)"
+          },
+          "deals_due": {
+            "type": "integer",
+            "title": "Deals Due",
+            "description": "Your deals under review, closing or blocked (M15b top bar)",
+            "default": 0
           },
           "save_id": {
             "type": "string",

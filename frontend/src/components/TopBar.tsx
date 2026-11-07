@@ -191,6 +191,16 @@ export function TopBar({
         {overview && !ended && overview.cash_cents < 0 && (
           <InsolventBadge saveId={overview.save_id} summary={summary} />
         )}
+        {overview && !ended && (overview.deals_due ?? 0) > 0 && (
+          // an M14 follow-up (M15b): a review, closing or blocked deal is one click away
+          <Link
+            to={`/game/${overview.save_id}/finance/deals`}
+            data-testid="top-deals"
+            style={{ fontSize: 13 }}
+          >
+            Deals: {overview.deals_due} due
+          </Link>
+        )}
         <Stat label={<Term term="kpi.runway">Runway</Term>}>
           {overview ? (
             <OverviewTip saveId={overview.save_id} which="runway" title="Runway">

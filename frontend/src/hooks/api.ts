@@ -1926,7 +1926,7 @@ export type MnaAction =
       mode: 'brand' | 'integrate';
     }
   | { kind: 'mode'; dealId: number; mode: 'brand' | 'integrate' }
-  | { kind: 'abandon' | 'remedy'; dealId: number }
+  | { kind: 'abandon' | 'remedy'; dealId: number; own?: boolean }
   | { kind: 'directive'; companyId: number; directive: 'grow' | 'harvest' | 'defend' };
 
 async function applyMna(saveId: string, a: MnaAction): Promise<MnaActionResult> {
@@ -1967,7 +1967,7 @@ async function applyMna(saveId: string, a: MnaAction): Promise<MnaActionResult> 
     case 'remedy':
       return unwrap(
         await api.POST('/api/saves/{save_id}/mna/deals/{deal_id}/remedy', {
-          params: { path: { save_id: saveId, deal_id: a.dealId } },
+          params: { path: { save_id: saveId, deal_id: a.dealId }, query: { own: a.own ?? false } },
         }),
       );
     case 'directive':

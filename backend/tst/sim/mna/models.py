@@ -82,6 +82,7 @@ class Deal:
     market: str = ""  # the market that share is in, "category/segment/region"
     blocked_draw: float | None = None  # the review's uniform, hidden; blocked if below p
     remedy_product_id: int | None = None  # the overlapping product a remedy would divest
+    own_remedy_product_id: int | None = None  # M15b: the acquirer's own overlapping product
     mode: Mode | None = None  # chosen at closing
     resolved_turn: int | None = None
     loan_cents: int = 0  # a bank loan taken first to pay the cash part (20.3)
