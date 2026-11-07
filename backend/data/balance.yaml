@@ -1086,7 +1086,7 @@ mna:
   distress_months: 6 # months of costs (28.3)
   counter_sd: 0.05 # a private target counters once at reservation x (1 + N(0, this)) (28.3)
   talks_block_months: 12 # months talks stay closed after they end (28.3)
-  counter_anchor: { aggressive: 1.30, premium: 1.25, fast_follower: 1.20, cost_leader: 1.15 } # a private target's first counter: reservation x this by personality (playtest 3 addendum 9, M15b)
+  counter_anchor: { aggressive: 1.15, premium: 1.10, fast_follower: 1.06, cost_leader: 1.03 } # a private target's first counter: reservation x this by personality (playtest 3 addendum 9, M15b; lowered from 1.30-1.15 so a deal at the first counter stays within 28.9 target 2, 1.0-1.6 x V_f)
   max_rounds: 3 # rounds of counters; each moves half the gap toward the reservation; an offer below the last ends talks (addendum 9)
   lowball: 0.9 # an offer below the last counter x this is a lowball (addendum 9)
   strikes: 2 # lowballs that end talks for talks_block_months (addendum 9)
