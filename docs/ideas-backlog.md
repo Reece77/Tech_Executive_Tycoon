@@ -46,3 +46,13 @@ Placement key: **v2** = a v2 milestone before the v2 retrospective; **v3** = alo
 ## Carried from milestone follow-ups
 
 Engineering follow-ups stay in their briefs and the roadmap (`docs/v2-roadmap.md`, M15 follow-ups). Only player-facing ideas live here.
+
+## v4 and v5 directions (Reece, 2026-11-07)
+
+Proposed after v3's chain (quartz mines to cloud software) is complete. Not scheduled; the playtests through v3 decide the order (economy or personal story, whichever feels thinner).
+
+| Version | Direction | What it adds | Builds on |
+| --- | --- | --- | --- |
+| **v4** | **Power, platforms and regulation** | **Power and compute:** regional power markets, power-purchase agreements, owning solar, gas or small nuclear plants for data centres and fabs, grid queues and outages, carbon pricing; energy as the next upstream tier. **Platforms and ecosystems:** app stores, developer ecosystems, network effects and lock-in, open-source strategy, standards wars, platform fees. **Regulation grown up:** antitrust with forced unbundling and gatekeeper rules. | the facility and market-good models (ADR-0020), M12a data centres, M21 fabs, M14 antitrust |
+| **v5** | **The founder's dynasty and new industries** | **The founder's life:** personal wealth, a family office, personal stock trading, philanthropy and a foundation, political influence, health and burnout, public reputation, succession to an heir or a professional CEO, then play on as the next generation. **New industries on the chain:** electric vehicles (v3's lithium and chips), robotics (the humanoid-robotics era), satellites and space launch, medical devices, each a category family with its own rivals. | M15b's serial founder, M16's group, v3's minerals and chips |
+| across both | **A living world** | Rivals as full player-like groups (holding companies, spin-offs, hostile bids against the player and each other); currencies and hedging across regions; more countries with their own rules; regional recessions and booms. | M14, M16, M22 |
