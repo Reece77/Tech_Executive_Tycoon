@@ -1,8 +1,9 @@
 """M16: the holding company and its subsidiaries (formulas.md section 31). `group_ownership`
 holds every company's holdings of another over a run of turns (31.1; Codex review 4 findings 2
-and 3) and `group_holding` the player's holding company (31.2), each record's fields in a JSON
+and 3), `group_holding` the player's holding company (31.2) and `group_stake` the stakes it
+does not control (31.3, 31.5), each record's fields in a JSON
 `data` column (data-dictionary.md); accounts 1820, 1830,
-3500, 4910, 4920 and 4930 (31.3).
+3500, 4910, 4920, 4930 and 4990 (31.3).
 
 Existing saves: each kept brand (`company_parent`) gets an open holding from its latest
 closing by that parent, with the 1810 investment its parent posted at closing (the
@@ -33,6 +34,7 @@ ACCOUNTS = (
     ("4910_share_of_associates", "Share of associates' profit", "revenue"),
     ("4920_fair_value_gains", "Fair-value gains and losses", "revenue"),
     ("4930_gain_on_disposal", "Gain or loss on disposal", "revenue"),
+    ("4990_nci_share_of_profit", "Attributable to non-controlling interest", "expense"),
 )
 INVESTMENT = "1810_investment_subsidiaries"
 
@@ -46,6 +48,13 @@ def upgrade() -> None:
         sa.Column("data", sa.JSON(), nullable=False),
     )
     op.create_index("ix_group_ownership_company", "group_ownership", ["company_id"])
+    op.create_table(
+        "group_stake",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("owner_id", sa.Integer(), nullable=False),
+        sa.Column("company_id", sa.Integer(), nullable=False),
+        sa.Column("data", sa.JSON(), nullable=False),
+    )
     op.create_table(
         "group_holding",
         sa.Column("company_id", sa.Integer(), primary_key=True),
@@ -121,6 +130,7 @@ def _backfill(conn: sa.Connection) -> None:
 def downgrade() -> None:
     op.execute("UPDATE save_meta SET schema_version = 38")
     op.drop_table("group_holding")
+    op.drop_table("group_stake")
     op.drop_index("ix_group_ownership_company", table_name="group_ownership")
     op.drop_table("group_ownership")
     for code, _, _ in ACCOUNTS:

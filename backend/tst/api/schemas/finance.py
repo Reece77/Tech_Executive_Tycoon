@@ -41,6 +41,11 @@ class ProfitAndLossOut(BaseModel):
     interest_cents: int
     tax_cents: int
     net_result_cents: int
+    nci_cents: int = Field(
+        default=0,
+        description="Of the net result, what outside holders of subsidiaries own (M16, 31.3)",
+    )
+    net_to_owners_cents: int = Field(default=0, description="The net result less NCI's share")
 
 
 class BalanceSheetOut(BaseModel):

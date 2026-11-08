@@ -5,6 +5,7 @@ from __future__ import annotations
 from bisect import bisect_left
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
+from fractions import Fraction
 from operator import attrgetter
 from types import MappingProxyType
 from typing import Any, Final
@@ -31,7 +32,14 @@ from tst.sim.geo.models import (
     RegionalMarket,
     RegionalSegment,
 )
-from tst.sim.group.models import EQUITY_ENDS, GroupMember, Holding, Ownership
+from tst.sim.group.models import (
+    EQUITY_ENDS,
+    FULL_STAKE_BP,
+    GroupMember,
+    Holding,
+    Ownership,
+    Stake,
+)
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
@@ -278,6 +286,7 @@ class GameState:
     # M16 (31.1): every holding of one company by another, open or ended, sorted by id
     ownerships: tuple[Ownership, ...] = ()
     holdings: tuple[Holding, ...] = ()  # M16 (31.2): the player's holding company, if formed
+    stakes: tuple[Stake, ...] = ()  # M16 (31.3, 31.5): stakes the group does not control, by id
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -704,11 +713,12 @@ def group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:
         for o in ownership_history(state, company.id):
             owned_by.setdefault(o.owner_id, []).append(o)
     out: list[GroupMember] = []
-    frontier: list[tuple[int, int, int | None, int, bool]] = [
-        (root_id, _BEFORE_TIME, None, 0, False)
+    root_steps: tuple[tuple[int, Fraction], ...] = ((_BEFORE_TIME, Fraction(1)),)
+    frontier: list[tuple[int, int, int | None, int, bool, tuple[tuple[int, Fraction], ...]]] = [
+        (root_id, _BEFORE_TIME, None, 0, False, root_steps)
     ]
     while frontier:
-        owner, w_start, w_end, depth, w_cc = frontier.pop(0)
+        owner, w_start, w_end, depth, w_cc, w_steps = frontier.pop(0)
         for o in sorted(owned_by.get(owner, ()), key=lambda x: (x.from_turn, x.company_id, x.id)):
             if o.company_id == root_id:
                 raise GroupDataError(f"ownership cycle through company {root_id}")
@@ -720,11 +730,32 @@ def group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:
             if end == start and o.end_reason in EQUITY_ENDS and o.to_turn == start:
                 continue  # passed on the turn it arrived (a transfer to the holding company)
             cc = (o.common_control and start == o.from_turn) or (w_cc and start == w_start)
-            out.append(GroupMember(o.company_id, owner, start, end, o, depth + 1, cc))
+            steps = _effective_steps(o, w_steps, start)
+            out.append(GroupMember(o.company_id, owner, start, end, o, depth + 1, cc, steps))
             if depth + 1 > len(state.companies):
                 raise GroupDataError(f"ownership cycle below company {root_id}")
-            frontier.append((o.company_id, start, end, depth + 1, cc))
+            frontier.append((o.company_id, start, end, depth + 1, cc, steps))
     return tuple(sorted(out, key=lambda m: (m.depth, m.start, m.company_id)))
+
+
+def _effective_steps(
+    o: Ownership, parent: tuple[tuple[int, Fraction], ...], start: int
+) -> tuple[tuple[int, Fraction], ...]:
+    """The root's effective stake in `o`'s company from `start`: the owner's effective stake
+    x this holding's stake, at each turn either changes (31.3)."""
+    turns = sorted(
+        {start, *(t for t, _ in parent if t > start), *(t for t, *_ in o.rebases if t > start)}
+    )
+    out: list[tuple[int, Fraction]] = []
+    for t in turns:
+        owner_e = Fraction(1)
+        for pt, e in parent:
+            if pt <= t:
+                owner_e = e
+        e = owner_e * Fraction(o.stake_at(t), FULL_STAKE_BP)
+        if not out or out[-1][1] != e:
+            out.append((t, e))
+    return tuple(out)
 
 
 def group_companies(
@@ -799,6 +830,19 @@ def with_ownership(state: GameState, ownership: Ownership) -> GameState:
     if ownership.id == 0:
         ownership = replace(ownership, id=max((o.id for o in state.ownerships), default=0) + 1)
     return replace(state, ownerships=_upsert(state.ownerships, ownership, lambda o: o.id))
+
+
+def with_stake(state: GameState, stake: Stake) -> GameState:
+    """Insert or replace one stake (31.5); id 0 takes the next free id."""
+    if stake.id == 0:
+        stake = replace(stake, id=max((x.id for x in state.stakes), default=0) + 1)
+    return replace(state, stakes=_upsert(state.stakes, stake, lambda x: x.id))
+
+
+def open_stakes(state: GameState, owner_id: int | None = None) -> tuple[Stake, ...]:
+    return tuple(
+        x for x in state.stakes if x.is_open and (owner_id is None or x.owner_id == owner_id)
+    )
 
 
 def with_holding(state: GameState, holding: Holding) -> GameState:

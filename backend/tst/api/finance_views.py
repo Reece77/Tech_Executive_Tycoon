@@ -66,7 +66,7 @@ from tst.sim.finance.captable import (
     share_price,
     unallocated,
 )
-from tst.sim.finance.consolidation import Member, consolidated_lines
+from tst.sim.finance.consolidation import consolidated_lines
 from tst.sim.finance.fundraising import (
     arr_cents,
     base_value,
@@ -87,7 +87,8 @@ from tst.sim.finance.models import (
     TermSheet,
 )
 from tst.sim.finance.options import at_cliff, next_vesting, pool_left_bp
-from tst.sim.group.models import EQUITY_ENDS, GroupMember
+from tst.sim.group.models import GroupMember
+from tst.sim.group.statements import member_input
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.ledger import CASH
 from tst.sim.mna.exit import sale_of
@@ -147,23 +148,7 @@ def statements_out(
     types: dict[str, AccountType] = {a.code: a.type for a in data.game_data.accounts}
     own = lines
     if members:
-        lines = consolidated_lines(
-            lines,
-            [
-                Member(
-                    sub,
-                    m.start,
-                    m.end,
-                    m.ownership.from_turn,
-                    m.ownership.book_cents if m.ownership.id else None,
-                    m.ownership.equity_cents if m.ownership.id else None,
-                    m.common_control,
-                    m.end is not None and m.ownership.end_reason in EQUITY_ENDS,
-                )
-                for m, sub in members
-            ],
-            types,
-        )
+        lines = consolidated_lines(lines, [member_input(m, sub) for m, sub in members], types)
     brands: dict[int, Lines] = {}
     for m, sub in members:
         brands.setdefault(m.company_id, sub)
@@ -196,6 +181,8 @@ def statements_out(
                         interest_cents=pnl.interest,
                         tax_cents=pnl.tax,
                         net_result_cents=pnl.net_result,
+                        nci_cents=pnl.nci,
+                        net_to_owners_cents=pnl.net_to_owners,
                     ),
                     cash_flow=CashFlowOut(
                         operating_cents=flow.operating,

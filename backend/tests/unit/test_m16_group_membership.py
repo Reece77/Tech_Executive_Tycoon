@@ -23,6 +23,7 @@ from tst.sim.finance.consolidation import Member, consolidated_lines
 from tst.sim.finance.insolvency import fail_rival
 from tst.sim.group.models import Ownership
 from tst.sim.group.ownership import carrying_cents
+from tst.sim.group.statements import members_input
 from tst.sim.ledger import (
     CASH,
     COMMON_EQUITY,
@@ -268,17 +269,7 @@ class Books(Game):
         return result
 
     def consolidated(self, root: int) -> list[Line]:
-        members = [
-            Member(
-                self.lines.get(m.company_id, []),
-                m.start,
-                m.end,
-                m.ownership.from_turn,
-                m.ownership.book_cents,
-                m.ownership.equity_cents,
-            )
-            for m in group_members(self.state, root)
-        ]
+        members = members_input(group_members(self.state, root), self.lines)
         return consolidated_lines(self.lines.get(root, []), members, _types(self.loaded))
 
 

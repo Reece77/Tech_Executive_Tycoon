@@ -46,6 +46,7 @@ FINANCIAL_INVESTMENTS: Final = "1830_financial_investments"  # under 20%, fair v
 NCI: Final = "3500_non_controlling_interest"  # outside holders of subsidiaries (M16, 31.3)
 ASSOCIATES_PROFIT: Final = "4910_share_of_associates"  # the group's share (M16, 31.3)
 FAIR_VALUE: Final = "4920_fair_value_gains"  # December marks of financial investments (M16)
+NCI_SHARE: Final = "4990_nci_share_of_profit"  # outsiders' share, consolidated only (M16, 31.3)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -76,6 +77,7 @@ ENGINE_ACCOUNTS: Final = (
     NCI,
     ASSOCIATES_PROFIT,
     FAIR_VALUE,
+    NCI_SHARE,
 )
 
 

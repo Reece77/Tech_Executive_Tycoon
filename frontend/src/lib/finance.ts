@@ -222,6 +222,21 @@ export function pnlLines(periods: readonly StatementPeriod[]): StatementLine[] {
     values: pnl.map((p) => p.net_result_cents),
     total: true,
   });
+  // M16 (31.3): what outside holders of subsidiaries own of it, and the owners' part
+  if (pnl.some((p) => (p.nci_cents ?? 0) !== 0)) {
+    lines.push({
+      id: 'nci',
+      label: 'Attributable to non-controlling interest',
+      values: pnl.map((p) => p.nci_cents ?? 0),
+      indent: true,
+    });
+    lines.push({
+      id: 'owners',
+      label: 'Attributable to owners',
+      values: pnl.map((p) => p.net_to_owners_cents ?? p.net_result_cents),
+      indent: true,
+    });
+  }
   return lines;
 }
 

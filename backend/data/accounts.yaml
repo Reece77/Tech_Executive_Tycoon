@@ -28,6 +28,7 @@ accounts:
   - { code: 4900_other_income, name: Other income, type: revenue } # M6: event cash gains
   - { code: 4910_share_of_associates, name: Share of associates' profit, type: revenue } # M16 (31.3): the group's share of associates' profit; below the operating result
   - { code: 4920_fair_value_gains, name: Fair-value gains and losses, type: revenue } # M16 (31.3): December marks of stakes under 20%; below the operating result
+  - { code: 4990_nci_share_of_profit, name: Attributable to non-controlling interest, type: expense } # M16 (31.3): outside holders' share of consolidated subsidiaries' profit; consolidated statements only, shown below the net result
   - { code: 4930_gain_on_disposal, name: Gain or loss on disposal, type: revenue } # M16 (31.1): a subsidiary leaving the group (failed, sold, spun off): what was received less the investment and its goodwill; below the operating result
   # Expenses
   - { code: 5000_cogs, name: Cost of goods sold, type: expense }

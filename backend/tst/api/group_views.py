@@ -7,8 +7,8 @@ from __future__ import annotations
 from tst.api.schemas.group import GroupEntityOut, GroupOut
 from tst.loader import LoadedData
 from tst.sim.group import formulas as gf
-from tst.sim.group.models import FULL_STAKE_BP
 from tst.sim.group.holding import form_fee_cents, gate
+from tst.sim.group.models import FULL_STAKE_BP
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.mna import valuation
 from tst.sim.state import GameState, group_members, holding_of, listed_id, owner_at

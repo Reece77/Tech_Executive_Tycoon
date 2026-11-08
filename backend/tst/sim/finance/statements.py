@@ -22,6 +22,7 @@ from tst.sim.ledger import (
     DEPRECIATION,
     DISPOSAL,
     FAIR_VALUE,
+    NCI_SHARE,
     AccountCode,
 )
 from tst.sim.money import Cents
@@ -42,6 +43,9 @@ INTEREST_PREFIX = "7"
 # M16 (31.1, 31.3): gains and losses below the operating result, in the net result: the
 # group's share of associates' profit, fair-value marks and disposals
 NON_OPERATING: tuple[AccountCode, ...] = (ASSOCIATES_PROFIT, FAIR_VALUE, DISPOSAL)
+# M16 (31.3): the outsiders' share of the net result, shown below it (consolidated only); the
+# balance sheet's accumulated result is the owners'
+NCI_ACCOUNTS: tuple[AccountCode, ...] = (NCI_SHARE,)
 TAX_PREFIX = "8"
 
 type Lines = Iterable[tuple[int, AccountCode, Cents]]
@@ -57,6 +61,7 @@ class ProfitAndLoss:
     interest: Cents = 0
     tax: Cents = 0
     other_gains: Mapping[AccountCode, Cents] = field(default_factory=dict)  # M16: positive gain
+    nci: Cents = 0  # M16 (31.3): of the net result, what outside holders of subsidiaries own
 
     @property
     def total_revenue(self) -> Cents:
@@ -73,6 +78,10 @@ class ProfitAndLoss:
     @property
     def net_result(self) -> Cents:
         return self.operating_result + sum(self.other_gains.values()) - self.interest - self.tax
+
+    @property
+    def net_to_owners(self) -> Cents:
+        return self.net_result - self.nci
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,12 +130,14 @@ def profit_and_loss(
     cost: dict[AccountCode, Cents] = {}
     opex: dict[AccountCode, Cents] = {}
     other: dict[AccountCode, Cents] = {}
-    interest = tax = 0
+    interest = tax = nci = 0
     for turn, account, amount in lines:
         if not first_turn <= turn <= last_turn:
             continue
         kind = types[account]
-        if account in NON_OPERATING:
+        if account in NCI_ACCOUNTS:
+            nci += amount
+        elif account in NON_OPERATING:
             other[account] = other.get(account, 0) - amount
         elif kind == "revenue":
             revenue[account] = revenue.get(account, 0) - amount
@@ -139,7 +150,7 @@ def profit_and_loss(
                 cost[account] = cost.get(account, 0) + amount
             else:
                 opex[account] = opex.get(account, 0) + amount
-    return ProfitAndLoss(first_turn, last_turn, revenue, cost, opex, interest, tax, other)
+    return ProfitAndLoss(first_turn, last_turn, revenue, cost, opex, interest, tax, other, nci)
 
 
 def balance_sheet(

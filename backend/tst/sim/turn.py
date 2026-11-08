@@ -32,6 +32,7 @@ from tst.sim.founder.phase import founder_month, next_budget
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.group.holding import holding_month
 from tst.sim.group.ownership import disposals
+from tst.sim.group.stakes import stakes_month
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -319,6 +320,12 @@ def financing(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state).post(*integration_entries).log(*integration_logs)
+    if ctx.state.stakes:  # M16 (31.3): associates' share of the month; December fair value
+        types = {a.code: a.type for a in ctx.data.accounts}
+        targets = {x.company_id for x in ctx.state.stakes if x.is_open}
+        month = {cid: _month_operating(ctx, cid, types) for cid in targets}
+        state, stake_entries = stakes_month(ctx.state, ctx.balances, month, ctx.balance, ctx.data)
+        ctx = replace(ctx, state=state).post(*stake_entries)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
     state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
     # M16 (31.1): a held company that failed leaves its owner's group with a disposal.

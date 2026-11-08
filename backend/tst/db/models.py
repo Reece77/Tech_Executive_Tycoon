@@ -1848,3 +1848,15 @@ class HoldingRow(Base):
 
     company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class StakeRow(Base):
+    """A stake the group does not control (31.3, 31.5; 0039): `data` holds the Stake's other
+    fields (stake_bp, cost_cents, carrying_cents, from_turn, kind, to_turn, disclosed_bp)."""
+
+    __tablename__ = "group_stake"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    owner_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

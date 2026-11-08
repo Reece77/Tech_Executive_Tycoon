@@ -10219,6 +10219,18 @@ export interface components {
             tax_cents: number;
             /** Net Result Cents */
             net_result_cents: number;
+            /**
+             * Nci Cents
+             * @description Of the net result, what outside holders of subsidiaries own (M16, 31.3)
+             * @default 0
+             */
+            nci_cents?: number;
+            /**
+             * Net To Owners Cents
+             * @description The net result less NCI's share
+             * @default 0
+             */
+            net_to_owners_cents?: number;
         };
         /** ProjectBudgetIn */
         ProjectBudgetIn: {

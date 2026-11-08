@@ -11,11 +11,12 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from tst.db.mna_io import _sync, from_data, to_data
-from tst.db.models import HoldingRow, OwnershipRow
-from tst.sim.group.models import Holding, Ownership
+from tst.db.models import HoldingRow, OwnershipRow, StakeRow
+from tst.sim.group.models import Holding, Ownership, Stake
 from tst.sim.state import GameState
 
 KEYS = ("id", "company_id", "owner_id")
+STAKE_KEYS = ("id", "owner_id", "company_id")
 
 
 def load_group(
@@ -32,16 +33,32 @@ def load_group(
         from_data(Holding, r.data, company_id=r.company_id)
         for r in session.scalars(select(HoldingRow).order_by(HoldingRow.company_id))
     )
-    return replace(state, ownerships=ownerships, holdings=holdings)
+    stakes = tuple(
+        from_data(Stake, r.data, id=r.id, owner_id=r.owner_id, company_id=r.company_id)
+        for r in session.scalars(select(StakeRow).order_by(StakeRow.id))
+    )
+    return replace(state, ownerships=ownerships, holdings=holdings, stakes=stakes)
 
 
 def sync_group(
     session: Session, old: GameState, new: GameState, has_table: Callable[[Session, Any], bool]
 ) -> None:
-    if (old.ownerships, old.holdings) == (new.ownerships, new.holdings) or not has_table(
-        session, OwnershipRow
-    ):
+    if (old.ownerships, old.holdings, old.stakes) == (
+        new.ownerships,
+        new.holdings,
+        new.stakes,
+    ) or not has_table(session, OwnershipRow):
         return
+    _sync(
+        session,
+        old.stakes,
+        new.stakes,
+        lambda x: x.id,
+        lambda x: StakeRow(
+            id=x.id, owner_id=x.owner_id, company_id=x.company_id, data=to_data(x, STAKE_KEYS)
+        ),
+        lambda k: delete(StakeRow).where(StakeRow.id == k),
+    )
     _sync(
         session,
         old.holdings,
