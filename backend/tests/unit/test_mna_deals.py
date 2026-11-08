@@ -81,18 +81,28 @@ def test_negotiation_runs_rounds_toward_the_reservation(loaded: LoadedData) -> N
     zoho = _id(game.state, "Zoho")
     res = _true_reservation(game, zoho)
     counters = []
-    for _ in range(mb.max_rounds):
+    for i in range(mb.max_rounds):
         _energy(game)
-        last = counters[-1] if counters else res
-        game.act(BidForCompany(_founder(game), zoho, round(last * 0.95), mode="brand"))
+        # below the reservation (an offer at or above it is accepted: playtest 4)
+        game.act(BidForCompany(_founder(game), zoho, res - 100, mode="brand"))
         assert "counters at" in _title(game), _title(game)
         counters.append(game.state.target_files[0].counter_cents)
+        if i == 0:  # anchored above the reservation
+            assert counters[0] >= res * min(mb.counter_anchor.values()) * 0.85
+            # a first counter within the lowball band of the reservation, so offers just
+            # under it are not lowballs and the rounds can run
+            tf = game.state.target_files[0]
+            near = res * 107 // 100
+            assert mf.shown_counter(near) * mb.lowball < res - 100
+            game.state = deals.with_target_file(
+                game.state, replace(tf, counter_exact=near, counter_cents=mf.shown_counter(near))
+            )
+            counters[0] = mf.shown_counter(near)
     assert counters == sorted(counters, reverse=True)  # each round lower
     assert all(c >= res for c in counters)  # never below the reservation
-    assert counters[0] >= res * min(mb.counter_anchor.values()) * 0.85  # anchored above it
     assert all(str(res) not in str(i.params) for i in game.action_logs)
     _energy(game)
-    game.act(BidForCompany(_founder(game), zoho, round(counters[-1] * 0.95), mode="brand"))
+    game.act(BidForCompany(_founder(game), zoho, res - 100, mode="brand"))
     assert "ended talks" in _title(game)
     _energy(game)
     with pytest.raises(MnaRuleError, match="closed for now"):
@@ -110,7 +120,8 @@ def test_two_lowballs_end_talks_and_the_counter_as_shown_buys(loaded: LoadedData
     assert shown is not None
     for strike in range(1, mb.strikes + 1):
         _energy(game)
-        game.act(BidForCompany(_founder(game), zoho, round(shown * mb.lowball) - 100, mode="brand"))
+        lowball = min(round(shown * mb.lowball), res) - 100  # below the reservation too
+        game.act(BidForCompany(_founder(game), zoho, lowball, mode="brand"))
         assert ("ended talks" in _title(game)) == (strike == mb.strikes)
     # a fresh game: bidding the counter as shown is accepted, at no less than the reservation
     game = _game(loaded)
@@ -121,6 +132,56 @@ def test_two_lowballs_end_talks_and_the_counter_as_shown_buys(loaded: LoadedData
     _energy(game)
     game.act(BidForCompany(_founder(game), zoho, shown, mode="brand"))
     assert game.state.deals and game.state.deals[0].price_cents == shown
+
+
+def test_a_counter_is_never_below_the_offer(loaded: LoadedData) -> None:
+    """Playtest 4 (M15r addendum a): the reported case was an offer of $17.9M countered at
+    $17.0M, the halved gap landing under the offer. Every counter is above the offer it
+    answers, and an offer at or above the reservation is accepted in any round."""
+    game = _game(loaded)
+    zoho = _id(game.state, "Zoho")
+    res = _true_reservation(game, zoho)
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, round(res * 0.95), mode="brand"))
+    first = game.state.target_files[0].counter_cents
+    assert first is not None and first > res
+    # the second offer sits between the reservation and the first counter, above the
+    # halfway point the old rule would have countered at
+    offer = res + (first - res) * 3 // 4
+    assert offer >= mf.shown_counter(mf.next_counter_exact(first, res))  # the old bug's case
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, offer, mode="brand"))
+    assert game.state.deals and game.state.deals[0].price_cents == offer, _title(game)
+    # an opening offer exactly at the reservation is accepted too
+    game = _game(loaded)
+    _energy(game)
+    game.act(BidForCompany(_founder(game), zoho, res, mode="brand"))
+    assert game.state.deals and game.state.deals[0].price_cents == res, _title(game)
+
+
+@settings(max_examples=60, deadline=None)
+@given(
+    shares=st.lists(st.floats(min_value=0.5, max_value=0.999), min_size=1, max_size=4),
+)
+def test_counters_stay_above_offers_below_the_reservation(
+    loaded: LoadedData, shares: list[float]
+) -> None:
+    """Property (playtest 4): offers below the reservation are countered (or end talks),
+    and every counter shown is above the offer it answered."""
+    game = _game(loaded)
+    zoho = _id(game.state, "Zoho")
+    res = _true_reservation(game, zoho)
+    for share in shares:
+        _energy(game)
+        offer = round(res * share)
+        try:
+            game.act(BidForCompany(_founder(game), zoho, offer, mode="brand"))
+        except MnaRuleError:
+            break  # talks closed
+        assert not game.state.deals
+        if "counters at" in _title(game):
+            shown = game.state.target_files[0].counter_cents
+            assert shown is not None and shown > offer and shown >= res
 
 
 def test_no_run_of_offers_reveals_the_reservation(loaded: LoadedData) -> None:

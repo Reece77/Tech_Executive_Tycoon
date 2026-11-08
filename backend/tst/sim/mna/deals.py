@@ -436,12 +436,18 @@ def _negotiate(
     half the gap toward it, for up to mna.max_rounds rounds; an offer at or above the counter
     as shown is accepted. A lowball (below the last counter x mna.lowball) uses up patience:
     mna.strikes of them end talks. Counters are shown rounded up to two significant figures,
-    so no run of offers pins the reservation down; the reservation is never shown."""
+    so no run of offers pins the reservation down; the reservation is never shown.
+
+    Playtest 4 (M15r addendum a): an offer at or above the reservation is accepted in any
+    round, and a counter is never below the offer it answers (the halved gap had countered
+    $17.9M at $17.0M)."""
     mb = balance.mna
     target = action.target_id
     name = state.company(target).name
     price = action.price_cents
     reservation = reservation_cents(state, target, balances, balance, data)
+    if price >= reservation:
+        return _accept(state, found, action, acquirer_id, rng, balance, data)
     if found.counter_exact is None:
         personality = state.company(target).personality or ""
         anchor = mb.counter_anchor.get(personality, max(mb.counter_anchor.values()))
@@ -486,6 +492,8 @@ def _counter(
     mb = balance.mna
     target = found.target_id
     name = state.company(target).name
+    exact = max(exact, price + 1)  # never counter below the offer (playtest 4); unreachable
+    # while offers at the reservation are accepted, kept so the rule holds on its own
     shown = mf.shown_counter(exact)
     rounds = found.rounds + 1
     found = replace(found, counter_exact=exact, counter_cents=shown, rounds=rounds)
