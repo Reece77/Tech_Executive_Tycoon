@@ -2581,6 +2581,74 @@ Appended to `eras.yaml` as seeded windows (§26.4, stream `era_window` keyed by 
 2. **The scenario list** in §30.3.
 3. **The chief-of-staff advisor** stays in the backlog (v4), not M15.
 
+## 31. Holding company and subsidiaries (M16, v3)
+
+Reece's decisions (2026-11-02, ADR-0020; defaults 2026-11-06 accepted 2026-11-08): subsidiaries are real legal entities with their own books, cap table and board; a **conglomerate discount** of 10–25%; **corporate venture investing** in M16; rivals as groups later (after M23). Built on M14's kept brands. Principle: **a company that never forms a holding company plays exactly as before.**
+
+### 31.1 Group membership and consolidation by period (Codex review 4, findings 2 and 3)
+
+- **Ultimate owner:** `owner_of(state, company_id)` follows `parent_id` to the top, cycle-checked (a cycle is a data error). `group_companies(state, root_id, turn)` returns every company whose ultimate owner was `root_id` at `turn`, at any depth, from **ownership history** (each company's `owned_from` and `owned_to` turns by owner), not from which companies are alive now.
+- **Consolidation per period:** each reporting period consolidates the companies controlled during it. A failed or sold subsidiary keeps its contributions to earlier periods; its end posts a **disposal** (net assets out, the investment out, the difference to `4930 gain or loss on disposal`). Intercompany investments are eliminated at every level, and each subsidiary consolidates once.
+- **Antitrust** (§28.4) counts the customers of every company under the same ultimate owner.
+
+### 31.2 Becoming a holding company (stage 5)
+
+- **Gate:** listed (stage 4) and either two or more subsidiaries or group revenue of at least `group.stage5_revenue_cents` ($2B) a year.
+- **Form a holding company** (energy 20; fees 0.1% of market cap to 6900): a new company "<Name> Holdings" takes the listing, the cap table and the founder as Chair; the operating company and every kept brand become its subsidiaries (100% owned). Shareholders swap one for one. It has no products of its own; its costs are a small group office (`group.office_monthly_cents`, $250k).
+- **Screens:** a **Group** screen (an entity tree: ownership, mandate, CEO, revenue, operating margin, cash, value) and a company switcher scoping the existing screens to one entity.
+
+### 31.3 How stakes are accounted
+
+| Stake held | Treatment | Accounts |
+| --- | --- | --- |
+| ≥ 50% | Full consolidation; outside holders' share is non-controlling interest (NCI) | 3500 non-controlling interest; NCI's share of profit shown below net income |
+| 20–50% | Equity method: the investment grows by the group's share of profit, less dividends | 1820 investments in associates; 4910 share of associates' profit |
+| < 20% | Fair value (market cap if listed, else §28.1's value), marked each December | 1830 financial investments; 4920 fair-value gains and losses |
+
+### 31.4 Subsidiaries as companies
+
+- **Cap table and board:** each subsidiary has its own cap table (parent, minority investors, an option pool) and board (parent nominees, independents, one seat per 15% held by minorities).
+- **CEO and mandate:** each subsidiary's CEO runs it under a **mandate** (energy 3): **grow** (revenue growth target), **margin** (operating margin target) or **return cash** (dividend payout target), plus a yearly capex limit and the categories and regions it may enter. Subsidiary CEOs pitch to the holding company through M13b's system, judged against the mandate. Kept brands' directives map to mandates (grow → grow, harvest → return cash, defend → margin).
+- **Review:** each December the subsidiary's board scores its CEO against the mandate (§24's review); two misses in a row bring a replacement proposal.
+- **Money:** a 100%-owned subsidiary keeps M14's sweep and funding; with minorities, cash moves up only as dividends, pro rata to every holder.
+
+### 31.5 Capital actions
+
+- **Sell a stake** (up to 49% keeps control): priced at the subsidiary's value less `group.private_discount` (20%) unless listed; the buyers are investors from `investors.yaml`.
+- **Buy out minorities** at `group.buyout_premium` (25%) over value.
+- **Subsidiary IPO (carve-out):** list 10–40% through M13's IPO chain; the subsidiary gets its own share price, analysts and earnings; the parent keeps control.
+- **Spin-off:** distribute a subsidiary's shares to the holding company's shareholders (the player may keep up to 19.9%); it becomes an independent listed rival with its people, products and facilities. The founder receives their pro-rata shares personally (credited to M24's book as a holding, not cash).
+- **Stakes in listed rivals:** buy on the market up to 49.9%; each 1% of the target raises the price paid by `group.stake_impact` (0.5%); public disclosure events at 5%, 10% and 25%; at 30% a full offer (§28.3) or no further buying.
+- **Corporate venture:** invest in a startup's funding round (§15.4) for 5–25% at the round's price; information rights reveal its key people and products as ranges (scouting rules).
+
+### 31.6 Transfer prices
+
+- Each intra-group flow (chips to devices, compute to software, in v3 wafers and minerals) moves at a price the holding company sets per flow: **cost**, **cost plus** a margin, or **market** (the market-good price). M12b's internal supply at cost becomes the default "cost".
+- Within 100%-owned companies it moves profit between entities only. Where the selling or buying company has minorities, a price more than `group.fairness_band` (10%) from market for 6 months raises a **minority complaint** event (critical), then a 10% valuation discount on that subsidiary and a legal cost of 0.5% of its revenue until corrected.
+- Built to carry M22's regional tax and tariffs (follow-up).
+
+### 31.7 The conglomerate discount
+
+A listed holding company's market cap is the sum of its parts (§28.1 values, with listed subsidiaries at market, × ownership) × `(1 − d)`, where `d = clamp(group.cd_base + group.cd_per_segment × (segments − 1) − group.cd_synergy × intra_group_share, 0.10, 0.25)` (base 0.10, 0.03 per unrelated segment, synergy 0.15 × the share of group revenue that is intra-group). Analysts' notes name it.
+
+### 31.8 Worked examples
+
+- **Consolidation with NCI.** The group owns 80% of a subsidiary with net assets $100M and profit $10M: NCI $20M on the balance sheet and $2M of profit to NCI.
+- **Equity method.** A 30% stake bought for $60M in a company earning $20M and paying $5M of dividends: investment $60M + 6 − 1.5 = **$64.5M**.
+- **Conglomerate discount.** Parts worth $40B in 4 unrelated segments with 10% intra-group revenue: `d` = 0.10 + 0.09 − 0.015 = 0.175; market cap **$33.0B**.
+
+### 31.9 Balance targets (M16 acceptance, printed)
+
+1. **Nothing moves for a single company:** a game that never forms a holding company plays exactly as before (golden snapshots unchanged by sub-tasks 1–2 except the findings' fixes).
+2. **Consolidation is right:** property tests on cash, NCI, eliminations and disposals; the §31.8 examples; a three-level group's statements equal hand-built ones.
+3. **Spin-offs sometimes pay:** with the discount, spinning off an unrelated subsidiary raises the founder's total value (both stakes) on 40–80% of seeds; spinning off a closely integrated one lowers it on most.
+4. **Mandates matter:** a subsidiary under "grow" grows 20–60% faster over 3 years than under "return cash", which returns 2–4× the cash.
+5. **Fairness bites:** an unfair transfer price with minorities raises a complaint within 6 months on every seed.
+
+### 31.10 What the API may show
+
+The entity tree with stakes and treatments; every subsidiary's public statements; mandates and reviews; offers and stakes; the conglomerate discount and its parts. Never a minority investor's or target board's hidden thresholds, or private companies' true values (ranges as §28.1).
+
 ## 32. The founder's life (M24, lane C)
 
 Reece's decisions (2026-11-07): **burnout from overwork** with a visible stress meter; **political influence with scandal risk**; **a personal foundation** funded from a personal account; **a public persona built from choices**. Built in parallel with v3 as a third lane (numbered after v3). Principle: **the founder is a person, not only a budget of energy**; nothing here changes the company's rules except through the effects named below.
