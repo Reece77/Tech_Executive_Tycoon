@@ -93,13 +93,13 @@ def _entity(
 
 
 def _discount(state: GameState, balances: LedgerBalances, data: LoadedData) -> DiscountOut:
-    d = conglomerate(state, listed_id(state), balances, data.balance, data.game_data)
+    d = conglomerate(state, listed_id(state), balances, data.balance, data.game_data, public=True)
     return DiscountOut(
         parts_cents=d.parts_cents,
         segments=d.segments,
         intra_share=float(d.intra_share),
         discount=float(d.discount),
-        value_cents=d.value_cents,
+        after_discount_cents=d.value_cents,
     )
 
 

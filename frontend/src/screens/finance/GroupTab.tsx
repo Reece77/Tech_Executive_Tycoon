@@ -297,7 +297,7 @@ export function GroupTab({ saveId }: { saveId: string }) {
             Analysts value the parts at {formatMoneyShort(g.discount.parts_cents)} and apply a{' '}
             {(g.discount.discount * 100).toFixed(1)}% conglomerate discount ({g.discount.segments}{' '}
             segments, {(g.discount.intra_share * 100).toFixed(1)}% of revenue intra-group):{' '}
-            {formatMoneyShort(g.discount.value_cents)}.
+            {formatMoneyShort(g.discount.after_discount_cents)}.
           </p>
         </Panel>
       )}

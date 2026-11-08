@@ -45,30 +45,45 @@ def segments(state: GameState, root: int) -> int:
 
 
 def part_cents(
-    state: GameState, company_id: int, balances: LedgerBalances, balance: Balance, data: GameData
+    state: GameState,
+    company_id: int,
+    balances: LedgerBalances,
+    balance: Balance,
+    data: GameData,
+    public: bool = False,
 ) -> int:
     """One company's value (28.1) for the sum of the parts, less a standing complaint's
-    discount (31.6)."""
+    discount (31.6). `public` (what the API shows, 31.10): a private company at its displayed
+    range's midpoint, never its V_f."""
     cap = valuation.market_cap_cents(state, company_id, balances, balance, data)
-    value = (
-        cap
-        if cap is not None
-        else valuation.fundamental_value_cents(state, company_id, balances, balance, data)
-    )
+    if cap is not None:
+        value = cap
+    elif public:
+        low, high = valuation.value_range_cents(state, company_id, balances, balance, data)
+        value = (low + high) // 2
+    else:
+        value = valuation.fundamental_value_cents(state, company_id, balances, balance, data)
     if complaint_against(state, company_id):
         value = round(value * (1 - exact(balance.group.complaint_discount)))
     return value
 
 
 def conglomerate(
-    state: GameState, root: int, balances: LedgerBalances, balance: Balance, data: GameData
+    state: GameState,
+    root: int,
+    balances: LedgerBalances,
+    balance: Balance,
+    data: GameData,
+    public: bool = False,
 ) -> Discount:
     turn = state.turn
     parts = Fraction(0)
     for m in group_members(state, root):
         if m.end is not None or not state.company(m.company_id).alive:
             continue
-        parts += m.effective_at(turn) * part_cents(state, m.company_id, balances, balance, data)
+        parts += m.effective_at(turn) * part_cents(
+            state, m.company_id, balances, balance, data, public
+        )
     parts += sum(x.carrying_cents for x in state.stakes if x.is_open and x.owner_id == root)
     revenue = sum(sum(c.mrr_history[-MONTHS_PER_YEAR:]) for c in group_companies(state, root))
     share = intra_group_share(state, revenue)

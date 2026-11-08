@@ -5543,7 +5543,11 @@ export interface components {
              */
             history: number[];
         };
-        /** DiscountOut */
+        /**
+         * DiscountOut
+         * @description From public numbers only (31.10): listed parts at market, private ones at their
+         *     displayed range's midpoint.
+         */
         DiscountOut: {
             /**
              * Parts Cents
@@ -5563,10 +5567,10 @@ export interface components {
              */
             discount: number;
             /**
-             * Value Cents
+             * After Discount Cents
              * @description The sum of the parts x (1 - d)
              */
-            value_cents: number;
+            after_discount_cents: number;
         };
         /** DividendIn */
         DividendIn: {

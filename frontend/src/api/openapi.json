@@ -20766,9 +20766,9 @@
             "title": "Discount",
             "description": "The conglomerate discount d, 0.10-0.25"
           },
-          "value_cents": {
+          "after_discount_cents": {
             "type": "integer",
-            "title": "Value Cents",
+            "title": "After Discount Cents",
             "description": "The sum of the parts x (1 - d)"
           }
         },
@@ -20778,9 +20778,10 @@
           "segments",
           "intra_share",
           "discount",
-          "value_cents"
+          "after_discount_cents"
         ],
-        "title": "DiscountOut"
+        "title": "DiscountOut",
+        "description": "From public numbers only (31.10): listed parts at market, private ones at their\ndisplayed range's midpoint."
       },
       "DividendIn": {
         "properties": {

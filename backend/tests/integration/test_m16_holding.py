@@ -171,3 +171,29 @@ def test_a_spin_off_becomes_an_independent_listed_company(
     for p in out.periods:
         s = p.balance_sheet
         assert s.total_assets_cents == s.total_liabilities_and_equity_cents, p.label
+
+
+def test_upgrading_to_0039_backfills_each_brands_holding(
+    tmp_path: Path, loaded: LoadedData
+) -> None:
+    """Migration 0039 on a save from before M16: each kept brand gets an open holding from its
+    closing by its parent, with the 1810 the parent posted at closing and the brand's equity
+    then, as the engine records them."""
+    from tst.db import migrate
+
+    sys.path.insert(0, str(TOOLS))
+    from e2e_m16_save import eligible
+
+    path = eligible(tmp_path, "upgrade", loaded)
+    recorded = {o.company_id: o for o in _load(path).ownerships}
+    assert len(recorded) == 2
+    migrate.downgrade(path, "0038_m15r")
+    migrate.ensure_current(path)
+    state = _load(path)
+    upgraded = {o.company_id: o for o in state.ownerships}
+    assert set(upgraded) == set(recorded)
+    for cid, o in recorded.items():
+        u = upgraded[cid]
+        assert (u.owner_id, u.from_turn, u.to_turn) == (o.owner_id, o.from_turn, None)
+        assert (u.book_cents, u.equity_cents) == (o.book_cents, o.equity_cents)
+    assert gate(state, loaded.balance) == []

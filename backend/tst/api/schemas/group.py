@@ -80,11 +80,14 @@ class FlowOut(BaseModel):
 
 
 class DiscountOut(BaseModel):
+    """From public numbers only (31.10): listed parts at market, private ones at their
+    displayed range's midpoint."""
+
     parts_cents: int = Field(description="The sum of the parts (31.7)")
     segments: int
     intra_share: float = Field(description="Intra-group revenue over the year's group revenue")
     discount: float = Field(description="The conglomerate discount d, 0.10-0.25")
-    value_cents: int = Field(description="The sum of the parts x (1 - d)")
+    after_discount_cents: int = Field(description="The sum of the parts x (1 - d)")
 
 
 class GroupOut(BaseModel):
