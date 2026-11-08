@@ -154,36 +154,60 @@ test('(c) run out of cash, see the insolvency badge and bridge, ignore it, reach
   await expect(page.getByTestId('accept-bridge')).toHaveText('Accept the bridge · 5 energy');
 
   // Ignore it: Continue until the third month end below zero ends the game. A critical
-  // event (the payroll crunch, M6) must be answered first; take its first choice.
+  // event (the payroll crunch, M6) must be answered first; take its first choice. Each step
+  // reads what blocks Continue from the server and waits for the screen to show the same
+  // before acting: the new month shows from the advance response while the events list
+  // refetches behind it, so the screen alone can briefly look unblocked (or, in the month
+  // that ends the game, briefly not insolvent before the game over screen opens).
+  const base = `/saves/${BROKE}`;
   const date = page.getByTestId('game-date');
   const cont = page.getByTestId('continue');
+  const blockedNote = page.getByTestId('continue-blocked');
   const critical = page.getByRole('dialog');
-  for (let step = 0; step < 8 && !page.url().endsWith('/over'); step++) {
-    if (await critical.isVisible()) {
+  type Blocking = {
+    blocking_event_id: number | null;
+    blocking_event_ids: number[];
+    blocking_proposal_ids?: number[];
+    blocking_pitch_ids?: number[];
+  };
+  let over = false;
+  for (let step = 0; step < 12 && !over; step++) {
+    const open = await api<Blocking>(request, 'GET', `${base}/events`);
+    if (open.blocking_event_id !== null) {
+      await expect(critical).toBeVisible();
+      await expect(cont).toBeDisabled();
       await critical.locator('[data-choice="A"]').click();
       await expect(critical).toBeHidden();
       continue;
     }
-    if (await page.getByTestId('continue-blocked').isVisible()) {
+    const others =
+      open.blocking_event_ids.length +
+      (open.blocking_proposal_ids?.length ?? 0) +
+      (open.blocking_pitch_ids?.length ?? 0);
+    if (others > 0) {
+      await expect(blockedNote).toBeVisible();
+      await expect(cont).toBeDisabled();
       await answerBlocking(page); // a major event blocks Continue too (23.1, M10b)
       continue;
     }
-    // The redirect to /over can land a moment after the last month's date shows (M24 made
-    // the overview heavier): the game-over screen ends the loop as the URL would.
-    if (await page.getByTestId('over-kicker').isVisible()) break;
-    const before = await date.textContent();
+    // Nothing blocks: Continue is on and the company is still insolvent.
+    await expect(blockedNote).toHaveCount(0);
+    await expect(page.getByTestId('insolvent-badge')).toBeVisible();
     await expect(cont).toBeEnabled();
-    await cont.click();
-    await expect
-      .poll(
-        async () =>
-          page.url().endsWith('/over') ||
-          (await date.textContent()) !== before ||
-          (await critical.isVisible()),
-      )
-      .toBe(true);
-    if (!page.url().endsWith('/over') && !(await critical.isVisible()))
-      await expect(page.getByTestId('insolvent-badge')).toBeVisible();
+    const before = (await date.textContent()) ?? '';
+    const [advanced] = await Promise.all([
+      page.waitForResponse(
+        (r) => r.request().method() === 'POST' && r.url().endsWith(`/api${base}/advance`),
+      ),
+      cont.click(),
+    ]);
+    expect(advanced.ok()).toBe(true);
+    const next = (await advanced.json()) as { game_state: string };
+    if (next.game_state !== 'active') {
+      over = true;
+    } else {
+      await expect(date).not.toHaveText(before);
+    }
   }
   await expect(page).toHaveURL(/\/over$/);
   await expect(page.getByTestId('over-kicker')).toContainText('Bankrupt');
