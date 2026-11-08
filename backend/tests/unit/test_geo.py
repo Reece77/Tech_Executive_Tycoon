@@ -292,7 +292,7 @@ def test_draw_city(loaded: LoadedData) -> None:
     assert draw_city(0.0, "bangalore", b, data) == "bangalore"
     assert draw_city(0.849, "bangalore", b, data) == "bangalore"
     assert draw_city(0.85, "bangalore", b, data) == "san_francisco"  # relocators by weight
-    assert draw_city(0.9999, "bangalore", b, data) == "sydney"
+    assert draw_city(0.9999, "bangalore", b, data) == "cape_town"  # the last city (M15r)
     assert draw_city(0.0, ANYWHERE, b, data) == "san_francisco"
 
 
