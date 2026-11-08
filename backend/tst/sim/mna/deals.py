@@ -147,6 +147,27 @@ def monthly_costs_cents(state: GameState, company_id: int, balance: Balance, dat
     return monthly_cost_cents(state, company_id, balance, data)
 
 
+def public_costs_cents(state: GameState, company_id: int, balance: Balance, data: GameData) -> int:
+    """What anyone can estimate of a company's monthly staff costs (M15r, Codex review 4
+    finding 5): its displayed headcount (15.5's rounding of people plus pools) x a market
+    head's monthly cost (the mid-level pay of each pool function's role at the default region,
+    benefits and office, averaged). Never its people's private salaries."""
+    from tst.sim.hiring.formulas import benefits_cents, market_mid_cents, monthly_salary_cents
+    from tst.sim.rivals.formulas import rounded_headcount
+
+    heads = len(state.staff(company_id)) + sum(p.headcount for p in state.company_pools(company_id))
+    shown = rounded_headcount(heads, balance.rivals)
+    region = data.region(balance.founder.default_region).salary_multiplier_bp
+    per_head = []
+    for role_key in balance.rivals.function_roles.values():
+        role = data.role(role_key)
+        pay = monthly_salary_cents(market_mid_cents(role.salary_band_mid_cents["mid"], region))
+        per_head.append(
+            pay + benefits_cents(pay, balance.payroll) + balance.payroll.office_cost_per_head_cents
+        )
+    return shown * (sum(per_head) // len(per_head)) if per_head else 0
+
+
 def premium_of(state: GameState, target_id: int, balance: Balance) -> float:
     """p (28.3): a startup's founder by true ambition; otherwise by personality."""
     company = state.company(target_id)

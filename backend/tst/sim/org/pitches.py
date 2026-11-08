@@ -1071,7 +1071,8 @@ def _acquisitions(
     the CPO only startups estimated under the auto-approve limit x mna.cpo_limit_mult. Score:
     the target's displayed revenue in the acquirer's categories x fit / estimated price, on the
     pitches' 24-month scale; central case: that revenue grown 24 months, plus integration
-    savings of mna.pitch_synergy x its monthly costs."""
+    savings of mna.pitch_synergy x its public monthly staff-cost estimate (M15r: displayed
+    headcount at market rates, never its private salaries)."""
     from tst.sim.mna import antitrust, deals, valuation
     from tst.sim.mna.integration import can_integrate
 
@@ -1104,7 +1105,7 @@ def _acquisitions(
             for p in state.company_products(target.id)
             if p.category in mine
         )
-        costs = deals.monthly_costs_cents(state, target.id, b, data)
+        costs = deals.public_costs_cents(state, target.id, b, data)  # public only (M15r)
         central = revenue * (1 + growth) ** 2 + mb.pitch_synergy * costs
         listed = valuation.is_listed(state, target.id, data)
         if listed:
