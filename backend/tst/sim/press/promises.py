@@ -17,6 +17,7 @@ from tst.sim.press.config import PROMISE_KINDS, REMINDER
 from tst.sim.press.draws import press_gen
 from tst.sim.press.models import Promise
 from tst.sim.press.shares import shown_lead, shown_prices, shown_quality
+from tst.sim.rivals.models import player_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -223,8 +224,9 @@ def check(
         result = verdict(state, p)
         if result is None:
             continue
-        if p.company_id not in gens:  # stream press, key (company_id,): one a month (29.4)
-            gens[p.company_id] = press_gen(rng, state.turn, p.company_id)
+        if p.company_id not in gens:  # stream press, the player key: one a month (29.4)
+            owner = state.company(p.company_id)
+            gens[p.company_id] = press_gen(rng, state.turn, *player_key(owner.id, owner.rival_key))
         lo, hi = balance.press.reminder_months
         months = int(gens[p.company_id].integers(lo, hi + 1))
         state, logged = resolve(state, p, result, balance, data, months)

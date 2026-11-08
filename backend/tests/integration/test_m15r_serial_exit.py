@@ -152,6 +152,7 @@ def test_the_delisting_persists(played: Played) -> None:
     cold = _load(played.path)
     assert public_of(cold, OLD) is None and ceo_of(cold, OLD) is None
     assert cold == live_view(played.warm)  # warm and cold agree after the committed action
+    assert cold.player.rival_key == (4, 1)  # the new venture's stable key persists (finding 9)
     with open_session(played.path) as session:
         assert session.get(PublicCompanyRow, OLD) is None
         months = session.scalars(select(ShareMonthRow).where(ShareMonthRow.company_id == OLD))

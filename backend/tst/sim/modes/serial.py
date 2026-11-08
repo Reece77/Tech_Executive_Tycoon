@@ -25,6 +25,7 @@ from tst.sim.modes.models import Venture
 from tst.sim.money import format_money
 from tst.sim.people.models import FOUNDER_ROLE, Employment
 from tst.sim.people.reveal import new_reveal_state
+from tst.sim.rivals.models import VENTURE_KEY
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     CompanyState,
@@ -172,6 +173,9 @@ def found_again(
                 stage_history=((0, turn),),
                 mission=old.mission,
                 hq_city=old.hq_city,
+                # a stable identity for its streams, never the database id (ADR-0013; M15r,
+                # Codex review 4 finding 9): the n-th venture after the first
+                rival_key=(VENTURE_KEY, len(state.ventures)),
             ),
         ),
     )

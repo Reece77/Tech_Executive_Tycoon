@@ -30,7 +30,7 @@ from tst.sim.mna import valuation
 from tst.sim.mna.draws import fixed_draws, mna_draws
 from tst.sim.mna.models import OPEN_DEALS, PROBLEMS, Deal, Mode, Problem, TargetFile
 from tst.sim.money import format_money
-from tst.sim.rivals.models import stream_key
+from tst.sim.rivals.models import player_key, stream_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -102,9 +102,12 @@ class DealOutcome:
 
 
 def key_of(state: GameState, company_id: int) -> tuple[int, ...]:
-    """A company's mna stream key (ADR-0013): a rival's stable key, the player's id."""
+    """A company's mna stream key (ADR-0013): a rival's stable key, the player's player key
+    (M15r)."""
     company = state.company(company_id)
-    return (company_id,) if company.is_player else stream_key(company_id, company.rival_key)
+    if company.is_player:
+        return player_key(company_id, company.rival_key)
+    return stream_key(company_id, company.rival_key)
 
 
 def problems_of(state: GameState, target_id: int, balance: Balance) -> tuple[Problem, ...]:

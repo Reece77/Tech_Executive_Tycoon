@@ -140,3 +140,49 @@ def test_retire_ends_the_game(loaded: LoadedData) -> None:
     assert len(game.state.ventures) == 1
     with pytest.raises(InvalidModeError):
         game.act(Retire(_founder(game)))
+
+
+def test_a_new_venture_has_a_stable_identity(loaded: LoadedData) -> None:
+    """M15r (Codex review 4 finding 9): the new venture's draws (IPO demand, sentiment, deals,
+    press) follow a persisted venture key, not its database id, so appending an unrelated
+    company before founding again changes none of them."""
+    from tst.sim.markets_public import ipo
+    from tst.sim.markets_public.public import sentiment_draws
+    from tst.sim.mna.deals import key_of
+    from tst.sim.rivals.models import player_key
+    from tst.sim.rng import RngFactory
+    from tst.sim.state import CompanyState
+
+    game = _game(loaded)
+    plain = game.state
+    extra = CompanyState(
+        id=max(c.id for c in plain.companies) + 1,
+        name="Unrelated Co",
+        is_player=False,
+        stage=0,
+        founded_turn=0,
+    )
+    appended = replace(plain, companies=(*plain.companies, extra))
+    rng = RngFactory(3)
+    out = []
+    for state in (plain, appended):
+        founder = state.founder_of(state.player.id)
+        assert founder is not None
+        from tst.sim.modes.serial import found_again
+
+        new, _, _ = found_again(state, "Second Act", KEEP, rng, loaded.balance, loaded.game_data)
+        company = new.player
+        key = player_key(company.id, company.rival_key)
+        out.append(
+            (
+                company.id,
+                key,
+                key_of(new, company.id),
+                ipo.draw_demand(rng, 60, key, 1.0, loaded.balance),
+                float(sentiment_draws(rng, 60, *key).random()),
+            )
+        )
+    (id_a, *draws_a), (id_b, *draws_b) = out
+    assert id_a != id_b  # the database ids differ...
+    assert draws_a == draws_b  # ...and nothing the venture draws does
+    assert out[0][1] == (4, 1)  # VENTURE_KEY, the second company the player has run

@@ -27,6 +27,7 @@ from tst.sim.markets_public.value import (
     growth_of,
 )
 from tst.sim.press.moments import credibility, queue_moment
+from tst.sim.rivals.models import player_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -110,8 +111,8 @@ def guidance_problem(
 
 
 def sentiment_draws(rng: RngFactory, turn: int, *key: int) -> np.random.Generator:
-    """The one call site of stream market_sentiment (25.3): the player keyed by its id, a
-    listed rival (M14, 28.1) by its stable key."""
+    """The one call site of stream market_sentiment (25.3): a player company by its player
+    key (M15r), a listed rival (M14, 28.1) by its stable key."""
     return rng.stream(turn, "market_sentiment", *key)
 
 
@@ -136,11 +137,12 @@ def public_month(
         f = fundamentals(state, cid, revenue.get(cid, 0), op.get(cid, 0), balance, data)
         # One generator a month per listed company: the sentiment shock and the analysts'
         # targets, at the listing and after each report (stream market_sentiment, 25.3).
-        gen = sentiment_draws(rng, state.turn, cid)
+        key = player_key(cid, company.rival_key)  # a stable key, never the id (M15r)
+        gen = sentiment_draws(rng, state.turn, *key)
         if public is None and listing is not None:
             if ipo.roadshow_done(listing) and listing.demand is None:
                 climate = macro.venture_climate(state, data)
-                d = ipo.draw_demand(rng, state.turn, cid, climate, balance)
+                d = ipo.draw_demand(rng, state.turn, key, climate, balance)
                 state = ipo.open_pricing(state, cid, f, d, balance, data)
             elif listing.status == "priced":
                 state, posted, logged = ipo.list_company(
