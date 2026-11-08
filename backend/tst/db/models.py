@@ -46,9 +46,7 @@ class SaveMetaRow(Base):
     # as display_name is: older migrations read save_meta through the current models.
     mod_name: Mapped[str | None] = mapped_column(String(64), nullable=True, deferred=True)
     mod_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, deferred=True)
-    mod_overlay: Mapped[dict[str, Any] | None] = mapped_column(
-        JSON, nullable=True, deferred=True
-    )
+    mod_overlay: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True, deferred=True)
     next_person_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_search_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_offer_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
