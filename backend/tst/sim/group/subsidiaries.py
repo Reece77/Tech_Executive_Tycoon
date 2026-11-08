@@ -324,6 +324,17 @@ def group_month(
     return state, tuple(logs)
 
 
+def payout_cap(state: GameState, company_id: int, balance: Balance) -> int | None:
+    """Under "grow", the most it pays up this month: grow_payout of last month's operating
+    profit (31.4: it reinvests the rest); None under the other mandates or none."""
+    mandate = mandate_of(state, company_id)
+    if mandate is None or mandate.kind != "grow":
+        return None
+    ops = state.company(company_id).op_history
+    profit = ops[-1] if ops else 0
+    return max(0, round(exact(balance.group.mandate.grow_payout) * profit))
+
+
 def keep_months(state: GameState, company_id: int, balance: Balance) -> float | None:
     """Months of costs a subsidiary under a mandate keeps before its cash goes up (31.4);
     None without a mandate (M14's mna.sweep_months)."""

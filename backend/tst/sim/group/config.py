@@ -29,6 +29,7 @@ class MandateBalance(_Frozen):
     grow_keep_months: float = Field(ge=0)  # costs a "grow" subsidiary keeps before sweeping
     margin_keep_months: float = Field(ge=0)
     return_keep_months: float = Field(ge=0)
+    grow_payout: float = Field(ge=0, le=1)  # share of last month's profit "grow" pays up
     review_misses: int = Field(ge=1)  # missed Decembers in a row before a replacement proposal
     pitch_chance: float = Field(ge=0, le=1)  # a subsidiary CEO's capital request each quarter
     pitch_months: float = Field(gt=0)  # months of its costs a request asks for

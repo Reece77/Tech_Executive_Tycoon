@@ -512,3 +512,24 @@ Tuned in M15a (before → after): `rnd.rate` 0.4 → 0.3 (V2); `debt.venture.cov
 T3 follows the product manager's ruling of 2026-11-07: three new Reckless sources (runway under 6 months while burning, a down round, headcount doubled in a year) and the 5-point lead in the measure. Tuned (M24's keys only): `persona.sources.down_round` 8 → 70 (blitzscale's down rounds close in months 87–99, and the drift leaves `20 + S − 2 × (119 − t)` at year 10; 6 seeds need S ≥ 59); `foundation.beloved_k` 2 → 3 (at 2, $10M a year raised Beloved by 4); `influence.risk_rate` 0.002 → 0.0005 (at 0.002 a scandal broke on 8 of 10 seeds; 0.0015 and 0.001: 8; 0.0008: 7; 0.0006: 6; 0.0005: 5).
 
 `stress.load` 40 → 30 (product manager, 2026-11-08): at 40, M15a's research_heavy burned out (stress 82 around month 61) and its 10-year guard failed (research_heavy 5 of 10 wins); at 30 it is back to `main`'s known miss. Values above are on the code merged with M15a, at `stress.load` 30.
+
+
+## M16: the holding company and subsidiaries (§31.9)
+
+### M16 Holding company (2026-11-08, v3)
+
+`tools/m16_targets.py` (`tst/balance/m16.py`), 10 seeds: M13's listed company keeping two small revenue-earning rivals as brands at their public value (U unrelated, I supplying its compute at cost).
+
+| Target | Band | Value |
+| --- | --- | --- |
+| T1 nothing moves for a single company | goldens unchanged by sub-tasks 1–2 | golden snapshots unchanged through sub-task 7 (no group in the golden runs); consolidation tests below |
+| T2 consolidation is right | property tests; 31.8's examples; a three-level group by hand | `tests/property/test_m16_consolidation.py` (cash, NCI, every turn balances, three levels), `tests/unit/test_m16_formulas.py`, `test_m16_stakes.py::test_31_8_nci_through_consolidation`, `test_m16_group_membership.py::test_a_nested_group_consolidates_each_company_once_and_balances` |
+| T3 spin off the unrelated subsidiary | founder's value up on 40–80% | **8 of 10** (met) |
+| T3 spin off the integrated one | lowers it on most | **3 of 10 (missed)** |
+| T4 grow vs return cash, revenue after 3 years | +20% to +60% | +83%, +67%, +60%, +72%, +47%, +40%, +39%, +39%, +33%, +46%: **7 of 10 in band** (seeds 1, 2, 4 above) |
+| T4 cash returned, return cash / grow | 2–4x | 1.9x, 2.2x, 2.1x, 2.1x, 2.3x, 2.3x, 2.3x, 2.3x, 2.4x, 2.3x: **9 of 10 in band** (seed 1 at 1.9x) |
+| T5 a complaint within 6 months | every seed | **10 of 10** (month 6 on every seed) |
+
+Tuned (`group.*` only): `group.mandate.grow_payout` 0.5 and `grow_keep_months` 6 set the cash ratio (1.0 gave 1.2x, 0.4 gave 2.5–3.1x with the larger brands of a first fixture); `supply_cost`, `discount.synergy` and `discount.per_segment` were tried at 0.3 / 0.5 / 0.02 without moving T3's integrated half (1 of 10) and are left at 0.80 and §31.7's 0.15 and 0.03. A marketing multiplier per mandate had no effect (the brands' products carry no marketing budget) and was removed.
+
+T3's integrated half and T4's revenue band are open (see the brief's follow-ups): the lost in-group saving is small next to what a spin-off gains, and T4's revenue gap comes from the grow/harvest brand styles the directive mapping fixes.

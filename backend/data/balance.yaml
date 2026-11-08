@@ -1363,9 +1363,10 @@ group: # 31: the holding company and its subsidiaries (M16, v3)
     grow_target: 0.25 # yearly revenue growth a "grow" CEO must reach
     margin_target: 0.15 # operating margin a "margin" CEO must reach
     payout_target: 0.5 # share of the year's profit a "return cash" CEO must pay out as dividends
-    grow_keep_months: 6 # months of costs a "grow" subsidiary keeps before cash goes up to its owner
-    margin_keep_months: 3 # the same under "margin"
+    grow_keep_months: 6 # months of costs a "grow" subsidiary keeps; above that it pays up only grow_payout of last month's operating profit (it reinvests the rest)
+    margin_keep_months: 3 # months of costs a "margin" subsidiary keeps before the rest goes up to its owner
     return_keep_months: 1 # the same under "return cash" (without a mandate: mna.sweep_months)
+    grow_payout: 0.5 # share of last month's operating profit a "grow" subsidiary pays up (it keeps its stock of cash)
     review_misses: 2 # Decembers missed in a row before the board proposes a new CEO
     pitch_chance: 0.25 # chance each quarter that a subsidiary CEO asks the group for capital
     pitch_months: 3 # months of the subsidiary's costs a capital request asks for (within its capex limit)

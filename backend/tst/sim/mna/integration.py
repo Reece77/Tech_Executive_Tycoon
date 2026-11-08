@@ -497,7 +497,7 @@ def _sweeps(
     """A brand's cash above mna.sweep_months of its costs goes to its parent (28.5): the
     brand's equity and the parent's investment fall by the same amount. With a mandate it
     keeps the mandate's months; with minorities it pays a dividend instead (31.4)."""
-    from tst.sim.group.subsidiaries import keep_months, stake_of
+    from tst.sim.group.subsidiaries import keep_months, payout_cap, stake_of
     from tst.sim.mna.deals import monthly_costs_cents
 
     out = []
@@ -515,6 +515,9 @@ def _sweeps(
         months = keep_months(state, company.id, balance)
         keep = balance.mna.sweep_months if months is None else months
         sweep = cash - round(exact(keep) * costs)
+        cap = payout_cap(state, company.id, balance)
+        if cap is not None:  # "grow" reinvests: it pays up only a share of its profit (31.4)
+            sweep = min(sweep, cap)
         if sweep <= 0:
             continue
         stake = stake_of(state, company.id)
