@@ -115,7 +115,7 @@ make dev       # run API and front end together
 3. The `tag-milestone` workflow tags the commit: when `check` succeeds on `main` and the head commit has a `Milestone-Tag:` trailer whose tag doesn't exist yet, it creates and pushes that tag. Confirm the tag appeared (`git ls-remote --tags origin mX-done`). Cloud sessions cannot push tags themselves (HTTP 403).
 4. If the instructions name a next brief, start it on a new branch from the updated `main`; otherwise stop and report.
 
-Never force-push, rewrite `main`'s history, or merge with a red check. The product manager reviews after the merge and sends any fixes as a follow-up brief.
+Never force-push, rewrite `main`'s history, or merge with a red check (`check` and, from 2026-11-08, `e2e`). The product manager reviews after the merge and sends any fixes as a follow-up brief.
 
 ## 7. Conventions
 
@@ -150,3 +150,23 @@ Data
 ## 9. When unsure
 
 Ask one short, specific question with your proposed default. Pause rather than invent game design. Engineering details (naming, internal structure) you may decide and note in your summary.
+
+### Decision rules (product manager, 2026-11-08)
+
+Most stops in v2 were predictable. Decide these yourself, record each decision with its numbers in the brief's "Decisions made", and carry on:
+
+1. **Your milestone's own target misses:** tune the keys your brief lists as yours, as far as needed. Record before and after values.
+2. **An earlier milestone's guard fails on your branch but passes on `main`:**
+   - first check whether a balance **script** lacks behaviour a sensible player would have (as M13b's and M15a's founder scripts lacked regions and new categories); if so, fix the script in `tst/balance/` (never the game) and record why;
+   - otherwise, if your own keys bring it back without breaking your targets, do that;
+   - otherwise stop and report.
+3. **A failure that also happens on a clean `main`** (prove it by running `main` in a separate worktree, with a table): it is not yours. Record it with its evidence, name the fix milestone running or next, and continue to merge. Never add it to `known_misses.py` yourself.
+4. **Seed luck:** a guard that misses on seeds 1–10 but passes on seeds 11–40 on both `main` and your branch is seed variance; record both readings and treat it as rule 3. If your branch differs from `main` on 30 seeds, it's real: apply rule 2.
+5. **Flaky or timing-dependent tests:** make them wait on state, not time, or fix the fixture. Never add retries, longer sleeps or looser checks.
+6. **Turn-time budgets:** run them alone (`make check-timing`). If over budget alone, profile and make the slow step proportional to what changes, with identical results (state-cache check, golden snapshots). Stop only if it is still over after that.
+7. **Long runs:** don't run the nightly or weekly suites locally for more than an hour. Dispatch the GitHub workflow on your branch instead (`gh workflow run nightly.yml --ref <branch>`), and write any local long run's output to a file.
+8. **Lanes:** once the other lane has merged, its file ownership lapses, and you may fix integration bugs in its files.
+9. **Docs branches named in your instructions:** open and merge them (docs only, merge commit) before you start.
+10. **One merger per milestone:** only the session your instructions name as building a milestone opens its pull request and merges it. If you find another branch or session carrying the same milestone's work, stop and report rather than merging.
+
+**Always stop and ask** for: a P1-level defect; changing how an earlier milestone's target is measured, or its band; a design question the spec, ADRs and brief don't answer; anything that weakens a hidden-value guarantee (CLAUDE.md §8); editing an applied migration; a guard that rules 1–4 can't resolve.
