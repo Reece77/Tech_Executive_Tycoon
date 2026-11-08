@@ -251,7 +251,7 @@ templates:
     body: "{buyer} bought the company for {price}. Your stake came to {proceeds}. The game is over: this is your exit."
   rankings_published: # M15b (30.4): each January's industry rankings
     title: "The {year} industry rankings"
-    body: "{leader} tops the revenue list at {revenue} a year. Your places: {places}. See the Rankings screen."
+    body: "{leader} tops the revenue list at {revenue} a year.\n\nYour places: Top 50 by revenue {revenue_place}; Best places to work {places_place}; Most innovative {innovative_place}.\n\nTop 50 by revenue: {revenue_top}.\nBest places to work: {places_top}.\nMost innovative: {innovative_top}.\n\nOpen the Rankings screen for the full lists."
   founded_again: # M15b addendum 10: a serial founder's next company
     title: "You founded {name}"
     body: "After selling {old} to {buyer}, you put {cash} of your proceeds into {name} and kept {kept}. {old} carries on as part of {buyer}."

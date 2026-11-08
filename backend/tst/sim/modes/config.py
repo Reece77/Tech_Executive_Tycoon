@@ -54,6 +54,7 @@ class RankBalance(_Frozen):
     lead_full: float = Field(gt=0)  # summed research lead scoring the full lead measure
     eras_full: int = Field(ge=1)
     launches_full: int = Field(ge=1)
+    news_top: int = Field(ge=1)  # names from each list's top in January's news item
 
 
 class SerialBalance(_Frozen):
