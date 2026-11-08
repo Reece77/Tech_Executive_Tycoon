@@ -32,6 +32,8 @@ The spec's v3 fantasy is a vertically integrated empire, "from quartz mines to c
 | M22 | **Geopolitics and export controls:** blocs, entity lists, tariffs, licensing, sovereign deals, nationalization risk, all history then seeded | B | M21 and M22 in parallel |
 | M23 | **v3 balance and polish:** vertical-integrator strategy, 30-year runs, Reece's playtests | single | |
 
+**Codex review 4 (2026-11-07):** M15r fixes nine findings alongside M16 and M24; findings 2 and 3 (consolidation by period, nested groups) are M16's first sub-task.
+
 **A third lane (Reece, 2026-11-07, "expedite as able"):** **M24, the founder's life** (stress and burnout, a personal account and foundation, a public persona, political influence with scandal risk, a legacy score) runs alongside M16 and merges first. Its brief is `docs/tasks/M24-the-founders-life.md`. Later v4 and v5 pieces join that lane only when they don't depend on v3's chain (`docs/ideas-backlog.md`).
 
 **Rough size:** 8 milestones in 6 rounds. Expect review-fix and playtest-fix milestones as in v2.
