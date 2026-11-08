@@ -1242,7 +1242,7 @@ serial: # founding again after an exit (M15b addendum 10)
 stress: # 32.1: stress 0-100 on the founder, public
   start: 20 # stress points a new founder starts with
   comfort: 0.6 # share of the month's energy budget spent without strain
-  load: 40 # stress points per unit of share spent above comfort (all 60 of 60: +16 a month)
+  load: 30 # stress points per unit of share spent above comfort (all 60 of 60: +12 a month); 32.1 said 40, set to 30 by the product manager (2026-11-08): at 40 research_heavy (peaking at 82) burned out and tipped M15a's 10-year guard
   recover: 8 # stress points lost in a month at or below comfort
   holiday: 25 # stress points lost in a month on Holiday, or the month off a burnout grants
   critical: 5 # stress points for each critical event answered in the month

@@ -2587,10 +2587,10 @@ Reece's decisions (2026-11-07): **burnout from overwork** with a visible stress 
 
 ### 32.1 Stress and burnout
 
-- **Stress** 0–100 on the founder, public, starting at 20. Each month: `+ stress.load × max(0, used − stress.comfort)` where `used` is the share of the month's energy spent (0–1), `stress.comfort` 0.6 and `stress.load` 40; `− stress.recover` (8) if `used ≤ 0.6`; `− 25` for a month on Holiday; `+5` for each critical event answered that month; floor 0.
+- **Stress** 0–100 on the founder, public, starting at 20. Each month: `+ stress.load × max(0, used − stress.comfort)` where `used` is the share of the month's energy spent (0–1), `stress.comfort` 0.6 and `stress.load` 30; `− stress.recover` (8) if `used ≤ 0.6`; `− 25` for a month on Holiday; `+5` for each critical event answered that month; floor 0.
 - **Burnout** when stress reaches 80: the monthly energy budget falls by `stress.burnout_cut` (30%), and a bold press answer's backfire chance doubles (§29.1). Burnout ends when stress falls below 40. A burnout raises a critical event the first month ("you are running on empty"), with choices: take a month off (Holiday 1 month), delegate more (opens the Executive team panel), or push on (stress +5).
 - **Shown** on the top bar beside energy, with the last six months' causes.
-- **Example.** Using all 60 energy (used 1.0) adds `40 × 0.4` = 16 a month: from 20, burnout in the fourth month. Using 45 of 60 (0.75) adds 6 a month: burnout after 10 months unless a light month or Holiday intervenes.
+- **Example.** Using all 60 energy (used 1.0) adds `30 × 0.4` = 12 a month: from 20, burnout in the fifth month. Using 45 of 60 (0.75) adds 4.5 a month: burnout after 14 months unless a light month or Holiday intervenes. (`stress.load` 30, product manager 2026-11-08; 40 at first: scripted strategies near full energy, research_heavy peaking at 82, tipped M15a's 10-year guard.)
 
 ### 32.2 The founder's personal account
 

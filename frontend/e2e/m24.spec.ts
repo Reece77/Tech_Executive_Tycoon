@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { continueMonth } from './helpers.ts';
 
-// M24 flows (formulas.md 32): (a) four months of spending all energy bring burnout's critical
+// M24 flows (formulas.md 32): (a) five months of spending all energy bring burnout's critical
 // event and the energy cut; (b) after the IPO the founder sells shares, creates a foundation,
 // gives, and December's first grants show their effect; (c) lobbying builds influence with
 // an exposure word, and a scripted scandal arrives as a critical event; (d) the legacy score
@@ -28,18 +28,18 @@ async function founderTab(page: Page, save: string, tab: string) {
   await page.getByTestId('founder-tabs').getByText(tab, { exact: true }).click();
 }
 
-test('(a) four months at full energy: burnout, its event and the energy cut', async ({ page }) => {
-  test.setTimeout(300_000); // four fixture edits and four months
+test('(a) five months at full energy: burnout, its event and the energy cut', async ({ page }) => {
+  test.setTimeout(300_000); // five fixture edits and five months
   const save = `m24-burnout-${stamp}`;
   tool('fresh', save);
   await page.goto(`/game/${save}/inbox`);
   await expect(page.getByTestId('stress')).toHaveText('20');
-  for (let month = 0; month < 4; month++) {
+  for (let month = 0; month < 5; month++) {
     tool('drain', save);
     await page.reload();
     await expect(page.getByTestId('energy')).toHaveText(/^0 \//);
     await page.getByTestId('continue').click();
-    await expect(page.getByTestId('stress')).toHaveText(String(20 + 16 * (month + 1)));
+    await expect(page.getByTestId('stress')).toHaveText(String(20 + 12 * (month + 1)));
   }
   const meter = page.getByTestId('stress-meter');
   await expect(meter).toHaveAttribute('data-burnout', 'true');

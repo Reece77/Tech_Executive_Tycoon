@@ -37,28 +37,28 @@ def _months(used: float, n: int) -> list[float]:
 
 
 def test_worked_example_all_energy() -> None:
-    """32.1: using all 60 energy adds 40 x 0.4 = 16 a month: from 20, burnout in month 4."""
-    assert _months(1.0, 4) == [36.0, 52.0, 68.0, 84.0]
+    """32.1: using all 60 energy adds 30 x 0.4 = 12 a month: from 20, burnout in month 5."""
+    assert _months(1.0, 5) == [32.0, 44.0, 56.0, 68.0, 80.0]
     life = stress.new_life(1, B)
     began_at = None
     for turn in range(6):
         life, began = stress.step(life, turn, 1.0, False, 0, SB)
         if began:
             began_at = turn
-    assert began_at == 3  # the fourth month
+    assert began_at == 4  # the fifth month
     assert life.burnouts == 1
 
 
 def test_worked_example_three_quarters() -> None:
-    """45 of 60 (0.75) adds 6 a month: burnout after 10 months."""
+    """45 of 60 (0.75) adds 4.5 a month: burnout after 14 months."""
     assert stress.used_share(60, 15, 60) == 0.75
     life = stress.new_life(1, B)
     months = 0
     while not life.burnout:
         life, _ = stress.step(life, months, 0.75, False, 0, SB)
         months += 1
-    assert months == 10
-    assert life.stress == 80.0
+    assert months == 14
+    assert life.stress == 83.0
 
 
 def test_recovery_holiday_and_critical() -> None:
@@ -119,15 +119,15 @@ def _spend_all(state: GameState) -> GameState:
     return with_person_state(state, replace(state.person_state(founder.id), energy=0))
 
 
-def test_four_full_months_burn_out_and_queue_the_event() -> None:
+def test_five_full_months_burn_out_and_queue_the_event() -> None:
     state = fresh_game(LOADED)
     balances = dict(CASH)
     founder = state.founder_of(1)
     assert founder is not None
-    for _ in range(4):
+    for _ in range(5):
         state = _play(_spend_all(state), balances)
     life = life_of(state, founder.id)
-    assert life is not None and life.burnout and life.stress == 84.0
+    assert life is not None and life.burnout and life.stress == 80.0
     # The next month's budget is cut by 30%.
     assert state.person_state(founder.id).energy == life.budget
     assert life.budget is not None and life.budget < B.founder.energy_per_month

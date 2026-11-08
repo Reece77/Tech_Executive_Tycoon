@@ -71,6 +71,8 @@ Play two hard months back to back and watch stress; take a Holiday month. Sell s
     | m13 (a), the IPO chain | fails 2 of 4 runs | passed 4 of 4 on the last try | an existing flake |
     | m4b (c), bankruptcy | passes | failed, then fixed | a timing race in the test: the redirect to Game over can land after the month's date shows; the loop now also ends when the Game over screen shows (no check loosened) |
 
+18. **`stress.load` 40 → 30 (product manager's ruling, 2026-11-08, option A).** At 40, scripted strategies near full energy burned out: M15a's `research_heavy` spent almost all its energy for about six months around month 61, peaked at stress 82, and took a month off on every probed seed, which tipped M15a's 10-year guard (`test_v1_to_v4_ten_years`: research_heavy won 5 of 10, the band is at most 4). With burnout off, or at 30 (peak about 61), the guard is back to `main`'s recorded known miss. §32.1's worked example is now "+12 a month, burnout in the fifth month" (0.75 of the energy: +4.5 a month, burnout after 14 months); its unit test and the e2e burnout flow (five months) follow.
+
 ## Follow-ups
 
 - M15r: repair the m9 (b) and m14b press e2e flows and the m13 (a) flake (failing on `main` before M24).
