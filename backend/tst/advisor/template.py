@@ -39,7 +39,39 @@ def _effect(d: Driver, metric_unit: Unit, metric: str) -> str:
     return amount(d.effect, metric_unit, signed=True)
 
 
-def driver_text(d: Driver, metric_unit: Unit, metric: str) -> str:
+GENERIC_WORDS = frozenset(
+    {
+        "the",
+        "base",
+        "quality",
+        "brand",
+        "feature",
+        "your",
+        "rivals'",
+        "change",
+        "joined",
+        "left",
+        "new",
+        "lost",
+        "cash",
+        "burn",
+        "other",
+        "baseline",
+        "pay",
+        "projected",
+    }
+)
+
+
+def _mid(label: str) -> str:
+    """A driver's label inside a sentence: common words lower-case, names as they are."""
+    first = label.split(" ", 1)[0]
+    return label[0].lower() + label[1:] if first.lower() in GENERIC_WORDS else label
+
+
+def driver_text(d: Driver, metric_unit: Unit, metric: str, *, mid: bool = False) -> str:
+    if mid:
+        d = Driver(_mid(d.label), d.effect, d.change, d.unit, d.kind)
     if d.kind == "level":  # terms carry a sign; amounts (a price, a segment's size) do not
         unit = d.unit or metric_unit
         return f"{d.label} ({amount(d.effect or 0.0, unit, signed=unit == 'points')})"
@@ -78,7 +110,7 @@ def explain_text(e: Explanation, named: int) -> str:
         head = f"{label} {verb} from {amount(before, unit)} to {amount(after, unit)}"
     if not top:
         return head + "; no single driver stands out in its breakdown."
-    texts = [driver_text(d, unit, lower) for d in top]
+    texts = [driver_text(d, unit, lower, mid=True) for d in top]
     joined = texts[0] if len(texts) == 1 else ", ".join(texts[:-1]) + " and " + texts[-1]
     if all(d.kind == "level" for d in top):
         return f"{head}. The largest terms now: {joined}."

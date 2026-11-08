@@ -6,6 +6,7 @@ import { useMarkSeen, useSaveAchievements, type Achievement } from '../hooks/pro
 // and is marked seen in the profile as it appears.
 
 const SHOW_MS = 12_000; // how long a toast stays before it fades on its own
+const MAX_SHOWN = 3; // toasts at once; the rest are counted on a last line
 
 export function AchievementToasts({ saveId }: { saveId: string }) {
   const data = useSaveAchievements(saveId).data;
@@ -43,7 +44,7 @@ export function AchievementToasts({ saveId }: { saveId: string }) {
       }}
       aria-live="polite"
     >
-      {shown.map((a) => (
+      {shown.slice(0, MAX_SHOWN).map((a) => (
         <div
           key={a.key}
           className="tst-panel"
@@ -69,6 +70,11 @@ export function AchievementToasts({ saveId }: { saveId: string }) {
           />
         </div>
       ))}
+      {shown.length > MAX_SHOWN && (
+        <div className="tst-panel tst-muted" style={{ padding: '6px 14px', fontSize: 12 }}>
+          +{shown.length - MAX_SHOWN} more: see Achievements on the main menu
+        </div>
+      )}
     </div>
   );
 }
