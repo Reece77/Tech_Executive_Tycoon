@@ -567,7 +567,7 @@ def apply_action(
         ):
             out = apply_finance(state, action, balance, data, ledger_balances)
         case ChooseEvent():
-            out = choose_event(state, action, balance, data)
+            out = choose_event(state, action, balance, data, ledger_balances)
         case MakePromise():  # M14b (29.2)
             out = make_promise(state, action, balance, data)
         case ReplaceLeaver():  # M14b (29.5)

@@ -185,7 +185,7 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     for proposal in ctx.state.pending_proposals(ctx.state.player.id):
         lapsed = with_proposal(lapsed, replace(proposal, status="lapsed", resolved_turn=ctx.turn))
     ctx = replace(ctx, state=lapsed)
-    state, event_entries, event_logs = auto_resolve(ctx.state, ctx.balance, ctx.data)
+    state, event_entries, event_logs = auto_resolve(ctx.state, ctx.balance, ctx.data, ctx.balances)
     ctx = replace(ctx, state=state).post(*event_entries).log(*event_logs)
     state, ended = phases.end_notices(ctx.state)
     joining = state

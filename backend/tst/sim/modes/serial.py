@@ -29,7 +29,9 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import (
     CompanyState,
     GameState,
+    ceo_of,
     credibility_of,
+    with_ceo,
     with_company,
     with_credibility,
     with_employment,
@@ -141,11 +143,16 @@ def found_again(
         state,
         replace(old, is_player=False, parent_id=buyer.id, personality=buyer.personality),
     )
+    # The sale settled when the bid was accepted (tst.sim.mna.exit.sell_company), once: the
+    # buyer's payment, its investment and goodwill and the acquisition record (M15r).
     state = replace(
         state,
         public_companies=tuple(p for p in state.public_companies if p.company_id != old.id),
         seats=tuple(s for s in state.seats if s.company_id != old.id),
     )
+    ceo = ceo_of(state, old.id)  # a CEO serving the listed company goes with the listing
+    if ceo is not None:
+        state = with_ceo(state, replace(ceo, ended_turn=turn, end_reason="acquired"))
     job = next(e for e in state.staff(old.id) if e.person_id == founder.id)
     state = with_employment(
         state, replace(job, status="ended", end_turn=turn, end_reason="acquired")

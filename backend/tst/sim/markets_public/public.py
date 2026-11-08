@@ -15,7 +15,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
 from tst.sim.finance import macro
 from tst.sim.finance.board import _add_seat, average_confidence
-from tst.sim.ledger import CASH, COMMON_EQUITY, GENERAL_ADMIN, LedgerEntry
+from tst.sim.ledger import CASH, COMMON_EQUITY, GENERAL_ADMIN, LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public import capital, ipo
 from tst.sim.markets_public import formulas as pf
@@ -382,12 +382,19 @@ def _ceo_board(
 
 
 def apply_public_step(
-    state: GameState, company_id: int, step: str, balance: Balance
-) -> tuple[GameState, list[LogItem]]:
+    state: GameState,
+    company_id: int,
+    step: str,
+    balance: Balance,
+    data: GameData | None = None,
+    balances: LedgerBalances | None = None,
+) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
     """An activist, takeover or CEO-vote choice. Those that need cash or a draw wait for the
-    next phase 7 (`pending`)."""
+    next phase 7 (`pending`). Accepting a takeover settles the sale, so it needs the data and
+    the ledger balances (M15r)."""
     public = public_of(state, company_id)
     logs: list[LogItem] = []
+    entries: list[LedgerEntry] = []
     if step in ("activist_seat", "activist_buyback", "activist_fight") and public is not None:
         state = with_public(state, replace(public, pending=(*public.pending, step)))
     elif step == "takeover_talks" and public is not None:
@@ -417,10 +424,12 @@ def apply_public_step(
     elif step == "takeover_accept" and public is not None:  # M14 (28.6): an exit
         from tst.sim.mna.exit import sell_company
 
-        state, sold = sell_company(state, company_id, balance)
+        if data is None or balances is None:
+            raise ValueError("accepting a takeover needs the game data and ledger balances")
+        state, entries, sold = sell_company(state, company_id, balance, data, balances)
         logs += sold
     # takeover_reject: the template's board effect is all
-    return state, logs
+    return state, entries, logs
 
 
 def _pending(
