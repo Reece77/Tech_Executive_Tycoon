@@ -197,3 +197,14 @@ def test_upgrading_to_0039_backfills_each_brands_holding(
         assert (u.owner_id, u.from_turn, u.to_turn) == (o.owner_id, o.from_turn, None)
         assert (u.book_cents, u.equity_cents) == (o.book_cents, o.equity_cents)
     assert gate(state, loaded.balance) == []
+
+
+def test_the_saves_list_reads_a_save_with_a_holding_company(formed: Formed) -> None:
+    """Two player companies in one save (the operating company and its holding): the saves
+    index names the operating company (it was `.one()` and the saves list failed)."""
+    from tst.db.repository import list_saves, summarize
+
+    assert summarize(formed.path).company_name == "Kestrel"  # it raised: two rows for .one()
+    (formed.path.parent / "index.json").unlink(missing_ok=True)  # rebuilt from the files
+    saves = list_saves(formed.path.parent)
+    assert [(s.slug, s.company_name) for s in saves] == [("m16", "Kestrel")]

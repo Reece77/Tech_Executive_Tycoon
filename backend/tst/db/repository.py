@@ -1111,7 +1111,12 @@ def summarize(path: Path) -> SaveSummary:
         meta = read_meta(session)
         # Only the player's name is needed; loading the whole state here cost a second full
         # load on every turn (M2a performance check).
-        player = session.scalars(select(CompanyRow).where(CompanyRow.is_player.is_(True))).one()
+        # the operating company: a holding company (M16, 31.2) is also a player company, and
+        # always has the higher id
+        player = session.scalars(
+            select(CompanyRow).where(CompanyRow.is_player.is_(True)).order_by(CompanyRow.id)
+        ).first()
+        assert player is not None
         return SaveSummary(
             slug=slug_of(path),
             company_name=player.name,
