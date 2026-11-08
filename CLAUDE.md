@@ -167,5 +167,6 @@ Most stops in v2 were predictable. Decide these yourself, record each decision w
 7. **Long runs:** don't run the nightly or weekly suites locally for more than an hour. Dispatch the GitHub workflow on your branch instead (`gh workflow run nightly.yml --ref <branch>`), and write any local long run's output to a file.
 8. **Lanes:** once the other lane has merged, its file ownership lapses, and you may fix integration bugs in its files.
 9. **Docs branches named in your instructions:** open and merge them (docs only, merge commit) before you start.
+10. **One merger per milestone:** only the session your instructions name as building a milestone opens its pull request and merges it. If you find another branch or session carrying the same milestone's work, stop and report rather than merging.
 
 **Always stop and ask** for: a P1-level defect; changing how an earlier milestone's target is measured, or its band; a design question the spec, ADRs and brief don't answer; anything that weakens a hidden-value guarantee (CLAUDE.md §8); editing an applied migration; a guard that rules 1–4 can't resolve.
