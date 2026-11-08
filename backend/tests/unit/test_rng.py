@@ -90,6 +90,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "rival_mna": 39,  # M14 (28.6)
         "scenario": 43,  # M15b (30.3)
         "press": 40,  # M14b (29.4)
+        "group": 45,  # M16 (31)
         "founder_life": 46,  # M24 (32.5)
         "misc": 99,
     }

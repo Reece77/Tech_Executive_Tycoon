@@ -34,6 +34,7 @@ from tst.sim.founder.config import (
     PersonalBalance,
     StressBalance,
 )
+from tst.sim.group.config import GroupBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
@@ -1248,6 +1249,7 @@ class Balance(_Frozen):
     foundation: FoundationBalance  # M24 (formulas.md 32.3)
     persona: PersonaBalance  # M24 (formulas.md 32.4)
     influence: InfluenceBalance  # M24 (formulas.md 32.5)
+    group: GroupBalance  # M16 (formulas.md 31)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:

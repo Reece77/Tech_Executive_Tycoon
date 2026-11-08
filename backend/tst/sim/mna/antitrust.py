@@ -21,6 +21,7 @@ from tst.sim.mna.models import Deal
 from tst.sim.products.models import SELLING
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_company, with_deal, with_product
+from tst.sim.state import owner_of as state_owner_of
 
 FIRST_YEAR = 2010  # tunable-exempt: turn 0 is January 2010
 MONTHS_A_YEAR = 12  # tunable-exempt: calendar
@@ -41,9 +42,9 @@ class AcceptRemedy:
 
 
 def owner_of(state: GameState, company_id: int) -> int:
-    """The group a company's customers count for: a kept brand's parent (28.4, 28.5)."""
-    parent = state.company(company_id).parent_id
-    return parent if parent is not None else company_id
+    """The group a company's customers count for: its ultimate owner now, at any depth
+    (28.4, 31.1; M16, Codex review 4 finding 3). One traversal, shared with finance."""
+    return state_owner_of(state, company_id)
 
 
 def customers_by_market(
@@ -76,9 +77,10 @@ def combined_share(
 ) -> tuple[float, Market | None]:
     """The highest S_c over markets where both sell, and that market (28.4)."""
     acquirer = owner_of(state, acquirer_id)
+    target = owner_of(state, target_id)  # a target that owns brands brings their customers
     best: tuple[float, Market | None] = (0.0, None)
     for market, owners in sorted(customers_by_market(state, balance, data, without).items()):
-        mine, theirs = owners.get(acquirer, 0.0), owners.get(target_id, 0.0)
+        mine, theirs = owners.get(acquirer, 0.0), owners.get(target, 0.0)
         total = sum(owners.values())
         if mine <= 0 or theirs <= 0 or total <= 0:
             continue
@@ -256,7 +258,7 @@ def accept_remedy(
     assert product is not None
     market = tuple(deal.market.split("/"))
     owners = customers_by_market(state, balance, data).get(market, {})  # type: ignore[arg-type]
-    excluded = {owner_of(state, acquirer_id), deal.target_id}
+    excluded = {owner_of(state, acquirer_id), owner_of(state, deal.target_id)}
     buyers = sorted(
         ((c, -n) for c, n in owners.items() if c not in excluded and n > 0),
         key=lambda x: (x[1], x[0]),

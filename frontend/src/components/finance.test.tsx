@@ -120,6 +120,20 @@ describe('StatementTable', () => {
     expect(lines.filter((l) => l.total).map((l) => l.id)).toEqual(['gross', 'opex', 'net']);
   });
 
+  it('shows a disposal below the operating result (M16)', () => {
+    const withLoss = periods.map((p, i) => ({
+      ...p,
+      profit_and_loss: {
+        ...p.profit_and_loss,
+        other_gains:
+          i === 1 ? [line('4930_gain_on_disposal', 'Gain or loss on disposal', -900)] : [],
+      },
+    }));
+    const lines = pnlLines(withLoss);
+    expect(lines.map((l) => l.id).slice(-2)).toEqual(['4930_gain_on_disposal', 'net']);
+    expect(lines.find((l) => l.id === '4930_gain_on_disposal')?.values).toEqual([0, -900]);
+  });
+
   it('renders periods side by side with negatives in orange', () => {
     const html = renderToStaticMarkup(<StatementTable periods={periods} />);
     expect(html).toContain('Feb 2013');

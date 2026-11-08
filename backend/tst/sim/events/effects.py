@@ -32,6 +32,8 @@ from tst.sim.people.relationships import clamp_relationship, pair_key
 from tst.sim.press.moments import apply_tone
 from tst.sim.state import (
     GameState,
+    listed_id,
+    public_of,
     with_approach,
     with_employment,
     with_event,
@@ -334,6 +336,11 @@ def apply_choice(
         elif t == "press_step" and effect.stat:  # M14b (29.1): a press moment's tone
             state, logged = apply_tone(state, event, effect.stat, balance, data)
             logs += logged
+        elif t == "group_step" and effect.stat:  # M16 (31.6): a minority complaint's answer
+            from tst.sim.group.transfer import group_step
+
+            state, logged = group_step(state, event, effect.stat)
+            logs += logged
         elif t == "founder_step" and effect.stat:  # M24 (32.1, 32.5)
             from tst.sim.founder.phase import founder_step
 
@@ -417,6 +424,8 @@ def public_step(
 ) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
     """M13 (25): IPO steps go to the chain; activist, takeover and CEO-vote steps to the
     public company."""
+    if step.startswith(("activist_", "takeover_")) and public_of(state, company_id) is None:
+        company_id = listed_id(state)  # M16 (31.2): the holding company holds the listing
     if step.startswith(("activist_", "takeover_", "ceo_")):
         return apply_public_step(state, company_id, step, balance, data, balances)
     return apply_ipo_step(state, company_id, step, balance, data)

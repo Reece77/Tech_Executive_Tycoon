@@ -25,7 +25,7 @@ def test_the_library(loaded: LoadedData) -> None:
         "personnel": 25,  # M6: 20; M7a: +4; M10b: key exit (23.3)
         "market": 16,  # M6: 12; M7a: +2; M10b: the press storyline (23.3)
         "operations": 15,  # M6: 10; M7a: +2; M10b: breach and outage (23.3); M12a: 22.5
-        "finance": 8,
+        "finance": 9,  # M16: the minority complaint (31.6)
         "board": 6,
         "rivals": 4,
         "founder": 17,  # M7a: early days (early_days); M24: burnout, scandal, first grants

@@ -269,8 +269,8 @@ function Tiles({ board }: { board: Board }) {
   );
 }
 
-export function BoardTab({ saveId }: { saveId: string }) {
-  const { data: board, error, isPending } = useBoard(saveId);
+export function BoardTab({ saveId, companyId }: { saveId: string; companyId?: number }) {
+  const { data: board, error, isPending } = useBoard(saveId, companyId);
   if (isPending) return <Loading />;
   if (error) return <LoadError title="Could not load the board" error={error} />;
   if (board.directors.length === 0) {

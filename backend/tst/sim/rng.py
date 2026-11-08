@@ -60,6 +60,9 @@ STREAM_IDS: Final = MappingProxyType(
         # reminders, rival CEOs' statements and jabs (M14b, 29.4); 41-42 reserved for lane B
         "press": 40,
         "scenario": 43,  # key (index,): a historical scenario's staff, start month (M15b, 30.3)
+        # key: the company's stable rival key, or (company_id,) for the player's companies:
+        # stake purchases' price impact, minority complaints, board reviews (M16, 31)
+        "group": 45,
         "founder_life": 46,  # key (company_id,): scandal draws (M24, 32.5)
         "misc": 99,
     }

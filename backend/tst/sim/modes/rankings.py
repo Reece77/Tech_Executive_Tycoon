@@ -90,7 +90,8 @@ def lists(
     rival key, the player after any rival it ties with (M15a fix: ties went to the lowest
     company id, the player's, so it won a sparse Most innovative list most years)."""
     rb = balance.rank
-    alive = [c for c in state.ledger_companies() if c.alive]
+    held = {h.company_id for h in state.holdings}  # M16: the group's revenue is not a company's
+    alive = [c for c in state.ledger_companies() if c.alive and c.id not in held]
     revenue_of = {c.id: _revenue(state, c.id) for c in alive}
     stable = {c.id: (c.is_player, c.rival_key, c.id) for c in alive}
 
@@ -134,6 +135,8 @@ def publish(
     logs = []
     names = {c.id: c.name for c in state.companies}
     for company in player_companies(state):
+        if any(h.company_id == company.id for h in state.holdings):
+            continue  # M16 (31.2): one January item, for the company the player runs
         params: dict[str, str] = {}
         for list_kind in LIST_LABELS:
             listed = [r for r in new if r.kind == list_kind]

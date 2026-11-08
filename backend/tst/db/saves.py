@@ -172,7 +172,9 @@ def _mode_and_score(session: Any) -> tuple[str, int | None]:
     mode = str(row.data.get("kind", "campaign")) if row is not None else "campaign"
     if mode == "sandbox":
         return mode, None
-    player = session.scalar(select(CompanyRow.id).where(CompanyRow.is_player.is_(True)))
+    player = session.scalar(  # the operating company, not a holding company (M16)
+        select(CompanyRow.id).where(CompanyRow.is_player.is_(True)).order_by(CompanyRow.id)
+    )
     best = session.scalars(
         select(CompanyScoreRow)
         .where(CompanyScoreRow.company_id == player)
@@ -298,7 +300,9 @@ def restore(path: Path, backup_id: str) -> SaveFile:
     if found is None:
         raise UnknownBackupError(f"no backup {backup_id!r} for this save")
     with repository.open_session(path) as session:
-        company = session.scalar(select(CompanyRow.name).where(CompanyRow.is_player.is_(True)))
+        company = session.scalar(  # the operating company, not a holding company (M16)
+            select(CompanyRow.name).where(CompanyRow.is_player.is_(True)).order_by(CompanyRow.id)
+        )
     name = f"{company} (restored, {format_turn(found.turn)})"[:NAME_MAX]
     target = path.parent / f"{slug_for(path.parent, name)}{SAVE_SUFFIX}"
     with exclusive(path):

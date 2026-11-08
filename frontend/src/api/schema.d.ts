@@ -1225,7 +1225,9 @@ export interface paths {
         };
         /**
          * Get Statements
-         * @description P&L, balance sheet and cash flow for every closed month, quarter or year (14.1).
+         * @description P&L, balance sheet and cash flow for every closed month, quarter or year (14.1): the
+         *     listed entity's group by default (the holding company's once formed), or one company of
+         *     the player's group with what it owns (M16 company switcher).
          */
         get: operations["getStatements"];
         put?: never;
@@ -1246,7 +1248,7 @@ export interface paths {
         /**
          * Get Summary
          * @description Cash, the projected net burn and runway ("profitable" when null), insolvency and the
-         *     game state (ADR-0018).
+         *     game state (ADR-0018); the player's company by default, or one company of its group.
          */
         get: operations["getFinanceSummary"];
         put?: never;
@@ -1266,7 +1268,8 @@ export interface paths {
         };
         /**
          * Get Captable
-         * @description Holders, classes, shares and percentages; every grant with vested and unvested.
+         * @description Holders, classes, shares and percentages; every grant with vested and unvested. The
+         *     listed entity's by default, or one company of the player's group (M16).
          */
         get: operations["getCapTable"];
         put?: never;
@@ -1286,7 +1289,8 @@ export interface paths {
         };
         /**
          * Get Board
-         * @description Seats, each director's confidence and trend, and the last quarterly meeting (14.6).
+         * @description Seats, each director's confidence and trend, and the last quarterly meeting (14.6):
+         *     the listed entity's board by default, or one company of the player's group (M16).
          */
         get: operations["getBoard"];
         put?: never;
@@ -3348,6 +3352,248 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/group": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Group
+         * @description The entity tree with stakes, treatments and each company's numbers; the holding
+         *     company's gate before it is formed (31.2, 31.10).
+         */
+        get: operations["getGroup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Form Holding
+         * @description Form the holding company: it takes the listing, the cap table and the board; the
+         *     company and its brands become its subsidiaries (31.2).
+         */
+        post: operations["formHolding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/mandate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Mandate
+         * @description Set a subsidiary's mandate: grow, margin or return cash (31.4).
+         */
+        post: operations["setMandate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/companies/{company_id}/replace-ceo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Replace Ceo
+         * @description Accept the board's proposal for a new CEO (31.4).
+         */
+        post: operations["replaceSubsidiaryCeo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/pitches/{pitch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Pitch
+         * @description Approve or decline a subsidiary CEO's request for capital (31.4).
+         */
+        post: operations["answerGroupPitch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/sell-stake": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sell Stake
+         * @description Sell part of a subsidiary to investors; the group keeps control (31.5).
+         */
+        post: operations["sellStake"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/companies/{company_id}/buy-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Buy Out
+         * @description Buy out a subsidiary's minorities at the premium (31.5).
+         */
+        post: operations["buyOutMinorities"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/carve-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Carve Out
+         * @description List 10-40% of a subsidiary; the group keeps control (31.5).
+         */
+        post: operations["carveOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/spin-off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Spin Off
+         * @description Give a subsidiary's shares to the holding company's shareholders (31.5).
+         */
+        post: operations["spinOff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/stake": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Buy Stake
+         * @description Buy a listed rival's shares on the market up to `stake_bp` (31.5).
+         */
+        post: operations["buyStake"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/venture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Venture
+         * @description Invest in a startup's round for 5-25% (31.5).
+         */
+        post: operations["ventureInvest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/transfer-price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Transfer Price
+         * @description Set the price one group company supplies another at: cost, cost plus or market (31.6).
+         */
+        post: operations["setTransferPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -5297,6 +5543,35 @@ export interface components {
              */
             history: number[];
         };
+        /**
+         * DiscountOut
+         * @description From public numbers only (31.10): listed parts at market, private ones at their
+         *     displayed range's midpoint.
+         */
+        DiscountOut: {
+            /**
+             * Parts Cents
+             * @description The sum of the parts (31.7)
+             */
+            parts_cents: number;
+            /** Segments */
+            segments: number;
+            /**
+             * Intra Share
+             * @description Intra-group revenue over the year's group revenue
+             */
+            intra_share: number;
+            /**
+             * Discount
+             * @description The conglomerate discount d, 0.10-0.25
+             */
+            discount: number;
+            /**
+             * After Discount Cents
+             * @description The sum of the parts x (1 - d)
+             */
+            after_discount_cents: number;
+        };
         /** DividendIn */
         DividendIn: {
             /** Per Share Cents */
@@ -5974,6 +6249,48 @@ export interface components {
             /** Detail */
             detail: string | null;
         };
+        /** FlowOut */
+        FlowOut: {
+            /** Id */
+            id: number;
+            /** Seller Id */
+            seller_id: number;
+            /** Seller */
+            seller: string;
+            /** Buyer Id */
+            buyer_id: number;
+            /** Buyer */
+            buyer: string;
+            /**
+             * Good
+             * @description compute | chips
+             */
+            good: string;
+            /**
+             * Price Kind
+             * @description cost | cost_plus | market
+             */
+            price_kind: string;
+            /** Margin */
+            margin: number | null;
+            /**
+             * Last Price Cents
+             * @description The transfer price paid at the last month end
+             */
+            last_price_cents: number;
+            /**
+             * Unfair Months
+             * @description Months running more than 10% from market
+             */
+            unfair_months: number;
+            /**
+             * Minorities
+             * @description A company of the flow has outside shareholders
+             */
+            minorities: boolean;
+            /** Complaint */
+            complaint: boolean;
+        };
         /**
          * FormerProfileOut
          * @description A person who has left the company (M7c): read-only, as the player knew them at
@@ -6493,6 +6810,181 @@ export interface components {
              * @default false
              */
             next_vest_is_cliff?: boolean;
+        };
+        /** GroupActionOut */
+        GroupActionOut: {
+            group: components["schemas"]["GroupOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** GroupEntityOut */
+        GroupEntityOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Parent Id
+             * @description Its direct owner inside the group; null: the root
+             */
+            parent_id: number | null;
+            /**
+             * Depth
+             * @description 0 for the root, 1 for its subsidiaries, ...
+             */
+            depth: number;
+            /**
+             * Role
+             * @description holding | operating | subsidiary | company
+             */
+            role: string;
+            /**
+             * Stake Bp
+             * @description The group's stake held by its direct owner, basis points
+             */
+            stake_bp: number;
+            /**
+             * Treatment
+             * @description root | consolidated | equity | fair_value (31.3)
+             */
+            treatment: string;
+            /** Listed */
+            listed: boolean;
+            /**
+             * Revenue Cents
+             * @description Revenue over the last 12 month ends
+             */
+            revenue_cents: number;
+            /**
+             * Operating Margin
+             * @description Operating result over revenue for the last 12 month ends; null without revenue
+             */
+            operating_margin: number | null;
+            /** Cash Cents */
+            cash_cents: number;
+            /**
+             * Market Cap Cents
+             * @description Listed companies only
+             */
+            market_cap_cents?: number | null;
+            /**
+             * Value Low Cents
+             * @description Private: the value range (28.1)
+             */
+            value_low_cents?: number | null;
+            /** Value High Cents */
+            value_high_cents?: number | null;
+            /**
+             * Ceo
+             * @description Its CEO's name (subsidiaries)
+             */
+            ceo?: string | null;
+            /**
+             * Mandate
+             * @description grow | margin | return_cash (31.4)
+             */
+            mandate?: string | null;
+            /**
+             * Capex Limit Cents
+             * @default 0
+             */
+            capex_limit_cents?: number;
+            /**
+             * Review
+             * @description The last December review's result
+             * @default
+             */
+            review?: string;
+            /**
+             * Misses
+             * @default 0
+             */
+            misses?: number;
+            /**
+             * Replacement Proposed
+             * @default false
+             */
+            replacement_proposed?: boolean;
+            /**
+             * Board Seats
+             * @description [parent nominees, independents, minority seats]
+             */
+            board_seats?: number[];
+        };
+        /** GroupOut */
+        GroupOut: {
+            /** Formed */
+            formed: boolean;
+            /** Holding Id */
+            holding_id: number | null;
+            /** Can Form */
+            can_form: boolean;
+            /**
+             * Reasons
+             * @description What still stands in the way of forming one (31.2)
+             */
+            reasons: string[];
+            /** Form Energy */
+            form_energy: number;
+            /**
+             * Form Fee Cents
+             * @description 0.1% of the market cap at the last month end
+             */
+            form_fee_cents: number;
+            /** Office Monthly Cents */
+            office_monthly_cents: number;
+            /**
+             * Entities
+             * @description Owners before what they own
+             */
+            entities: components["schemas"]["GroupEntityOut"][];
+            /**
+             * Pitches
+             * @description Pending requests
+             */
+            pitches?: components["schemas"]["GroupPitchOut"][];
+            /**
+             * Stakes
+             * @description Stakes it does not control
+             */
+            stakes?: components["schemas"]["StakeOut"][];
+            /**
+             * Personal Stakes
+             * @description The founder's own shares in spun-off companies
+             */
+            personal_stakes?: components["schemas"]["PersonalStakeOut"][];
+            /**
+             * Flows
+             * @description Intra-group supply (31.6)
+             */
+            flows?: components["schemas"]["FlowOut"][];
+            /** @description The listed holding company's conglomerate discount (31.7) */
+            discount?: components["schemas"]["DiscountOut"] | null;
+            /**
+             * Mandate Energy
+             * @default 0
+             */
+            mandate_energy?: number;
+        };
+        /** GroupPitchOut */
+        GroupPitchOut: {
+            /** Id */
+            id: number;
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Ceo */
+            ceo: string;
+            /** Turn */
+            turn: number;
+            /** Amount Cents */
+            amount_cents: number;
+            /** Fits Mandate */
+            fits_mandate: boolean;
+            /** Status */
+            status: string;
         };
         /**
          * GuardChoiceOut
@@ -7783,6 +8275,32 @@ export interface components {
              * @description strong | fine | stretched, from their manager morale term
              */
             label: string;
+        };
+        /** MandateIn */
+        MandateIn: {
+            /** Company Id */
+            company_id: number;
+            /**
+             * Mandate
+             * @description grow | margin | return_cash
+             */
+            mandate: string;
+            /**
+             * Capex Limit Cents
+             * @description 0: no limit
+             * @default 0
+             */
+            capex_limit_cents?: number;
+            /**
+             * Categories
+             * @description Empty: any
+             */
+            categories?: string[];
+            /**
+             * Regions
+             * @description Empty: any
+             */
+            regions?: string[];
         };
         /**
          * ManufacturingOut
@@ -9136,6 +9654,20 @@ export interface components {
              */
             entries: components["schemas"]["PersonalEntryOut"][];
         };
+        /** PersonalStakeOut */
+        PersonalStakeOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Stake Bp */
+            stake_bp: number;
+        };
+        /** PitchAnswerIn */
+        PitchAnswerIn: {
+            /** Approve */
+            approve: boolean;
+        };
         /**
          * PitchOut
          * @description A big move an executive proposes (27.1, M13b), with the numbers they pitch it on:
@@ -10064,12 +10596,34 @@ export interface components {
             total_operating_expenses_cents: number;
             /** Operating Result Cents */
             operating_result_cents: number;
+            /**
+             * Other Gains
+             * @description Below the operating result: disposals of subsidiaries (4930; M16, 31.1)
+             */
+            other_gains?: components["schemas"]["StatementLineOut"][];
+            /**
+             * Total Other Gains Cents
+             * @default 0
+             */
+            total_other_gains_cents?: number;
             /** Interest Cents */
             interest_cents: number;
             /** Tax Cents */
             tax_cents: number;
             /** Net Result Cents */
             net_result_cents: number;
+            /**
+             * Nci Cents
+             * @description Of the net result, what outside holders of subsidiaries own (M16, 31.3)
+             * @default 0
+             */
+            nci_cents?: number;
+            /**
+             * Net To Owners Cents
+             * @description The net result less NCI's share
+             * @default 0
+             */
+            net_to_owners_cents?: number;
         };
         /** ProjectBudgetIn */
         ProjectBudgetIn: {
@@ -11546,6 +12100,17 @@ export interface components {
              */
             available: number;
         };
+        /** SpinOffIn */
+        SpinOffIn: {
+            /** Company Id */
+            company_id: number;
+            /**
+             * Keep Bp
+             * @description What the group keeps, at most 19.9%
+             * @default 0
+             */
+            keep_bp?: number;
+        };
         /** SpotOut */
         SpotOut: {
             /** Good */
@@ -11578,6 +12143,39 @@ export interface components {
             turn: number;
             /** Date Label */
             date_label: string;
+        };
+        /** StakeIn */
+        StakeIn: {
+            /** Company Id */
+            company_id: number;
+            /**
+             * Stake Bp
+             * @description Share of the company, basis points
+             */
+            stake_bp: number;
+        };
+        /** StakeOut */
+        StakeOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Stake Bp */
+            stake_bp: number;
+            /**
+             * Treatment
+             * @description equity | fair_value (31.3)
+             */
+            treatment: string;
+            /**
+             * Kind
+             * @description market | venture | retained
+             */
+            kind: string;
+            /** Carrying Cents */
+            carrying_cents: number;
+            /** Cost Cents */
+            cost_cents: number;
         };
         /** StartProjectIn */
         StartProjectIn: {
@@ -12236,6 +12834,28 @@ export interface components {
             /** Effects */
             effects: string;
         };
+        /** TransferPriceIn */
+        TransferPriceIn: {
+            /** Seller Id */
+            seller_id: number;
+            /** Buyer Id */
+            buyer_id: number;
+            /**
+             * Good
+             * @description compute | chips
+             */
+            good: string;
+            /**
+             * Price Kind
+             * @description cost | cost_plus | market
+             */
+            price_kind: string;
+            /**
+             * Margin
+             * @description cost plus: the margin, 0-1
+             */
+            margin?: number | null;
+        };
         /** UISettings */
         UISettings: {
             /** Tables */
@@ -12323,6 +12943,13 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** VentureIn */
+        VentureIn: {
+            /** Company Id */
+            company_id: number;
+            /** Cents */
+            cents: number;
         };
         /**
          * VentureOut
@@ -16620,6 +17247,8 @@ export interface operations {
         parameters: {
             query?: {
                 period?: "month" | "quarter" | "year";
+                /** @description A company of the player's group; default: the listed entity */
+                company_id?: number | null;
             };
             header?: never;
             path: {
@@ -16678,7 +17307,10 @@ export interface operations {
     };
     getFinanceSummary: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A company of the player's group; default: the listed entity */
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -16736,7 +17368,10 @@ export interface operations {
     };
     getCapTable: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A company of the player's group; default: the listed entity */
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -16794,7 +17429,10 @@ export interface operations {
     };
     getBoard: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A company of the player's group; default: the listed entity */
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -23532,6 +24170,737 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FounderActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    formHolding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setMandate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MandateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    replaceSubsidiaryCeo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                company_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    answerGroupPitch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                pitch_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PitchAnswerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sellStake: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StakeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buyOutMinorities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                company_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    carveOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StakeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    spinOff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpinOffIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buyStake: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StakeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    ventureInvest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VentureIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setTransferPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferPriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
                 };
             };
             /** @description Bad Request */
