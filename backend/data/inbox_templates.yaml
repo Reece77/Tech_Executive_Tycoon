@@ -3,6 +3,30 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  burnout_started: # M24 (32.1)
+    title: "You are burning out"
+    body: "Stress has reached {stress}. Your monthly energy is down by 30% until it falls below 40; answer the event to take a month off, delegate or push on."
+  founder_shares_sold: # M24 (32.2): the founder sells their own shares once listed
+    title: "You sold {shares} of your shares"
+    body: "The sale raised {net_cents} after fees for your personal account. The company's cash does not change."
+  foundation_created: # M24 (32.3)
+    title: "{name} is founded"
+    body: "Your foundation will give to {cause}. Gifts from your personal account fund it; each December it grants 5% of its endowment."
+  foundation_gift: # M24 (32.3)
+    title: "A gift to {name}"
+    body: "You gave {amount_cents} from your personal account to the foundation's endowment."
+  foundation_grants: # M24 (32.3)
+    title: "{name} made its grants"
+    body: "The foundation granted {amount_cents} to {cause} this year. The effects last 12 months."
+  lobbying_set: # M24 (32.5)
+    title: "Lobbying in {region}"
+    body: "The company now spends {amount_cents} a month on lobbying in {region}. Influence builds slowly and decays when spending stops; so does the risk of a story."
+  scandal_broke: # M24 (32.5)
+    title: "Scandal: lobbying in {region}"
+    body: "The press has the story of the company's lobbying in {region}. Credibility and every product's brand fall, influence there is gone, and the fine is {fine_cents}."
+  scandal_second_story: # M24 (32.5): fighting the story brought a second one
+    title: "The story runs again"
+    body: "Fighting the lobbying story gave the press a second round. Credibility and brands fall again."
   replace_started: # M14b (29.5)
     title: "Replacing {name}"
     body: "Your recruiter is finding a {role} to replace {name}. Screened candidates arrive at the month end and get offers at once."

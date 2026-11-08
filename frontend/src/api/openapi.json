@@ -14965,6 +14965,411 @@
         }
       }
     },
+    "/api/saves/{save_id}/founder": {
+      "get": {
+        "tags": [
+          "founder"
+        ],
+        "summary": "Get Founder",
+        "description": "Stress, persona, the personal account, the foundation, influence and legacy (32.8).",
+        "operationId": "getFounder",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FounderOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/sell-shares": {
+      "post": {
+        "tags": [
+          "founder"
+        ],
+        "summary": "Sell Shares",
+        "description": "Sell some of your own shares into the float once listed (32.2).",
+        "operationId": "sellFounderShares",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SellSharesIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FounderActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/foundation": {
+      "post": {
+        "tags": [
+          "founder"
+        ],
+        "summary": "Create Foundation",
+        "description": "Create the foundation for a cause (32.3).",
+        "operationId": "createFoundation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoundationIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FounderActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/gifts": {
+      "post": {
+        "tags": [
+          "founder"
+        ],
+        "summary": "Give",
+        "description": "Move personal cash to the foundation's endowment (32.3).",
+        "operationId": "giveToFoundation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GiftIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FounderActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/lobbying": {
+      "post": {
+        "tags": [
+          "founder"
+        ],
+        "summary": "Set Lobbying",
+        "description": "Set a region's monthly lobbying spend; 0 stops it (32.5).",
+        "operationId": "setLobbying",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LobbyingIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FounderActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -17104,35 +17509,6 @@
         ],
         "title": "CategoryTechOut"
       },
-      "CauseOut": {
-        "properties": {
-          "turn": {
-            "type": "integer",
-            "title": "Turn"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label",
-            "description": "Mon YYYY"
-          },
-          "change": {
-            "type": "number",
-            "title": "Change"
-          },
-          "cause": {
-            "type": "string",
-            "title": "Cause"
-          }
-        },
-        "type": "object",
-        "required": [
-          "turn",
-          "label",
-          "change",
-          "cause"
-        ],
-        "title": "CauseOut"
-      },
       "CeoAuthorityIn": {
         "properties": {
           "scopes": {
@@ -18868,7 +19244,7 @@
           },
           "history": {
             "items": {
-              "$ref": "#/components/schemas/CauseOut"
+              "$ref": "#/components/schemas/tst__api__schemas__press__CauseOut"
             },
             "type": "array",
             "title": "History",
@@ -20685,7 +21061,7 @@
           },
           "causes": {
             "items": {
-              "$ref": "#/components/schemas/CauseOut"
+              "$ref": "#/components/schemas/tst__api__schemas__press__CauseOut"
             },
             "type": "array",
             "title": "Causes"
@@ -21118,6 +21494,197 @@
         "title": "FoundAgainIn",
         "description": "Found a new company after an exit (M15b addendum 10)."
       },
+      "FoundationFormOut": {
+        "properties": {
+          "can_create": {
+            "type": "boolean",
+            "title": "Can Create"
+          },
+          "min_cents": {
+            "type": "integer",
+            "title": "Min Cents"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          },
+          "causes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Causes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_create",
+          "min_cents",
+          "energy",
+          "causes"
+        ],
+        "title": "FoundationFormOut"
+      },
+      "FoundationIn": {
+        "properties": {
+          "cause": {
+            "type": "string",
+            "title": "Cause"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": ""
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cause"
+        ],
+        "title": "FoundationIn"
+      },
+      "FoundationOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "cause": {
+            "type": "string",
+            "title": "Cause"
+          },
+          "cause_label": {
+            "type": "string",
+            "title": "Cause Label"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          },
+          "created_label": {
+            "type": "string",
+            "title": "Created Label"
+          },
+          "endowment_cents": {
+            "type": "integer",
+            "title": "Endowment Cents"
+          },
+          "gifts_cents": {
+            "type": "integer",
+            "title": "Gifts Cents"
+          },
+          "grants_cents": {
+            "type": "integer",
+            "title": "Grants Cents",
+            "description": "Lifetime grants"
+          },
+          "last_grant_cents": {
+            "type": "integer",
+            "title": "Last Grant Cents"
+          },
+          "last_grant_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Grant Label"
+          },
+          "effect": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effect",
+            "description": "The running effect of the last grants, in words"
+          },
+          "effect_until_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effect Until Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "cause",
+          "cause_label",
+          "city",
+          "region",
+          "created_label",
+          "endowment_cents",
+          "gifts_cents",
+          "grants_cents",
+          "last_grant_cents",
+          "last_grant_label",
+          "effect",
+          "effect_until_label"
+        ],
+        "title": "FoundationOut"
+      },
+      "FounderActionOut": {
+        "properties": {
+          "founder": {
+            "$ref": "#/components/schemas/FounderOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "founder",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "FounderActionOut"
+      },
       "FounderIn": {
         "properties": {
           "background": {
@@ -21225,6 +21792,54 @@
         "type": "object",
         "title": "FounderIn",
         "description": "Founder build (docs/formulas.md section 5). Omitted fields use the defaults."
+      },
+      "FounderOut": {
+        "properties": {
+          "founder_name": {
+            "type": "string",
+            "title": "Founder Name"
+          },
+          "stress": {
+            "$ref": "#/components/schemas/StressOut"
+          },
+          "persona": {
+            "$ref": "#/components/schemas/PersonaOut"
+          },
+          "personal": {
+            "$ref": "#/components/schemas/PersonalOut"
+          },
+          "foundation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FoundationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "foundation_form": {
+            "$ref": "#/components/schemas/FoundationFormOut"
+          },
+          "government": {
+            "$ref": "#/components/schemas/GovernmentOut"
+          },
+          "legacy": {
+            "$ref": "#/components/schemas/LegacyOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "founder_name",
+          "stress",
+          "persona",
+          "personal",
+          "foundation",
+          "foundation_form",
+          "government",
+          "legacy"
+        ],
+        "title": "FounderOut"
       },
       "FounderPreviewOut": {
         "properties": {
@@ -21613,6 +22228,17 @@
             "title": "Exit Proceeds Cents",
             "description": "The founder's stake"
           },
+          "legacy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LegacyOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The legacy score (M24, 32.6)"
+          },
           "ended_label": {
             "anyOf": [
               {
@@ -21843,6 +22469,20 @@
         ],
         "title": "GeoOut"
       },
+      "GiftIn": {
+        "properties": {
+          "amount_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount_cents"
+        ],
+        "title": "GiftIn"
+      },
       "GlossaryOut": {
         "properties": {
           "terms": {
@@ -21859,6 +22499,50 @@
         ],
         "title": "GlossaryOut",
         "description": "Definitions of every KPI and column (backend/data/glossary.yaml; M7b)."
+      },
+      "GovernmentOut": {
+        "properties": {
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/InfluenceOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "scandals": {
+            "items": {
+              "$ref": "#/components/schemas/ScandalOut"
+            },
+            "type": "array",
+            "title": "Scandals"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          },
+          "max_monthly_cents": {
+            "type": "integer",
+            "title": "Max Monthly Cents"
+          },
+          "region_options": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__founder__RegionOptionOut"
+            },
+            "type": "array",
+            "title": "Region Options",
+            "description": "Every region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regions",
+          "scandals",
+          "energy",
+          "max_monthly_cents",
+          "region_options"
+        ],
+        "title": "GovernmentOut",
+        "description": "The Government affairs panel (32.5)."
       },
       "GrantOut": {
         "properties": {
@@ -22216,6 +22900,17 @@
             },
             "type": "array",
             "title": "Rivals Outlasted"
+          },
+          "legacy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LegacyOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The founder's legacy score with its parts (M24, 32.6)"
           }
         },
         "type": "object",
@@ -23402,6 +24097,62 @@
         ],
         "title": "IndexPointOut"
       },
+      "InfluenceOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "influence": {
+            "type": "number",
+            "title": "Influence",
+            "description": "0-100"
+          },
+          "monthly_cents": {
+            "type": "integer",
+            "title": "Monthly Cents"
+          },
+          "spent_cents": {
+            "type": "integer",
+            "title": "Spent Cents"
+          },
+          "exposure": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Exposure",
+            "description": "The scandal exposure as a word only (32.5)"
+          },
+          "antitrust_cut_pct": {
+            "type": "number",
+            "title": "Antitrust Cut Pct",
+            "description": "Antitrust block chance cut by influence, %"
+          },
+          "scandals": {
+            "type": "integer",
+            "title": "Scandals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "region_label",
+          "influence",
+          "monthly_cents",
+          "spent_cents",
+          "exposure",
+          "antitrust_cut_pct",
+          "scandals"
+        ],
+        "title": "InfluenceOut"
+      },
       "InfrastructureActionOut": {
         "properties": {
           "infrastructure": {
@@ -24441,6 +25192,52 @@
         "title": "LedOut",
         "description": "Something a former employee led or was part of (23.6, M10b)."
       },
+      "LegacyOut": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "best_score": {
+            "type": "integer",
+            "title": "Best Score"
+          },
+          "best_company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Company"
+          },
+          "giving": {
+            "type": "number",
+            "title": "Giving"
+          },
+          "persona": {
+            "type": "number",
+            "title": "Persona"
+          },
+          "grants_cents": {
+            "type": "integer",
+            "title": "Grants Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "best_score",
+          "best_company",
+          "giving",
+          "persona",
+          "grants_cents"
+        ],
+        "title": "LegacyOut",
+        "description": "The legacy score with its parts (32.6), across every company the founder ran."
+      },
       "LicenseIn": {
         "properties": {
           "company_id": {
@@ -24856,6 +25653,25 @@
           "repay_energy"
         ],
         "title": "LoansOut"
+      },
+      "LobbyingIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "monthly_dollars": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Monthly Dollars"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "monthly_dollars"
+        ],
+        "title": "LobbyingIn"
       },
       "MacroIndicatorOut": {
         "properties": {
@@ -26881,6 +27697,17 @@
             ],
             "description": "The company score (M15b, 30.1)"
           },
+          "stress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StressOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The founder's stress (M24, 32.1)"
+          },
           "deals_due": {
             "type": "integer",
             "title": "Deals Due",
@@ -28046,6 +28873,146 @@
           "interests"
         ],
         "title": "PersonSummaryOut"
+      },
+      "PersonaOut": {
+        "properties": {
+          "traits": {
+            "items": {
+              "$ref": "#/components/schemas/TraitOut"
+            },
+            "type": "array",
+            "title": "Traits"
+          },
+          "top": {
+            "type": "string",
+            "title": "Top"
+          },
+          "effect_at": {
+            "type": "number",
+            "title": "Effect At"
+          },
+          "causes": {
+            "items": {
+              "$ref": "#/components/schemas/TraitCauseOut"
+            },
+            "type": "array",
+            "title": "Causes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "traits",
+          "top",
+          "effect_at",
+          "causes"
+        ],
+        "title": "PersonaOut"
+      },
+      "PersonalEntryOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "memo": {
+            "type": "string",
+            "title": "Memo"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents",
+            "description": "The change in personal cash (gifts are negative)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "memo",
+          "source",
+          "amount_cents"
+        ],
+        "title": "PersonalEntryOut"
+      },
+      "PersonalOut": {
+        "properties": {
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "endowment_cents": {
+            "type": "integer",
+            "title": "Endowment Cents"
+          },
+          "income": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Income",
+            "description": "Lifetime income by source"
+          },
+          "gifts_cents": {
+            "type": "integer",
+            "title": "Gifts Cents"
+          },
+          "grants_cents": {
+            "type": "integer",
+            "title": "Grants Cents"
+          },
+          "stake_shares": {
+            "type": "integer",
+            "title": "Stake Shares",
+            "description": "Shares the founder holds in the current company"
+          },
+          "stake_value_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stake Value Cents",
+            "description": "Shares x the share price once listed"
+          },
+          "can_sell": {
+            "type": "boolean",
+            "title": "Can Sell",
+            "description": "Listed: the founder may sell shares into the float"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/PersonalEntryOut"
+            },
+            "type": "array",
+            "title": "Entries",
+            "description": "The last entries, newest first"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cash_cents",
+          "endowment_cents",
+          "income",
+          "gifts_cents",
+          "grants_cents",
+          "stake_shares",
+          "stake_value_cents",
+          "can_sell",
+          "entries"
+        ],
+        "title": "PersonalOut",
+        "description": "The founder's own book (32.2): never a company's money."
       },
       "PitchOut": {
         "properties": {
@@ -32684,6 +33651,34 @@
         ],
         "title": "ScaleupOut"
       },
+      "ScandalOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "region",
+          "region_label"
+        ],
+        "title": "ScandalOut"
+      },
       "ScenarioOut": {
         "properties": {
           "id": {
@@ -33198,6 +34193,20 @@
           "segment"
         ],
         "title": "SegmentIn"
+      },
+      "SellSharesIn": {
+        "properties": {
+          "shares": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shares"
+        ],
+        "title": "SellSharesIn"
       },
       "SeriesGuideOut": {
         "properties": {
@@ -34091,6 +35100,56 @@
           "started_label"
         ],
         "title": "StorylineOut"
+      },
+      "StressOut": {
+        "properties": {
+          "stress": {
+            "type": "number",
+            "title": "Stress",
+            "description": "0-100"
+          },
+          "burnout": {
+            "type": "boolean",
+            "title": "Burnout"
+          },
+          "burnout_at": {
+            "type": "number",
+            "title": "Burnout At"
+          },
+          "recover_below": {
+            "type": "number",
+            "title": "Recover Below"
+          },
+          "energy_cut_pct": {
+            "type": "number",
+            "title": "Energy Cut Pct",
+            "description": "The monthly energy lost while burnt out, %"
+          },
+          "burnouts": {
+            "type": "integer",
+            "title": "Burnouts"
+          },
+          "causes": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__founder_parts__CauseOut"
+            },
+            "type": "array",
+            "title": "Causes",
+            "description": "The last months' changes, newest last"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stress",
+          "burnout",
+          "burnout_at",
+          "recover_below",
+          "energy_cut_pct",
+          "burnouts",
+          "causes"
+        ],
+        "title": "StressOut",
+        "description": "The top bar's stress meter (32.1)."
       },
       "StructureGuideOut": {
         "properties": {
@@ -34987,6 +36046,73 @@
         ],
         "title": "TimelineOut"
       },
+      "TraitCauseOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "trait": {
+            "type": "string",
+            "title": "Trait"
+          },
+          "change": {
+            "type": "number",
+            "title": "Change"
+          },
+          "cause": {
+            "type": "string",
+            "title": "Cause"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "trait",
+          "change",
+          "cause"
+        ],
+        "title": "TraitCauseOut"
+      },
+      "TraitOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "strong": {
+            "type": "boolean",
+            "title": "Strong",
+            "description": "At the effect line or above: its effects apply"
+          },
+          "effects": {
+            "type": "string",
+            "title": "Effects"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "value",
+          "strong",
+          "effects"
+        ],
+        "title": "TraitOut"
+      },
       "UISettings": {
         "properties": {
           "tables": {
@@ -35374,6 +36500,52 @@
         ],
         "title": "RegionOptionOut"
       },
+      "tst__api__schemas__founder__RegionOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "RegionOptionOut"
+      },
+      "tst__api__schemas__founder_parts__CauseOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "change": {
+            "type": "number",
+            "title": "Change"
+          },
+          "cause": {
+            "type": "string",
+            "title": "Cause"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "change",
+          "cause"
+        ],
+        "title": "CauseOut"
+      },
       "tst__api__schemas__hardware__OptionOut": {
         "properties": {
           "key": {
@@ -35409,6 +36581,35 @@
           "name"
         ],
         "title": "NamedOut"
+      },
+      "tst__api__schemas__press__CauseOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Mon YYYY"
+          },
+          "change": {
+            "type": "number",
+            "title": "Change"
+          },
+          "cause": {
+            "type": "string",
+            "title": "Cause"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "change",
+          "cause"
+        ],
+        "title": "CauseOut"
       },
       "tst__api__schemas__press__OptionOut": {
         "properties": {

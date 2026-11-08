@@ -41,6 +41,7 @@ from tst.sim.data_models import (
 )
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
 from tst.sim.facilities.config import ComponentsHistoryFile
+from tst.sim.founder.models import PERSONAL_ACCOUNTS, PERSONAL_PREFIX
 from tst.sim.ledger import ENGINE_ACCOUNTS
 from tst.sim.markets_public.config import BanksFile
 from tst.sim.modes.config import HistoricalScenario
@@ -408,9 +409,14 @@ def load_all(path: Path) -> LoadedData:
         raise DataLoadError(f"{EVENTS_DIR}/*.yaml: " + "; ".join(problems))
 
     balance = _validate(Balance, parsed[BALANCE_FILE], BALANCE_FILE)
+    chart = dict(parsed[ACCOUNTS_FILE] or {})
+    personal_chart = chart.pop("personal_accounts", None) or []  # M24 (32.2)
     accounts = [
         _validate(Account, item, ACCOUNTS_FILE)
-        for item in _list_of(parsed[ACCOUNTS_FILE], "accounts", ACCOUNTS_FILE)
+        for item in _list_of(chart, "accounts", ACCOUNTS_FILE)
+    ]
+    personal_accounts = [  # M24 (32.2): the founder's own chart, apart from the companies'
+        _validate(Account, item, ACCOUNTS_FILE) for item in personal_chart
     ]
     if extra := set(parsed[SCENARIOS_FILE] or {}) - {"scenarios", "historical"}:
         raise DataLoadError(
@@ -454,6 +460,7 @@ def load_all(path: Path) -> LoadedData:
         GameData,
         {
             "accounts": accounts,
+            "personal_accounts": personal_accounts,
             "scenarios": scenarios,
             "historical": historical,
             "skills": skills.skills,
@@ -504,6 +511,11 @@ def load_all(path: Path) -> LoadedData:
     orphans = sorted(set(balance.scenario) - scenario_ids)
     if orphans:
         raise DataLoadError(f"{BALANCE_FILE}: scenario blocks {orphans} are not in scenarios.yaml")
+    personal = {a.code for a in game_data.personal_accounts}
+    if personal != set(PERSONAL_ACCOUNTS):
+        raise DataLoadError(f"{ACCOUNTS_FILE}: personal_accounts must be {list(PERSONAL_ACCOUNTS)}")
+    if mixed := sorted(c for c in game_data.account_codes() if c.startswith(PERSONAL_PREFIX)):
+        raise DataLoadError(f"{ACCOUNTS_FILE}: company accounts may not use 9xxx codes: {mixed}")
     unknown_accounts = sorted(set(ENGINE_ACCOUNTS) - game_data.account_codes())
     if unknown_accounts:
         raise DataLoadError(f"{ACCOUNTS_FILE}: engine accounts missing: {unknown_accounts}")

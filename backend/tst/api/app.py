@@ -12,6 +12,7 @@ from tst.api.routers import (
     events,
     facilities,
     finance,
+    founder,
     game,
     geo,
     hardware,
@@ -93,6 +94,7 @@ def create_app() -> FastAPI:
     app.include_router(mna.router)  # M14
     app.include_router(press.router)  # M14b
     app.include_router(modes.router)  # M15b
+    app.include_router(founder.router)  # M24
     app.include_router(events.settings_router)
     app.include_router(meta.router)
 

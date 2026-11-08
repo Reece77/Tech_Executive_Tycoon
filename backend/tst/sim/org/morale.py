@@ -11,6 +11,7 @@ from dataclasses import dataclass, replace
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.modifiers import person_factor
+from tst.sim.founder.effects import morale_points
 from tst.sim.hiring.formulas import fit_term, market_mid_cents, pay_term, runway_term
 from tst.sim.hiring.rules import matching_interests
 from tst.sim.money import Cents
@@ -36,6 +37,7 @@ class MoraleTerms:
     support: float = 0.0  # W_support, "Admin and support" (M8, 18.4)
     crowded: float = 0.0  # "Crowded office" (M9, 19.2)
     events: float = 0.0  # event modifiers on the morale target (M10b, 23.2)
+    founder: float = 0.0  # the founder's persona and foundation (M24, 32.3-32.4)
 
     @property
     def team_total(self) -> float:
@@ -57,6 +59,7 @@ class MoraleTerms:
             + self.relationships
             + self.support
             + self.crowded
+            + self.founder
             + self.events
         )
 
@@ -118,6 +121,7 @@ def morale_terms(
             support if support is not None else support_morale_terms(state, view, balance, data)
         ).get(person.id, 0.0),
         crowded=balance.office.crowded_morale if person.id in crowded else 0.0,
+        founder=morale_points(state, employment.company_id, balance),
     )
     factor = person_factor(
         state, employment.company_id, person.id, employment.unit_id, "morale_target"

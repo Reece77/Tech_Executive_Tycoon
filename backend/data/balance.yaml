@@ -1238,3 +1238,97 @@ story: # rival CEO storylines (M15b addendum 12): press pieces from engine facts
 serial: # founding again after an exit (M15b addendum 10)
   background: garage_bootstrap # scenarios.yaml start: the new company's cap table (founder 90%, pool 10%) and equity account
   min_cash_dollars: 10000 # dollars; the least of the proceeds the founder can put into the new company
+
+# --- The founder's life (formulas.md 32, M24 lane C) ------------------------------------------
+stress: # 32.1: stress 0-100 on the founder, public
+  start: 20 # stress points a new founder starts with
+  comfort: 0.6 # share of the month's energy budget spent without strain
+  load: 30 # stress points per unit of share spent above comfort (all 60 of 60: +12 a month); 32.1 said 40, set to 30 by the product manager (2026-11-08): at 40 research_heavy (peaking at 82) burned out and tipped M15a's 10-year guard
+  recover: 8 # stress points lost in a month at or below comfort
+  holiday: 25 # stress points lost in a month on Holiday, or the month off a burnout grants
+  critical: 5 # stress points for each critical event answered in the month
+  burnout_at: 80 # stress points; burnout starts here
+  recover_below: 40 # stress points; burnout ends when stress falls below this
+  burnout_cut: 0.30 # share of the monthly energy budget lost while burnt out
+  backfire_mult: 2 # a bold claim made while burnt out costs this many backfires' credibility (M24 decision for "chance doubles")
+  push_on: 5 # stress points for pushing on at the burnout event
+  history: 6 # months of stress causes shown on the top bar
+
+personal: # 32.2: the founder's own book (9xxx accounts), never mixed with a company's
+  tax_rate: 0.35 # share of the founder's salary lost to income tax before it reaches the book
+
+foundation: # 32.3
+  min_cents: 100000000 # cents ($1M) of personal cash needed to create a foundation
+  energy: 5 # energy to create one
+  payout: 0.05 # share of the endowment granted each December
+  beloved_k: 3 # Beloved points per decade of a year's grants: min(beloved_cap, k x log10(g / unit)); 32.3 says 2, tuned to 3 for 32.7 target 5 ($10M a year raises Beloved 5-10: 2 x 2 = 4 missed it)
+  beloved_cap: 10 # Beloved points at most from one year's grants
+  beloved_unit_dollars: 100000 # dollars; a year's grants below this raise no Beloved
+  hiring: 0.03 # offer-score points at most (education) in the founder's home region
+  hiring_full_dollars: 10000000 # dollars a year of grants reaching the full education effect (M24 decision; 32.7 target 5 caps it at 0.03)
+  brand: 2 # brand-target points on consumer products (climate)
+  morale: 1 # morale-target points for staff (health)
+  pool: 0.05 # share added to hiring pools in the foundation's city (local communities)
+  effect_months: 12 # months a year's grant effects last
+  legacy_unit_dollars: 1000000 # dollars; legacy adds 100 x log10(1 + lifetime grants / this) (32.6)
+
+persona: # 32.4: four public traits 0-100
+  start: 20 # trait points each starts at
+  drift: 2 # trait points a month toward start
+  effect_at: 60 # trait points; effects apply at this or more
+  history: 8 # trait causes shown on the profile
+  sources: # trait points per occurrence (32.4 table)
+    era_caused: 15
+    bold_answer: 3
+    new_category: 5
+    innovative_top: 5
+    layoffs: 10
+    hostile_bid: 10
+    poach: 3
+    broke_no_layoffs: 15
+    kept_promise: 4
+    places_top: 5
+    raises: 2
+    broken_promise: 6
+    covenant_breach: 8
+    failed_tender: 8
+    pushed_on: 4
+    runway_burn: 2 # a month burning cash with runway under burn_runway_months (product manager, 2026-11-07)
+    down_round: 70 # a priced round closed below the last (product manager, 2026-11-07: +8; tuned to 70 for 32.7 target 3, see the M24 brief)
+    headcount_doubled: 5 # once a year: headcount up more than headcount_growth (product manager, 2026-11-07)
+  raise_share: 0.25 # raises to this share of staff in one month count as raises across the company (M24 decision)
+  layoff_share: 0.10 # firing this share of staff in a month is a layoff (32.4)
+  builder_hiring: 0.03 # Visionary: offer-score points for builder roles
+  feud_mult: 1.3 # Ruthless: rival feud points build x this
+  ruthless_morale: -2 # Ruthless: morale-target points for staff
+  antitrust_mult: 1.1 # Ruthless: antitrust strictness x this
+  resign_mult: 0.9 # Beloved: resignation chance x this
+  bold_brand: 1 # Beloved: brand-target points after a bold press answer
+  bold_months: 3 # months Beloved's bold-answer brand point lasts (M24 decision: press.bold_months)
+  burn_runway_months: 6 # months; runway_burn counts a burning month with runway under this
+  burn_year_cap: 12 # trait points; runway_burn raises Reckless at most this much a calendar year
+  headcount_growth: 1.0 # share; headcount_doubled when December's headcount is above (1 + this) x last December's
+  reckless_cred_target: 45 # Reckless: credibility drifts toward this instead of press.cred_start
+
+influence: # 32.5: lobbying and influence over regulators by region
+  energy: 5 # energy to set or change a region's monthly lobbying
+  rate: 3 # influence points a month x sqrt(spend / unit)
+  unit_dollars: 100000 # dollars a month of lobbying for rate points
+  decay: 0.03 # share of influence lost each month
+  cap: 100 # influence points at most
+  antitrust: 0.4 # an antitrust review's block probability x (1 - this x I / 100)
+  risk_rate: 0.0005 # hidden scandal risk per $1k of lobbying a month; 32.5 says 0.002, tuned for 32.7 target 4 (0.002: a scandal on 8 of 10 seeds; 0.0005: 5)
+  risk_ruthless: 1.5 # risk builds x this while Ruthless is at persona.effect_at or more
+  risk_decay: 0.02 # share of risk lost each month
+  risk_scale: 1000 # a month's scandal chance is min(chance_cap, risk / this)
+  chance_cap: 0.2 # a month's scandal chance at most
+  exposure: [10, 30] # hidden risk at which exposure reads medium, then high (the API shows only the word)
+  max_monthly_dollars: 10000000 # dollars; the most one region's lobbying may be set to (M24 decision)
+  scandal_cred: -15 # credibility points
+  scandal_brand: -6 # brand points on every product
+  scandal_fine: 0.005 # share of the trailing 12 months' revenue, paid at once
+  scandal_ruthless: 10 # trait points
+  scandal_reckless: 5 # trait points
+  apologize_cred: -5 # credibility points more for apologizing
+  apologize_stress: 10 # stress points for apologizing
+  fight_chance: 0.5 # chance that fighting it brings a second story (the hit again, no fine)

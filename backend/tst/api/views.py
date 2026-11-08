@@ -5,6 +5,7 @@ Ranges come from the company's knowledge records; true values never leave this m
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Mapping, Sequence
 
 from sqlalchemy import select
@@ -57,7 +58,7 @@ from tst.sim.org.rules import is_remote, org_view
 from tst.sim.people.formulas import potential_phrase
 from tst.sim.people.models import PA_KEY, Person, RevealState
 from tst.sim.people.reveal import revealed_range
-from tst.sim.state import GameState
+from tst.sim.state import GameState, life_of
 
 
 def options_out(state: GameState, employment_id: int, data: LoadedData) -> OptionsOut | None:
@@ -141,6 +142,17 @@ def energy(state: GameState, data: LoadedData) -> EnergyOut:
                         percent=True,
                     )
                 )
+        life = life_of(state, founder.id)  # M24 (32.1): burnout's cut, a month off
+        if life is not None and life.burnout:
+            cut = data.balance.stress.burnout_cut
+            cap = math.floor(cap * (1 - cut))
+            adjustments.append(
+                EnergyAdjustmentOut(
+                    label=f"-{cut:.0%} while burnt out", value=-cut * 100, percent=True
+                )
+            )
+        if life is not None and life.rest_turn == state.turn:
+            adjustments.append(EnergyAdjustmentOut(label="a month off", value=0, percent=False))
     return EnergyOut(energy=cap if left is None else left, max=cap, adjustments=adjustments)
 
 

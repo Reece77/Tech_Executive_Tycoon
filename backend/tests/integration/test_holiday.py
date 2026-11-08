@@ -60,7 +60,16 @@ def test_a_12_month_holiday_equals_12_continues(loaded: LoadedData, tmp_path: Pa
     for _ in range(12):
         repository.run_turn(home, loaded)
     a, b = _rows(away), _rows(home)
-    assert replace(a["state"], save_meta=b["state"].save_meta) == b["state"]
+    # M24 (32.1): a month on Holiday lowers the founder's stress; nothing else differs.
+    (rested,), (worked,) = a["state"].founder_lives, b["state"].founder_lives
+    assert rested.holiday_months == 12 and worked.holiday_months == 0
+    assert rested.stress <= worked.stress
+    assert any(why == "a month away" for _, _, why in rested.causes)
+    assert not any(why == "a month away" for _, _, why in worked.causes)
+    same = replace(
+        a["state"], save_meta=b["state"].save_meta, founder_lives=b["state"].founder_lives
+    )
+    assert same == b["state"]
     assert a["ledger"] == b["ledger"] and a["snapshots"] == b["snapshots"]
     assert a["inbox"] == b["inbox"]
 

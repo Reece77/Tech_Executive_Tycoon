@@ -52,6 +52,14 @@ from tst.sim.actions.finance import (
     TakeLoan,
     apply_finance,
 )
+from tst.sim.actions.founder import (
+    CreateFoundation,
+    FounderAction,
+    GiveToFoundation,
+    SellFounderShares,
+    SetLobbying,
+    apply_founder,
+)
 from tst.sim.actions.geo import (
     CloseOffice,
     GeoAction,
@@ -222,9 +230,14 @@ type Action = (
     | Retire
     | PressAction
     | ReplaceLeaver
+    | FounderAction  # M24
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
+    "sell_founder_shares": SellFounderShares,  # M24 (32.2-32.5)
+    "create_foundation": CreateFoundation,
+    "give_to_foundation": GiveToFoundation,
+    "set_lobbying": SetLobbying,
     "make_promise": MakePromise,  # M14b
     "replace_leaver": ReplaceLeaver,
     "hire_banks": HireBanks,  # M13
@@ -325,6 +338,7 @@ __all__ = [
     "CloseOffice",
     "ClosePlan",
     "CloseSearch",
+    "CreateFoundation",
     "CreatePlan",
     "CreateProduct",
     "CreateUnit",
@@ -334,6 +348,7 @@ __all__ = [
     "Draws",
     "Fire",
     "GiveRaise",
+    "GiveToFoundation",
     "HireBanks",
     "Interview",
     "LaunchInRegion",
@@ -360,11 +375,13 @@ __all__ = [
     "SecondaryOffering",
     "SellCapacity",
     "SellFacility",
+    "SellFounderShares",
     "SellPlantCapacity",
     "SetAuthority",
     "SetCeoAuthority",
     "SetGuidance",
     "SetLeader",
+    "SetLobbying",
     "SetMarketing",
     "SetMarketingSplit",
     "SetPolicy",
@@ -570,6 +587,8 @@ def apply_action(
             out = choose_event(state, action, balance, data, ledger_balances)
         case MakePromise():  # M14b (29.2)
             out = make_promise(state, action, balance, data)
+        case SellFounderShares() | CreateFoundation() | GiveToFoundation() | SetLobbying():
+            out = apply_founder(state, action, balance, data)  # M24 (32)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

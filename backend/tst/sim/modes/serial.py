@@ -99,10 +99,21 @@ def _close_venture(state: GameState, outcome: str, kept: int = 0) -> GameState:
     return replace(state, ventures=(*rest, venture))
 
 
+def _credit_exit(state: GameState, cents: int) -> GameState:
+    """The founder's exit proceeds they keep reach their personal book (M24, 32.2)."""
+    from tst.sim.founder.personal import credit
+
+    founder = state.founder_of(state.player.id)
+    if founder is None:
+        return state
+    return credit(state, founder.id, cents, "exit", f"Kept from the sale of {state.player.name}")
+
+
 def retire(state: GameState) -> GameState:
     """Retire after an exit: the game ends as before (28.6), recorded as retired."""
     if state.save_meta.game_state != EXIT:
         raise InvalidModeError("you can retire only after an exit")
+    state = _credit_exit(state, proceeds_cents(state, state.player.id))
     state = _close_venture(state, "exit")
     return replace(state, save_meta=replace(state.save_meta, game_state=RETIRED))
 
@@ -136,6 +147,7 @@ def found_again(
     assert founder is not None
     sale = sale_of(state, old.id)
     assert sale is not None
+    state = _credit_exit(state, keep_cents)  # M24 (32.2): what the founder kept
     state = _close_venture(state, "exit", keep_cents)
     turn = state.turn
     # The sold company: a kept brand of its buyer, delisted, with no board and no founder.

@@ -83,9 +83,8 @@ def test_create_save(save: Path, loaded: LoadedData) -> None:
         # M13: 0030_public_company; M12b: 0031_hardware (re-parented after M13)
         # M14b: 0033_press
         # M14: 0034_mna
-        # M15b: 0035_m15b
-        # M15a: 0036_m15a
-        assert meta.schema_version == SCHEMA_VERSION == 37  # M15r: 0037_m15r
+        # M15b: 0035_m15b; M15a: 0036_m15a; M24: 0037_founder
+        assert meta.schema_version == SCHEMA_VERSION == 38  # M15r: 0038_m15r
         assert company_cash(ledger_balances(session), state.player.id) == GARAGE_CASH
 
 
@@ -253,13 +252,13 @@ def test_list_saves_uses_index(save: Path, save_dir: Path, loaded: LoadedData) -
     assert [s.slug for s in list_saves(save_dir)] == ["dev"]  # rebuilt from files
 
 
-def test_upgrade_to_0037_makes_contract_prices_exact(save: Path) -> None:
+def test_upgrade_to_0038_makes_contract_prices_exact(save: Path) -> None:
     """M15r (Codex review 4 finding 8): a FLOAT price_cents from 0031 becomes exact integer
     millicents, and the loaded contract keeps its price."""
     from tst.db.models import ProductionContractRow
     from tst.db.state_io import load_state
 
-    migrate.downgrade(save, "0036_m15a")
+    migrate.downgrade(save, "0037_founder")
     con = sqlite3.connect(save)
     con.execute(
         "INSERT INTO production_contract (id, company_id, product_id, kind, supplier, units,"
