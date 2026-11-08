@@ -2712,3 +2712,106 @@ At the game's end and in the Hall of Fame: `legacy = best company score reached 
 
 Stress and its causes, burnout state, the personal account, the foundation, persona traits with causes, influence by region, exposure as low, medium or high, scandals, and the legacy score with its parts. Never the scandal risk number or a scandal's probability.
 
+## 33. Commodities, offtake and regional power (M17, v3 lane A)
+
+Reece's decisions (2026-11-02, 2026-11-06, playtest 4): commodity prices follow **history to 2025, then seeded**; the chain feeds **chips and devices first**; data centres should cost less where power is cheap. Data: `docs/v3-research/v3-data-dossier.md` §1, §2, §3. Principle: **commodities change what chips and devices cost; they do not yet change who makes what** (mines come in M19, refining in M20).
+
+### 33.1 Commodity goods
+
+Twelve goods in M12a's market-good model (key, unit, history then seeded, allocation, spot and contract), in `commodities.yaml` and `commodities_history.yaml`:
+
+| Key | Unit | History source (dossier §1.1) |
+| --- | --- | --- |
+| `quartz_hp` | $/t | USGS ranges 2021–2025; flat at the 2021 level before (dossier §1.2) |
+| `silicon_metal` | ¢/lb | SiM column |
+| `polysilicon` | $/kg | Poly column; **semiconductor grade = solar × `commodity.semi_poly_multiple` (5, an assumption)** |
+| `gallium`, `germanium` | $/kg | Ga, Ge columns (2010–2014 year-end values used as annual) |
+| `copper`, `tin`, `tantalum`, `cobalt` | as dossier | Cu, Sn, Ta, Co columns |
+| `lithium_carbonate` | $/t | Li column (MCS 2026 series from 2021) |
+| `ndpr_oxide` | $/kg | REE column (Nd oxide to 2020, NdPr from 2021; the midpoint of a range) |
+| `neon` | index | 1.0 to 2021, ×10 Mar–Jun 2022 easing to ×2 by Dec 2022, 1.2 from 2023 (dossier §1.2 proxies) |
+
+- **Monthly history:** each year's annual value is held for the year, with the dossier §1.3 shocks placed in their months (for example lithium rising through 2021 to its November 2022 peak; neon March–June 2022). The loader rejects a year without a value.
+- **After 2025 (seeded):** log-price AR(1) toward a long-run level (the 2015–2025 median in real terms) with `commodity.phi` 0.9 and annual volatility per good (`commodity.vol`, from the history's own volatility), plus **shocks** on stream `commodity` (id 47, key: the good's index): an export ban (more likely where one country holds over 60% of production or refining, dossier §2), a demand boom, or a supply disruption; size and length per good in `balance.yaml`. During a shock the good's allocation falls as M12a's components do.
+- **Index:** each good's index is its price ÷ its 2010–2019 mean, so 1.0 is "normal".
+
+### 33.2 What commodities cost the player
+
+- **Devices:** `device_bom` index (§26) becomes `(1 − w) × components index + w × commodity mix`, with `w` = `commodity.device_share` (0.15) and the mix lithium carbonate 0.30, cobalt 0.25, copper 0.20, NdPr 0.10, tin 0.10, tantalum 0.05.
+- **Servers:** `server_bom` likewise with `commodity.server_share` 0.08, mix copper 0.6, tin 0.2, tantalum 0.2.
+- **Chips (wafers):** the wafer price (§26.3) × `(1 − v) + v × chip mix`, `v` = `commodity.wafer_share` (0.10): semiconductor polysilicon 0.5, neon 0.2, gallium 0.15, germanium 0.15.
+- The **product cost breakdown** (Products and Hardware screens) shows each commodity's share of a unit's cost and its index.
+
+### 33.3 Contracts and offtake
+
+- **Spot** buying is automatic, at the month's price, with the good's allocation in a shortage.
+- **Contracts** (M12a's: fixed price for 6–36 months, take-or-pay) extend to commodities.
+- **Offtake agreements** (new, energy 5): 3–10 years with a named **supplier** (§33.4) for a volume a year, priced inside a **collar** (a floor and a ceiling around the price at signing, ±`offtake.collar` 25%), optional **prepayment** (up to 30% of year 1's value, buying 100% allocation during shocks). Take-or-pay at 70% of contracted volume. A supplier may breach in a severe shock (probability from its reliability; stream `commodity`).
+- **Example.** Lithium carbonate offtake signed January 2020 at $8,000/t for 5 years: the collar is $6,000–$10,000. In 2022 (spot $63,700) the company pays $10,000; in 2025 (spot $9,000) it pays $9,000.
+
+### 33.4 Suppliers
+
+The dossier's §3.1 and §3.2 companies (Freeport-McMoRan, BHP, Rio Tinto, Glencore, Albemarle, SQM, Lynas, MP Materials from July 2020, Umicore, Wacker, Hemlock, GCL, Shin-Etsu, SUMCO, GlobalWafers, Siltronic, and the rest) join `suppliers.yaml`: region, goods, a production share, reliability and listing. In M17 they are counterparties only (no products or pools); M19 and M20 turn the relevant ones into rival mining and refining companies. **Their 2010 revenues are spot-checked against sources before entry** (the dossier marks about two-thirds as recalled).
+
+### 33.5 Regional power (playtest 4)
+
+- **Power** becomes a market good by region: an industrial price index, North America = 1.0, with history to 2025 from public sources (EIA, Eurostat, IEA; the brief's first sub-task researches and cites them) and seeded after (stream `commodity`, power's index per region). Default 2010–2019 levels if sources are thin: Europe 1.5 (×2.5 in 2022, easing to 1.6 by 2024), East Asia 1.2, South and Southeast Asia 0.85, Latin America 0.9, Africa 1.1, Oceania 1.3.
+- **Who pays it:** data centres' power cost (§22.2) × the region's index; fabs and refineries later. M12a's tuning is for North America, which stays at 1.0, so §22.7 target 4 is unchanged for a North American build.
+- **Example.** A GPU data centre's $200 a CU-month power (§22) costs $170 in South and Southeast Asia, and $300 in Europe in 2022's spike.
+
+### 33.6 Balance targets (M17 acceptance, printed)
+
+1. **History holds:** every good's monthly price equals the history file on every seed through 2025; nothing after the current month reaches the API.
+2. **Shocks hurt devices:** the 2021–2022 lithium spike raises a reference phone's unit cost by 3–8% at its peak against 2020.
+3. **Hedging pays:** a device maker with a 5-year lithium and cobalt offtake from 2020 has a gross margin at least 3 points higher in 2022 than a spot-only twin.
+4. **Power spreads:** a data centre's operating cost per CU in the cheapest region is at most 0.85× North America's; §22.7 target 4 still holds for a North American build.
+5. **After 2025:** each good has at least one shock in 2026–2039 on 6–10 of 10 seeds, and no good's index stays above 3.0 for more than 36 months.
+6. **Nothing else moves for software companies:** a company without hardware or data centres plays exactly as before (golden snapshots for software-only seeds).
+
+## 34. Prospecting and exploration (M18, v3 lane B)
+
+Reece's decisions (2026-11-02, 2026-11-06): **hidden deposit grades revealed by drilling**; **protests and permits** are critical events. Data: dossier §2 (where each commodity is found) and §6 (economics). Principle: **you never see the truth, only estimates that narrow as you spend.** Mines are M19; M18 ends at a permitted, feasibility-studied project the player can sell or (from M19) build.
+
+### 34.1 Geology
+
+- Each region has a **prospectivity** per commodity (0–1, `geology.yaml`) following dossier §2: for example copper high in Latin America and Africa; lithium high in Latin America (brine) and Oceania (hard rock); cobalt and tantalum high in Africa; rare earths high in East Asia, medium in Oceania and North America; high-purity quartz high in North America; tin high in South and Southeast Asia and Latin America. Gallium and germanium are refining by-products (M20), not explored.
+- At game start each region is divided into **blocks** (`geology.blocks_per_region`, 40), and each block holds hidden **deposits** drawn on stream `geology` (id 48, key: region index, block index), with probability from prospectivity: commodity, type (hard rock, brine, placer), tonnage, grade, depth, metallurgical recovery, infrastructure distance, permitting difficulty and community sensitivity. Most blocks hold nothing economic: tuned so roughly 1 in 25 surveyed blocks becomes a feasible project (a game-scale version of the dossier's 1 in 1,000).
+
+### 34.2 The pipeline
+
+| Stage | Cost and time | What it reveals |
+| --- | --- | --- |
+| **Desk study** (region and commodity) | $200k, 2 months, geologist-months | a heat map: each block's prospectivity as a band (low, medium, high), sharper with the team's skill |
+| **Exploration licence** (a block) | a fee by region, held 5 years, renewable once | the right to explore; rivals' licences are visible |
+| **Survey** (geophysics, geochemistry) | $1–3M, 6 months | whether an anomaly exists (a probability band) and its commodity |
+| **Sampling** | $2M, 6 months | a first grade range (±60%) |
+| **Drilling** (a programme of holes) | $150–400k a hole by depth and region | each hole draws a grade from the deposit's true distribution (stream `exploration`, id 49, key: block, hole); the estimate is the running mean, and its range narrows with holes and with the resource geologist's skill |
+| **Resource estimate** | $1M, 3 months | categories: inferred (from 8 holes), indicated (20), measured (40), with tonnage and grade ranges |
+| **Feasibility** (scoping, pre-feasibility, definitive) | $2M, $8M, $20M; 6, 12, 18 months | capex and operating cost ranges, recovery, and an NPV range at M17's price deck |
+| **Permitting** | 1–7 years by region (North America slowest, dossier §6) | a permit or a refusal; community and environmental events |
+
+- **Geologists:** a new role `geologist` with skills field geology, geophysics and resource estimation, hired in mining cities (new: **Perth, Santiago, Johannesburg**; existing: Toronto). Skill narrows every range (`range × (1.3 − 0.03 × skill)`), and a better desk study points the survey at better blocks.
+- **Selling a project** at any stage to a supplier (§33.4) at a price from its estimate range and the price deck: the exit before M19 lets you build.
+
+### 34.3 Critical events
+
+- **Protests and permits:** a community blockade or a permit delayed or revoked, with probability from the block's hidden community sensitivity and the region; choices: consult (time and money), offer a benefit agreement (money, raises the odds), or push on (legal risk, persona Ruthless +5 from M24).
+- **Minor events:** a drilling accident (a fine and a month's delay), a bonanza intercept (a hole far above the estimate, news), a dry hole streak.
+
+### 34.4 Who explores
+
+A company at stage 3 or more; at stage 5 usually a subsidiary (M16), so an exploration business can be carved out or sold. Rivals' suppliers hold licences on some blocks from the start (the real mines are theirs, abstractly).
+
+### 34.5 What the API may show
+
+Heat-map bands, licences, every estimate as a range with its category, holes drilled and their assays (each hole's result is public once drilled), feasibility ranges, permits and events. **Never** a deposit's true tonnage, grade, recovery or sensitivity, or an empty block's emptiness before it is tested. A differential test: two blocks with the same revealed results but different truths give identical responses.
+
+### 34.6 Balance targets (M18 acceptance, printed)
+
+1. **Estimates converge:** 20 holes narrow a deposit's grade range to ±15% (median); 40 holes to ±8%.
+2. **Geologists matter:** a team at skill 15 finds a feasible project 1.5–2.5× as often per dollar as one at skill 8, with ranges 25–40% narrower.
+3. **Exploration is a gamble:** the median spend per feasible, permitted project is $20–60M (game scale) over 3–8 years; at least 40% of surveyed blocks end in nothing.
+4. **Geography is real:** the region with the most feasible projects per commodity matches dossier §2's leading producer region for copper, lithium, cobalt and rare earths on at least 7 of 10 seeds.
+5. **Permits vary:** median permitting time in North America is at least 1.5× Latin America's.
+6. **Nothing else moves:** a company that never explores plays exactly as before.
+
