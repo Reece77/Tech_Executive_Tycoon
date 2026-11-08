@@ -3040,3 +3040,45 @@ def transfer_price_cmd(
 
     seller, buyer, good = flow.split(":")
     _group_act(save, lambda f: SetTransferPrice(f, int(seller), int(buyer), good, kind, margin))
+
+
+# --- M25: Explain, achievements and mods ---------------------------------------------------
+
+
+@app.command("explain")
+def explain_cmd(
+    save: SaveOpt,
+    metric: Annotated[str, typer.Option("--metric", help="A metric key, e.g. churn or cash")],
+    entity: Annotated[
+        str | None,
+        typer.Option(
+            "--entity", help="Product or person id, account code (cost_line) or category key"
+        ),
+    ] = None,
+) -> None:
+    """Print a number's driver breakdown, its trend and the template explanation (M25)."""
+    from tst.advisor.ask import explained
+    from tst.advisor.metrics import METRICS
+    from tst.advisor.template import amount, driver_text
+
+    path, data, _ = _game(save)
+    try:
+        found = explained(path, data, metric, entity)
+    except SimError as exc:
+        keys = ", ".join(METRICS)
+        raise _fail(f"{exc.message} (metrics: {keys})") from exc
+    e = found.explanation
+    value = "-" if e.value is None else amount(e.value, e.metric.unit)
+    typer.echo(f"{e.metric.label} of {e.subject}: {value}")
+    for item in e.items:
+        typer.echo(f"  {item.label:<48} {amount(item.amount, item.unit)}")
+    if e.note:
+        typer.echo(f"  ({e.note})")
+    if e.trend:
+        trend = ", ".join(
+            f"{format_turn(p.turn)} {amount(p.value, e.metric.unit)}" for p in e.trend
+        )
+        typer.echo(f"Trend: {trend}")
+    for d in e.drivers:
+        typer.echo(f"  - {driver_text(d, e.metric.unit, e.metric.label.lower())}")
+    typer.echo(found.template)

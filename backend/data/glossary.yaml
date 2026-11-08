@@ -625,3 +625,7 @@ terms:
   field.wafers: "Wafer starts a month under contract."
   field.warrant_bp: "The lender's warrants as a share of all shares."
   field.your_level: "Your research level in the era's domain."
+  # --- M25: Explain, achievements and the data editor ---------------------------------------
+  explain.driver: "One line of the number's breakdown: what it is made of, or what moved it."
+  explain.amount: "That line's size, in the number's own unit."
+  kpi.churn: "Customers lost last month as a share of those held at the start of the month, over every segment."

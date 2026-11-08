@@ -4,6 +4,7 @@ import type { StatementPeriod } from '../hooks/api';
 import { formatThousands, pnlLines, type StatementLine } from '../lib/finance';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 import { DataTable } from './DataTable';
+import { Explain } from './Explain';
 import { Term } from './Term';
 
 /** The glossary id of a P&L line: an account code, or a computed line (M7b). */
@@ -37,6 +38,9 @@ export function StatementTable({ periods }: { periods: readonly StatementPeriod[
               }}
             >
               <Term term={lineTerm(row.original.id)}>{row.original.label}</Term>
+              {/^\d/.test(row.original.id) && (
+                <Explain metric="cost_line" entity={row.original.id} label={row.original.label} />
+              )}
             </span>
           ),
         }),

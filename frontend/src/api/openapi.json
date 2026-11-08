@@ -16425,6 +16425,196 @@
         }
       }
     },
+    "/api/saves/{save_id}/explain/{metric}": {
+      "get": {
+        "tags": [
+          "explain"
+        ],
+        "summary": "Get Explain",
+        "description": "A number's breakdown, its trend, what moved it and the template explanation.",
+        "operationId": "getExplain",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Metric"
+            }
+          },
+          {
+            "name": "entity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplainOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/explain/{metric}/ask": {
+      "post": {
+        "tags": [
+          "explain"
+        ],
+        "summary": "Ask Explain",
+        "description": "Ask the chief of staff why. Offline, over budget or after an error the answer is the\ntemplate explanation.",
+        "operationId": "askExplain",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Metric"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplainAskIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplainAnswerOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -21895,6 +22085,274 @@
         ],
         "title": "ExitChoiceOut",
         "description": "After the choice: the game's state and the company the player now runs."
+      },
+      "ExplainAnswerOut": {
+        "properties": {
+          "speaker": {
+            "type": "string",
+            "title": "Speaker"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "claude, mock, or template (offline or over budget)"
+          },
+          "cost_cents": {
+            "type": "number",
+            "title": "Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "speaker",
+          "question",
+          "answer",
+          "source",
+          "cost_cents"
+        ],
+        "title": "ExplainAnswerOut"
+      },
+      "ExplainAskIn": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "ExplainAskIn"
+      },
+      "ExplainDriverOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "effect": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effect",
+            "description": "Its share of the number's last change, in the number's unit"
+          },
+          "change": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change",
+            "description": "The driver's own move, in `unit`"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExplainUnit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "change",
+              "level"
+            ],
+            "title": "Kind",
+            "description": "level: a term of the number as it stands now",
+            "default": "change"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "title": "ExplainDriverOut"
+      },
+      "ExplainOut": {
+        "properties": {
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/ExplainUnit"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "company",
+              "product",
+              "person",
+              "account",
+              "market"
+            ],
+            "title": "Scope"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject",
+            "description": "What the number belongs to, by name"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BreakdownItemOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "The number's driver breakdown"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "trend": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPointOut"
+            },
+            "type": "array",
+            "title": "Trend",
+            "description": "The last advisor.explain.history_months"
+          },
+          "trend_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend Note"
+          },
+          "drivers": {
+            "items": {
+              "$ref": "#/components/schemas/ExplainDriverOut"
+            },
+            "type": "array",
+            "title": "Drivers",
+            "description": "What moved it last month, largest first"
+          },
+          "related": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Related",
+            "description": "Related events in the last months, as the inbox"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation",
+            "description": "The template explanation (offline, always shown)"
+          },
+          "speaker": {
+            "type": "string",
+            "title": "Speaker",
+            "description": "Who answers Ask why: the chief of staff, by name"
+          },
+          "max_question_chars": {
+            "type": "integer",
+            "title": "Max Question Chars"
+          },
+          "offline": {
+            "type": "boolean",
+            "title": "Offline",
+            "description": "True when Ask why can only give the template answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric",
+          "label",
+          "unit",
+          "scope",
+          "subject",
+          "items",
+          "trend",
+          "drivers",
+          "related",
+          "explanation",
+          "speaker",
+          "max_question_chars",
+          "offline"
+        ],
+        "title": "ExplainOut"
+      },
+      "ExplainUnit": {
+        "type": "string",
+        "enum": [
+          "cents",
+          "count",
+          "points",
+          "percent",
+          "months"
+        ]
       },
       "FacilityOut": {
         "properties": {
@@ -37867,6 +38325,29 @@
           "price_kind"
         ],
         "title": "TransferPriceIn"
+      },
+      "TrendPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "value"
+        ],
+        "title": "TrendPointOut"
       },
       "UISettings": {
         "properties": {

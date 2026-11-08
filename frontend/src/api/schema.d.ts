@@ -3594,6 +3594,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/explain/{metric}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Explain
+         * @description A number's breakdown, its trend, what moved it and the template explanation.
+         */
+        get: operations["getExplain"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/explain/{metric}/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask Explain
+         * @description Ask the chief of staff why. Offline, over budget or after an error the answer is the
+         *     template explanation.
+         */
+        post: operations["askExplain"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -6044,6 +6085,117 @@ export interface components {
             /** Company Name */
             company_name: string;
         };
+        /** ExplainAnswerOut */
+        ExplainAnswerOut: {
+            /** Speaker */
+            speaker: string;
+            /** Question */
+            question: string;
+            /** Answer */
+            answer: string;
+            /**
+             * Source
+             * @description claude, mock, or template (offline or over budget)
+             */
+            source: string;
+            /** Cost Cents */
+            cost_cents: number;
+        };
+        /** ExplainAskIn */
+        ExplainAskIn: {
+            /** Question */
+            question: string;
+            /** Entity */
+            entity?: string | null;
+        };
+        /** ExplainDriverOut */
+        ExplainDriverOut: {
+            /** Label */
+            label: string;
+            /**
+             * Effect
+             * @description Its share of the number's last change, in the number's unit
+             */
+            effect?: number | null;
+            /**
+             * Change
+             * @description The driver's own move, in `unit`
+             */
+            change?: number | null;
+            unit?: components["schemas"]["ExplainUnit"] | null;
+            /**
+             * Kind
+             * @description level: a term of the number as it stands now
+             * @default change
+             * @enum {string}
+             */
+            kind?: "change" | "level";
+        };
+        /** ExplainOut */
+        ExplainOut: {
+            /** Metric */
+            metric: string;
+            /** Label */
+            label: string;
+            unit: components["schemas"]["ExplainUnit"];
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "company" | "product" | "person" | "account" | "market";
+            /** Entity */
+            entity?: string | null;
+            /**
+             * Subject
+             * @description What the number belongs to, by name
+             */
+            subject: string;
+            /** Value */
+            value?: number | null;
+            /**
+             * Items
+             * @description The number's driver breakdown
+             */
+            items: components["schemas"]["BreakdownItemOut"][];
+            /** Note */
+            note?: string | null;
+            /**
+             * Trend
+             * @description The last advisor.explain.history_months
+             */
+            trend: components["schemas"]["TrendPointOut"][];
+            /** Trend Note */
+            trend_note?: string | null;
+            /**
+             * Drivers
+             * @description What moved it last month, largest first
+             */
+            drivers: components["schemas"]["ExplainDriverOut"][];
+            /**
+             * Related
+             * @description Related events in the last months, as the inbox
+             */
+            related: string[];
+            /**
+             * Explanation
+             * @description The template explanation (offline, always shown)
+             */
+            explanation: string;
+            /**
+             * Speaker
+             * @description Who answers Ask why: the chief of staff, by name
+             */
+            speaker: string;
+            /** Max Question Chars */
+            max_question_chars: number;
+            /**
+             * Offline
+             * @description True when Ask why can only give the template answer
+             */
+            offline: boolean;
+        };
+        /** @enum {string} */
+        ExplainUnit: "cents" | "count" | "points" | "percent" | "months";
         /** FacilityOut */
         FacilityOut: {
             /** Facility Id */
@@ -12855,6 +13007,15 @@ export interface components {
              * @description cost plus: the margin, 0-1
              */
             margin?: number | null;
+        };
+        /** TrendPointOut */
+        TrendPointOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Value */
+            value: number;
         };
         /** UISettings */
         UISettings: {
@@ -24901,6 +25062,130 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getExplain: {
+        parameters: {
+            query?: {
+                entity?: string | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+                metric: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplainOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    askExplain: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                metric: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExplainAskIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplainAnswerOut"];
                 };
             };
             /** @description Bad Request */

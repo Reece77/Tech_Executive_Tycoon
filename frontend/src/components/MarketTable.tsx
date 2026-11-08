@@ -1,3 +1,4 @@
+import { Explain } from './Explain';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, type HTMLAttributes } from 'react';
 import { Link } from 'react-router';
@@ -76,16 +77,22 @@ export function MarketTable({
           header: 'Appeal',
           sortFn: 'basic',
           sortDescFirst: true,
-          cell: ({ getValue }) => (
+          cell: ({ row, getValue }) => (
             <span className="tst-num" style={{ fontWeight: 600 }}>
               {formatAppeal(getValue())}
+              <Explain metric="appeal" entity={row.original.product_id} label="Appeal" />
             </span>
           ),
         }),
         helper.accessor('customers', {
           header: 'Customers',
           sortFn: 'basic',
-          cell: ({ getValue }) => <span className="tst-num">{formatCount(getValue())}</span>,
+          cell: ({ row, getValue }) => (
+            <span className="tst-num">
+              {formatCount(getValue())}
+              <Explain metric="churn" entity={row.original.product_id} label="Churn" />
+            </span>
+          ),
         }),
         helper.accessor('share_of_served', {
           header: 'Share of buyers',

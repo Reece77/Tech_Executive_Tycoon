@@ -41,6 +41,7 @@ function FundingTile({ saveId, funding: f }: { saveId: string; funding: Overview
     >
       <KpiTile
         term="kpi.funding"
+        explain="founder_ownership"
         label="Funding"
         value={
           f.last_round_label
@@ -91,6 +92,7 @@ export function OverviewScreen() {
         )}
         <KpiTile
           term="kpi.cash"
+          explain="cash"
           drivers={tip('cash', "Last month's change in cash")}
           label="Cash"
           value={formatMoneyWhole(data.cash_cents)}
@@ -99,6 +101,7 @@ export function OverviewScreen() {
         />
         <KpiTile
           term="kpi.burn"
+          explain="burn"
           drivers={tip('burn', 'Burn by cost line')}
           label="Monthly burn"
           value={formatMoneyWhole(data.monthly_burn_cents)}
@@ -107,6 +110,7 @@ export function OverviewScreen() {
         />
         <KpiTile
           term="kpi.runway"
+          explain="runway"
           drivers={tip('runway', 'Runway')}
           label="Runway"
           value={formatRunway(data.runway_months)}
@@ -116,6 +120,7 @@ export function OverviewScreen() {
         />
         <KpiTile
           term="kpi.mrr"
+          explain="mrr"
           drivers={tip('mrr', 'MRR by product')}
           label="MRR"
           value={formatMoneyWhole(data.mrr_cents)}
@@ -124,6 +129,7 @@ export function OverviewScreen() {
         />
         <KpiTile
           term="kpi.arr"
+          explain="arr"
           drivers={tip('arr', 'ARR by product')}
           label="ARR"
           value={formatMoneyShort(data.arr_cents)}
@@ -136,6 +142,7 @@ export function OverviewScreen() {
         />
         <KpiTile
           term="kpi.headcount"
+          explain="headcount"
           drivers={tip('headcount', 'Staff by unit')}
           label="Headcount"
           value={String(data.team.headcount)}
@@ -144,6 +151,7 @@ export function OverviewScreen() {
         />
         <KpiTile
           term="kpi.payroll"
+          explain="payroll"
           label="Monthly payroll"
           value={formatMoneyWhole(data.team.payroll_cents)}
           note="Salaries and benefits"
@@ -152,6 +160,7 @@ export function OverviewScreen() {
         />
         <KpiTile
           term="kpi.avg_morale"
+          explain="avg_morale"
           drivers={tip('avg_morale', 'Average morale terms')}
           label="Average morale"
           value={data.team.avg_morale === null ? 'n/a' : formatWhole(data.team.avg_morale)}
