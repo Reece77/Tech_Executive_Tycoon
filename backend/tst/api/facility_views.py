@@ -192,6 +192,12 @@ def facility_out(
         unit_name=unit.name if unit else None,
         monthly_cost_cents=cost,
         power_index=power.kind_index(state, facility.kind, facility.region, b, d),
+        power_cents=round(
+            power.opex_cents(
+                kind.opex_per_unit_cents,
+                power.kind_index(state, facility.kind, facility.region, b, d),
+            )
+        ),
         cost_per_used_cents=round(cost / used) if used > 0 and not building else None,
         spot_cents=round(compute.spot_unit_cents(state, kind.output_good, b, d)),
         book_value_cents=facility.book_value_cents,
@@ -389,6 +395,7 @@ def build_preview(
     full = ff.monthly_cost_cents(capacity, q.capex_cents, k.life_months, opex)
     return BuildPreviewOut(
         power_index=power_index,
+        power_cents=opex,
         kind=kind,
         region=region,
         units=capacity,

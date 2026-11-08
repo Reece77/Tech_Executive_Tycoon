@@ -35,6 +35,8 @@ class CommodityOut(BaseModel):
     top_share: float = Field(description="Its largest country's share of production or refining")
     note: str = Field(description="Shortage, a running shock, or full allocation, in words")
     use_month: float = Field(description="Your company's use last month, in volume units")
+    peak_price: float = Field(description="The highest price in the history shown")
+    peak_label: str = Field(description="Its month")
     history: list[PricePointOut]
 
 
@@ -45,7 +47,7 @@ class PowerOut(BaseModel):
     history: list[PricePointOut]
 
 
-class DealOut(BaseModel):
+class CommodityDealOut(BaseModel):
     deal_id: int
     kind: str = Field(description="contract or offtake")
     good: str
@@ -90,7 +92,7 @@ class SupplierOut(BaseModel):
 class CommoditiesOut(BaseModel):
     goods: list[CommodityOut]
     power: list[PowerOut]
-    deals: list[DealOut]
+    deals: list[CommodityDealOut]
     suppliers: list[SupplierOut]
     collar: float = Field(description="Offtake floor and ceiling: signing price -/+ this share")
     prepay_max: float

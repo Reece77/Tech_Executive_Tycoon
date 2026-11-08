@@ -5,6 +5,7 @@ import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
+import { Term } from '../components/Term';
 import {
   useHardware,
   useHardwareAction,
@@ -190,6 +191,34 @@ export function ManufacturingPanel({ m }: { m: Manufacturing }) {
           <span className="tst-num">{formatMoney(line.cents)}</span>
         </div>
       ))}
+      {(m.commodity_lines ?? []).length > 0 && (
+        <div data-testid="commodity-lines" style={{ marginTop: 6 }}>
+          <div className="tst-muted" style={{ fontSize: 12 }}>
+            <Term term="commodity.cost_line">Commodities in a unit</Term> · spot, then after your
+            deals (<Term term="commodity.hedged">share hedged</Term>)
+          </div>
+          {(m.commodity_lines ?? []).map((c) => (
+            <div key={c.good} className="tst-row" data-testid={`commodity-line-${c.good}`}>
+              <span>
+                {c.label}{' '}
+                <span className="tst-muted">
+                  · weight {Math.round(c.weight * 100)}% · index {c.index.toFixed(2)}
+                </span>
+              </span>
+              <span className="tst-num">
+                {formatMoney(Math.round(c.spot_cents))} spot
+                {c.hedged_share > 0 && (
+                  <span data-testid={`commodity-hedged-${c.good}`}>
+                    {' '}
+                    → {formatMoney(Math.round(c.deal_cents))} ({Math.round(c.hedged_share * 100)}%
+                    hedged)
+                  </span>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 8 }}>
         <KpiTile
           label="Unit cost"

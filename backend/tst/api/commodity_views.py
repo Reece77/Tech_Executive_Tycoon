@@ -11,8 +11,8 @@ from tst.api.facility_views import Stored, current_turn
 from tst.api.schemas.commodities import (
     CommoditiesOut,
     CommodityCostLineOut,
+    CommodityDealOut,
     CommodityOut,
-    DealOut,
     PowerOut,
     PricePointOut,
     SupplierGoodOut,
@@ -79,14 +79,14 @@ def _note(month: GoodMonth, turn: int) -> str:
     return "Full allocation"
 
 
-def deal_out(state: GameState, deal_id: int, data: LoadedData) -> DealOut:
+def deal_out(state: GameState, deal_id: int, data: LoadedData) -> CommodityDealOut:
     d, b = data.game_data, data.balance
     deal = next(x for x in state.commodity_deals if x.id == deal_id)
     assert d.commodities is not None
     supplier = d.suppliers.supplier(deal.supplier) if d.suppliers and deal.supplier else None
     spot = commodity.current(state, deal.good, d).index * commodity.mean_of(d, deal.good)
     spot *= commodity.price_multiple(deal.good, b)
-    return DealOut(
+    return CommodityDealOut(
         deal_id=deal.id,
         kind=deal.kind,
         good=deal.good,
@@ -123,6 +123,8 @@ def commodities_out(
         mult = commodity.price_multiple(g.key, b)
         mean = commodity.mean_of(d, g.key)
         year_ago = month_at(g.key, max(0, now - MONTHS_PER_YEAR), state, data, stored)
+        history = _history(g.key, state, data, stored)
+        peak = max(history, key=lambda p: p.price) if history else None
         goods.append(
             CommodityOut(
                 good=g.key,
@@ -138,7 +140,9 @@ def commodities_out(
                 top_share=g.top_share,
                 note=_note(month, now),
                 use_month=use.get(g.key, 0.0),
-                history=_history(g.key, state, data, stored),
+                peak_price=peak.price if peak else month.index * mean * mult,
+                peak_label=peak.label if peak else format_turn(now),
+                history=history,
             )
         )
     power = [
