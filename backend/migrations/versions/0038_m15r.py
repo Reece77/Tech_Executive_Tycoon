@@ -26,7 +26,7 @@ def upgrade() -> None:
     with op.batch_alter_table("production_contract") as batch:
         batch.alter_column("price_millicents", existing_type=sa.BigInteger(), nullable=False)
         batch.drop_column("price_cents")
-    op.execute("UPDATE save_meta SET schema_version = 37")
+    op.execute("UPDATE save_meta SET schema_version = 38")
 
 
 def downgrade() -> None:
@@ -36,4 +36,4 @@ def downgrade() -> None:
     with op.batch_alter_table("production_contract") as batch:
         batch.alter_column("price_cents", existing_type=sa.Float(), nullable=False)
         batch.drop_column("price_millicents")
-    op.execute("UPDATE save_meta SET schema_version = 36")
+    op.execute("UPDATE save_meta SET schema_version = 37")
