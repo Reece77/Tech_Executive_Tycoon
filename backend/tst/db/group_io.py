@@ -11,8 +11,24 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from tst.db.mna_io import _sync, from_data, to_data
-from tst.db.models import GroupPitchRow, HoldingRow, MandateRow, OwnershipRow, StakeRow
-from tst.sim.group.models import GroupPitch, Holding, Mandate, Ownership, Stake
+from tst.db.models import (
+    GroupListingRow,
+    GroupPitchRow,
+    HoldingRow,
+    MandateRow,
+    OwnershipRow,
+    PersonalStakeRow,
+    StakeRow,
+)
+from tst.sim.group.models import (
+    GroupListing,
+    GroupPitch,
+    Holding,
+    Mandate,
+    Ownership,
+    PersonalStake,
+    Stake,
+)
 from tst.sim.state import GameState
 
 KEYS = ("id", "company_id", "owner_id")
@@ -45,8 +61,22 @@ def load_group(
         from_data(GroupPitch, r.data, id=r.id, company_id=r.company_id)
         for r in session.scalars(select(GroupPitchRow).order_by(GroupPitchRow.id))
     )
+    listings = tuple(
+        from_data(GroupListing, r.data, company_id=r.company_id)
+        for r in session.scalars(select(GroupListingRow).order_by(GroupListingRow.company_id))
+    )
+    personal = tuple(
+        from_data(PersonalStake, r.data, person_id=r.person_id, company_id=r.company_id)
+        for r in session.scalars(
+            select(PersonalStakeRow).order_by(
+                PersonalStakeRow.person_id, PersonalStakeRow.company_id
+            )
+        )
+    )
     return replace(
         state,
+        group_listings=listings,
+        personal_stakes=personal,
         ownerships=ownerships,
         holdings=holdings,
         stakes=stakes,
@@ -58,14 +88,41 @@ def load_group(
 def sync_group(
     session: Session, old: GameState, new: GameState, has_table: Callable[[Session, Any], bool]
 ) -> None:
-    if (old.ownerships, old.holdings, old.stakes, old.mandates, old.group_pitches) == (
-        new.ownerships,
-        new.holdings,
-        new.stakes,
-        new.mandates,
-        new.group_pitches,
-    ) or not has_table(session, OwnershipRow):
+    fields = (
+        "ownerships",
+        "holdings",
+        "stakes",
+        "mandates",
+        "group_pitches",
+        "group_listings",
+        "personal_stakes",
+    )
+    if all(getattr(old, f) == getattr(new, f) for f in fields) or not has_table(
+        session, OwnershipRow
+    ):
         return
+    _sync(
+        session,
+        old.group_listings,
+        new.group_listings,
+        lambda x: x.company_id,
+        lambda x: GroupListingRow(company_id=x.company_id, data=to_data(x, ("company_id",))),
+        lambda k: delete(GroupListingRow).where(GroupListingRow.company_id == k),
+    )
+    _sync(
+        session,
+        old.personal_stakes,
+        new.personal_stakes,
+        lambda x: (x.person_id, x.company_id),
+        lambda x: PersonalStakeRow(
+            person_id=x.person_id,
+            company_id=x.company_id,
+            data=to_data(x, ("person_id", "company_id")),
+        ),
+        lambda k: delete(PersonalStakeRow).where(
+            PersonalStakeRow.person_id == k[0], PersonalStakeRow.company_id == k[1]
+        ),
+    )
     _sync(
         session,
         old.mandates,

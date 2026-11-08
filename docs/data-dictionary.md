@@ -1698,6 +1698,27 @@ A subsidiary CEO's request to the group for capital (31.4), each quarter on a dr
 | `company_id` | INTEGER | no | The subsidiary. |
 | `data` | JSON | no | `person_id` (its CEO), `turn`, `amount_cents`, `fits_mandate`, `status` (`pending`, `approved`, `declined`, `lapsed`), `resolved_turn`. |
 
+### group_listing
+
+A company the group listed (formulas.md 31.5): a carve-out (10–40% sold to the public; the group keeps control) or a spin-off (its shares given to the holding company's shareholders: an independent listed rival). Either trades like a listed rival (28.1: V_f x the sentiment in `rival_listing`, which it gets a row in).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER | no | Primary key: the company listed. |
+| `data` | JSON | no | `listed_turn`, `kind` (`carve_out`, `spin_off`), `shares` (shares outstanding at listing, 10,000,000). |
+
+### group_personal_stake
+
+Shares the founder holds in their own name in a spun-off company (31.5): their pro-rata part of what was given out (their share of the holding company x the share distributed), a holding, not cash (M24's book holds cash only).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER | no | Primary key, with `company_id`: the founder. |
+| `company_id` | INTEGER | no | Primary key, with `person_id`: the spun-off company. |
+| `data` | JSON | no | `stake_bp`, `turn`. |
+
+A subsidiary's cap table (`cap_entry`) opens the first time outsiders buy in: its owner's `group` entry for 10,000,000 shares, then `firm` entries for investors who bought a stake (an `investors.yaml` firm drawn on stream `group`) and a `group` "Public float" entry for a carve-out. A buyout removes them.
+
 With minorities (a stake under 100%), a subsidiary's spare cash goes up as a **dividend** to every holder pro rata (its memo "Dividend to shareholders"; the owner's share against its 1810) instead of M14's sweep, and its owner no longer funds its shortfalls.
 
 `group_ownership.data` also carries `rebases` ([turn, stake_bp, book_cents, equity_cents] at each stake change: from that turn the stake and the investment's basis are the rebase's; the investment is `book − stake × (equity now − equity)`), `goodwill_cents` (the goodwill an owner carries for a company passed to it inside the group; null: from the acquisition) and `common_control` (a reorganization: forming the holding company; the group's entry difference is equity, not goodwill). `end_reason` may be `transferred` (a brand passed from the operating company to the holding company).

@@ -127,3 +127,47 @@ def test_the_group_plays_on_balanced_and_reloads_cold(formed: Formed, loaded: Lo
     last = out.periods[-1]
     cash = sum(balances.get((c, CASH), 0) for c in (hid, *books))
     assert {x.account: x.amount_cents for x in last.balance_sheet.assets}[CASH] == cash
+
+
+def test_a_spin_off_becomes_an_independent_listed_company(
+    tmp_path: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """31.5: the shares go to the holding company's shareholders; it trades as a listed rival;
+    the group keeps 10% at fair value; the founder holds their part in their own name; the
+    group's statements still balance and no longer consolidate it."""
+    from tst.sim.group.capital import SpinOff
+    from tst.sim.mna import valuation
+
+    monkeypatch.setenv("TST_STATE_CACHE_CHECK", "1")
+    sys.path.insert(0, str(TOOLS))
+    from e2e_m16_save import formed as make_formed
+
+    path = make_formed(tmp_path, "spin", loaded)
+    state = _load(path)
+    hid = listed_id(state)
+    brand = next(c.id for c in group_companies(state, hid)[1:] if c.id != 1)
+    with pytest.raises(GroupRuleError):
+        run_action(path, loaded, SpinOff(FOUNDER, brand, keep_bp=2_500))  # 19.9% at most
+    after = run_action(path, loaded, SpinOff(FOUNDER, brand, keep_bp=1_000)).new_state
+    company = after.company(brand)
+    assert company.parent_id is None and company.alive and not company.is_player
+    assert valuation.is_listed(after, brand, loaded.game_data)
+    assert brand not in {c.id for c in group_companies(after, hid)}
+    (kept,) = [x for x in after.stakes if x.company_id == brand]
+    assert kept.kind == "retained" and kept.stake_bp == 1_000 and kept.owner_id == hid
+    (mine,) = [x for x in after.personal_stakes if x.company_id == brand]
+    assert mine.person_id == FOUNDER and 0 < mine.stake_bp < 9_000
+    run_turn(path, loaded)
+    state = _load(path)
+    cap = valuation.market_cap_cents(state, brand, {}, loaded.balance, loaded.game_data)
+    assert cap is not None and cap > 0
+    with open_session(path) as session:
+        lines = repository.ledger_lines(session, hid)
+        members = group_members(state, hid)
+        books = {m.company_id: repository.ledger_lines(session, m.company_id) for m in members}
+    out = finance_views.statements_out(
+        state, lines, "month", loaded, [(m, books[m.company_id]) for m in members]
+    )
+    for p in out.periods:
+        s = p.balance_sheet
+        assert s.total_assets_cents == s.total_liabilities_and_equity_cents, p.label

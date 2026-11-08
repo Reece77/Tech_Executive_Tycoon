@@ -4,7 +4,9 @@ game.
 - `eligible <save dir> <name>`: M13's listed Kestrel (tools/e2e_m13_save.py) that has kept two
   rival startups as brands through the real closing path (settle, then the brand closing):
   eligible to form a holding company (formulas.md 31.2).
-- `formed <save dir> <name>`: the same with the holding company formed and a month played.
+- `formed <save dir> <name>`: the same with the holding company formed and a month played
+  (its events answered with their first choice).
+- `advance <save dir> <name>`: play a month of an existing save and answer its events.
 
 Usage: uv run --project backend python tools/e2e_m16_save.py <mode> <save dir> <name>
 """
@@ -17,7 +19,14 @@ from pathlib import Path
 
 from tst.config import Settings
 from tst.db.mappers import entry_to_row
-from tst.db.repository import ledger_balances, load_state, open_session, run_action, run_turn
+from tst.db.repository import (
+    ledger_balances,
+    load_state,
+    open_session,
+    run_action,
+    run_turn,
+    save_path,
+)
 from tst.db.state_io import sync_state
 from tst.loader import LoadedData, load_all
 from tst.sim.group.holding import FormHolding
@@ -108,10 +117,27 @@ def eligible(save_dir: Path, name: str, data: LoadedData) -> Path:
     return path
 
 
+def _answer(path: Path, data: LoadedData) -> None:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from e2e_m13_save import answer_open
+
+    answer_open(path, data)
+
+
 def formed(save_dir: Path, name: str, data: LoadedData) -> Path:
     path = eligible(save_dir, name, data)
+    _answer(path, data)
     run_action(path, data, FormHolding(FOUNDER))
     run_turn(path, data)
+    _answer(path, data)
+    return path
+
+
+def advance(save_dir: Path, name: str, data: LoadedData) -> Path:
+    path = save_path(save_dir, name)
+    _answer(path, data)
+    run_turn(path, data)
+    _answer(path, data)
     return path
 
 
@@ -121,7 +147,7 @@ def main(argv: list[str]) -> int:
         return 2
     mode, save_dir, name = argv[0], Path(argv[1]), argv[2]
     data = load_all(Settings().data_dir)
-    modes = {"eligible": eligible, "formed": formed}
+    modes = {"eligible": eligible, "formed": formed, "advance": advance}
     if mode not in modes:
         print(__doc__)
         return 2

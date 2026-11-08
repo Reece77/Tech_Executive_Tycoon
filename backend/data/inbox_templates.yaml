@@ -3,6 +3,24 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  stake_sold: # M16 (31.5)
+    title: "Sold {pct} of {company}"
+    body: "{buyer} paid {price_cents}. The group keeps control; {company}'s spare cash now goes up as dividends to every holder."
+  minorities_bought_out: # M16 (31.5)
+    title: "{company} is wholly owned again"
+    body: "The group paid {price_cents} for the minorities' shares."
+  carve_out_listed: # M16 (31.5)
+    title: "{company} is listed"
+    body: "The carve-out sold {pct} to the public for {price_cents}. The group keeps control; {company} now has its own share price."
+  spun_off: # M16 (31.5)
+    title: "{company} is spun off"
+    body: "Its shares went to the holding company's shareholders: it is an independent listed company now. The group kept {kept}; you hold {yours} in your own name."
+  stake_disclosed: # M16 (31.5)
+    title: "Disclosure: your stake in {company} passed {pct}"
+    body: "The market now knows how much of {company} the group holds."
+  venture_invested: # M16 (31.5)
+    title: "Venture investment in {company}"
+    body: "The group invested {amount_cents} for {pct}. Information rights show its key people (as ranges)."
   group_review_met: # M16 (31.4)
     title: "{company}'s CEO met the mandate"
     body: "The board's December review: {measure}."

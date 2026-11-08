@@ -1879,3 +1879,22 @@ class GroupPitchRow(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     company_id: Mapped[int] = mapped_column(Integer, nullable=False)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class GroupListingRow(Base):
+    """A company the group listed: a carve-out or a spin-off (31.5; 0039)."""
+
+    __tablename__ = "group_listing"
+
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class PersonalStakeRow(Base):
+    """Shares the founder holds personally in a spun-off company (31.5; 0039)."""
+
+    __tablename__ = "group_personal_stake"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

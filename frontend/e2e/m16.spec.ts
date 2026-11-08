@@ -53,3 +53,38 @@ test('(a) form a holding company and see the Group screen', async ({ page }) => 
   await switcher.selectOption({ index: 1 }); // the operating company
   await expect(page).toHaveURL(/company=1/);
 });
+
+test('(b) sell 30% of a subsidiary and see NCI in the consolidated statements', async ({
+  page,
+}) => {
+  test.setTimeout(240_000);
+  const save = `m16-sell-${stamp}`;
+  tool('formed', save);
+  await page.goto(`/game/${save}/finance/group`);
+  const brand = page.getByTestId('group-row').nth(2);
+  await expect(brand).toContainText('Subsidiary');
+  await brand.getByTestId('group-pct').fill('30');
+  await brand.getByTestId('group-sell').click();
+  await expect(brand).toContainText('70.00%');
+  tool('advance', save); // the sale's month closes
+  await page.goto(`/game/${save}/finance/statements`);
+  await expect(page.getByText('Non-controlling interest').first()).toBeVisible();
+});
+
+test('(c) spin off a subsidiary and see it become a listed rival', async ({ page }) => {
+  test.setTimeout(240_000);
+  const save = `m16-spin-${stamp}`;
+  tool('formed', save);
+  await page.goto(`/game/${save}/finance/group`);
+  const rows = page.getByTestId('group-row');
+  await expect(rows).toHaveCount(4);
+  const brand = rows.nth(3);
+  const href = (await brand.getByTestId('group-entity-link').getAttribute('href')) ?? '';
+  const id = /company=(\d+)/.exec(href)?.[1];
+  expect(id).toBeTruthy();
+  await brand.getByTestId('group-spin').click();
+  await expect(rows).toHaveCount(3);
+  await expect(page.getByTestId('group-personal-stake')).toContainText('in your own name');
+  await page.goto(`/game/${save}/competitors/${id}`);
+  await expect(page.getByTestId('target-value')).toContainText('Market cap');
+});

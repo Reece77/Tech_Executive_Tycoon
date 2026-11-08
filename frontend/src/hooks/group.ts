@@ -36,9 +36,35 @@ export function useGroupAction(saveId: string) {
       a:
         | { kind: 'mandate'; body: MandateIn }
         | { kind: 'replace'; companyId: number }
-        | { kind: 'pitch'; pitchId: number; approve: boolean },
+        | { kind: 'pitch'; pitchId: number; approve: boolean }
+        | { kind: 'sell' | 'carve'; companyId: number; stakeBp: number }
+        | { kind: 'spin'; companyId: number; keepBp: number }
+        | { kind: 'buyout'; companyId: number },
     ) => {
       switch (a.kind) {
+        case 'sell':
+        case 'carve':
+          return unwrap(
+            await api.POST(
+              a.kind === 'sell'
+                ? '/api/saves/{save_id}/group/sell-stake'
+                : '/api/saves/{save_id}/group/carve-out',
+              { ...path(saveId), body: { company_id: a.companyId, stake_bp: a.stakeBp } },
+            ),
+          );
+        case 'spin':
+          return unwrap(
+            await api.POST('/api/saves/{save_id}/group/spin-off', {
+              ...path(saveId),
+              body: { company_id: a.companyId, keep_bp: a.keepBp },
+            }),
+          );
+        case 'buyout':
+          return unwrap(
+            await api.POST('/api/saves/{save_id}/group/companies/{company_id}/buy-out', {
+              params: { path: { save_id: saveId, company_id: a.companyId } },
+            }),
+          );
         case 'mandate':
           return unwrap(
             await api.POST('/api/saves/{save_id}/group/mandate', { ...path(saveId), body: a.body }),

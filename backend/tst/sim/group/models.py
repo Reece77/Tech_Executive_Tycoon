@@ -106,7 +106,7 @@ class Holding:
     chair_id: int
 
 
-type StakeKind = Literal["market", "venture", "retained"]
+type StakeKind = Literal["market", "venture", "retained", "founder"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -175,3 +175,25 @@ class GroupPitch:
     fits_mandate: bool
     status: GroupPitchStatus = "pending"
     resolved_turn: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class GroupListing:
+    """A company the group listed (31.5): a carve-out (its parent keeps control) or a
+    spin-off (independent). Its shares trade like a listed rival's (28.1: V_f x S)."""
+
+    company_id: int
+    listed_turn: int
+    kind: Literal["carve_out", "spin_off"]
+    shares: int  # shares outstanding at listing
+
+
+@dataclass(frozen=True, slots=True)
+class PersonalStake:
+    """Shares the founder holds personally in a spun-off company (31.5): their pro-rata part
+    of the distribution, a holding in their own name, not cash (M24's book holds cash only)."""
+
+    person_id: int
+    company_id: int
+    stake_bp: int
+    turn: int

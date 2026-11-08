@@ -48,6 +48,22 @@ class GroupPitchOut(BaseModel):
     status: str
 
 
+class StakeOut(BaseModel):
+    company_id: int
+    company: str
+    stake_bp: int
+    treatment: str = Field(description="equity | fair_value (31.3)")
+    kind: str = Field(description="market | venture | retained")
+    carrying_cents: int
+    cost_cents: int
+
+
+class PersonalStakeOut(BaseModel):
+    company_id: int
+    company: str
+    stake_bp: int
+
+
 class GroupOut(BaseModel):
     formed: bool
     holding_id: int | None
@@ -58,6 +74,10 @@ class GroupOut(BaseModel):
     office_monthly_cents: int
     entities: list[GroupEntityOut] = Field(description="Owners before what they own")
     pitches: list[GroupPitchOut] = Field(default_factory=list, description="Pending requests")
+    stakes: list[StakeOut] = Field(default_factory=list, description="Stakes it does not control")
+    personal_stakes: list[PersonalStakeOut] = Field(
+        default_factory=list, description="The founder's own shares in spun-off companies"
+    )
     mandate_energy: int = 0
 
 
@@ -77,3 +97,18 @@ class GroupActionOut(BaseModel):
     group: GroupOut
     energy: EnergyOut
     unread_inbox: int
+
+
+class StakeIn(BaseModel):
+    company_id: int
+    stake_bp: int = Field(description="Share of the company, basis points")
+
+
+class SpinOffIn(BaseModel):
+    company_id: int
+    keep_bp: int = Field(default=0, ge=0, description="What the group keeps, at most 19.9%")
+
+
+class VentureIn(BaseModel):
+    company_id: int
+    cents: int = Field(gt=0)

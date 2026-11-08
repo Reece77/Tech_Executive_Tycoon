@@ -4,7 +4,13 @@ numbers."""
 
 from __future__ import annotations
 
-from tst.api.schemas.group import GroupEntityOut, GroupOut, GroupPitchOut
+from tst.api.schemas.group import (
+    GroupEntityOut,
+    GroupOut,
+    GroupPitchOut,
+    PersonalStakeOut,
+    StakeOut,
+)
 from tst.api.views import person_name
 from tst.loader import LoadedData
 from tst.sim.group import formulas as gf
@@ -114,4 +120,25 @@ def group_out(state: GameState, balances: LedgerBalances, data: LoadedData) -> G
             if p.status == "pending"
         ],
         mandate_energy=data.balance.group.mandate.energy,
+        stakes=[
+            StakeOut(
+                company_id=x.company_id,
+                company=state.company(x.company_id).name,
+                stake_bp=x.stake_bp,
+                treatment=gf.treatment(x.stake_bp, data.balance),
+                kind=x.kind,
+                carrying_cents=x.carrying_cents,
+                cost_cents=x.cost_cents,
+            )
+            for x in state.stakes
+            if x.is_open
+        ],
+        personal_stakes=[
+            PersonalStakeOut(
+                company_id=x.company_id,
+                company=state.company(x.company_id).name,
+                stake_bp=x.stake_bp,
+            )
+            for x in state.personal_stakes
+        ],
     )

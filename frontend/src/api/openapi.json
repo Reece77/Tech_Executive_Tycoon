@@ -15845,6 +15845,503 @@
         }
       }
     },
+    "/api/saves/{save_id}/group/sell-stake": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Sell Stake",
+        "description": "Sell part of a subsidiary to investors; the group keeps control (31.5).",
+        "operationId": "sellStake",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StakeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/companies/{company_id}/buy-out": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Buy Out",
+        "description": "Buy out a subsidiary's minorities at the premium (31.5).",
+        "operationId": "buyOutMinorities",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/carve-out": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Carve Out",
+        "description": "List 10-40% of a subsidiary; the group keeps control (31.5).",
+        "operationId": "carveOut",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StakeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/spin-off": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Spin Off",
+        "description": "Give a subsidiary's shares to the holding company's shareholders (31.5).",
+        "operationId": "spinOff",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpinOffIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/stake": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Buy Stake",
+        "description": "Buy a listed rival's shares on the market up to `stake_bp` (31.5).",
+        "operationId": "buyStake",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StakeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/venture": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Venture",
+        "description": "Invest in a startup's round for 5-25% (31.5).",
+        "operationId": "ventureInvest",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VentureIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -23363,6 +23860,22 @@
             "title": "Pitches",
             "description": "Pending requests"
           },
+          "stakes": {
+            "items": {
+              "$ref": "#/components/schemas/StakeOut"
+            },
+            "type": "array",
+            "title": "Stakes",
+            "description": "Stakes it does not control"
+          },
+          "personal_stakes": {
+            "items": {
+              "$ref": "#/components/schemas/PersonalStakeOut"
+            },
+            "type": "array",
+            "title": "Personal Stakes",
+            "description": "The founder's own shares in spun-off companies"
+          },
           "mandate_energy": {
             "type": "integer",
             "title": "Mandate Energy",
@@ -29849,6 +30362,29 @@
         "title": "PersonalOut",
         "description": "The founder's own book (32.2): never a company's money."
       },
+      "PersonalStakeOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "stake_bp": {
+            "type": "integer",
+            "title": "Stake Bp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "stake_bp"
+        ],
+        "title": "PersonalStakeOut"
+      },
       "PitchAnswerIn": {
         "properties": {
           "approve": {
@@ -35446,6 +35982,26 @@
         ],
         "title": "SourceOut"
       },
+      "SpinOffIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "keep_bp": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Keep Bp",
+            "description": "What the group keeps, at most 19.9%",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id"
+        ],
+        "title": "SpinOffIn"
+      },
       "SpotOut": {
         "properties": {
           "good": {
@@ -35523,6 +36079,70 @@
           "date_label"
         ],
         "title": "StageReachedOut"
+      },
+      "StakeIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "stake_bp": {
+            "type": "integer",
+            "title": "Stake Bp",
+            "description": "Share of the company, basis points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "stake_bp"
+        ],
+        "title": "StakeIn"
+      },
+      "StakeOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "stake_bp": {
+            "type": "integer",
+            "title": "Stake Bp"
+          },
+          "treatment": {
+            "type": "string",
+            "title": "Treatment",
+            "description": "equity | fair_value (31.3)"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "market | venture | retained"
+          },
+          "carrying_cents": {
+            "type": "integer",
+            "title": "Carrying Cents"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "stake_bp",
+          "treatment",
+          "kind",
+          "carrying_cents",
+          "cost_cents"
+        ],
+        "title": "StakeOut"
       },
       "StartProjectIn": {
         "properties": {
@@ -37231,6 +37851,25 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VentureIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "cents"
+        ],
+        "title": "VentureIn"
       },
       "VentureOut": {
         "properties": {

@@ -24,6 +24,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import GroupRuleError, InvalidActionError
 from tst.sim.group import formulas as gf
 from tst.sim.group.config import MANDATES
+from tst.sim.group.draws import group_draws
 from tst.sim.group.models import FULL_STAKE_BP, GroupPitch, Mandate, MandateKind
 from tst.sim.group.ownership import equity_cents
 from tst.sim.ledger import (
@@ -37,7 +38,6 @@ from tst.sim.ledger import (
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import exact
 from tst.sim.press.names import rival_ceo_id
-from tst.sim.rivals.models import player_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -291,7 +291,7 @@ def group_month(
         if any(p.company_id == cid and p.status == "pending" for p in state.group_pitches):
             continue
         company = state.company(cid)
-        gen = rng.stream(state.turn, "group", *player_key(cid, company.rival_key), PITCH_TAG)
+        gen = group_draws(rng, state.turn, company, PITCH_TAG)
         if float(gen.random()) >= mb.pitch_chance:
             continue
         from tst.sim.mna.deals import monthly_costs_cents

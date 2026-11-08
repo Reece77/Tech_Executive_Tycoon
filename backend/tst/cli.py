@@ -8,7 +8,7 @@ prints true values, as a debug view.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -2957,3 +2957,72 @@ def mandate_cmd(
     state = _run(path, data, SetMandate(_founder(state), company, kind, capex)).new_state  # type: ignore[arg-type]
     typer.echo(f"Mandate set; {_energy(state, data)}")
     _group_table(path, data)
+
+
+def _group_act(save: str, make: Callable[[int], Action]) -> None:
+    path, data, state = _game(save)
+    state = _run(path, data, make(_founder(state))).new_state
+    typer.echo(f"Done; {_energy(state, data)}")
+    _group_table(path, data)
+
+
+CompanyOpt = Annotated[int, typer.Option("--company", help="The company's id")]
+PctOpt = Annotated[float, typer.Option("--pct", help="Percent of the company, e.g. 30")]
+
+
+@app.command("sell-stake")
+def sell_stake_cmd(save: SaveOpt, company: CompanyOpt, pct: PctOpt) -> None:
+    """Sell part of a subsidiary to investors; the group keeps control (31.5)."""
+    from tst.sim.group.actions import SellStake
+
+    _group_act(save, lambda f: SellStake(f, company, round(pct * 100)))
+
+
+@app.command("buy-out")
+def buy_out_cmd(save: SaveOpt, company: CompanyOpt) -> None:
+    """Buy out a subsidiary's minorities at the premium (31.5)."""
+    from tst.sim.group.actions import BuyOutMinorities
+
+    _group_act(save, lambda f: BuyOutMinorities(f, company))
+
+
+@app.command("carve-out")
+def carve_out_cmd(save: SaveOpt, company: CompanyOpt, pct: PctOpt) -> None:
+    """List 10-40% of a subsidiary (31.5)."""
+    from tst.sim.group.actions import CarveOut
+
+    _group_act(save, lambda f: CarveOut(f, company, round(pct * 100)))
+
+
+@app.command("spin-off")
+def spin_off_cmd(
+    save: SaveOpt,
+    company: CompanyOpt,
+    keep: Annotated[
+        float, typer.Option("--keep", help="Percent the group keeps, at most 19.9")
+    ] = 0.0,
+) -> None:
+    """Give a subsidiary's shares to the holding company's shareholders (31.5)."""
+    from tst.sim.group.actions import SpinOff
+
+    _group_act(save, lambda f: SpinOff(f, company, round(keep * 100)))
+
+
+@app.command("stake")
+def stake_cmd(save: SaveOpt, company: CompanyOpt, pct: PctOpt) -> None:
+    """Buy a listed rival's shares on the market up to --pct (31.5)."""
+    from tst.sim.group.actions import BuyStake
+
+    _group_act(save, lambda f: BuyStake(f, company, round(pct * 100)))
+
+
+@app.command("venture")
+def venture_cmd(
+    save: SaveOpt,
+    startup: Annotated[int, typer.Option("--startup", help="The startup's company id")],
+    cents: Annotated[int, typer.Option("--cents", help="The investment, cents")],
+) -> None:
+    """Invest in a startup's round for 5-25% (31.5)."""
+    from tst.sim.group.actions import VentureInvest
+
+    _group_act(save, lambda f: VentureInvest(f, startup, cents))

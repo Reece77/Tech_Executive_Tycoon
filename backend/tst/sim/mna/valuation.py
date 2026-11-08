@@ -24,6 +24,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import (
     CompanyState,
     GameState,
+    group_listing,
     public_of,
     rival_listing,
     with_rival_listing,
@@ -52,6 +53,8 @@ def is_listed(state: GameState, company_id: int, data: GameData) -> bool:
     company = state.company(company_id)
     if company.is_player:
         return public_of(state, company_id) is not None
+    if group_listing(state, company_id) is not None:  # M16 (31.5): a carve-out or spin-off
+        return company.alive
     if company.parent_id is not None or not company.alive:
         return False
     since = listed_from(company, data)

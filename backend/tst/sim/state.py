@@ -35,11 +35,13 @@ from tst.sim.geo.models import (
 from tst.sim.group.models import (
     EQUITY_ENDS,
     FULL_STAKE_BP,
+    GroupListing,
     GroupMember,
     GroupPitch,
     Holding,
     Mandate,
     Ownership,
+    PersonalStake,
     Stake,
 )
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
@@ -291,6 +293,8 @@ class GameState:
     stakes: tuple[Stake, ...] = ()  # M16 (31.3, 31.5): stakes the group does not control, by id
     mandates: tuple[Mandate, ...] = ()  # M16 (31.4): subsidiaries' mandates, by company id
     group_pitches: tuple[GroupPitch, ...] = ()  # M16 (31.4): subsidiary CEOs' requests, by id
+    group_listings: tuple[GroupListing, ...] = ()  # M16 (31.5): carve-outs and spin-offs
+    personal_stakes: tuple[PersonalStake, ...] = ()  # M16 (31.5): the founder's own shares
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -841,6 +845,10 @@ def with_stake(state: GameState, stake: Stake) -> GameState:
     if stake.id == 0:
         stake = replace(stake, id=max((x.id for x in state.stakes), default=0) + 1)
     return replace(state, stakes=_upsert(state.stakes, stake, lambda x: x.id))
+
+
+def group_listing(state: GameState, company_id: int) -> GroupListing | None:
+    return next((x for x in state.group_listings if x.company_id == company_id), None)
 
 
 def mandate_of(state: GameState, company_id: int) -> Mandate | None:

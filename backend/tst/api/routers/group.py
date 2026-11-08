@@ -11,15 +11,29 @@ from tst.api import group_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
-from tst.api.schemas.group import GroupActionOut, GroupOut, MandateIn, PitchAnswerIn
+from tst.api.schemas.group import (
+    GroupActionOut,
+    GroupOut,
+    MandateIn,
+    PitchAnswerIn,
+    SpinOffIn,
+    StakeIn,
+    VentureIn,
+)
 from tst.db import inbox, repository
 from tst.loader import LoadedData
 from tst.sim.group.actions import (
     AnswerGroupPitch,
+    BuyOutMinorities,
+    BuyStake,
+    CarveOut,
     FormHolding,
     GroupAction,
     ReplaceSubsidiaryCeo,
+    SellStake,
     SetMandate,
+    SpinOff,
+    VentureInvest,
 )
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["group"])
@@ -103,3 +117,64 @@ def answer_pitch(
     """Approve or decline a subsidiary CEO's request for capital (31.4)."""
     path = _path(settings, save_id)
     return _act(path, data, AnswerGroupPitch(_founder_id(_state(path)), pitch_id, body.approve))
+
+
+def _founder(path: Path) -> int:
+    return _founder_id(_state(path))
+
+
+@router.post(
+    "/group/sell-stake", response_model=GroupActionOut, responses=ERRORS, operation_id="sellStake"
+)
+def sell_stake(save_id: str, body: StakeIn, settings: SettingsDep, data: DataDep) -> GroupActionOut:
+    """Sell part of a subsidiary to investors; the group keeps control (31.5)."""
+    path = _path(settings, save_id)
+    return _act(path, data, SellStake(_founder(path), body.company_id, body.stake_bp))
+
+
+@router.post(
+    "/group/companies/{company_id}/buy-out",
+    response_model=GroupActionOut,
+    responses=ERRORS,
+    operation_id="buyOutMinorities",
+)
+def buy_out(save_id: str, company_id: int, settings: SettingsDep, data: DataDep) -> GroupActionOut:
+    """Buy out a subsidiary's minorities at the premium (31.5)."""
+    path = _path(settings, save_id)
+    return _act(path, data, BuyOutMinorities(_founder(path), company_id))
+
+
+@router.post(
+    "/group/carve-out", response_model=GroupActionOut, responses=ERRORS, operation_id="carveOut"
+)
+def carve_out(save_id: str, body: StakeIn, settings: SettingsDep, data: DataDep) -> GroupActionOut:
+    """List 10-40% of a subsidiary; the group keeps control (31.5)."""
+    path = _path(settings, save_id)
+    return _act(path, data, CarveOut(_founder(path), body.company_id, body.stake_bp))
+
+
+@router.post(
+    "/group/spin-off", response_model=GroupActionOut, responses=ERRORS, operation_id="spinOff"
+)
+def spin_off(save_id: str, body: SpinOffIn, settings: SettingsDep, data: DataDep) -> GroupActionOut:
+    """Give a subsidiary's shares to the holding company's shareholders (31.5)."""
+    path = _path(settings, save_id)
+    return _act(path, data, SpinOff(_founder(path), body.company_id, body.keep_bp))
+
+
+@router.post(
+    "/group/stake", response_model=GroupActionOut, responses=ERRORS, operation_id="buyStake"
+)
+def buy_stake(save_id: str, body: StakeIn, settings: SettingsDep, data: DataDep) -> GroupActionOut:
+    """Buy a listed rival's shares on the market up to `stake_bp` (31.5)."""
+    path = _path(settings, save_id)
+    return _act(path, data, BuyStake(_founder(path), body.company_id, body.stake_bp))
+
+
+@router.post(
+    "/group/venture", response_model=GroupActionOut, responses=ERRORS, operation_id="ventureInvest"
+)
+def venture(save_id: str, body: VentureIn, settings: SettingsDep, data: DataDep) -> GroupActionOut:
+    """Invest in a startup's round for 5-25% (31.5)."""
+    path = _path(settings, save_id)
+    return _act(path, data, VentureInvest(_founder(path), body.company_id, body.cents))

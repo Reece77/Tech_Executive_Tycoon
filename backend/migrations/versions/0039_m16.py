@@ -2,7 +2,8 @@
 holds every company's holdings of another over a run of turns (31.1; Codex review 4 findings 2
 and 3), `group_holding` the player's holding company (31.2) and `group_stake` the stakes it
 does not control (31.3, 31.5), `group_mandate` and `group_pitch` subsidiaries' mandates and
-their CEOs' capital requests (31.4), each record's fields in a JSON
+their CEOs' capital requests (31.4), `group_listing` carve-outs and spin-offs and
+`group_personal_stake` the founder's shares in spun-off companies (31.5), each record's fields in a JSON
 `data` column (data-dictionary.md); accounts 1820, 1830,
 3500, 4910, 4920, 4930 and 4990 (31.3).
 
@@ -65,6 +66,17 @@ def upgrade() -> None:
         "group_pitch",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("company_id", sa.Integer(), nullable=False),
+        sa.Column("data", sa.JSON(), nullable=False),
+    )
+    op.create_table(
+        "group_listing",
+        sa.Column("company_id", sa.Integer(), primary_key=True),
+        sa.Column("data", sa.JSON(), nullable=False),
+    )
+    op.create_table(
+        "group_personal_stake",
+        sa.Column("person_id", sa.Integer(), primary_key=True),
+        sa.Column("company_id", sa.Integer(), primary_key=True),
         sa.Column("data", sa.JSON(), nullable=False),
     )
     op.create_table(
@@ -142,6 +154,8 @@ def _backfill(conn: sa.Connection) -> None:
 def downgrade() -> None:
     op.execute("UPDATE save_meta SET schema_version = 38")
     op.drop_table("group_holding")
+    op.drop_table("group_personal_stake")
+    op.drop_table("group_listing")
     op.drop_table("group_pitch")
     op.drop_table("group_mandate")
     op.drop_table("group_stake")

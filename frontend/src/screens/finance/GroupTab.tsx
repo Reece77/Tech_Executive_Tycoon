@@ -1,9 +1,9 @@
 // The Group screen (M16, formulas.md 31.2 and 31.10): the entity tree from the listed entity
 // (the holding company once formed) down, each company's stake, treatment and public numbers,
 // and the holding company's gate. Numbers come from the API; nothing is computed here.
-import { Alert, Button, SegmentedControl } from '@mantine/core';
+import { Alert, Button, NumberInput, SegmentedControl } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { DataTable } from '../../components/DataTable';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
@@ -38,6 +38,8 @@ export function GroupTab({ saveId }: { saveId: string }) {
   const group = useGroup(saveId);
   const form = useFormHolding(saveId);
   const act = useGroupAction(saveId);
+  const [pct, setPct] = useState<Record<number, number>>({});
+  const holdingId = group.data?.holding_id ?? null;
   const columns = useMemo(
     () =>
       helper.columns([
@@ -161,8 +163,72 @@ export function GroupTab({ saveId }: { saveId: string }) {
               '—'
             ),
         }),
+        helper.display({
+          id: 'capital',
+          header: 'Capital',
+          meta: { term: 'group.capital' },
+          cell: ({ row }) => {
+            const e = row.original;
+            if (!e.ceo) return '—';
+            const share = pct[e.company_id] ?? 30;
+            const bp = Math.round(share * 100);
+            return (
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                <NumberInput
+                  size="xs"
+                  w={70}
+                  min={1}
+                  max={49}
+                  suffix="%"
+                  value={share}
+                  aria-label={`Share of ${e.name}`}
+                  data-testid="group-pct"
+                  onChange={(v) => setPct((p) => ({ ...p, [e.company_id]: Number(v) || 0 }))}
+                />
+                <Button
+                  size="xs"
+                  variant="default"
+                  data-testid="group-sell"
+                  onClick={() => act.mutate({ kind: 'sell', companyId: e.company_id, stakeBp: bp })}
+                >
+                  Sell
+                </Button>
+                <Button
+                  size="xs"
+                  variant="default"
+                  data-testid="group-carve"
+                  onClick={() =>
+                    act.mutate({ kind: 'carve', companyId: e.company_id, stakeBp: bp })
+                  }
+                >
+                  Carve out
+                </Button>
+                {holdingId !== null && e.parent_id === holdingId && (
+                  <Button
+                    size="xs"
+                    variant="default"
+                    data-testid="group-spin"
+                    onClick={() => act.mutate({ kind: 'spin', companyId: e.company_id, keepBp: 0 })}
+                  >
+                    Spin off
+                  </Button>
+                )}
+                {e.stake_bp < 10_000 && (
+                  <Button
+                    size="xs"
+                    variant="default"
+                    data-testid="group-buyout"
+                    onClick={() => act.mutate({ kind: 'buyout', companyId: e.company_id })}
+                  >
+                    Buy out
+                  </Button>
+                )}
+              </div>
+            );
+          },
+        }),
       ]),
-    [saveId, act],
+    [saveId, act, pct, holdingId],
   );
   const table = useTable({
     features: gameTableFeatures,
@@ -219,6 +285,21 @@ export function GroupTab({ saveId }: { saveId: string }) {
           </Alert>
         )}
       </Panel>
+      {((g.stakes ?? []).length > 0 || (g.personal_stakes ?? []).length > 0) && (
+        <Panel title="Stakes" testId="group-stakes">
+          {(g.stakes ?? []).map((x) => (
+            <div key={`s${x.company_id}`} data-testid="group-stake">
+              {x.company}: {formatBpPercent(x.stake_bp)} ({TREATMENT[x.treatment] ?? x.treatment}),
+              carried at {formatMoneyShort(x.carrying_cents)}
+            </div>
+          ))}
+          {(g.personal_stakes ?? []).map((x) => (
+            <div key={`p${x.company_id}`} data-testid="group-personal-stake">
+              You hold {formatBpPercent(x.stake_bp)} of {x.company} in your own name
+            </div>
+          ))}
+        </Panel>
+      )}
       {(g.pitches ?? []).length > 0 && (
         <Panel title="Requests from subsidiaries" testId="group-pitches">
           {(g.pitches ?? []).map((p) => (

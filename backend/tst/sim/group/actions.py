@@ -5,6 +5,21 @@ from __future__ import annotations
 
 from tst.sim.actions.hiring import Outcome
 from tst.sim.data_models import Balance, GameData
+from tst.sim.group.capital import (
+    BuyOutMinorities,
+    BuyStake,
+    CapitalAction,
+    CarveOut,
+    SellStake,
+    SpinOff,
+    VentureInvest,
+    buy_out,
+    buy_stake,
+    carve_out,
+    sell_stake,
+    spin_off,
+    venture,
+)
 from tst.sim.group.holding import FormHolding, form
 from tst.sim.group.subsidiaries import (
     AnswerGroupPitch,
@@ -15,20 +30,35 @@ from tst.sim.group.subsidiaries import (
     set_mandate,
 )
 from tst.sim.ledger import LedgerBalances
+from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
-type GroupAction = FormHolding | SetMandate | ReplaceSubsidiaryCeo | AnswerGroupPitch
-GROUP_ACTIONS = (FormHolding, SetMandate, ReplaceSubsidiaryCeo, AnswerGroupPitch)
+type GroupAction = (
+    FormHolding | SetMandate | ReplaceSubsidiaryCeo | AnswerGroupPitch | CapitalAction
+)
 
 
 def apply_group(
     state: GameState,
     action: GroupAction,
+    rng: RngFactory,
     balances: LedgerBalances,
     balance: Balance,
     data: GameData,
 ) -> Outcome:
     match action:
+        case SellStake():
+            return sell_stake(state, action, rng, balances, balance, data)
+        case BuyOutMinorities():
+            return buy_out(state, action, balances, balance, data)
+        case CarveOut():
+            return carve_out(state, action, balances, balance, data)
+        case SpinOff():
+            return spin_off(state, action, balances, balance, data)
+        case BuyStake():
+            return buy_stake(state, action, balances, balance, data)
+        case VentureInvest():
+            return venture(state, action, rng, balances, balance, data)
         case FormHolding():
             return form(state, action, balances, balance, data)
         case SetMandate():
@@ -40,11 +70,16 @@ def apply_group(
 
 
 __all__ = [
-    "GROUP_ACTIONS",
     "AnswerGroupPitch",
+    "BuyOutMinorities",
+    "BuyStake",
+    "CarveOut",
     "FormHolding",
     "GroupAction",
     "ReplaceSubsidiaryCeo",
+    "SellStake",
     "SetMandate",
+    "SpinOff",
+    "VentureInvest",
     "apply_group",
 ]
