@@ -113,3 +113,6 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | — | 41–42 | — | Reserved for lane B | M14b |
 | `group` | 45 | the company id or stable rival key | Stake purchases' price impact, minority complaints, board reviews (formulas.md §31) | M16 |
 | `founder_life` | 46 | `(company_id,)` | Scandal draws (formulas.md §32.5); named `founder_life` because `founder` (7) is the founder build | M24 (lane C) |
+| `commodity` | 47 | the good's index (power: its region's index) | Commodity and power prices after 2025, shocks, supplier breaches (formulas.md §33) | M17 (lane A) |
+| `geology` | 48 | `(region index, block index)` | Hidden deposits at game start (formulas.md §34.1) | M18 (lane B) |
+| `exploration` | 49 | `(block index, hole)` or the project | Drilling assays, surveys, permits and exploration events (formulas.md §34.2–§34.3) | M18 (lane B) |
