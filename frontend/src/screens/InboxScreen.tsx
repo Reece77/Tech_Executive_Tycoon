@@ -472,6 +472,16 @@ function MessageDetail({
             {item.kind === 'bridge_offered' ? 'View the bridge offer' : 'Open Finance'}
           </Button>
         )}
+        {item.link_kind === 'rankings' && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/competitors/rankings`}
+            h={44}
+            data-testid="view-rankings"
+          >
+            Open Rankings
+          </Button>
+        )}
         {item.link_kind === 'history' && (
           <Button component={Link} to={`/game/${saveId}/history`} h={44} data-testid="view-history">
             Open History

@@ -2500,7 +2500,7 @@ Each scenario is a start (year, company, cash, staff, products, research, rivals
 
 | Scenario | Start | Goal |
 | --- | --- | --- |
-| The AI lab | Jan 2015, a 12-person AI research startup with a Series A | cause the Transformers era first, or $100M ARR, by Dec 2020 |
+| The AI lab | Jan 2015, a 12-person AI research startup with a Series A | $100M ARR by Dec 2020; causing the Transformers era first is a bonus shown on the result screen, not a win condition (M15r addendum d) |
 | Mobile first | Jan 2011, a consumer-app startup of 4 | 1M consumer customers by Dec 2014 |
 | Survive 2022 | Jan 2021, a growth-stage SaaS with venture debt and 20 months of runway | still solvent with a positive operating margin in Dec 2023 |
 | The chip startup | Jan 2016, a fabless chip startup with a Series B | 10% of AI accelerator units by Dec 2023 |

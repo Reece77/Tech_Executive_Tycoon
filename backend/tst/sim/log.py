@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import Literal
 
 type LinkKind = Literal[
-    "person", "candidate", "search", "product", "finance", "rival"
-]  # rival: M14 and M14b
+    "person", "candidate", "search", "product", "finance", "rival", "rankings"
+]  # rival: M14 and M14b; rankings: the Rankings screen (M15r addendum b)
 type ParamValue = str | int
 
 

@@ -1223,6 +1223,7 @@ rank:
   lead_full: 60 # summed research lead points scoring the full lead measure (M15b decision)
   eras_full: 2 # eras caused in the window for the full measure (M15b decision)
   launches_full: 6 # launches in the window for the full measure (M15b decision)
+  news_top: 5 # companies; January's news item names each list's top this many (playtest 4, M15r addendum b)
 
 sandbox:
   years: [2010, 2025] # start years offered (30.2)
