@@ -60,6 +60,8 @@ Play two hard months back to back and watch stress; take a Holiday month. Sell s
 14. **§32.7 target 3: the product manager's ruling (2026-11-07), option (c).** As first built, blitzscale's scripted founder did nothing §32.4 counts as Ruthless or Reckless, so every trait sat at 20 at year 10 (0 of 10). The ruling added three Reckless sources, each with a `persona.*` key and a unit test: a month burning cash with runway under 6 months (+2, at most +12 a calendar year), a down round (+8 in the ruling), and, each December, headcount up more than 100% over the year (+5; the first year counts from the founding headcount, else blitzscale's 1 → 16 in its first year never counted). It also changed the measure: a top trait counts only when it leads the next by at least 5 (`m24.T3_LEAD`), so ties count for neither half.
 15. **`persona.sources.down_round` tuned 8 → 70.** Blitzscale burns with little runway only in its first two years and its down rounds close in months 87–99 (8 of 10 seeds; seed 5's is in month 36). With the 2-a-month drift a source at month t shows at month 119 only as `min(100, 20 + S) − 2 × (119 − t)`, so six seeds need S ≥ 59; 70 gives 8 of 10 with margin. The ruling allowed tuning source sizes; the drift and the other keys are unchanged. A down round now takes the founder to Reckless 90, whose credibility effect (drift toward 45) runs for about 2.5 years after it. The guard suite decides whether that moves anything.
 
+16. **Migration** `0037_founder` follows M15a's `0036_m15a` (merged before M24); schema version 37.
+
 ## Follow-ups
 
 - `persona.sources.down_round` 70 is nine times the ruling's +8 because the year-10 snapshot sits behind a 2-a-month drift; a product-manager look at the drift (or a snapshot that averages the last year) would let the source return toward +8.
@@ -67,4 +69,3 @@ Play two hard months back to back and watch stress; take a Holiday month. Sell s
 - M16: call `founder.personal.credit(state, person_id, cents, "dividend")` for group dividends, and regenerate goldens after the merge.
 - M22: export licences and tariffs read `founder.influence.of(state, company_id, region)`.
 - Rival CEOs' own personas (beyond naming the player's in their replies).
-- Migration: re-parent `0036_founder` onto M15a's `0036_m15a` (renamed `0037_founder`) when M15a merges.

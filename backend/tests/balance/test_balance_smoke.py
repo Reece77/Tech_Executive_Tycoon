@@ -10,7 +10,7 @@ import pytest
 
 from tst.balance.game import start_game
 from tst.balance.report import evaluate, play, run_all
-from tst.balance.strategies import STRATEGIES
+from tst.balance.strategies_v2 import STRATEGIES, V2
 from tst.loader import LoadedData
 
 SMOKE_TURNS = 24
@@ -19,7 +19,8 @@ SMOKE_SEEDS = (1, 2)
 
 @pytest.mark.parametrize("strategy", list(STRATEGIES))
 def test_strategy_plays_and_books_balance(loaded: LoadedData, strategy: str) -> None:
-    for seed in SMOKE_SEEDS:
+    """The v1 scripts on two seeds; M15a's v2 scripts (30.6) on one."""
+    for seed in SMOKE_SEEDS[:1] if strategy in V2 else SMOKE_SEEDS:
         game = start_game(loaded, seed)
         for _ in range(SMOKE_TURNS):
             if game.state.ended:

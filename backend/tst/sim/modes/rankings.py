@@ -86,20 +86,28 @@ def innovative_measure(state: GameState, company_id: int, balance: Balance) -> f
 def lists(
     state: GameState, balance: Balance, data: GameData
 ) -> dict[ListKind, list[tuple[int, float]]]:
-    """Each list's (company id, measure), best first; ties by company id."""
+    """Each list's (company id, measure), best first; ties by revenue, then by the stable
+    rival key, the player after any rival it ties with (M15a fix: ties went to the lowest
+    company id, the player's, so it won a sparse Most innovative list most years)."""
     rb = balance.rank
     alive = [c for c in state.ledger_companies() if c.alive]
+    revenue_of = {c.id: _revenue(state, c.id) for c in alive}
+    stable = {c.id: (c.is_player, c.rival_key, c.id) for c in alive}
+
+    def order(x: tuple[int, float]) -> tuple[float, int, tuple[bool, tuple[int, ...], int]]:
+        return (-x[1], -revenue_of[x[0]], stable[x[0]])
+
     revenue = sorted(
         ((c.id, float(_revenue(state, c.id))) for c in alive if _revenue(state, c.id) > 0),
-        key=lambda x: (-x[1], x[0]),
+        key=order,
     )[: rb.top_revenue]
     places = sorted(
         ((c.id, v) for c in alive if (v := places_measure(state, c.id, balance, data)) is not None),
-        key=lambda x: (-x[1], x[0]),
+        key=order,
     )[: rb.top_lists]
     innovative = sorted(
         ((c.id, v) for c in alive if (v := innovative_measure(state, c.id, balance)) > 0),
-        key=lambda x: (-x[1], x[0]),
+        key=order,
     )[: rb.top_lists]
     return {"revenue": revenue, "places": places, "innovative": innovative}
 

@@ -112,6 +112,7 @@ def fork(game: Game) -> Game:
         dict(game.balances),
         seq=game.seq,
         snapshots=list(game.snapshots),
+        notes=dict(game.notes),
     )
 
 

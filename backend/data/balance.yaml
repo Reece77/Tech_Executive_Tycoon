@@ -535,6 +535,9 @@ rivals:
     low_cash_months: 6 # months of costs in cash below which a startup tries to raise (15.4)
     salary_mult: 1.0 # multiplier on market rate for startup salaries (15.4)
     personalities: [aggressive, fast_follower, cost_leader] # 15.4: any but premium
+    start_feature_share: 0.3 # fraction of the features the category's market expectation gained since January 2010 (F_exp(t) - F0, 11.4) a new startup's product starts with (M15a, 30.7 V5: from 0, late founders never reached the 30% launch bar; product manager 2026-11-07: 0.3, with M8 18.9 target 5's bound 1.2 -> 1.14)
+    small_staff: 3 # people; a rival startup below this many is small (M15a, 30.7 V5; product manager 2026-11-07)
+    small_months: 24 # consecutive month ends small before it closes, shut down or acqui-hired (M15a, 30.7 V5): long-lived tiny startups held every max_alive place
   poach:
     offer_mult: 1.0 # multiplier on market rate a rival offers the player's employee (15.6)
     top_fraction: 0.30 # top share of the player's staff by CA a rival may approach (15.6)
@@ -736,7 +739,7 @@ debt:
     term_months: 36 # months to repay (20.3)
     interest_only_months: 12 # months of interest only before equal principal (20.3)
     warrant_bp: 25 # bp of fully diluted shares (after issue) granted to the lender at signing (20.3)
-    covenant_burn_months: 3 # cash must cover this many months of last month's burn (20.3)
+    covenant_burn_months: 2 # cash must cover this many months of last month's burn (20.3; M15a, 30.7 V7: 3 -> 2, product manager 2026-11-07: covenants bit on 70% of blitz_debt seeds on 1-10 and 11-40)
   bank:
     stage: 3 # company stage needed for a bank loan (20.3)
     profit_months: 3 # months of positive operating profit needed, each (20.3)
@@ -929,7 +932,7 @@ rnd:
   cap_points: 50 # points; the most category lead that lifts Q_cap, so at most x1.20 (21.2)
   feature_per_point: 0.005 # (21.2 says 0.002; M11 tuning for 21.8 target 2) feature points gained x (1 + this x lead) (21.2)
   feature_points: 50 # points; the most category lead that lifts features (21.2)
-  rate: 0.4 # lead points per point of research output a month at zero lead (21.3 says 0.25; M11 tuning for 21.8 target 2)
+  rate: 0.3 # lead points per point of research output a month at zero lead (21.3 says 0.25; M11 tuning for 21.8 target 2: 0.4; M15a: 0.4 -> 0.3 for 30.7 V2, research_heavy won 5 of 10 seeds, now 4, ARR 1.25x -> 1.15x)
   half: 30 # points of lead at which progress is half as fast (21.3)
   start_energy: 6 # founder energy to start a research project (21.3)
   stop_energy: 2 # founder energy to stop one (21.3)
@@ -1211,7 +1214,7 @@ rank:
   places_min_staff: 50 # staff; smaller companies are not in Best places to work (30.4)
   effect_places: 10 # a top-10 place earns the list's effect (30.4)
   hiring: 0.03 # hiring appeal for the year from a top-10 Best places to work place (30.4)
-  brand: 0 # brand target points for the year from a top-10 Most innovative place (30.4); 0 until M15a restores and tunes it (product manager, 2026-11-07: at +2 the player wins it most years and M8 T5, M13 T2 and M13b T1 fail)
+  brand: 0 # brand target points for the year from a top-10 Most innovative place (30.4); 0 (product manager, 2026-11-07, M15a): with the tie-break fixed, 0.5 still moved V1/V2 (research_heavy 6 wins), V3 (-8.6 pts) and V4 (1.44x) out of band; an M23 follow-up
   effect_months: 12 # months the effects run, January to December (30.4)
   years: 3 # Most innovative counts eras caused and launches in the last 3 years (30.4)
   tenure_full_months: 60 # mean tenure scoring the full tenure measure (M15b decision)

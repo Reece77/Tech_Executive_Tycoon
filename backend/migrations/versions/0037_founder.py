@@ -5,8 +5,8 @@ whose JSON holds the hidden scandal risk). Records keep their fields in a JSON `
 (data-dictionary.md). Existing saves have none: their founder starts at stress 20 and every
 trait at 20 at the next month end.
 
-Revision ID: 0036_founder
-Revises: 0035_m15b
+Revision ID: 0037_founder
+Revises: 0036_m15a
 """
 
 from __future__ import annotations
@@ -16,8 +16,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0036_founder"
-down_revision: str | None = "0035_m15b"
+revision: str = "0037_founder"
+down_revision: str | None = "0036_m15a"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -49,11 +49,11 @@ def upgrade() -> None:
         sa.Column("region", sa.String(40), primary_key=True),
         sa.Column("data", sa.JSON(), nullable=False),
     )
-    op.execute("UPDATE save_meta SET schema_version = 36")
+    op.execute("UPDATE save_meta SET schema_version = 37")
 
 
 def downgrade() -> None:
-    op.execute("UPDATE save_meta SET schema_version = 35")
+    op.execute("UPDATE save_meta SET schema_version = 36")
     op.drop_index("ix_personal_entry_person_id", table_name="personal_entry")
     for table in ("influence", "foundation", "personal_entry", "founder_life"):
         op.drop_table(table)

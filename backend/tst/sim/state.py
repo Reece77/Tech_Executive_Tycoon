@@ -136,6 +136,9 @@ class CompanyState:
     rival_key: tuple[int, ...] = ()
     # M14 (28.5, ADR-0020): the company that owns this one as a kept brand; None otherwise
     parent_id: int | None = None
+    # M15a (formulas.md 30.7 V5): a rival startup's first month of its current run below
+    # rivals.startup.small_staff people; None while it has that many
+    small_since_turn: int | None = None
 
     @property
     def is_rival(self) -> bool:

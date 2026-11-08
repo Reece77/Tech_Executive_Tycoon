@@ -57,6 +57,35 @@ def test_appending_an_era_moves_no_other_month(loaded: LoadedData) -> None:
         assert after[: len(before)] == before
 
 
+# M15a: every era's month before 30.8's five were appended, seeds 1-3 (scheduled_turn).
+BEFORE_M15A = {
+    1: [12, 33, 53, 89, 96, 120, 154, 182, 24, 76, 130, 203, 235],
+    2: [12, 33, 53, 89, 96, 120, 154, 182, 24, 76, 130, 207, 243],
+    3: [12, 33, 53, 89, 96, 120, 154, 182, 24, 76, 130, 195, 241],
+}
+
+
+def test_eras_to_2039_leave_earlier_months_alone(loaded: LoadedData) -> None:
+    """30.8's five eras are appended with windows ending by December 2039; the eras before
+    them keep their months on every seed."""
+    eras_ = loaded.game_data.eras.eras
+    new = {e.key for e in eras_[len(BEFORE_M15A[1]) :]}
+    assert new == {
+        "post_quantum_security",
+        "ar_glasses",
+        "humanoid_robotics",
+        "photonic_interconnect",
+        "practical_quantum",
+    }
+    for era in eras_[len(BEFORE_M15A[1]) :]:
+        start, n = levels.window_span(era)
+        assert era.windowed and start + n - 1 <= ym_to_turn(2039, 12), era.key
+    for seed, months in BEFORE_M15A.items():
+        rng = RngFactory(seed)
+        now = [levels.scheduled_turn(e, i, rng) for i, e in enumerate(eras_)]
+        assert now[: len(months)] == months
+
+
 def test_loader_checks_the_window() -> None:
     base = {"key": "x", "label": "X", "domain": "devices"}
     with pytest.raises(ValidationError):

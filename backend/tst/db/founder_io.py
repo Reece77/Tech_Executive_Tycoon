@@ -1,4 +1,4 @@
-"""Loading and syncing M24's records (formulas.md 32; migration 0036): founders' lives,
+"""Loading and syncing M24's records (formulas.md 32; migration 0037): founders' lives,
 the personal book (append-only, in its own table, never in `ledger_entry`), foundations
 and influence, each kept as JSON."""
 

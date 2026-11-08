@@ -173,9 +173,15 @@ def assignment_of(state: GameState, company_id: int, unit_id: int | None) -> int
 
 
 def launch_problems(
-    state: GameState, product: Product, balance: Balance, data: GameData
+    state: GameState,
+    product: Product,
+    balance: Balance,
+    data: GameData,
+    *,
+    needs_source: bool = True,
 ) -> list[str]:
-    """What still stands between a product in development and its launch (11.2)."""
+    """What still stands between a product in development and its launch (11.2).
+    `needs_source=False` for a rival: its manufacturing is abstract (26.1, M15a fix)."""
     pb = balance.products
     problems = []
     if product.status != "in_development":
@@ -191,7 +197,11 @@ def launch_problems(
         if seg.price_cents is None:
             problems.append(f"a price for {data.segment(seg.segment).label}")
     category = data.category(product.category)
-    if category.sells_units and not production.has_source(state, product, balance, data):
+    if (
+        needs_source
+        and category.sells_units
+        and not production.has_source(state, product, balance, data)
+    ):
         # M12b (26.1): a manufacturing source
         problems.append(
             "a wafer contract" if category.chip_type else "a manufacturing contract or a live plant"
