@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from tst.sim.commodities import commodity
+from tst.sim.commodities import commodity, offtake
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities import cloud, goods, lifecycle
 from tst.sim.hardware.phase import hardware_month
@@ -29,6 +29,9 @@ def production_month(
     state = goods.supply_phase(state, rng, balance, data)
     state = replace(state, supply=state.supply + extra)
     state, entries, logs = lifecycle.settle_contracts(state, balance, data)
+    state, ended, notes = offtake.start_of_month(state, rng, balance, data)  # M17 (33.3)
+    entries = [*entries, *ended]
+    logs = [*logs, *notes]
     for facility in state.facilities:
         if facility.status == "closed":
             continue

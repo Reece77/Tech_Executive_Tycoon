@@ -60,6 +60,10 @@ class FacilityOut(BaseModel):
     unit_id: int | None = Field(description="The unit that staffs it")
     unit_name: str | None
     monthly_cost_cents: int = Field(description="Depreciation plus operating cost a month")
+    power_index: float = Field(
+        1.0,
+        description="M17 (33.5): the region's power index on operating cost (North America 1.0)",
+    )
     cost_per_used_cents: int | None = Field(description="Monthly cost / units used; null if none")
     spot_cents: int = Field(description="Spot price of a unit of its output")
     book_value_cents: int
@@ -159,6 +163,10 @@ class RegionOptionOut(BaseModel):
 
 
 class BuildPreviewOut(BaseModel):
+    power_index: float = Field(
+        1.0,
+        description="M17 (33.5): the region's power index on operating cost (North America 1.0)",
+    )
     kind: str
     region: str
     units: int

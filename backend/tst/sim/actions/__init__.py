@@ -27,6 +27,12 @@ from tst.sim.actions.authority import (
     set_authority,
     set_pitch_policy,
 )
+from tst.sim.actions.commodities import (
+    SignCommodityContract,
+    SignOfftake,
+    sign_commodity_contract,
+    sign_offtake,
+)
 from tst.sim.actions.events import ChooseEvent, choose_event
 from tst.sim.actions.facilities import (
     BuildFacility,
@@ -239,6 +245,8 @@ type Action = (
     | FacilityAction
     | ResearchAction
     | HardwareAction
+    | SignCommodityContract  # M17
+    | SignOfftake
     | PublicAction
     | MnaAction  # M14
     | FoundAgain  # M15b addendum 10
@@ -336,6 +344,8 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "sign_manufacturing_contract": SignManufacturingContract,  # M12b
     "sign_wafer_contract": SignWaferContract,
     "sell_plant_capacity": SellPlantCapacity,
+    "sign_commodity_contract": SignCommodityContract,  # M17
+    "sign_offtake": SignOfftake,
     "start_project": StartProject,  # M11
     "stop_project": StopProject,
     "set_project_budget": SetProjectBudget,
@@ -427,8 +437,10 @@ __all__ = [
     "SetSharedServices",
     "SetTransferPrice",
     "SetUnitOffice",
+    "SignCommodityContract",
     "SignContract",
     "SignManufacturingContract",
+    "SignOfftake",
     "SignWaferContract",
     "SpinOff",
     "StaffFacility",
@@ -694,6 +706,10 @@ def apply_action(
             out = sign_wafer_contract(state, action, balance, data)
         case SellPlantCapacity():
             out = sell_plant_capacity(state, action, balance, data)
+        case SignCommodityContract():  # M17 (33.3)
+            out = sign_commodity_contract(state, action, balance, data)
+        case SignOfftake():
+            out = sign_offtake(state, action, balance, data, ledger_balances)
         case StartProject():
             out = start_project(state, action, balance, data)
         case StopProject():

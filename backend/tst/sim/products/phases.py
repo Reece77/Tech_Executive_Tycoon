@@ -17,6 +17,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
+from tst.sim.commodities import offtake
 from tst.sim.data_models import SCORE_MAX, Balance, GameData, ProductsBalance
 from tst.sim.facilities import cloud, compute
 from tst.sim.finance import macro
@@ -340,10 +341,12 @@ def run_markets(
         state, flows, data, regional_units, plan
     )
     running = any(c.running(state.turn) for c in state.production_contracts)
-    if plan is not None or cm_sold or state.production or running:  # M12b (26.2)
+    deals = any(d.status == "active" for d in state.commodity_deals)  # M17 (33.3)
+    if plan is not None or cm_sold or state.production or running or deals:  # M12b (26.2)
         before = {row.product_id: row.lost_units for row in state.production}
         state, made = production.settle(state, plan, cm_sold, balance, data)
-        entries_out = (*entries_out, *made)
+        state, hedged = offtake.settle_month(state, balance, data)
+        entries_out = (*entries_out, *made, *hedged)
         more_logs += production_notes(state, plan, before)
     return MarketOutcome(
         state=state,

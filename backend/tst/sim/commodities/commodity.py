@@ -29,6 +29,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, replace
 
+import numpy as np
+
 from tst.sim.commodities.config import AnnualHistory, CommodityBalance
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import CommodityRuleError
@@ -115,8 +117,14 @@ class Draws:
     months: float
 
 
+def generator(rng: RngFactory, turn: int, family: int, index: int) -> np.random.Generator:
+    """Stream `commodity` (id 47), the one call site: family 0 commodities, 1 power, 2 an
+    offtake's breach draw (module docstring, offtake.py)."""
+    return rng.stream(turn, "commodity", family, index)
+
+
 def draws(rng: RngFactory, turn: int, good_index: int) -> Draws:
-    gen = rng.stream(turn, "commodity", COMMODITY_KEY, good_index)
+    gen = generator(rng, turn, COMMODITY_KEY, good_index)
     z = float(gen.standard_normal())
     start, kind, rise, allocation, months = (float(x) for x in gen.random(UNIFORMS))
     return Draws(z, start, kind, rise, allocation, months)
@@ -242,7 +250,7 @@ def power_month(
     pb = balance.power
     if history.key == pb.base_region:
         return replace(prev, turn=turn, index=1.0, base=1.0, allocation=1.0)
-    z = float(rng.stream(turn, "commodity", POWER_KEY, i).standard_normal())
+    z = float(generator(rng, turn, POWER_KEY, i).standard_normal())
     return step_power(prev, turn, z, history.mean_2010_2019, pb.phi, pb.vol)
 
 

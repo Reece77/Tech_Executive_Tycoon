@@ -1379,7 +1379,7 @@ group: # 31: the holding company and its subsidiaries (M16, v3)
 
 # --- Commodities, offtake and regional power (formulas.md 33, M17, lane A) -----------------
 commodity:
-  phi: 0.9 # annual persistence of each good's log price toward its long-run level after 2025 (33.1)
+  phi: 0.6 # annual persistence of each good's log price toward its long-run level after 2025 (33.1; M17 tuning from 0.9, 33.6 target 5: at 0.9 lithium's trend stayed above index 3.0 for 103 months, at 0.6 at most 24 on seeds 1-10 and 25 on 11-40)
   vol: # annual volatility of the log price after 2025: the history's own (robust sd of 2011-2025 annual log changes, MAD x 1.4826, so the shocks below are not counted twice; quartz and neon, flat in history, use the plain sd), 33.1
     quartz_hp: 0.10
     silicon_metal: 0.28
@@ -1401,7 +1401,7 @@ commodity:
     demand_boom: { monthly: 0.003, rise: [0.3, 1.0], allocation: [0.85, 1.0], months: [12, 30] } # the same fields
     supply_disruption: { monthly: 0.003, rise: [0.2, 0.6], allocation: [0.6, 0.9], months: [3, 12] } # the same fields
   mixes: # what commodities cost the player (33.2): the cost good's index becomes (1 - share) x its own index + share x the mix's index
-    device_bom: { share: 0.15, weights: { lithium_carbonate: 0.30, cobalt: 0.25, copper: 0.20, ndpr_oxide: 0.10, tin: 0.10, tantalum: 0.05 } } # w (fraction) and weights (sum 1), 33.2
+    device_bom: { share: 0.033, weights: { lithium_carbonate: 0.30, cobalt: 0.25, copper: 0.20, ndpr_oxide: 0.10, tin: 0.10, tantalum: 0.05 } } # w (fraction) and weights (sum 1), 33.2; M17 tuning from 0.15 (33.6 target 2: 0.15 raised the reference phone 43% at the lithium peak; 0.033 gives 7.3%, and target 3's hedge 3.3 points)
     server_bom: { share: 0.08, weights: { copper: 0.6, tin: 0.2, tantalum: 0.2 } } # the same, 33.2
     foundry_wafer: { share: 0.10, mode: scale, weights: { polysilicon: 0.5, neon: 0.2, gallium: 0.15, germanium: 0.15 } } # v and the chip mix; the wafer price x ((1 - v) + v x the mix), 33.2
   contract_energy: 6 # founder energy to sign a commodity contract (33.3, as M12a's)

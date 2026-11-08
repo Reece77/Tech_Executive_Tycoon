@@ -545,6 +545,7 @@ terms:
   field.plant_yield: "The share of units made that are good."
   field.points: "Skill points a city's talent adds to candidates' role skills."
   field.pool_kept: "Staff kept from the acquired company's teams."
+  field.power_index: "Industrial power in this region against North America (1.0). A data centre's operating cost is multiplied by it."
   field.price_after_cents: "The share price after the quarterly report."
   field.price_before_cents: "The share price before the quarterly report."
   field.price_per_point_cents: "What licensing in one research point costs."
