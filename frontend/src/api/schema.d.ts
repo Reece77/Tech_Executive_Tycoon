@@ -3696,6 +3696,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/mods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Mods */
+        get: operations["listMods"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mods/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Files
+         * @description The editable data files: rivals, entrants, categories, cities, scenarios and balance,
+         *     then any file the loader adds later.
+         */
+        get: operations["listDataFiles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mods/files/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get File
+         * @description One file's form: its spec, base values, comments, and its values under `mod`.
+         */
+        get: operations["getDataFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mods/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Mod */
+        get: operations["getMod"];
+        /**
+         * Save Mod
+         * @description Save a mod from its changes. The merged data is validated exactly as the base files
+         *     are; an invalid mod is refused with the loader's message and nothing is written.
+         */
+        put: operations["saveMod"];
+        post?: never;
+        /**
+         * Delete Mod
+         * @description Delete a mod file. Saves started with it keep their own copy and play on unchanged.
+         */
+        delete: operations["deleteMod"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -5492,6 +5576,11 @@ export interface components {
              * @description A historical scenario's key (M15b, 30.3)
              */
             historical?: string | null;
+            /**
+             * Mod
+             * @description A data-editor mod in saves/mods (M25); earns no achievements
+             */
+            mod?: string | null;
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -5899,6 +5988,44 @@ export interface components {
             effect: string;
             /** Detail */
             detail: string;
+        };
+        /** EditorFileOut */
+        EditorFileOut: {
+            /** File */
+            file: string;
+            /** Label */
+            label: string;
+            /**
+             * Spec
+             * @description Form spec from the loader's Pydantic schema
+             */
+            spec: {
+                [key: string]: unknown;
+            };
+            /**
+             * Base
+             * @description The base file's values
+             */
+            base: unknown;
+            /**
+             * Value
+             * @description The values with the chosen mod merged in
+             */
+            value: unknown;
+            /**
+             * Comments
+             * @description Each field's YAML comment: unit and intent
+             */
+            comments: {
+                [key: string]: string;
+            };
+        };
+        /** EditorFileRefOut */
+        EditorFileRefOut: {
+            /** File */
+            file: string;
+            /** Label */
+            label: string;
         };
         /** EmploymentOut */
         EmploymentOut: {
@@ -7350,6 +7477,11 @@ export interface components {
             rivals_outlasted: components["schemas"]["RivalOutlastedOut"][];
             /** @description The founder's legacy score with its parts (M24, 32.6) */
             legacy?: components["schemas"]["LegacyOut"] | null;
+            /**
+             * Mod Name
+             * @description A modded game's mod (M25): its records are a separate, modded list
+             */
+            mod_name?: string | null;
         };
         /** HardwareActionOut */
         HardwareActionOut: {
@@ -8841,6 +8973,48 @@ export interface components {
              * @description Whether you can pay in shares
              */
             listed: boolean;
+        };
+        /** ModChangeIn */
+        ModChangeIn: {
+            /** File */
+            file: string;
+            /** Path */
+            path: string[];
+            /** Value */
+            value: unknown;
+        };
+        /** ModChangeOut */
+        ModChangeOut: {
+            /** File */
+            file: string;
+            /**
+             * Path
+             * @description Keys, and @field=value for a list item
+             */
+            path: string[];
+            /** Value */
+            value: unknown;
+        };
+        /** ModIn */
+        ModIn: {
+            /**
+             * Description
+             * @default
+             */
+            description?: string;
+            /** Changes */
+            changes: components["schemas"]["ModChangeIn"][];
+        };
+        /** ModOut */
+        ModOut: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Files */
+            files: string[];
+            /** Changes */
+            changes: components["schemas"]["ModChangeOut"][];
         };
         /** MomentOut */
         MomentOut: {
@@ -11952,6 +12126,11 @@ export interface components {
              * @description The latest company score; none for Sandbox games (M15b)
              */
             score?: number | null;
+            /**
+             * Mod Name
+             * @description The data-editor mod the game started with (M25)
+             */
+            mod_name?: string | null;
         };
         /** ScaleupActionOut */
         ScaleupActionOut: {
@@ -25459,6 +25638,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listMods: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModOut"][];
+                };
+            };
+        };
+    };
+    listDataFiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorFileRefOut"][];
+                };
+            };
+        };
+    };
+    getDataFile: {
+        parameters: {
+            query?: {
+                mod?: string | null;
+            };
+            header?: never;
+            path: {
+                file: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorFileOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    saveMod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    deleteMod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };

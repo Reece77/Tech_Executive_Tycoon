@@ -63,6 +63,7 @@ class SaveFile:
     busy: bool
     mode: str = "campaign"  # M15b: campaign, sandbox or scenario
     score: int | None = None  # the player's latest company score; never a Sandbox's (30.2)
+    mod_name: str | None = None  # M25: the data-editor mod it started with
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,10 +143,12 @@ def describe(path: Path) -> SaveFile:
         meta = session.get(SaveMetaRow, META_ID)
         assert meta is not None
         display, state = meta.display_name, meta.game_state
+        mod_name = getattr(meta, "mod_name", None)
         mode, score = _mode_and_score(session)
     return SaveFile(
         mode=mode,
         score=score,
+        mod_name=mod_name,
         slug=summary.slug,
         display_name=display or summary.slug,
         company_name=summary.company_name,

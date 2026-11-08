@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { AchievementsScreen } from './screens/AchievementsScreen';
+import { DataEditorScreen } from './screens/DataEditorScreen';
 import { CompetitorsScreen } from './screens/CompetitorsScreen';
 import { FinanceScreen } from './screens/FinanceScreen';
 import { GameLayout } from './screens/GameLayout';
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/" element={<MainMenu />} />
         <Route path="/new" element={<NewGameScreen />} />
         <Route path="/achievements" element={<AchievementsScreen />} />
+        <Route path="/mods" element={<DataEditorScreen />} />
         <Route path="/saves" element={<MainMenu />} />
         <Route path="/game/:saveId/over" element={<GameOverScreen />} />
         <Route path="/game/:saveId" element={<GameLayout />}>

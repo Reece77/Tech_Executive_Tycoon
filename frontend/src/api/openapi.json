@@ -16752,6 +16752,363 @@
         }
       }
     },
+    "/api/mods": {
+      "get": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "List Mods",
+        "operationId": "listMods",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModOut"
+                  },
+                  "type": "array",
+                  "title": "Response Listmods"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mods/files": {
+      "get": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "List Files",
+        "description": "The editable data files: rivals, entrants, categories, cities, scenarios and balance,\nthen any file the loader adds later.",
+        "operationId": "listDataFiles",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EditorFileRefOut"
+                  },
+                  "type": "array",
+                  "title": "Response Listdatafiles"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mods/files/{file}": {
+      "get": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "Get File",
+        "description": "One file's form: its spec, base values, comments, and its values under `mod`.",
+        "operationId": "getDataFile",
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File"
+            }
+          },
+          {
+            "name": "mod",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Mod"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorFileOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/mods/{name}": {
+      "get": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "Get Mod",
+        "operationId": "getMod",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "Save Mod",
+        "description": "Save a mod from its changes. The merged data is validated exactly as the base files\nare; an invalid mod is refused with the loader's message and nothing is written.",
+        "operationId": "saveMod",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "Delete Mod",
+        "description": "Delete a mod file. Saves started with it keep their own copy and play on unchanged.",
+        "operationId": "deleteMod",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -20708,6 +21065,18 @@
             ],
             "title": "Historical",
             "description": "A historical scenario's key (M15b, 30.3)"
+          },
+          "mod": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mod",
+            "description": "A data-editor mod in saves/mods (M25); earns no achievements"
           }
         },
         "type": "object",
@@ -21634,6 +22003,68 @@
           "detail"
         ],
         "title": "DriverOut"
+      },
+      "EditorFileOut": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "spec": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Spec",
+            "description": "Form spec from the loader's Pydantic schema"
+          },
+          "base": {
+            "title": "Base",
+            "description": "The base file's values"
+          },
+          "value": {
+            "title": "Value",
+            "description": "The values with the chosen mod merged in"
+          },
+          "comments": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Comments",
+            "description": "Each field's YAML comment: unit and intent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "label",
+          "spec",
+          "base",
+          "value",
+          "comments"
+        ],
+        "title": "EditorFileOut"
+      },
+      "EditorFileRefOut": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "label"
+        ],
+        "title": "EditorFileRefOut"
       },
       "EmploymentOut": {
         "properties": {
@@ -25164,6 +25595,18 @@
               }
             ],
             "description": "The founder's legacy score with its parts (M24, 32.6)"
+          },
+          "mod_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mod Name",
+            "description": "A modded game's mod (M25): its records are a separate, modded list"
           }
         },
         "type": "object",
@@ -28713,6 +29156,112 @@
           "listed"
         ],
         "title": "MnaOut"
+      },
+      "ModChangeIn": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "path",
+          "value"
+        ],
+        "title": "ModChangeIn"
+      },
+      "ModChangeOut": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path",
+            "description": "Keys, and @field=value for a list item"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "path",
+          "value"
+        ],
+        "title": "ModChangeOut"
+      },
+      "ModIn": {
+        "properties": {
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ModChangeIn"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "changes"
+        ],
+        "title": "ModIn"
+      },
+      "ModOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ModChangeOut"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "files",
+          "changes"
+        ],
+        "title": "ModOut"
       },
       "MomentOut": {
         "properties": {
@@ -35851,6 +36400,18 @@
             ],
             "title": "Score",
             "description": "The latest company score; none for Sandbox games (M15b)"
+          },
+          "mod_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mod Name",
+            "description": "The data-editor mod the game started with (M25)"
           }
         },
         "type": "object",

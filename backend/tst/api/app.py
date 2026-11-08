@@ -23,6 +23,7 @@ from tst.api.routers import (
     meta,
     mna,
     modes,
+    mods,
     org,
     press,
     products,
@@ -101,6 +102,7 @@ def create_app() -> FastAPI:
     app.include_router(group.router)  # M16
     app.include_router(explain.router)  # M25
     app.include_router(profile.router)  # M25
+    app.include_router(mods.router)  # M25
     app.include_router(events.settings_router)
     app.include_router(meta.router)
 

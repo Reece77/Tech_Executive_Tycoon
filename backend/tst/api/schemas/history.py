@@ -157,6 +157,10 @@ class HallOfFameOut(BaseModel):
     legacy: LegacyOut | None = Field(
         default=None, description="The founder's legacy score with its parts (M24, 32.6)"
     )
+    mod_name: str | None = Field(
+        default=None,
+        description="A modded game's mod (M25): its records are a separate, modded list",
+    )
 
 
 class VentureOut(BaseModel):

@@ -434,6 +434,10 @@ def create_save(
                     current_turn=state.turn,
                     data_hashes=data.hashes,
                     schema_version=SCHEMA_VERSION,
+                    # M25: a mod's name, merged-data hash and overlay copy; None without one
+                    mod_name=data.mod_name,
+                    mod_hash=data.mod_hash,
+                    mod_overlay=data.mod_overlay,
                     next_person_id=state.next_ids.person,
                     next_search_id=state.next_ids.search,
                     next_offer_id=state.next_ids.offer,

@@ -81,6 +81,16 @@ def _fail(message: str) -> typer.Exit:
     return typer.Exit(code=1)
 
 
+def _save_data(settings: Settings, path: Path, data: LoadedData) -> LoadedData:
+    """The data a save plays with: the base data, or its mod's (M25)."""
+    from tst.mods.store import data_for_save
+
+    try:
+        return data_for_save(path, settings.data_dir, data)
+    except DataLoadError as exc:
+        raise _fail(str(exc)) from exc
+
+
 def _context() -> tuple[Settings, LoadedData]:
     settings = Settings()
     try:
@@ -128,6 +138,9 @@ def new_game(
     ] = None,
     rivals: Annotated[str, typer.Option(help="Sandbox: all|half|none")] = "all",
     eras: Annotated[str, typer.Option(help="Sandbox: historical|seeded")] = "historical",
+    mod: Annotated[
+        str | None, typer.Option("--mod", help="A data-editor mod in saves/mods (M25; tst mods)")
+    ] = None,
 ) -> None:
     """Create a new save file at schema head, with a founder built from a background. A
     historical scenario's key as --scenario starts that scenario (30.3); --sandbox starts a
@@ -136,6 +149,13 @@ def new_game(
     from tst.sim.modes.world import ModeSpec
 
     settings, data = _context()
+    if mod is not None:
+        from tst.mods.store import read_mod, validate
+
+        try:
+            data = validate(settings.data_dir, read_mod(settings.resolved_save_dir(), mod))
+        except SimError as exc:
+            raise _fail(exc.message) from exc
     mode: ModeSpec | None = None
     if data.game_data.historical_scenario(scenario) is not None:
         if sandbox:
@@ -172,7 +192,8 @@ def new_game(
     except SimError as exc:
         raise _fail(exc.message) from exc
     start = 0 if mode is None else ym_to_turn(mode.start_year, 1)
-    typer.echo(f"Created {path.name}: {company_name}, {format_turn(start)}")
+    note = f" with mod {mod!r} (earns no achievements)" if mod else ""
+    typer.echo(f"Created {path.name}: {company_name}, {format_turn(start)}{note}")
 
 
 @app.command()
@@ -190,6 +211,7 @@ def advance(
 
         try:
             path = repository.existing_save_path(settings.resolved_save_dir(), save)
+            data = _save_data(settings, path, data)  # M25: its mod, if any
             played, why = repository.continue_until(path, data)
         except SimError as exc:
             raise _fail(exc.message) from exc
@@ -199,6 +221,7 @@ def advance(
         return
     try:
         path = repository.existing_save_path(settings.resolved_save_dir(), save)
+        data = _save_data(settings, path, data)  # M25: its mod, if any
         result = None
         for _ in range(turns):
             result = repository.run_turn(path, data)
@@ -226,6 +249,7 @@ def holiday(
         raise _fail(f"--stop takes {', '.join(hol.STOP_LEVELS)}")
     try:
         path = repository.existing_save_path(settings.resolved_save_dir(), save)
+        data = _save_data(settings, path, data)  # M25: its mod, if any
         token = repository.reserve(path)
         try:
             with repository.holding(token):
@@ -498,6 +522,7 @@ def _game(save: str) -> tuple[Path, LoadedData, GameState]:
     settings, data = _context()
     try:
         path = repository.existing_save_path(settings.resolved_save_dir(), save)
+        data = _save_data(settings, path, data)  # M25: its mod, if any
         with repository.open_session(path) as session:
             return path, data, repository.load_state(session)
     except SimError as exc:
@@ -3082,3 +3107,19 @@ def explain_cmd(
     for d in e.drivers:
         typer.echo(f"  - {driver_text(d, e.metric.unit, e.metric.label.lower())}")
     typer.echo(found.template)
+
+
+@app.command("mods")
+def mods_cmd() -> None:
+    """List the data-editor mods in saves/mods (M25): name, files changed, description."""
+    from tst.mods.store import list_mods
+
+    settings = Settings()
+    found = list_mods(settings.resolved_save_dir())
+    if not found:
+        typer.echo(
+            "No mods. Make one in the Data editor (main menu), or write saves/mods/<name>.yaml."
+        )
+    for m in found:
+        files = ", ".join(sorted(m.files)) or "no changes"
+        typer.echo(f"{m.name:<24} {files}" + (f"  {m.description}" if m.description else ""))

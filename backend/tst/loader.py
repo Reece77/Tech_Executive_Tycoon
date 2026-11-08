@@ -15,6 +15,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 
 from tst.advisor.config import ADVISOR_FILE, DEFAULT_ADVISOR, AdvisorConfig
+from tst.mods.overlay import canonical_hash, merge
 from tst.profile.data import ACHIEVEMENTS_FILE, AchievementDef, AchievementsFile
 from tst.sim.data_models import (
     INSTRUMENTS,
@@ -136,6 +137,11 @@ class LoadedData:
     glossary: dict[str, str] = field(default_factory=dict)  # M7b tooltips
     advisor: AdvisorConfig = DEFAULT_ADVISOR  # M25: the Explain panel and Ask why (unhashed)
     achievements: tuple[AchievementDef, ...] = ()  # M25: the profile's (unhashed)
+    # M25 (section 3): the data-editor mod merged in, the hash of the merged data files and a
+    # copy of the overlay; all None for the base data, which then loads exactly as before.
+    mod_name: str | None = None
+    mod_hash: str | None = None
+    mod_overlay: dict[str, Any] | None = None
 
 
 class _UniqueKeyLoader(yaml.SafeLoader):
@@ -394,14 +400,27 @@ def research_problems(balance: Balance, data: GameData) -> list[str]:
     return problems
 
 
-def load_all(path: Path) -> LoadedData:
-    """Load and cross-check every data file in `path`. Raises DataLoadError on any problem."""
+def load_all(
+    path: Path, overlay: dict[str, Any] | None = None, mod_name: str | None = None
+) -> LoadedData:
+    """Load and cross-check every data file in `path`. Raises DataLoadError on any problem.
+
+    `overlay` (M25, a mod's `files`): changed values merged into the named data files before
+    any validation, so a mod is checked exactly as the base files are. Without one the
+    files load as before; `hashes` are always the base files' own."""
     parsed: dict[str, Any] = {}
     hashes: dict[str, str] = {}
     for name in DATA_FILES:
         data, raw = _read(path / name)
         parsed[name] = data
         hashes[name] = file_hash(raw)
+    mod_hash = None
+    if overlay is not None:
+        if unknown := sorted(set(overlay) - set(DATA_FILES)):
+            raise DataLoadError(f"mod {mod_name!r}: unknown data files {unknown}")
+        for name, changes in overlay.items():
+            parsed[name] = merge(parsed[name], changes)
+        mod_hash = canonical_hash({name: parsed[name] for name in DATA_FILES})
 
     event_templates: list[EventTemplate] = []
     for file in sorted((path / EVENTS_DIR).glob("*.yaml")):
@@ -536,4 +555,7 @@ def load_all(path: Path) -> LoadedData:
         glossary=dict(glossary),
         advisor=advisor,
         achievements=achievements,
+        mod_name=mod_name if overlay is not None else None,
+        mod_hash=mod_hash,
+        mod_overlay=overlay,
     )

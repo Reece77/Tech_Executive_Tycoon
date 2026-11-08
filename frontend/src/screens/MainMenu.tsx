@@ -22,6 +22,16 @@ export function MainMenu() {
             >
               Achievements{achievements ? ` ${achievements.earned}/${achievements.total}` : ''}
             </Button>
+            <Button
+              component={Link}
+              to="/mods"
+              variant="default"
+              size="md"
+              h={44}
+              data-testid="data-editor-link"
+            >
+              Data editor
+            </Button>
             <Button component={Link} to="/new" size="md" h={44} data-testid="new-game">
               New game
             </Button>
