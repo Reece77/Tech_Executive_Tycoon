@@ -3,6 +3,21 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  group_review_met: # M16 (31.4)
+    title: "{company}'s CEO met the mandate"
+    body: "The board's December review: {measure}."
+  group_review_missed: # M16 (31.4)
+    title: "{company}'s CEO missed the mandate"
+    body: "The board's December review: {measure}. Missed {misses} year(s) running."
+  group_review_proposal: # M16 (31.4)
+    title: "{company}'s board proposes a new CEO"
+    body: "The mandate was missed {misses} years running ({measure}). Replace the CEO from the Group screen, or keep them."
+  group_ceo_replaced: # M16 (31.4)
+    title: "{company} has a new CEO"
+    body: "The board replaced the CEO; the next leader takes over under the same mandate."
+  group_pitch: # M16 (31.4)
+    title: "{company}'s CEO asks for {amount_cents}"
+    body: "A request for capital to the group; it {fit}. Approve or decline it on the Group screen before next quarter."
   holding_formed: # M16 (31.2)
     title: "{name} is formed"
     body: "The holding company now holds the listing, the cap table and the board, and owns {subsidiaries} subsidiaries. You chair it. Legal fees came to {fee_cents}."

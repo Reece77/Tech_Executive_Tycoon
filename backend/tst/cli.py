@@ -2941,3 +2941,19 @@ def form_holding_cmd(save: SaveOpt) -> None:
     state = _run(path, data, FormHolding(_founder(state))).new_state
     typer.echo(f"Holding company formed; {_energy(state, data)}")
     _group_table(path, data)
+
+
+@app.command("mandate")
+def mandate_cmd(
+    save: SaveOpt,
+    company: Annotated[int, typer.Option("--company", help="A subsidiary's company id")],
+    kind: Annotated[str, typer.Option("--kind", help="grow, margin or return_cash")],
+    capex: Annotated[int, typer.Option("--capex-cents", help="Yearly capex limit; 0: none")] = 0,
+) -> None:
+    """Set a subsidiary's mandate (31.4): what its CEO runs it for."""
+    from tst.sim.group.actions import SetMandate
+
+    path, data, state = _game(save)
+    state = _run(path, data, SetMandate(_founder(state), company, kind, capex)).new_state  # type: ignore[arg-type]
+    typer.echo(f"Mandate set; {_energy(state, data)}")
+    _group_table(path, data)

@@ -1362,10 +1362,12 @@ group: # 31: the holding company and its subsidiaries (M16, v3)
     grow_target: 0.25 # yearly revenue growth a "grow" CEO must reach
     margin_target: 0.15 # operating margin a "margin" CEO must reach
     payout_target: 0.5 # share of the year's profit a "return cash" CEO must pay out as dividends
-    grow_spend: 0.25 # share of revenue a "grow" CEO puts into marketing and hiring each month
-    return_spend: 0.05 # the same under "return cash"
-    margin_spend: 0.12 # the same under "margin"
+    grow_keep_months: 6 # months of costs a "grow" subsidiary keeps before cash goes up to its owner
+    margin_keep_months: 3 # the same under "margin"
+    return_keep_months: 1 # the same under "return cash" (without a mandate: mna.sweep_months)
     review_misses: 2 # Decembers missed in a row before the board proposes a new CEO
+    pitch_chance: 0.25 # chance each quarter that a subsidiary CEO asks the group for capital
+    pitch_months: 3 # months of the subsidiary's costs a capital request asks for (within its capex limit)
   discount: # 31.7: the conglomerate discount on a listed holding company's sum of the parts
     base: 0.10 # with one segment
     per_segment: 0.03 # for each further unrelated segment

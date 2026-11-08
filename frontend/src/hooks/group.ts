@@ -24,3 +24,40 @@ export function useFormHolding(saveId: string) {
     onSuccess: () => void invalidate(),
   });
 }
+
+export type GroupPitch = Schemas['GroupPitchOut'];
+export type MandateIn = Schemas['MandateIn'];
+
+/** The Chair's actions on subsidiaries (31.4): a mandate, a new CEO, a capital request. */
+export function useGroupAction(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (
+      a:
+        | { kind: 'mandate'; body: MandateIn }
+        | { kind: 'replace'; companyId: number }
+        | { kind: 'pitch'; pitchId: number; approve: boolean },
+    ) => {
+      switch (a.kind) {
+        case 'mandate':
+          return unwrap(
+            await api.POST('/api/saves/{save_id}/group/mandate', { ...path(saveId), body: a.body }),
+          );
+        case 'replace':
+          return unwrap(
+            await api.POST('/api/saves/{save_id}/group/companies/{company_id}/replace-ceo', {
+              params: { path: { save_id: saveId, company_id: a.companyId } },
+            }),
+          );
+        case 'pitch':
+          return unwrap(
+            await api.POST('/api/saves/{save_id}/group/pitches/{pitch_id}', {
+              params: { path: { save_id: saveId, pitch_id: a.pitchId } },
+              body: { approve: a.approve },
+            }),
+          );
+      }
+    },
+    onSuccess: () => void invalidate(),
+  });
+}

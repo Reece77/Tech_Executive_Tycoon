@@ -3394,6 +3394,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/group/mandate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Mandate
+         * @description Set a subsidiary's mandate: grow, margin or return cash (31.4).
+         */
+        post: operations["setMandate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/companies/{company_id}/replace-ceo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Replace Ceo
+         * @description Accept the board's proposal for a new CEO (31.4).
+         */
+        post: operations["replaceSubsidiaryCeo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/pitches/{pitch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Pitch
+         * @description Approve or decline a subsidiary CEO's request for capital (31.4).
+         */
+        post: operations["answerGroupPitch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -6604,6 +6664,42 @@ export interface components {
             value_low_cents?: number | null;
             /** Value High Cents */
             value_high_cents?: number | null;
+            /**
+             * Ceo
+             * @description Its CEO's name (subsidiaries)
+             */
+            ceo?: string | null;
+            /**
+             * Mandate
+             * @description grow | margin | return_cash (31.4)
+             */
+            mandate?: string | null;
+            /**
+             * Capex Limit Cents
+             * @default 0
+             */
+            capex_limit_cents?: number;
+            /**
+             * Review
+             * @description The last December review's result
+             * @default
+             */
+            review?: string;
+            /**
+             * Misses
+             * @default 0
+             */
+            misses?: number;
+            /**
+             * Replacement Proposed
+             * @default false
+             */
+            replacement_proposed?: boolean;
+            /**
+             * Board Seats
+             * @description [parent nominees, independents, minority seats]
+             */
+            board_seats?: number[];
         };
         /** GroupOut */
         GroupOut: {
@@ -6632,6 +6728,35 @@ export interface components {
              * @description Owners before what they own
              */
             entities: components["schemas"]["GroupEntityOut"][];
+            /**
+             * Pitches
+             * @description Pending requests
+             */
+            pitches?: components["schemas"]["GroupPitchOut"][];
+            /**
+             * Mandate Energy
+             * @default 0
+             */
+            mandate_energy?: number;
+        };
+        /** GroupPitchOut */
+        GroupPitchOut: {
+            /** Id */
+            id: number;
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Ceo */
+            ceo: string;
+            /** Turn */
+            turn: number;
+            /** Amount Cents */
+            amount_cents: number;
+            /** Fits Mandate */
+            fits_mandate: boolean;
+            /** Status */
+            status: string;
         };
         /**
          * GuardChoiceOut
@@ -7922,6 +8047,32 @@ export interface components {
              * @description strong | fine | stretched, from their manager morale term
              */
             label: string;
+        };
+        /** MandateIn */
+        MandateIn: {
+            /** Company Id */
+            company_id: number;
+            /**
+             * Mandate
+             * @description grow | margin | return_cash
+             */
+            mandate: string;
+            /**
+             * Capex Limit Cents
+             * @description 0: no limit
+             * @default 0
+             */
+            capex_limit_cents?: number;
+            /**
+             * Categories
+             * @description Empty: any
+             */
+            categories?: string[];
+            /**
+             * Regions
+             * @description Empty: any
+             */
+            regions?: string[];
         };
         /**
          * ManufacturingOut
@@ -9274,6 +9425,11 @@ export interface components {
              * @description The last entries, newest first
              */
             entries: components["schemas"]["PersonalEntryOut"][];
+        };
+        /** PitchAnswerIn */
+        PitchAnswerIn: {
+            /** Approve */
+            approve: boolean;
         };
         /**
          * PitchOut
@@ -23812,6 +23968,190 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setMandate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MandateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    replaceSubsidiaryCeo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                company_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    answerGroupPitch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                pitch_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PitchAnswerIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

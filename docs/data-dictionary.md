@@ -1679,6 +1679,27 @@ A stake the group does not control (formulas.md 31.3, 31.5): bought on the marke
 | `company_id` | INTEGER | no | The company held. |
 | `data` | JSON | no | `stake_bp`, `cost_cents`, `carrying_cents` (the owner's balance for it on 1820 or 1830), `from_turn`, `kind` (`market`, `venture`, `retained`), `to_turn` (null while held), `disclosed_bp` (the highest disclosure line crossed: 5%, 10%, 25%). |
 
+### group_mandate
+
+A subsidiary's mandate (formulas.md 31.4): what its CEO runs it for. It sets the directive the subsidiary decides under (grow -> grow, return cash -> harvest, margin -> defend) and the months of costs it keeps before its cash goes up (`group.mandate.*_keep_months`; without a mandate M14's `mna.sweep_months`). Each December its board scores the CEO against it.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER | no | Primary key: the subsidiary. |
+| `data` | JSON | no | `kind` (`grow`, `margin`, `return_cash`), `set_turn`, `capex_limit_cents` (0: none), `categories`, `regions` (empty: any), `misses` (Decembers missed in a row), `last_review_turn`, `last_result` (e.g. "missed: revenue growth 12% (target 25%)"), `equity_cents` (its equity balance at the last review: what it paid up since is the change), `proposal` (the board proposes a new CEO). |
+
+### group_pitch
+
+A subsidiary CEO's request to the group for capital (31.4), each quarter on a draw (stream `group`), judged against the mandate; approved, its owner funds it (1810 against the subsidiary's 3000); unanswered by the next quarter, it lapses.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER | no | The subsidiary. |
+| `data` | JSON | no | `person_id` (its CEO), `turn`, `amount_cents`, `fits_mandate`, `status` (`pending`, `approved`, `declined`, `lapsed`), `resolved_turn`. |
+
+With minorities (a stake under 100%), a subsidiary's spare cash goes up as a **dividend** to every holder pro rata (its memo "Dividend to shareholders"; the owner's share against its 1810) instead of M14's sweep, and its owner no longer funds its shortfalls.
+
 `group_ownership.data` also carries `rebases` ([turn, stake_bp, book_cents, equity_cents] at each stake change: from that turn the stake and the investment's basis are the rebase's; the investment is `book − stake × (equity now − equity)`), `goodwill_cents` (the goodwill an owner carries for a company passed to it inside the group; null: from the acquisition) and `common_control` (a reorganization: forming the holding company; the group's entry difference is equity, not goodwill). `end_reason` may be `transferred` (a brand passed from the operating company to the holding company).
 
 Also new: company accounts `1820_investment_associates` (asset: 20–50% stakes, equity method), `1830_financial_investments` (asset: stakes under 20% at fair value, marked each December), `3500_non_controlling_interest` (equity: outside holders' share of consolidated subsidiaries, in consolidated statements), `4910_share_of_associates`, `4920_fair_value_gains` and `4930_gain_on_disposal` (revenue type, shown below the operating result as "other gains" and included in the net result), and `4990_nci_share_of_profit` (expense type, consolidated statements only: the outsiders' share of the net result, shown below it; the balance sheet's accumulated result is the owners'). A holding's end posts the owner's 1810 investment and the goodwill it booked out, any cash received in, and the difference to 4930 (a debit is a loss). `company_parent` stays the current direct owner; `group_ownership` is the history. RNG stream `group` (45). Balance keys `group.*` (balance.yaml).

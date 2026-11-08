@@ -26,6 +26,26 @@ class GroupEntityOut(BaseModel):
     market_cap_cents: int | None = Field(default=None, description="Listed companies only")
     value_low_cents: int | None = Field(default=None, description="Private: the value range (28.1)")
     value_high_cents: int | None = None
+    ceo: str | None = Field(default=None, description="Its CEO's name (subsidiaries)")
+    mandate: str | None = Field(default=None, description="grow | margin | return_cash (31.4)")
+    capex_limit_cents: int = 0
+    review: str = Field(default="", description="The last December review's result")
+    misses: int = 0
+    replacement_proposed: bool = False
+    board_seats: list[int] = Field(
+        default_factory=list, description="[parent nominees, independents, minority seats]"
+    )
+
+
+class GroupPitchOut(BaseModel):
+    id: int
+    company_id: int
+    company: str
+    ceo: str
+    turn: int
+    amount_cents: int
+    fits_mandate: bool
+    status: str
 
 
 class GroupOut(BaseModel):
@@ -37,6 +57,20 @@ class GroupOut(BaseModel):
     form_fee_cents: int = Field(description="0.1% of the market cap at the last month end")
     office_monthly_cents: int
     entities: list[GroupEntityOut] = Field(description="Owners before what they own")
+    pitches: list[GroupPitchOut] = Field(default_factory=list, description="Pending requests")
+    mandate_energy: int = 0
+
+
+class MandateIn(BaseModel):
+    company_id: int
+    mandate: str = Field(description="grow | margin | return_cash")
+    capex_limit_cents: int = Field(default=0, ge=0, description="0: no limit")
+    categories: list[str] = Field(default_factory=list, description="Empty: any")
+    regions: list[str] = Field(default_factory=list, description="Empty: any")
+
+
+class PitchAnswerIn(BaseModel):
+    approve: bool
 
 
 class GroupActionOut(BaseModel):

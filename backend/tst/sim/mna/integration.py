@@ -9,6 +9,7 @@ flight; generated pool staff on stream `people_gen` keyed by the target's stable
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Literal
 
 from tst.sim.data_models import Balance, GameData
@@ -494,7 +495,9 @@ def _sweeps(
     state: GameState, balances: LedgerBalances, balance: Balance, data: GameData
 ) -> list[LedgerEntry]:
     """A brand's cash above mna.sweep_months of its costs goes to its parent (28.5): the
-    brand's equity and the parent's investment fall by the same amount."""
+    brand's equity and the parent's investment fall by the same amount. With a mandate it
+    keeps the mandate's months; with minorities it pays a dividend instead (31.4)."""
+    from tst.sim.group.subsidiaries import keep_months, stake_of
     from tst.sim.mna.deals import monthly_costs_cents
 
     out = []
@@ -508,8 +511,15 @@ def _sweeps(
             continue
         costs = monthly_costs_cents(state, company.id, balance, data)
         cash = account_balance(balances, company.id, CASH)
-        sweep = cash - round(exact(balance.mna.sweep_months) * costs)
+        # M16 (31.4): a mandate sets how much it keeps; without one, M14's sweep_months
+        months = keep_months(state, company.id, balance)
+        keep = balance.mna.sweep_months if months is None else months
+        sweep = cash - round(exact(keep) * costs)
         if sweep <= 0:
+            continue
+        stake = stake_of(state, company.id)
+        if stake < 1:  # with minorities cash moves up only as dividends, pro rata (31.4)
+            out += _dividend(state, company.id, company.parent_id, sweep, stake)
             continue
         out.append(
             LedgerEntry.transfer(
@@ -534,18 +544,49 @@ def _sweeps(
     return out
 
 
+def _dividend(
+    state: GameState, company_id: int, parent_id: int, amount: int, stake: Fraction
+) -> list[LedgerEntry]:
+    """A dividend paid to every holder pro rata (31.4): the subsidiary's equity and cash fall
+    by the whole; the parent's share comes in against its investment (its stake of the
+    equity change, tst.sim.group.ownership.carrying_cents)."""
+    mine = round(stake * amount)
+    name, parent = state.company(company_id).name, state.company(parent_id).name
+    return [
+        LedgerEntry.transfer(
+            turn=state.turn,
+            company_id=company_id,
+            memo=f"Dividend to shareholders ({parent} {float(stake):.0%})",
+            debit=COMMON_EQUITY,
+            credit=CASH,
+            amount=amount,
+        ),
+        LedgerEntry.transfer(
+            turn=state.turn,
+            company_id=parent_id,
+            memo=f"Dividend from {name}",
+            debit=CASH,
+            credit=INVESTMENT_SUBSIDIARIES,
+            amount=mine,
+        ),
+    ]
+
+
 def _fund_brands(
     state: GameState, balances: LedgerBalances, balance: Balance, data: GameData
 ) -> list[LedgerEntry]:
     """A brand short of cash is funded by its parent, up to mna.funding_months of its costs
     and what the parent has (Reece's playtest 3): the parent's investment and the brand's
     equity rise by the same amount, the mirror of a sweep."""
+    from tst.sim.group.subsidiaries import stake_of
     from tst.sim.mna.deals import monthly_costs_cents
 
     out: list[LedgerEntry] = []
     paid: dict[int, int] = {}
     for company in state.companies:
         if company.parent_id is None or not company.alive:
+            continue
+        if stake_of(state, company.id) < 1:  # with minorities, no funding from the parent (31.4)
             continue
         shortfall = -account_balance(balances, company.id, CASH)
         if shortfall <= 0:

@@ -132,3 +132,46 @@ class Stake:
     @property
     def is_open(self) -> bool:
         return self.to_turn is None
+
+
+type MandateKind = Literal["grow", "margin", "return_cash"]
+
+
+@dataclass(frozen=True, slots=True)
+class Mandate:
+    """What a subsidiary's CEO runs it for (31.4): grow (revenue growth), margin (operating
+    margin) or return cash (dividends), with a yearly capex limit (0: none) and the categories
+    and regions it may enter (empty: any). Each December its board scores the CEO against it;
+    `misses` counts Decembers missed in a row, and at `group.mandate.review_misses` the board
+    proposes a new CEO (`proposal`). `equity_cents` is the subsidiary's equity balance at the
+    last review (what it has paid up since is the change)."""
+
+    company_id: int
+    kind: MandateKind
+    set_turn: int
+    capex_limit_cents: int = 0
+    categories: tuple[str, ...] = ()
+    regions: tuple[str, ...] = ()
+    misses: int = 0
+    last_review_turn: int | None = None
+    last_result: str = ""  # "met" or "missed", with the measure, for the Group screen
+    equity_cents: int = 0
+    proposal: bool = False
+
+
+type GroupPitchStatus = Literal["pending", "approved", "declined", "lapsed"]
+
+
+@dataclass(frozen=True, slots=True)
+class GroupPitch:
+    """A subsidiary CEO's request to the group for capital (31.4, M13b's quarterly cadence):
+    judged against its mandate; approved, the owner funds it (a mirror sweep, 28.5)."""
+
+    id: int
+    company_id: int
+    person_id: int
+    turn: int
+    amount_cents: int
+    fits_mandate: bool
+    status: GroupPitchStatus = "pending"
+    resolved_turn: int | None = None

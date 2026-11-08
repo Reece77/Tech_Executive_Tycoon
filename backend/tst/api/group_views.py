@@ -4,14 +4,17 @@ numbers."""
 
 from __future__ import annotations
 
-from tst.api.schemas.group import GroupEntityOut, GroupOut
+from tst.api.schemas.group import GroupEntityOut, GroupOut, GroupPitchOut
+from tst.api.views import person_name
 from tst.loader import LoadedData
 from tst.sim.group import formulas as gf
 from tst.sim.group.holding import form_fee_cents, gate
 from tst.sim.group.models import FULL_STAKE_BP
+from tst.sim.group.subsidiaries import board_seats, is_subsidiary
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.mna import valuation
-from tst.sim.state import GameState, group_members, holding_of, listed_id, owner_at
+from tst.sim.press.names import rival_ceo_id
+from tst.sim.state import GameState, group_members, holding_of, listed_id, mandate_of, owner_at
 
 MONTHS_A_YEAR = 12
 
@@ -42,7 +45,7 @@ def _entity(
     else:
         role = "company"
     owned = owner_at(state, company_id) if parent_id is not None else None
-    stake = owned.stake_bp if owned is not None else FULL_STAKE_BP
+    stake = owned.stake_at() if owned is not None else FULL_STAKE_BP
     treatment = "root" if parent_id is None else gf.treatment(stake, data.balance)
     revenue, margin = _numbers(state, company_id)
     cap = valuation.market_cap_cents(state, company_id, balances, data.balance, data.game_data)
@@ -51,7 +54,17 @@ def _entity(
         low, high = valuation.value_range_cents(
             state, company_id, balances, data.balance, data.game_data
         )
+    mandate = mandate_of(state, company_id)
+    sub = is_subsidiary(state, company_id)
+    ceo = rival_ceo_id(state, company_id) if sub else None
     return GroupEntityOut(
+        ceo=person_name(state.person(ceo)) if ceo is not None else None,
+        mandate=mandate.kind if mandate is not None else None,
+        capex_limit_cents=mandate.capex_limit_cents if mandate is not None else 0,
+        review=mandate.last_result if mandate is not None else "",
+        misses=mandate.misses if mandate is not None else 0,
+        replacement_proposed=bool(mandate and mandate.proposal),
+        board_seats=list(board_seats(state, company_id, data.balance)) if sub else [],
         company_id=company_id,
         name=state.company(company_id).name,
         parent_id=parent_id,
@@ -86,4 +99,19 @@ def group_out(state: GameState, balances: LedgerBalances, data: LoadedData) -> G
         form_fee_cents=form_fee_cents(state, data.balance) if held is None else 0,
         office_monthly_cents=data.balance.group.office_monthly_cents,
         entities=entities,
+        pitches=[
+            GroupPitchOut(
+                id=p.id,
+                company_id=p.company_id,
+                company=state.company(p.company_id).name,
+                ceo=person_name(state.person(p.person_id)),
+                turn=p.turn,
+                amount_cents=p.amount_cents,
+                fits_mandate=p.fits_mandate,
+                status=p.status,
+            )
+            for p in state.group_pitches
+            if p.status == "pending"
+        ],
+        mandate_energy=data.balance.group.mandate.energy,
     )

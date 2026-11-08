@@ -15588,6 +15588,263 @@
         }
       }
     },
+    "/api/saves/{save_id}/group/mandate": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Set Mandate",
+        "description": "Set a subsidiary's mandate: grow, margin or return cash (31.4).",
+        "operationId": "setMandate",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MandateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/companies/{company_id}/replace-ceo": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Replace Ceo",
+        "description": "Accept the board's proposal for a new CEO (31.4).",
+        "operationId": "replaceSubsidiaryCeo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/pitches/{pitch_id}": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Answer Pitch",
+        "description": "Approve or decline a subsidiary CEO's request for capital (31.4).",
+        "operationId": "answerGroupPitch",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "pitch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pitch Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PitchAnswerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -22977,6 +23234,59 @@
               }
             ],
             "title": "Value High Cents"
+          },
+          "ceo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ceo",
+            "description": "Its CEO's name (subsidiaries)"
+          },
+          "mandate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mandate",
+            "description": "grow | margin | return_cash (31.4)"
+          },
+          "capex_limit_cents": {
+            "type": "integer",
+            "title": "Capex Limit Cents",
+            "default": 0
+          },
+          "review": {
+            "type": "string",
+            "title": "Review",
+            "description": "The last December review's result",
+            "default": ""
+          },
+          "misses": {
+            "type": "integer",
+            "title": "Misses",
+            "default": 0
+          },
+          "replacement_proposed": {
+            "type": "boolean",
+            "title": "Replacement Proposed",
+            "default": false
+          },
+          "board_seats": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Board Seats",
+            "description": "[parent nominees, independents, minority seats]"
           }
         },
         "type": "object",
@@ -23044,6 +23354,19 @@
             "type": "array",
             "title": "Entities",
             "description": "Owners before what they own"
+          },
+          "pitches": {
+            "items": {
+              "$ref": "#/components/schemas/GroupPitchOut"
+            },
+            "type": "array",
+            "title": "Pitches",
+            "description": "Pending requests"
+          },
+          "mandate_energy": {
+            "type": "integer",
+            "title": "Mandate Energy",
+            "default": 0
           }
         },
         "type": "object",
@@ -23058,6 +23381,54 @@
           "entities"
         ],
         "title": "GroupOut"
+      },
+      "GroupPitchOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "ceo": {
+            "type": "string",
+            "title": "Ceo"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "fits_mandate": {
+            "type": "boolean",
+            "title": "Fits Mandate"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "company",
+          "ceo",
+          "turn",
+          "amount_cents",
+          "fits_mandate",
+          "status"
+        ],
+        "title": "GroupPitchOut"
       },
       "GuardChoiceOut": {
         "properties": {
@@ -26291,6 +26662,48 @@
         ],
         "title": "ManagerOut"
       },
+      "MandateIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "mandate": {
+            "type": "string",
+            "title": "Mandate",
+            "description": "grow | margin | return_cash"
+          },
+          "capex_limit_cents": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Capex Limit Cents",
+            "description": "0: no limit",
+            "default": 0
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories",
+            "description": "Empty: any"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Regions",
+            "description": "Empty: any"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "mandate"
+        ],
+        "title": "MandateIn"
+      },
       "ManufacturingOut": {
         "properties": {
           "product_id": {
@@ -29435,6 +29848,19 @@
         ],
         "title": "PersonalOut",
         "description": "The founder's own book (32.2): never a company's money."
+      },
+      "PitchAnswerIn": {
+        "properties": {
+          "approve": {
+            "type": "boolean",
+            "title": "Approve"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approve"
+        ],
+        "title": "PitchAnswerIn"
       },
       "PitchOut": {
         "properties": {

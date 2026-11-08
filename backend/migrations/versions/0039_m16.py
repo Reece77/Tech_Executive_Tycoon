@@ -1,7 +1,8 @@
 """M16: the holding company and its subsidiaries (formulas.md section 31). `group_ownership`
 holds every company's holdings of another over a run of turns (31.1; Codex review 4 findings 2
 and 3), `group_holding` the player's holding company (31.2) and `group_stake` the stakes it
-does not control (31.3, 31.5), each record's fields in a JSON
+does not control (31.3, 31.5), `group_mandate` and `group_pitch` subsidiaries' mandates and
+their CEOs' capital requests (31.4), each record's fields in a JSON
 `data` column (data-dictionary.md); accounts 1820, 1830,
 3500, 4910, 4920, 4930 and 4990 (31.3).
 
@@ -52,6 +53,17 @@ def upgrade() -> None:
         "group_stake",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("owner_id", sa.Integer(), nullable=False),
+        sa.Column("company_id", sa.Integer(), nullable=False),
+        sa.Column("data", sa.JSON(), nullable=False),
+    )
+    op.create_table(
+        "group_mandate",
+        sa.Column("company_id", sa.Integer(), primary_key=True),
+        sa.Column("data", sa.JSON(), nullable=False),
+    )
+    op.create_table(
+        "group_pitch",
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("company_id", sa.Integer(), nullable=False),
         sa.Column("data", sa.JSON(), nullable=False),
     )
@@ -130,6 +142,8 @@ def _backfill(conn: sa.Connection) -> None:
 def downgrade() -> None:
     op.execute("UPDATE save_meta SET schema_version = 38")
     op.drop_table("group_holding")
+    op.drop_table("group_pitch")
+    op.drop_table("group_mandate")
     op.drop_table("group_stake")
     op.drop_index("ix_group_ownership_company", table_name="group_ownership")
     op.drop_table("group_ownership")

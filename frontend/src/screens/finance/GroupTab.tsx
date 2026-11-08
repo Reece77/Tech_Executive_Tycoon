@@ -1,14 +1,14 @@
 // The Group screen (M16, formulas.md 31.2 and 31.10): the entity tree from the listed entity
 // (the holding company once formed) down, each company's stake, treatment and public numbers,
 // and the holding company's gate. Numbers come from the API; nothing is computed here.
-import { Alert, Button } from '@mantine/core';
+import { Alert, Button, SegmentedControl } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { DataTable } from '../../components/DataTable';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import { Term } from '../../components/Term';
-import { useFormHolding, useGroup, type GroupEntity } from '../../hooks/group';
+import { useFormHolding, useGroup, useGroupAction, type GroupEntity } from '../../hooks/group';
 import { formatBpPercent, formatMoneyShort } from '../../lib/format';
 import { gameTableFeatures, type GameTableFeatures } from '../../lib/table';
 
@@ -37,6 +37,7 @@ function value(e: GroupEntity): string {
 export function GroupTab({ saveId }: { saveId: string }) {
   const group = useGroup(saveId);
   const form = useFormHolding(saveId);
+  const act = useGroupAction(saveId);
   const columns = useMemo(
     () =>
       helper.columns([
@@ -108,8 +109,60 @@ export function GroupTab({ saveId }: { saveId: string }) {
           meta: { term: 'group.value' },
           cell: ({ row }) => <span className="tst-num">{value(row.original)}</span>,
         }),
+        helper.accessor('ceo', {
+          header: 'CEO',
+          meta: { term: 'group.ceo' },
+          enableSorting: false,
+          cell: ({ getValue }) => getValue() ?? '—',
+        }),
+        helper.display({
+          id: 'mandate',
+          header: 'Mandate',
+          meta: { term: 'group.mandate' },
+          cell: ({ row }) =>
+            row.original.ceo ? (
+              <div>
+                <SegmentedControl
+                  size="xs"
+                  data-testid="group-mandate"
+                  value={row.original.mandate ?? ''}
+                  onChange={(v) =>
+                    act.mutate({
+                      kind: 'mandate',
+                      body: { company_id: row.original.company_id, mandate: v },
+                    })
+                  }
+                  data={[
+                    { value: 'grow', label: 'Grow' },
+                    { value: 'margin', label: 'Margin' },
+                    { value: 'return_cash', label: 'Return cash' },
+                  ]}
+                />
+                {row.original.review && (
+                  <div className="tst-muted" style={{ fontSize: 12 }} data-testid="group-review">
+                    {row.original.review}
+                  </div>
+                )}
+                {row.original.replacement_proposed && (
+                  <Button
+                    size="xs"
+                    mt={4}
+                    color="orange"
+                    data-testid="group-replace-ceo"
+                    onClick={() =>
+                      act.mutate({ kind: 'replace', companyId: row.original.company_id })
+                    }
+                  >
+                    Replace the CEO
+                  </Button>
+                )}
+              </div>
+            ) : (
+              '—'
+            ),
+        }),
       ]),
-    [saveId],
+    [saveId, act],
   );
   const table = useTable({
     features: gameTableFeatures,
@@ -160,7 +213,41 @@ export function GroupTab({ saveId }: { saveId: string }) {
       )}
       <Panel title="Group" testId="group-tree">
         <DataTable table={table} label="Group" rowTestId="group-row" empty="No companies." />
+        {act.error && (
+          <Alert color="red" role="alert" mt="sm">
+            {act.error.message}
+          </Alert>
+        )}
       </Panel>
+      {(g.pitches ?? []).length > 0 && (
+        <Panel title="Requests from subsidiaries" testId="group-pitches">
+          {(g.pitches ?? []).map((p) => (
+            <div
+              key={p.id}
+              data-testid="group-pitch"
+              style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}
+            >
+              <span>
+                {p.ceo} ({p.company}) asks for {formatMoneyShort(p.amount_cents)}:{' '}
+                {p.fits_mandate ? 'fits its mandate' : 'does not fit its mandate'}.
+              </span>
+              <Button
+                size="xs"
+                onClick={() => act.mutate({ kind: 'pitch', pitchId: p.id, approve: true })}
+              >
+                Approve
+              </Button>
+              <Button
+                size="xs"
+                variant="default"
+                onClick={() => act.mutate({ kind: 'pitch', pitchId: p.id, approve: false })}
+              >
+                Decline
+              </Button>
+            </div>
+          ))}
+        </Panel>
+      )}
     </>
   );
 }

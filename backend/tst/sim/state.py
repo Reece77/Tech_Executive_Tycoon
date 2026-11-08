@@ -36,7 +36,9 @@ from tst.sim.group.models import (
     EQUITY_ENDS,
     FULL_STAKE_BP,
     GroupMember,
+    GroupPitch,
     Holding,
+    Mandate,
     Ownership,
     Stake,
 )
@@ -287,6 +289,8 @@ class GameState:
     ownerships: tuple[Ownership, ...] = ()
     holdings: tuple[Holding, ...] = ()  # M16 (31.2): the player's holding company, if formed
     stakes: tuple[Stake, ...] = ()  # M16 (31.3, 31.5): stakes the group does not control, by id
+    mandates: tuple[Mandate, ...] = ()  # M16 (31.4): subsidiaries' mandates, by company id
+    group_pitches: tuple[GroupPitch, ...] = ()  # M16 (31.4): subsidiary CEOs' requests, by id
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -837,6 +841,20 @@ def with_stake(state: GameState, stake: Stake) -> GameState:
     if stake.id == 0:
         stake = replace(stake, id=max((x.id for x in state.stakes), default=0) + 1)
     return replace(state, stakes=_upsert(state.stakes, stake, lambda x: x.id))
+
+
+def mandate_of(state: GameState, company_id: int) -> Mandate | None:
+    return next((m for m in state.mandates if m.company_id == company_id), None)
+
+
+def with_mandate(state: GameState, mandate: Mandate) -> GameState:
+    return replace(state, mandates=_upsert(state.mandates, mandate, lambda m: m.company_id))
+
+
+def with_group_pitch(state: GameState, pitch: GroupPitch) -> GameState:
+    if pitch.id == 0:
+        pitch = replace(pitch, id=max((p.id for p in state.group_pitches), default=0) + 1)
+    return replace(state, group_pitches=_upsert(state.group_pitches, pitch, lambda p: p.id))
 
 
 def open_stakes(state: GameState, owner_id: int | None = None) -> tuple[Stake, ...]:

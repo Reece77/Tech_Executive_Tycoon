@@ -33,6 +33,7 @@ from tst.sim.geo.cities import settle_home_cities
 from tst.sim.group.holding import holding_month
 from tst.sim.group.ownership import disposals
 from tst.sim.group.stakes import stakes_month
+from tst.sim.group.subsidiaries import group_month
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -326,6 +327,9 @@ def financing(ctx: TurnContext) -> TurnContext:
         month = {cid: _month_operating(ctx, cid, types) for cid in targets}
         state, stake_entries = stakes_month(ctx.state, ctx.balances, month, ctx.balance, ctx.data)
         ctx = replace(ctx, state=state).post(*stake_entries)
+    # M16 (31.4): December reviews of subsidiaries' CEOs; capital requests to the group.
+    state, group_logs = group_month(ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).log(*group_logs)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
     state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
     # M16 (31.1): a held company that failed leaves its owner's group with a disposal.

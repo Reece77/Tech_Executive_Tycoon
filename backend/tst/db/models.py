@@ -1860,3 +1860,22 @@ class StakeRow(Base):
     owner_id: Mapped[int] = mapped_column(Integer, nullable=False)
     company_id: Mapped[int] = mapped_column(Integer, nullable=False)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class MandateRow(Base):
+    """A subsidiary's mandate (31.4; 0039): `data` holds the Mandate's other fields."""
+
+    __tablename__ = "group_mandate"
+
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class GroupPitchRow(Base):
+    """A subsidiary CEO's request to the group for capital (31.4; 0039)."""
+
+    __tablename__ = "group_pitch"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

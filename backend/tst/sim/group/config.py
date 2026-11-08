@@ -25,10 +25,19 @@ class MandateBalance(_Frozen):
     grow_target: float = Field(gt=0)  # yearly revenue growth a "grow" CEO is judged on
     margin_target: float = Field(gt=-1, lt=1)  # operating margin a "margin" CEO is judged on
     payout_target: float = Field(ge=0, le=1)  # share of profit a "return cash" CEO pays out
-    grow_spend: float = Field(ge=0)  # share of revenue reinvested in growth under "grow"
-    return_spend: float = Field(ge=0)  # the same under "return cash"
-    margin_spend: float = Field(ge=0)  # the same under "margin"
+    grow_keep_months: float = Field(ge=0)  # costs a "grow" subsidiary keeps before sweeping
+    margin_keep_months: float = Field(ge=0)
+    return_keep_months: float = Field(ge=0)
     review_misses: int = Field(ge=1)  # missed Decembers in a row before a replacement proposal
+    pitch_chance: float = Field(ge=0, le=1)  # a subsidiary CEO's capital request each quarter
+    pitch_months: float = Field(gt=0)  # months of its costs a request asks for
+
+    def keep_months(self, kind: str) -> float:
+        return {
+            "grow": self.grow_keep_months,
+            "margin": self.margin_keep_months,
+            "return_cash": self.return_keep_months,
+        }[kind]
 
 
 class DiscountBalance(_Frozen):

@@ -199,7 +199,14 @@ from tst.sim.actions.scaleup import (
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import GameOverError, InvalidActionError
 from tst.sim.geo.cities import settle_home_cities
-from tst.sim.group.actions import FormHolding, GroupAction, apply_group
+from tst.sim.group.actions import (
+    AnswerGroupPitch,
+    FormHolding,
+    GroupAction,
+    ReplaceSubsidiaryCeo,
+    SetMandate,
+    apply_group,
+)
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.mna.antitrust import AcceptRemedy
@@ -236,7 +243,10 @@ type Action = (
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
-    "form_holding": FormHolding,  # M16 (31.2)
+    "form_holding": FormHolding,  # M16 (31.2-31.7)
+    "set_mandate": SetMandate,
+    "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
+    "answer_group_pitch": AnswerGroupPitch,
     "sell_founder_shares": SellFounderShares,  # M24 (32.2-32.5)
     "create_foundation": CreateFoundation,
     "give_to_foundation": GiveToFoundation,
@@ -329,6 +339,7 @@ __all__ = [
     "Action",
     "ActionResult",
     "AddSegment",
+    "AnswerGroupPitch",
     "AnswerPitch",
     "AnswerProposal",
     "AppointCeo",
@@ -374,6 +385,7 @@ __all__ = [
     "RenameUnit",
     "RepayLoan",
     "ReplaceLeaver",
+    "ReplaceSubsidiaryCeo",
     "Scout",
     "ScoutSearch",
     "SecondaryOffering",
@@ -386,6 +398,7 @@ __all__ = [
     "SetGuidance",
     "SetLeader",
     "SetLobbying",
+    "SetMandate",
     "SetMarketing",
     "SetMarketingSplit",
     "SetPolicy",
@@ -593,7 +606,7 @@ def apply_action(
             out = make_promise(state, action, balance, data)
         case SellFounderShares() | CreateFoundation() | GiveToFoundation() | SetLobbying():
             out = apply_founder(state, action, balance, data)  # M24 (32)
-        case FormHolding():  # M16 (31)
+        case FormHolding() | SetMandate() | ReplaceSubsidiaryCeo() | AnswerGroupPitch():  # M16
             out = apply_group(state, action, ledger_balances, balance, data)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)

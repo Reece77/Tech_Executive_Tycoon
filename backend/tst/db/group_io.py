@@ -11,8 +11,8 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from tst.db.mna_io import _sync, from_data, to_data
-from tst.db.models import HoldingRow, OwnershipRow, StakeRow
-from tst.sim.group.models import Holding, Ownership, Stake
+from tst.db.models import GroupPitchRow, HoldingRow, MandateRow, OwnershipRow, StakeRow
+from tst.sim.group.models import GroupPitch, Holding, Mandate, Ownership, Stake
 from tst.sim.state import GameState
 
 KEYS = ("id", "company_id", "owner_id")
@@ -37,18 +37,53 @@ def load_group(
         from_data(Stake, r.data, id=r.id, owner_id=r.owner_id, company_id=r.company_id)
         for r in session.scalars(select(StakeRow).order_by(StakeRow.id))
     )
-    return replace(state, ownerships=ownerships, holdings=holdings, stakes=stakes)
+    mandates = tuple(
+        from_data(Mandate, r.data, company_id=r.company_id)
+        for r in session.scalars(select(MandateRow).order_by(MandateRow.company_id))
+    )
+    pitches = tuple(
+        from_data(GroupPitch, r.data, id=r.id, company_id=r.company_id)
+        for r in session.scalars(select(GroupPitchRow).order_by(GroupPitchRow.id))
+    )
+    return replace(
+        state,
+        ownerships=ownerships,
+        holdings=holdings,
+        stakes=stakes,
+        mandates=mandates,
+        group_pitches=pitches,
+    )
 
 
 def sync_group(
     session: Session, old: GameState, new: GameState, has_table: Callable[[Session, Any], bool]
 ) -> None:
-    if (old.ownerships, old.holdings, old.stakes) == (
+    if (old.ownerships, old.holdings, old.stakes, old.mandates, old.group_pitches) == (
         new.ownerships,
         new.holdings,
         new.stakes,
+        new.mandates,
+        new.group_pitches,
     ) or not has_table(session, OwnershipRow):
         return
+    _sync(
+        session,
+        old.mandates,
+        new.mandates,
+        lambda m: m.company_id,
+        lambda m: MandateRow(company_id=m.company_id, data=to_data(m, ("company_id",))),
+        lambda k: delete(MandateRow).where(MandateRow.company_id == k),
+    )
+    _sync(
+        session,
+        old.group_pitches,
+        new.group_pitches,
+        lambda p: p.id,
+        lambda p: GroupPitchRow(
+            id=p.id, company_id=p.company_id, data=to_data(p, ("id", "company_id"))
+        ),
+        lambda k: delete(GroupPitchRow).where(GroupPitchRow.id == k),
+    )
     _sync(
         session,
         old.stakes,

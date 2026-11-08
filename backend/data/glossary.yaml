@@ -301,6 +301,8 @@ terms:
   group.revenue: "Revenue over the last 12 month ends."
   group.margin: "Operating result over revenue for the last 12 month ends."
   group.cash: "The company's own cash."
+  group.ceo: "The subsidiary's CEO, who runs it under its mandate."
+  group.mandate: "What the subsidiary's CEO runs it for: grow (revenue growth), margin (operating margin) or return cash (dividends to the group). Its board scores the CEO each December; two misses in a row bring a proposal to replace them. Energy 3."
   group.value: "A listed company's market cap; a private one's estimated range."
   mna.value: "A listed company's market cap is public. A private one shows an estimated range, narrower after due diligence; its middle is not the true value."
   mna.diligence: "Two months and 0.5% of the estimated value (at least $50,000): narrows the range and shows its people, product ranges and any hidden problem."
