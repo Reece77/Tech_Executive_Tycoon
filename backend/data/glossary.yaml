@@ -629,3 +629,7 @@ terms:
   explain.driver: "One line of the number's breakdown: what it is made of, or what moved it."
   explain.amount: "That line's size, in the number's own unit."
   kpi.churn: "Customers lost last month as a share of those held at the start of the month, over every segment."
+  achievement.status: "Earned, locked, or hidden: a hidden achievement shows as ??? until you earn it."
+  achievement.title: "The achievement's name."
+  achievement.description: "What earns it."
+  achievement.earned_in: "The company and the game date it was earned in."

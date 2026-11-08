@@ -15,6 +15,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 
 from tst.advisor.config import ADVISOR_FILE, DEFAULT_ADVISOR, AdvisorConfig
+from tst.profile.data import ACHIEVEMENTS_FILE, AchievementDef, AchievementsFile
 from tst.sim.data_models import (
     INSTRUMENTS,
     MENTOR_TAG,
@@ -134,6 +135,7 @@ class LoadedData:
     hashes: dict[str, str]  # file name -> SHA-256 hex digest (line endings normalized)
     glossary: dict[str, str] = field(default_factory=dict)  # M7b tooltips
     advisor: AdvisorConfig = DEFAULT_ADVISOR  # M25: the Explain panel and Ask why (unhashed)
+    achievements: tuple[AchievementDef, ...] = ()  # M25: the profile's (unhashed)
 
 
 class _UniqueKeyLoader(yaml.SafeLoader):
@@ -524,10 +526,14 @@ def load_all(path: Path) -> LoadedData:
 
     glossary = _validate(GlossaryFile, _read(path / GLOSSARY_FILE)[0], GLOSSARY_FILE).terms
     advisor = _validate(AdvisorConfig, _read(path / ADVISOR_FILE)[0], ADVISOR_FILE)  # M25
+    achievements = _validate(
+        AchievementsFile, _read(path / ACHIEVEMENTS_FILE)[0], ACHIEVEMENTS_FILE
+    ).achievements
     return LoadedData(
         balance=balance,
         game_data=game_data,
         hashes=dict(sorted(hashes.items())),
         glossary=dict(glossary),
         advisor=advisor,
+        achievements=achievements,
     )

@@ -3635,6 +3635,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profile/achievements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Achievements
+         * @description Every achievement: earned (with the save and date), locked, or hidden as "???".
+         */
+        get: operations["getAchievements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/achievements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Save Achievements
+         * @description The profile's achievements as seen from one save: its new ones (for the toast), and
+         *     whether it can earn any (Sandbox and modded games cannot).
+         */
+        get: operations["getSaveAchievements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/profile/achievements/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Seen
+         * @description The toasts for these achievements have been shown.
+         */
+        post: operations["markAchievementsSeen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -3847,6 +3908,66 @@ export interface components {
              * @description The board nominee where the round adds a common seat (M4c)
              */
             nominee_id?: number | null;
+        };
+        /** AchievementOut */
+        AchievementOut: {
+            /** Key */
+            key: string;
+            /**
+             * Title
+             * @description "???" for a hidden achievement not yet earned
+             */
+            title: string;
+            /** Description */
+            description: string;
+            /** Hidden */
+            hidden: boolean;
+            /** Earned */
+            earned: boolean;
+            /**
+             * Save
+             * @description The save it was earned in
+             */
+            save?: string | null;
+            /** Company */
+            company?: string | null;
+            /**
+             * Date Label
+             * @description The game date it was earned
+             */
+            date_label?: string | null;
+            /**
+             * Seen
+             * @default true
+             */
+            seen?: boolean;
+        };
+        /** AchievementsOut */
+        AchievementsOut: {
+            /** Profile */
+            profile: string;
+            /** Earned */
+            earned: number;
+            /** Total */
+            total: number;
+            /** Achievements */
+            achievements: components["schemas"]["AchievementOut"][];
+            /**
+             * Unseen
+             * @description Earned and not yet shown as a toast
+             */
+            unseen: components["schemas"]["AchievementOut"][];
+            /**
+             * Eligible
+             * @description Whether this save can earn any
+             * @default true
+             */
+            eligible?: boolean;
+            /**
+             * Reason
+             * @description Why this save earns none
+             */
+            reason?: string | null;
         };
         /** AcquisitionOut */
         AcquisitionOut: {
@@ -12089,6 +12210,11 @@ export interface components {
         SecondaryIn: {
             /** Shares */
             shares: number;
+        };
+        /** SeenIn */
+        SeenIn: {
+            /** Keys */
+            keys: string[];
         };
         /** SegmentIn */
         SegmentIn: {
@@ -25222,6 +25348,117 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getAchievements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AchievementsOut"];
+                };
+            };
+        };
+    };
+    getSaveAchievements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AchievementsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    markAchievementsSeen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeenIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AchievementsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

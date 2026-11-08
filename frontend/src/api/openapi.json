@@ -16615,6 +16615,143 @@
         }
       }
     },
+    "/api/profile/achievements": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Get Achievements",
+        "description": "Every achievement: earned (with the save and date), locked, or hidden as \"???\".",
+        "operationId": "getAchievements",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementsOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/achievements": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Get Save Achievements",
+        "description": "The profile's achievements as seen from one save: its new ones (for the toast), and\nwhether it can earn any (Sandbox and modded games cannot).",
+        "operationId": "getSaveAchievements",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/profile/achievements/seen": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Mark Seen",
+        "description": "The toasts for these achievements have been shown.",
+        "operationId": "markAchievementsSeen",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -16950,6 +17087,138 @@
         },
         "type": "object",
         "title": "AcceptSheetIn"
+      },
+      "AchievementOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "\"???\" for a hidden achievement not yet earned"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "hidden": {
+            "type": "boolean",
+            "title": "Hidden"
+          },
+          "earned": {
+            "type": "boolean",
+            "title": "Earned"
+          },
+          "save": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Save",
+            "description": "The save it was earned in"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Label",
+            "description": "The game date it was earned"
+          },
+          "seen": {
+            "type": "boolean",
+            "title": "Seen",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "description",
+          "hidden",
+          "earned"
+        ],
+        "title": "AchievementOut"
+      },
+      "AchievementsOut": {
+        "properties": {
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "earned": {
+            "type": "integer",
+            "title": "Earned"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "achievements": {
+            "items": {
+              "$ref": "#/components/schemas/AchievementOut"
+            },
+            "type": "array",
+            "title": "Achievements"
+          },
+          "unseen": {
+            "items": {
+              "$ref": "#/components/schemas/AchievementOut"
+            },
+            "type": "array",
+            "title": "Unseen",
+            "description": "Earned and not yet shown as a toast"
+          },
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible",
+            "description": "Whether this save can earn any",
+            "default": true
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Why this save earns none"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile",
+          "earned",
+          "total",
+          "achievements",
+          "unseen"
+        ],
+        "title": "AchievementsOut"
       },
       "AcquisitionOut": {
         "properties": {
@@ -36267,6 +36536,22 @@
           "shares"
         ],
         "title": "SecondaryIn"
+      },
+      "SeenIn": {
+        "properties": {
+          "keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keys"
+          }
+        },
+        "type": "object",
+        "required": [
+          "keys"
+        ],
+        "title": "SeenIn"
       },
       "SegmentIn": {
         "properties": {
