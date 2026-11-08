@@ -107,7 +107,9 @@ class Acquisition:
     let_go: int = 0  # pool staff let go with severance
     departed: int = 0  # acquired key people who have left since
     problems: tuple[Problem, ...] = ()  # discovered by closing at the latest
-    product_ids: tuple[int, ...] = ()  # integrated products (now the acquirer's)
+    product_ids: tuple[
+        int, ...
+    ] = ()  # acquired products: integrated (now the acquirer's) or the brand's
     unit_ids: tuple[int, ...] = ()  # the acquirer's units created for them
     person_ids: tuple[int, ...] = ()  # everyone who came over: key people and pool staff kept
 
