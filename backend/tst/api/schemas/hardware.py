@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.commodities import CommodityCostLineOut
 from tst.api.schemas.facilities import ComponentOut
 from tst.api.schemas.people import EnergyOut
 
@@ -51,6 +52,10 @@ class ManufacturingOut(BaseModel):
     can_launch_source: bool = Field(description="It has a manufacturing source to launch")
     sells_units: bool = Field(
         default=True, description="False for a software product: no bill of materials (empty)"
+    )
+    commodity_lines: list[CommodityCostLineOut] = Field(
+        default_factory=list,
+        description="M17 (33.2): each commodity's part of a unit's cost, at spot and after deals",
     )
 
 

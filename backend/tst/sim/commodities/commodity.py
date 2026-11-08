@@ -295,8 +295,10 @@ def price_multiple(good: str, balance: Balance) -> float:
 def price(state: GameState, key: str, turn: int, data: GameData, balance: Balance) -> float:
     """**Interface for M18.** A commodity's price in `turn` in its history's unit (dollars a
     tonne for lithium carbonate, US cents a pound for copper; polysilicon at semiconductor
-    grade). History for any month to December 2025; after it, only the state's current month
-    (the latest the engine has made). A month after the state's raises FutureMonthError."""
+    grade). History for any month to December 2025. After it, the state's own month only: the
+    latest month the engine has made that is not after it (between turns, the month just
+    played; inside phase 4 onwards, this month's). A month after the state's raises
+    FutureMonthError, and so does an earlier seeded month the state no longer holds."""
     if turn > state.turn:
         raise FutureMonthError(f"{key}: month {turn} is after the game's month {state.turn}")
     history = history_of(data, key)
@@ -304,7 +306,7 @@ def price(state: GameState, key: str, turn: int, data: GameData, balance: Balanc
     month = history_month(history, key, turn, mean)
     if month is None:
         latest = current(state, key, data)
-        if latest.turn != turn:
+        if latest.turn != turn and turn != state.turn:
             raise FutureMonthError(f"{key}: month {turn} is not held (only {latest.turn})")
         month = latest
     return month.index * mean * price_multiple(key, balance)
