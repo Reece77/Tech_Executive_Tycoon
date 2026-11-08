@@ -39,6 +39,7 @@ export function AchievementToasts({ saveId }: { saveId: string }) {
         flexDirection: 'column',
         gap: 8,
         maxWidth: 340,
+        pointerEvents: 'none', // never in the way of a click on the screen beneath
       }}
       aria-live="polite"
     >
@@ -61,6 +62,7 @@ export function AchievementToasts({ saveId }: { saveId: string }) {
             </div>
           </div>
           <CloseButton
+            style={{ pointerEvents: 'auto' }}
             size="sm"
             aria-label="Dismiss"
             onClick={() => setShown((s) => s.filter((x) => x.key !== a.key))}

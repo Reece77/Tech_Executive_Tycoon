@@ -31,7 +31,7 @@ export function Explain({ metric, entity, label }: Props) {
       <button
         type="button"
         className="tst-explain"
-        aria-label={`Explain ${label ?? metric}`}
+        aria-label="Explain"
         title={`Explain ${label ?? 'this number'}`}
         data-testid={`explain-${metric}${key === null ? '' : `-${key}`}`}
         onClick={(e) => {
