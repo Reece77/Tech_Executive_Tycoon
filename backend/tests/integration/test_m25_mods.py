@@ -205,3 +205,29 @@ def test_a_change_to_a_withheld_field_is_refused(api: ModClient) -> None:
         "/api/mods/rich", {"changes": [{"file": "incumbents.yaml", "path": path, "value": 1}]}, 400
     )
     assert out["code"] == "invalid_mod" and "hidden" in out["message"]
+
+
+def test_a_market_twice_as_big(api: ModClient) -> None:
+    """Reece's manual check: AI models' addressable customers doubled in every segment."""
+    cats = api.get("/api/mods/files/categories.yaml")["base"]["categories"]
+    ai = next(c for c in cats if c["key"] == "ai_models")
+    changes = [
+        {
+            "file": "categories.yaml",
+            "path": [
+                "categories",
+                "@key=ai_models",
+                "markets",
+                f"@segment={m['segment']}",
+                "addressable",
+            ],
+            "value": m["addressable"] * 2,
+        }
+        for m in ai["markets"]
+    ]
+    out = api.put("/api/mods/big-ai", {"changes": changes})
+    assert len(out["changes"]) == len(ai["markets"])
+    _new(api, "bigai", "big-ai")
+    market = api.get("/api/saves/bigai/markets/ai_models")
+    sizes = {s["segment"]: s["addressable"] for s in market["segments"]}
+    assert sizes == {m["segment"]: m["addressable"] * 2 for m in ai["markets"]}

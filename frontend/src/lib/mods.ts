@@ -10,7 +10,7 @@ export type Spec = {
   nullable?: boolean;
 };
 
-const IDENTITY = ['key', 'id', 'name'] as const;
+const IDENTITY = ['key', 'id', 'name', 'segment', 'region'] as const;
 
 /** The field that identifies every item of a list of records, if one does. */
 export function identityField(items: unknown[]): string | null {
