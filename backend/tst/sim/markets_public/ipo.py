@@ -115,7 +115,10 @@ def trailing_growth(company: CompanyState) -> float:
 
 
 def queue_public(state: GameState, company_id: int, template_id: str, due_turn: int) -> GameState:
-    """Queue a `public` template for the player (the director shows it in `due_turn`)."""
+    """Queue a `public` template for the player (the director shows it in `due_turn`). A
+    listed holding company's go to the player's company: its founder answers them (M16)."""
+    if any(h.company_id == company_id for h in state.holdings):
+        company_id = state.player.id
     qid, ids = state.next_ids.take("queued")
     return with_queued(
         replace(state, next_ids=ids),

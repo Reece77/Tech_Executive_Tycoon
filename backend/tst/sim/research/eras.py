@@ -120,8 +120,11 @@ def arrive_eras(
         cid = found[0] if found else None
         arrival = EraArrival(era.key, state.turn, cid, max(0, hist - state.turn))
         state = with_era_arrival(state, arrival)
+        held = {h.company_id for h in state.holdings}  # M16: one inbox, so one item
         logs += [  # every company the player controls hears (ADR-0020 1; M12r)
-            era_news(state, data, balance, era, arrival, c.id) for c in player_companies(state)
+            era_news(state, data, balance, era, arrival, c.id)
+            for c in player_companies(state)
+            if c.id not in held
         ]
         if cid is not None and cid in {c.id for c in player_companies(state)}:
             state = with_era_window(state, _window(state, data, era, cid))  # 27.3 (M13b)

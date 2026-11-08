@@ -14,6 +14,7 @@ from tst.sim.events.data import (
     EFFECT_TARGETS,
     EFFECT_TYPES,
     FOUNDER_STEPS,
+    GROUP_STEPS,
     MODIFIER_STATS,
     PRESS_STEPS,
     PUBLIC_STEPS,
@@ -69,6 +70,8 @@ def allowed_effects(
             continue  # M14b (29.1): only a press template's own tones
         if effect == "founder_step" and "founder_step" not in template_types:
             continue  # M24 (32): only a founder template's own answers
+        if effect == "group_step" and "group_step" not in template_types:
+            continue  # M16 (31.6): only a group template's own answers
         if effect == "public_step" and "public_step" not in template_types:
             continue  # M13 (25): only a public template's own steps
         words = {TARGET_KIND.get(w, w) for w in EFFECT_TARGETS[effect]}
@@ -149,12 +152,13 @@ def validate_event(
             if (target.partition(":")[0] if target else "") not in words:
                 dropped += 1
                 continue
-            if kind in ("public_step", "press_step", "founder_step"):  # an engine step
+            if kind in ("public_step", "press_step", "founder_step", "group_step"):  # engine steps
                 stat = item.get("stat")
                 steps = {
                     "public_step": PUBLIC_STEPS,
                     "press_step": PRESS_STEPS,
                     "founder_step": FOUNDER_STEPS,
+                    "group_step": GROUP_STEPS,
                 }[kind]
                 if stat not in steps:
                     dropped += 1

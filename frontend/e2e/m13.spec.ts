@@ -51,7 +51,10 @@ test('(a) take a company public through the chain and see the Stock tab', async 
       await expect(modal).toBeHidden();
       sawPricing = true;
     }
-    await continueMonth(page); // answers the S-1 and roadshow events with their first choice
+    // Answers the S-1 and roadshow events with their first choice, then waits for this month's
+    // advance response (M15r: not for the date to change, which a reload satisfied on its own,
+    // so the next read could overlap a month still being played and see last month's status).
+    await continueMonth(page);
     await page.goto(`/game/${save}/finance/fundraising`);
     await expect(panel.getByTestId('ipo-status')).toBeVisible();
   }

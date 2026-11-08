@@ -280,3 +280,22 @@ class InvalidModeError(SimError):
     """A Sandbox or scenario start outside what the game offers (M15b, 30.2-30.3)."""
 
     code = "invalid_mode"
+
+
+class GroupRuleError(SimError):
+    """A holding-company, stake or capital action the group rules do not allow (M16,
+    formulas.md 31). The message never names a minority investor's or board's hidden
+    threshold (31.10)."""
+
+    code = "group_rule"
+
+
+class GroupDataError(SimError):
+    """Ownership records that cannot describe a group: a company that owns itself through a
+    chain, or two owners at once (M16, 31.1). A data error, never a player's mistake."""
+
+    code = "group_data"
+
+
+class UnknownCompanyError(NotFoundError):  # M16: the company switcher's company
+    code = "unknown_company"

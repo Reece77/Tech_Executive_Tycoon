@@ -87,13 +87,15 @@ from tst.sim.finance.models import (
     TermSheet,
 )
 from tst.sim.finance.options import at_cliff, next_vesting, pool_left_bp
+from tst.sim.group.models import GroupMember
+from tst.sim.group.statements import member_input
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.ledger import CASH
 from tst.sim.mna.exit import sale_of
 from tst.sim.modes.scenarios import bonus_reached
 from tst.sim.money import Cents
 from tst.sim.snapshot import CompanySnapshot
-from tst.sim.state import GameState
+from tst.sim.state import GameState, listed_id
 
 OPTIONS_HOLDER = "Employee options"
 PRICE_DECIMALS = 5
@@ -138,17 +140,18 @@ def statements_out(
     lines: Lines,
     period: fs.Period,
     data: LoadedData,
-    brands: Sequence[tuple[int, Lines]] = (),
+    members: Sequence[tuple[GroupMember, Lines]] = (),
 ) -> StatementsOut:
-    """Every closed month, quarter or year from January 2010, oldest first; with kept brands,
-    the group's consolidated statements and a column per brand (M14, 28.5)."""
+    """Every closed month, quarter or year from January 2010, oldest first; with subsidiaries,
+    the group's consolidated statements, each company over the periods it was inside the
+    group, at any depth, and a column per subsidiary (M14, 28.5; M16, 31.1)."""
     types: dict[str, AccountType] = {a.code: a.type for a in data.game_data.accounts}
-    closed = {a.target_id: a.closed_turn for a in state.acquisitions}
     own = lines
-    if brands:
-        lines = consolidated_lines(
-            lines, [(brand, closed.get(cid, 0)) for cid, brand in brands], types
-        )
+    if members:
+        lines = consolidated_lines(lines, [member_input(m, sub) for m, sub in members], types)
+    brands: dict[int, Lines] = {}
+    for m, sub in members:
+        brands.setdefault(m.company_id, sub)
     names = {a.code: a.name for a in data.game_data.accounts}
     last_closed = state.turn - 1
     periods = []
@@ -173,9 +176,13 @@ def statements_out(
                         operating_expenses=_lines(pnl.operating_expenses, names),
                         total_operating_expenses_cents=sum(pnl.operating_expenses.values()),
                         operating_result_cents=pnl.operating_result,
+                        other_gains=_lines(pnl.other_gains, names),
+                        total_other_gains_cents=sum(pnl.other_gains.values()),
                         interest_cents=pnl.interest,
                         tax_cents=pnl.tax,
                         net_result_cents=pnl.net_result,
+                        nci_cents=pnl.nci,
+                        net_to_owners_cents=pnl.net_to_owners,
                     ),
                     cash_flow=CashFlowOut(
                         operating_cents=flow.operating,
@@ -196,7 +203,7 @@ def statements_out(
                 )
             )
     columns = []
-    for cid, brand in brands:
+    for cid, brand in brands.items():
         revenue, result, cash = [], [], []
         for x in periods:
             pnl = fs.profit_and_loss(brand, types, x.first_turn, x.last_turn)
@@ -360,9 +367,13 @@ def grant_out(state: GameState, employment_id: int, name: str, data: LoadedData)
     return _grant_out(grant, {grant.person_id: name}, staff, fd, state, data.balance.finance)
 
 
-def captable_out(state: GameState, names: Mapping[int, str], data: LoadedData) -> CapTableOut:
-    """`names` gives the names of grant holders who may have left (not in the live state)."""
-    company = state.player.id
+def captable_out(
+    state: GameState, names: Mapping[int, str], data: LoadedData, company_id: int | None = None
+) -> CapTableOut:
+    """`names` gives the names of grant holders who may have left (not in the live state).
+    `company_id` (M16 switcher) defaults to the listed entity: the holding company's cap table
+    once formed."""
+    company = company_id if company_id is not None else listed_id(state)
     fd = fd_shares(state, company)
     founder = state.founder_of(company)
     founder_id = founder.id if founder is not None else None
@@ -688,10 +699,12 @@ def board_out(
     data: LoadedData,
     meetings: Sequence[InboxMessage] = (),
     warnings: Sequence[InboxMessage] = (),
+    company_id: int | None = None,
 ) -> BoardOut:
     """`meetings` and `warnings` are the board_meeting and board_warning inbox items, newest
-    first; the newest meeting is the last one shown."""
-    company = state.player.id
+    first; the newest meeting is the last one shown. `company_id` (M16) defaults to the
+    listed entity, whose board it is."""
+    company = company_id if company_id is not None else listed_id(state)
     bb = data.balance.board
     seats = state.board(company)
     avg = average_confidence(state, company)
@@ -955,8 +968,10 @@ def open_bridge(state: GameState) -> Safe | None:
     return None
 
 
-def summary_out(state: GameState, cash_cents: Cents, data: LoadedData) -> FinanceSummaryOut:
-    company = state.player
+def summary_out(
+    state: GameState, cash_cents: Cents, data: LoadedData, company_id: int | None = None
+) -> FinanceSummaryOut:
+    company = state.company(company_id) if company_id is not None else state.player
     burn = fs.projected_net_burn(state, company.id, data.balance, data.game_data)
     runway = fs.projected_runway(state, company.id, cash_cents, data.balance, data.game_data)
     bridge = open_bridge(state)

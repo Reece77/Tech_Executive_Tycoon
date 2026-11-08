@@ -135,6 +135,10 @@ def settle(
         cost_before_cents=deals.monthly_costs_cents(state, deal.target_id, balance, data),
         problems=problems,
     )
+    if acquisition.mode == "brand":  # M16 (31.1): the holding opens at closing
+        from tst.sim.group.ownership import acquire
+
+        state = acquire(state, deal.target_id, deal.acquirer_id, balances, data)
     return with_deal(state, deal), posted, acquisition
 
 

@@ -1627,8 +1627,6 @@ A rival startup's current run of month ends below `rivals.startup.small_staff` p
 | `company_id` | INTEGER FK company | no | Primary key: the startup. |
 | `since_turn` | INTEGER | no | The first month end of the current small run. |
 
-Also new: `save_meta.game_state` values `scenario_done` (a historical scenario judged) and `retired` (the founder retired after an exit); the knowledge actions `public_appearance`, `rival_approach` and `rival_diligence` in reveal records of rival CEOs (addendum 11); the `llm_text.kind` value `rival_story` (addendum 12); `mna_target_file.data` gains `counter_exact` (**hidden**), `rounds` and `strikes` (negotiation, addendum 9) and `mna_deal.data` gains `own_remedy_product_id` (addendum 15).
-
 ## The founder's life (migration `0037_founder`, M24)
 
 The founder's own records (formulas.md 32). `founder_life`, `foundation` and `influence` keep their fields in a JSON `data` column: the frozen record in `backend/tst/sim/founder/models.py` without its key columns. Saves made before M24 have no rows: at the next month end their founder starts at stress 20 and every trait at 20. `save_meta.schema_version` is 37.
@@ -1647,3 +1645,93 @@ Also new: company account `6950_lobbying` (expense; monthly lobbying by region; 
 `production_contract.price_cents` (FLOAT, 0031) becomes `price_millicents` (BIGINT): the unit fee or wafer price in exact integer thousandths of a cent (Codex review 4 finding 8). Existing rows convert once, `ROUND(price_cents x 1000)`. `save_meta.schema_version` becomes 38 (after M24's `0037_founder`).
 
 Also from M15r, without a schema change: a sold company's `board_seat` rows (and their `board_seat_history`) are deleted when the founder founds again; `ceo.end_reason` may be `acquired`; the exit sale's `mna_deal` has `mode` `brand` and an `mna_acquisition` row from the month of the sale.
+
+## The holding company and its subsidiaries (migration `0039_m16`, M16)
+
+### group_ownership
+
+One company's holding of another over a run of turns (formulas.md 31.1; Codex review 4 findings 2 and 3). Group membership, ultimate owners, consolidation and antitrust read it by period: a company is inside its owner's group from `from_turn` (the closing; its lines up to then are opening balances) to `to_turn` (inclusive; a disposal posts then), and inside its owner's owner's group while both hold. A company has at most one open holding. Upgraded saves get an open holding for each kept brand in `company_parent`, from its latest brand closing by that parent; a brand that had already failed is disposed of at the next month end. `save_meta.schema_version` is 39.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER | no | The company held (indexed). |
+| `owner_id` | INTEGER | no | Its direct owner. |
+| `data` | JSON | no | `from_turn`, `to_turn` (null while held), `book_cents` (the owner's 1810 investment at closing: the company's book equity then), `equity_cents` (the company's equity accounts' balance then, debit positive: the investment now is `book_cents` less the change in the company's equity since), `stake_bp` (10,000 = 100%), `end_reason` (`failed`, `sold`, `spun_off`, `integrated`; null while held). |
+
+### group_holding
+
+The player's holding company (formulas.md 31.2), once formed: a `company` row ("<Name> Holdings", `is_player` true, stage 5, `rival_key` [5, n]) that holds the listing (`public_company`, `guidance`), the board (`board_seat`) and every cap-table holder but the operating company's option pool and grants; the operating company's cap table then holds one `group` entry for the holding company. The IPO chain's `listing` row stays the operating company's history. Events and inbox items for the holding company reach the player's inbox.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER | no | Primary key: the holding company. |
+| `data` | JSON | no | `operating_id` (the company it was formed over, the one the player runs), `formed_turn`, `chair_id` (the founder, its Chair). |
+
+### group_stake
+
+A stake the group does not control (formulas.md 31.3, 31.5): bought on the market in a listed rival, a corporate venture investment in a startup's round, or what the group kept of a spin-off. 20–50% is an associate (equity method, `1820`): each month its carrying amount moves by the stake's share of the company's operating result (against `4910`). Under 20% it is a financial investment (`1830`) marked each December to fair value (against `4920`): the stake x the market cap if listed, else x the midpoint of the displayed value range (28.1; never the hidden value).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `owner_id` | INTEGER | no | The group company holding it. |
+| `company_id` | INTEGER | no | The company held. |
+| `data` | JSON | no | `stake_bp`, `cost_cents`, `carrying_cents` (the owner's balance for it on 1820 or 1830), `from_turn`, `kind` (`market`, `venture`, `retained`), `to_turn` (null while held), `disclosed_bp` (the highest disclosure line crossed: 5%, 10%, 25%). |
+
+### group_mandate
+
+A subsidiary's mandate (formulas.md 31.4): what its CEO runs it for. It sets the directive the subsidiary decides under (grow -> grow, return cash -> harvest, margin -> defend) and the months of costs it keeps before its cash goes up (`group.mandate.*_keep_months`; without a mandate M14's `mna.sweep_months`). Each December its board scores the CEO against it.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER | no | Primary key: the subsidiary. |
+| `data` | JSON | no | `kind` (`grow`, `margin`, `return_cash`), `set_turn`, `capex_limit_cents` (0: none), `categories`, `regions` (empty: any), `misses` (Decembers missed in a row), `last_review_turn`, `last_result` (e.g. "missed: revenue growth 12% (target 25%)"), `equity_cents` (its equity balance at the last review: what it paid up since is the change), `proposal` (the board proposes a new CEO). |
+
+### group_pitch
+
+A subsidiary CEO's request to the group for capital (31.4), each quarter on a draw (stream `group`), judged against the mandate; approved, its owner funds it (1810 against the subsidiary's 3000); unanswered by the next quarter, it lapses.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER | no | The subsidiary. |
+| `data` | JSON | no | `person_id` (its CEO), `turn`, `amount_cents`, `fits_mandate`, `status` (`pending`, `approved`, `declined`, `lapsed`), `resolved_turn`. |
+
+### group_listing
+
+A company the group listed (formulas.md 31.5): a carve-out (10–40% sold to the public; the group keeps control) or a spin-off (its shares given to the holding company's shareholders: an independent listed rival). Either trades like a listed rival (28.1: V_f x the sentiment in `rival_listing`, which it gets a row in).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER | no | Primary key: the company listed. |
+| `data` | JSON | no | `listed_turn`, `kind` (`carve_out`, `spin_off`), `shares` (shares outstanding at listing, 10,000,000). |
+
+### group_personal_stake
+
+Shares the founder holds in their own name in a spun-off company (31.5): their pro-rata part of what was given out (their share of the holding company x the share distributed), a holding, not cash (M24's book holds cash only).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `person_id` | INTEGER | no | Primary key, with `company_id`: the founder. |
+| `company_id` | INTEGER | no | Primary key, with `person_id`: the spun-off company. |
+| `data` | JSON | no | `stake_bp`, `turn`. |
+
+### group_transfer_flow
+
+One company of the player's group supplying another (formulas.md 31.6): compute (the buyer's `6300_compute`) or chips (`5000_cogs`). Each month the buyer's spend on the good is supplied in-group: its outside purchase is reversed, the seller's cost is `group.supply_cost` (80%) of it, and the buyer pays the seller the transfer price (`5900_intercompany_purchases` / `4300_intercompany_sales`, both removed in consolidated statements). A flow ends when either company leaves the group.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `data` | JSON | no | `seller_id`, `buyer_id`, `good` (`compute`, `chips`), `kind` (`cost`, `cost_plus`, `market`), `margin` (cost plus; null: `group.cost_plus`), `set_turn`, `unfair_months` (months running more than `group.fairness_band` from market while a company of the flow has minorities), `complaint` (a minority complaint stands: the minority-held company pays `group.complaint_legal` of its revenue a year in legal costs, 6900, and is valued `group.complaint_discount` lower), `complaint_turn`, `trailing` (the transfer price paid at the last 12 month ends: the intra-group share of 31.7's conglomerate discount), `ended_turn`. |
+
+Event template `minority_complaint` (trigger `group`, critical; effect `group_step`: `correct_price` moves the flows under complaint to market, `defend_price` keeps them).
+
+A subsidiary's cap table (`cap_entry`) opens the first time outsiders buy in: its owner's `group` entry for 10,000,000 shares, then `firm` entries for investors who bought a stake (an `investors.yaml` firm drawn on stream `group`) and a `group` "Public float" entry for a carve-out. A buyout removes them.
+
+With minorities (a stake under 100%), a subsidiary's spare cash goes up as a **dividend** to every holder pro rata (its memo "Dividend to shareholders"; the owner's share against its 1810) instead of M14's sweep, and its owner no longer funds its shortfalls.
+
+`group_ownership.data` also carries `rebases` ([turn, stake_bp, book_cents, equity_cents] at each stake change: from that turn the stake and the investment's basis are the rebase's; the investment is `book − stake × (equity now − equity)`), `goodwill_cents` (the goodwill an owner carries for a company passed to it inside the group; null: from the acquisition) and `common_control` (a reorganization: forming the holding company; the group's entry difference is equity, not goodwill). `end_reason` may be `transferred` (a brand passed from the operating company to the holding company).
+
+Also new: company accounts `1820_investment_associates` (asset: 20–50% stakes, equity method), `1830_financial_investments` (asset: stakes under 20% at fair value, marked each December), `3500_non_controlling_interest` (equity: outside holders' share of consolidated subsidiaries, in consolidated statements), `4910_share_of_associates`, `4920_fair_value_gains` and `4930_gain_on_disposal` (revenue type, shown below the operating result as "other gains" and included in the net result), and `4990_nci_share_of_profit` (expense type, consolidated statements only: the outsiders' share of the net result, shown below it; the balance sheet's accumulated result is the owners'). A holding's end posts the owner's 1810 investment and the goodwill it booked out, any cash received in, and the difference to 4930 (a debit is a loss). `company_parent` stays the current direct owner; `group_ownership` is the history. RNG stream `group` (45). Balance keys `group.*` (balance.yaml).

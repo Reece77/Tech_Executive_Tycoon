@@ -199,6 +199,21 @@ from tst.sim.actions.scaleup import (
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import GameOverError, InvalidActionError
 from tst.sim.geo.cities import settle_home_cities
+from tst.sim.group.actions import (
+    AnswerGroupPitch,
+    BuyOutMinorities,
+    BuyStake,
+    CarveOut,
+    FormHolding,
+    GroupAction,
+    ReplaceSubsidiaryCeo,
+    SellStake,
+    SetMandate,
+    SetTransferPrice,
+    SpinOff,
+    VentureInvest,
+    apply_group,
+)
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.mna.antitrust import AcceptRemedy
@@ -231,9 +246,21 @@ type Action = (
     | PressAction
     | ReplaceLeaver
     | FounderAction  # M24
+    | GroupAction  # M16
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
+    "form_holding": FormHolding,  # M16 (31.2-31.7)
+    "set_mandate": SetMandate,
+    "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
+    "answer_group_pitch": AnswerGroupPitch,
+    "sell_stake": SellStake,
+    "buy_out_minorities": BuyOutMinorities,
+    "carve_out": CarveOut,
+    "spin_off": SpinOff,
+    "buy_stake": BuyStake,
+    "venture_invest": VentureInvest,
+    "set_transfer_price": SetTransferPrice,
     "sell_founder_shares": SellFounderShares,  # M24 (32.2-32.5)
     "create_foundation": CreateFoundation,
     "give_to_foundation": GiveToFoundation,
@@ -326,14 +353,18 @@ __all__ = [
     "Action",
     "ActionResult",
     "AddSegment",
+    "AnswerGroupPitch",
     "AnswerPitch",
     "AnswerProposal",
     "AppointCeo",
     "AppointExecutive",
     "AssignUnit",
     "BuildFacility",
+    "BuyOutMinorities",
+    "BuyStake",
     "Buyback",
     "CancelProduct",
+    "CarveOut",
     "ChooseEvent",
     "CloseOffice",
     "ClosePlan",
@@ -347,6 +378,7 @@ __all__ = [
     "DissolveUnit",
     "Draws",
     "Fire",
+    "FormHolding",
     "GiveRaise",
     "GiveToFoundation",
     "HireBanks",
@@ -370,6 +402,7 @@ __all__ = [
     "RenameUnit",
     "RepayLoan",
     "ReplaceLeaver",
+    "ReplaceSubsidiaryCeo",
     "Scout",
     "ScoutSearch",
     "SecondaryOffering",
@@ -377,11 +410,13 @@ __all__ = [
     "SellFacility",
     "SellFounderShares",
     "SellPlantCapacity",
+    "SellStake",
     "SetAuthority",
     "SetCeoAuthority",
     "SetGuidance",
     "SetLeader",
     "SetLobbying",
+    "SetMandate",
     "SetMarketing",
     "SetMarketingSplit",
     "SetPolicy",
@@ -390,10 +425,12 @@ __all__ = [
     "SetProjectBudget",
     "SetRegionalPrice",
     "SetSharedServices",
+    "SetTransferPrice",
     "SetUnitOffice",
     "SignContract",
     "SignManufacturingContract",
     "SignWaferContract",
+    "SpinOff",
     "StaffFacility",
     "StartProject",
     "StartRound",
@@ -402,6 +439,7 @@ __all__ = [
     "TakeLoan",
     "UnassignUnit",
     "UpdatePlan",
+    "VentureInvest",
     "WithdrawOffer",
     "action_from_payload",
     "action_payload",
@@ -589,6 +627,20 @@ def apply_action(
             out = make_promise(state, action, balance, data)
         case SellFounderShares() | CreateFoundation() | GiveToFoundation() | SetLobbying():
             out = apply_founder(state, action, balance, data)  # M24 (32)
+        case (
+            FormHolding()
+            | SetMandate()
+            | ReplaceSubsidiaryCeo()
+            | AnswerGroupPitch()
+            | SellStake()
+            | BuyOutMinorities()
+            | CarveOut()
+            | SpinOff()
+            | BuyStake()
+            | VentureInvest()
+            | SetTransferPrice()
+        ):  # M16 (31)
+            out = apply_group(state, action, rng, ledger_balances, balance, data)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

@@ -48,10 +48,27 @@ from tst.sim.actions import (
     StartRound,
     TakeLoan,
 )
-from tst.sim.errors import UnknownTermSheetError
-from tst.sim.state import company_cash, group_companies
+from tst.sim.errors import UnknownCompanyError, UnknownTermSheetError
+from tst.sim.state import GameState, company_cash, group_companies, group_members, listed_id
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["finance"])
+
+# M16 (31.2): the company switcher scopes the finance screens to one company of the group
+CompanyQuery = Annotated[
+    int | None, Query(description="A company of the player's group; default: the listed entity")
+]
+
+
+def _entity(state: GameState, company_id: int | None) -> int:
+    """The company a finance screen shows: `company_id` if it is in the player's group now,
+    else the listed entity (the holding company once formed)."""
+    root = listed_id(state)
+    if company_id is None:
+        return root
+    if company_id not in {c.id for c in group_companies(state, root)}:
+        raise UnknownCompanyError(f"company {company_id} is not in your group")
+    return company_id
+
 
 NEWS_LIMIT = 60  # finance inbox items read for the game over timeline (six months is fewer)
 
@@ -67,16 +84,21 @@ def get_statements(
     settings: SettingsDep,
     data: DataDep,
     period: Annotated[Literal["month", "quarter", "year"], Query()] = "month",
+    company_id: CompanyQuery = None,
 ) -> StatementsOut:
-    """P&L, balance sheet and cash flow for every closed month, quarter or year (14.1)."""
+    """P&L, balance sheet and cash flow for every closed month, quarter or year (14.1): the
+    listed entity's group by default (the holding company's once formed), or one company of
+    the player's group with what it owns (M16 company switcher)."""
     with repository.read_session(_path(settings, save_id)) as session:
         state = repository.read_state(session)
-        lines = repository.ledger_lines(session, state.player.id)
-        brands = [  # M14 (28.5): kept brands consolidate from closing
-            (c.id, repository.ledger_lines(session, c.id))
-            for c in group_companies(state, state.player.id)[1:]
-        ]
-    return finance_views.statements_out(state, lines, period, data, brands)
+        root = _entity(state, company_id)
+        lines = repository.ledger_lines(session, root)
+        # M16 (31.1): every company inside the group, at any depth, over its periods there
+        members = group_members(state, root)
+        books = {m.company_id: repository.ledger_lines(session, m.company_id) for m in members}
+    return finance_views.statements_out(
+        state, lines, period, data, [(m, books[m.company_id]) for m in members]
+    )
 
 
 @router.get(
@@ -85,36 +107,46 @@ def get_statements(
     responses=ERRORS,
     operation_id="getFinanceSummary",
 )
-def get_summary(save_id: str, settings: SettingsDep, data: DataDep) -> FinanceSummaryOut:
+def get_summary(
+    save_id: str, settings: SettingsDep, data: DataDep, company_id: CompanyQuery = None
+) -> FinanceSummaryOut:
     """Cash, the projected net burn and runway ("profitable" when null), insolvency and the
-    game state (ADR-0018)."""
+    game state (ADR-0018); the player's company by default, or one company of its group."""
     with repository.read_session(_path(settings, save_id)) as session:
         state = repository.read_state(session)
-        cash = company_cash(repository.ledger_balances(session), state.player.id)
-    return finance_views.summary_out(state, cash, data)
+        cid = _entity(state, company_id) if company_id is not None else state.player.id
+        cash = company_cash(repository.ledger_balances(session), cid)
+    return finance_views.summary_out(state, cash, data, cid)
 
 
 @router.get(
     "/finance/captable", response_model=CapTableOut, responses=ERRORS, operation_id="getCapTable"
 )
-def get_captable(save_id: str, settings: SettingsDep, data: DataDep) -> CapTableOut:
-    """Holders, classes, shares and percentages; every grant with vested and unvested."""
+def get_captable(
+    save_id: str, settings: SettingsDep, data: DataDep, company_id: CompanyQuery = None
+) -> CapTableOut:
+    """Holders, classes, shares and percentages; every grant with vested and unvested. The
+    listed entity's by default, or one company of the player's group (M16)."""
     with repository.read_session(_path(settings, save_id)) as session:
         state = repository.read_state(session)
         names = repository.person_names(session, [g.person_id for g in state.grants])
-    return finance_views.captable_out(state, names, data)
+    return finance_views.captable_out(state, names, data, _entity(state, company_id))
 
 
 @router.get("/finance/board", response_model=BoardOut, responses=ERRORS, operation_id="getBoard")
-def get_board(save_id: str, settings: SettingsDep, data: DataDep) -> BoardOut:
-    """Seats, each director's confidence and trend, and the last quarterly meeting (14.6)."""
+def get_board(
+    save_id: str, settings: SettingsDep, data: DataDep, company_id: CompanyQuery = None
+) -> BoardOut:
+    """Seats, each director's confidence and trend, and the last quarterly meeting (14.6):
+    the listed entity's board by default, or one company of the player's group (M16)."""
     with repository.read_session(_path(settings, save_id)) as session:
         state = repository.read_state(session)
         player = state.player.id
+        board_of = _entity(state, company_id)
         meetings = inbox.list_inbox(session, player, kinds=["board_meeting"], limit=2)
         warnings = inbox.list_inbox(session, player, kinds=["board_warning"], limit=1)
         minutes = written_text(session, "minutes", meetings[0].turn) if meetings else None
-    out = finance_views.board_out(state, data, meetings, warnings)
+    out = finance_views.board_out(state, data, meetings, warnings, board_of)
     if out.last_meeting is not None and minutes:
         out.last_meeting.minutes = minutes
     return out

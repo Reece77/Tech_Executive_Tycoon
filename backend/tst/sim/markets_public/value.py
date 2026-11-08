@@ -73,11 +73,17 @@ def fundamentals(
         balance.public.multiple,
     )
     arr = revenue_now * MONTHS_A_YEAR
+    value = pf.fundamental_value_cents(arr, m)
+    if any(h.company_id == company_id for h in state.holdings):
+        # M16 (31.7): a holding company is worth the sum of its parts less the discount
+        from tst.sim.group.discount import conglomerate
+
+        value = conglomerate(state, company_id, {}, balance, data).value_cents
     return Fundamentals(
         arr_cents=arr,
         growth=g,
         margin=margin,
         multiple=m,
-        value_cents=pf.fundamental_value_cents(arr, m),
+        value_cents=value,
         shares=fd_shares(state, company_id),
     )

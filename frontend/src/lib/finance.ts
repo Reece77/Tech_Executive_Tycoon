@@ -168,7 +168,7 @@ function amount(lines: Pnl['revenue'], account: string): number {
 }
 
 /** P&L rows: revenue, cost of revenue, gross margin, each operating expense, operating
- * expenses, interest and tax when any period has them, and the net result. */
+ * expenses, other gains, interest and tax when any period has them, and the net result. */
 export function pnlLines(periods: readonly StatementPeriod[]): StatementLine[] {
   const pnl = periods.map((p) => p.profit_and_loss);
   const lines: StatementLine[] = [
@@ -202,6 +202,14 @@ export function pnlLines(periods: readonly StatementPeriod[]): StatementLine[] {
     values: pnl.map((p) => -p.total_operating_expenses_cents),
     total: true,
   });
+  // M16 (31.1): gains and losses below the operating result, such as a subsidiary's disposal
+  for (const [account, label] of accounts(periods, (p) => p.other_gains ?? [])) {
+    lines.push({
+      id: account,
+      label,
+      values: pnl.map((p) => amount(p.other_gains ?? [], account)),
+    });
+  }
   if (pnl.some((p) => p.interest_cents !== 0)) {
     lines.push({ id: 'interest', label: 'Interest', values: pnl.map((p) => -p.interest_cents) });
   }
@@ -214,6 +222,21 @@ export function pnlLines(periods: readonly StatementPeriod[]): StatementLine[] {
     values: pnl.map((p) => p.net_result_cents),
     total: true,
   });
+  // M16 (31.3): what outside holders of subsidiaries own of it, and the owners' part
+  if (pnl.some((p) => (p.nci_cents ?? 0) !== 0)) {
+    lines.push({
+      id: 'nci',
+      label: 'Attributable to non-controlling interest',
+      values: pnl.map((p) => p.nci_cents ?? 0),
+      indent: true,
+    });
+    lines.push({
+      id: 'owners',
+      label: 'Attributable to owners',
+      values: pnl.map((p) => p.net_to_owners_cents ?? p.net_result_cents),
+      indent: true,
+    });
+  }
   return lines;
 }
 

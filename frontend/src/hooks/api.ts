@@ -238,11 +238,13 @@ export const keys = {
   portfolio: (saveId: string) => ['saves', saveId, 'portfolio'] as const,
   pricePreview: (saveId: string, productId: number, segment: string, price: number) =>
     ['saves', saveId, 'price-preview', productId, segment, price] as const,
-  statements: (saveId: string, period: StatementPeriodKind) =>
-    ['saves', saveId, 'statements', period] as const,
+  statements: (saveId: string, period: StatementPeriodKind, companyId?: number) =>
+    ['saves', saveId, 'statements', period, companyId ?? null] as const,
   financeSummary: (saveId: string) => ['saves', saveId, 'finance-summary'] as const,
-  capTable: (saveId: string) => ['saves', saveId, 'captable'] as const,
-  board: (saveId: string) => ['saves', saveId, 'board'] as const,
+  capTable: (saveId: string, companyId?: number) =>
+    ['saves', saveId, 'captable', companyId ?? null] as const,
+  board: (saveId: string, companyId?: number) =>
+    ['saves', saveId, 'board', companyId ?? null] as const,
   safes: (saveId: string) => ['saves', saveId, 'safes'] as const,
   safeHint: (saveId: string, amount: number, cap: number) =>
     ['saves', saveId, 'safe-hint', amount, cap] as const,
@@ -1054,13 +1056,17 @@ export function useProductAction(saveId: string) {
 
 // --- Finance (M4b) ----------------------------------------------------------------------------
 
-export function useStatements(saveId: string, period: StatementPeriodKind) {
+/** `companyId` (M16 company switcher): one company of the group; default the listed one. */
+export function useStatements(saveId: string, period: StatementPeriodKind, companyId?: number) {
   return useQuery({
-    queryKey: keys.statements(saveId, period),
+    queryKey: keys.statements(saveId, period, companyId),
     queryFn: async () =>
       unwrap(
         await api.GET('/api/saves/{save_id}/finance/statements', {
-          params: { path: { save_id: saveId }, query: { period } },
+          params: {
+            path: { save_id: saveId },
+            query: companyId === undefined ? { period } : { period, company_id: companyId },
+          },
         }),
       ),
     placeholderData: keepPreviousData,
@@ -1075,18 +1081,26 @@ export function useFinanceSummary(saveId: string) {
   });
 }
 
-export function useCapTable(saveId: string) {
+const scoped = (saveId: string, companyId?: number) => ({
+  params: {
+    path: { save_id: saveId },
+    query: companyId === undefined ? {} : { company_id: companyId },
+  },
+});
+
+export function useCapTable(saveId: string, companyId?: number) {
   return useQuery({
-    queryKey: keys.capTable(saveId),
+    queryKey: keys.capTable(saveId, companyId),
     queryFn: async () =>
-      unwrap(await api.GET('/api/saves/{save_id}/finance/captable', path(saveId))),
+      unwrap(await api.GET('/api/saves/{save_id}/finance/captable', scoped(saveId, companyId))),
   });
 }
 
-export function useBoard(saveId: string) {
+export function useBoard(saveId: string, companyId?: number) {
   return useQuery({
-    queryKey: keys.board(saveId),
-    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/finance/board', path(saveId))),
+    queryKey: keys.board(saveId, companyId),
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/finance/board', scoped(saveId, companyId))),
   });
 }
 

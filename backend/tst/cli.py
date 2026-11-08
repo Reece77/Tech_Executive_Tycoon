@@ -8,7 +8,7 @@ prints true values, as a debug view.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -2893,3 +2893,150 @@ def lobby_cmd(
             f"{format_money(r.monthly_cents)}/month  exposure {r.exposure}  "
             f"scandals {r.scandals}"
         )
+
+
+# --- The group (M16, formulas.md 31) ----------------------------------------------------------
+
+
+def _group_table(path: Path, data: LoadedData) -> None:
+    from tst.api.group_views import group_out
+
+    with repository.open_session(path) as session:
+        state = repository.load_state(session)
+        balances = repository.ledger_balances(session)
+    g = group_out(state, balances, data)
+    if not g.formed:
+        typer.echo(
+            "No holding company yet: "
+            + ("you can form one (tst form-holding)." if g.can_form else "; ".join(g.reasons))
+        )
+    for e in g.entities:
+        stake = "" if e.depth == 0 else f" {e.stake_bp / 100:.1f}% {e.treatment}"
+        margin = "—" if e.operating_margin is None else f"{e.operating_margin:.1%}"
+        if e.market_cap_cents is not None:
+            value = f"cap {format_money(e.market_cap_cents)}"
+        elif e.value_low_cents is not None and e.value_high_cents is not None:
+            value = f"value {format_money(e.value_low_cents)}-{format_money(e.value_high_cents)}"
+        else:
+            value = ""
+        typer.echo(
+            f"{'  ' * e.depth}{e.name} [{e.role}]{stake}: revenue {format_money(e.revenue_cents)}"
+            f" (12 months), margin {margin}, cash {format_money(e.cash_cents)} {value}".rstrip()
+        )
+
+
+@app.command("group")
+def group_cmd(save: SaveOpt) -> None:
+    """The group (31.10): the entity tree with stakes, treatments and each company's numbers."""
+    path, data, _ = _game(save)
+    _group_table(path, data)
+
+
+@app.command("form-holding")
+def form_holding_cmd(save: SaveOpt) -> None:
+    """Form the holding company (31.2): it takes the listing, the cap table and the board."""
+    from tst.sim.group.actions import FormHolding
+
+    path, data, state = _game(save)
+    state = _run(path, data, FormHolding(_founder(state))).new_state
+    typer.echo(f"Holding company formed; {_energy(state, data)}")
+    _group_table(path, data)
+
+
+@app.command("mandate")
+def mandate_cmd(
+    save: SaveOpt,
+    company: Annotated[int, typer.Option("--company", help="A subsidiary's company id")],
+    kind: Annotated[str, typer.Option("--kind", help="grow, margin or return_cash")],
+    capex: Annotated[int, typer.Option("--capex-cents", help="Yearly capex limit; 0: none")] = 0,
+) -> None:
+    """Set a subsidiary's mandate (31.4): what its CEO runs it for."""
+    from tst.sim.group.actions import SetMandate
+
+    path, data, state = _game(save)
+    state = _run(path, data, SetMandate(_founder(state), company, kind, capex)).new_state  # type: ignore[arg-type]
+    typer.echo(f"Mandate set; {_energy(state, data)}")
+    _group_table(path, data)
+
+
+def _group_act(save: str, make: Callable[[int], Action]) -> None:
+    path, data, state = _game(save)
+    state = _run(path, data, make(_founder(state))).new_state
+    typer.echo(f"Done; {_energy(state, data)}")
+    _group_table(path, data)
+
+
+CompanyOpt = Annotated[int, typer.Option("--company", help="The company's id")]
+PctOpt = Annotated[float, typer.Option("--pct", help="Percent of the company, e.g. 30")]
+
+
+@app.command("sell-stake")
+def sell_stake_cmd(save: SaveOpt, company: CompanyOpt, pct: PctOpt) -> None:
+    """Sell part of a subsidiary to investors; the group keeps control (31.5)."""
+    from tst.sim.group.actions import SellStake
+
+    _group_act(save, lambda f: SellStake(f, company, round(pct * 100)))
+
+
+@app.command("buy-out")
+def buy_out_cmd(save: SaveOpt, company: CompanyOpt) -> None:
+    """Buy out a subsidiary's minorities at the premium (31.5)."""
+    from tst.sim.group.actions import BuyOutMinorities
+
+    _group_act(save, lambda f: BuyOutMinorities(f, company))
+
+
+@app.command("carve-out")
+def carve_out_cmd(save: SaveOpt, company: CompanyOpt, pct: PctOpt) -> None:
+    """List 10-40% of a subsidiary (31.5)."""
+    from tst.sim.group.actions import CarveOut
+
+    _group_act(save, lambda f: CarveOut(f, company, round(pct * 100)))
+
+
+@app.command("spin-off")
+def spin_off_cmd(
+    save: SaveOpt,
+    company: CompanyOpt,
+    keep: Annotated[
+        float, typer.Option("--keep", help="Percent the group keeps, at most 19.9")
+    ] = 0.0,
+) -> None:
+    """Give a subsidiary's shares to the holding company's shareholders (31.5)."""
+    from tst.sim.group.actions import SpinOff
+
+    _group_act(save, lambda f: SpinOff(f, company, round(keep * 100)))
+
+
+@app.command("stake")
+def stake_cmd(save: SaveOpt, company: CompanyOpt, pct: PctOpt) -> None:
+    """Buy a listed rival's shares on the market up to --pct (31.5)."""
+    from tst.sim.group.actions import BuyStake
+
+    _group_act(save, lambda f: BuyStake(f, company, round(pct * 100)))
+
+
+@app.command("venture")
+def venture_cmd(
+    save: SaveOpt,
+    startup: Annotated[int, typer.Option("--startup", help="The startup's company id")],
+    cents: Annotated[int, typer.Option("--cents", help="The investment, cents")],
+) -> None:
+    """Invest in a startup's round for 5-25% (31.5)."""
+    from tst.sim.group.actions import VentureInvest
+
+    _group_act(save, lambda f: VentureInvest(f, startup, cents))
+
+
+@app.command("transfer-price")
+def transfer_price_cmd(
+    save: SaveOpt,
+    flow: Annotated[str, typer.Option("--flow", help="SELLER:BUYER:GOOD, e.g. 7:1:compute")],
+    kind: Annotated[str, typer.Option("--kind", help="cost, cost_plus or market")],
+    margin: Annotated[float | None, typer.Option(help="cost plus: the margin, 0-1")] = None,
+) -> None:
+    """Set the price one group company supplies another at (31.6)."""
+    from tst.sim.group.actions import SetTransferPrice
+
+    seller, buyer, good = flow.split(":")
+    _group_act(save, lambda f: SetTransferPrice(f, int(seller), int(buyer), good, kind, margin))

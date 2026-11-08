@@ -5731,7 +5731,7 @@
           "finance"
         ],
         "summary": "Get Statements",
-        "description": "P&L, balance sheet and cash flow for every closed month, quarter or year (14.1).",
+        "description": "P&L, balance sheet and cash flow for every closed month, quarter or year (14.1): the\nlisted entity's group by default (the holding company's once formed), or one company of\nthe player's group with what it owns (M16 company switcher).",
         "operationId": "getStatements",
         "parameters": [
           {
@@ -5757,6 +5757,24 @@
               "default": "month",
               "title": "Period"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A company of the player's group; default: the listed entity",
+              "title": "Company Id"
+            },
+            "description": "A company of the player's group; default: the listed entity"
           }
         ],
         "responses": {
@@ -5819,7 +5837,7 @@
           "finance"
         ],
         "summary": "Get Summary",
-        "description": "Cash, the projected net burn and runway (\"profitable\" when null), insolvency and the\ngame state (ADR-0018).",
+        "description": "Cash, the projected net burn and runway (\"profitable\" when null), insolvency and the\ngame state (ADR-0018); the player's company by default, or one company of its group.",
         "operationId": "getFinanceSummary",
         "parameters": [
           {
@@ -5830,6 +5848,24 @@
               "type": "string",
               "title": "Save Id"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A company of the player's group; default: the listed entity",
+              "title": "Company Id"
+            },
+            "description": "A company of the player's group; default: the listed entity"
           }
         ],
         "responses": {
@@ -5892,7 +5928,7 @@
           "finance"
         ],
         "summary": "Get Captable",
-        "description": "Holders, classes, shares and percentages; every grant with vested and unvested.",
+        "description": "Holders, classes, shares and percentages; every grant with vested and unvested. The\nlisted entity's by default, or one company of the player's group (M16).",
         "operationId": "getCapTable",
         "parameters": [
           {
@@ -5903,6 +5939,24 @@
               "type": "string",
               "title": "Save Id"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A company of the player's group; default: the listed entity",
+              "title": "Company Id"
+            },
+            "description": "A company of the player's group; default: the listed entity"
           }
         ],
         "responses": {
@@ -5965,7 +6019,7 @@
           "finance"
         ],
         "summary": "Get Board",
-        "description": "Seats, each director's confidence and trend, and the last quarterly meeting (14.6).",
+        "description": "Seats, each director's confidence and trend, and the last quarterly meeting (14.6):\nthe listed entity's board by default, or one company of the player's group (M16).",
         "operationId": "getBoard",
         "parameters": [
           {
@@ -5976,6 +6030,24 @@
               "type": "string",
               "title": "Save Id"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A company of the player's group; default: the listed entity",
+              "title": "Company Id"
+            },
+            "description": "A company of the player's group; default: the listed entity"
           }
         ],
         "responses": {
@@ -15370,6 +15442,989 @@
         }
       }
     },
+    "/api/saves/{save_id}/group": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Get Group",
+        "description": "The entity tree with stakes, treatments and each company's numbers; the holding\ncompany's gate before it is formed (31.2, 31.10).",
+        "operationId": "getGroup",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/form": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Form Holding",
+        "description": "Form the holding company: it takes the listing, the cap table and the board; the\ncompany and its brands become its subsidiaries (31.2).",
+        "operationId": "formHolding",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/mandate": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Set Mandate",
+        "description": "Set a subsidiary's mandate: grow, margin or return cash (31.4).",
+        "operationId": "setMandate",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MandateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/companies/{company_id}/replace-ceo": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Replace Ceo",
+        "description": "Accept the board's proposal for a new CEO (31.4).",
+        "operationId": "replaceSubsidiaryCeo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/pitches/{pitch_id}": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Answer Pitch",
+        "description": "Approve or decline a subsidiary CEO's request for capital (31.4).",
+        "operationId": "answerGroupPitch",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "pitch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pitch Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PitchAnswerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/sell-stake": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Sell Stake",
+        "description": "Sell part of a subsidiary to investors; the group keeps control (31.5).",
+        "operationId": "sellStake",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StakeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/companies/{company_id}/buy-out": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Buy Out",
+        "description": "Buy out a subsidiary's minorities at the premium (31.5).",
+        "operationId": "buyOutMinorities",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/carve-out": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Carve Out",
+        "description": "List 10-40% of a subsidiary; the group keeps control (31.5).",
+        "operationId": "carveOut",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StakeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/spin-off": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Spin Off",
+        "description": "Give a subsidiary's shares to the holding company's shareholders (31.5).",
+        "operationId": "spinOff",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpinOffIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/stake": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Buy Stake",
+        "description": "Buy a listed rival's shares on the market up to `stake_bp` (31.5).",
+        "operationId": "buyStake",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StakeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/venture": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Venture",
+        "description": "Invest in a startup's round for 5-25% (31.5).",
+        "operationId": "ventureInvest",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VentureIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/transfer-price": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Transfer Price",
+        "description": "Set the price one group company supplies another at: cost, cost plus or market (31.6).",
+        "operationId": "setTransferPrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferPriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -19690,6 +20745,44 @@
         ],
         "title": "DirectorOut"
       },
+      "DiscountOut": {
+        "properties": {
+          "parts_cents": {
+            "type": "integer",
+            "title": "Parts Cents",
+            "description": "The sum of the parts (31.7)"
+          },
+          "segments": {
+            "type": "integer",
+            "title": "Segments"
+          },
+          "intra_share": {
+            "type": "number",
+            "title": "Intra Share",
+            "description": "Intra-group revenue over the year's group revenue"
+          },
+          "discount": {
+            "type": "number",
+            "title": "Discount",
+            "description": "The conglomerate discount d, 0.10-0.25"
+          },
+          "after_discount_cents": {
+            "type": "integer",
+            "title": "After Discount Cents",
+            "description": "The sum of the parts x (1 - d)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "parts_cents",
+          "segments",
+          "intra_share",
+          "discount",
+          "after_discount_cents"
+        ],
+        "title": "DiscountOut",
+        "description": "From public numbers only (31.10): listed parts at market, private ones at their\ndisplayed range's midpoint."
+      },
       "DividendIn": {
         "properties": {
           "per_share_cents": {
@@ -21280,6 +22373,86 @@
         ],
         "title": "FirstOut"
       },
+      "FlowOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "seller_id": {
+            "type": "integer",
+            "title": "Seller Id"
+          },
+          "seller": {
+            "type": "string",
+            "title": "Seller"
+          },
+          "buyer_id": {
+            "type": "integer",
+            "title": "Buyer Id"
+          },
+          "buyer": {
+            "type": "string",
+            "title": "Buyer"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good",
+            "description": "compute | chips"
+          },
+          "price_kind": {
+            "type": "string",
+            "title": "Price Kind",
+            "description": "cost | cost_plus | market"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin"
+          },
+          "last_price_cents": {
+            "type": "integer",
+            "title": "Last Price Cents",
+            "description": "The transfer price paid at the last month end"
+          },
+          "unfair_months": {
+            "type": "integer",
+            "title": "Unfair Months",
+            "description": "Months running more than 10% from market"
+          },
+          "minorities": {
+            "type": "boolean",
+            "title": "Minorities",
+            "description": "A company of the flow has outside shareholders"
+          },
+          "complaint": {
+            "type": "boolean",
+            "title": "Complaint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "seller_id",
+          "seller",
+          "buyer_id",
+          "buyer",
+          "good",
+          "price_kind",
+          "margin",
+          "last_price_cents",
+          "unfair_months",
+          "minorities",
+          "complaint"
+        ],
+        "title": "FlowOut"
+      },
       "FormerProfileOut": {
         "properties": {
           "person_id": {
@@ -22636,6 +23809,359 @@
           "fraction"
         ],
         "title": "GrantOut"
+      },
+      "GroupActionOut": {
+        "properties": {
+          "group": {
+            "$ref": "#/components/schemas/GroupOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "group",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "GroupActionOut"
+      },
+      "GroupEntityOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id",
+            "description": "Its direct owner inside the group; null: the root"
+          },
+          "depth": {
+            "type": "integer",
+            "title": "Depth",
+            "description": "0 for the root, 1 for its subsidiaries, ..."
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "holding | operating | subsidiary | company"
+          },
+          "stake_bp": {
+            "type": "integer",
+            "title": "Stake Bp",
+            "description": "The group's stake held by its direct owner, basis points"
+          },
+          "treatment": {
+            "type": "string",
+            "title": "Treatment",
+            "description": "root | consolidated | equity | fair_value (31.3)"
+          },
+          "listed": {
+            "type": "boolean",
+            "title": "Listed"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "Revenue over the last 12 month ends"
+          },
+          "operating_margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operating Margin",
+            "description": "Operating result over revenue for the last 12 month ends; null without revenue"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "market_cap_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Cap Cents",
+            "description": "Listed companies only"
+          },
+          "value_low_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Low Cents",
+            "description": "Private: the value range (28.1)"
+          },
+          "value_high_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value High Cents"
+          },
+          "ceo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ceo",
+            "description": "Its CEO's name (subsidiaries)"
+          },
+          "mandate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mandate",
+            "description": "grow | margin | return_cash (31.4)"
+          },
+          "capex_limit_cents": {
+            "type": "integer",
+            "title": "Capex Limit Cents",
+            "default": 0
+          },
+          "review": {
+            "type": "string",
+            "title": "Review",
+            "description": "The last December review's result",
+            "default": ""
+          },
+          "misses": {
+            "type": "integer",
+            "title": "Misses",
+            "default": 0
+          },
+          "replacement_proposed": {
+            "type": "boolean",
+            "title": "Replacement Proposed",
+            "default": false
+          },
+          "board_seats": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Board Seats",
+            "description": "[parent nominees, independents, minority seats]"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "parent_id",
+          "depth",
+          "role",
+          "stake_bp",
+          "treatment",
+          "listed",
+          "revenue_cents",
+          "operating_margin",
+          "cash_cents"
+        ],
+        "title": "GroupEntityOut"
+      },
+      "GroupOut": {
+        "properties": {
+          "formed": {
+            "type": "boolean",
+            "title": "Formed"
+          },
+          "holding_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holding Id"
+          },
+          "can_form": {
+            "type": "boolean",
+            "title": "Can Form"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "What still stands in the way of forming one (31.2)"
+          },
+          "form_energy": {
+            "type": "integer",
+            "title": "Form Energy"
+          },
+          "form_fee_cents": {
+            "type": "integer",
+            "title": "Form Fee Cents",
+            "description": "0.1% of the market cap at the last month end"
+          },
+          "office_monthly_cents": {
+            "type": "integer",
+            "title": "Office Monthly Cents"
+          },
+          "entities": {
+            "items": {
+              "$ref": "#/components/schemas/GroupEntityOut"
+            },
+            "type": "array",
+            "title": "Entities",
+            "description": "Owners before what they own"
+          },
+          "pitches": {
+            "items": {
+              "$ref": "#/components/schemas/GroupPitchOut"
+            },
+            "type": "array",
+            "title": "Pitches",
+            "description": "Pending requests"
+          },
+          "stakes": {
+            "items": {
+              "$ref": "#/components/schemas/StakeOut"
+            },
+            "type": "array",
+            "title": "Stakes",
+            "description": "Stakes it does not control"
+          },
+          "personal_stakes": {
+            "items": {
+              "$ref": "#/components/schemas/PersonalStakeOut"
+            },
+            "type": "array",
+            "title": "Personal Stakes",
+            "description": "The founder's own shares in spun-off companies"
+          },
+          "flows": {
+            "items": {
+              "$ref": "#/components/schemas/FlowOut"
+            },
+            "type": "array",
+            "title": "Flows",
+            "description": "Intra-group supply (31.6)"
+          },
+          "discount": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiscountOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The listed holding company's conglomerate discount (31.7)"
+          },
+          "mandate_energy": {
+            "type": "integer",
+            "title": "Mandate Energy",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "formed",
+          "holding_id",
+          "can_form",
+          "reasons",
+          "form_energy",
+          "form_fee_cents",
+          "office_monthly_cents",
+          "entities"
+        ],
+        "title": "GroupOut"
+      },
+      "GroupPitchOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "ceo": {
+            "type": "string",
+            "title": "Ceo"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "fits_mandate": {
+            "type": "boolean",
+            "title": "Fits Mandate"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "company",
+          "ceo",
+          "turn",
+          "amount_cents",
+          "fits_mandate",
+          "status"
+        ],
+        "title": "GroupPitchOut"
       },
       "GuardChoiceOut": {
         "properties": {
@@ -25869,6 +27395,48 @@
         ],
         "title": "ManagerOut"
       },
+      "MandateIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "mandate": {
+            "type": "string",
+            "title": "Mandate",
+            "description": "grow | margin | return_cash"
+          },
+          "capex_limit_cents": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Capex Limit Cents",
+            "description": "0: no limit",
+            "default": 0
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories",
+            "description": "Empty: any"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Regions",
+            "description": "Empty: any"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "mandate"
+        ],
+        "title": "MandateIn"
+      },
       "ManufacturingOut": {
         "properties": {
           "product_id": {
@@ -29014,6 +30582,42 @@
         "title": "PersonalOut",
         "description": "The founder's own book (32.2): never a company's money."
       },
+      "PersonalStakeOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "stake_bp": {
+            "type": "integer",
+            "title": "Stake Bp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "stake_bp"
+        ],
+        "title": "PersonalStakeOut"
+      },
+      "PitchAnswerIn": {
+        "properties": {
+          "approve": {
+            "type": "boolean",
+            "title": "Approve"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approve"
+        ],
+        "title": "PitchAnswerIn"
+      },
       "PitchOut": {
         "properties": {
           "pitch_id": {
@@ -30979,6 +32583,19 @@
             "type": "integer",
             "title": "Operating Result Cents"
           },
+          "other_gains": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLineOut"
+            },
+            "type": "array",
+            "title": "Other Gains",
+            "description": "Below the operating result: disposals of subsidiaries (4930; M16, 31.1)"
+          },
+          "total_other_gains_cents": {
+            "type": "integer",
+            "title": "Total Other Gains Cents",
+            "default": 0
+          },
           "interest_cents": {
             "type": "integer",
             "title": "Interest Cents"
@@ -30990,6 +32607,18 @@
           "net_result_cents": {
             "type": "integer",
             "title": "Net Result Cents"
+          },
+          "nci_cents": {
+            "type": "integer",
+            "title": "Nci Cents",
+            "description": "Of the net result, what outside holders of subsidiaries own (M16, 31.3)",
+            "default": 0
+          },
+          "net_to_owners_cents": {
+            "type": "integer",
+            "title": "Net To Owners Cents",
+            "description": "The net result less NCI's share",
+            "default": 0
           }
         },
         "type": "object",
@@ -34573,6 +36202,26 @@
         ],
         "title": "SourceOut"
       },
+      "SpinOffIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "keep_bp": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Keep Bp",
+            "description": "What the group keeps, at most 19.9%",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id"
+        ],
+        "title": "SpinOffIn"
+      },
       "SpotOut": {
         "properties": {
           "good": {
@@ -34650,6 +36299,70 @@
           "date_label"
         ],
         "title": "StageReachedOut"
+      },
+      "StakeIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "stake_bp": {
+            "type": "integer",
+            "title": "Stake Bp",
+            "description": "Share of the company, basis points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "stake_bp"
+        ],
+        "title": "StakeIn"
+      },
+      "StakeOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "stake_bp": {
+            "type": "integer",
+            "title": "Stake Bp"
+          },
+          "treatment": {
+            "type": "string",
+            "title": "Treatment",
+            "description": "equity | fair_value (31.3)"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "market | venture | retained"
+          },
+          "carrying_cents": {
+            "type": "integer",
+            "title": "Carrying Cents"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "stake_bp",
+          "treatment",
+          "kind",
+          "carrying_cents",
+          "cost_cents"
+        ],
+        "title": "StakeOut"
       },
       "StartProjectIn": {
         "properties": {
@@ -36113,6 +37826,48 @@
         ],
         "title": "TraitOut"
       },
+      "TransferPriceIn": {
+        "properties": {
+          "seller_id": {
+            "type": "integer",
+            "title": "Seller Id"
+          },
+          "buyer_id": {
+            "type": "integer",
+            "title": "Buyer Id"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good",
+            "description": "compute | chips"
+          },
+          "price_kind": {
+            "type": "string",
+            "title": "Price Kind",
+            "description": "cost | cost_plus | market"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin",
+            "description": "cost plus: the margin, 0-1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seller_id",
+          "buyer_id",
+          "good",
+          "price_kind"
+        ],
+        "title": "TransferPriceIn"
+      },
       "UISettings": {
         "properties": {
           "tables": {
@@ -36358,6 +38113,25 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VentureIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "cents"
+        ],
+        "title": "VentureIn"
       },
       "VentureOut": {
         "properties": {

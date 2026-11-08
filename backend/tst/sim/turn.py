@@ -12,7 +12,7 @@ from dataclasses import dataclass, field, replace
 from typing import Final
 
 from tst.sim.actions import Action
-from tst.sim.calendar import format_turn
+from tst.sim.calendar import MONTHS_PER_YEAR, format_turn
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.errors import CriticalEventOpenError, EventsOpenError, GameOverError
@@ -30,6 +30,11 @@ from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
 from tst.sim.founder.phase import founder_month, next_budget
 from tst.sim.geo.cities import settle_home_cities
+from tst.sim.group.holding import holding_month
+from tst.sim.group.ownership import disposals
+from tst.sim.group.stakes import stakes_month
+from tst.sim.group.subsidiaries import group_month
+from tst.sim.group.transfer import transfer_month
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -82,6 +87,8 @@ from tst.sim.score import snapshot_scores
 from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
 from tst.sim.state import (
     GameState,
+    group_companies,
+    holding_of,
     player_companies,
     with_company,
     with_person_state,
@@ -290,12 +297,34 @@ def financing(ctx: TurnContext) -> TurnContext:
         preferred = {  # credit balances, positive (M15b: they convert at the IPO)
             c.id: -account_balance(ctx.balances, c.id, PREFERRED_EQUITY) for c in players
         }
+        revenue = dict(ctx.revenue)
+        held = holding_of(ctx.state)
+        if held is not None:  # M16 (31.2): the listed holding company trades on the group's
+            group = group_companies(ctx.state, held.company_id)
+            revenue[held.company_id] = sum(ctx.revenue.get(c.id, 0) for c in group)
+            op[held.company_id] = sum(_month_operating(ctx, c.id, types) for c in group)
+            cash[held.company_id] = sum(account_balance(ctx.balances, c.id, CASH) for c in group)
         state, public_entries, public_logs = public_month(
-            ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.revenue, op, cash, preferred
+            ctx.state, ctx.rng, ctx.balance, ctx.data, revenue, op, cash, preferred
         )
         ctx = replace(ctx, state=state).post(*public_entries).log(*public_logs)
     # M14 (28.1): listed rivals' sentiment (their market cap is V_f x S).
     ctx = replace(ctx, state=listed_rivals_month(ctx.state, ctx.rng, ctx.balance, ctx.data))
+    # M16 (31.6): intra-group supply at transfer prices, and minority complaints.
+    if ctx.state.transfer_flows:
+        spend: dict[tuple[int, str], int] = {}
+        for e in ctx.entries:
+            for line in e.lines:
+                key = (e.company_id, line.account)
+                spend[key] = spend.get(key, 0) + line.amount
+        year = {c.id: sum(c.mrr_history[-MONTHS_PER_YEAR:]) for c in ctx.state.companies}
+        state, flow_entries, flow_logs = transfer_month(
+            ctx.state, spend, year, ctx.balance, ctx.data
+        )
+        ctx = replace(ctx, state=state).post(*flow_entries).log(*flow_logs)
+    # M16 (31.2): the group office, and cash between the holding and its operating company.
+    state, holding_entries, _ = holding_month(ctx.state, ctx.balances, ctx.balance)
+    ctx = replace(ctx, state=state).post(*holding_entries)
     # M14 (28.2-28.5): diligence, antitrust reviews, closings, then brands and integrations.
     state, deal_entries, deal_logs = mna_month(
         ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
@@ -305,9 +334,20 @@ def financing(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state).post(*integration_entries).log(*integration_logs)
+    if ctx.state.stakes:  # M16 (31.3): associates' share of the month; December fair value
+        types = {a.code: a.type for a in ctx.data.accounts}
+        targets = {x.company_id for x in ctx.state.stakes if x.is_open}
+        month = {cid: _month_operating(ctx, cid, types) for cid in targets}
+        state, stake_entries = stakes_month(ctx.state, ctx.balances, month, ctx.balance, ctx.data)
+        ctx = replace(ctx, state=state).post(*stake_entries)
+    # M16 (31.4): December reviews of subsidiaries' CEOs; capital requests to the group.
+    state, group_logs = group_month(ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).log(*group_logs)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
     state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
-    ctx = replace(ctx, rival_moves=ctx.rival_moves + failed)
+    # M16 (31.1): a held company that failed leaves its owner's group with a disposal.
+    state, disposal_entries, _ = disposals(state, ctx.balances, ctx.data)
+    ctx = replace(ctx, rival_moves=ctx.rival_moves + failed).post(*disposal_entries)
     return replace(ctx, state=state).log(*answered, *sheets, *lapsed, *bridges, *insolvent)
 
 
@@ -410,11 +450,17 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     # MRR at each month end feeds investors' growth and the board (M4, 14.3).
     state = remember_shares(ctx.state, ctx.balance)  # rivals' share memory (M5, 15.3)
     keep = 2 * ctx.balance.finance.growth_window_months + 1
+    revenue = dict(ctx.revenue)
+    held = holding_of(state)
+    if held is not None:  # M16 (31.2): the holding company's revenue is its group's
+        group = group_companies(state, held.company_id)
+        revenue[held.company_id] = sum(ctx.revenue.get(c.id, 0) for c in group)
     for company in state.ledger_companies():
-        history = (*company.mrr_history, ctx.revenue.get(company.id, 0))[-keep:]
+        history = (*company.mrr_history, revenue.get(company.id, 0))[-keep:]
         state = with_company(state, replace(company, mrr_history=history))
     state = _rival_op_history(state, ctx, types)  # M14 (28.1): rivals' V_f margin
     state = _debt_history(state, ctx, types)  # M10 (20.3): covenants read completed months
+    state = _holding_history(state, ctx, types)  # M16 (31.2): the listed group's margin
     state = ceo_knowledge_month(state, ctx.rng, ctx.balance, ctx.data)  # M15b addendum 11
     state = judge_scenario(state, ctx.balances, ctx.balance, ctx.data)  # M15b (30.3)
     state, ranked = publish_rankings(state, ctx.balance, ctx.data)  # M15b (30.4)
@@ -461,6 +507,20 @@ def _month_operating(ctx: TurnContext, company_id: int, types: Mapping[str, Acco
     ]
     prior = ctx.prior_operating.get(company_id, 0)
     return profit_and_loss(lines, types, ctx.turn, ctx.turn).operating_result + prior
+
+
+def _holding_history(
+    state: GameState, ctx: TurnContext, types: Mapping[str, AccountType]
+) -> GameState:
+    """The holding company's operating result for the month: its group's (M16, 31.2), for the
+    listed group's trailing margin (25.3)."""
+    held = holding_of(state)
+    if held is None:
+        return state
+    company = state.company(held.company_id)
+    result = sum(_month_operating(ctx, c.id, types) for c in group_companies(state, company.id))
+    keep = ctx.balance.ipo.trailing_months + 1
+    return with_company(state, replace(company, op_history=(*company.op_history, result)[-keep:]))
 
 
 def _debt_history(

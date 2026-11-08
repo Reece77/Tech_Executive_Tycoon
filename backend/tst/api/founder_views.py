@@ -26,7 +26,7 @@ from tst.sim.founder.config import CAUSES, TRAITS
 from tst.sim.founder.foundation import CAUSE_WORDS
 from tst.sim.founder.models import PERSONAL_CASH, FounderLife
 from tst.sim.founder.persona import top_trait
-from tst.sim.state import GameState, foundation_of, life_of, public_of
+from tst.sim.state import GameState, foundation_of, life_of, listed_id, public_of
 
 ENTRIES_SHOWN = 12  # tunable-exempt: rows on the Personal tab
 PCT = 100  # tunable-exempt: percent
@@ -103,9 +103,9 @@ def personal_out(state: GameState, data: LoadedData) -> PersonalOut:
     pid = life.person_id
     totals = personal.book_balances(state.personal_book, pid)
     f = foundation_of(state, pid)
-    company = state.player
-    shares = person_shares(state, company.id, pid)
-    public = public_of(state, company.id)
+    listed = listed_id(state)  # M16 (31.2): the holding company's, once formed
+    shares = person_shares(state, listed, pid)
+    public = public_of(state, listed)
     mine = [e for e in state.personal_book if e.person_id == pid]
     return PersonalOut(
         cash_cents=totals.get(PERSONAL_CASH, 0),

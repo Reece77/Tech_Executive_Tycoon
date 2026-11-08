@@ -80,12 +80,16 @@ def render(item: LogItem, templates: dict[str, InboxTemplate]) -> tuple[str, str
 
 
 def inbox_rows(
-    items: Iterable[LogItem], player_id: int, templates: dict[str, InboxTemplate]
+    items: Iterable[LogItem],
+    player_id: int,
+    templates: dict[str, InboxTemplate],
+    also: frozenset[int] = frozenset(),
 ) -> list[InboxItemRow]:
-    """Rows for the player company's templated items, in emission order."""
+    """Rows for the player company's templated items, in emission order; items for `also`
+    (the player's holding company, M16) reach the same inbox."""
     rows = []
     for item in items:
-        if item.template is None or item.company_id != player_id:
+        if item.template is None or (item.company_id != player_id and item.company_id not in also):
             continue
         title, body = render(item, templates)
         rows.append(

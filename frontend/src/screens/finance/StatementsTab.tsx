@@ -192,9 +192,9 @@ export function CashBurnChart({ history }: { history: Overview['history'] }) {
   );
 }
 
-export function StatementsTab({ saveId }: { saveId: string }) {
+export function StatementsTab({ saveId, companyId }: { saveId: string; companyId?: number }) {
   const [period, setPeriod] = useState<StatementPeriodKind>('month');
-  const statements = useStatements(saveId, period);
+  const statements = useStatements(saveId, period, companyId);
   const overview = useOverview(saveId);
   if (statements.isPending || overview.isPending) return <Loading />;
   if (statements.error || overview.error) {

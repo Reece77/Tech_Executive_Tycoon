@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 38
+SCHEMA_VERSION = 39
 
 
 class Base(DeclarativeBase):
@@ -1820,4 +1820,90 @@ class InfluenceRow(Base):
 
     company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     region: Mapped[str] = mapped_column(String(40), primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- The holding company and its subsidiaries (M16, formulas.md 31; 0039) --------------------
+
+
+class OwnershipRow(Base):
+    """One company's holding of another over a run of turns (31.1; 0039): `data` holds the
+    Ownership's other fields (from_turn, to_turn, book_cents, equity_cents, stake_bp,
+    end_reason)."""
+
+    __tablename__ = "group_ownership"
+    __table_args__ = (Index("ix_group_ownership_company", "company_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    owner_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class HoldingRow(Base):
+    """The player's holding company (31.2; 0039): `data` holds operating_id, formed_turn and
+    chair_id."""
+
+    __tablename__ = "group_holding"
+
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class StakeRow(Base):
+    """A stake the group does not control (31.3, 31.5; 0039): `data` holds the Stake's other
+    fields (stake_bp, cost_cents, carrying_cents, from_turn, kind, to_turn, disclosed_bp)."""
+
+    __tablename__ = "group_stake"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    owner_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class MandateRow(Base):
+    """A subsidiary's mandate (31.4; 0039): `data` holds the Mandate's other fields."""
+
+    __tablename__ = "group_mandate"
+
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class GroupPitchRow(Base):
+    """A subsidiary CEO's request to the group for capital (31.4; 0039)."""
+
+    __tablename__ = "group_pitch"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class GroupListingRow(Base):
+    """A company the group listed: a carve-out or a spin-off (31.5; 0039)."""
+
+    __tablename__ = "group_listing"
+
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class PersonalStakeRow(Base):
+    """Shares the founder holds personally in a spun-off company (31.5; 0039)."""
+
+    __tablename__ = "group_personal_stake"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class TransferFlowRow(Base):
+    """One group company supplying another at a transfer price (31.6; 0039)."""
+
+    __tablename__ = "group_transfer_flow"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
