@@ -62,8 +62,18 @@ Play two hard months back to back and watch stress; take a Holiday month. Sell s
 
 16. **Migration** `0037_founder` follows M15a's `0036_m15a` (merged before M24); schema version 37.
 
+17. **e2e flows failing on `main` before M24 (product manager's ruling, 2026-11-08: merge; M15r owns their repair).** After M15a merged, `make e2e` on a clean `origin/main` worktree fails as follows; M24 merges with them recorded here:
+
+    | Flow | On `main` | With M24 | Cause |
+    | --- | --- | --- | --- |
+    | m9 (b), launch in Europe and go live after 6 months | fails 3 of 3 runs ("Localizing until Jul 2010", never "Live since") | fails | already on `main` |
+    | m14b (a), (b), (d) press flows | fail intermittently (a promise stays "open"; timeouts) | fail | already on `main` |
+    | m13 (a), the IPO chain | fails 2 of 4 runs | passed 4 of 4 on the last try | an existing flake |
+    | m4b (c), bankruptcy | passes | failed, then fixed | a timing race in the test: the redirect to Game over can land after the month's date shows; the loop now also ends when the Game over screen shows (no check loosened) |
+
 ## Follow-ups
 
+- M15r: repair the m9 (b) and m14b press e2e flows and the m13 (a) flake (failing on `main` before M24).
 - `persona.sources.down_round` 70 is nine times the ruling's +8 because the year-10 snapshot sits behind a 2-a-month drift; a product-manager look at the drift (or a snapshot that averages the last year) would let the source return toward +8.
 - Visionary's investor heat (+0.05 in rounds) and Reckless's lenders' rates (+1 point): one-line hooks in `finance/fundraising.round_heat` and the loan offer's rate, for a milestone allowed in `finance/` (M16 or after).
 - M16: call `founder.personal.credit(state, person_id, cents, "dividend")` for group dividends, and regenerate goldens after the merge.
