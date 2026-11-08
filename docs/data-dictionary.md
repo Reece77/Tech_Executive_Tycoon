@@ -1627,8 +1627,6 @@ A rival startup's current run of month ends below `rivals.startup.small_staff` p
 | `company_id` | INTEGER FK company | no | Primary key: the startup. |
 | `since_turn` | INTEGER | no | The first month end of the current small run. |
 
-Also new: `save_meta.game_state` values `scenario_done` (a historical scenario judged) and `retired` (the founder retired after an exit); the knowledge actions `public_appearance`, `rival_approach` and `rival_diligence` in reveal records of rival CEOs (addendum 11); the `llm_text.kind` value `rival_story` (addendum 12); `mna_target_file.data` gains `counter_exact` (**hidden**), `rounds` and `strikes` (negotiation, addendum 9) and `mna_deal.data` gains `own_remedy_product_id` (addendum 15).
-
 ## The founder's life (migration `0037_founder`, M24)
 
 The founder's own records (formulas.md 32). `founder_life`, `foundation` and `influence` keep their fields in a JSON `data` column: the frozen record in `backend/tst/sim/founder/models.py` without its key columns. Saves made before M24 have no rows: at the next month end their founder starts at stress 20 and every trait at 20. `save_meta.schema_version` is 37.

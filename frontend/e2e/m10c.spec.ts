@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { answerBlocking, continueMonth } from './helpers.ts';
+import { answerBlocking, continueMonth, pressContinue } from './helpers.ts';
 
 // M10c flows (formulas.md 24): (a) give the CRO authority and see a seller hiring plan opened
 // when capacity limits sales; (b) a CFO proposal blocks Continue and approving it opens the
@@ -50,10 +50,7 @@ test('(b) a CFO proposal blocks Continue and approving it opens the round', asyn
   fixture('cfo', CFO);
   await page.goto(`/game/${CFO}/org`);
   await giveAuthority(page, 'cfo');
-  const date = page.getByTestId('game-date');
-  const before = await date.textContent();
-  await page.getByTestId('continue').click();
-  await expect(date).not.toHaveText(before ?? '');
+  await pressContinue(page); // waits on the month played, not the date (M15r)
   await page.goto(`/game/${CFO}/org`);
   await answerBlocking(page, { proposals: false }); // a critical event's modal would cover it
   await expect(page.getByTestId('continue-blocked')).toContainText('1 proposal');
