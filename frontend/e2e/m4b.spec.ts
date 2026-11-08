@@ -168,6 +168,9 @@ test('(c) run out of cash, see the insolvency badge and bridge, ignore it, reach
       await answerBlocking(page); // a major event blocks Continue too (23.1, M10b)
       continue;
     }
+    // The redirect to /over can land a moment after the last month's date shows (M24 made
+    // the overview heavier): the game-over screen ends the loop as the URL would.
+    if (await page.getByTestId('over-kicker').isVisible()) break;
     const before = await date.textContent();
     await expect(cont).toBeEnabled();
     await cont.click();
