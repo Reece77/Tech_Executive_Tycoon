@@ -10,6 +10,8 @@ accounts:
   - { code: 1510_accumulated_depreciation, name: Accumulated depreciation, type: asset } # M12a: contra-asset, credit balance
   - { code: 1800_goodwill, name: Goodwill, type: asset } # M14 (28.3): price - the target's book equity at closing; no amortization
   - { code: 1810_investment_subsidiaries, name: Investment in subsidiaries, type: asset } # M14 (28.5): a kept brand's book equity at closing, less cash swept since; replaced by its net assets in consolidation
+  - { code: 1820_investment_associates, name: Investments in associates, type: asset } # M16 (31.3): 20-50% stakes at cost, plus the group's share of profit, less its share of dividends
+  - { code: 1830_financial_investments, name: Financial investments, type: asset } # M16 (31.3): stakes under 20% at fair value, marked each December
   # Liabilities
   - { code: 2000_payables, name: Accounts payable, type: liability }
   - { code: 2100_accrued_payroll, name: Accrued payroll, type: liability }
@@ -18,11 +20,15 @@ accounts:
   # Equity
   - { code: 3000_common_equity, name: Common equity, type: equity }
   - { code: 3100_preferred_equity, name: Preferred equity, type: equity }
+  - { code: 3500_non_controlling_interest, name: Non-controlling interest, type: equity } # M16 (31.3): outside holders' share of consolidated subsidiaries' net assets (consolidated statements only)
   # Revenue
   - { code: 4000_revenue_subscriptions, name: Subscription revenue, type: revenue }
   - { code: 4100_revenue_licenses, name: License revenue, type: revenue }
   - { code: 4200_revenue_services, name: Services revenue, type: revenue }
   - { code: 4900_other_income, name: Other income, type: revenue } # M6: event cash gains
+  - { code: 4910_share_of_associates, name: Share of associates' profit, type: revenue } # M16 (31.3): the group's share of associates' profit; below the operating result
+  - { code: 4920_fair_value_gains, name: Fair-value gains and losses, type: revenue } # M16 (31.3): December marks of stakes under 20%; below the operating result
+  - { code: 4930_gain_on_disposal, name: Gain or loss on disposal, type: revenue } # M16 (31.1): a subsidiary leaving the group (failed, sold, spun off): what was received less the investment and its goodwill; below the operating result
   # Expenses
   - { code: 5000_cogs, name: Cost of goods sold, type: expense }
   - { code: 6000_salaries, name: Salaries, type: expense }

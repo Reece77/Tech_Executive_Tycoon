@@ -66,7 +66,7 @@ from tst.sim.finance.captable import (
     share_price,
     unallocated,
 )
-from tst.sim.finance.consolidation import consolidated_lines
+from tst.sim.finance.consolidation import Member, consolidated_lines
 from tst.sim.finance.fundraising import (
     arr_cents,
     base_value,
@@ -87,6 +87,7 @@ from tst.sim.finance.models import (
     TermSheet,
 )
 from tst.sim.finance.options import at_cliff, next_vesting, pool_left_bp
+from tst.sim.group.models import GroupMember
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.ledger import CASH
 from tst.sim.mna.exit import sale_of
@@ -138,17 +139,32 @@ def statements_out(
     lines: Lines,
     period: fs.Period,
     data: LoadedData,
-    brands: Sequence[tuple[int, Lines]] = (),
+    members: Sequence[tuple[GroupMember, Lines]] = (),
 ) -> StatementsOut:
-    """Every closed month, quarter or year from January 2010, oldest first; with kept brands,
-    the group's consolidated statements and a column per brand (M14, 28.5)."""
+    """Every closed month, quarter or year from January 2010, oldest first; with subsidiaries,
+    the group's consolidated statements, each company over the periods it was inside the
+    group, at any depth, and a column per subsidiary (M14, 28.5; M16, 31.1)."""
     types: dict[str, AccountType] = {a.code: a.type for a in data.game_data.accounts}
-    closed = {a.target_id: a.closed_turn for a in state.acquisitions}
     own = lines
-    if brands:
+    if members:
         lines = consolidated_lines(
-            lines, [(brand, closed.get(cid, 0)) for cid, brand in brands], types
+            lines,
+            [
+                Member(
+                    sub,
+                    m.start,
+                    m.end,
+                    m.ownership.from_turn,
+                    m.ownership.book_cents if m.ownership.id else None,
+                    m.ownership.equity_cents if m.ownership.id else None,
+                )
+                for m, sub in members
+            ],
+            types,
         )
+    brands: dict[int, Lines] = {}
+    for m, sub in members:
+        brands.setdefault(m.company_id, sub)
     names = {a.code: a.name for a in data.game_data.accounts}
     last_closed = state.turn - 1
     periods = []
@@ -173,6 +189,8 @@ def statements_out(
                         operating_expenses=_lines(pnl.operating_expenses, names),
                         total_operating_expenses_cents=sum(pnl.operating_expenses.values()),
                         operating_result_cents=pnl.operating_result,
+                        other_gains=_lines(pnl.other_gains, names),
+                        total_other_gains_cents=sum(pnl.other_gains.values()),
                         interest_cents=pnl.interest,
                         tax_cents=pnl.tax,
                         net_result_cents=pnl.net_result,
@@ -196,7 +214,7 @@ def statements_out(
                 )
             )
     columns = []
-    for cid, brand in brands:
+    for cid, brand in brands.items():
         revenue, result, cash = [], [], []
         for x in periods:
             pnl = fs.profit_and_loss(brand, types, x.first_turn, x.last_turn)

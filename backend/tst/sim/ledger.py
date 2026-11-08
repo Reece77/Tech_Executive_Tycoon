@@ -40,6 +40,12 @@ COGS: Final = "5000_cogs"  # hardware: bills of materials, chips and assembly at
 GOODWILL: Final = "1800_goodwill"  # price - the target's book equity at closing (M14, 28.3)
 INVESTMENT_SUBSIDIARIES: Final = "1810_investment_subsidiaries"  # kept brands (M14, 28.5)
 LOBBYING: Final = "6950_lobbying"  # a company's lobbying by region (M24, 32.5)
+DISPOSAL: Final = "4930_gain_on_disposal"  # a subsidiary leaving the group (M16, 31.1)
+ASSOCIATES: Final = "1820_investment_associates"  # 20-50% stakes, equity method (M16, 31.3)
+FINANCIAL_INVESTMENTS: Final = "1830_financial_investments"  # under 20%, fair value (M16, 31.3)
+NCI: Final = "3500_non_controlling_interest"  # outside holders of subsidiaries (M16, 31.3)
+ASSOCIATES_PROFIT: Final = "4910_share_of_associates"  # the group's share (M16, 31.3)
+FAIR_VALUE: Final = "4920_fair_value_gains"  # December marks of financial investments (M16)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -64,6 +70,12 @@ ENGINE_ACCOUNTS: Final = (
     GOODWILL,
     INVESTMENT_SUBSIDIARIES,
     LOBBYING,
+    DISPOSAL,
+    ASSOCIATES,
+    FINANCIAL_INVESTMENTS,
+    NCI,
+    ASSOCIATES_PROFIT,
+    FAIR_VALUE,
 )
 
 

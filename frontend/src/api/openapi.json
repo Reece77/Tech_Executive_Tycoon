@@ -30979,6 +30979,19 @@
             "type": "integer",
             "title": "Operating Result Cents"
           },
+          "other_gains": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLineOut"
+            },
+            "type": "array",
+            "title": "Other Gains",
+            "description": "Below the operating result: disposals of subsidiaries (4930; M16, 31.1)"
+          },
+          "total_other_gains_cents": {
+            "type": "integer",
+            "title": "Total Other Gains Cents",
+            "default": 0
+          },
           "interest_cents": {
             "type": "integer",
             "title": "Interest Cents"

@@ -9,6 +9,7 @@ from operator import attrgetter
 from types import MappingProxyType
 from typing import Any, Final
 
+from tst.sim.errors import GroupDataError
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
 from tst.sim.finance.macro import MacroMonth
@@ -30,6 +31,7 @@ from tst.sim.geo.models import (
     RegionalMarket,
     RegionalSegment,
 )
+from tst.sim.group.models import GroupMember, Ownership
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
@@ -88,6 +90,7 @@ _ID = attrgetter("id")  # sort key of id-sorted collections (C speed for bisect)
 # relationship_map's memo: the tuple is kept with its map, so an id is never reused while cached
 _REL_MAPS: dict[int, tuple[tuple[Relationship, ...], Mapping[tuple[int, int], Relationship]]] = {}
 _REL_MAPS_KEPT: Final = 4  # tunable-exempt: memo size (the turn's old and new tuples)
+_BEFORE_TIME: Final = -1  # tunable-exempt: the root's own window starts before turn 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -272,6 +275,8 @@ class GameState:
     personal_book: tuple[PersonalEntry, ...] = ()
     foundations: tuple[Foundation, ...] = ()
     influence: tuple[Influence, ...] = ()
+    # M16 (31.1): every holding of one company by another, open or ended, sorted by id
+    ownerships: tuple[Ownership, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -634,11 +639,97 @@ class GameState:
         raise LookupError("game state has no player company")
 
 
-def group_companies(state: GameState, parent_id: int) -> tuple[CompanyState, ...]:
-    """A parent and the kept brands it owns (M14, 28.5; ADR-0020): consolidation iterates
-    these. M16 extends this to deeper groups."""
-    parent = state.company(parent_id)
-    return (parent, *(c for c in state.companies if c.parent_id == parent_id and c.alive))
+def ownership_history(state: GameState, company_id: int) -> tuple[Ownership, ...]:
+    """Every holding of `company_id`, oldest first (31.1). A company with a parent but no
+    recorded history (a save or fixture from before M16) is held by its parent from its
+    latest closing, or from turn 0 without one."""
+    found = tuple(o for o in state.ownerships if o.company_id == company_id)
+    if found:
+        return found
+    parent = state.company(company_id).parent_id
+    if parent is None:
+        return ()
+    closed = max(
+        (a.closed_turn for a in state.acquisitions if a.target_id == company_id), default=0
+    )
+    return (Ownership(id=0, company_id=company_id, owner_id=parent, from_turn=closed),)
+
+
+def owner_at(state: GameState, company_id: int, turn: int | None = None) -> Ownership | None:
+    """The holding that makes another company `company_id`'s direct owner: at `turn`, or now
+    (an open holding) when `turn` is None. Two at once is a data error."""
+    held = [
+        o
+        for o in ownership_history(state, company_id)
+        if (o.is_open if turn is None else o.covers(turn))
+    ]
+    if len(held) > 1:
+        raise GroupDataError(f"company {company_id} has {len(held)} owners at turn {turn}")
+    return held[0] if held else None
+
+
+def owner_of(state: GameState, company_id: int, turn: int | None = None) -> int:
+    """The ultimate owner (31.1; Codex review 4 finding 3): follow direct owners to the top,
+    at `turn` or now. A company that owns itself through a chain is a data error."""
+    seen = [company_id]
+    current = company_id
+    while (held := owner_at(state, current, turn)) is not None:
+        current = held.owner_id
+        if current in seen:
+            raise GroupDataError(f"ownership cycle: {' -> '.join(map(str, [*seen, current]))}")
+        seen.append(current)
+    return current
+
+
+def group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:
+    """Every company ever inside `root_id`'s group, at any depth, with the run of turns it was
+    inside (31.1): a company enters when it is bought or when its owner enters, and leaves when
+    its holding ends or its owner leaves. Ordered by depth, then start, then company id, so
+    each owner comes before what it owns. A company bought, sold and bought again appears
+    once per run."""
+    owned_by: dict[int, list[Ownership]] = {}
+    for company in state.companies:
+        for o in ownership_history(state, company.id):
+            owned_by.setdefault(o.owner_id, []).append(o)
+    out: list[GroupMember] = []
+    frontier: list[tuple[int, int, int | None, int]] = [(root_id, _BEFORE_TIME, None, 0)]
+    while frontier:
+        owner, w_start, w_end, depth = frontier.pop(0)
+        for o in sorted(owned_by.get(owner, ()), key=lambda x: (x.from_turn, x.company_id, x.id)):
+            if o.company_id == root_id:
+                raise GroupDataError(f"ownership cycle through company {root_id}")
+            start = max(o.from_turn, w_start)
+            ends = [e for e in (o.to_turn, w_end) if e is not None]
+            end = min(ends) if ends else None
+            if end is not None and end < start:
+                continue
+            out.append(GroupMember(o.company_id, owner, start, end, o, depth + 1))
+            if depth + 1 > len(state.companies):
+                raise GroupDataError(f"ownership cycle below company {root_id}")
+            frontier.append((o.company_id, start, end, depth + 1))
+    return tuple(sorted(out, key=lambda m: (m.depth, m.start, m.company_id)))
+
+
+def group_companies(
+    state: GameState, root_id: int, turn: int | None = None
+) -> tuple[CompanyState, ...]:
+    """The root and every company whose ultimate owner is the root (31.1; Codex review 4
+    findings 2 and 3), at any depth: at `turn` by ownership history (a failed or sold company
+    keeps its earlier periods), or now (open holdings of companies still alive) when `turn`
+    is None. The root first, then by depth and company id."""
+    members = group_members(state, root_id)
+    if turn is None:
+        ids = [m.company_id for m in members if m.end is None]
+        chosen = [state.company(c) for c in ids if state.company(c).alive]
+    else:
+        ids = [
+            m.company_id for m in members if m.start <= turn and (m.end is None or turn <= m.end)
+        ]
+        chosen = [state.company(c) for c in ids]
+    unique: dict[int, CompanyState] = {}
+    for c in chosen:
+        unique.setdefault(c.id, c)
+    return (state.company(root_id), *unique.values())
 
 
 def player_companies(state: GameState) -> tuple[CompanyState, ...]:
@@ -668,6 +759,13 @@ def _upsert[T](items: tuple[T, ...], item: T, key: Callable[[T], Any]) -> tuple[
 
 def with_person(state: GameState, person: Person) -> GameState:
     return replace(state, people=_upsert(state.people, person, lambda p: p.id))
+
+
+def with_ownership(state: GameState, ownership: Ownership) -> GameState:
+    """Insert or replace one holding (31.1); id 0 takes the next free id."""
+    if ownership.id == 0:
+        ownership = replace(ownership, id=max((o.id for o in state.ownerships), default=0) + 1)
+    return replace(state, ownerships=_upsert(state.ownerships, ownership, lambda o: o.id))
 
 
 def with_company(state: GameState, company: CompanyState) -> GameState:

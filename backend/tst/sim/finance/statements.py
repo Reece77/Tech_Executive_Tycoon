@@ -14,7 +14,16 @@ from typing import Literal
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.hiring.phases import monthly_costs
-from tst.sim.ledger import ACCUMULATED_DEPRECIATION, CASH, COMPUTE, DEPRECIATION, AccountCode
+from tst.sim.ledger import (
+    ACCUMULATED_DEPRECIATION,
+    ASSOCIATES_PROFIT,
+    CASH,
+    COMPUTE,
+    DEPRECIATION,
+    DISPOSAL,
+    FAIR_VALUE,
+    AccountCode,
+)
 from tst.sim.money import Cents
 from tst.sim.products.phases import projected_revenue
 from tst.sim.snapshot import runway_months
@@ -30,6 +39,9 @@ COST_OF_REVENUE_PREFIX = "5"  # 5xxx cost of goods sold (unused in v1), plus hos
 COMPUTE_ACCOUNTS = (COMPUTE, DEPRECIATION)
 NON_CASH = (DEPRECIATION, ACCUMULATED_DEPRECIATION)
 INTEREST_PREFIX = "7"
+# M16 (31.1, 31.3): gains and losses below the operating result, in the net result: the
+# group's share of associates' profit, fair-value marks and disposals
+NON_OPERATING: tuple[AccountCode, ...] = (ASSOCIATES_PROFIT, FAIR_VALUE, DISPOSAL)
 TAX_PREFIX = "8"
 
 type Lines = Iterable[tuple[int, AccountCode, Cents]]
@@ -44,6 +56,7 @@ class ProfitAndLoss:
     operating_expenses: Mapping[AccountCode, Cents] = field(default_factory=dict)
     interest: Cents = 0
     tax: Cents = 0
+    other_gains: Mapping[AccountCode, Cents] = field(default_factory=dict)  # M16: positive gain
 
     @property
     def total_revenue(self) -> Cents:
@@ -59,7 +72,7 @@ class ProfitAndLoss:
 
     @property
     def net_result(self) -> Cents:
-        return self.operating_result - self.interest - self.tax
+        return self.operating_result + sum(self.other_gains.values()) - self.interest - self.tax
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,12 +120,15 @@ def profit_and_loss(
     revenue: dict[AccountCode, Cents] = {}
     cost: dict[AccountCode, Cents] = {}
     opex: dict[AccountCode, Cents] = {}
+    other: dict[AccountCode, Cents] = {}
     interest = tax = 0
     for turn, account, amount in lines:
         if not first_turn <= turn <= last_turn:
             continue
         kind = types[account]
-        if kind == "revenue":
+        if account in NON_OPERATING:
+            other[account] = other.get(account, 0) - amount
+        elif kind == "revenue":
             revenue[account] = revenue.get(account, 0) - amount
         elif kind == "expense":
             if account.startswith(INTEREST_PREFIX):
@@ -123,7 +139,7 @@ def profit_and_loss(
                 cost[account] = cost.get(account, 0) + amount
             else:
                 opex[account] = opex.get(account, 0) + amount
-    return ProfitAndLoss(first_turn, last_turn, revenue, cost, opex, interest, tax)
+    return ProfitAndLoss(first_turn, last_turn, revenue, cost, opex, interest, tax, other)
 
 
 def balance_sheet(

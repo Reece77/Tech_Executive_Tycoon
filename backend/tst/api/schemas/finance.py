@@ -33,6 +33,11 @@ class ProfitAndLossOut(BaseModel):
     operating_expenses: list[StatementLineOut]
     total_operating_expenses_cents: int
     operating_result_cents: int
+    other_gains: list[StatementLineOut] = Field(
+        default_factory=list,
+        description="Below the operating result: disposals of subsidiaries (4930; M16, 31.1)",
+    )
+    total_other_gains_cents: int = 0
     interest_cents: int
     tax_cents: int
     net_result_cents: int

@@ -1645,3 +1645,18 @@ Also new: company account `6950_lobbying` (expense; monthly lobbying by region; 
 `production_contract.price_cents` (FLOAT, 0031) becomes `price_millicents` (BIGINT): the unit fee or wafer price in exact integer thousandths of a cent (Codex review 4 finding 8). Existing rows convert once, `ROUND(price_cents x 1000)`. `save_meta.schema_version` becomes 38 (after M24's `0037_founder`).
 
 Also from M15r, without a schema change: a sold company's `board_seat` rows (and their `board_seat_history`) are deleted when the founder founds again; `ceo.end_reason` may be `acquired`; the exit sale's `mna_deal` has `mode` `brand` and an `mna_acquisition` row from the month of the sale.
+
+## The holding company and its subsidiaries (migration `0039_m16`, M16)
+
+### group_ownership
+
+One company's holding of another over a run of turns (formulas.md 31.1; Codex review 4 findings 2 and 3). Group membership, ultimate owners, consolidation and antitrust read it by period: a company is inside its owner's group from `from_turn` (the closing; its lines up to then are opening balances) to `to_turn` (inclusive; a disposal posts then), and inside its owner's owner's group while both hold. A company has at most one open holding. Upgraded saves get an open holding for each kept brand in `company_parent`, from its latest brand closing by that parent; a brand that had already failed is disposed of at the next month end. `save_meta.schema_version` is 39.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER | no | The company held (indexed). |
+| `owner_id` | INTEGER | no | Its direct owner. |
+| `data` | JSON | no | `from_turn`, `to_turn` (null while held), `book_cents` (the owner's 1810 investment at closing: the company's book equity then), `equity_cents` (the company's equity accounts' balance then, debit positive: the investment now is `book_cents` less the change in the company's equity since), `stake_bp` (10,000 = 100%), `end_reason` (`failed`, `sold`, `spun_off`, `integrated`; null while held). |
+
+Also new: company account `4930_gain_on_disposal` (revenue type, shown below the operating result as "other gains" and included in the net result): a holding's end posts the owner's 1810 investment and the goodwill it booked out, any cash received in, and the difference here (a debit is a loss). `company_parent` stays the current direct owner; `group_ownership` is the history.

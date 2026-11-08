@@ -10064,6 +10064,16 @@ export interface components {
             total_operating_expenses_cents: number;
             /** Operating Result Cents */
             operating_result_cents: number;
+            /**
+             * Other Gains
+             * @description Below the operating result: disposals of subsidiaries (4930; M16, 31.1)
+             */
+            other_gains?: components["schemas"]["StatementLineOut"][];
+            /**
+             * Total Other Gains Cents
+             * @default 0
+             */
+            total_other_gains_cents?: number;
             /** Interest Cents */
             interest_cents: number;
             /** Tax Cents */

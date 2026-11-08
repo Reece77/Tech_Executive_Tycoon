@@ -30,6 +30,7 @@ from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
 from tst.sim.founder.phase import founder_month, next_budget
 from tst.sim.geo.cities import settle_home_cities
+from tst.sim.group.ownership import disposals
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -307,7 +308,9 @@ def financing(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=state).post(*integration_entries).log(*integration_logs)
     state, insolvent = insolvency.insolvency(ctx.state, ctx.balances, ctx.balance, ctx.data)
     state, failed = record_failures(state, insolvent)  # rivals that closed (M5, 15.1)
-    ctx = replace(ctx, rival_moves=ctx.rival_moves + failed)
+    # M16 (31.1): a held company that failed leaves its owner's group with a disposal.
+    state, disposal_entries, _ = disposals(state, ctx.balances, ctx.data)
+    ctx = replace(ctx, rival_moves=ctx.rival_moves + failed).post(*disposal_entries)
     return replace(ctx, state=state).log(*answered, *sheets, *lapsed, *bridges, *insolvent)
 
 
