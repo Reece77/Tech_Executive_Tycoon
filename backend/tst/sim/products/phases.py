@@ -20,6 +20,7 @@ from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
 from tst.sim.data_models import SCORE_MAX, Balance, GameData, ProductsBalance
 from tst.sim.facilities import cloud, compute
 from tst.sim.finance import macro
+from tst.sim.founder.effects import consumer_brand
 from tst.sim.geo.markets import ReachContext, reach_context
 from tst.sim.geo.models import RegionalSegment
 from tst.sim.hardware import cm_market, production
@@ -50,6 +51,8 @@ from tst.sim.state import (
     with_segments,
     with_unit,
 )
+
+CONSUMER = "consumer"  # M24 (32.3): the consumer segment key (categories.yaml)
 
 CUSTOMER_ROUNDING = 0.5  # tunable-exempt: customers are shown rounded; below this is "none"
 PRODUCT_LINK: LinkKind = "product"
@@ -795,6 +798,9 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
             target = min(float(SCORE_MAX), target + team.tech.brand_points)
         if bonus := brand_bonus(state, product.company_id, balance):  # Most innovative (30.4)
             target = min(float(SCORE_MAX), target + bonus)
+        climate = consumer_brand(state, product.company_id, balance)  # M24 (32.3)
+        if climate and any(s.segment == CONSUMER for s in state.segments_of(product.id)):
+            target = min(float(SCORE_MAX), target + climate)
         state = with_product(state, replace(product, brand=f.next_brand(product.brand, target, pb)))
     year = turn_to_ym(state.turn)[0]
     for market in state.markets:  # base growth plus era boosts (M11, 21.4)

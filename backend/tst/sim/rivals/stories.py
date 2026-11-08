@@ -115,6 +115,16 @@ def candidates(
     return found[: balance.story.max_per_month]
 
 
+def _persona_line(state: GameState, kind: str, facts: dict[str, str], balance: Balance) -> str:
+    """M24 (32.4): a feud reply mentions the founder's public persona once they have one."""
+    from tst.sim.founder.persona import UNKNOWN_WORDS, public_words
+
+    words = public_words(state, state.player.id, balance)
+    if kind != "reply" or words == UNKNOWN_WORDS:
+        return ""
+    return f" The trade press calls {facts['founder']} {words}."
+
+
 def month_stories(start: GameState | None, state: GameState, balance: Balance) -> list[LogItem]:
     """Phase 11, after the rankings: this month's pieces as inbox items linked to the rival."""
     out = []
@@ -129,7 +139,7 @@ def month_stories(start: GameState | None, state: GameState, balance: Balance) -
                 link_kind="rival",
                 link_id=rival_id,
                 title=TITLES[kind].format(**facts),
-                text=voice[kind].format(**facts),
+                text=voice[kind].format(**facts) + _persona_line(state, kind, facts, balance),
                 story=kind,
             )
         )

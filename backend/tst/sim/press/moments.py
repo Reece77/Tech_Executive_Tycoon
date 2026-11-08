@@ -84,10 +84,13 @@ def adjust_credibility(
 
 
 def drift_credibility(state: GameState, balance: Balance) -> GameState:
-    """1 a month toward 50 (29.3); not a cause the panel lists."""
+    """1 a month toward 50 (29.3), or toward 45 for a Reckless founder (M24, 32.4); not a
+    cause the panel lists."""
+    from tst.sim.founder.effects import cred_target
+
     pb = balance.press
     for record in state.credibility:
-        gap = pb.cred_start - record.value
+        gap = cred_target(state, record.company_id, balance) - record.value
         if gap:
             step = max(-pb.cred_drift, min(pb.cred_drift, gap))
             state = with_credibility(state, replace(record, value=record.value + step))

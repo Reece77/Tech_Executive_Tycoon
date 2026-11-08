@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 37
+SCHEMA_VERSION = 38
 
 
 class Base(DeclarativeBase):
@@ -1305,7 +1305,7 @@ class ProductionContractRow(Base):
     kind: Mapped[str] = mapped_column(String(16), nullable=False)
     supplier: Mapped[str] = mapped_column(String(32), nullable=False)
     units: Mapped[int] = mapped_column(Integer, nullable=False)
-    # thousandths of a cent, exact (0037_m15r; was a FLOAT price_cents)
+    # thousandths of a cent, exact (0038_m15r; was a FLOAT price_cents)
     price_millicents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     signed_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     end_turn: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -1778,3 +1778,46 @@ class StartupSmallRow(Base):
 
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
     since_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class FounderLifeRow(Base):
+    """A founder's stress, burnout and persona (M24, 32.1 and 32.4; migration 0037)."""
+
+    __tablename__ = "founder_life"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class PersonalEntryRow(Base):
+    """One entry in a founder's own book (32.2): never in `ledger_entry`, which holds only
+    companies' books. `lines` is a list of [account, cents] pairs that sums to zero."""
+
+    __tablename__ = "personal_entry"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    person_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    memo: Mapped[str] = mapped_column(String(200), nullable=False)
+    source: Mapped[str] = mapped_column(String(16), nullable=False)
+    lines: Mapped[list[Any]] = mapped_column(JSON, nullable=False)
+
+
+class FoundationRow(Base):
+    """A founder's foundation (32.3)."""
+
+    __tablename__ = "foundation"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class InfluenceRow(Base):
+    """A company's influence in one region (32.5). `data` holds the hidden scandal risk too:
+    the API reads it only through the exposure band."""
+
+    __tablename__ = "influence"
+
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    region: Mapped[str] = mapped_column(String(40), primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

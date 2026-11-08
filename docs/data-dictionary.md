@@ -1375,7 +1375,7 @@ A contract-manufacturing contract (kind `assembly`, 26.2) or a wafer contract (k
 | `kind` | VARCHAR(16) | no | `assembly` or `wafer`. |
 | `supplier` | VARCHAR(32) | no | `hardware.contract.manufacturers` or `chips.contract.foundries` key. |
 | `units` | INTEGER | no | A month: units assembled, or wafer starts. |
-| `price_millicents` | BIGINT | no | A unit's fee (base x manufacturer x city), or a wafer's price at the foundry_wafer index locked at signing, in exact integer thousandths of a cent (0037_m15r; was FLOAT `price_cents` in 0031). Rounded to cents when a month posts. |
+| `price_millicents` | BIGINT | no | A unit's fee (base x manufacturer x city), or a wafer's price at the foundry_wafer index locked at signing, in exact integer thousandths of a cent (0038_m15r; was FLOAT `price_cents` in 0031). Rounded to cents when a month posts. |
 | `signed_turn` | INTEGER | no | The month it was signed; a contract signed before a shortage began keeps full allocation. |
 | `end_turn` | INTEGER | no | The last month it covers. |
 | `city` | VARCHAR(32) | yes | cities.yaml key where it is made (assembly). |
@@ -1627,8 +1627,21 @@ A rival startup's current run of month ends below `rivals.startup.small_staff` p
 | `company_id` | INTEGER FK company | no | Primary key: the startup. |
 | `since_turn` | INTEGER | no | The first month end of the current small run. |
 
-## Exact contract prices (migration `0037_m15r`, M15r)
+## The founder's life (migration `0037_founder`, M24)
 
-`production_contract.price_cents` (FLOAT, 0031) becomes `price_millicents` (BIGINT): the unit fee or wafer price in exact integer thousandths of a cent (Codex review 4 finding 8). Existing rows convert once, `ROUND(price_cents x 1000)`. `save_meta.schema_version` becomes 37 (after M15a's `0036_m15a`).
+The founder's own records (formulas.md 32). `founder_life`, `foundation` and `influence` keep their fields in a JSON `data` column: the frozen record in `backend/tst/sim/founder/models.py` without its key columns. Saves made before M24 have no rows: at the next month end their founder starts at stress 20 and every trait at 20. `save_meta.schema_version` is 37.
+
+| Table | Key | Columns | Notes |
+| --- | --- | --- | --- |
+| `founder_life` | `person_id` | `data`: `stress` (0–100), `visionary`, `ruthless`, `beloved`, `reckless` (0–100 each), `burnout`, `burnout_turn`, `recovered_turn`, `burnouts`, `budget` (this month's energy budget), `rest_turn` (a month off taken at a burnout), `causes` ([turn, change, words] of stress), `trait_causes` ([turn, trait, change, words]), `holiday_months` | Public (32.8). Kept across a serial founder's companies. |
+| `personal_entry` | `id` (autoincrement) | `turn`, `person_id`, `memo`, `source` (`secondary`, `dividend`, `exit`, `salary`, `gift`, `grant`), `lines` (JSON list of [account, cents], summing to 0) | The founder's own double-entry book (32.2, ADR-0003), apart from `ledger_entry`: only the `personal_accounts` of `accounts.yaml` (9100 personal cash, 9200 foundation endowment, 9300 personal spending, 9400 personal income), which no company entry may use. Append-only. |
+| `foundation` | `person_id` | `data`: `name`, `cause` (`education`, `climate`, `health`, `local`), `created_turn`, `city` (local: a `cities.yaml` key), `region` (the founder's home region when created), `grants_cents` (lifetime), `last_grant_cents`, `last_grant_turn`, `gifts_cents` | 32.3. The endowment is the founder's 9200 balance. |
+| `influence` | `company_id`, `region` | `data`: `value` (0–100), `spend_cents` (monthly lobbying), `risk` (**hidden**: the scandal risk), `scandal_turns`, `spent_cents`, `started_turn`, `second_story` (**hidden**: fighting the last scandal brings a second story) | 32.5. The API shows the risk only as an exposure word (low, medium, high) and never `second_story`. |
+
+Also new: company account `6950_lobbying` (expense; monthly lobbying by region; scandal fines post to `6900_general_admin`); `decision_log` payloads carry `holiday` in a turn's `Decisions` (a Holiday month lowers stress); action kinds `sell_founder_shares`, `create_foundation`, `give_to_foundation` and `set_lobbying`; event templates `founder_burnout`, `founder_scandal` and `founder_first_grants` (trigger `founder_life`, effect `founder_step`).
+
+## Exact contract prices (migration `0038_m15r`, M15r)
+
+`production_contract.price_cents` (FLOAT, 0031) becomes `price_millicents` (BIGINT): the unit fee or wafer price in exact integer thousandths of a cent (Codex review 4 finding 8). Existing rows convert once, `ROUND(price_cents x 1000)`. `save_meta.schema_version` becomes 38 (after M24's `0037_founder`).
 
 Also from M15r, without a schema change: a sold company's `board_seat` rows (and their `board_seat_history`) are deleted when the founder founds again; `ceo.end_reason` may be `acquired`; the exit sale's `mna_deal` has `mode` `brand` and an `mna_acquisition` row from the month of the sale.

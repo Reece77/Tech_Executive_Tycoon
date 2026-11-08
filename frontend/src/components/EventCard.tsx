@@ -93,6 +93,15 @@ export function EventCard({ saveId, event }: { saveId: string; event: GameEventO
         </span>
       )}
       {event.category === 'press' && <PressNote saveId={saveId} event={event} />}
+      {event.template_id === 'founder_burnout' && (
+        <span className="tst-muted" style={{ fontSize: 12 }} data-testid="burnout-note">
+          A takes this month off; B: open the{' '}
+          <Link to={`/game/${saveId}/org`} data-testid="burnout-exec-link">
+            Executive team panel
+          </Link>{' '}
+          and hand more to your executives; C pushes on.
+        </span>
+      )}
       {event.follow_up_note && (
         <span className="tst-muted" style={{ fontSize: 13 }}>
           {event.follow_up_note}

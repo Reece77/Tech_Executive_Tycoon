@@ -26,6 +26,7 @@ from tst.sim.events.formulas import candidate_weight, cash_base_cents, severity_
 from tst.sim.events.models import EventRequest, GameEvent, QueuedEvent, Storyline, Tone
 from tst.sim.events.render import loan_names, placeholder_names, render
 from tst.sim.events.triggers import TriggerHit, crisis_hits, triggers
+from tst.sim.founder.persona import public_words
 from tst.sim.markets_public.describe import public_names
 from tst.sim.money import Cents
 from tst.sim.org.rules import org_view
@@ -432,6 +433,7 @@ def direct(
         ) | loan_names(state, data, targets.loan_id)
         if template.trigger == PRESS_TRIGGER:  # M14b (29.1)
             names |= press_names(state, data, cid, next_month)
+        names["persona"] = public_words(state, cid, balance)  # M24 (32.4)
         if template.trigger == PUBLIC_TRIGGER:  # M13 (25)
             names |= public_names(state, data, balance, cid)
         storyline_id = None

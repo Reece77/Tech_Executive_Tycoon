@@ -17,6 +17,7 @@ from tst.sim.events.data import EFFECT_TARGETS, MODIFIER_STATS, EventTemplate
 from tst.sim.events.formulas import effect_cap
 from tst.sim.events.models import GameEvent
 from tst.sim.events.render import full_name
+from tst.sim.founder.persona import public_words
 from tst.sim.people.reveal import revealed_range
 from tst.sim.state import GameState
 
@@ -187,6 +188,8 @@ def build_prompt(
             "runway_months": kpis.runway_months,
             "monthly_revenue_dollars": kpis.mrr_cents // CENTS_PER_DOLLAR,
             "headcount": kpis.headcount,
+            # M24 (32.4): the founder's public persona, in words (shown on their profile)
+            "founder_persona": public_words(state, cid, balance),
         },
         "category": event.category,
         "severity": event.severity,

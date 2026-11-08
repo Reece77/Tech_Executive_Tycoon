@@ -108,6 +108,10 @@ def add_feud(
     if not _outside_group(state, company_id, rival_id):
         return state
     feud = feud_of(state, company_id, rival_id) or Feud(company_id, rival_id)
+    if delta > 0:  # M24 (32.4): a Ruthless founder's feuds build faster
+        from tst.sim.founder.effects import feud_factor
+
+        delta *= feud_factor(state, company_id, balance)
     score = max(0.0, min(float(SCALE), feud.score + delta))
     causes = feud.causes
     if delta > 0:

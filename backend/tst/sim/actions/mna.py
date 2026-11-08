@@ -46,7 +46,15 @@ def apply_mna(
             return Outcome(out.state, out.entries, out.logs)
         case BidForCompany():
             out = deals.make_offer(state, action, company, rng, balances, balance, data, spend)
-            return Outcome(out.state, out.entries, out.logs)
+            new = out.state
+            founder = new.founder_of(company)
+            if action.hostile and founder is not None and new.company(company).is_player:
+                from tst.sim.founder.persona import note  # M24 (32.4)
+
+                new = note(new, founder.id, "hostile_bid", balance)
+                if out.result == "tender_failed":
+                    new = note(new, founder.id, "failed_tender", balance)
+            return Outcome(new, out.entries, out.logs)
         case SetDealMode():
             return Outcome(deals.set_deal_mode(state, action, company, balance))
         case AbandonDeal():

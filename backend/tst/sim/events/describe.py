@@ -121,9 +121,22 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return modifier_text(state, effect.stat, effect.target, v, effect.months)
         case "press_step":  # M14b (29.1)
             return PRESS_STEP_TEXT.get(effect.stat, effect.stat)
+        case "founder_step":  # M24 (32.1, 32.5)
+            return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
             return PUBLIC_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
     return effect.type.replace("_", " ")
+
+
+# M24 (32.1, 32.5): what each founder step does, in words (never the scandal risk).
+FOUNDER_STEP_TEXT: dict[str, str] = {
+    "rest": "you take this month off: no energy this month, and stress falls",
+    "delegate": "you hand more to your executives (open the Executive team panel)",
+    "push_on": "you push on: stress rises and the press calls it reckless",
+    "apologize": "you apologize: credibility falls further and stress rises",
+    "drop_lobbyists": "you drop the lobbyists: lobbying in that region stops",
+    "fight": "you fight the story: it may run again",
+}
 
 
 # M13 (25): what each IPO or public-company step does, in words (never a hidden number).

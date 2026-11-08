@@ -218,6 +218,11 @@ def review_month(
         if state.turn + 1 < deal.review_end_turn:  # ends at the end of its last month
             continue
         p = mf.block_probability(deal.combined_share, year, balance.antitrust)
+        if deal.market:  # M24 (32.4-32.5): influence there, and a Ruthless founder
+            from tst.sim.founder.influence import antitrust_factor
+
+            region = deal.market.rsplit("/", 1)[-1]
+            p = min(1.0, p * antitrust_factor(state, deal.acquirer_id, region, balance))
         name = state.company(deal.target_id).name
         if deal.blocked_draw is not None and deal.blocked_draw < p:
             deal = replace(deal, status="refused", resolved_turn=state.turn)

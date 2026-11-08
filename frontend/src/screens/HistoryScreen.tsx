@@ -1,3 +1,4 @@
+import { LegacyPanel } from '../components/FounderPanels';
 import { Button, NativeSelect, SegmentedControl, TextInput } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
@@ -608,6 +609,7 @@ function FameTab({ saveId, companyId }: { saveId: string; companyId?: number }) 
   );
   return (
     <>
+      <LegacyPanel legacy={f.legacy} />
       <div
         style={{
           display: 'grid',

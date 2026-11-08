@@ -112,7 +112,10 @@ def get_hall_of_fame(
         company = _company(state, company_id)
         venture = next((v for v in state.ventures if v.company_id == company), None)
         turn = venture.ended_turn if venture is not None else state.turn
-        return history_views.hall_of_fame(session, company, turn, data)
+        out = history_views.hall_of_fame(session, company, turn, data)
+    from tst.api.founder_views import legacy_out
+
+    return out.model_copy(update={"legacy": legacy_out(state, data)})  # M24 (32.6)
 
 
 @router.get(

@@ -890,7 +890,10 @@ def game_over_out(
     sold = meta.game_state in ("exit", "retired")  # M14 (28.6), M15b addendum 10
     sale = sale_of(state, company.id) if sold else None
     per_share = sale.price_cents // fd if sale is not None and fd else 0
+    from tst.api.founder_views import legacy_out
+
     return GameOverOut(
+        legacy=legacy_out(state, data),  # M24 (32.6)
         game_state=meta.game_state,
         company_name=company.name,
         ended_turn=ended,

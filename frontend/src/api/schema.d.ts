@@ -3248,6 +3248,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/founder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Founder
+         * @description Stress, persona, the personal account, the foundation, influence and legacy (32.8).
+         */
+        get: operations["getFounder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/sell-shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sell Shares
+         * @description Sell some of your own shares into the float once listed (32.2).
+         */
+        post: operations["sellFounderShares"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/foundation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Foundation
+         * @description Create the foundation for a cause (32.3).
+         */
+        post: operations["createFoundation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/gifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Give
+         * @description Move personal cash to the foundation's endowment (32.3).
+         */
+        post: operations["giveToFoundation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/lobbying": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Lobbying
+         * @description Set a region's monthly lobbying spend; 0 stops it (32.5).
+         */
+        post: operations["setLobbying"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -4279,20 +4379,6 @@ export interface components {
              */
             first_mover: boolean;
         };
-        /** CauseOut */
-        CauseOut: {
-            /** Turn */
-            turn: number;
-            /**
-             * Label
-             * @description Mon YYYY
-             */
-            label: string;
-            /** Change */
-            change: number;
-            /** Cause */
-            cause: string;
-        };
         /** CeoAuthorityIn */
         CeoAuthorityIn: {
             /** Scopes */
@@ -5019,7 +5105,7 @@ export interface components {
              * History
              * @description The last changes and their causes, newest last
              */
-            history: components["schemas"]["CauseOut"][];
+            history: components["schemas"]["tst__api__schemas__press__CauseOut"][];
         };
         /** CrossDivisionOut */
         CrossDivisionOut: {
@@ -5814,7 +5900,7 @@ export interface components {
             /** Rivalry */
             rivalry: boolean;
             /** Causes */
-            causes: components["schemas"]["CauseOut"][];
+            causes: components["schemas"]["tst__api__schemas__press__CauseOut"][];
         };
         /** FinanceActionOut */
         FinanceActionOut: {
@@ -5975,6 +6061,71 @@ export interface components {
              */
             keep_cents?: number;
         };
+        /** FoundationFormOut */
+        FoundationFormOut: {
+            /** Can Create */
+            can_create: boolean;
+            /** Min Cents */
+            min_cents: number;
+            /** Energy */
+            energy: number;
+            /** Causes */
+            causes: string[];
+        };
+        /** FoundationIn */
+        FoundationIn: {
+            /** Cause */
+            cause: string;
+            /**
+             * Name
+             * @default
+             */
+            name?: string;
+            /** City */
+            city?: string | null;
+        };
+        /** FoundationOut */
+        FoundationOut: {
+            /** Name */
+            name: string;
+            /** Cause */
+            cause: string;
+            /** Cause Label */
+            cause_label: string;
+            /** City */
+            city: string | null;
+            /** Region */
+            region: string | null;
+            /** Created Label */
+            created_label: string;
+            /** Endowment Cents */
+            endowment_cents: number;
+            /** Gifts Cents */
+            gifts_cents: number;
+            /**
+             * Grants Cents
+             * @description Lifetime grants
+             */
+            grants_cents: number;
+            /** Last Grant Cents */
+            last_grant_cents: number;
+            /** Last Grant Label */
+            last_grant_label: string | null;
+            /**
+             * Effect
+             * @description The running effect of the last grants, in words
+             */
+            effect: string | null;
+            /** Effect Until Label */
+            effect_until_label: string | null;
+        };
+        /** FounderActionOut */
+        FounderActionOut: {
+            founder: components["schemas"]["FounderOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
         /**
          * FounderIn
          * @description Founder build (docs/formulas.md section 5). Omitted fields use the defaults.
@@ -6009,6 +6160,18 @@ export interface components {
             interests?: string[] | null;
             /** Work Style */
             work_style?: string | null;
+        };
+        /** FounderOut */
+        FounderOut: {
+            /** Founder Name */
+            founder_name: string;
+            stress: components["schemas"]["StressOut"];
+            persona: components["schemas"]["PersonaOut"];
+            personal: components["schemas"]["PersonalOut"];
+            foundation: components["schemas"]["FoundationOut"] | null;
+            foundation_form: components["schemas"]["FoundationFormOut"];
+            government: components["schemas"]["GovernmentOut"];
+            legacy: components["schemas"]["LegacyOut"];
         };
         /** FounderPreviewOut */
         FounderPreviewOut: {
@@ -6153,6 +6316,8 @@ export interface components {
              * @description The founder's stake
              */
             exit_proceeds_cents?: number | null;
+            /** @description The legacy score (M24, 32.6) */
+            legacy?: components["schemas"]["LegacyOut"] | null;
             /** Ended Label */
             ended_label: string | null;
             /** Founded Label */
@@ -6244,6 +6409,11 @@ export interface components {
              */
             relocation_cents: number;
         };
+        /** GiftIn */
+        GiftIn: {
+            /** Amount Cents */
+            amount_cents: number;
+        };
         /**
          * GlossaryOut
          * @description Definitions of every KPI and column (backend/data/glossary.yaml; M7b).
@@ -6253,6 +6423,25 @@ export interface components {
             terms: {
                 [key: string]: string;
             };
+        };
+        /**
+         * GovernmentOut
+         * @description The Government affairs panel (32.5).
+         */
+        GovernmentOut: {
+            /** Regions */
+            regions: components["schemas"]["InfluenceOut"][];
+            /** Scandals */
+            scandals: components["schemas"]["ScandalOut"][];
+            /** Energy */
+            energy: number;
+            /** Max Monthly Cents */
+            max_monthly_cents: number;
+            /**
+             * Region Options
+             * @description Every region
+             */
+            region_options: components["schemas"]["tst__api__schemas__founder__RegionOptionOut"][];
         };
         /** GrantOut */
         GrantOut: {
@@ -6387,6 +6576,8 @@ export interface components {
             best_product_quality: components["schemas"]["ProductRecordOut"] | null;
             /** Rivals Outlasted */
             rivals_outlasted: components["schemas"]["RivalOutlastedOut"][];
+            /** @description The founder's legacy score with its parts (M24, 32.6) */
+            legacy?: components["schemas"]["LegacyOut"] | null;
         };
         /** HardwareActionOut */
         HardwareActionOut: {
@@ -6848,6 +7039,35 @@ export interface components {
             /** Allocation */
             allocation: number;
         };
+        /** InfluenceOut */
+        InfluenceOut: {
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /**
+             * Influence
+             * @description 0-100
+             */
+            influence: number;
+            /** Monthly Cents */
+            monthly_cents: number;
+            /** Spent Cents */
+            spent_cents: number;
+            /**
+             * Exposure
+             * @description The scandal exposure as a word only (32.5)
+             * @enum {string}
+             */
+            exposure: "low" | "medium" | "high";
+            /**
+             * Antitrust Cut Pct
+             * @description Antitrust block chance cut by influence, %
+             */
+            antitrust_cut_pct: number;
+            /** Scandals */
+            scandals: number;
+        };
         /** InfrastructureActionOut */
         InfrastructureActionOut: {
             infrastructure: components["schemas"]["InfrastructureOut"];
@@ -7239,6 +7459,24 @@ export interface components {
             /** Months */
             months: number;
         };
+        /**
+         * LegacyOut
+         * @description The legacy score with its parts (32.6), across every company the founder ran.
+         */
+        LegacyOut: {
+            /** Total */
+            total: number;
+            /** Best Score */
+            best_score: number;
+            /** Best Company */
+            best_company: string | null;
+            /** Giving */
+            giving: number;
+            /** Persona */
+            persona: number;
+            /** Grants Cents */
+            grants_cents: number;
+        };
         /** LicenseIn */
         LicenseIn: {
             /**
@@ -7413,6 +7651,13 @@ export interface components {
             debt_cents: number;
             /** Repay Energy */
             repay_energy: number;
+        };
+        /** LobbyingIn */
+        LobbyingIn: {
+            /** Region */
+            region: string;
+            /** Monthly Dollars */
+            monthly_dollars: number;
         };
         /** MacroIndicatorOut */
         MacroIndicatorOut: {
@@ -8311,6 +8556,8 @@ export interface components {
         OverviewOut: {
             /** @description The company score (M15b, 30.1) */
             score?: components["schemas"]["ScoreOut"] | null;
+            /** @description The founder's stress (M24, 32.1) */
+            stress?: components["schemas"]["StressOut"] | null;
             /**
              * Deals Due
              * @description Your deals under review, closing or blocked (M15b top bar)
@@ -8813,6 +9060,74 @@ export interface components {
              * @default 5
              */
             leadership_fit_high?: number;
+        };
+        /** PersonaOut */
+        PersonaOut: {
+            /** Traits */
+            traits: components["schemas"]["TraitOut"][];
+            /** Top */
+            top: string;
+            /** Effect At */
+            effect_at: number;
+            /** Causes */
+            causes: components["schemas"]["TraitCauseOut"][];
+        };
+        /** PersonalEntryOut */
+        PersonalEntryOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Memo */
+            memo: string;
+            /** Source */
+            source: string;
+            /**
+             * Amount Cents
+             * @description The change in personal cash (gifts are negative)
+             */
+            amount_cents: number;
+        };
+        /**
+         * PersonalOut
+         * @description The founder's own book (32.2): never a company's money.
+         */
+        PersonalOut: {
+            /** Cash Cents */
+            cash_cents: number;
+            /** Endowment Cents */
+            endowment_cents: number;
+            /**
+             * Income
+             * @description Lifetime income by source
+             */
+            income: {
+                [key: string]: number;
+            };
+            /** Gifts Cents */
+            gifts_cents: number;
+            /** Grants Cents */
+            grants_cents: number;
+            /**
+             * Stake Shares
+             * @description Shares the founder holds in the current company
+             */
+            stake_shares: number;
+            /**
+             * Stake Value Cents
+             * @description Shares x the share price once listed
+             */
+            stake_value_cents: number | null;
+            /**
+             * Can Sell
+             * @description Listed: the founder may sell shares into the float
+             */
+            can_sell: boolean;
+            /**
+             * Entries
+             * @description The last entries, newest first
+             */
+            entries: components["schemas"]["PersonalEntryOut"][];
         };
         /**
          * PitchOut
@@ -10858,6 +11173,17 @@ export interface components {
             pitches?: components["schemas"]["PitchOut"][];
             pitch_policy?: components["schemas"]["PitchPolicyOut"] | null;
         };
+        /** ScandalOut */
+        ScandalOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+        };
         /** ScenarioOut */
         ScenarioOut: {
             /** Id */
@@ -11055,6 +11381,11 @@ export interface components {
         SegmentIn: {
             /** Segment */
             segment: string;
+        };
+        /** SellSharesIn */
+        SellSharesIn: {
+            /** Shares */
+            shares: number;
         };
         /**
          * SeriesGuideOut
@@ -11418,6 +11749,35 @@ export interface components {
             status: string;
             /** Started Label */
             started_label: string;
+        };
+        /**
+         * StressOut
+         * @description The top bar's stress meter (32.1).
+         */
+        StressOut: {
+            /**
+             * Stress
+             * @description 0-100
+             */
+            stress: number;
+            /** Burnout */
+            burnout: boolean;
+            /** Burnout At */
+            burnout_at: number;
+            /** Recover Below */
+            recover_below: number;
+            /**
+             * Energy Cut Pct
+             * @description The monthly energy lost while burnt out, %
+             */
+            energy_cut_pct: number;
+            /** Burnouts */
+            burnouts: number;
+            /**
+             * Causes
+             * @description The last months' changes, newest last
+             */
+            causes: components["schemas"]["tst__api__schemas__founder_parts__CauseOut"][];
         };
         /** StructureGuideOut */
         StructureGuideOut: {
@@ -11840,6 +12200,35 @@ export interface components {
             /** Products */
             products: components["schemas"]["tst__api__schemas__history__NamedOut"][];
         };
+        /** TraitCauseOut */
+        TraitCauseOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Trait */
+            trait: string;
+            /** Change */
+            change: number;
+            /** Cause */
+            cause: string;
+        };
+        /** TraitOut */
+        TraitOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Value */
+            value: number;
+            /**
+             * Strong
+             * @description At the effect line or above: its effects apply
+             */
+            strong: boolean;
+            /** Effects */
+            effects: string;
+        };
         /** UISettings */
         UISettings: {
             /** Tables */
@@ -11975,6 +12364,24 @@ export interface components {
             /** Is Home */
             is_home: boolean;
         };
+        /** RegionOptionOut */
+        tst__api__schemas__founder__RegionOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** CauseOut */
+        tst__api__schemas__founder_parts__CauseOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Change */
+            change: number;
+            /** Cause */
+            cause: string;
+        };
         /** OptionOut */
         tst__api__schemas__hardware__OptionOut: {
             /** Key */
@@ -11988,6 +12395,20 @@ export interface components {
             id: number;
             /** Name */
             name: string;
+        };
+        /** CauseOut */
+        tst__api__schemas__press__CauseOut: {
+            /** Turn */
+            turn: number;
+            /**
+             * Label
+             * @description Mon YYYY
+             */
+            label: string;
+            /** Change */
+            change: number;
+            /** Cause */
+            cause: string;
         };
         /** OptionOut */
         tst__api__schemas__press__OptionOut: {
@@ -22798,6 +23219,312 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExitChoiceOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getFounder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FounderOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sellFounderShares: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SellSharesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FounderActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    createFoundation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FoundationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FounderActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    giveToFoundation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GiftIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FounderActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setLobbying: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LobbyingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FounderActionOut"];
                 };
             };
             /** @description Bad Request */

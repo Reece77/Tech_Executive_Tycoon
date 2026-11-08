@@ -28,6 +28,7 @@ from tst.sim.finance.board import average_confidence, board_month, vacate_depart
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
+from tst.sim.founder.phase import founder_month, next_budget
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
@@ -502,6 +503,17 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
     # M14b (29): feuds, promises and credibility; the month's press moments are queued.
     state, press_logs = press_month(state, ctx.rng, ctx.balance, ctx.data, ctx.rival_moves)
     ctx = ctx.log(*press_logs)
+    # M24 (32): stress, persona, the foundation's grants, lobbying and scandals.
+    state, founder_entries, founder_logs = founder_month(
+        state,
+        ctx.start or ctx.state,
+        ctx.rng,
+        ctx.balance,
+        ctx.data,
+        holiday=ctx.decisions.holiday,
+        cash_cents=account_balance(ctx.balances, state.player.id, CASH),
+    )
+    ctx = ctx.post(*founder_entries).log(*founder_logs)
     player = state.player.id
     state, requests = direct(
         state,
@@ -619,6 +631,7 @@ def advance_turn(
     if founder is not None and bonus:  # events' energy_delta, next month (16.3)
         ps = final.person_state(founder.id)
         final = with_person_state(final, replace(ps, energy=max(0, (ps.energy or 0) + bonus)))
+    final = next_budget(final, balance)  # M24 (32.1): the burnout cut; the month's budget
     return TurnResult(
         new_state=replace(final, turn=state.turn + 1),
         ledger_entries=ctx.entries,

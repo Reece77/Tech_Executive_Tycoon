@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.founder_parts import LegacyOut
 from tst.api.schemas.people import EnergyOut
 
 
@@ -428,6 +429,7 @@ class GameOverOut(BaseModel):
     exit_buyer: str | None = Field(default=None, description="Exit (M14, 28.6): who bought it")
     exit_price_cents: int | None = None
     exit_proceeds_cents: int | None = Field(default=None, description="The founder's stake")
+    legacy: LegacyOut | None = Field(default=None, description="The legacy score (M24, 32.6)")
     ended_label: str | None
     founded_label: str
     months_lasted: int

@@ -334,6 +334,11 @@ def apply_choice(
         elif t == "press_step" and effect.stat:  # M14b (29.1): a press moment's tone
             state, logged = apply_tone(state, event, effect.stat, balance, data)
             logs += logged
+        elif t == "founder_step" and effect.stat:  # M24 (32.1, 32.5)
+            from tst.sim.founder.phase import founder_step
+
+            state, logged = founder_step(state, event, effect.stat, balance, data)
+            logs += logged
         elif t == "public_step" and effect.stat:  # M13 (25): the IPO chain and public life
             state, posted, logged = public_step(
                 state,

@@ -13,6 +13,7 @@ from tst.sim.data_models import EventsBalance
 from tst.sim.events.data import (
     EFFECT_TARGETS,
     EFFECT_TYPES,
+    FOUNDER_STEPS,
     MODIFIER_STATS,
     PRESS_STEPS,
     PUBLIC_STEPS,
@@ -66,6 +67,8 @@ def allowed_effects(
             continue  # 23.3: only a crisis template's own counter-offer
         if effect == "press_step" and "press_step" not in template_types:
             continue  # M14b (29.1): only a press template's own tones
+        if effect == "founder_step" and "founder_step" not in template_types:
+            continue  # M24 (32): only a founder template's own answers
         if effect == "public_step" and "public_step" not in template_types:
             continue  # M13 (25): only a public template's own steps
         words = {TARGET_KIND.get(w, w) for w in EFFECT_TARGETS[effect]}
@@ -146,9 +149,14 @@ def validate_event(
             if (target.partition(":")[0] if target else "") not in words:
                 dropped += 1
                 continue
-            if kind in ("public_step", "press_step"):  # M13, M14b: an engine step
+            if kind in ("public_step", "press_step", "founder_step"):  # an engine step
                 stat = item.get("stat")
-                if stat not in (PUBLIC_STEPS if kind == "public_step" else PRESS_STEPS):
+                steps = {
+                    "public_step": PUBLIC_STEPS,
+                    "press_step": PRESS_STEPS,
+                    "founder_step": FOUNDER_STEPS,
+                }[kind]
+                if stat not in steps:
                     dropped += 1
                     continue
                 effects.append(Effect(kind, target, 0.0, str(stat)))

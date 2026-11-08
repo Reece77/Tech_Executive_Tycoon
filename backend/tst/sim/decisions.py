@@ -11,3 +11,4 @@ DECISIONS_VERSION: Final = 1
 @dataclass(frozen=True, slots=True)
 class Decisions:
     version: int = DECISIONS_VERSION
+    holiday: bool = False  # M24 (32.1): a month played on Holiday lowers the founder's stress

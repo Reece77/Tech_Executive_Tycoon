@@ -11,7 +11,7 @@ templates:
     weight: 1.0
     title: "{product} is out: the press wants a word"
     body: >-
-      Reporters covering {company}'s launch of {product} want to know what it means for the market and what comes next. How you answer sets the tone for the coverage.
+      Reporters covering {company}'s launch of {product} want to know what it means for the market and what comes next. They have you down as {persona}; how you answer sets the tone for the coverage.
     choices:
       - key: A
         label: "Give a measured answer"
@@ -106,7 +106,7 @@ templates:
     weight: 1.0
     title: "The layoffs at {company} make the news"
     body: >-
-      Word of the job cuts at {company} has reached the press, and staff and customers are reading every line of the coverage.
+      Word of the job cuts at {company} has reached the press, and staff and customers are reading every line of the coverage. Inside the company, people say their founder is {persona}.
     choices:
       - key: A
         label: "Give a measured answer"
