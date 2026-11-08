@@ -12,6 +12,8 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - Data dictionary: one table per heading for 0030-0036, checked by `tests/unit/test_data_dictionary.py`. Acquisition-pitch tests now exercise the CPO's targets and Holiday's guard.
   - Golden snapshots unchanged.
 
+- Fix the flaky M4b Playwright flow (c) (run out of cash, reach game over): each step now reads what blocks Continue (critical event, major events, proposals, pitches) from the server's events list and waits for the screen to show it before acting, and each Continue waits for its own advance response, which says when the game ended. Before, the new month showed from the advance response while the events list was still refetching, so Continue could look free and then turn disabled, and the month that ends the game briefly hid the insolvency badge before the game over screen opened. The flow checks the same things (badge before every Continue, bridge, ignoring it, game over).
+
 - M15a v2 balance and long campaigns (formulas.md §30.6–30.9, lane A, merges second):
   - Five v2 strategies in the balance scripts (`tst/balance/strategies_v2.py`): steady_regions, research_heavy, acquirer, integrator and ceo; with v1's four, nine. steady_regions and its family also launch the CPO scoring's best new-category product at most once per 36 months and split steady's marketing over their products. AI-models arms `ai_regions` and `integrator_ai` for V3.
   - Five eras to 2039 appended as seeded windows (post-quantum security, AR glasses, humanoid robotics, photonic interconnect, practical quantum computing).
