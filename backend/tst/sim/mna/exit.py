@@ -13,7 +13,7 @@ from tst.sim.finance.captable import fd_shares, person_shares
 from tst.sim.ledger import CASH, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.mna.models import Deal
-from tst.sim.money import format_money
+from tst.sim.money import exact, format_money
 from tst.sim.state import GameState, public_of, with_acquisition
 
 EXIT: Final = "exit"
@@ -49,7 +49,7 @@ def sell_company(
     buyer = buyer_of(state)
     if public is None or buyer is None:
         return state, [], []
-    per_share = round(public.price_cents * (1 + balance.public.takeover.premium))
+    per_share = round(public.price_cents * (1 + exact(balance.public.takeover.premium)))
     shares = fd_shares(state, company_id)
     price = per_share * shares
     buyer_name = state.company(buyer).name

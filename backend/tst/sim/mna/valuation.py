@@ -17,6 +17,7 @@ from tst.sim.markets_public.value import growth_of, margin_of
 from tst.sim.mna import formulas as mf
 from tst.sim.mna.draws import fixed_draws
 from tst.sim.mna.models import RivalListing
+from tst.sim.money import exact
 from tst.sim.people.models import FOUNDER_ROLE
 from tst.sim.rivals.models import ENTRANT_KEY, INCUMBENT_KEY, stream_key
 from tst.sim.rng import RngFactory
@@ -121,7 +122,8 @@ def market_cap_cents(
         return public.price_cents * outstanding_shares(state, company_id)
     listing = rival_listing(state, company_id)
     sentiment = listing.sentiment if listing is not None else 1.0
-    return round(fundamental_value_cents(state, company_id, balances, balance, data) * sentiment)
+    value = fundamental_value_cents(state, company_id, balances, balance, data)
+    return round(value * exact(sentiment))
 
 
 def range_draw(state: GameState, company: CompanyState) -> float:

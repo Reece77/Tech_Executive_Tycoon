@@ -45,7 +45,7 @@ def _contract(state, cid, pid, kind, units, signed):  # type: ignore[no-untyped-
             kind=kind,
             supplier="foxconn" if kind == "assembly" else "tsmc",
             units=units,
-            price_cents=1_300.0 if kind == "assembly" else 600_000.0,
+            price_millicents=1_300_000 if kind == "assembly" else 600_000_000,
             signed_turn=signed,
             end_turn=signed + 24,
         ),

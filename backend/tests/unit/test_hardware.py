@@ -88,7 +88,7 @@ def _contract(
         kind=kind,  # type: ignore[arg-type]
         supplier="foxconn" if kind == "assembly" else "tsmc",
         units=units,
-        price_cents=1_300.0 if kind == "assembly" else 900_000.0,
+        price_millicents=1_300_000 if kind == "assembly" else 900_000_000,
         signed_turn=turn,
         end_turn=turn + 23,
         city=SHENZHEN if kind == "assembly" else None,

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Literal
 
 from tst.sim.data_models import Balance, GameData
@@ -29,6 +30,7 @@ from tst.sim.mna import formulas as mf
 from tst.sim.mna import valuation
 from tst.sim.mna.draws import fixed_draws, mna_draws
 from tst.sim.mna.models import OPEN_DEALS, PROBLEMS, Deal, Mode, Problem, TargetFile
+from tst.sim.money import exact as rational
 from tst.sim.money import format_money
 from tst.sim.rivals.models import player_key, stream_key
 from tst.sim.rng import RngFactory
@@ -139,6 +141,13 @@ def open_deal(state: GameState, target_id: int) -> Deal | None:
 
 
 # --- Prices -------------------------------------------------------------------------------
+
+
+def cash_part_cents(price_cents: int, cash_share: float) -> int:
+    """The cash part of a price (28.3): price x the cash share as written, rounded half to
+    even once, in exact arithmetic (M15r, Codex review 4 finding 8). Offer validation,
+    closing and share issuance all use it; the stock part is the rest."""
+    return round(rational(price_cents) * rational(cash_share))
 
 
 def monthly_costs_cents(state: GameState, company_id: int, balance: Balance, data: GameData) -> int:
@@ -323,7 +332,7 @@ def _validate_offer(
     if action.cash_share < 1 and not listed:
         raise MnaRuleError("paying in shares needs the company to be listed")
     cash = account_balance(balances, acquirer_id, CASH)
-    cash_part = round(action.price_cents * action.cash_share)
+    cash_part = cash_part_cents(action.price_cents, action.cash_share)
     if cash_part > cash:
         raise MnaRuleError(
             f"the cash part is {format_money(cash_part)}; there is {format_money(cash)} on hand "
@@ -445,7 +454,7 @@ def _negotiate(
     shown = found.counter_cents or mf.shown_counter(found.counter_exact)
     if price >= shown:
         return _accept(state, found, action, acquirer_id, rng, balance, data)
-    if price < shown * mb.lowball:
+    if price < rational(shown) * rational(mb.lowball):
         strikes = found.strikes + 1
         if strikes >= mb.strikes:
             return _end_talks(state, found, acquirer_id, name, "lowballed twice", balance)
@@ -645,7 +654,7 @@ def closing_entries(
     name = state.company(target).name
     lines = net_assets(balances, target, data)
     equity = sum(amount for _, amount in lines)
-    cash_part = round(deal.price_cents * deal.cash_share)
+    cash_part = cash_part_cents(deal.price_cents, deal.cash_share)
     stock_part = deal.price_cents - cash_part
     paid = [LedgerLine(CASH, -cash_part), LedgerLine(COMMON_EQUITY, -stock_part)]
     goodwill = LedgerLine(GOODWILL, mf.goodwill_cents(deal.price_cents, equity))
@@ -685,11 +694,11 @@ def issue_shares(state: GameState, deal: Deal) -> GameState:
     from tst.sim.markets_public.ipo import PUBLIC_HOLDERS
     from tst.sim.state import with_cap_entry
 
-    stock_part = deal.price_cents - round(deal.price_cents * deal.cash_share)
+    stock_part = deal.price_cents - cash_part_cents(deal.price_cents, deal.cash_share)
     public = public_of(state, deal.acquirer_id)
     if stock_part <= 0 or public is None or public.price_cents <= 0:
         return state
-    shares = max(1, round(stock_part / public.price_cents))
+    shares = max(1, round(Fraction(stock_part, public.price_cents)))
     entry = _float_entry(state, deal.acquirer_id)
     if entry is not None:
         return with_cap_entry(state, replace(entry, shares=entry.shares + shares))

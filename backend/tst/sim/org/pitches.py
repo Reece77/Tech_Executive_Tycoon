@@ -55,7 +55,7 @@ from tst.sim.hardware.formulas import plant_cost_per_good_unit
 from tst.sim.hiring.formulas import market_mid_cents
 from tst.sim.ledger import CASH, MARKETING, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import Cents, format_money
+from tst.sim.money import Cents, exact, format_money
 from tst.sim.org.delegates import delegate_draws
 from tst.sim.org.executives import displayed_score
 from tst.sim.org.formulas import (
@@ -1124,7 +1124,7 @@ def _acquisitions(
         central = revenue * (1 + growth) ** 2 + mb.pitch_synergy * costs
         listed = valuation.is_listed(state, target.id, data)
         if listed:
-            price = round(estimate * (1 + mb.pitch_bid_premium))
+            price = round(estimate * (1 + exact(mb.pitch_bid_premium)))  # exact (M15r)
         else:
             price = valuation.value_range_cents(state, target.id, balances, b, data)[1]
         share, _ = antitrust.combined_share(state, company, target.id, b, data)

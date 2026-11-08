@@ -1112,7 +1112,7 @@ def _load_hardware(session: Session, state: GameState) -> GameState:
             kind=r.kind,  # type: ignore[arg-type]
             supplier=r.supplier,
             units=r.units,
-            price_cents=r.price_cents,
+            price_millicents=r.price_millicents,
             signed_turn=r.signed_turn,
             end_turn=r.end_turn,
             city=r.city,

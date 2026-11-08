@@ -52,7 +52,7 @@ def close_deal(
     """Close one deal (28.3): the cash part must be on hand; the price posts with goodwill,
     the target's problems come to light, and the chosen mode runs (28.5)."""
     name = state.company(deal.target_id).name
-    cash_part = round(deal.price_cents * deal.cash_share)
+    cash_part = deals.cash_part_cents(deal.price_cents, deal.cash_share)
     if account_balance(balances, deal.acquirer_id, CASH) < cash_part:
         state = with_deal(state, replace(deal, status="abandoned", resolved_turn=state.turn))
         log = deals._update(

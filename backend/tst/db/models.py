@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 35
+SCHEMA_VERSION = 36
 
 
 class Base(DeclarativeBase):
@@ -1305,7 +1305,8 @@ class ProductionContractRow(Base):
     kind: Mapped[str] = mapped_column(String(16), nullable=False)
     supplier: Mapped[str] = mapped_column(String(32), nullable=False)
     units: Mapped[int] = mapped_column(Integer, nullable=False)
-    price_cents: Mapped[float] = mapped_column(Float, nullable=False)
+    # thousandths of a cent, exact (0036_m15r; was a FLOAT price_cents)
+    price_millicents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     signed_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     end_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     city: Mapped[str | None] = mapped_column(String(32), nullable=True)

@@ -28,6 +28,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.mna import formulas as mf
 from tst.sim.mna.data import IntegrationBalance
 from tst.sim.mna.models import AcquiredPerson, Acquisition, Directive
+from tst.sim.money import exact
 from tst.sim.org.models import OrgUnit
 from tst.sim.people.models import Employment
 from tst.sim.products import formulas as pf
@@ -248,7 +249,7 @@ def integrate(
         mid = data.role(role).salary_band_mid_cents["mid"]
         bp = data.region(balance.founder.default_region).salary_multiplier_bp
         severance += round(
-            gone * market_mid_cents(mid, bp) / 12 * ib.severance_months
+            exact(gone) * market_mid_cents(mid, bp) / 12 * exact(ib.severance_months)
         )  # tunable-exempt: months a year
         state = _zero_pool(state, pool)
     state, gone_people, paid = _let_go_others(state, acquirer, arrived, ib, data)
@@ -507,7 +508,7 @@ def _sweeps(
             continue
         costs = monthly_costs_cents(state, company.id, balance, data)
         cash = account_balance(balances, company.id, CASH)
-        sweep = cash - round(balance.mna.sweep_months * costs)
+        sweep = cash - round(exact(balance.mna.sweep_months) * costs)
         if sweep <= 0:
             continue
         out.append(
@@ -550,7 +551,7 @@ def _fund_brands(
         if shortfall <= 0:
             continue
         costs = monthly_costs_cents(state, company.id, balance, data)
-        cap = max(round(balance.mna.funding_months * costs), 0)
+        cap = max(round(exact(balance.mna.funding_months) * costs), 0)
         parent = company.parent_id
         available = account_balance(balances, parent, CASH) - paid.get(parent, 0)
         amount = min(shortfall, cap, max(available, 0))

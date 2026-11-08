@@ -37,6 +37,7 @@ from tst.sim.hardware import formulas as hf
 from tst.sim.hardware.models import ProductionContract
 from tst.sim.hiring.models import PersonState
 from tst.sim.ledger import COGS, COMPUTE, REVENUE_SUBSCRIPTIONS
+from tst.sim.money import to_millicents
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Employment
 from tst.sim.products.models import Product, ProductSegment
@@ -156,7 +157,7 @@ def contract(
         kind=kind,  # type: ignore[arg-type]
         supplier="foxconn" if kind == "assembly" else "tsmc",
         units=units,
-        price_cents=price,
+        price_millicents=to_millicents(price),
         signed_turn=signed,
         end_turn=signed + months - 1,
         city="shenzhen" if kind == "assembly" else None,

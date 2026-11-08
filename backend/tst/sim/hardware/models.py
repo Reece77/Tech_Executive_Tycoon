@@ -6,6 +6,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
+from tst.sim.money import MILLICENTS_PER_CENT
+
 type ContractKind = Literal["assembly", "wafer"]
 type ProductionContractStatus = Literal["active", "ended"]
 
@@ -16,7 +18,8 @@ class ProductionContract:
     contract manufacturer for `fee_cents` a unit; 26.2) or a wafer contract (kind `wafer`:
     `units` wafer starts a month from a foundry at `price_cents` a wafer, the index locked at
     signing; 26.3). Take-or-pay charges a share of the price on each unused unit a month.
-    `delivered`, `used` and `charged_cents` are the last month's."""
+    `delivered`, `used` and `charged_cents` are the last month's. The price is stored exactly,
+    in integer thousandths of a cent (M15r, Codex review 4 finding 8)."""
 
     id: int
     company_id: int
@@ -24,7 +27,7 @@ class ProductionContract:
     kind: ContractKind
     supplier: str  # hardware.contract.manufacturers or chips.contract.foundries key
     units: int  # a month: units assembled, or wafer starts
-    price_cents: float  # a unit's fee, or a wafer's price at the locked index
+    price_millicents: int  # a unit's fee, or a wafer's price at the locked index, in 1/1000 cent
     signed_turn: int
     end_turn: int  # the last month it covers
     city: str | None = None  # cities.yaml key (assembly contracts)
@@ -35,6 +38,11 @@ class ProductionContract:
 
     def running(self, turn: int) -> bool:
         return self.status == "active" and self.signed_turn <= turn <= self.end_turn
+
+    @property
+    def price_cents(self) -> float:
+        """The price in cents (fractional), from its exact stored millicents."""
+        return self.price_millicents / MILLICENTS_PER_CENT
 
 
 @dataclass(frozen=True, slots=True)

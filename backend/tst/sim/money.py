@@ -55,3 +55,12 @@ def exact(x: float | int | Fraction) -> Fraction:
     if isinstance(x, Fraction | int):
         return Fraction(x)
     return Fraction(repr(x))
+
+
+MILLICENTS_PER_CENT: Final = 1000  # tunable-exempt: thousandths of a cent in a cent
+
+
+def to_millicents(cents: float | int | Fraction) -> int:
+    """A fractional cents rate (a unit fee, a wafer price) as exact integer thousandths of a
+    cent, rounded half to even once (M15r, Codex review 4 finding 8)."""
+    return round(exact(cents) * MILLICENTS_PER_CENT)

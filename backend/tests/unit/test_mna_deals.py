@@ -5,6 +5,7 @@ stock and mixed consideration) and the cap table sums to 100% after a stock deal
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 
 import pytest
 from hypothesis import given, settings
@@ -237,7 +238,7 @@ def _listed_with_target(loaded: LoadedData) -> tuple[GameState, int]:
 @settings(max_examples=40, deadline=None)
 @given(
     price=st.integers(min_value=1_00, max_value=10**13),
-    cash_share=st.sampled_from([0.0, 0.25, 0.5, 1.0]),
+    cash_share=st.sampled_from([0.0, 0.25, 0.5, 1.0, 0.545, 0.105, 0.333, 0.999]),
     mode=st.sampled_from(["brand", "integrate"]),
     target_cash=st.integers(min_value=0, max_value=10**12),
     target_debt=st.integers(min_value=0, max_value=10**11),
@@ -259,7 +260,7 @@ def test_closing_entries_balance(
         assert sum(v for (c, _), v in after.items() if c == company) == sum(
             v for (c, _), v in balances.items() if c == company
         )
-    cash_part = round(price * cash_share)
+    cash_part = round(Fraction(price) * Fraction(repr(cash_share)))  # rational reference (M15r)
     assert after.get((1, CASH), 0) - balances.get((1, CASH), 0) == (
         -cash_part + (target_cash if mode == "integrate" else 0)
     )
@@ -283,9 +284,9 @@ def test_a_stock_deal_keeps_the_cap_table_whole(
     before = fd_shares(state, 1)
     deal = Deal(1, 1, target, price, cash_share, state.turn)
     after = deals.issue_shares(state, deal)
-    stock = price - round(price * cash_share)
+    stock = price - round(Fraction(price) * Fraction(repr(cash_share)))  # rational (M15r)
     issued = fd_shares(after, 1) - before
-    assert issued == max(1, round(stock / public.price_cents))
+    assert issued == max(1, round(Fraction(stock, public.price_cents)))
     entries = after.company_cap(1)
     total = sum(e.shares for e in entries)
     assert total == fd_shares(after, 1)
