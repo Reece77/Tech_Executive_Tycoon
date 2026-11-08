@@ -116,7 +116,8 @@ def publish(
     state: GameState, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LogItem, ...]]:
     """December's month end: next January's three lists, and a news item for each company
-    the player controls naming its places."""
+    the player controls: its place on each list (or "not ranked") and each list's top
+    rank.news_top names, linked to the Rankings screen (playtest 4, M15r addendum b)."""
     if state.turn % MONTHS_A_YEAR != DECEMBER:
         return state, ()
     january = state.turn + 1
@@ -131,22 +132,32 @@ def publish(
     new.sort(key=lambda r: (r.kind, r.place))  # the order a save loads them in
     state = replace(state, rankings=(*state.rankings, *new))
     logs = []
+    names = {c.id: c.name for c in state.companies}
     for company in player_companies(state):
-        mine = [r for r in new if r.company_id == company.id]
-        places = "; ".join(f"{LIST_LABELS[r.kind]}: #{r.place}" for r in mine) or "no place yet"
+        params: dict[str, str] = {}
+        for list_kind in LIST_LABELS:
+            listed = [r for r in new if r.kind == list_kind]
+            own = next((r for r in listed if r.company_id == company.id), None)
+            params[f"{list_kind}_place"] = f"#{own.place}" if own else "not ranked"
+            names_top = ", ".join(
+                f"{r.place}. {names[r.company_id]}" for r in listed[: balance.rank.news_top]
+            )
+            params[f"{list_kind}_top"] = names_top or "nobody yet"
+        mine_all = [r for r in new if r.company_id == company.id]
+        places = "; ".join(f"{LIST_LABELS[r.kind]}: #{r.place}" for r in mine_all)
         top = next((r for r in new if r.kind == "revenue" and r.place == 1), None)
-        leader = state.company(top.company_id).name if top else "nobody"
         logs.append(
             inbox_item(
                 january - 1,
                 company.id,
                 "rankings_published",
-                link_kind="finance",
+                link_kind="rankings",
                 link_id=0,
                 year=str(turn_to_ym(january)[0]),
-                places=places,
-                leader=leader,
+                places=places or "no place yet",
+                leader=names[top.company_id] if top else "nobody",
                 revenue=format_money(round(top.value)) if top else "-",
+                **params,
             )
         )
     return state, tuple(logs)

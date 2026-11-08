@@ -15,7 +15,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
 from tst.sim.finance import macro
 from tst.sim.finance.board import _add_seat, average_confidence
-from tst.sim.ledger import CASH, COMMON_EQUITY, GENERAL_ADMIN, LedgerEntry
+from tst.sim.ledger import CASH, COMMON_EQUITY, GENERAL_ADMIN, LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public import capital, ipo
 from tst.sim.markets_public import formulas as pf
@@ -27,6 +27,7 @@ from tst.sim.markets_public.value import (
     growth_of,
 )
 from tst.sim.press.moments import credibility, queue_moment
+from tst.sim.rivals.models import player_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -110,8 +111,8 @@ def guidance_problem(
 
 
 def sentiment_draws(rng: RngFactory, turn: int, *key: int) -> np.random.Generator:
-    """The one call site of stream market_sentiment (25.3): the player keyed by its id, a
-    listed rival (M14, 28.1) by its stable key."""
+    """The one call site of stream market_sentiment (25.3): a player company by its player
+    key (M15r), a listed rival (M14, 28.1) by its stable key."""
     return rng.stream(turn, "market_sentiment", *key)
 
 
@@ -136,11 +137,12 @@ def public_month(
         f = fundamentals(state, cid, revenue.get(cid, 0), op.get(cid, 0), balance, data)
         # One generator a month per listed company: the sentiment shock and the analysts'
         # targets, at the listing and after each report (stream market_sentiment, 25.3).
-        gen = sentiment_draws(rng, state.turn, cid)
+        key = player_key(cid, company.rival_key)  # a stable key, never the id (M15r)
+        gen = sentiment_draws(rng, state.turn, *key)
         if public is None and listing is not None:
             if ipo.roadshow_done(listing) and listing.demand is None:
                 climate = macro.venture_climate(state, data)
-                d = ipo.draw_demand(rng, state.turn, cid, climate, balance)
+                d = ipo.draw_demand(rng, state.turn, key, climate, balance)
                 state = ipo.open_pricing(state, cid, f, d, balance, data)
             elif listing.status == "priced":
                 state, posted, logged = ipo.list_company(
@@ -386,12 +388,19 @@ def _ceo_board(
 
 
 def apply_public_step(
-    state: GameState, company_id: int, step: str, balance: Balance
-) -> tuple[GameState, list[LogItem]]:
+    state: GameState,
+    company_id: int,
+    step: str,
+    balance: Balance,
+    data: GameData | None = None,
+    balances: LedgerBalances | None = None,
+) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
     """An activist, takeover or CEO-vote choice. Those that need cash or a draw wait for the
-    next phase 7 (`pending`)."""
+    next phase 7 (`pending`). Accepting a takeover settles the sale, so it needs the data and
+    the ledger balances (M15r)."""
     public = public_of(state, company_id)
     logs: list[LogItem] = []
+    entries: list[LedgerEntry] = []
     if step in ("activist_seat", "activist_buyback", "activist_fight") and public is not None:
         state = with_public(state, replace(public, pending=(*public.pending, step)))
     elif step == "takeover_talks" and public is not None:
@@ -421,10 +430,12 @@ def apply_public_step(
     elif step == "takeover_accept" and public is not None:  # M14 (28.6): an exit
         from tst.sim.mna.exit import sell_company
 
-        state, sold = sell_company(state, company_id, balance)
+        if data is None or balances is None:
+            raise ValueError("accepting a takeover needs the game data and ledger balances")
+        state, entries, sold = sell_company(state, company_id, balance, data, balances)
         logs += sold
     # takeover_reject: the template's board effect is all
-    return state, logs
+    return state, entries, logs
 
 
 def _pending(

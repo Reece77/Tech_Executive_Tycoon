@@ -10,6 +10,7 @@ from tests.unit.test_hiring_phases import Game
 from tests.unit.test_m13_public import listed
 from tst.loader import LoadedData
 from tst.sim.finance.captable import fd_shares, person_shares
+from tst.sim.ledger import CASH
 from tst.sim.markets_public.public import TAKEOVER_OFFER, apply_public_step
 from tst.sim.mna import exit as mna_exit
 from tst.sim.mna.rivals import rival_deals
@@ -20,17 +21,25 @@ from tst.sim.state import public_of
 def test_talks_queue_the_offer_and_accepting_is_an_exit(loaded: LoadedData) -> None:
     b = loaded.balance
     state = listed()
-    talks, _ = apply_public_step(state, 1, "takeover_talks", b)
+    talks, _, _ = apply_public_step(state, 1, "takeover_talks", b)
     assert any(q.template_id == TAKEOVER_OFFER for q in talks.queued)
     public = public_of(talks, 1)
     assert public is not None
-    sold, logs = apply_public_step(talks, 1, "takeover_accept", b)
+    buyer = mna_exit.buyer_of(talks)
+    assert buyer is not None
+    rich = {(buyer, CASH): 10**15}
+    sold, entries, logs = apply_public_step(talks, 1, "takeover_accept", b, loaded.game_data, rich)
     assert sold.ended and sold.save_meta.game_state == "exit"
     assert sold.save_meta.ended_turn == sold.turn
     sale = mna_exit.sale_of(sold, 1)
     assert sale is not None and sale.acquirer_id == mna_exit.buyer_of(talks)
     per_share = round(public.price_cents * (1 + b.public.takeover.premium))
     assert sale.price_cents == per_share * fd_shares(talks, 1)
+    (paid,) = entries  # the buyer pays, once, at acceptance (M15r)
+    assert (
+        paid.company_id == buyer
+        and dict((x.account, x.amount) for x in paid.lines)[CASH] == -sale.price_cents
+    )
     (item,) = logs
     assert item.template == "exit_sale"
     founder = talks.founder_of(1)
@@ -44,7 +53,7 @@ def test_talks_queue_the_offer_and_accepting_is_an_exit(loaded: LoadedData) -> N
 
 def test_rejecting_keeps_playing(loaded: LoadedData) -> None:
     state = listed()
-    after, _ = apply_public_step(state, 1, "takeover_reject", loaded.balance)
+    after, _, _ = apply_public_step(state, 1, "takeover_reject", loaded.balance)
     assert not after.ended and mna_exit.sale_of(after, 1) is None
 
 

@@ -78,9 +78,10 @@ def test_cross_region_factor(loaded: LoadedData) -> None:
 
 
 def test_cities_table(loaded: LoadedData) -> None:
-    """19.1's table as loaded: 15 cities, multipliers, rent and talent bonuses."""
+    """19.1's table as loaded: 15 cities, then Africa's three (M15r addendum c), multipliers,
+    rent and talent bonuses."""
     data = loaded.game_data
-    assert len(data.cities) == 15
+    assert len(data.cities) == 18
     sf, tel_aviv, shenzhen = (
         data.city("san_francisco"),
         data.city("tel_aviv"),
@@ -95,7 +96,7 @@ def test_cities_table(loaded: LoadedData) -> None:
     assert talent_bonus(shenzhen, "manufacturing", data) == 1.5
     assert talent_bonus(shenzhen, "software_engineering", data) == 0.0
     assert data.region_city("europe") == "london"
-    assert data.region_city("africa") == "london"  # no hub: its sales neighbour's city
+    assert data.region_city("africa") == "london"  # pre-M9 people keep their home city
 
 
 def test_regional_growth(loaded: LoadedData) -> None:

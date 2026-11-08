@@ -14,7 +14,15 @@ from tst.sim.events.formulas import cash_cap, clamp_effect
 from tst.sim.events.models import EventChoice, GameEvent, QueuedEvent
 from tst.sim.events.modifiers import start as start_modifier
 from tst.sim.finance.debt import repay as repay_loan
-from tst.sim.ledger import CASH, GENERAL_ADMIN, INTEREST, OTHER_INCOME, LedgerEntry
+from tst.sim.ledger import (
+    CASH,
+    GENERAL_ADMIN,
+    INTEREST,
+    OTHER_INCOME,
+    LedgerBalances,
+    LedgerEntry,
+    apply_entries,
+)
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public.ipo import apply_ipo_step
 from tst.sim.markets_public.public import apply_public_step
@@ -158,9 +166,11 @@ def apply_choice(
     data: GameData,
     *,
     auto: bool,
+    balances: LedgerBalances | None = None,
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...]]:
     """Apply one choice of an open event and close it. An event whose words were never
-    written (no choices) closes with nothing applied."""
+    written (no choices) closes with nothing applied. `balances` (the ledger so far) is
+    needed only by a choice that settles money against a balance: accepting a takeover."""
     choice: EventChoice | None = event.choice(key)
     entries: list[LedgerEntry] = []
     logs: list[LogItem] = []
@@ -330,7 +340,14 @@ def apply_choice(
             state, logged = founder_step(state, event, effect.stat, balance, data)
             logs += logged
         elif t == "public_step" and effect.stat:  # M13 (25): the IPO chain and public life
-            state, posted, logged = public_step(state, cid, effect.stat, balance, data)
+            state, posted, logged = public_step(
+                state,
+                cid,
+                effect.stat,
+                balance,
+                data,
+                None if balances is None else apply_entries(balances, entries),
+            )
             entries += posted
             logs += logged
         # energy_delta applies when energy resets for next month (energy_next_month).
@@ -364,7 +381,7 @@ def blocking_events(state: GameState) -> tuple[GameEvent, ...]:
 
 
 def auto_resolve(
-    state: GameState, balance: Balance, data: GameData
+    state: GameState, balance: Balance, data: GameData, balances: LedgerBalances | None = None
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...]]:
     """Phase 1: the player's unanswered minor and major events resolve to their first
     choice at Continue (16.3). A written critical event never reaches here (advance_turn
@@ -376,18 +393,30 @@ def auto_resolve(
         if event.severity == "critical" and event.status == "open":
             continue
         first = event.choices[0].key if event.choices else "A"
-        state, posted, logged = apply_choice(state, event, first, balance, data, auto=True)
+        state, posted, logged = apply_choice(
+            state,
+            event,
+            first,
+            balance,
+            data,
+            auto=True,
+            balances=None if balances is None else apply_entries(balances, entries),
+        )
         entries += posted
         logs += logged
     return state, tuple(entries), tuple(logs)
 
 
 def public_step(
-    state: GameState, company_id: int, step: str, balance: Balance, data: GameData
+    state: GameState,
+    company_id: int,
+    step: str,
+    balance: Balance,
+    data: GameData,
+    balances: LedgerBalances | None = None,
 ) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
     """M13 (25): IPO steps go to the chain; activist, takeover and CEO-vote steps to the
     public company."""
     if step.startswith(("activist_", "takeover_", "ceo_")):
-        state, logs = apply_public_step(state, company_id, step, balance)
-        return state, [], logs
+        return apply_public_step(state, company_id, step, balance, data, balances)
     return apply_ipo_step(state, company_id, step, balance, data)

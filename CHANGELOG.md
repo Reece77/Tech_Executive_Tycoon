@@ -4,6 +4,14 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M15r Fixes from Codex review 4 (`docs/reviews/codex-review-4.md`; findings 2 and 3 go to M16):
+  - A sale after a takeover bid settles the buyer's side once, through the shared brand-closing path (cash out, 1810 and goodwill, an acquisition record); a buyer without the cash is refused. Founding again deletes the sold company's `public_company` and board seat rows (share-price history stays) and ends its CEO.
+  - A serial founder's later venture has a stable key `(4, n)` in `company_rival_key`; the player's ipo, sentiment, mna and press streams use it.
+  - Acquisition pitches use a public staff-cost estimate; plant pitches use the plant kind's sizes and 26.2's cost per good unit; tech_debt and customer_concentration apply to kept brands as well (and the churn penalty covers all 12 months).
+  - Exact M&A money: the cash/stock split and the other deal price helpers in Fractions; migration `0038_m15r` (renumbered after M24's `0037_founder`) moves `production_contract.price_cents` (FLOAT) to integer `price_millicents`.
+  - Data dictionary: one table per heading for 0030-0036, checked by `tests/unit/test_data_dictionary.py`. Acquisition-pitch tests now exercise the CPO's targets and Holiday's guard.
+  - Golden snapshots unchanged.
+  - Playtest 4 addendum (`docs/playtests/reece-playtest-4.md`): (a) negotiation accepts any offer at or above the target's reservation and never counters below the offer (the reported $17.9M countered at $17.0M); (b) January's rankings item gives the player's place on each list, each list's top five (`rank.news_top`) and an Open Rankings link (`link_kind` `rankings`); (c) Lagos, Nairobi and Cape Town in `cities.yaml`, so offices lease in Africa (people saved before M9 with no city keep London); (d) the AI lab's goal is $100M ARR by December 2020 (goal kind `arr`, replacing `era_or_arr`), with causing Transformers first a bonus on the result screen (`scenario_bonus`, `scenario_bonus_reached`). Golden snapshots unchanged by all four.
 - M24 The founder's life (formulas.md §32, lane C, merges before M16):
   - Stress 0–100 from the share of each month's energy spent (load above 0.6, recovery, Holiday −25, +5 a critical answer); burnout at 80 cuts the energy budget 30% until stress is below 40 and raises the critical `founder_burnout` event (a month off, delegate, push on); a top-bar stress meter with the last six months' causes. `Decisions.holiday` marks a Holiday month, and replay feeds each turn's logged decisions back in.
   - The founder's own double-entry book (`personal_entry`, accounts 9100–9400 in a separate `personal_accounts` chart; company entries and company codes may never use 9xxx): a sale of the founder's own shares into the float once listed, the founder's share of dividends, exit proceeds kept, salary after tax; `founder.personal.credit` is the hook M16 calls for group dividends.

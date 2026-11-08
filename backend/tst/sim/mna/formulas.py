@@ -5,15 +5,17 @@ integration flight. No state; every number comes from the caller or balance.yaml
 from __future__ import annotations
 
 import math
+from fractions import Fraction
 
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance, TenderBalance
+from tst.sim.money import BP_DENOMINATOR, exact
 
 CENTRE = 0.5  # tunable-exempt: a uniform's midpoint, as 21.7's lead ranges
 
 
 def acquihire_value_cents(cash_cents: int, builders: float, mb: MnaBalance) -> int:
     """A company with ARR below mna.min_arr_cents: its cash plus a value per builder (28.1)."""
-    return max(0, cash_cents) + round(builders * mb.min_value_per_builder_cents)
+    return max(0, cash_cents) + round(exact(builders) * mb.min_value_per_builder_cents)
 
 
 def value_range_cents(value_cents: int, u: float, half_share: float) -> tuple[int, int]:
@@ -45,7 +47,7 @@ def midpoint_cents(value_range: tuple[int, int]) -> int:
 def diligence_cost_cents(estimated_cents: int, mb: MnaBalance) -> int:
     """0.5% of the target's estimated value, at least $50,000 (28.2)."""
     d = mb.diligence
-    return max(d.min_cents, round(estimated_cents * d.cost_bp / 10_000))  # tunable-exempt: bp
+    return max(d.min_cents, round(Fraction(estimated_cents * d.cost_bp, BP_DENOMINATOR)))
 
 
 def personality_premium(personality: str, mb: MnaBalance) -> float:
@@ -62,7 +64,7 @@ def founder_premium(ambition: float, mb: MnaBalance) -> float:
 def reservation_cents(value_cents: int, premium: float, distressed: bool, mb: MnaBalance) -> int:
     """A private target accepts at least V_f x (1 + p), p less the distress discount when
     its cash covers fewer than mna.distress_months of costs (28.3)."""
-    p = premium - (mb.distress_discount if distressed else 0.0)
+    p = exact(premium) - (exact(mb.distress_discount) if distressed else 0)
     return round(value_cents * (1 + p))
 
 
@@ -74,14 +76,16 @@ def distressed(cash_cents: int, monthly_costs_cents: int, mb: MnaBalance) -> boo
 def counter_cents(reservation: int, z: float, mb: MnaBalance) -> int:
     """M14's single counter: reservation x (1 + N(0, sd)), z a standard normal, in whole
     dollars (rounded up), so bidding the counter as shown is accepted."""
-    cents = round(reservation * (1 + mb.counter_sd * z))
+    cents = round(reservation * (1 + exact(mb.counter_sd) * exact(z)))
     return -(-cents // 100) * 100  # tunable-exempt: cents in a dollar
 
 
 def first_counter_exact(reservation: int, anchor: float, z: float, mb: MnaBalance) -> int:
     """M15b negotiation: the opening counter, reservation x anchor x (1 + N(0, sd)), never
     below the reservation."""
-    return max(reservation, round(reservation * anchor * (1 + mb.counter_sd * z)))
+    return max(
+        reservation, round(reservation * exact(anchor) * (1 + exact(mb.counter_sd) * exact(z)))
+    )
 
 
 def next_counter_exact(counter: int, reservation: int) -> int:

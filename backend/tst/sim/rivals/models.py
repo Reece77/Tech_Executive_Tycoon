@@ -89,6 +89,14 @@ class SegmentShare:
 
 LEGACY_KEY = 3  # tunable-exempt: rival_key tag of a company without a stored identity
 INCUMBENT_KEY, ENTRANT_KEY, STARTUP_KEY = 0, 1, 2  # tunable-exempt: rival_key tags
+VENTURE_KEY = 4  # tunable-exempt: rival_key tag of a player venture after the first (M15r)
+
+
+def player_key(company_id: int, rival_key: tuple[int, ...]) -> tuple[int, ...]:
+    """The key a player company's own streams use (ADR-0013; M15r, Codex review 4 finding
+    9): a serial founder's later venture by its stored (VENTURE_KEY, ordinal), never its
+    database id; the first company (always id 1, no stored key) by its id, as before."""
+    return rival_key if rival_key else (company_id,)
 
 
 def stream_key(company_id: int, rival_key: tuple[int, ...]) -> tuple[int, ...]:

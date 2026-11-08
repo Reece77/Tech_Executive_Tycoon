@@ -1223,12 +1223,12 @@ A data-centre outage (22.5). The state holds the last 24 months.
 
 ### company_rival_key
 
-A rival's stable identity for its RNG keys (ADR-0013 amendment). Primary key `company_id`; the player and rivals of older saves have no row.
+A company's stable identity for its RNG keys (ADR-0013 amendment). Primary key `company_id`; the player's first company and rivals of older saves have no row.
 
 | Column | Type | Null | Meaning |
 | --- | --- | --- | --- |
 | `company_id` | INTEGER FK company | no | The rival. |
-| `rival_key` | JSON | no | `[0, i]` incumbent at position i of incumbents.yaml, `[1, i]` entrant at position i of entrants.yaml, `[2, c, n]` the n-th startup founded in category c. |
+| `rival_key` | JSON | no | `[0, i]` incumbent at position i of incumbents.yaml, `[1, i]` entrant at position i of entrants.yaml, `[2, c, n]` the n-th startup founded in category c, `[4, n]` the player's n-th venture after the first (a serial founder's, M15r; kept when it is sold). |
 
 New games number incumbents' products from 900,000 (10 per incumbent) and their key people and employments from 5,000,001 (100 per incumbent), by position in incumbents.yaml.
 
@@ -1236,13 +1236,6 @@ New games number incumbents' products from 900,000 (10 per incumbent) and their 
 
 `1510_accumulated_depreciation` (asset, credit balance) and `6700_depreciation` (expense, with compute in cost of revenue). The cash flow counts both with investing, where depreciation cancels and a sale leaves its proceeds.
 
-## Hardware, devices and fabless chips (migration `0031_hardware`, M12b; re-parented after M13's `0030_public_company`)
-
-Assembly plants are the `assembly_plant` kind of `facility` (the three columns above); device, server, equipment and wafer goods are rows of `supply_month` after 2025. Existing saves start with no contracts and no production; M12b's eras the save is past are recorded in `era_arrival` on schedule (future eras at their seeded month).
-
-### production_contract
-
-A contract-manufacturing contract (kind `assembly`, 26.2) or a wafer contract (kind `wafer`, 26.3). The state holds active ones and those ended in the last 24 months.
 ## Going public and the Chair (migration `0030_public_company`, M13)
 
 A company's IPO chain, its life as a listed company and its appointed CEO (formulas.md 25). Every row belongs to a company (ADR-0020 7), so a v3 subsidiary can list on its own. Existing saves start with no rows: every company is private and founder-led. `save_meta.schema_version` becomes 30.
@@ -1277,7 +1270,7 @@ A company's IPO chain (25.2), from hiring the banks to the listing or a pull. Pr
 
 ### public_company
 
-A listed company's market state (25.3-25.5). Primary key `company_id`. The state holds every row.
+A listed company's market state (25.3-25.5). Primary key `company_id`. The state holds every row; a sold company's row is deleted when the founder founds again (its `share_month` history stays; M15r).
 
 | Column | Type | Null | Meaning |
 | --- | --- | --- | --- |
@@ -1341,12 +1334,48 @@ An appointed CEO (25.6); the founder is Chair while one serves. The state holds 
 | Column | Type | Null | Meaning |
 | --- | --- | --- | --- |
 | `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The company. |
+| `person_id` | INTEGER | no | The CEO (no FK). |
+| `since_turn` | INTEGER | no | The month appointed. |
+| `scopes` | JSON | no | The authority the Chair allows (`config.CEO_SCOPES` keys), a list. |
+| `ended_turn` | INTEGER | yes | When the tenure ended; null while serving. |
+| `end_reason` | VARCHAR(16) | yes | `replaced` (the board), `dismissed` (the Chair), `left`, or `acquired` (the company was sold, M15r). |
+| `low_months` | INTEGER | no | Months of board confidence below `ceo.replace.below`. |
+| `price_anchors` | JSON | no | `[[product_id, segment, cents], ...]`: the player's last prices; the CEO moves a price only within `ceo.price_band_pct` of these. |
+
+### ceo_decision
+
+One decision a CEO took (25.6). The state holds the last `ceo.memory_months` (12); indexed on `turn`.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
+| `company_id` | INTEGER FK company | no | The company. |
+| `person_id` | INTEGER | no | The CEO (no FK). |
+| `turn` | INTEGER | no | The month (indexed). |
+| `scope` | VARCHAR(32) | no | The scope it fell under. |
+| `text` | TEXT | no | What they did, in words. |
+| `mistake` | BOOLEAN | no | A plausible but worse option. |
+| `undo` | JSON | no | `[[key, value], ...]`: the action kind and fields that reverse it; `[]` when it cannot be overridden. |
+| `overridden_turn` | INTEGER | yes | When the Chair overrode it. |
+
+## Hardware, devices and fabless chips (migration `0031_hardware`, M12b; re-parented after M13's `0030_public_company`)
+
+Assembly plants are the `assembly_plant` kind of `facility` (the three columns above); device, server, equipment and wafer goods are rows of `supply_month` after 2025. Existing saves start with no contracts and no production; M12b's eras the save is past are recorded in `era_arrival` on schedule (future eras at their seeded month).
+
+### production_contract
+
+A contract-manufacturing contract (kind `assembly`, 26.2) or a wafer contract (kind `wafer`, 26.3). The state holds active ones and those ended in the last 24 months.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
 | `company_id` | INTEGER FK company | no | The company that signed it. |
 | `product_id` | INTEGER | no | The device, server or chip product it makes (no FK). |
 | `kind` | VARCHAR(16) | no | `assembly` or `wafer`. |
 | `supplier` | VARCHAR(32) | no | `hardware.contract.manufacturers` or `chips.contract.foundries` key. |
 | `units` | INTEGER | no | A month: units assembled, or wafer starts. |
-| `price_cents` | FLOAT | no | A unit's fee (base x manufacturer x city), or a wafer's price at the foundry_wafer index locked at signing. Fractional cents; rounded when a month posts. |
+| `price_millicents` | BIGINT | no | A unit's fee (base x manufacturer x city), or a wafer's price at the foundry_wafer index locked at signing, in exact integer thousandths of a cent (0038_m15r; was FLOAT `price_cents` in 0031). Rounded to cents when a month posts. |
 | `signed_turn` | INTEGER | no | The month it was signed; a contract signed before a shortage began keeps full allocation. |
 | `end_turn` | INTEGER | no | The last month it covers. |
 | `city` | VARCHAR(32) | yes | cities.yaml key where it is made (assembly). |
@@ -1377,31 +1406,6 @@ One unit-sale product's month of production (26.2, 26.3), append-only. Primary k
 | `lost_units` | FLOAT | no | Demand above what it could make, lost to the next-best product. |
 
 `5000_cogs` (existing) now carries hardware's cost of goods: the player's from `production_month`, a rival's at its market's `hosting_cents` a unit.
-
-| `company_id` | INTEGER FK company | no | The company. |
-| `person_id` | INTEGER | no | The CEO (no FK). |
-| `since_turn` | INTEGER | no | The month appointed. |
-| `scopes` | JSON | no | The authority the Chair allows (`config.CEO_SCOPES` keys), a list. |
-| `ended_turn` | INTEGER | yes | When the tenure ended; null while serving. |
-| `end_reason` | VARCHAR(16) | yes | `replaced` (the board), `dismissed` (the Chair) or `left`. |
-| `low_months` | INTEGER | no | Months of board confidence below `ceo.replace.below`. |
-| `price_anchors` | JSON | no | `[[product_id, segment, cents], ...]`: the player's last prices; the CEO moves a price only within `ceo.price_band_pct` of these. |
-
-### ceo_decision
-
-One decision a CEO took (25.6). The state holds the last `ceo.memory_months` (12); indexed on `turn`.
-
-| Column | Type | Null | Meaning |
-| --- | --- | --- | --- |
-| `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
-| `company_id` | INTEGER FK company | no | The company. |
-| `person_id` | INTEGER | no | The CEO (no FK). |
-| `turn` | INTEGER | no | The month (indexed). |
-| `scope` | VARCHAR(32) | no | The scope it fell under. |
-| `text` | TEXT | no | What they did, in words. |
-| `mistake` | BOOLEAN | no | A plausible but worse option. |
-| `undo` | JSON | no | `[[key, value], ...]`: the action kind and fields that reverse it; `[]` when it cannot be overridden. |
-| `overridden_turn` | INTEGER | yes | When the Chair overrode it. |
 
 ## Executives' pitches and era windows (migration `0032_pitches`, M13b)
 
@@ -1563,6 +1567,7 @@ Someone who resigned or was poached (29.5): the source of a Replace plan once th
 | `unit_id` | INTEGER | yes | Their unit (`org_unit.id`, no FK); null = the company root. |
 | `reason` | VARCHAR(16) | no | `resigned` or `poached`. |
 | `turn` | INTEGER | no | The month they left. |
+| `name` | VARCHAR(128) | no | Their name when they left, for the Replace plan's words. |
 
 ### search_interest
 
@@ -1591,7 +1596,7 @@ The M&A records keep their fields in a JSON `data` column: each is the frozen re
 | `rival_listing` | `company_id` | `sentiment` (float) | A listed rival's sentiment S (28.1); its market cap is V_f × S. A row appears in a rival's first listed month (`listed_from` in `incumbents.yaml` / `entrants.yaml`). |
 | `company_parent` | `company_id` | `parent_id` | A kept brand's parent (28.5, ADR-0020). No row: an independent company. |
 | `mna_target_file` | `acquirer_id`, `target_id` | `data`: `problems` (list of `tech_debt`, `key_person_risk`, `customer_concentration`; **hidden** until diligence or closing), `diligence_turn`, `diligence_done_turn`, `board_bar` (**hidden**), `counter_cents`, `blocked_until` | What one acquirer knows of one target (28.2–28.3). |
-| `mna_deal` | `id` | `data`: `acquirer_id`, `target_id`, `price_cents`, `cash_share` (0–1), `made_turn`, `status` (`accepted`, `review`, `blocked`, `closed`, `abandoned`, `failed`), `hostile`, `close_turn`, `review_end_turn`, `combined_share`, `market`, `blocked_draw` (**hidden**), `remedy_product_id`, `mode` (`brand`, `integrate`), `resolved_turn`, `loan_cents` | A deal on its way to closing (28.3–28.4). |
+| `mna_deal` | `id` | `data`: `acquirer_id`, `target_id`, `price_cents`, `cash_share` (0–1), `made_turn`, `status` (`accepted`, `review`, `blocked`, `refused` (blocked after a review, final), `closed`, `abandoned`, `failed`), `hostile`, `close_turn`, `review_end_turn`, `combined_share`, `market`, `blocked_draw` (**hidden**), `remedy_product_id`, `mode` (`brand`, `integrate`), `resolved_turn`, `loan_cents` | A deal on its way to closing (28.3–28.4). |
 | `mna_acquisition` | `deal_id` | `data`: `acquirer_id`, `target_id`, `mode`, `closed_turn`, `price_cents`, `directive` (`grow`, `harvest`, `defend`), `distance`, `cost_before_cents`, `key_people`, `pool_kept`, `let_go`, `departed`, `problems`, `product_ids`, `unit_ids`, `person_ids` (everyone who came over) | A closed acquisition and its integration progress (28.5). |
 | `mna_acquired_person` | `person_id` | `data`: `deal_id`, `until_turn`, `brand`, `flight_mult` | An acquired key person during culture clash (28.5); the row goes when clash ends or they leave. |
 
@@ -1609,16 +1614,18 @@ Each record keeps its fields in a JSON `data` column: the frozen record in `back
 | `product_quarter_mark` | `product_id` | `data`: `turn`, `quality`, `customers` | A product at the last quarterly reports: the next reports' starting values. Replaced each quarter. |
 | `venture` | `company_id` | `data`: `name`, `founded_turn`, `ended_turn`, `outcome` (`exit`), `buyer_id`, `price_cents`, `proceeds_cents` (the founder's share), `kept_cents` (what they kept rather than invest) | A company the player sold (addendum 10). History, the score and the Hall of Fame show each apart. |
 
+Also new: `save_meta.game_state` values `scenario_done` (a historical scenario judged) and `retired` (the founder retired after an exit); the knowledge actions `public_appearance`, `rival_approach` and `rival_diligence` in reveal records of rival CEOs (addendum 11); the `llm_text.kind` value `rival_story` (addendum 12); `mna_target_file.data` gains `counter_exact` (**hidden**), `rounds` and `strikes` (negotiation, addendum 9) and `mna_deal.data` gains `own_remedy_product_id` (addendum 15).
+
 ## Small rival startups (migration `0036_m15a`, M15a)
 
 ### startup_small
 
 A rival startup's current run of month ends below `rivals.startup.small_staff` people (formulas.md 30.7 V5). At `rivals.startup.small_months` consecutive small month ends it closes (shut down or acqui-hired). No row: not small; the row is deleted when it grows back.
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `company_id` | int, PK, FK company | the startup |
-| `since_turn` | int | the first month end of the current small run |
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key: the startup. |
+| `since_turn` | INTEGER | no | The first month end of the current small run. |
 
 Also new: `save_meta.game_state` values `scenario_done` (a historical scenario judged) and `retired` (the founder retired after an exit); the knowledge actions `public_appearance`, `rival_approach` and `rival_diligence` in reveal records of rival CEOs (addendum 11); the `llm_text.kind` value `rival_story` (addendum 12); `mna_target_file.data` gains `counter_exact` (**hidden**), `rounds` and `strikes` (negotiation, addendum 9) and `mna_deal.data` gains `own_remedy_product_id` (addendum 15).
 
@@ -1634,3 +1641,9 @@ The founder's own records (formulas.md 32). `founder_life`, `foundation` and `in
 | `influence` | `company_id`, `region` | `data`: `value` (0–100), `spend_cents` (monthly lobbying), `risk` (**hidden**: the scandal risk), `scandal_turns`, `spent_cents`, `started_turn`, `second_story` (**hidden**: fighting the last scandal brings a second story) | 32.5. The API shows the risk only as an exposure word (low, medium, high) and never `second_story`. |
 
 Also new: company account `6950_lobbying` (expense; monthly lobbying by region; scandal fines post to `6900_general_admin`); `decision_log` payloads carry `holiday` in a turn's `Decisions` (a Holiday month lowers stress); action kinds `sell_founder_shares`, `create_foundation`, `give_to_foundation` and `set_lobbying`; event templates `founder_burnout`, `founder_scandal` and `founder_first_grants` (trigger `founder_life`, effect `founder_step`).
+
+## Exact contract prices (migration `0038_m15r`, M15r)
+
+`production_contract.price_cents` (FLOAT, 0031) becomes `price_millicents` (BIGINT): the unit fee or wafer price in exact integer thousandths of a cent (Codex review 4 finding 8). Existing rows convert once, `ROUND(price_cents x 1000)`. `save_meta.schema_version` becomes 38 (after M24's `0037_founder`).
+
+Also from M15r, without a schema change: a sold company's `board_seat` rows (and their `board_seat_history`) are deleted when the founder founds again; `ceo.end_reason` may be `acquired`; the exit sale's `mna_deal` has `mode` `brand` and an `mna_acquisition` row from the month of the sale.

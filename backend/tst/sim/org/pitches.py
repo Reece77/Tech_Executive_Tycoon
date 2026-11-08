@@ -51,10 +51,11 @@ from tst.sim.events.models import Modifier
 from tst.sim.facilities import compute, lifecycle
 from tst.sim.facilities import formulas as ff
 from tst.sim.geo import formulas as gf
+from tst.sim.hardware.formulas import plant_cost_per_good_unit
 from tst.sim.hiring.formulas import market_mid_cents
 from tst.sim.ledger import CASH, MARKETING, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import Cents, format_money
+from tst.sim.money import Cents, exact, format_money
 from tst.sim.org.delegates import delegate_draws
 from tst.sim.org.executives import displayed_score
 from tst.sim.org.formulas import (
@@ -568,17 +569,31 @@ def _plants(state: GameState, company: int, b: Balance, data: GameData) -> list[
         and c.end_turn - state.turn + 1 >= pb.plant_months
     ]
     units = sum(c.units for c in contracts)
-    sizes = [s for s in sorted(b.facility.sizes) if units >= pb.plant_share * s]
+    kind = b.facility.kinds[plant]
+    # the plant kind's own sizes, as the build action allows them (26.8; M15r finding 6)
+    allowed = kind.sizes or b.facility.sizes
+    sizes = [s for s in sorted(allowed) if units >= pb.plant_share * s]
     if not contracts or not sizes:
         return []
     size = sizes[-1]
     fee = sum(c.units * c.price_cents for c in contracts) / units
     home = compute.home_region_of(state, b, data)
-    kind = b.facility.kinds[plant]
     q = lifecycle.quote(state, company, plant, home, size, b, data)
-    fixed = q.capex_cents / kind.life_months + kind.fixed_opex_cents
-    per_unit = fixed / min(units, size)
-    saving = (fee - per_unit) * min(units, size)
+    run = min(units, size)
+    # cost per good unit: fixed, variable a unit run and depreciation over units x yield, at
+    # the formula's base yield before the plant has staff (26.2)
+    per_unit = plant_cost_per_good_unit(
+        size,
+        run,
+        b.hardware.plant_yield.base,
+        kind.fixed_opex_cents,
+        kind.variable_cents,
+        q.capex_cents,
+        kind.life_months,
+    )
+    if per_unit is None:
+        return []
+    saving = (fee - per_unit) * run
     if saving <= 0:
         return []
     return [
@@ -1071,7 +1086,8 @@ def _acquisitions(
     the CPO only startups estimated under the auto-approve limit x mna.cpo_limit_mult. Score:
     the target's displayed revenue in the acquirer's categories x fit / estimated price, on the
     pitches' 24-month scale; central case: that revenue grown 24 months, plus integration
-    savings of mna.pitch_synergy x its monthly costs."""
+    savings of mna.pitch_synergy x its public monthly staff-cost estimate (M15r: displayed
+    headcount at market rates, never its private salaries)."""
     from tst.sim.mna import antitrust, deals, valuation
     from tst.sim.mna.integration import can_integrate
 
@@ -1104,11 +1120,11 @@ def _acquisitions(
             for p in state.company_products(target.id)
             if p.category in mine
         )
-        costs = deals.monthly_costs_cents(state, target.id, b, data)
+        costs = deals.public_costs_cents(state, target.id, b, data)  # public only (M15r)
         central = revenue * (1 + growth) ** 2 + mb.pitch_synergy * costs
         listed = valuation.is_listed(state, target.id, data)
         if listed:
-            price = round(estimate * (1 + mb.pitch_bid_premium))
+            price = round(estimate * (1 + exact(mb.pitch_bid_premium)))  # exact (M15r)
         else:
             price = valuation.value_range_cents(state, target.id, balances, b, data)[1]
         share, _ = antitrust.combined_share(state, company, target.id, b, data)

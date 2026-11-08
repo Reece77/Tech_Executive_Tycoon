@@ -108,7 +108,7 @@ def _launch_with_contract(state: GameState) -> GameState:
         kind="assembly",
         supplier="foxconn",
         units=20_000,
-        price_cents=1_300.0,
+        price_millicents=1_300_000,
         signed_turn=state.turn,
         end_turn=state.turn + 23,
         city="shenzhen",

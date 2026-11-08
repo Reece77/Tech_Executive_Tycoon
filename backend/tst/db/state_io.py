@@ -1147,7 +1147,7 @@ def _load_hardware(session: Session, state: GameState) -> GameState:
             kind=r.kind,  # type: ignore[arg-type]
             supplier=r.supplier,
             units=r.units,
-            price_cents=r.price_cents,
+            price_millicents=r.price_millicents,
             signed_turn=r.signed_turn,
             end_turn=r.end_turn,
             city=r.city,
@@ -1428,6 +1428,12 @@ def _sync_public(session: Session, old: GameState, new: GameState) -> None:
         session.merge(ListingRow(**asdict(x)))
     for p in _changed(old.public_companies, new.public_companies, lambda p: p.company_id):
         session.merge(public_to_row(p))
+    # A delisting (a sale, M15b addendum 10) removes the current listed state; the share-price
+    # history (share_month) stays (M15r, Codex review 4 finding 4).
+    kept = {p.company_id for p in new.public_companies}
+    gone = [p.company_id for p in old.public_companies if p.company_id not in kept]
+    if gone:
+        session.execute(delete(PublicCompanyRow).where(PublicCompanyRow.company_id.in_(gone)))
     for g in _changed(old.guidance, new.guidance, lambda g: (g.company_id, g.quarter_turn)):
         session.merge(GuidanceRow(**asdict(g)))
     for m in _changed(old.share_months, new.share_months, lambda m: (m.company_id, m.turn)):
@@ -1878,6 +1884,15 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
         session.flush()
     for seat in _changed(old.seats, new.seats, lambda s: s.id):
         session.merge(seat_history_row(seat))
+    # A sold company's board goes with the sale (M15b addendum 10; M15r, Codex review 4
+    # finding 4): seats removed from the state leave the save too.
+    kept_seats = {s.id for s in new.seats}
+    gone_seats = [s.id for s in old.seats if s.id not in kept_seats]
+    if gone_seats:
+        session.execute(
+            delete(BoardSeatHistoryRow).where(BoardSeatHistoryRow.seat_id.in_(gone_seats))
+        )
+        session.execute(delete(BoardSeatRow).where(BoardSeatRow.id.in_(gone_seats)))
     for rnd in _changed(old.rounds, new.rounds, lambda r: r.id):
         session.merge(round_nominee_row(rnd))
 

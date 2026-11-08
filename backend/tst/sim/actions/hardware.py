@@ -19,7 +19,7 @@ from tst.sim.hardware import cm_market
 from tst.sim.hardware import formulas as hf
 from tst.sim.hardware.models import ProductionContract
 from tst.sim.log import inbox_item
-from tst.sim.money import format_money
+from tst.sim.money import format_money, to_millicents
 from tst.sim.products.formulas import held_feature_points
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.state import (
@@ -112,7 +112,7 @@ def sign_manufacturing_contract(
         kind="assembly",
         supplier=action.manufacturer,
         units=action.units,
-        price_cents=fee,
+        price_millicents=to_millicents(fee),
         signed_turn=state.turn,
         end_turn=state.turn + action.months - 1,
         city=action.city,
@@ -159,7 +159,7 @@ def sign_wafer_contract(
         kind="wafer",
         supplier=action.foundry,
         units=action.wafers,
-        price_cents=price,
+        price_millicents=to_millicents(price),
         signed_turn=state.turn,
         end_turn=state.turn + action.months - 1,
     )

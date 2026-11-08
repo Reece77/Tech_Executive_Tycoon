@@ -90,6 +90,7 @@ from tst.sim.finance.options import at_cliff, next_vesting, pool_left_bp
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.ledger import CASH
 from tst.sim.mna.exit import sale_of
+from tst.sim.modes.scenarios import bonus_reached
 from tst.sim.money import Cents
 from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState
@@ -838,7 +839,7 @@ def funding_summary(state: GameState) -> str | None:
     return f"after {words}"
 
 
-def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | None]:
+def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | bool | None]:
     """A historical scenario's goal and verdict for the result screen (M15b, 30.3)."""
     mode = state.mode
     if mode is None or mode.kind != "scenario" or mode.scenario is None:
@@ -851,6 +852,8 @@ def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | None
         "scenario_goal": h.goal.text,
         "scenario_deadline_label": format_turn(ym_to_turn(*h.deadline)),
         "scenario_result": mode.result,
+        "scenario_bonus": h.goal.bonus_text,
+        "scenario_bonus_reached": bonus_reached(h.goal, state),
     }
 
 

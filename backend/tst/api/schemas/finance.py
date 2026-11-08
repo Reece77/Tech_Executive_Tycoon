@@ -426,6 +426,10 @@ class GameOverOut(BaseModel):
     scenario_goal: str | None = None
     scenario_deadline_label: str | None = None
     scenario_result: str | None = Field(default=None, description="success | failure, once judged")
+    scenario_bonus: str | None = Field(
+        default=None, description="The goal's bonus in words, never a win condition (M15r)"
+    )
+    scenario_bonus_reached: bool | None = None
     exit_buyer: str | None = Field(default=None, description="Exit (M14, 28.6): who bought it")
     exit_price_cents: int | None = None
     exit_proceeds_cents: int | None = Field(default=None, description="The founder's stake")

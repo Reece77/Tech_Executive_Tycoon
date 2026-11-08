@@ -28,6 +28,33 @@ def test_january_brings_three_lists_and_the_news(loaded: LoadedData) -> None:
     assert len(news) == 1 and news[0].company_id == 1
 
 
+def test_the_news_item_names_each_lists_top_and_links_the_screen(loaded: LoadedData) -> None:
+    """Playtest 4 (M15r addendum b): the January item gives the player's place on each list
+    (or "not ranked"), the top five names on each, and links to the Rankings screen."""
+    from tst.db.inbox import render
+
+    game = Game(loaded, with_product(fresh_game(loaded), customers={"smb": 100.0}))
+    while game.state.turn < 11:
+        game.turn()
+    result = game.turn()
+    item = next(i for i in result.log_items if i.kind == "rankings_published")
+    assert item.link_kind == "rankings"
+    params = dict(item.params)
+    names = {c.id: c.name for c in game.state.companies}
+    n = loaded.balance.rank.news_top
+    assert n == 5
+    for kind in ("revenue", "places", "innovative"):
+        ranked = sorted((r for r in game.state.rankings if r.kind == kind), key=lambda r: r.place)
+        mine = next((r for r in ranked if r.company_id == 1), None)
+        assert params[f"{kind}_place"] == (f"#{mine.place}" if mine else "not ranked")
+        expected = ", ".join(f"{r.place}. {names[r.company_id]}" for r in ranked[:n])
+        assert params[f"{kind}_top"] == (expected or "nobody yet")
+    assert len(params["revenue_top"].split(", ")) == n  # the revenue list has five or more
+    _, body = render(item, loaded.game_data.inbox_templates)
+    assert params["revenue_top"] in body and "Rankings screen" in body
+    assert params["revenue_place"] in body and params["innovative_top"] in body
+
+
 def test_a_top_ten_place_lifts_hiring_and_brand_for_the_year(loaded: LoadedData) -> None:
     b = loaded.balance
     state = replace(fresh_game(loaded), turn=12)

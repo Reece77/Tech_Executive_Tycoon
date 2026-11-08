@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Literal
 
 from tst.sim.data_models import Balance, GameData
@@ -29,8 +30,9 @@ from tst.sim.mna import formulas as mf
 from tst.sim.mna import valuation
 from tst.sim.mna.draws import fixed_draws, mna_draws
 from tst.sim.mna.models import OPEN_DEALS, PROBLEMS, Deal, Mode, Problem, TargetFile
+from tst.sim.money import exact as rational
 from tst.sim.money import format_money
-from tst.sim.rivals.models import stream_key
+from tst.sim.rivals.models import player_key, stream_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -102,9 +104,12 @@ class DealOutcome:
 
 
 def key_of(state: GameState, company_id: int) -> tuple[int, ...]:
-    """A company's mna stream key (ADR-0013): a rival's stable key, the player's id."""
+    """A company's mna stream key (ADR-0013): a rival's stable key, the player's player key
+    (M15r)."""
     company = state.company(company_id)
-    return (company_id,) if company.is_player else stream_key(company_id, company.rival_key)
+    if company.is_player:
+        return player_key(company_id, company.rival_key)
+    return stream_key(company_id, company.rival_key)
 
 
 def problems_of(state: GameState, target_id: int, balance: Balance) -> tuple[Problem, ...]:
@@ -138,10 +143,38 @@ def open_deal(state: GameState, target_id: int) -> Deal | None:
 # --- Prices -------------------------------------------------------------------------------
 
 
+def cash_part_cents(price_cents: int, cash_share: float) -> int:
+    """The cash part of a price (28.3): price x the cash share as written, rounded half to
+    even once, in exact arithmetic (M15r, Codex review 4 finding 8). Offer validation,
+    closing and share issuance all use it; the stock part is the rest."""
+    return round(rational(price_cents) * rational(cash_share))
+
+
 def monthly_costs_cents(state: GameState, company_id: int, balance: Balance, data: GameData) -> int:
     from tst.sim.rivals.decisions import monthly_cost_cents
 
     return monthly_cost_cents(state, company_id, balance, data)
+
+
+def public_costs_cents(state: GameState, company_id: int, balance: Balance, data: GameData) -> int:
+    """What anyone can estimate of a company's monthly staff costs (M15r, Codex review 4
+    finding 5): its displayed headcount (15.5's rounding of people plus pools) x a market
+    head's monthly cost (the mid-level pay of each pool function's role at the default region,
+    benefits and office, averaged). Never its people's private salaries."""
+    from tst.sim.hiring.formulas import benefits_cents, market_mid_cents, monthly_salary_cents
+    from tst.sim.rivals.formulas import rounded_headcount
+
+    heads = len(state.staff(company_id)) + sum(p.headcount for p in state.company_pools(company_id))
+    shown = rounded_headcount(heads, balance.rivals)
+    region = data.region(balance.founder.default_region).salary_multiplier_bp
+    per_head = []
+    for role_key in balance.rivals.function_roles.values():
+        role = data.role(role_key)
+        pay = monthly_salary_cents(market_mid_cents(role.salary_band_mid_cents["mid"], region))
+        per_head.append(
+            pay + benefits_cents(pay, balance.payroll) + balance.payroll.office_cost_per_head_cents
+        )
+    return shown * (sum(per_head) // len(per_head)) if per_head else 0
 
 
 def premium_of(state: GameState, target_id: int, balance: Balance) -> float:
@@ -299,7 +332,7 @@ def _validate_offer(
     if action.cash_share < 1 and not listed:
         raise MnaRuleError("paying in shares needs the company to be listed")
     cash = account_balance(balances, acquirer_id, CASH)
-    cash_part = round(action.price_cents * action.cash_share)
+    cash_part = cash_part_cents(action.price_cents, action.cash_share)
     if cash_part > cash:
         raise MnaRuleError(
             f"the cash part is {format_money(cash_part)}; there is {format_money(cash)} on hand "
@@ -403,12 +436,18 @@ def _negotiate(
     half the gap toward it, for up to mna.max_rounds rounds; an offer at or above the counter
     as shown is accepted. A lowball (below the last counter x mna.lowball) uses up patience:
     mna.strikes of them end talks. Counters are shown rounded up to two significant figures,
-    so no run of offers pins the reservation down; the reservation is never shown."""
+    so no run of offers pins the reservation down; the reservation is never shown.
+
+    Playtest 4 (M15r addendum a): an offer at or above the reservation is accepted in any
+    round, and a counter is never below the offer it answers (the halved gap had countered
+    $17.9M at $17.0M)."""
     mb = balance.mna
     target = action.target_id
     name = state.company(target).name
     price = action.price_cents
     reservation = reservation_cents(state, target, balances, balance, data)
+    if price >= reservation:
+        return _accept(state, found, action, acquirer_id, rng, balance, data)
     if found.counter_exact is None:
         personality = state.company(target).personality or ""
         anchor = mb.counter_anchor.get(personality, max(mb.counter_anchor.values()))
@@ -421,7 +460,7 @@ def _negotiate(
     shown = found.counter_cents or mf.shown_counter(found.counter_exact)
     if price >= shown:
         return _accept(state, found, action, acquirer_id, rng, balance, data)
-    if price < shown * mb.lowball:
+    if price < rational(shown) * rational(mb.lowball):
         strikes = found.strikes + 1
         if strikes >= mb.strikes:
             return _end_talks(state, found, acquirer_id, name, "lowballed twice", balance)
@@ -453,6 +492,8 @@ def _counter(
     mb = balance.mna
     target = found.target_id
     name = state.company(target).name
+    exact = max(exact, price + 1)  # never counter below the offer (playtest 4); unreachable
+    # while offers at the reservation are accepted, kept so the rule holds on its own
     shown = mf.shown_counter(exact)
     rounds = found.rounds + 1
     found = replace(found, counter_exact=exact, counter_cents=shown, rounds=rounds)
@@ -621,7 +662,7 @@ def closing_entries(
     name = state.company(target).name
     lines = net_assets(balances, target, data)
     equity = sum(amount for _, amount in lines)
-    cash_part = round(deal.price_cents * deal.cash_share)
+    cash_part = cash_part_cents(deal.price_cents, deal.cash_share)
     stock_part = deal.price_cents - cash_part
     paid = [LedgerLine(CASH, -cash_part), LedgerLine(COMMON_EQUITY, -stock_part)]
     goodwill = LedgerLine(GOODWILL, mf.goodwill_cents(deal.price_cents, equity))
@@ -661,11 +702,11 @@ def issue_shares(state: GameState, deal: Deal) -> GameState:
     from tst.sim.markets_public.ipo import PUBLIC_HOLDERS
     from tst.sim.state import with_cap_entry
 
-    stock_part = deal.price_cents - round(deal.price_cents * deal.cash_share)
+    stock_part = deal.price_cents - cash_part_cents(deal.price_cents, deal.cash_share)
     public = public_of(state, deal.acquirer_id)
     if stock_part <= 0 or public is None or public.price_cents <= 0:
         return state
-    shares = max(1, round(stock_part / public.price_cents))
+    shares = max(1, round(Fraction(stock_part, public.price_cents)))
     entry = _float_entry(state, deal.acquirer_id)
     if entry is not None:
         return with_cap_entry(state, replace(entry, shares=entry.shares + shares))

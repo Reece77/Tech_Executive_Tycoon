@@ -174,6 +174,6 @@ def test_override_costs_energy_and_reverts() -> None:
 
 def test_board_vote_replaces_the_ceo() -> None:
     state = with_ceo_appointed(staffed())
-    state, logs = apply_public_step(state, CID, "ceo_replace", LOADED.balance)
+    state, _, logs = apply_public_step(state, CID, "ceo_replace", LOADED.balance)
     assert ceo_of(state, CID) is None
     assert any(item.template == "ceo_replaced" for item in logs)

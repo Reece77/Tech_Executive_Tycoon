@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+import pytest
+
 from tests.helpers import fresh_game
 from tests.unit.test_hiring_phases import Game
 from tests.unit.test_mna_deals import BIG, _energy, _founder, _id, _reservation
@@ -142,3 +144,41 @@ def test_revenue_shares(loaded: LoadedData) -> None:
     products = list(state.company_products(_id(state, "Microsoft")))
     shares = integration.revenue_shares(state, products)
     assert abs(sum(shares) - 1.0) < 1e-9 and len(shares) == len(products)
+
+
+@pytest.mark.parametrize("mode", ["integrate", "brand"])
+def test_hidden_problems_apply_in_either_mode(loaded: LoadedData, mode: str) -> None:
+    """M15r (Codex review 4 finding 7): tech_debt costs 10 quality over the 12 months after
+    closing and customer_concentration multiplies churn x1.5 for those 12 months (28.2), on
+    the products' owning company, whether the target is integrated or kept as a brand."""
+    from tst.sim.events.modifiers import product_factor
+    from tst.sim.mna.deals import file_of
+    from tst.sim.state import with_target_file
+
+    pb = loaded.balance.mna.problems
+    game = Game(loaded, fresh_game(loaded, seed=3), cash=BIG)
+    target = _id(game.state, "GitHub")
+    found = file_of(game.state, 1, target, loaded.balance)
+    game.state = with_target_file(
+        game.state, replace(found, problems=("tech_debt", "customer_concentration"))
+    )
+    _energy(game)
+    game.act(BidForCompany(_founder(game), target, _reservation(game, target), mode=mode))  # type: ignore[arg-type]
+    game.turn()
+    (acquisition,) = game.state.acquisitions
+    assert acquisition.mode == mode and acquisition.product_ids
+    owner = 1 if mode == "integrate" else target
+    closed = acquisition.closed_turn
+    state = game.state
+    start = {pid: state.product(pid).quality for pid in acquisition.product_ids}  # type: ignore[union-attr]
+    ib = loaded.balance.integration
+    for month in range(1, pb.tech_debt_months + 2):
+        state = integration._products(replace(state, turn=closed + month), loaded.balance)
+        lost = min(month, pb.tech_debt_months) * pb.tech_debt_quality / pb.tech_debt_months
+        for pid in acquisition.product_ids:
+            product = state.product(pid)
+            assert product is not None and product.company_id == owner
+            assert product.quality == pytest.approx(start[pid] - lost)
+            clash = ib.churn_mult if mode == "integrate" and month < ib.churn_months else 1.0
+            problem = pb.churn_mult if month <= pb.churn_months else 1.0
+            assert product_factor(state, owner, pid, "churn") == pytest.approx(clash * problem)

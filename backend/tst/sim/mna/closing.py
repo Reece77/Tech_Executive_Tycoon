@@ -10,7 +10,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, LedgerBalances, LedgerEntry, account_balance, apply_entries
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.mna import antitrust, deals, integration
-from tst.sim.mna.models import Acquisition, Deal
+from tst.sim.mna.models import Acquisition, Deal, Problem
 from tst.sim.money import format_money
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, target_file, with_acquisition, with_deal, with_target_file
@@ -52,7 +52,7 @@ def close_deal(
     """Close one deal (28.3): the cash part must be on hand; the price posts with goodwill,
     the target's problems come to light, and the chosen mode runs (28.5)."""
     name = state.company(deal.target_id).name
-    cash_part = round(deal.price_cents * deal.cash_share)
+    cash_part = deals.cash_part_cents(deal.price_cents, deal.cash_share)
     if account_balance(balances, deal.acquirer_id, CASH) < cash_part:
         state = with_deal(state, replace(deal, status="abandoned", resolved_turn=state.turn))
         log = deals._update(
@@ -69,24 +69,11 @@ def close_deal(
     if mode == "integrate" and not can_integrate(state, deal.target_id, balance):
         mode = "brand"  # it grew past integration.max_staff before closing (2026-11-05)
     deal = replace(deal, mode=mode, status="closed", resolved_turn=state.turn)
-    posted = list(deals.closing_entries(state, deal, balances, data))
-    state = deals.issue_shares(state, deal)
     found = deals.file_of(state, deal.acquirer_id, deal.target_id, balance)
     state = with_target_file(
         state, replace(found, diligence_done_turn=found.diligence_done_turn or state.turn)
     )
-    costs = deals.monthly_costs_cents(state, deal.target_id, balance, data)
-    acquisition = Acquisition(
-        deal_id=deal.id,
-        acquirer_id=deal.acquirer_id,
-        target_id=deal.target_id,
-        mode=mode,
-        closed_turn=state.turn,
-        price_cents=deal.price_cents,
-        cost_before_cents=costs,
-        problems=found.problems,
-    )
-    state = with_deal(state, deal)
+    state, posted, acquisition = settle(state, deal, found.problems, balances, balance, data)
     state, acquisition, more, logs = integration.after_closing(
         state, acquisition, rng, apply_entries(balances, posted), balance, data
     )
@@ -122,6 +109,33 @@ def close_deal(
             ),
         )
     return state, posted, logs
+
+
+def settle(
+    state: GameState,
+    deal: Deal,
+    problems: tuple[Problem, ...],
+    balances: LedgerBalances,
+    balance: Balance,
+    data: GameData,
+) -> tuple[GameState, list[LedgerEntry], Acquisition]:
+    """The price at closing, once (28.3): the acquirer's postings (cash out, new shares,
+    goodwill, the brand's book equity in 1810 or its books moved over), the shares issued, and
+    the closed deal with its acquisition record. Shared by a closing and by a sale after a
+    takeover bid (M15r, Codex review 4 finding 1)."""
+    posted = list(deals.closing_entries(state, deal, balances, data))
+    state = deals.issue_shares(state, deal)
+    acquisition = Acquisition(
+        deal_id=deal.id,
+        acquirer_id=deal.acquirer_id,
+        target_id=deal.target_id,
+        mode=deal.mode or "integrate",
+        closed_turn=state.turn,
+        price_cents=deal.price_cents,
+        cost_before_cents=deals.monthly_costs_cents(state, deal.target_id, balance, data),
+        problems=problems,
+    )
+    return with_deal(state, deal), posted, acquisition
 
 
 def file_known(state: GameState, acquirer_id: int, target_id: int) -> bool:

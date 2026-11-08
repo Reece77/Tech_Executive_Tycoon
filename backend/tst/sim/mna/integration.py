@@ -28,6 +28,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.mna import formulas as mf
 from tst.sim.mna.data import IntegrationBalance
 from tst.sim.mna.models import AcquiredPerson, Acquisition, Directive
+from tst.sim.money import exact
 from tst.sim.org.models import OrgUnit
 from tst.sim.people.models import Employment
 from tst.sim.products import formulas as pf
@@ -121,8 +122,28 @@ def after_closing(
     if brand:
         target = state.company(acquisition.target_id)
         state = with_company(state, replace(target, parent_id=acquisition.acquirer_id))
-        return state, replace(acquisition, person_ids=tuple(key_people)), [], []
-    return integrate(state, acquisition, rng, balances, balance, data)
+        kept = tuple(p.id for p in state.company_products(target.id) if p.status != "retired")
+        acquisition = replace(acquisition, person_ids=tuple(key_people), product_ids=kept)
+        return _liabilities(state, acquisition, balance), acquisition, [], []
+    state, acquisition, entries, logs = integrate(state, acquisition, rng, balances, balance, data)
+    return _liabilities(state, acquisition, balance), acquisition, entries, logs
+
+
+def _liabilities(state: GameState, acquisition: Acquisition, balance: Balance) -> GameState:
+    """The target's problems after closing, in either mode, on the products' owning company
+    (28.2; M15r, Codex review 4 finding 7): customer_concentration multiplies the acquired
+    products' churn for the problems.churn_months after closing. tech_debt's quality loss runs
+    monthly in _products. Integration's own churn penalty stays in `integrate`."""
+    pb = balance.mna.problems
+    if "customer_concentration" not in acquisition.problems:
+        return state
+    for pid in acquisition.product_ids:
+        product = state.product(pid)
+        if product is not None:
+            state = _modifier(
+                state, product.company_id, pid, pb.churn_mult, pb.churn_months, state.turn + 1
+            )
+    return state
 
 
 def _risky_person(state: GameState, acquisition: Acquisition, people: list[int]) -> int | None:
@@ -176,8 +197,7 @@ def integrate(
             ),
         )
         unit_ids.append(unit_id)
-        for months, mult in _churn_penalties(acquisition, balance):
-            state = _modifier(state, acquirer, product.id, mult, months)
+        state = _modifier(state, acquirer, product.id, ib.churn_mult, ib.churn_months)
     key = [e for e in state.staff(target)]
     arrived = [e.person_id for e in key]
     for index, employment in enumerate(sorted(key, key=lambda e: e.id)):
@@ -229,7 +249,7 @@ def integrate(
         mid = data.role(role).salary_band_mid_cents["mid"]
         bp = data.region(balance.founder.default_region).salary_multiplier_bp
         severance += round(
-            gone * market_mid_cents(mid, bp) / 12 * ib.severance_months
+            exact(gone) * market_mid_cents(mid, bp) / 12 * exact(ib.severance_months)
         )  # tunable-exempt: months a year
         state = _zero_pool(state, pool)
     state, gone_people, paid = _let_go_others(state, acquirer, arrived, ib, data)
@@ -382,16 +402,13 @@ def can_integrate(state: GameState, company_id: int, balance: Balance) -> bool:
     return staff_of(state, company_id) <= balance.integration.max_staff
 
 
-def _churn_penalties(acquisition: Acquisition, balance: Balance) -> list[tuple[int, float]]:
-    ib, pb = balance.integration, balance.mna.problems
-    out = [(ib.churn_months, ib.churn_mult)]
-    if "customer_concentration" in acquisition.problems:
-        out.append((pb.churn_months, pb.churn_mult))
-    return out
-
-
 def _modifier(
-    state: GameState, company_id: int, product_id: int, mult: float, months: int
+    state: GameState,
+    company_id: int,
+    product_id: int,
+    mult: float,
+    months: int,
+    start: int | None = None,
 ) -> GameState:
     from tst.sim.state import with_modifier
 
@@ -405,8 +422,8 @@ def _modifier(
             target=f"product:{product_id}",
             stat="churn",
             value_pct=(mult - 1) * 100,  # tunable-exempt: percent
-            start_turn=state.turn,
-            end_turn=state.turn + months,
+            start_turn=state.turn if start is None else start,
+            end_turn=(state.turn if start is None else start) + months,
         ),
     )
 
@@ -491,7 +508,7 @@ def _sweeps(
             continue
         costs = monthly_costs_cents(state, company.id, balance, data)
         cash = account_balance(balances, company.id, CASH)
-        sweep = cash - round(balance.mna.sweep_months * costs)
+        sweep = cash - round(exact(balance.mna.sweep_months) * costs)
         if sweep <= 0:
             continue
         out.append(
@@ -534,7 +551,7 @@ def _fund_brands(
         if shortfall <= 0:
             continue
         costs = monthly_costs_cents(state, company.id, balance, data)
-        cap = max(round(balance.mna.funding_months * costs), 0)
+        cap = max(round(exact(balance.mna.funding_months) * costs), 0)
         parent = company.parent_id
         available = account_balance(balances, parent, CASH) - paid.get(parent, 0)
         amount = min(shortfall, cap, max(available, 0))
@@ -672,29 +689,35 @@ def _clash(state: GameState, balance: Balance) -> GameState:
 
 
 def _products(state: GameState, balance: Balance) -> GameState:
-    """Integrated products: brand toward the acquirer's average; tech debt's quality loss
-    spread over its months (28.2, 28.5)."""
+    """Acquired products: integrated ones' brand toward the acquirer's average; tech debt's
+    quality loss spread over its months in either mode, on the products' owner (28.2, 28.5;
+    M15r finding 7: a kept brand's products too)."""
     ib, pb = balance.integration, balance.mna.problems
     for acquisition in state.acquisitions:
-        if acquisition.mode != "integrate" or not acquisition.product_ids:
+        if not acquisition.product_ids:
             continue
         months = state.turn - acquisition.closed_turn
         if months <= 0:
             continue
+        integrated = acquisition.mode == "integrate"
+        owner = acquisition.acquirer_id if integrated else acquisition.target_id
+        debt = "tech_debt" in acquisition.problems and months <= pb.tech_debt_months
+        if not integrated and not debt:
+            continue
         own = [
             p.brand
             for p in state.company_products(acquisition.acquirer_id)
-            if p.status in SELLING and p.id not in acquisition.product_ids
+            if integrated and p.status in SELLING and p.id not in acquisition.product_ids
         ]
         for pid in acquisition.product_ids:
             product = state.product(pid)
-            if product is None or product.company_id != acquisition.acquirer_id:
+            if product is None or product.company_id != owner:
                 continue
             brand = product.brand
             if own:
                 brand += ib.brand_blend * (sum(own) / len(own) - brand)
             quality = product.quality
-            if "tech_debt" in acquisition.problems and months <= pb.tech_debt_months:
+            if debt:
                 quality -= pb.tech_debt_quality / pb.tech_debt_months
             state = with_product(
                 state,

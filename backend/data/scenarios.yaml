@@ -78,7 +78,8 @@ historical:
         brand: 20
         segments: { smb: { price_dollars: 100, customers: 40 }, mid_market: { price_dollars: 2000, customers: 3 } }
     research: [{ domain: ai, lead: 12 }]
-    goal: { kind: era_or_arr, era: transformers, arr_dollars: 100000000, text: "Cause the Transformers era first, or reach $100M ARR" }
+    # playtest 4 (M15r addendum d): $100M ARR is the goal; Transformers first is a bonus
+    goal: { kind: arr, arr_dollars: 100000000, text: "Reach $100M ARR", bonus_era: transformers, bonus_text: "Cause the Transformers era first" }
     deadline: [2020, 12]
 
   - key: mobile_first

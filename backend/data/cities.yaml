@@ -1,4 +1,4 @@
-# Cities (docs/formulas.md 19.1, M9). About 15 real tech hubs; real names, personal use.
+# Cities (docs/formulas.md 19.1, M9; Africa's three from M15r). Real tech hubs; real names, personal use.
 # Order is significant: the first city of each region is the home city of people generated
 # before M9 (migration 0022), so append new cities and never reorder.
 #
@@ -30,6 +30,12 @@ cities:
   - { key: tokyo, label: Tokyo, region: east_asia, salary_multiplier_bp: 7500, rent_index: 0.70, talent_weight: 5, talent: { hardware_design: 0.8 } }
   - { key: sao_paulo, label: São Paulo, region: latin_america, salary_multiplier_bp: 4000, rent_index: 0.30, talent_weight: 3, talent: {} }
   - { key: sydney, label: Sydney, region: oceania, salary_multiplier_bp: 8500, rent_index: 0.70, talent_weight: 2, talent: {} }
+  # Africa's hubs (playtest 4, M15r addendum c: "Why are there no offices to lease in Africa?").
+  # Pay below the region's 0.55x as other emerging-market hubs sit below theirs (Bangalore,
+  # Sao Paulo); Cape Town highest, Lagos's prime rent above Nairobi's; small talent pools.
+  - { key: lagos, label: Lagos, region: africa, salary_multiplier_bp: 3500, rent_index: 0.30, talent_weight: 2, talent: { business: 0.3 } }
+  - { key: nairobi, label: Nairobi, region: africa, salary_multiplier_bp: 3500, rent_index: 0.20, talent_weight: 2, talent: { finance: 0.5 } }
+  - { key: cape_town, label: Cape Town, region: africa, salary_multiplier_bp: 4500, rent_index: 0.30, talent_weight: 1, talent: { technical: 0.3 } }
 
 # A region's demand growth is the category's growth x this multiplier (19.5). Every
 # regions.yaml key is listed.
@@ -44,6 +50,7 @@ region_growth:
 
 # Regions without a city of their own: people generated there before M9 get this region's
 # first city as their home city (M9 decision: Africa has no hub in 19.1's table, so its
-# people take Europe's, its sales neighbour).
+# people take Europe's, its sales neighbour). Africa keeps the entry after M15r added its
+# cities, so people saved with no city of their own keep London and their pay (M15r).
 home_city_region:
   africa: europe

@@ -219,10 +219,10 @@ def apply_ipo_step(
 
 
 def draw_demand(
-    rng: RngFactory, turn: int, company_id: int, climate: float, balance: Balance
+    rng: RngFactory, turn: int, key: tuple[int, ...], climate: float, balance: Balance
 ) -> float:
-    """d on stream `ipo`, key (company_id,) (25.2 step 4). Hidden (25.8)."""
-    z = float(rng.stream(turn, "ipo", company_id).standard_normal())
+    """d on stream `ipo`, key the company's player key (25.2 step 4; M15r). Hidden (25.8)."""
+    z = float(rng.stream(turn, "ipo", *key).standard_normal())
     return pf.book_demand(z, climate, balance.ipo.demand)
 
 
