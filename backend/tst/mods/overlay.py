@@ -11,8 +11,9 @@ An overlay holds only changed values, in each data file's own shape:
                 brand: 40
 
 Mappings merge key by key. A list whose items are mappings with an identity field (`key`,
-`id`, `name`, `segment` or `region`, the first every item has) merges item by item: an overlay item names the
-base item it changes, or is appended when no base item has its identity. Any other list,
+`id`, `name`, `segment` or `region`, the first every item has) merges item by item: an
+overlay item names the base item it changes, or is appended when no base item has its
+identity. Any other list,
 and every scalar, is replaced whole. A change path is a list of segments: a mapping key, or
 `@<field>=<value>` for the list item with that identity.
 """
