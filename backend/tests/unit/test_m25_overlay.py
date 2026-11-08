@@ -84,7 +84,7 @@ def test_no_overlay_loads_exactly_the_base(loaded: LoadedData) -> None:
 
 
 def test_an_invalid_overlay_fails_with_the_loaders_message() -> None:
-    with pytest.raises(DataLoadError, match="balance.yaml"):
+    with pytest.raises(DataLoadError, match=r"balance\.yaml"):
         load_all(Settings().data_dir, {"balance.yaml": {"backup": {"every_n_turns": "x"}}}, "bad")
     with pytest.raises(DataLoadError, match="unknown data files"):
         load_all(Settings().data_dir, {"nope.yaml": {}}, "bad")
