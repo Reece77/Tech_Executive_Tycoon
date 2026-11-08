@@ -43,6 +43,8 @@ class CapitalRun:
     founder_bp: int
     bankrupt: bool
     breached: bool
+    # M15a (30.7 V7): a breach in a month whose closing cash was still positive
+    breached_positive: bool
     series: tuple[str, ...]  # closed rounds, in order
     loans: int
 
@@ -65,6 +67,7 @@ def _closed(game: Game) -> tuple[str, ...]:
 
 def _play(seed: int, arm: str) -> CapitalRun:
     game = start_game(_loaded("data"), seed, SCENARIO)
+    positive = False
     for _ in range(TURNS):
         if game.state.ended:
             break
@@ -80,7 +83,11 @@ def _play(seed: int, arm: str) -> CapitalRun:
         else:  # blitz_later
             fundraise(game, BLITZ_LATER, pick="amount")
             blitzscale(game)
+        before = sum(x.breaches for x in game.state.company_loans(PLAYER))
         game.turn()
+        after = sum(x.breaches for x in game.state.company_loans(PLAYER))
+        if after > before and game.cash > 0:
+            positive = True
     loans = game.state.company_loans(PLAYER)
     return CapitalRun(
         seed=seed,
@@ -88,6 +95,7 @@ def _play(seed: int, arm: str) -> CapitalRun:
         founder_bp=0 if game.state.ended else founder_bp(game.state, PLAYER),
         bankrupt=game.state.save_meta.game_state == "bankrupt",
         breached=any(x.breaches for x in loans),
+        breached_positive=positive,
         series=_closed(game),
         loans=len(loans),
     )

@@ -23,20 +23,27 @@ class KnownMiss:
 
 KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     KnownMiss(
-        target="T2",
-        owner="M15",
-        # score: the most wins of any one strategy as a share of the seeds; 0.9 = 9/10, so
-        # it fails only if one strategy wins every seed (Reece, 2026-11-05)
-        worse_than=0.9,
-        reason="steady wins 8/10 on main; M15's v2 strategies should split wins",
+        target="V3.ai",  # docs/formulas.md 30.7 V3's AI arm: integrator_ai +3 to +10 points
+        owner="M23",
+        # score: minus the margin gap (larger is worse); known while the AI integrator is no
+        # more than 2 points below ai_regions (product manager, 2026-11-07)
+        worse_than=0.02,
+        reason="+0.7 pts in M15a: an AI-models company is about $7M ARR at year 10 (2020)",
     ),
     KnownMiss(
-        target="M10.T3",  # docs/formulas.md 20.5 target 3: covenants bite sometimes (20-60%)
-        owner="M15",
-        # score: the share of blitz_debt seeds that breach a covenant; known while below 90%,
-        # M10's original measured value (product manager, 2026-11-04)
-        worse_than=0.89,
-        reason="70% of blitz_debt seeds breach on main over seeds 11-40 (60% on 1-10 was luck)",
+        target="V5.cells",  # 30.7 V5: >= 75% of (run, category, decade after 2020) cells
+        owner="M23",
+        # score: the empty share; known while at most 40% empty (product manager,
+        # 2026-11-07, fifth round: owned by M23, fails below 60%)
+        worse_than=0.40,
+        reason="68-77% in M15a: long-lived startups hold rivals.startup.max_alive's places",
+    ),
+    KnownMiss(
+        target="V5.cats",  # 30.7 V5: no category misses a decade in more than 2 of 10 runs
+        owner="M23",
+        # score: the most runs a category-decade is empty in, as a share; known up to 70%
+        worse_than=0.70,
+        reason="2030s category-decades empty in up to 6 of 10 runs (M15a): as V5.cells",
     ),
 )
 

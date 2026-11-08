@@ -24,6 +24,7 @@ from tst.sim.geo.models import ProductRegion, RegionalSegment
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.mna.style import style  # M14 (28.5): a kept brand's directive
+from tst.sim.products import formulas as pf
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.research.eras import annual_growth
 from tst.sim.rivals.models import ENTRANT_KEY, STARTUP_KEY, RivalMove, stream_key
@@ -218,7 +219,8 @@ def launch_ready(
         for product in state.company_products(company.id):
             if product.status != "in_development":
                 continue
-            if launch_problems(state, product, balance, data):
+            # rivals' manufacturing is abstract (26.1): no contract or plant is needed (M15a)
+            if launch_problems(state, product, balance, data, needs_source=False):
                 continue
             state = with_product(state, replace(product, status="live", launched_turn=state.turn))
             category = data.category(product.category)
@@ -273,7 +275,12 @@ def record_failures(
         if item.template != "rival_failed":
             continue
         company = state.company(item.company_id or 0)
-        state, move = _record(state, company, "failed", "ran out of money and closed")
+        why = (  # M15a: a startup small for rivals.startup.small_months closes with cash left
+            "closed after too long as a tiny team: shut down or acqui-hired"
+            if company.small_since_turn is not None and company.insolvent_months == 0
+            else "ran out of money and closed"
+        )
+        state, move = _record(state, company, "failed", why)
         moves.append(move)
     return state, tuple(moves)
 
@@ -325,7 +332,10 @@ def found_company(
             name=name,
             status="in_development",
             quality=balance.products.start_quality,
-            feature_points=0.0,
+            # M15a (30.7 V5): a share of what the market has learned since 2010 comes free,
+            # so late founders can reach the launch bar (11.4); 0 in January 2010
+            feature_points=balance.rivals.startup.start_feature_share
+            * (pf.expected_features(category, state.turn) - category.features_at_start),
             brand=0.0,
             marketing_budget_cents=0,
             created_turn=state.turn,

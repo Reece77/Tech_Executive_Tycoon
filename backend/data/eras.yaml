@@ -100,6 +100,43 @@ eras:
       - { category: devices, segments: [consumer, smb], growth: 0.20, months: 36 }
       - { category: chips_mobile_soc, growth: 0.20, months: 36 }
 
+  # --- M15a (formulas.md 30.8), appended: eras to 2039, seeded windows. Keys are positions in
+  # this list (stream era_window, key (era_index,)), so earlier eras' months do not move. An
+  # era has one domain: two-domain eras take the first named (M15a decision). Effects the era
+  # model cannot express (a new segment, a data-centre cost cut) are left out (M15a decision).
+  - key: post_quantum_security
+    label: Post-quantum security
+    domain: infrastructure
+    window: [[2028, 1], [2031, 12]]
+    boosts:
+      - { category: cybersecurity, growth: 0.15, months: 36 }
+  - key: ar_glasses
+    label: AR glasses
+    domain: devices
+    window: [[2028, 1], [2032, 12]]
+    boosts:
+      - { category: devices, growth: 0.15, months: 36 }
+  - key: humanoid_robotics
+    label: Humanoid robotics
+    domain: ai
+    window: [[2030, 1], [2035, 12]]
+    boosts:
+      - { category: ai_models, growth: 0.20, months: 36 }
+      - { category: devices, growth: 0.20, months: 36 }
+  - key: photonic_interconnect
+    label: Photonic interconnect
+    domain: chip_design
+    window: [[2031, 1], [2035, 12]]
+    boosts:
+      - { category: chips_server_cpu, growth: 0.10, months: 36 }
+      - { category: chips_ai_accelerator, growth: 0.10, months: 36 }
+  - key: practical_quantum
+    label: Practical quantum computing
+    domain: infrastructure
+    window: [[2034, 1], [2039, 12]]
+    boosts:
+      - { category: cloud_hosting, growth: 0.15, months: 36 }
+
 # Base demand growth (fraction a year) for categories whose eras' boosts are already in the
 # curves M8-M10 were tuned on (21.4, 21.8 target 1): it replaces categories.yaml's `growth`
 # and `growth_by_year` for demand. By calendar year, the latest year at or before the month.

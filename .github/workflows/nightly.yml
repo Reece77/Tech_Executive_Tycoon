@@ -37,7 +37,8 @@ jobs:
     # share) and the nightly tests in four shards (two took over 45 minutes each on CI).
     name: nightly (${{ matrix.part }})
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # M15a: 60 -> 120; shard 1 passed 60 minutes with V1-V4's nine strategies and AI arms
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
