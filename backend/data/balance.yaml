@@ -1332,3 +1332,43 @@ influence: # 32.5: lobbying and influence over regulators by region
   apologize_cred: -5 # credibility points more for apologizing
   apologize_stress: 10 # stress points for apologizing
   fight_chance: 0.5 # chance that fighting it brings a second story (the hit again, no fine)
+
+group: # 31: the holding company and its subsidiaries (M16, v3)
+  stage5_revenue_cents: 200000000000 # cents ($2B) of group revenue in the last 12 months that opens the holding company (with a listing), 31.2
+  stage5_subsidiaries: 2 # or this many subsidiaries (kept brands count), 31.2
+  form_energy: 20 # energy to form the holding company
+  form_fee: 0.001 # share of market cap paid in legal fees when forming it (6900)
+  office_monthly_cents: 25000000 # cents ($250k) a month: the holding company's group office (6900)
+  control: 0.5 # stake from which a company is controlled and fully consolidated (NCI for the rest), 31.3
+  influence: 0.2 # stake from which a company is an associate (equity method); below it, fair value, 31.3
+  seat_per_stake: 0.15 # minorities get one board seat per this share of the subsidiary, 31.4
+  private_discount: 0.2 # an unlisted subsidiary's stake sells at its value less this share, 31.5
+  buyout_premium: 0.25 # minorities are bought out at their value plus this share, 31.5
+  max_sale: 0.49 # most of a subsidiary sold while the group keeps control, 31.5
+  carve_out: [0.10, 0.40] # share of a subsidiary listed in a carve-out IPO, 31.5
+  spin_keep: 0.199 # most of a spun-off company the group may keep, 31.5
+  stake_max: 0.499 # most of a listed rival bought on the market, 31.5
+  stake_impact: 0.005 # the price paid rises this share for each 1% of the target bought, 31.5
+  disclosures: [0.05, 0.10, 0.25] # stakes in a listed rival announced publicly as they are crossed, 31.5
+  offer_at: 0.30 # at this stake the group makes a full offer (28.3) or buys no more, 31.5
+  venture: [0.05, 0.25] # share of a startup bought in its funding round (15.4), 31.5
+  cost_plus: 0.10 # margin over cost of a "cost plus" transfer price, 31.6
+  fairness_band: 0.10 # a transfer price more than this share from market is unfair where minorities hold, 31.6
+  fairness_months: 6 # months unfair before the minority complaint (a critical event), 31.6
+  complaint_discount: 0.10 # share off the subsidiary's value while a complaint stands, 31.6
+  complaint_legal: 0.005 # share of the subsidiary's revenue a year paid in legal costs while it stands (6900), 31.6
+  mandate: # 31.4: what a subsidiary's CEO is judged on, by mandate
+    energy: 3 # energy to set a subsidiary's mandate
+    grow_target: 0.25 # yearly revenue growth a "grow" CEO must reach
+    margin_target: 0.15 # operating margin a "margin" CEO must reach
+    payout_target: 0.5 # share of the year's profit a "return cash" CEO must pay out as dividends
+    grow_spend: 0.25 # share of revenue a "grow" CEO puts into marketing and hiring each month
+    return_spend: 0.05 # the same under "return cash"
+    margin_spend: 0.12 # the same under "margin"
+    review_misses: 2 # Decembers missed in a row before the board proposes a new CEO
+  discount: # 31.7: the conglomerate discount on a listed holding company's sum of the parts
+    base: 0.10 # with one segment
+    per_segment: 0.03 # for each further unrelated segment
+    synergy: 0.15 # less this x the share of group revenue that is intra-group
+    min: 0.10 # the discount at least
+    max: 0.25 # and at most
