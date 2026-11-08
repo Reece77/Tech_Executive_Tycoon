@@ -51,6 +51,7 @@ from tst.sim.events.models import Modifier
 from tst.sim.facilities import compute, lifecycle
 from tst.sim.facilities import formulas as ff
 from tst.sim.geo import formulas as gf
+from tst.sim.hardware.formulas import plant_cost_per_good_unit
 from tst.sim.hiring.formulas import market_mid_cents
 from tst.sim.ledger import CASH, MARKETING, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
@@ -568,17 +569,31 @@ def _plants(state: GameState, company: int, b: Balance, data: GameData) -> list[
         and c.end_turn - state.turn + 1 >= pb.plant_months
     ]
     units = sum(c.units for c in contracts)
-    sizes = [s for s in sorted(b.facility.sizes) if units >= pb.plant_share * s]
+    kind = b.facility.kinds[plant]
+    # the plant kind's own sizes, as the build action allows them (26.8; M15r finding 6)
+    allowed = kind.sizes or b.facility.sizes
+    sizes = [s for s in sorted(allowed) if units >= pb.plant_share * s]
     if not contracts or not sizes:
         return []
     size = sizes[-1]
     fee = sum(c.units * c.price_cents for c in contracts) / units
     home = compute.home_region_of(state, b, data)
-    kind = b.facility.kinds[plant]
     q = lifecycle.quote(state, company, plant, home, size, b, data)
-    fixed = q.capex_cents / kind.life_months + kind.fixed_opex_cents
-    per_unit = fixed / min(units, size)
-    saving = (fee - per_unit) * min(units, size)
+    run = min(units, size)
+    # cost per good unit: fixed, variable a unit run and depreciation over units x yield, at
+    # the formula's base yield before the plant has staff (26.2)
+    per_unit = plant_cost_per_good_unit(
+        size,
+        run,
+        b.hardware.plant_yield.base,
+        kind.fixed_opex_cents,
+        kind.variable_cents,
+        q.capex_cents,
+        kind.life_months,
+    )
+    if per_unit is None:
+        return []
+    saving = (fee - per_unit) * run
     if saving <= 0:
         return []
     return [
