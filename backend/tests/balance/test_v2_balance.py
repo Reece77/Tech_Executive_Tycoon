@@ -28,7 +28,8 @@ def _check(rows: list[Row]) -> None:
 
 
 @pytest.mark.nightly
-@pytest.mark.weekly  # weekly since 2026-11-08: 11 strategies x 10 seeds pushed the nightly past 2 hours
+# Weekly since 2026-11-08: 11 strategies x 10 seeds pushed the nightly past 2 hours.
+@pytest.mark.weekly
 def test_v1_to_v4_ten_years() -> None:
     results = run_all(
         seeds=v2.SEEDS,
