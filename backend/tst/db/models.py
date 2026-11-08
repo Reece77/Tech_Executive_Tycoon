@@ -42,10 +42,13 @@ class SaveMetaRow(Base):
     current_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     data_hashes: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False)
     schema_version: Mapped[int] = mapped_column(Integer, nullable=False)
-    # M25 (section 3): the data-editor mod a game started with; all NULL without one
-    mod_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    mod_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    mod_overlay: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    # M25 (section 3): the data-editor mod a game started with; all NULL without one. Deferred,
+    # as display_name is: older migrations read save_meta through the current models.
+    mod_name: Mapped[str | None] = mapped_column(String(64), nullable=True, deferred=True)
+    mod_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, deferred=True)
+    mod_overlay: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON, nullable=True, deferred=True
+    )
     next_person_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_search_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_offer_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
