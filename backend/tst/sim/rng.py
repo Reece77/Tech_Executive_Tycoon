@@ -64,6 +64,9 @@ STREAM_IDS: Final = MappingProxyType(
         # stake purchases' price impact, minority complaints, board reviews (M16, 31)
         "group": 45,
         "founder_life": 46,  # key (company_id,): scandal draws (M24, 32.5)
+        # key (0, good_index) for a commodity, (1, region_index) for power: prices after 2025
+        # and shocks; (2, offtake_id) for a supplier's breach draw (M17, 33.1, 33.3, 33.5)
+        "commodity": 47,
         "misc": 99,
     }
 )

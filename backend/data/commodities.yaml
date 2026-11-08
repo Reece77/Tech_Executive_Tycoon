@@ -1,0 +1,22 @@
+# The twelve commodity goods (docs/formulas.md 33.1, M17, lane A): what each is and who
+# holds its production (dossier 2). Prices are in commodities_history.yaml (same order).
+#
+# unit: the history's price unit. volume_unit: what contracts and offtakes buy (a year's volume
+# is in these). usd_per_unit: dollars per volume unit for one price unit (1 US cent/lb =
+# $22.046/t; 1 $/lb = $2,204.6/t). top_country / top_share: the largest single country's share
+# of production or refining, whichever is higher (dossier 2: D from USGS tonnages, V quoted, A
+# an assumption where the dossier gives no share). A share over commodity.ban_concentration
+# (0.60) makes an export ban more likely after 2025 (33.1).
+goods:
+  - { key: quartz_hp, label: High-purity quartz, unit: $/t, volume_unit: t, usd_per_unit: 1.0, top_country: United States, top_share: 0.75, share_basis: A } # Spruce Pine "dominant" for crucible grade (dossier 2), share A
+  - { key: silicon_metal, label: Silicon metal, unit: ¢/lb, volume_unit: t, usd_per_unit: 22.046, top_country: China, top_share: 0.85, share_basis: D } # 3.9 of 4.6 Mt (2024)
+  - { key: polysilicon, label: Polysilicon (semiconductor grade), unit: $/kg, volume_unit: kg, usd_per_unit: 1.0, top_country: China, top_share: 0.915, share_basis: V } # 91.5% of output (2023); the price is solar x commodity.semi_poly_multiple
+  - { key: gallium, label: Gallium, unit: $/kg, volume_unit: kg, usd_per_unit: 1.0, top_country: China, top_share: 0.99, share_basis: D } # 839 of 848 t low-purity (2024)
+  - { key: germanium, label: Germanium, unit: $/kg, volume_unit: kg, usd_per_unit: 1.0, top_country: China, top_share: 0.68, share_basis: V } # 68% of refinery output (2021, ING)
+  - { key: copper, label: Copper, unit: ¢/lb, volume_unit: t, usd_per_unit: 22.046, top_country: China, top_share: 0.45, share_basis: D } # refined 45% (mining: Chile 24%)
+  - { key: tin, label: Tin, unit: $/t, volume_unit: t, usd_per_unit: 1.0, top_country: China, top_share: 0.24, share_basis: D }
+  - { key: tantalum, label: Tantalum, unit: $/kg Ta2O5, volume_unit: kg, usd_per_unit: 1.0, top_country: DR Congo, top_share: 0.51, share_basis: D }
+  - { key: cobalt, label: Cobalt, unit: $/lb, volume_unit: t, usd_per_unit: 2204.6, top_country: China, top_share: 0.88, share_basis: V } # refining 80-88% (IISD); mining DRC 75%
+  - { key: lithium_carbonate, label: Lithium carbonate, unit: $/t, volume_unit: t, usd_per_unit: 1.0, top_country: China, top_share: 0.62, share_basis: V } # 58-65% of chemical conversion (IEA), midpoint
+  - { key: ndpr_oxide, label: NdPr oxide, unit: $/kg, volume_unit: kg, usd_per_unit: 1.0, top_country: China, top_share: 0.88, share_basis: V } # separation 87-90% (IEA)
+  - { key: neon, label: Neon (semiconductor grade), unit: index, volume_unit: lot, usd_per_unit: 1000.0, top_country: Ukraine, top_share: 0.60, share_basis: V } # 50-70% before 2022; a lot is $1,000 at index 1.0 (A: no public price)

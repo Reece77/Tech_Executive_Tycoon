@@ -1190,6 +1190,7 @@ One market good's month (22.4). Rows exist only for months already played; the A
 | `shock_months` | INTEGER | no | How long it runs. |
 | `shock_rise` | FLOAT | no | Its rise on the trend (fraction), fading after it ends. |
 | `shock_allocation` | FLOAT | no | Allocation while it runs. |
+| `shock_kind` | VARCHAR(32) | yes | M17 (0040): a commodity shock's kind (`export_ban`, `demand_boom`, `supply_disruption`); null for components and history. |
 
 ### supply_contract
 
@@ -1735,3 +1736,17 @@ With minorities (a stake under 100%), a subsidiary's spare cash goes up as a **d
 `group_ownership.data` also carries `rebases` ([turn, stake_bp, book_cents, equity_cents] at each stake change: from that turn the stake and the investment's basis are the rebase's; the investment is `book − stake × (equity now − equity)`), `goodwill_cents` (the goodwill an owner carries for a company passed to it inside the group; null: from the acquisition) and `common_control` (a reorganization: forming the holding company; the group's entry difference is equity, not goodwill). `end_reason` may be `transferred` (a brand passed from the operating company to the holding company).
 
 Also new: company accounts `1820_investment_associates` (asset: 20–50% stakes, equity method), `1830_financial_investments` (asset: stakes under 20% at fair value, marked each December), `3500_non_controlling_interest` (equity: outside holders' share of consolidated subsidiaries, in consolidated statements), `4910_share_of_associates`, `4920_fair_value_gains` and `4930_gain_on_disposal` (revenue type, shown below the operating result as "other gains" and included in the net result), and `4990_nci_share_of_profit` (expense type, consolidated statements only: the outsiders' share of the net result, shown below it; the balance sheet's accumulated result is the owners'). A holding's end posts the owner's 1810 investment and the goodwill it booked out, any cash received in, and the difference to 4930 (a debit is a loss). `company_parent` stays the current direct owner; `group_ownership` is the history. RNG stream `group` (45). Balance keys `group.*` (balance.yaml).
+
+## Commodities, offtake and regional power (migration `0040_m17`, M17)
+
+The twelve commodities (`commodities.yaml`; `quartz_hp`, `silicon_metal`, `polysilicon`, `gallium`, `germanium`, `copper`, `tin`, `tantalum`, `cobalt`, `lithium_carbonate`, `ndpr_oxide`, `neon`) and power by region (`power_<region>`, North America 1.0) are rows of `supply_month` (formulas.md 33.1, 33.5): `price_index` is a commodity's price over its 2010–2019 mean (a power row's index against North America), `base` the trend under a shock, `change` 0, and `shock_turn`, `shock_months`, `shock_rise`, `shock_allocation` and `shock_kind` the latest seeded shock after 2025 (a history row carries the history's shortage: its first month and the share). History to December 2025 comes from `commodities_history.yaml` and `power_history.yaml`, never the table. RNG stream `commodity` (47). Balance keys `commodity.*`, `offtake.*` and `power.*` (balance.yaml).
+
+### commodity_deal
+
+A company's commodity contract or offtake agreement (formulas.md 33.3). Prepayments sit in the existing `1200_prepaid` account until drawn against purchases.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER | no | The buyer (indexed). |
+| `data` | JSON | no | `kind` (`contract`: a fixed price for 6–36 months, take-or-pay on the unused volume at the end; `offtake`: 3–10 years with a supplier inside a collar, take-or-pay each month), `good`, `supplier` (suppliers.yaml key; offtakes), `signed_turn`, `end_turn` (the last month covered), `volume_year` (volume units a year), `signing_price`, `floor` and `ceiling` (the collar, the good's price unit; a contract's are its price), `prepaid_cents` and `prepaid_left_cents` (paid at signing, and not yet drawn), `status` (`active`, `ended`, `breached`), `taken` (volume taken so far), `last_taken` and `last_price` (last month's), `hedge_cents` (cost of goods saved against spot so far; negative when the deal cost more), `charged_cents` (take-or-pay so far), `closed_turn`. |

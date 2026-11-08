@@ -49,6 +49,7 @@ FAIR_VALUE: Final = "4920_fair_value_gains"  # December marks of financial inves
 INTERCOMPANY_SALES: Final = "4300_intercompany_sales"  # at the transfer price (M16, 31.6)
 INTERCOMPANY_PURCHASES: Final = "5900_intercompany_purchases"  # the other side (M16, 31.6)
 NCI_SHARE: Final = "4990_nci_share_of_profit"  # outsiders' share, consolidated only (M16, 31.3)
+PREPAID: Final = "1200_prepaid"  # offtake prepayments not yet drawn (M17, 33.3)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -82,6 +83,7 @@ ENGINE_ACCOUNTS: Final = (
     NCI_SHARE,
     INTERCOMPANY_SALES,
     INTERCOMPANY_PURCHASES,
+    PREPAID,
 )
 
 
