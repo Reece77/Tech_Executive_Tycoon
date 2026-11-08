@@ -75,7 +75,10 @@ _(Product manager adds items from Reece's playtest 3 that touch this lane.)_
 17. **Small rival startups close** (product manager, 2026-11-07, third round): below `rivals.startup.small_staff` (3) people for `rivals.startup.small_months` (24) consecutive month ends, a rival startup closes, shut down or acqui-hired, with its own History line; persisted in `startup_small` (migration `0036_m15a`). It replaces ruling 3's one-person close. Tests: `tests/unit/test_m15a_rival_launches.py`.
 18. **V5's launch clause re-banded** (third round): at least 90% of (run, startup category, decade after 2020) cells have a rival launch, and no category misses a decade in more than 2 of 10 runs; the old clause failed on one empty cell of 160.
 19. **`rnd.rate` 0.4 → 0.3** for V2: research_heavy won 5 of 10 among the founder-played strategies; M11's §21.8 targets 2, 3 and 5 still pass (target 2: 1.14 net).
-20. **Game records** each month's revenue and operating result (`Game.pnl`) for V3's margin, the last 12 months.
+20. **Ranking ties** (product manager, 2026-11-07, fifth round): by revenue, then the stable rival key, the player after a rival it ties with (`tst/sim/modes/rankings.py`); `rank.brand` stays 0.
+21. **M8 §18.9 target 5's bound 1.2 → 1.14** (fifth round): rival fintech startups now launch with features, so the scripted second product meets real competition (main 1.224, M15a 1.145).
+22. **S2 re-set 65 → 140** worker-minutes: nine strategies; CI measured 112.2. The nightly's job timeout 60 → 120 minutes.
+23. **Game records** each month's revenue and operating result (`Game.pnl`) for V3's margin, the last 12 months.
 
 ## Follow-ups
 
@@ -83,3 +86,7 @@ _(Product manager adds items from Reece's playtest 3 that touch this lane.)_
 - v3 (fabs): the photonic-interconnect era's data-centre cost per CU −15% (§30.8).
 - v3: seeded future entrants for hardware and cloud after 2025 (V5's scheduled-only categories).
 - M23: `integrator_ai` (V3.ai): an AI-models company's own GPU data centres add under 1 point of margin at year 10.
+- M23: V5's launch cells and categories (known misses): long-lived startups hold the startup places; founding more fills them earlier.
+- M23: `rank.brand` stays 0; with ties fixed, 0.5 still moved V1–V4 out of band.
+- Backlog: investors sizing late rounds to months of burn (blitzscale's idle billions): a new rule, no key covers it.
+- Carried items checked: AMD's bankruptcy around 2020 no longer happens (39/39 incumbents alive at year 10); score-8 CPOs' hit rate +11 points over score 15's gap (M13b target 3 passes); M8's seat and support targets pass; launches per category well above 1.00.
