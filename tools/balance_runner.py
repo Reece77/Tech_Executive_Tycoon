@@ -34,7 +34,7 @@ def main() -> int:
     sys.path.insert(0, str(BACKEND))
     from tst.balance.known_misses import verdict
     from tst.balance.report import evaluate, run_all, runs_table, table
-    from tst.balance.strategies import STRATEGIES
+    from tst.balance.strategies_v2 import STRATEGIES
 
     strategies = args.strategies or list(STRATEGIES)
     unknown = set(strategies) - set(STRATEGIES)

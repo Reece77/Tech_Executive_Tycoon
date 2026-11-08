@@ -193,13 +193,23 @@ def headcount(game: Game) -> int:
     return len(game.state.staff(PLAYER)) - 1 + pending
 
 
-def hire(game: Game, wanted: int, per_month: int, order: tuple[str, ...] = HIRE_ORDER) -> None:
+def hire(
+    game: Game,
+    wanted: int,
+    per_month: int,
+    order: tuple[str, ...] = HIRE_ORDER,
+    keep: frozenset[int] = frozenset(),
+) -> None:
     """Work toward `wanted` employees (offers out count) in `order` (cycled): the next
     `per_month` slots' roles each get a job post (others close), their candidates are
     interviewed while energy lasts and offered 1.05x the ask. Job posts close once the target
-    is reached."""
+    is reached. Searches in `keep` (M15a: a v2 script's own searches) are left open."""
     state = game.state
-    searches = [s for s in state.searches if s.company_id == PLAYER and s.status == "open"]
+    searches = [
+        s
+        for s in state.searches
+        if s.company_id == PLAYER and s.status == "open" and s.id not in keep
+    ]
     count = headcount(game)
     slots = [order[(count + i) % len(order)] for i in range(min(per_month, wanted - count))]
     for search in searches:
@@ -335,7 +345,7 @@ STEADY_MARKETING_MIN = 1_000_000  # $10,000 a month, then 20% of revenue
 STEADY_MARKETING = 0.20
 
 
-def steady(game: Game, appoint: bool = True) -> None:
+def steady(game: Game, appoint: bool = True, keep: frozenset[int] = frozenset()) -> None:
     """The M3a team on one product; a seed at launch or when runway falls below 12 months,
     whichever comes first, and a Series A when allowed, best pre-money; grows while runway
     stays above 18 months; a second product at $5M ARR."""
@@ -351,7 +361,7 @@ def steady(game: Game, appoint: bool = True) -> None:
     wanted = STEADY_START
     if headcount(game) >= STEADY_START and (months is None or months > STEADY_RUNWAY):
         wanted = headcount(game) + 1
-    hire(game, wanted, per_month=2)
+    hire(game, wanted, per_month=2, keep=keep)
     set_marketing(game, max(STEADY_MARKETING_MIN, round(STEADY_MARKETING * last_revenue(game))))
     go_public(game)  # M13 (25.9)
     if appoint:  # M8 target 2's vacant arm turns this off

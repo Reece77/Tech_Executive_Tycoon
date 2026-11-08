@@ -152,6 +152,7 @@ from tst.db.models import (
     SearchRow,
     SegmentShareRow,
     ShareMonthRow,
+    StartupSmallRow,
     StatementRow,
     StorylineRow,
     SupplyContractRow,
@@ -565,7 +566,39 @@ def load_state(session: Session) -> GameState:
     state = _load_public(session, state)
     state = _load_research(session, state)
     state = _load_geo(session, state, product_ids)
-    return _load_press(session, state)
+    state = _load_press(session, state)
+    return _load_small(session, state)  # M15a (0036)
+
+
+def _load_small(session: Session, state: GameState) -> GameState:
+    """Rival startups' runs of small months (M15a, 0036)."""
+    if not has_table(session, StartupSmallRow):
+        return state
+    since = {r.company_id: r.since_turn for r in session.scalars(select(StartupSmallRow))}
+    if not since:
+        return state
+    return replace(
+        state,
+        companies=tuple(
+            replace(c, small_since_turn=since[c.id]) if c.id in since else c
+            for c in state.companies
+        ),
+    )
+
+
+def _sync_small(session: Session, old: GameState, new: GameState) -> None:
+    if not has_table(session, StartupSmallRow):
+        return
+    before = {c.id: c.small_since_turn for c in old.companies}
+    for c in new.companies:
+        if before.get(c.id) == c.small_since_turn:
+            continue
+        if c.small_since_turn is None:
+            row = session.get(StartupSmallRow, c.id)
+            if row is not None:
+                session.delete(row)
+        else:
+            session.merge(StartupSmallRow(company_id=c.id, since_turn=c.small_since_turn))
 
 
 RESEARCH_MEMORY = 24  # months of stopped projects loaded: last events and History (M11)
@@ -1900,6 +1933,8 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _sync_public(session, old, new)
     _sync_research(session, old, new)
     _sync_press(session, old, new)
+    session.flush()
+    _sync_small(session, old, new)  # M15a (0036)
     if old.employments != new.employments and has_table(session, FormerStaffRow):
         session.flush()
         for row in former_rows(old, new):  # M7c: what the player knew when they left

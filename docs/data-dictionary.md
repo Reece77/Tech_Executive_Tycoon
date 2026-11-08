@@ -1375,7 +1375,7 @@ A contract-manufacturing contract (kind `assembly`, 26.2) or a wafer contract (k
 | `kind` | VARCHAR(16) | no | `assembly` or `wafer`. |
 | `supplier` | VARCHAR(32) | no | `hardware.contract.manufacturers` or `chips.contract.foundries` key. |
 | `units` | INTEGER | no | A month: units assembled, or wafer starts. |
-| `price_millicents` | BIGINT | no | A unit's fee (base x manufacturer x city), or a wafer's price at the foundry_wafer index locked at signing, in exact integer thousandths of a cent (0036_m15r; was FLOAT `price_cents` in 0031). Rounded to cents when a month posts. |
+| `price_millicents` | BIGINT | no | A unit's fee (base x manufacturer x city), or a wafer's price at the foundry_wafer index locked at signing, in exact integer thousandths of a cent (0037_m15r; was FLOAT `price_cents` in 0031). Rounded to cents when a month posts. |
 | `signed_turn` | INTEGER | no | The month it was signed; a contract signed before a shortage began keeps full allocation. |
 | `end_turn` | INTEGER | no | The last month it covers. |
 | `city` | VARCHAR(32) | yes | cities.yaml key where it is made (assembly). |
@@ -1616,8 +1616,19 @@ Each record keeps its fields in a JSON `data` column: the frozen record in `back
 
 Also new: `save_meta.game_state` values `scenario_done` (a historical scenario judged) and `retired` (the founder retired after an exit); the knowledge actions `public_appearance`, `rival_approach` and `rival_diligence` in reveal records of rival CEOs (addendum 11); the `llm_text.kind` value `rival_story` (addendum 12); `mna_target_file.data` gains `counter_exact` (**hidden**), `rounds` and `strikes` (negotiation, addendum 9) and `mna_deal.data` gains `own_remedy_product_id` (addendum 15).
 
-## Exact contract prices (migration `0036_m15r`, M15r)
+## Small rival startups (migration `0036_m15a`, M15a)
 
-`production_contract.price_cents` (FLOAT, 0031) becomes `price_millicents` (BIGINT): the unit fee or wafer price in exact integer thousandths of a cent (Codex review 4 finding 8). Existing rows convert once, `ROUND(price_cents x 1000)`. `save_meta.schema_version` becomes 36.
+### startup_small
+
+A rival startup's current run of month ends below `rivals.startup.small_staff` people (formulas.md 30.7 V5). At `rivals.startup.small_months` consecutive small month ends it closes (shut down or acqui-hired). No row: not small; the row is deleted when it grows back.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key: the startup. |
+| `since_turn` | INTEGER | no | The first month end of the current small run. |
+
+## Exact contract prices (migration `0037_m15r`, M15r)
+
+`production_contract.price_cents` (FLOAT, 0031) becomes `price_millicents` (BIGINT): the unit fee or wafer price in exact integer thousandths of a cent (Codex review 4 finding 8). Existing rows convert once, `ROUND(price_cents x 1000)`. `save_meta.schema_version` becomes 37 (after M15a's `0036_m15a`).
 
 Also from M15r, without a schema change: a sold company's `board_seat` rows (and their `board_seat_history`) are deleted when the founder founds again; `ceo.end_reason` may be `acquired`; the exit sale's `mna_deal` has `mode` `brand` and an `mna_acquisition` row from the month of the sale.

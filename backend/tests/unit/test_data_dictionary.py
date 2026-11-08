@@ -37,11 +37,19 @@ def sections() -> dict[str, list[str]]:
     return out
 
 
-def rows(lines: list[str]) -> list[list[str]]:
+HEADER = "| Column | Type | Null | Meaning |"
+
+
+def rows(lines: list[str]) -> list[list[str]] | None:
+    """The column table's rows; None when the section's table is not in the standard
+    four-column form."""
     table = [ln for ln in lines if ln.startswith("|")]
-    if len(table) < 2 or not table[0].startswith("| Column"):
+    if not table:
         return []
-    return [[c.strip() for c in ln.strip("|").split("|")] for ln in table[2:]]
+    if table[0].strip() not in (HEADER, HEADER.replace("Meaning", "Description")):
+        return None
+    out = [[c.strip() for c in ln.strip("|").split("|")] for ln in table[2:]]
+    return None if any(len(r) != 4 for r in out) else out
 
 
 def _type(text: str) -> str:
@@ -59,6 +67,9 @@ def test_every_new_table_is_documented_once_and_matches_the_orm() -> None:
                 problems.append(f"{name}: no section")
             continue
         found = rows(docs[name])
+        if found is None:
+            problems.append(f"{name}: not a Column | Type | Null | Meaning table")
+            continue
         documented = {r[0].strip("`"): r for r in found}
         if len(documented) != len(found):
             problems.append(f"{name}: a column twice")

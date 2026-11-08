@@ -52,8 +52,11 @@ A known miss is a target that misses on `main` with a recorded owner and a bound
 
 | Target | Owner | Fails only if ("worse than") | Why |
 | --- | --- | --- | --- |
-| T2 | M15 | one strategy wins **10/10** seeds (score: the top strategy's share of the seeds, bound 0.9) | steady wins 8/10 on `main` (nightly, 2026-11-05); M15's v2 strategies should split wins |
-| M10.T3 (20.5 target 3, covenants bite sometimes, band 20–60%) | M15 | **90% or more** of blitz_debt seeds breach (score: the share that breach, bound 0.89; 90% was M10's original measured value) | `main` reads 70% (21/30) on seeds 11–40; its 60% (6/10) on seeds 1–10 was luck. M14b reads 70% (7/10) on seeds 1–10 and 70% (21/30) on seeds 11–40. Product manager's ruling, 2026-11-04 |
+| V3.ai (30.7 V3's AI arm, +3 to +10 points) | M23 | integrator_ai more than 2 points below ai_regions | +0.9 pts at year 10: an AI-models company is about $7M ARR in 2020 and its own GPU data centres save little (product manager, 2026-11-07) |
+| V5.cells (≥ 75% of run × startup category × decade-after-2020 cells with a rival launch) | M23 | more than 40% of cells empty | 77% (steady_regions), 68% (research_heavy): about 11 startups a decade over 6 categories is about 1.8 launches per category-decade, e^-1.8 ≈ 17–20% empty by chance, and long-lived startups hold the 8 places (found_rate 0.05 with 12 places fell to 63%) |
+| V5.cats (no category misses a decade in more than 2 of 10 runs) | M23 | a category-decade empty in more than 7 of 10 runs | as V5.cells |
+
+T2 (closed by M15a: wins counted over the founder-played strategies, as V1) and M10.T3 (closed: covenants re-measured as V7 with `debt.venture.covenant_burn_months` 2) left the list.
 
 
 ## Target curves (bands)
@@ -464,3 +467,28 @@ M14b's own §29.7 targets (`tools/m14b_targets.py`, nightly), 10 seeds, all pass
 - **Tuning:** none needed; the synergy keys land it in band as given.
 - **Startups:** their figure mostly reflects departures, since they have few or no pool staff.
 - **Before the ruling:** the maintenance-line rule cut 87% (scripted) and 51% (startups).
+
+### v2 final (M15a, 2026-11-08): the combined code with M15b, final keys
+
+Nine strategies × 10 seeds × 120 months (V1–V4), 30 seeds (V1), steady_regions and research_heavy × 10 seeds to December 2039 (V5), a 2039 stage-4 save (V6).
+
+| Target | Value | Band |
+| --- | --- | --- |
+| V1 most wins of one founder-played strategy | research_heavy 4, acquirer 3, steady_regions 2, integrator 1 | ≤ 5 of 10 |
+| V1 strategies with a win over 30 seeds | 4 (research_heavy 16, steady_regions 6, acquirer 6, integrator 2) | ≥ 4 |
+| V2 research_heavy / steady_regions median ARR; wins | 1.17×; 4 of 10 | 1.0–1.4×; ≤ 4 |
+| V3 integrator − steady_regions operating margin; ARR | −0.2 pts (66.7% vs 66.8%); 1.03× | ≥ −1 pt (re-banded); 0.85–1.25× |
+| V3.ai integrator_ai − ai_regions margin | +0.9 pts | +3 to +10: known miss (M23) |
+| V4 ceo / steady_regions median ARR | 1.39× | ≤ 1.4× (re-banded) |
+| V5 era arrivals 2026–2039 (median) | 7, 7 | ≥ 5 |
+| V5 total demand growth in the 2030s | 48.4%, 48.2% a year | ≥ 4% |
+| V5 2026 rivals alive in 2039 | 64%, 65% | ≥ 30% |
+| V5 cells with a rival launch | 77%, 68% | ≥ 75%: research_heavy a known miss (M23) |
+| V5 steady_regions at stage 4 by 2039 | 10/10 | ≥ 5 |
+| V6 2039 stage-4 turn time (113 staff) | 454 ms median (blocks 492, 454, 451) | ≤ 1.0 s |
+| V7 covenant breaches while cash is positive | 60% (seeds 1–10 and 11–40) | 20–60% |
+
+Earlier milestones on the final keys: v1's runner (`make balance`, CI) passes every gate; T7 39/39 incumbents and 49% of startups alive at five years; M5's living market 1 breach, launches per category above 1; M8 §18.9 seats, support and blitz (bound 1.2 → 1.14: rival fintech startups now launch with features, main 1.224, M15a 1.145); M10 §20.5 targets 2–5; M11 §21.8 targets 2, 3 and 5 (target 2 1.14 net); M13 §25.9 targets 2–5; M13b §27.5 targets 1–7; M14 §28.9 and M14b §29.7 (CI nightly, final head). S2 re-set 65 → 140 worker-minutes (nine strategies; CI measured 112.2).
+
+Tuned in M15a (before → after): `rnd.rate` 0.4 → 0.3 (V2); `debt.venture.covenant_burn_months` 3 → 2 (V7); `rivals.startup.start_feature_share` new, 0.3 (V5); `rivals.startup.small_staff` 3 and `small_months` 24 new (V5); `rank.brand` stays 0 (0.5 moved V1–V4 out of band even with the tie-break fixed; an M23 follow-up).
+

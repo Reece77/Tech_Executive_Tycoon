@@ -79,6 +79,29 @@ def bridge_amount(
     return round(balance.bankruptcy.bridge_burn_months * max(burn, 0)) + max(0, -cash)
 
 
+def small_startups(state: GameState, balance: Balance) -> tuple[GameState, list[CompanyState]]:
+    """M15a (30.7 V5, product manager 2026-11-07): each rival startup below
+    rivals.startup.small_staff people counts its consecutive small month ends; at
+    rivals.startup.small_months it is due to close (shut down or acqui-hired)."""
+    sb = balance.rivals.startup
+    due: list[CompanyState] = []
+    for company in state.companies:
+        if not company.is_startup or not company.alive or company.is_player:
+            continue
+        small = len(state.staff(company.id)) < sb.small_staff
+        since = company.small_since_turn
+        if not small:
+            if since is not None:
+                state = with_company(state, replace(company, small_since_turn=None))
+            continue
+        if since is None:
+            state = with_company(state, replace(company, small_since_turn=state.turn))
+            since = state.turn
+        if state.turn - since + 1 >= sb.small_months:
+            due.append(state.company(company.id))
+    return state, due
+
+
 def insolvency(
     state: GameState,
     balances: Mapping[tuple[int, AccountCode], Cents],
@@ -88,6 +111,12 @@ def insolvency(
     """Cash below zero at the end of phase 7: insolvency notes, a bridge offer, bankruptcy."""
     bk = balance.bankruptcy
     logs: list[LogItem] = []
+    state, small = small_startups(state, balance)
+    for company in small:  # closed before the cash test: History says why (record_failures)
+        state, failed = fail_rival(
+            state, company, balance.hiring.candidate_shelf_turns, balance.rivals.free_agent_months
+        )
+        logs += failed
     for company in state.ledger_companies():
         cash = account_balance(balances, company.id, CASH)
         parent = company.parent_id

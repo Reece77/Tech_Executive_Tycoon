@@ -785,6 +785,9 @@ class StartupBalance(_Frozen):
     low_cash_months: float = Field(ge=0)
     salary_mult: float = Field(gt=0)
     personalities: tuple[str, ...] = Field(min_length=1)
+    start_feature_share: float = Field(ge=0, le=1)  # M15a: of F_exp(t) - F0 at founding
+    small_staff: int = Field(ge=1)  # M15a: below this many people a startup is small
+    small_months: int = Field(ge=1)  # M15a: consecutive small months before it closes
 
 
 class PoachBalance(_Frozen):

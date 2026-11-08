@@ -43,8 +43,8 @@ The product manager triaged the review on 2026-11-07 and confirmed the findings 
 - **Public cost estimate** (finding 5): `deals.public_costs_cents` = displayed (15.5-rounded) headcount x a market head's monthly cost (the mean over the pool functions' roles of mid-level pay at the default region, benefits and office). Product costs (hosting, marketing) are not in it.
 - **Plant case** (finding 6): 26.2's cost per good unit at the formula's base yield (0.85), as a plant has before staff.
 - **Problems after closing** (finding 7): customer_concentration's churn runs months T+1 to T+12 after a closing at T (the integrate path had installed it at T, so it covered only 11 product months); it applies to rival acquirers too, as the mode-independent path. Integration's own churn penalty is unchanged.
-- **Exact money** (finding 8): `deals.cash_part_cents` (Fraction, half-even once); the other M&A helpers multiply in Fractions (`money.exact`). Contract prices are integer millicents (`price_millicents`, migration `0036_m15r`; quantized at signing); the sim reads `price_cents` as a property.
-- **Migration number**: written as `0036_m15r` on `0035_m15b`; renumbered onto `main`'s head at the merge after M15a and M24.
+- **Exact money** (finding 8): `deals.cash_part_cents` (Fraction, half-even once); the other M&A helpers multiply in Fractions (`money.exact`). Contract prices are integer millicents (`price_millicents`, migration `0037_m15r`; quantized at signing); the sim reads `price_cents` as a property.
+- **Migration number**: written as `0036_m15r` on `0035_m15b`; renumbered `0037_m15r` on M15a's `0036_m15a` at the merge (and again onto M24's if it lands first).
 
 ## Follow-ups
 

@@ -18,7 +18,7 @@ from typing import Final
 
 from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.known_misses import known_miss, verdict
-from tst.balance.strategies import STRATEGIES
+from tst.balance.strategies_v2 import DELEGATED, PLAYABLE, STRATEGIES
 from tst.loader import LoadedData, load_all
 from tst.sim.rivals.startups import is_entrant
 
@@ -33,7 +33,9 @@ E3_MONTHS: Final = 24
 # S2 for v2 (M10d brief): what CI's nightly needs plus 25% headroom, re-set when a milestone
 # adds work per turn. M7a set 20 for v1; M13b re-banded 43 -> 65 (product manager, 2026-11-03:
 # M12r measured 50-52 worker-minutes on CI on main and its branch alike; 52 plus 25%).
-S2_BUDGET: Final = 65.0
+# M15a re-set 65 -> 140 (product manager's rule above): the runner plays nine strategies, not
+# four; CI's nightly measured 112.2 worker-minutes on the final head (2026-11-07), plus 25%.
+S2_BUDGET: Final = 140.0
 STARTUP_YEARS_MONTHS: Final = 60  # T7: alive five years after founding
 EARLY_LEAVE_MONTHS: Final = 12  # T6
 
@@ -66,6 +68,15 @@ class RunResult:
     startups: tuple[tuple[int, int | None], ...]  # (founded_turn, failed_turn)
     events: tuple[tuple[int, str, str], ...]  # (turn, template id, trigger), the player's
     refused: dict[str, int] = field(default_factory=dict)
+    # M15a (30.7 V3): the last 12 months' revenue and operating result, cents
+    revenue_year: int = 0
+    operating_year: int = 0
+    stage: int = 1  # the player's stage at the end
+
+    @property
+    def margin(self) -> float | None:
+        """Operating margin over the last 12 months (V3); None without revenue."""
+        return self.operating_year / self.revenue_year if self.revenue_year > 0 else None
 
     @property
     def bankrupt(self) -> bool:
@@ -95,7 +106,7 @@ def play(
     """One strategy on one seed. Picklable arguments and result (worker processes)."""
     started = time.perf_counter()
     game = start_game(_loaded(data_dir), seed, SCENARIO, difficulty)
-    script = STRATEGIES[strategy]
+    script = PLAYABLE[strategy]
     launch: int | None = None
     for _ in range(turns):
         if game.state.ended:
@@ -157,6 +168,9 @@ def _result(
             (e.turn, e.template_id, e.trigger) for e in state.events if e.company_id == PLAYER
         ),
         refused=dict(game.refused),
+        revenue_year=sum(game.pnl.get(t, (0, 0))[0] for t in range(last - 12, last)),
+        operating_year=sum(game.pnl.get(t, (0, 0))[1] for t in range(last - 12, last)),
+        stage=state.player.stage,
     )
 
 
@@ -249,9 +263,11 @@ def evaluate(results: Sequence[RunResult]) -> list[Row]:
                 True,
             )
         )
-    wins = winners(results)
+    # Founder-played strategies only, as 30.7 V1 (product manager, 2026-11-07): the ceo arm
+    # is a delegation benchmark measured by V4.
+    wins = winners([r for r in results if r.strategy not in DELEGATED])
     most = max(wins.values(), default=0)
-    detail = ", ".join(f"{s} {wins.get(s, 0)}" for s in STRATEGIES)
+    detail = ", ".join(f"{s} {wins.get(s, 0)}" for s in STRATEGIES if s not in DELEGATED)
     cap = 6 * seeds / 10
     rows.append(
         Row(

@@ -49,6 +49,9 @@ class Game:
     event_requests: int = 0
     month_lines: list[tuple[int, str, int]] = field(default_factory=list)  # actions this month
     last_product_months: tuple[ProductMonth, ...] = ()  # the last turn's history rows (M12b)
+    # M15a: turn -> (revenue, operating result) cents, the month's whole P&L (V3's margin)
+    pnl: dict[int, tuple[int, int]] = field(default_factory=dict)
+    notes: dict[str, int] = field(default_factory=dict)  # M15a: a v2 script's own memory
     _writer: Writer = field(
         default_factory=lambda: Writer(MockLLMAdapter(), LLMSettings(), lambda: 1_000_000.0)
     )
@@ -113,6 +116,14 @@ class Game:
                 PLAYER: profit_and_loss(self.month_lines, types, turn, turn).operating_result
             },
         )
+        lines = self.month_lines + [
+            (e.turn, line.account, line.amount)
+            for e in result.ledger_entries
+            if e.company_id == PLAYER
+            for line in e.lines
+        ]
+        pnl = profit_and_loss(lines, types, turn, turn)
+        self.pnl[turn] = (pnl.total_revenue, pnl.operating_result)
         self.month_lines = []
         self.last_product_months = result.product_months
         self.state = result.new_state

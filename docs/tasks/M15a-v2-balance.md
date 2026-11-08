@@ -56,8 +56,37 @@ _(Product manager adds items from Reece's playtest 3 that touch this lane.)_
 
 ## Decisions made
 
-_(Agent fills in.)_
+1. **Strategies** (§30.6) live in `backend/tst/balance/strategies_v2.py`, which imports only the game wrapper, the v1 scripts and the sim, so `tst.balance.report` can list all nine without an import cycle. `hire()` gained a `keep` set so a v2 script's own job posts (researchers, data-centre staff) stay open.
+2. **The ceo strategy appoints its CEO at stage 4,** as soon as `ceo.min_stage` allows (§30.6 says stage 3; seats get authority from stage 3). Accepted by the product manager (2026-11-07).
+3. **research_heavy** starts its research unit once the seed closes, on the domain with the largest summed `tech_weights` over its selling products, hiring the role whose skills that domain's research weighs most.
+4. **integrator** builds general data centres in its home region, sized to the need a home data centre can serve (home and its neighbour), only when its cost per CU at full use is below spot; each is staffed by its own unit. Device plants follow only a hardware product, which the scripts never make. Placing builds in the region with the most uncovered need lowered the median margin from 43.7% to 34.2% and was reverted.
+5. **New-category products** (product manager, 2026-11-07): steady_regions and every strategy built on it launch the CPO scoring's best new-category candidate (§27.1) at most once per 36 months, from the first launch and while steady would grow (profitable, or runway above 24 months).
+6. **steady_regions splits steady's marketing:** 20% of last month's revenue as one budget over its products (each at least $10,000). steady sets the whole 20% on every product, which with four products spent about 80% of revenue; the v1 `steady` script is unchanged.
+7. **Eras to 2039** (§30.8): appended as seeded windows. A two-domain era uses its first domain (humanoid robotics: AI; photonic interconnect: chip design). Effects the era model cannot express (the AR-glasses segment opening, the photonic data-centre cost cut) are left out (follow-ups).
+8. **V5's total demand** is addressable customers × the category's reference price, home and other regions.
+9. **V5's rival-launch clause** is checked over the categories rival startups may be founded in (§15.4); hardware and capacity categories are scheduled entrants only (§18.7, §26) and are printed (product manager, 2026-11-07).
+10. **Rival launches after 2020** (ruling 3): `rivals.startup.start_feature_share` 0.3 (new key: a startup's product starts with that share of the features its market gained since January 2010; from 0, no late founder reached the 30% launch bar); a rival startup needs no manufacturing contract to launch (bug: rivals' manufacturing is abstract, §26.1); a rival startup down to one person closes (one-person startups held every `max_alive` place for decades). Regression tests: `tests/unit/test_m15a_rival_launches.py`.
+11. **V3 re-banded** (product manager, 2026-11-07): the software integrator's margin gap at least −1 point (compute is about 12% of its revenue); a new `integrator_ai` arm against `ai_regions` (an AI-models first product) must show +3 to +10 points, a known miss owned by M23 (`V3.ai`).
+12. **V4 re-banded to ≤ 1.4×** (product manager, 2026-11-07, second round): delegation with full authority stays within 40% of the hands-on script. `pitch.base` stays 0.15.
+13. **V1 counts wins among the founder-played strategies;** the ceo arm is a delegation benchmark measured by V4 (product manager, 2026-11-07, second round).
+14. **V7:** M10's §20.5 target 3 is measured as breaches in a month whose closing cash is still positive; `debt.venture.covenant_burn_months` 3 → 2 (60% on seeds 1–10 and 11–40, was 70%; blitz_debt bankruptcy 0%, was 20%); M10's §20.5 targets 2–5 pass. M10.T3 leaves the known misses.
+15. **The weekly targets** (V1 over 30 seeds, V5, V6) run in `.github/workflows/weekly.yml` (Sundays and on demand); the nightly keeps the ten-year targets. Tests marked `weekly` are left out of `make check` and the nightly.
+16. **The V6 save** is built by `tools/v6_save.py` playing research_heavy for 360 months through the normal save path. Writing only the final state to a save failed the state-cache check: the next turn rebuilt the macro history it did not have.
+17. **Small rival startups close** (product manager, 2026-11-07, third round): below `rivals.startup.small_staff` (3) people for `rivals.startup.small_months` (24) consecutive month ends, a rival startup closes, shut down or acqui-hired, with its own History line; persisted in `startup_small` (migration `0036_m15a`). It replaces ruling 3's one-person close. Tests: `tests/unit/test_m15a_rival_launches.py`.
+18. **V5's launch clause re-banded** (third round): at least 90% of (run, startup category, decade after 2020) cells have a rival launch, and no category misses a decade in more than 2 of 10 runs; the old clause failed on one empty cell of 160.
+19. **`rnd.rate` 0.4 → 0.3** for V2: research_heavy won 5 of 10 among the founder-played strategies; M11's §21.8 targets 2, 3 and 5 still pass (target 2: 1.14 net).
+20. **Ranking ties** (product manager, 2026-11-07, fifth round): by revenue, then the stable rival key, the player after a rival it ties with (`tst/sim/modes/rankings.py`); `rank.brand` stays 0.
+21. **M8 §18.9 target 5's bound 1.2 → 1.14** (fifth round): rival fintech startups now launch with features, so the scripted second product meets real competition (main 1.224, M15a 1.145).
+22. **S2 re-set 65 → 140** worker-minutes: nine strategies; CI measured 112.2. The nightly's job timeout 60 → 120 minutes.
+23. **Game records** each month's revenue and operating result (`Game.pnl`) for V3's margin, the last 12 months.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- v3 (devices): the AR-glasses era's new consumer device segment (§30.8).
+- v3 (fabs): the photonic-interconnect era's data-centre cost per CU −15% (§30.8).
+- v3: seeded future entrants for hardware and cloud after 2025 (V5's scheduled-only categories).
+- M23: `integrator_ai` (V3.ai): an AI-models company's own GPU data centres add under 1 point of margin at year 10.
+- M23: V5's launch cells and categories (known misses): long-lived startups hold the startup places; founding more fills them earlier.
+- M23: `rank.brand` stays 0; with ties fixed, 0.5 still moved V1–V4 out of band.
+- Backlog: investors sizing late rounds to months of burn (blitzscale's idle billions): a new rule, no key covers it.
+- Carried items checked: AMD's bankruptcy around 2020 no longer happens (39/39 incumbents alive at year 10); score-8 CPOs' hit rate +11 points over score 15's gap (M13b target 3 passes); M8's seat and support targets pass; launches per category well above 1.00.
