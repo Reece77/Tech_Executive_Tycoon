@@ -4,6 +4,14 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M15r Fixes from Codex review 4 (`docs/reviews/codex-review-4.md`; findings 2 and 3 go to M16):
+  - A sale after a takeover bid settles the buyer's side once, through the shared brand-closing path (cash out, 1810 and goodwill, an acquisition record); a buyer without the cash is refused. Founding again deletes the sold company's `public_company` and board seat rows (share-price history stays) and ends its CEO.
+  - A serial founder's later venture has a stable key `(4, n)` in `company_rival_key`; the player's ipo, sentiment, mna and press streams use it.
+  - Acquisition pitches use a public staff-cost estimate; plant pitches use the plant kind's sizes and 26.2's cost per good unit; tech_debt and customer_concentration apply to kept brands as well (and the churn penalty covers all 12 months).
+  - Exact M&A money: the cash/stock split and the other deal price helpers in Fractions; migration `0036_m15r` moves `production_contract.price_cents` (FLOAT) to integer `price_millicents`.
+  - Data dictionary: one table per heading for 0030-0036, checked by `tests/unit/test_data_dictionary.py`. Acquisition-pitch tests now exercise the CPO's targets and Holiday's guard.
+  - Golden snapshots unchanged.
+
 - M15b Modes and polish (formulas.md §30.1–30.5, lane B, merges first):
   - Company score 0–1,000 from public inputs (value from market cap or the displayed value range's midpoint, growth, profit, market leadership, reputation): December and game-end snapshots, `score` on Overview, Rival and Saves, `tst score`.
   - A world built at any start year (the world plays from 2010 with the player dormant); Sandbox starts (year, cash, all/half/no rivals, historical or seeded eras; no board removal); five historical scenarios with goals judged early or at the deadline and a result screen (stream `scenario`, 43).

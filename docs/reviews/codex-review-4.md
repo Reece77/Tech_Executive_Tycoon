@@ -158,3 +158,22 @@ Read CLAUDE.md, the ADR index and ADRs 0002–0005, 0013 (including the stable-i
 - Existing transactional turn/action boundaries and pending-event recovery were inspected. No new partial-commit defect is asserted; previously resolved cache-publication and post-commit retry findings are not repeated.
 
 All source blob hashes matched the target tag after the reproductions. The cloned repository remained clean. Only this report is the requested deliverable.
+## Resolution (M15r, 2026-11-08)
+
+Findings 1 and 4-11 were fixed on branch `m15r-fixes` (from `main` after the docs merge, PR #20). Each regression test was written first and seen failing on the unfixed code, then passing after the fix (the 0036 upgrade test, for the contract-price half of finding 8, was written alongside its migration). **Findings 2 and 3** (consolidation membership by period; nested groups split by `owner_of` and `group_companies`) belong to **M16**, which rebuilds the group model: M15r did not edit `finance/consolidation.py`, `state.group_companies` or `mna/antitrust.owner_of`. No golden snapshot moved.
+
+| # | Finding | Fix commit | Regression test |
+| --- | --- | --- | --- |
+| 1 | P2 The buyer gets a company without paying | 1c7a892 | `backend/tests/integration/test_m15r_serial_exit.py::test_the_buyer_pays_once_and_every_ledger_reconciles`: on a real save, accept the bid, found again, advance two months, reload cold: one `Acquisition of Kestrel` entry for the buyer (cash out the price; 1810 the brand's book equity, the rest goodwill), the acquisition record, no entry on the seller's books, the new venture's starting cash the proceeds, every entry balanced (no acquisition entry existed before). `::test_a_buyer_that_cannot_pay_is_refused` |
+| 2 | P2 A failed brand disappears from past consolidation | — | M16 |
+| 3 | P2 Nested groups split by ownership helpers | — | M16 |
+| 4 | P2 Delisting after a serial exit is not persisted | 1c7a892 | `test_m15r_serial_exit.py::test_the_delisting_persists` with `TST_STATE_CACHE_CHECK=1`: no `public_company` row and no serving CEO after a cold load, share-price history kept, the cold state equal to the cached one (the old listing came back, and the sold company's board seats too) |
+| 5 | P2 Acquisition pitches reveal hidden costs | 66c5be1 | `backend/tests/unit/test_mna_pitches.py::test_acquisition_pitches_use_public_numbers_only`: two states differing only in one Zoho employee's salary (+$120,000) give identical candidates, pitches and pitch words |
+| 6 | P2 Plant pitches propose a rejected capacity | aa50708 | `backend/tests/unit/test_m15r_plant_pitch.py`: a 20,000-unit contract pitches a 20,000-unit plant (10,000 before), its case is 26.2's cost per good unit, and approving it builds the plant |
+| 7 | P2 Brands suppress hidden problems | 670054c | `backend/tests/unit/test_mna_integration.py::test_hidden_problems_apply_in_either_mode[integrate, brand]`: each of the 12 months after closing and the 13th, quality loss and churn x1.5 on the products' owner (brands had none; integration lost the 12th month of churn) |
+| 8 | P2 M&A cash consideration rounds binary floats | b5314d5 | `backend/tests/unit/test_m15r_exact_money.py`: 0.545 of 100 and of 100,000,000,100 cents posts 54 and 54,500,000,054 (55 and ...055 before); issuance and the closing cash check use the same split; a Hypothesis test against `Fraction`; a reservation at 6,466,600,254,430 x 1.35. `backend/tests/integration/test_persistence.py::test_upgrade_to_0036_makes_contract_prices_exact` |
+| 9 | P2 A new venture's RNG identity is unstable | 7978dc5 | `backend/tests/unit/test_serial_founder.py::test_a_new_venture_has_a_stable_identity`: an unrelated company appended before founding again moves the new venture's id (41 to 42) but none of its keys or its IPO demand, sentiment, deal and press draws (they differed before) |
+| 10 | P3 Dictionary attaches contract columns to `ceo` | 3fc23b3 | `backend/tests/unit/test_data_dictionary.py`: every table migrations 0030 onward create has one section whose columns, types, nullability and keys match the ORM (it failed on `main`'s file) |
+| 11 | P3 Acquisition-pitch tests pass with the behaviour absent | 914c717 | `test_mna_pitches.py::test_the_cpo_pitches_only_affordable_startups` (exactly Zoho for the CPO; Zoho, SAP and Salesforce for the CEO) and `::test_acquisitions_never_auto_approve` (runs Holiday's `pitch_month`); each fails when the CPO's candidates or the guard are removed |
+
+Decisions and follow-ups are in `docs/tasks/M15r-review-fixes.md`.

@@ -37,8 +37,18 @@ The product manager triaged the review on 2026-11-07 and confirmed the findings 
 
 ## Decisions made
 
-_(Agent fills in.)_
+- **The sale settles at acceptance** (finding 1). Accepting the takeover bid runs the brand-closing postings (`closing.settle`, shared with `close_deal`): the buyer pays the price in cash and holds the brand's book equity in 1810 plus goodwill; the deal's mode is `brand` and the acquisition record carries no hidden problems (the buyer did no diligence; the player's company has none modelled). The seller's books do not change (a share sale). A buyer whose cash is short of the price is refused: no sale, a `deal_update` "The sale fell through", and the game goes on. The company becomes the buyer's brand (`parent_id`) when the founder founds again, as M15b built it; on Retire the game is over. The event choice path now passes the ledger balances (`apply_choice(..., balances=)`, `apply_public_step` returns entries).
+- **Delisting** (finding 4): `state_io` deletes `public_company` rows and `board_seat` rows (with their history) that the new state dropped; the share-price history stays. A CEO serving the sold company ends with `end_reason` `acquired`. Listings stay as the IPO's history.
+- **Venture key** (finding 9): `(VENTURE_KEY = 4, n)` for the player's n-th venture after the first, stored in `company_rival_key` (so it survives the sale too). `player_key()` keys the ipo, market_sentiment, mna and press streams; the first company keeps `(1,)`, so existing saves and goldens draw as before.
+- **Public cost estimate** (finding 5): `deals.public_costs_cents` = displayed (15.5-rounded) headcount x a market head's monthly cost (the mean over the pool functions' roles of mid-level pay at the default region, benefits and office). Product costs (hosting, marketing) are not in it.
+- **Plant case** (finding 6): 26.2's cost per good unit at the formula's base yield (0.85), as a plant has before staff.
+- **Problems after closing** (finding 7): customer_concentration's churn runs months T+1 to T+12 after a closing at T (the integrate path had installed it at T, so it covered only 11 product months); it applies to rival acquirers too, as the mode-independent path. Integration's own churn penalty is unchanged.
+- **Exact money** (finding 8): `deals.cash_part_cents` (Fraction, half-even once); the other M&A helpers multiply in Fractions (`money.exact`). Contract prices are integer millicents (`price_millicents`, migration `0036_m15r`; quantized at signing); the sim reads `price_cents` as a property.
+- **Migration number**: written as `0036_m15r` on `0035_m15b`; renumbered onto `main`'s head at the merge after M15a and M24.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- M16: findings 2 and 3 (consolidation membership by period; ultimate ownership for antitrust and finance).
+- The exit sale's `Acquisition` exists before the company is the buyer's brand (between acceptance and Found again or Retire); M16's group model may want ownership from the acceptance month.
+- `api/rival_views.staff_estimate` and `deals.public_costs_cents` compute the same displayed headcount separately; one helper would keep them in step.
+- Hardware's unit-cost arithmetic (BOM, plants, contracts per unit) is still float before it rounds to cents; only the stored contract price is exact now.
