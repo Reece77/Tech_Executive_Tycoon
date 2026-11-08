@@ -3,9 +3,10 @@ holds every company's holdings of another over a run of turns (31.1; Codex revie
 and 3), `group_holding` the player's holding company (31.2) and `group_stake` the stakes it
 does not control (31.3, 31.5), `group_mandate` and `group_pitch` subsidiaries' mandates and
 their CEOs' capital requests (31.4), `group_listing` carve-outs and spin-offs and
-`group_personal_stake` the founder's shares in spun-off companies (31.5), each record's fields in a JSON
+`group_personal_stake` the founder's shares in spun-off companies (31.5) and
+`group_transfer_flow` intra-group supply at transfer prices (31.6), each record's fields in a JSON
 `data` column (data-dictionary.md); accounts 1820, 1830,
-3500, 4910, 4920, 4930 and 4990 (31.3).
+3500, 4910, 4920, 4930 and 4990 (31.3), 4300 and 5900 (31.6).
 
 Existing saves: each kept brand (`company_parent`) gets an open holding from its latest
 closing by that parent, with the 1810 investment its parent posted at closing (the
@@ -37,6 +38,8 @@ ACCOUNTS = (
     ("4920_fair_value_gains", "Fair-value gains and losses", "revenue"),
     ("4930_gain_on_disposal", "Gain or loss on disposal", "revenue"),
     ("4990_nci_share_of_profit", "Attributable to non-controlling interest", "expense"),
+    ("4300_intercompany_sales", "Intercompany sales", "revenue"),
+    ("5900_intercompany_purchases", "Intercompany purchases", "expense"),
 )
 INVESTMENT = "1810_investment_subsidiaries"
 
@@ -77,6 +80,11 @@ def upgrade() -> None:
         "group_personal_stake",
         sa.Column("person_id", sa.Integer(), primary_key=True),
         sa.Column("company_id", sa.Integer(), primary_key=True),
+        sa.Column("data", sa.JSON(), nullable=False),
+    )
+    op.create_table(
+        "group_transfer_flow",
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("data", sa.JSON(), nullable=False),
     )
     op.create_table(
@@ -154,6 +162,7 @@ def _backfill(conn: sa.Connection) -> None:
 def downgrade() -> None:
     op.execute("UPDATE save_meta SET schema_version = 38")
     op.drop_table("group_holding")
+    op.drop_table("group_transfer_flow")
     op.drop_table("group_personal_stake")
     op.drop_table("group_listing")
     op.drop_table("group_pitch")

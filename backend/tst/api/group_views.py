@@ -5,6 +5,8 @@ numbers."""
 from __future__ import annotations
 
 from tst.api.schemas.group import (
+    DiscountOut,
+    FlowOut,
     GroupEntityOut,
     GroupOut,
     GroupPitchOut,
@@ -14,9 +16,11 @@ from tst.api.schemas.group import (
 from tst.api.views import person_name
 from tst.loader import LoadedData
 from tst.sim.group import formulas as gf
+from tst.sim.group.discount import conglomerate
 from tst.sim.group.holding import form_fee_cents, gate
 from tst.sim.group.models import FULL_STAKE_BP
 from tst.sim.group.subsidiaries import board_seats, is_subsidiary
+from tst.sim.group.transfer import minority_held
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.mna import valuation
 from tst.sim.press.names import rival_ceo_id
@@ -88,6 +92,17 @@ def _entity(
     )
 
 
+def _discount(state: GameState, balances: LedgerBalances, data: LoadedData) -> DiscountOut:
+    d = conglomerate(state, listed_id(state), balances, data.balance, data.game_data)
+    return DiscountOut(
+        parts_cents=d.parts_cents,
+        segments=d.segments,
+        intra_share=float(d.intra_share),
+        discount=float(d.discount),
+        value_cents=d.value_cents,
+    )
+
+
 def group_out(state: GameState, balances: LedgerBalances, data: LoadedData) -> GroupOut:
     root = listed_id(state)
     held = holding_of(state)
@@ -133,6 +148,25 @@ def group_out(state: GameState, balances: LedgerBalances, data: LoadedData) -> G
             for x in state.stakes
             if x.is_open
         ],
+        flows=[
+            FlowOut(
+                id=f.id,
+                seller_id=f.seller_id,
+                seller=state.company(f.seller_id).name,
+                buyer_id=f.buyer_id,
+                buyer=state.company(f.buyer_id).name,
+                good=f.good,
+                price_kind=f.kind,
+                margin=f.margin,
+                last_price_cents=f.trailing[-1] if f.trailing else 0,
+                unfair_months=f.unfair_months,
+                minorities=minority_held(state, f.seller_id) or minority_held(state, f.buyer_id),
+                complaint=f.complaint,
+            )
+            for f in state.transfer_flows
+            if f.ended_turn is None
+        ],
+        discount=_discount(state, balances, data) if held is not None else None,
         personal_stakes=[
             PersonalStakeOut(
                 company_id=x.company_id,

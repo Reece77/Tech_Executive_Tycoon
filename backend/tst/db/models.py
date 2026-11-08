@@ -1898,3 +1898,12 @@ class PersonalStakeRow(Base):
     person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class TransferFlowRow(Base):
+    """One group company supplying another at a transfer price (31.6; 0039)."""
+
+    __tablename__ = "group_transfer_flow"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

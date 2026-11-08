@@ -46,6 +46,8 @@ FINANCIAL_INVESTMENTS: Final = "1830_financial_investments"  # under 20%, fair v
 NCI: Final = "3500_non_controlling_interest"  # outside holders of subsidiaries (M16, 31.3)
 ASSOCIATES_PROFIT: Final = "4910_share_of_associates"  # the group's share (M16, 31.3)
 FAIR_VALUE: Final = "4920_fair_value_gains"  # December marks of financial investments (M16)
+INTERCOMPANY_SALES: Final = "4300_intercompany_sales"  # at the transfer price (M16, 31.6)
+INTERCOMPANY_PURCHASES: Final = "5900_intercompany_purchases"  # the other side (M16, 31.6)
 NCI_SHARE: Final = "4990_nci_share_of_profit"  # outsiders' share, consolidated only (M16, 31.3)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
@@ -78,6 +80,8 @@ ENGINE_ACCOUNTS: Final = (
     ASSOCIATES_PROFIT,
     FAIR_VALUE,
     NCI_SHARE,
+    INTERCOMPANY_SALES,
+    INTERCOMPANY_PURCHASES,
 )
 
 

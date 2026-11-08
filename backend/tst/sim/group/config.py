@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 MANDATES: Final = ("grow", "margin", "return_cash")  # 31.4
 FLOWS: Final = ("cost", "cost_plus", "market")  # 31.6 transfer-price kinds
+GOODS: Final = ("compute", "chips")  # 31.6: what one group company supplies another
 # 31.4: a kept brand's directive (28.5) as a mandate
 DIRECTIVE_MANDATE: Final = {"grow": "grow", "harvest": "return_cash", "defend": "margin"}
 
@@ -78,6 +79,7 @@ class GroupBalance(_Frozen):
     offer_at: float = Field(gt=0, lt=1)  # from here, a full offer or no more buying
     venture: tuple[float, float]  # share of a startup bought in a funding round
     cost_plus: float = Field(ge=0)  # the margin of a "cost plus" transfer price
+    supply_cost: float = Field(gt=0, le=1)  # an in-group supplier's cost / the market price
     fairness_band: float = Field(ge=0)  # a transfer price this far from market is unfair
     fairness_months: int = Field(ge=1)  # months unfair before the minority complaint
     complaint_discount: float = Field(ge=0, lt=1)  # on the subsidiary's value until corrected

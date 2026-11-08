@@ -336,6 +336,11 @@ def apply_choice(
         elif t == "press_step" and effect.stat:  # M14b (29.1): a press moment's tone
             state, logged = apply_tone(state, event, effect.stat, balance, data)
             logs += logged
+        elif t == "group_step" and effect.stat:  # M16 (31.6): a minority complaint's answer
+            from tst.sim.group.transfer import group_step
+
+            state, logged = group_step(state, event, effect.stat)
+            logs += logged
         elif t == "founder_step" and effect.stat:  # M24 (32.1, 32.5)
             from tst.sim.founder.phase import founder_step
 

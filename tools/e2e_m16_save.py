@@ -7,6 +7,9 @@ game.
 - `formed <save dir> <name>`: the same with the holding company formed and a month played
   (its events answered with their first choice).
 - `advance <save dir> <name>`: play a month of an existing save and answer its events.
+- `complaint <save dir> <name>`: `formed`, then 30% of a brand sold and that brand supplying
+  the operating company's compute at cost (20% under market, at its minorities' expense)
+  until the minority complaint (31.6) is open, unanswered.
 
 Usage: uv run --project backend python tools/e2e_m16_save.py <mode> <save dir> <name>
 """
@@ -141,13 +144,33 @@ def advance(save_dir: Path, name: str, data: LoadedData) -> Path:
     return path
 
 
+def complaint(save_dir: Path, name: str, data: LoadedData) -> Path:
+    from tst.sim.group.capital import SellStake
+    from tst.sim.group.transfer import COMPLAINT_TEMPLATE, SetTransferPrice
+    from tst.sim.state import group_companies, listed_id
+
+    path = formed(save_dir, name, data)
+    state = _state(path)
+    seller = next(c.id for c in group_companies(state, listed_id(state))[1:] if c.id != 1)
+    buyer = 1  # the operating company buys compute every month
+    run_action(path, data, SellStake(FOUNDER, seller, 3_000))
+    run_action(path, data, SetTransferPrice(FOUNDER, seller, buyer, "compute", "cost"))
+    for _ in range(12):
+        run_turn(path, data)
+        state = _state(path)
+        if any(e.template_id == COMPLAINT_TEMPLATE for e in state.open_events(state.player.id)):
+            return path
+        _answer(path, data)
+    raise SystemExit("the complaint did not come")
+
+
 def main(argv: list[str]) -> int:
     if len(argv) < 3:
         print(__doc__)
         return 2
     mode, save_dir, name = argv[0], Path(argv[1]), argv[2]
     data = load_all(Settings().data_dir)
-    modes = {"eligible": eligible, "formed": formed, "advance": advance}
+    modes = {"eligible": eligible, "formed": formed, "advance": advance, "complaint": complaint}
     if mode not in modes:
         print(__doc__)
         return 2

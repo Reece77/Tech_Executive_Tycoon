@@ -3026,3 +3026,17 @@ def venture_cmd(
     from tst.sim.group.actions import VentureInvest
 
     _group_act(save, lambda f: VentureInvest(f, startup, cents))
+
+
+@app.command("transfer-price")
+def transfer_price_cmd(
+    save: SaveOpt,
+    flow: Annotated[str, typer.Option("--flow", help="SELLER:BUYER:GOOD, e.g. 7:1:compute")],
+    kind: Annotated[str, typer.Option("--kind", help="cost, cost_plus or market")],
+    margin: Annotated[float | None, typer.Option(help="cost plus: the margin, 0-1")] = None,
+) -> None:
+    """Set the price one group company supplies another at (31.6)."""
+    from tst.sim.group.actions import SetTransferPrice
+
+    seller, buyer, good = flow.split(":")
+    _group_act(save, lambda f: SetTransferPrice(f, int(seller), int(buyer), good, kind, margin))

@@ -3,6 +3,12 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  minority_complaint_filed: # M16 (31.6)
+    title: "Minority complaint: {seller} to {buyer}"
+    body: "The transfer price has been unfair to outside shareholders for months. Legal costs and a valuation discount apply until it is fair; answer the complaint."
+  minority_complaint_settled: # M16 (31.6)
+    title: "The minority complaint is settled"
+    body: "The price from {seller} to {buyer} is fair again; the legal costs and the discount stop."
   stake_sold: # M16 (31.5)
     title: "Sold {pct} of {company}"
     body: "{buyer} paid {price_cents}. The group keeps control; {company}'s spare cash now goes up as dividends to every holder."

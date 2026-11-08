@@ -43,6 +43,7 @@ from tst.sim.group.models import (
     Ownership,
     PersonalStake,
     Stake,
+    TransferFlow,
 )
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
@@ -295,6 +296,7 @@ class GameState:
     group_pitches: tuple[GroupPitch, ...] = ()  # M16 (31.4): subsidiary CEOs' requests, by id
     group_listings: tuple[GroupListing, ...] = ()  # M16 (31.5): carve-outs and spin-offs
     personal_stakes: tuple[PersonalStake, ...] = ()  # M16 (31.5): the founder's own shares
+    transfer_flows: tuple[TransferFlow, ...] = ()  # M16 (31.6): intra-group supply, by id
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -849,6 +851,12 @@ def with_stake(state: GameState, stake: Stake) -> GameState:
 
 def group_listing(state: GameState, company_id: int) -> GroupListing | None:
     return next((x for x in state.group_listings if x.company_id == company_id), None)
+
+
+def with_flow(state: GameState, flow: TransferFlow) -> GameState:
+    if flow.id == 0:
+        flow = replace(flow, id=max((f.id for f in state.transfer_flows), default=0) + 1)
+    return replace(state, transfer_flows=_upsert(state.transfer_flows, flow, lambda f: f.id))
 
 
 def mandate_of(state: GameState, company_id: int) -> Mandate | None:

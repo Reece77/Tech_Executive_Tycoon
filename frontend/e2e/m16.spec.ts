@@ -3,7 +3,9 @@ import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
 // M16 flows (formulas.md 31): (a) form a holding company on an eligible fixture and see the
-// Group screen. Saves come from tools/e2e_m16_save.py.
+// Group screen; (b) sell 30% of a subsidiary and see NCI in the consolidated statements; (c)
+// spin off a subsidiary and see it become a listed rival; (d) an unfair transfer price raises
+// a minority complaint. Saves come from tools/e2e_m16_save.py.
 test.describe.configure({ mode: 'serial' });
 
 const stamp = Date.now();
@@ -87,4 +89,18 @@ test('(c) spin off a subsidiary and see it become a listed rival', async ({ page
   await expect(page.getByTestId('group-personal-stake')).toContainText('in your own name');
   await page.goto(`/game/${save}/competitors/${id}`);
   await expect(page.getByTestId('target-value')).toContainText('Market cap');
+});
+
+test('(d) an unfair transfer price raises a minority complaint', async ({ page }) => {
+  test.setTimeout(300_000); // the fixture plays the months it takes
+  const save = `m16-complaint-${stamp}`;
+  tool('complaint', save);
+  await page.goto(`/game/${save}/inbox`);
+  const modal = page.getByTestId('critical-modal');
+  await expect(modal).toContainText('Minority shareholders complain about transfer prices');
+  await modal.locator('[data-choice="A"]').click(); // move the prices to market
+  await expect(modal).toBeHidden();
+  await page.goto(`/game/${save}/finance/group`);
+  await expect(page.getByTestId('group-complaint')).toBeVisible(); // until the month end
+  await expect(page.getByTestId('group-flow')).toContainText('unfair');
 });

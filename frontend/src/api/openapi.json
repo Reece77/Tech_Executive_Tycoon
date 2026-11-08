@@ -16342,6 +16342,89 @@
         }
       }
     },
+    "/api/saves/{save_id}/group/transfer-price": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Transfer Price",
+        "description": "Set the price one group company supplies another at: cost, cost plus or market (31.6).",
+        "operationId": "setTransferPrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferPriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -20662,6 +20745,43 @@
         ],
         "title": "DirectorOut"
       },
+      "DiscountOut": {
+        "properties": {
+          "parts_cents": {
+            "type": "integer",
+            "title": "Parts Cents",
+            "description": "The sum of the parts (31.7)"
+          },
+          "segments": {
+            "type": "integer",
+            "title": "Segments"
+          },
+          "intra_share": {
+            "type": "number",
+            "title": "Intra Share",
+            "description": "Intra-group revenue over the year's group revenue"
+          },
+          "discount": {
+            "type": "number",
+            "title": "Discount",
+            "description": "The conglomerate discount d, 0.10-0.25"
+          },
+          "value_cents": {
+            "type": "integer",
+            "title": "Value Cents",
+            "description": "The sum of the parts x (1 - d)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "parts_cents",
+          "segments",
+          "intra_share",
+          "discount",
+          "value_cents"
+        ],
+        "title": "DiscountOut"
+      },
       "DividendIn": {
         "properties": {
           "per_share_cents": {
@@ -22251,6 +22371,86 @@
           "detail"
         ],
         "title": "FirstOut"
+      },
+      "FlowOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "seller_id": {
+            "type": "integer",
+            "title": "Seller Id"
+          },
+          "seller": {
+            "type": "string",
+            "title": "Seller"
+          },
+          "buyer_id": {
+            "type": "integer",
+            "title": "Buyer Id"
+          },
+          "buyer": {
+            "type": "string",
+            "title": "Buyer"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good",
+            "description": "compute | chips"
+          },
+          "price_kind": {
+            "type": "string",
+            "title": "Price Kind",
+            "description": "cost | cost_plus | market"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin"
+          },
+          "last_price_cents": {
+            "type": "integer",
+            "title": "Last Price Cents",
+            "description": "The transfer price paid at the last month end"
+          },
+          "unfair_months": {
+            "type": "integer",
+            "title": "Unfair Months",
+            "description": "Months running more than 10% from market"
+          },
+          "minorities": {
+            "type": "boolean",
+            "title": "Minorities",
+            "description": "A company of the flow has outside shareholders"
+          },
+          "complaint": {
+            "type": "boolean",
+            "title": "Complaint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "seller_id",
+          "seller",
+          "buyer_id",
+          "buyer",
+          "good",
+          "price_kind",
+          "margin",
+          "last_price_cents",
+          "unfair_months",
+          "minorities",
+          "complaint"
+        ],
+        "title": "FlowOut"
       },
       "FormerProfileOut": {
         "properties": {
@@ -23875,6 +24075,25 @@
             "type": "array",
             "title": "Personal Stakes",
             "description": "The founder's own shares in spun-off companies"
+          },
+          "flows": {
+            "items": {
+              "$ref": "#/components/schemas/FlowOut"
+            },
+            "type": "array",
+            "title": "Flows",
+            "description": "Intra-group supply (31.6)"
+          },
+          "discount": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiscountOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The listed holding company's conglomerate discount (31.7)"
           },
           "mandate_energy": {
             "type": "integer",
@@ -37605,6 +37824,48 @@
           "effects"
         ],
         "title": "TraitOut"
+      },
+      "TransferPriceIn": {
+        "properties": {
+          "seller_id": {
+            "type": "integer",
+            "title": "Seller Id"
+          },
+          "buyer_id": {
+            "type": "integer",
+            "title": "Buyer Id"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good",
+            "description": "compute | chips"
+          },
+          "price_kind": {
+            "type": "string",
+            "title": "Price Kind",
+            "description": "cost | cost_plus | market"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin",
+            "description": "cost plus: the margin, 0-1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seller_id",
+          "buyer_id",
+          "good",
+          "price_kind"
+        ],
+        "title": "TransferPriceIn"
       },
       "UISettings": {
         "properties": {

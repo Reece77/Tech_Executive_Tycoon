@@ -12,7 +12,7 @@ from dataclasses import dataclass, field, replace
 from typing import Final
 
 from tst.sim.actions import Action
-from tst.sim.calendar import format_turn
+from tst.sim.calendar import MONTHS_PER_YEAR, format_turn
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.errors import CriticalEventOpenError, EventsOpenError, GameOverError
@@ -34,6 +34,7 @@ from tst.sim.group.holding import holding_month
 from tst.sim.group.ownership import disposals
 from tst.sim.group.stakes import stakes_month
 from tst.sim.group.subsidiaries import group_month
+from tst.sim.group.transfer import transfer_month
 from tst.sim.hiring import phases
 from tst.sim.ledger import (
     CASH,
@@ -309,6 +310,18 @@ def financing(ctx: TurnContext) -> TurnContext:
         ctx = replace(ctx, state=state).post(*public_entries).log(*public_logs)
     # M14 (28.1): listed rivals' sentiment (their market cap is V_f x S).
     ctx = replace(ctx, state=listed_rivals_month(ctx.state, ctx.rng, ctx.balance, ctx.data))
+    # M16 (31.6): intra-group supply at transfer prices, and minority complaints.
+    if ctx.state.transfer_flows:
+        spend: dict[tuple[int, str], int] = {}
+        for e in ctx.entries:
+            for line in e.lines:
+                key = (e.company_id, line.account)
+                spend[key] = spend.get(key, 0) + line.amount
+        year = {c.id: sum(c.mrr_history[-MONTHS_PER_YEAR:]) for c in ctx.state.companies}
+        state, flow_entries, flow_logs = transfer_month(
+            ctx.state, spend, year, ctx.balance, ctx.data
+        )
+        ctx = replace(ctx, state=state).post(*flow_entries).log(*flow_logs)
     # M16 (31.2): the group office, and cash between the holding and its operating company.
     state, holding_entries, _ = holding_month(ctx.state, ctx.balances, ctx.balance)
     ctx = replace(ctx, state=state).post(*holding_entries)

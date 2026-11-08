@@ -1717,6 +1717,17 @@ Shares the founder holds in their own name in a spun-off company (31.5): their p
 | `company_id` | INTEGER | no | Primary key, with `person_id`: the spun-off company. |
 | `data` | JSON | no | `stake_bp`, `turn`. |
 
+### group_transfer_flow
+
+One company of the player's group supplying another (formulas.md 31.6): compute (the buyer's `6300_compute`) or chips (`5000_cogs`). Each month the buyer's spend on the good is supplied in-group: its outside purchase is reversed, the seller's cost is `group.supply_cost` (80%) of it, and the buyer pays the seller the transfer price (`5900_intercompany_purchases` / `4300_intercompany_sales`, both removed in consolidated statements). A flow ends when either company leaves the group.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `data` | JSON | no | `seller_id`, `buyer_id`, `good` (`compute`, `chips`), `kind` (`cost`, `cost_plus`, `market`), `margin` (cost plus; null: `group.cost_plus`), `set_turn`, `unfair_months` (months running more than `group.fairness_band` from market while a company of the flow has minorities), `complaint` (a minority complaint stands: the minority-held company pays `group.complaint_legal` of its revenue a year in legal costs, 6900, and is valued `group.complaint_discount` lower), `complaint_turn`, `trailing` (the transfer price paid at the last 12 month ends: the intra-group share of 31.7's conglomerate discount), `ended_turn`. |
+
+Event template `minority_complaint` (trigger `group`, critical; effect `group_step`: `correct_price` moves the flows under complaint to market, `defend_price` keeps them).
+
 A subsidiary's cap table (`cap_entry`) opens the first time outsiders buy in: its owner's `group` entry for 10,000,000 shares, then `firm` entries for investors who bought a stake (an `investors.yaml` firm drawn on stream `group`) and a `group` "Public float" entry for a carve-out. A buyout removes them.
 
 With minorities (a stake under 100%), a subsidiary's spare cash goes up as a **dividend** to every holder pro rata (its memo "Dividend to shareholders"; the owner's share against its 1810) instead of M14's sweep, and its owner no longer funds its shortfalls.

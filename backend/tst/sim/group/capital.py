@@ -125,12 +125,16 @@ def value_cents(
     state: GameState, company_id: int, balances: LedgerBalances, balance: Balance, data: GameData
 ) -> int:
     """A company's public value (28.1): its market cap if listed, else the midpoint of its
-    displayed value range."""
+    displayed value range; less a standing minority complaint's discount (31.6)."""
+    from tst.sim.group.transfer import complaint_against
+
     cap = valuation.market_cap_cents(state, company_id, balances, balance, data)
-    if cap is not None:
-        return cap
-    low, high = valuation.value_range_cents(state, company_id, balances, balance, data)
-    return (low + high) // 2
+    if cap is None:
+        low, high = valuation.value_range_cents(state, company_id, balances, balance, data)
+        cap = (low + high) // 2
+    if complaint_against(state, company_id):
+        cap = round(cap * (1 - exact(balance.group.complaint_discount)))
+    return cap
 
 
 def _held(state: GameState, company_id: int) -> Ownership:

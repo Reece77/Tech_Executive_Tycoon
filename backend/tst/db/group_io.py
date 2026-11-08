@@ -19,6 +19,7 @@ from tst.db.models import (
     OwnershipRow,
     PersonalStakeRow,
     StakeRow,
+    TransferFlowRow,
 )
 from tst.sim.group.models import (
     GroupListing,
@@ -28,6 +29,7 @@ from tst.sim.group.models import (
     Ownership,
     PersonalStake,
     Stake,
+    TransferFlow,
 )
 from tst.sim.state import GameState
 
@@ -73,8 +75,13 @@ def load_group(
             )
         )
     )
+    flows = tuple(
+        from_data(TransferFlow, r.data, id=r.id)
+        for r in session.scalars(select(TransferFlowRow).order_by(TransferFlowRow.id))
+    )
     return replace(
         state,
+        transfer_flows=flows,
         group_listings=listings,
         personal_stakes=personal,
         ownerships=ownerships,
@@ -96,11 +103,20 @@ def sync_group(
         "group_pitches",
         "group_listings",
         "personal_stakes",
+        "transfer_flows",
     )
     if all(getattr(old, f) == getattr(new, f) for f in fields) or not has_table(
         session, OwnershipRow
     ):
         return
+    _sync(
+        session,
+        old.transfer_flows,
+        new.transfer_flows,
+        lambda x: x.id,
+        lambda x: TransferFlowRow(id=x.id, data=to_data(x, ("id",))),
+        lambda k: delete(TransferFlowRow).where(TransferFlowRow.id == k),
+    )
     _sync(
         session,
         old.group_listings,

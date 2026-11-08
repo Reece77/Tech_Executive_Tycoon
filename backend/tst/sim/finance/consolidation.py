@@ -37,6 +37,8 @@ from tst.sim.ledger import (
     COMMON_EQUITY,
     DISPOSAL,
     GOODWILL,
+    INTERCOMPANY_PURCHASES,
+    INTERCOMPANY_SALES,
     INVESTMENT_SUBSIDIARIES,
     NCI,
     NCI_SHARE,
@@ -45,6 +47,7 @@ from tst.sim.money import BP_DENOMINATOR
 
 type Line = tuple[int, str, int]  # (turn, account, amount): the statements' input
 BALANCE_SHEET = ("asset", "liability")
+INTERCOMPANY = (INTERCOMPANY_SALES, INTERCOMPANY_PURCHASES)
 
 
 @dataclass(frozen=True, slots=True)
@@ -155,10 +158,13 @@ def consolidated_lines(
     outsiders hold part of a member (31.3). A member given as (lines, closed turn) is a
     direct, still-held subsidiary bought at that turn (M14)."""
     out = [x for x in parent if x[1] != INVESTMENT_SUBSIDIARIES]
+    if brands:  # intercompany sales and purchases inside the group cancel (ADR-0020 4, 31.6)
+        out = [x for x in out if x[1] not in INTERCOMPANY]
     contributed: list[tuple[Member, list[Line], int]] = []
     for brand in brands:
         member = brand if isinstance(brand, Member) else Member(brand[0], brand[1])
         mine, entry = contribution(member, types)
+        mine = [x for x in mine if x[1] not in INTERCOMPANY]
         contributed.append((member, mine, entry))
         out += mine
     if any(e < 1 for m, _, _ in contributed for _, e in m.effective):

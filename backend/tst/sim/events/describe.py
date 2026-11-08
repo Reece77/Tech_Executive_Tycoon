@@ -121,6 +121,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return modifier_text(state, effect.stat, effect.target, v, effect.months)
         case "press_step":  # M14b (29.1)
             return PRESS_STEP_TEXT.get(effect.stat, effect.stat)
+        case "group_step":  # M16 (31.6)
+            return GROUP_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -129,6 +131,10 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
 
 
 # M24 (32.1, 32.5): what each founder step does, in words (never the scandal risk).
+GROUP_STEP_TEXT: dict[str, str] = {  # M16 (31.6)
+    "correct_price": "the transfer prices under complaint move to market",
+    "defend_price": "the prices stand; so do the complaint's legal costs and discount",
+}
 FOUNDER_STEP_TEXT: dict[str, str] = {
     "rest": "you take this month off: no energy this month, and stress falls",
     "delegate": "you hand more to your executives (open the Executive team panel)",

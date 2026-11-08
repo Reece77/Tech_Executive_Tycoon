@@ -39,9 +39,17 @@ export function useGroupAction(saveId: string) {
         | { kind: 'pitch'; pitchId: number; approve: boolean }
         | { kind: 'sell' | 'carve'; companyId: number; stakeBp: number }
         | { kind: 'spin'; companyId: number; keepBp: number }
-        | { kind: 'buyout'; companyId: number },
+        | { kind: 'buyout'; companyId: number }
+        | { kind: 'flow'; body: Schemas['TransferPriceIn'] },
     ) => {
       switch (a.kind) {
+        case 'flow':
+          return unwrap(
+            await api.POST('/api/saves/{save_id}/group/transfer-price', {
+              ...path(saveId),
+              body: a.body,
+            }),
+          );
         case 'sell':
         case 'carve':
           return unwrap(

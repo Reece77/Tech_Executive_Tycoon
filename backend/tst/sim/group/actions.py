@@ -29,12 +29,18 @@ from tst.sim.group.subsidiaries import (
     replace_ceo,
     set_mandate,
 )
+from tst.sim.group.transfer import SetTransferPrice, set_price
 from tst.sim.ledger import LedgerBalances
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
 type GroupAction = (
-    FormHolding | SetMandate | ReplaceSubsidiaryCeo | AnswerGroupPitch | CapitalAction
+    FormHolding
+    | SetMandate
+    | ReplaceSubsidiaryCeo
+    | AnswerGroupPitch
+    | CapitalAction
+    | SetTransferPrice
 )
 
 
@@ -47,6 +53,8 @@ def apply_group(
     data: GameData,
 ) -> Outcome:
     match action:
+        case SetTransferPrice():
+            return set_price(state, action)
         case SellStake():
             return sell_stake(state, action, rng, balances, balance, data)
         case BuyOutMinorities():
@@ -79,6 +87,7 @@ __all__ = [
     "ReplaceSubsidiaryCeo",
     "SellStake",
     "SetMandate",
+    "SetTransferPrice",
     "SpinOff",
     "VentureInvest",
     "apply_group",

@@ -3574,6 +3574,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/group/transfer-price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Transfer Price
+         * @description Set the price one group company supplies another at: cost, cost plus or market (31.6).
+         */
+        post: operations["setTransferPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -5523,6 +5543,31 @@ export interface components {
              */
             history: number[];
         };
+        /** DiscountOut */
+        DiscountOut: {
+            /**
+             * Parts Cents
+             * @description The sum of the parts (31.7)
+             */
+            parts_cents: number;
+            /** Segments */
+            segments: number;
+            /**
+             * Intra Share
+             * @description Intra-group revenue over the year's group revenue
+             */
+            intra_share: number;
+            /**
+             * Discount
+             * @description The conglomerate discount d, 0.10-0.25
+             */
+            discount: number;
+            /**
+             * Value Cents
+             * @description The sum of the parts x (1 - d)
+             */
+            value_cents: number;
+        };
         /** DividendIn */
         DividendIn: {
             /** Per Share Cents */
@@ -6200,6 +6245,48 @@ export interface components {
             /** Detail */
             detail: string | null;
         };
+        /** FlowOut */
+        FlowOut: {
+            /** Id */
+            id: number;
+            /** Seller Id */
+            seller_id: number;
+            /** Seller */
+            seller: string;
+            /** Buyer Id */
+            buyer_id: number;
+            /** Buyer */
+            buyer: string;
+            /**
+             * Good
+             * @description compute | chips
+             */
+            good: string;
+            /**
+             * Price Kind
+             * @description cost | cost_plus | market
+             */
+            price_kind: string;
+            /** Margin */
+            margin: number | null;
+            /**
+             * Last Price Cents
+             * @description The transfer price paid at the last month end
+             */
+            last_price_cents: number;
+            /**
+             * Unfair Months
+             * @description Months running more than 10% from market
+             */
+            unfair_months: number;
+            /**
+             * Minorities
+             * @description A company of the flow has outside shareholders
+             */
+            minorities: boolean;
+            /** Complaint */
+            complaint: boolean;
+        };
         /**
          * FormerProfileOut
          * @description A person who has left the company (M7c): read-only, as the player knew them at
@@ -6863,6 +6950,13 @@ export interface components {
              * @description The founder's own shares in spun-off companies
              */
             personal_stakes?: components["schemas"]["PersonalStakeOut"][];
+            /**
+             * Flows
+             * @description Intra-group supply (31.6)
+             */
+            flows?: components["schemas"]["FlowOut"][];
+            /** @description The listed holding company's conglomerate discount (31.7) */
+            discount?: components["schemas"]["DiscountOut"] | null;
             /**
              * Mandate Energy
              * @default 0
@@ -12735,6 +12829,28 @@ export interface components {
             strong: boolean;
             /** Effects */
             effects: string;
+        };
+        /** TransferPriceIn */
+        TransferPriceIn: {
+            /** Seller Id */
+            seller_id: number;
+            /** Buyer Id */
+            buyer_id: number;
+            /**
+             * Good
+             * @description compute | chips
+             */
+            good: string;
+            /**
+             * Price Kind
+             * @description cost | cost_plus | market
+             */
+            price_kind: string;
+            /**
+             * Margin
+             * @description cost plus: the margin, 0-1
+             */
+            margin?: number | null;
         };
         /** UISettings */
         UISettings: {
@@ -24709,6 +24825,68 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["VentureIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setTransferPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferPriceIn"];
             };
         };
         responses: {

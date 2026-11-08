@@ -209,6 +209,7 @@ from tst.sim.group.actions import (
     ReplaceSubsidiaryCeo,
     SellStake,
     SetMandate,
+    SetTransferPrice,
     SpinOff,
     VentureInvest,
     apply_group,
@@ -259,6 +260,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "spin_off": SpinOff,
     "buy_stake": BuyStake,
     "venture_invest": VentureInvest,
+    "set_transfer_price": SetTransferPrice,
     "sell_founder_shares": SellFounderShares,  # M24 (32.2-32.5)
     "create_foundation": CreateFoundation,
     "give_to_foundation": GiveToFoundation,
@@ -423,6 +425,7 @@ __all__ = [
     "SetProjectBudget",
     "SetRegionalPrice",
     "SetSharedServices",
+    "SetTransferPrice",
     "SetUnitOffice",
     "SignContract",
     "SignManufacturingContract",
@@ -635,6 +638,7 @@ def apply_action(
             | SpinOff()
             | BuyStake()
             | VentureInvest()
+            | SetTransferPrice()
         ):  # M16 (31)
             out = apply_group(state, action, rng, ledger_balances, balance, data)
         case ReplaceLeaver():  # M14b (29.5)

@@ -18,6 +18,7 @@ from tst.api.schemas.group import (
     PitchAnswerIn,
     SpinOffIn,
     StakeIn,
+    TransferPriceIn,
     VentureIn,
 )
 from tst.db import inbox, repository
@@ -32,6 +33,7 @@ from tst.sim.group.actions import (
     ReplaceSubsidiaryCeo,
     SellStake,
     SetMandate,
+    SetTransferPrice,
     SpinOff,
     VentureInvest,
 )
@@ -178,3 +180,20 @@ def venture(save_id: str, body: VentureIn, settings: SettingsDep, data: DataDep)
     """Invest in a startup's round for 5-25% (31.5)."""
     path = _path(settings, save_id)
     return _act(path, data, VentureInvest(_founder(path), body.company_id, body.cents))
+
+
+@router.post(
+    "/group/transfer-price",
+    response_model=GroupActionOut,
+    responses=ERRORS,
+    operation_id="setTransferPrice",
+)
+def transfer_price(
+    save_id: str, body: TransferPriceIn, settings: SettingsDep, data: DataDep
+) -> GroupActionOut:
+    """Set the price one group company supplies another at: cost, cost plus or market (31.6)."""
+    path = _path(settings, save_id)
+    action = SetTransferPrice(
+        _founder(path), body.seller_id, body.buyer_id, body.good, body.price_kind, body.margin
+    )
+    return _act(path, data, action)

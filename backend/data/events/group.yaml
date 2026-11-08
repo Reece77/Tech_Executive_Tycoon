@@ -1,0 +1,24 @@
+# Group event templates (docs/formulas.md 31.6, M16): queued by the engine by template id
+# (trigger group). A minority complaint: a transfer price more than group.fairness_band from
+# market for group.fairness_months months, where a company of the flow has outside holders.
+# Tone: grounded realism (ADR-0011). The first choice is what happens when it is left
+# unanswered at Continue.
+templates:
+  - id: minority_complaint
+    category: finance
+    trigger: group
+    severities: [critical]
+    weight: 1.0
+    title: "Minority shareholders complain about transfer prices"
+    body: >-
+      Outside shareholders of a company in {company}'s group say its prices to the rest of the
+      group take value from them. Their lawyers have written to the board; the analysts have
+      noticed. Until the price is fair, there are legal costs and the market marks the company
+      down.
+    choices:
+      - key: A
+        label: "Move the prices to market"
+        effects: [{ type: group_step, target: company, stat: correct_price }]
+      - key: B
+        label: "Defend the prices"
+        effects: [{ type: group_step, target: company, stat: defend_price }]

@@ -1353,6 +1353,7 @@ group: # 31: the holding company and its subsidiaries (M16, v3)
   offer_at: 0.30 # at this stake the group makes a full offer (28.3) or buys no more, 31.5
   venture: [0.05, 0.25] # share of a startup bought in its funding round (15.4), 31.5
   cost_plus: 0.10 # margin over cost of a "cost plus" transfer price, 31.6
+  supply_cost: 0.80 # an in-group supplier's cost as a share of the market price it replaces (M16 decision: the saving that makes vertical integration pay), 31.6
   fairness_band: 0.10 # a transfer price more than this share from market is unfair where minorities hold, 31.6
   fairness_months: 6 # months unfair before the minority complaint (a critical event), 31.6
   complaint_discount: 0.10 # share off the subsidiary's value while a complaint stands, 31.6

@@ -1,7 +1,7 @@
 // The Group screen (M16, formulas.md 31.2 and 31.10): the entity tree from the listed entity
 // (the holding company once formed) down, each company's stake, treatment and public numbers,
 // and the holding company's gate. Numbers come from the API; nothing is computed here.
-import { Alert, Button, NumberInput, SegmentedControl } from '@mantine/core';
+import { Alert, Button, NativeSelect, NumberInput, SegmentedControl } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
@@ -40,6 +40,7 @@ export function GroupTab({ saveId }: { saveId: string }) {
   const act = useGroupAction(saveId);
   const [pct, setPct] = useState<Record<number, number>>({});
   const holdingId = group.data?.holding_id ?? null;
+  const [flow, setFlow] = useState({ seller: '', buyer: '', good: 'compute' });
   const columns = useMemo(
     () =>
       helper.columns([
@@ -285,6 +286,106 @@ export function GroupTab({ saveId }: { saveId: string }) {
           </Alert>
         )}
       </Panel>
+      {g.discount && (
+        <Panel title="Conglomerate discount" testId="group-discount">
+          <Term term="group.discount">
+            <span className="tst-muted" style={{ fontSize: 12 }}>
+              How analysts value the group
+            </span>
+          </Term>
+          <p data-testid="group-discount-text">
+            Analysts value the parts at {formatMoneyShort(g.discount.parts_cents)} and apply a{' '}
+            {(g.discount.discount * 100).toFixed(1)}% conglomerate discount ({g.discount.segments}{' '}
+            segments, {(g.discount.intra_share * 100).toFixed(1)}% of revenue intra-group):{' '}
+            {formatMoneyShort(g.discount.value_cents)}.
+          </p>
+        </Panel>
+      )}
+      {g.entities.length > 1 && (
+        <Panel title="Intra-group supply" testId="group-flows">
+          <Term term="group.transfer">
+            <span className="tst-muted" style={{ fontSize: 12 }}>
+              Transfer prices
+            </span>
+          </Term>
+          {(g.flows ?? []).map((f) => (
+            <div
+              key={f.id}
+              data-testid="group-flow"
+              style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 6 }}
+            >
+              <span>
+                {f.seller} → {f.buyer}: {f.good}, last {formatMoneyShort(f.last_price_cents)}
+                {f.minorities && f.unfair_months > 0 && ` · unfair ${f.unfair_months} months`}
+              </span>
+              {f.complaint && (
+                <strong style={{ color: 'var(--tst-warn)' }} data-testid="group-complaint">
+                  Minority complaint
+                </strong>
+              )}
+              <SegmentedControl
+                size="xs"
+                value={f.price_kind}
+                onChange={(v) =>
+                  act.mutate({
+                    kind: 'flow',
+                    body: {
+                      seller_id: f.seller_id,
+                      buyer_id: f.buyer_id,
+                      good: f.good,
+                      price_kind: v,
+                    },
+                  })
+                }
+                data={[
+                  { value: 'cost', label: 'Cost' },
+                  { value: 'cost_plus', label: 'Cost plus' },
+                  { value: 'market', label: 'Market' },
+                ]}
+              />
+            </div>
+          ))}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'end', flexWrap: 'wrap' }}>
+            {(['seller', 'buyer'] as const).map((side) => (
+              <NativeSelect
+                key={side}
+                size="xs"
+                label={side === 'seller' ? 'Supplier' : 'Buyer'}
+                value={flow[side]}
+                onChange={(e) => setFlow((x) => ({ ...x, [side]: e.currentTarget.value }))}
+                data={[
+                  { value: '', label: '—' },
+                  ...g.entities.map((e) => ({ value: String(e.company_id), label: e.name })),
+                ]}
+              />
+            ))}
+            <NativeSelect
+              size="xs"
+              label="Good"
+              value={flow.good}
+              onChange={(e) => setFlow((x) => ({ ...x, good: e.currentTarget.value }))}
+              data={['compute', 'chips']}
+            />
+            <Button
+              size="xs"
+              disabled={!flow.seller || !flow.buyer}
+              onClick={() =>
+                act.mutate({
+                  kind: 'flow',
+                  body: {
+                    seller_id: Number(flow.seller),
+                    buyer_id: Number(flow.buyer),
+                    good: flow.good,
+                    price_kind: 'cost',
+                  },
+                })
+              }
+            >
+              Start supplying
+            </Button>
+          </div>
+        </Panel>
+      )}
       {((g.stakes ?? []).length > 0 || (g.personal_stakes ?? []).length > 0) && (
         <Panel title="Stakes" testId="group-stakes">
           {(g.stakes ?? []).map((x) => (

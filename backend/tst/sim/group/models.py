@@ -197,3 +197,26 @@ class PersonalStake:
     company_id: int
     stake_bp: int
     turn: int
+
+
+@dataclass(frozen=True, slots=True)
+class TransferFlow:
+    """One company of the group supplying another (31.6): `good` (compute or chips) at a
+    transfer price the holding company sets: cost, cost plus a margin, or market. Each month
+    the buyer's spend on the good is supplied in-group instead: the seller's cost is
+    `group.supply_cost` of it, and the buyer pays the seller the transfer price
+    (4300/5900, removed on consolidation). Where either side has minorities, a price more than
+    `group.fairness_band` from market for `group.fairness_months` raises a complaint."""
+
+    id: int
+    seller_id: int
+    buyer_id: int
+    good: str
+    kind: str = "cost"
+    margin: float | None = None  # cost plus: the margin (None: group.cost_plus)
+    set_turn: int = 0
+    unfair_months: int = 0
+    complaint: bool = False
+    complaint_turn: int | None = None
+    trailing: tuple[int, ...] = ()  # the transfer price paid at the last month ends (12)
+    ended_turn: int | None = None

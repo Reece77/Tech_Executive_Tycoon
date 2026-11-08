@@ -64,6 +64,29 @@ class PersonalStakeOut(BaseModel):
     stake_bp: int
 
 
+class FlowOut(BaseModel):
+    id: int
+    seller_id: int
+    seller: str
+    buyer_id: int
+    buyer: str
+    good: str = Field(description="compute | chips")
+    price_kind: str = Field(description="cost | cost_plus | market")
+    margin: float | None
+    last_price_cents: int = Field(description="The transfer price paid at the last month end")
+    unfair_months: int = Field(description="Months running more than 10% from market")
+    minorities: bool = Field(description="A company of the flow has outside shareholders")
+    complaint: bool
+
+
+class DiscountOut(BaseModel):
+    parts_cents: int = Field(description="The sum of the parts (31.7)")
+    segments: int
+    intra_share: float = Field(description="Intra-group revenue over the year's group revenue")
+    discount: float = Field(description="The conglomerate discount d, 0.10-0.25")
+    value_cents: int = Field(description="The sum of the parts x (1 - d)")
+
+
 class GroupOut(BaseModel):
     formed: bool
     holding_id: int | None
@@ -77,6 +100,10 @@ class GroupOut(BaseModel):
     stakes: list[StakeOut] = Field(default_factory=list, description="Stakes it does not control")
     personal_stakes: list[PersonalStakeOut] = Field(
         default_factory=list, description="The founder's own shares in spun-off companies"
+    )
+    flows: list[FlowOut] = Field(default_factory=list, description="Intra-group supply (31.6)")
+    discount: DiscountOut | None = Field(
+        default=None, description="The listed holding company's conglomerate discount (31.7)"
     )
     mandate_energy: int = 0
 
@@ -112,3 +139,11 @@ class SpinOffIn(BaseModel):
 class VentureIn(BaseModel):
     company_id: int
     cents: int = Field(gt=0)
+
+
+class TransferPriceIn(BaseModel):
+    seller_id: int
+    buyer_id: int
+    good: str = Field(description="compute | chips")
+    price_kind: str = Field(description="cost | cost_plus | market")
+    margin: float | None = Field(default=None, description="cost plus: the margin, 0-1")
