@@ -532,4 +532,4 @@ T3 follows the product manager's ruling of 2026-11-07: three new Reckless source
 
 Tuned (`group.*` only): `group.mandate.grow_payout` 0.5 and `grow_keep_months` 6 set the cash ratio (1.0 gave 1.2x, 0.4 gave 2.5–3.1x with the larger brands of a first fixture); `supply_cost`, `discount.synergy` and `discount.per_segment` were tried at 0.3 / 0.5 / 0.02 without moving T3's integrated half (1 of 10) and are left at 0.80 and §31.7's 0.15 and 0.03. A marketing multiplier per mandate had no effect (the brands' products carry no marketing budget) and was removed.
 
-T3's integrated half and T4's revenue band are open (see the brief's follow-ups): the lost in-group saving is small next to what a spin-off gains, and T4's revenue gap comes from the grow/harvest brand styles the directive mapping fixes.
+**Reece's ruling (2026-11-08): merge with these misses recorded** as known misses for a later ruling. T3's integrated half and T4's revenue band are open (see the brief's follow-ups): the lost in-group saving is small next to what a spin-off gains, and T4's revenue gap comes from the grow/harvest brand styles the directive mapping fixes.

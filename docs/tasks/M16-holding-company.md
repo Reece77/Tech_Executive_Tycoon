@@ -78,6 +78,8 @@ Tuned (`group.*` only): `group.mandate.grow_payout` 0.5 and `grow_keep_months` 6
 
 ## Follow-ups
 
+Reece's ruling (2026-11-08): M16 merges with T3's integrated half and T4's partial bands recorded as known misses.
+
 - **T3's integrated half misses** (see Results): spinning off a closely integrated supplier lowers the founder's value on only a few seeds. The lost in-group saving is small next to what a spin-off gains (no discount on that part, and a listing at V_f × S), and `group.*` alone does not move it (supply cost 0.3 and synergy 0.5 left it at 1 of 10). A product-manager ruling is needed: a stronger synergy mechanism (shared research, a dis-synergy cost on separation), or a different measure.
 - **T4's revenue band** is met on most seeds; the rest grow faster than +60%. The gap comes from the grow/harvest brand styles the spec's directive mapping fixes (the payout and keep months move only the cash), so it is not tunable inside `group.*`.
 - A carve-out through M13's full IPO chain (banks, roadshow, its own analysts, guidance and earnings) for a second listed entity.
