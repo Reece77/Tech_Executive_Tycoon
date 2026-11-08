@@ -76,7 +76,6 @@ from tst.sim.finance.fundraising import (
     series_problem,
 )
 from tst.sim.finance.insolvency import bridge_amount
-from tst.sim.modes.scenarios import bonus_reached
 from tst.sim.finance.models import (
     POOL_NAME,
     SAFE_HOLDERS,
@@ -91,6 +90,7 @@ from tst.sim.finance.options import at_cliff, next_vesting, pool_left_bp
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.ledger import CASH
 from tst.sim.mna.exit import sale_of
+from tst.sim.modes.scenarios import bonus_reached
 from tst.sim.money import Cents
 from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState
