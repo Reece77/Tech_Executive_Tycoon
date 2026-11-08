@@ -34,9 +34,11 @@ def upgrade() -> None:
         sa.Column("data", sa.JSON(), nullable=False),
     )
     op.create_index("ix_commodity_deal_company", "commodity_deal", ["company_id"])
+    op.execute("UPDATE save_meta SET schema_version = 40")
 
 
 def downgrade() -> None:
+    op.execute("UPDATE save_meta SET schema_version = 39")
     op.drop_index("ix_commodity_deal_company", table_name="commodity_deal")
     op.drop_table("commodity_deal")
     with op.batch_alter_table("supply_month") as batch:
