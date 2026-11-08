@@ -36,7 +36,8 @@ test('(a) launch a device on a contract; see its unit cost and gross margin', as
   await page.getByText('Pebble Phone').first().click();
   await page.getByTestId('launch').click();
   const unit = page.getByTestId('unit-cost');
-  await expect(unit).toContainText('$233.00');
+  // 26.7's $233 with the BOM's commodities at January 2010's spot (M17, formulas.md 33.2)
+  await expect(unit).toContainText('$232.54');
   await expect(page.getByTestId('gross-margin')).toContainText('27%');
   await continueMonth(page);
   await answerBlocking(page);
