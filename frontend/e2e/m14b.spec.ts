@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { answerBlocking, continueMonth } from './helpers.ts';
+import { continueMonth } from './helpers.ts';
 
 // M14b flows: (a) a launch press moment answered boldly with a Ship promise, kept; (b) a
 // no-layoffs promise broken by a firing, its "You said..." reminder and the morale; (c) a
@@ -123,11 +123,9 @@ test('(b) break a no-layoffs promise: the reminder and the morale', async ({ pag
   // The press does not forget: the reminder comes as a press moment.
   let reminder = false;
   for (let month = 0; month < 3 && !reminder; month += 1) {
-    await answerBlocking(page); // this month's other events, never a reminder already shown
-    const date = page.getByTestId('game-date');
-    const was = await date.textContent();
-    await page.getByTestId('continue').click();
-    await expect(date).not.toHaveText(was ?? '');
+    // this month's other events (never a reminder already shown), then the month, waited on
+    // by its advance response rather than the date (M15r: the date reads "…" after a reload)
+    await continueMonth(page);
     const events = await (await page.request.get(`/api/saves/${save}/events`)).json();
     reminder = (events.open as { title: string }[]).some((e) => e.title.includes('You said'));
   }

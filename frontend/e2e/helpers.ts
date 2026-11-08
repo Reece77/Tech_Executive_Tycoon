@@ -52,14 +52,34 @@ export async function answerBlocking(page: Page, opts: { proposals?: boolean } =
   }
 }
 
-/** Press Continue and wait for the date to move on; open major and critical events are
- * answered first with their first choice (23.1, M10b). */
+/** Press Continue and wait for that month to be played; open major and critical events are
+ * answered first with their first choice (23.1, M10b).
+ *
+ * Waits on state, not on the date changing: after answerBlocking reloads the page the date
+ * reads "…" until the overview loads, so "the date is no longer what it was" passed on the
+ * page load alone and a Continue was counted that never ran (M15r; the M9 Europe launch
+ * stayed "Localizing" and the next unanswered event hung the loop). */
 export async function continueMonth(page: Page) {
   await answerBlocking(page);
-  const date = page.getByTestId('game-date');
-  const before = await date.textContent();
-  await page.getByTestId('continue').click();
-  await expect(date).not.toHaveText(before ?? '');
+  await pressContinue(page);
+}
+
+/** Press Continue as it stands (nothing answered first) and wait until that month is played:
+ * its advance response, then the top bar showing the month it names. */
+export async function pressContinue(page: Page) {
+  const button = page.getByTestId('continue');
+  await expect(button).toBeEnabled();
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (r) =>
+        r.request().method() === 'POST' &&
+        /^\/api\/saves\/[^/]+\/advance$/.test(new URL(r.url()).pathname),
+    ),
+    button.click(),
+  ]);
+  expect(response.ok(), `Continue was refused: ${response.status()}`).toBe(true);
+  const played = (await response.json()) as { date_label: string };
+  await expect(page.getByTestId('game-date')).toHaveText(played.date_label);
 }
 
 /** Founder energy left this month, from the top bar ("52 / 60"). */
