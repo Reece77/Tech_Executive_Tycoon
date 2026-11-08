@@ -1659,4 +1659,15 @@ One company's holding of another over a run of turns (formulas.md 31.1; Codex re
 | `owner_id` | INTEGER | no | Its direct owner. |
 | `data` | JSON | no | `from_turn`, `to_turn` (null while held), `book_cents` (the owner's 1810 investment at closing: the company's book equity then), `equity_cents` (the company's equity accounts' balance then, debit positive: the investment now is `book_cents` less the change in the company's equity since), `stake_bp` (10,000 = 100%), `end_reason` (`failed`, `sold`, `spun_off`, `integrated`; null while held). |
 
+### group_holding
+
+The player's holding company (formulas.md 31.2), once formed: a `company` row ("<Name> Holdings", `is_player` true, stage 5, `rival_key` [5, n]) that holds the listing (`public_company`, `guidance`), the board (`board_seat`) and every cap-table holder but the operating company's option pool and grants; the operating company's cap table then holds one `group` entry for the holding company. The IPO chain's `listing` row stays the operating company's history. Events and inbox items for the holding company reach the player's inbox.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER | no | Primary key: the holding company. |
+| `data` | JSON | no | `operating_id` (the company it was formed over, the one the player runs), `formed_turn`, `chair_id` (the founder, its Chair). |
+
+`group_ownership.data` also carries `goodwill_cents` (the goodwill an owner carries for a company passed to it inside the group; null: from the acquisition) and `common_control` (a reorganization: forming the holding company; the group's entry difference is equity, not goodwill). `end_reason` may be `transferred` (a brand passed from the operating company to the holding company).
+
 Also new: company accounts `1820_investment_associates` (asset: 20–50% stakes, equity method), `1830_financial_investments` (asset: stakes under 20% at fair value, marked each December), `3500_non_controlling_interest` (equity: outside holders' share of consolidated subsidiaries, in consolidated statements), `4910_share_of_associates`, `4920_fair_value_gains` and `4930_gain_on_disposal` (revenue type, shown below the operating result as "other gains" and included in the net result). A holding's end posts the owner's 1810 investment and the goodwill it booked out, any cash received in, and the difference to 4930 (a debit is a loss). `company_parent` stays the current direct owner; `group_ownership` is the history. RNG stream `group` (45). Balance keys `group.*` (balance.yaml).

@@ -11,7 +11,7 @@ from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
 from tst.sim.founder import foundation, influence, personal
-from tst.sim.state import GameState
+from tst.sim.state import GameState, listed_id
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,8 +73,10 @@ def apply_founder(
                 balance,
                 cost=balance.public.capital.secondary_energy,
             )
+            # M16 (31.2): with a holding company, the founder's shares are the holding's
+            listed = listed_id(state) if company == state.player.id else company
             state, _, log = personal.sell_shares(
-                state, company, action.actor_id, action.shares, balance
+                state, listed, action.actor_id, action.shares, balance
             )
             return Outcome(state, (), (log,))
         case CreateFoundation():

@@ -27,7 +27,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from tst.sim.data_models import AccountType
-from tst.sim.ledger import DISPOSAL, GOODWILL, INVESTMENT_SUBSIDIARIES
+from tst.sim.ledger import COMMON_EQUITY, DISPOSAL, GOODWILL, INVESTMENT_SUBSIDIARIES
 
 type Line = tuple[int, str, int]  # (turn, account, amount): the statements' input
 BALANCE_SHEET = ("asset", "liability")
@@ -46,6 +46,10 @@ class Member:
     owned_from: int | None = None
     book_cents: int | None = None
     equity_cents: int | None = None
+    # M16 (31.2): it entered through a reorganization (the entry difference is equity), or
+    # left to the group's own shareholders or inside the group (its disposal is equity)
+    common_control: bool = False
+    equity_end: bool = False
 
 
 def _balances(
@@ -88,7 +92,7 @@ def member_lines(member: Member, types: Mapping[str, AccountType]) -> list[Line]
     )
     carried = book - (equity_now - equity_then)
     if net != carried:
-        out.append((start, GOODWILL, carried - net))
+        out.append((start, COMMON_EQUITY if member.common_control else GOODWILL, carried - net))
     out += later
     if end is not None:
         sheet: dict[str, int] = defaultdict(int)
@@ -98,7 +102,7 @@ def member_lines(member: Member, types: Mapping[str, AccountType]) -> list[Line]
         disposal = [(end, a, -v) for a, v in sorted(sheet.items()) if v != 0]
         total = sum(a for _, _, a in out) + sum(a for _, _, a in disposal)
         if total:
-            disposal.append((end, DISPOSAL, -total))
+            disposal.append((end, COMMON_EQUITY if member.equity_end else DISPOSAL, -total))
         out += disposal
     return out
 

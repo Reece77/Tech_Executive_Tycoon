@@ -295,3 +295,7 @@ class GroupDataError(SimError):
     chain, or two owners at once (M16, 31.1). A data error, never a player's mistake."""
 
     code = "group_data"
+
+
+class UnknownCompanyError(NotFoundError):  # M16: the company switcher's company
+    code = "unknown_company"

@@ -1838,3 +1838,13 @@ class OwnershipRow(Base):
     company_id: Mapped[int] = mapped_column(Integer, nullable=False)
     owner_id: Mapped[int] = mapped_column(Integer, nullable=False)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class HoldingRow(Base):
+    """The player's holding company (31.2; 0039): `data` holds operating_id, formed_turn and
+    chair_id."""
+
+    __tablename__ = "group_holding"
+
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

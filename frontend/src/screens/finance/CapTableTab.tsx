@@ -182,8 +182,8 @@ function Grants({ saveId, cap }: { saveId: string; cap: CapTableData }) {
   );
 }
 
-export function CapTableTab({ saveId }: { saveId: string }) {
-  const { data: cap, error, isPending } = useCapTable(saveId);
+export function CapTableTab({ saveId, companyId }: { saveId: string; companyId?: number }) {
+  const { data: cap, error, isPending } = useCapTable(saveId, companyId);
   const views = useTableViews('captable');
   if (isPending) return <Loading />;
   if (error) return <LoadError title="Could not load the cap table" error={error} />;

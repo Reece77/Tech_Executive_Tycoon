@@ -1225,7 +1225,9 @@ export interface paths {
         };
         /**
          * Get Statements
-         * @description P&L, balance sheet and cash flow for every closed month, quarter or year (14.1).
+         * @description P&L, balance sheet and cash flow for every closed month, quarter or year (14.1): the
+         *     listed entity's group by default (the holding company's once formed), or one company of
+         *     the player's group with what it owns (M16 company switcher).
          */
         get: operations["getStatements"];
         put?: never;
@@ -1246,7 +1248,7 @@ export interface paths {
         /**
          * Get Summary
          * @description Cash, the projected net burn and runway ("profitable" when null), insolvency and the
-         *     game state (ADR-0018).
+         *     game state (ADR-0018); the player's company by default, or one company of its group.
          */
         get: operations["getFinanceSummary"];
         put?: never;
@@ -1266,7 +1268,8 @@ export interface paths {
         };
         /**
          * Get Captable
-         * @description Holders, classes, shares and percentages; every grant with vested and unvested.
+         * @description Holders, classes, shares and percentages; every grant with vested and unvested. The
+         *     listed entity's by default, or one company of the player's group (M16).
          */
         get: operations["getCapTable"];
         put?: never;
@@ -1286,7 +1289,8 @@ export interface paths {
         };
         /**
          * Get Board
-         * @description Seats, each director's confidence and trend, and the last quarterly meeting (14.6).
+         * @description Seats, each director's confidence and trend, and the last quarterly meeting (14.6):
+         *     the listed entity's board by default, or one company of the player's group (M16).
          */
         get: operations["getBoard"];
         put?: never;
@@ -3342,6 +3346,48 @@ export interface paths {
          * @description Set a region's monthly lobbying spend; 0 stops it (32.5).
          */
         post: operations["setLobbying"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Group
+         * @description The entity tree with stakes, treatments and each company's numbers; the holding
+         *     company's gate before it is formed (31.2, 31.10).
+         */
+        get: operations["getGroup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Form Holding
+         * @description Form the holding company: it takes the listing, the cap table and the board; the
+         *     company and its brands become its subsidiaries (31.2).
+         */
+        post: operations["formHolding"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6493,6 +6539,99 @@ export interface components {
              * @default false
              */
             next_vest_is_cliff?: boolean;
+        };
+        /** GroupActionOut */
+        GroupActionOut: {
+            group: components["schemas"]["GroupOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** GroupEntityOut */
+        GroupEntityOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Parent Id
+             * @description Its direct owner inside the group; null: the root
+             */
+            parent_id: number | null;
+            /**
+             * Depth
+             * @description 0 for the root, 1 for its subsidiaries, ...
+             */
+            depth: number;
+            /**
+             * Role
+             * @description holding | operating | subsidiary | company
+             */
+            role: string;
+            /**
+             * Stake Bp
+             * @description The group's stake held by its direct owner, basis points
+             */
+            stake_bp: number;
+            /**
+             * Treatment
+             * @description root | consolidated | equity | fair_value (31.3)
+             */
+            treatment: string;
+            /** Listed */
+            listed: boolean;
+            /**
+             * Revenue Cents
+             * @description Revenue over the last 12 month ends
+             */
+            revenue_cents: number;
+            /**
+             * Operating Margin
+             * @description Operating result over revenue for the last 12 month ends; null without revenue
+             */
+            operating_margin: number | null;
+            /** Cash Cents */
+            cash_cents: number;
+            /**
+             * Market Cap Cents
+             * @description Listed companies only
+             */
+            market_cap_cents?: number | null;
+            /**
+             * Value Low Cents
+             * @description Private: the value range (28.1)
+             */
+            value_low_cents?: number | null;
+            /** Value High Cents */
+            value_high_cents?: number | null;
+        };
+        /** GroupOut */
+        GroupOut: {
+            /** Formed */
+            formed: boolean;
+            /** Holding Id */
+            holding_id: number | null;
+            /** Can Form */
+            can_form: boolean;
+            /**
+             * Reasons
+             * @description What still stands in the way of forming one (31.2)
+             */
+            reasons: string[];
+            /** Form Energy */
+            form_energy: number;
+            /**
+             * Form Fee Cents
+             * @description 0.1% of the market cap at the last month end
+             */
+            form_fee_cents: number;
+            /** Office Monthly Cents */
+            office_monthly_cents: number;
+            /**
+             * Entities
+             * @description Owners before what they own
+             */
+            entities: components["schemas"]["GroupEntityOut"][];
         };
         /**
          * GuardChoiceOut
@@ -16630,6 +16769,8 @@ export interface operations {
         parameters: {
             query?: {
                 period?: "month" | "quarter" | "year";
+                /** @description A company of the player's group; default: the listed entity */
+                company_id?: number | null;
             };
             header?: never;
             path: {
@@ -16688,7 +16829,10 @@ export interface operations {
     };
     getFinanceSummary: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A company of the player's group; default: the listed entity */
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -16746,7 +16890,10 @@ export interface operations {
     };
     getCapTable: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A company of the player's group; default: the listed entity */
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -16804,7 +16951,10 @@ export interface operations {
     };
     getBoard: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A company of the player's group; default: the listed entity */
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -23542,6 +23692,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FounderActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    formHolding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActionOut"];
                 };
             };
             /** @description Bad Request */

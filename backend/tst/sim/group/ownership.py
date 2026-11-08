@@ -53,7 +53,10 @@ def carrying_cents(ownership: Ownership, balances: LedgerBalances, data: GameDat
 
 def goodwill_of(state: GameState, ownership: Ownership) -> int:
     """The goodwill the owner booked when it bought the company (28.3): the price less the
-    book equity, from the acquisition closed at the holding's start; 0 without one."""
+    book equity, from the acquisition closed at the holding's start; 0 without one. A holding
+    passed on inside the group carries the goodwill it came with."""
+    if ownership.goodwill_cents is not None:
+        return ownership.goodwill_cents
     for a in reversed(state.acquisitions):
         if (
             a.target_id == ownership.company_id

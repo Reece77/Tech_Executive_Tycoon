@@ -5731,7 +5731,7 @@
           "finance"
         ],
         "summary": "Get Statements",
-        "description": "P&L, balance sheet and cash flow for every closed month, quarter or year (14.1).",
+        "description": "P&L, balance sheet and cash flow for every closed month, quarter or year (14.1): the\nlisted entity's group by default (the holding company's once formed), or one company of\nthe player's group with what it owns (M16 company switcher).",
         "operationId": "getStatements",
         "parameters": [
           {
@@ -5757,6 +5757,24 @@
               "default": "month",
               "title": "Period"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A company of the player's group; default: the listed entity",
+              "title": "Company Id"
+            },
+            "description": "A company of the player's group; default: the listed entity"
           }
         ],
         "responses": {
@@ -5819,7 +5837,7 @@
           "finance"
         ],
         "summary": "Get Summary",
-        "description": "Cash, the projected net burn and runway (\"profitable\" when null), insolvency and the\ngame state (ADR-0018).",
+        "description": "Cash, the projected net burn and runway (\"profitable\" when null), insolvency and the\ngame state (ADR-0018); the player's company by default, or one company of its group.",
         "operationId": "getFinanceSummary",
         "parameters": [
           {
@@ -5830,6 +5848,24 @@
               "type": "string",
               "title": "Save Id"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A company of the player's group; default: the listed entity",
+              "title": "Company Id"
+            },
+            "description": "A company of the player's group; default: the listed entity"
           }
         ],
         "responses": {
@@ -5892,7 +5928,7 @@
           "finance"
         ],
         "summary": "Get Captable",
-        "description": "Holders, classes, shares and percentages; every grant with vested and unvested.",
+        "description": "Holders, classes, shares and percentages; every grant with vested and unvested. The\nlisted entity's by default, or one company of the player's group (M16).",
         "operationId": "getCapTable",
         "parameters": [
           {
@@ -5903,6 +5939,24 @@
               "type": "string",
               "title": "Save Id"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A company of the player's group; default: the listed entity",
+              "title": "Company Id"
+            },
+            "description": "A company of the player's group; default: the listed entity"
           }
         ],
         "responses": {
@@ -5965,7 +6019,7 @@
           "finance"
         ],
         "summary": "Get Board",
-        "description": "Seats, each director's confidence and trend, and the last quarterly meeting (14.6).",
+        "description": "Seats, each director's confidence and trend, and the last quarterly meeting (14.6):\nthe listed entity's board by default, or one company of the player's group (M16).",
         "operationId": "getBoard",
         "parameters": [
           {
@@ -5976,6 +6030,24 @@
               "type": "string",
               "title": "Save Id"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A company of the player's group; default: the listed entity",
+              "title": "Company Id"
+            },
+            "description": "A company of the player's group; default: the listed entity"
           }
         ],
         "responses": {
@@ -15370,6 +15442,152 @@
         }
       }
     },
+    "/api/saves/{save_id}/group": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Get Group",
+        "description": "The entity tree with stakes, treatments and each company's numbers; the holding\ncompany's gate before it is formed (31.2, 31.10).",
+        "operationId": "getGroup",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/form": {
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Form Holding",
+        "description": "Form the holding company: it takes the listing, the cap table and the board; the\ncompany and its brands become its subsidiaries (31.2).",
+        "operationId": "formHolding",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -22636,6 +22854,210 @@
           "fraction"
         ],
         "title": "GrantOut"
+      },
+      "GroupActionOut": {
+        "properties": {
+          "group": {
+            "$ref": "#/components/schemas/GroupOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "group",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "GroupActionOut"
+      },
+      "GroupEntityOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id",
+            "description": "Its direct owner inside the group; null: the root"
+          },
+          "depth": {
+            "type": "integer",
+            "title": "Depth",
+            "description": "0 for the root, 1 for its subsidiaries, ..."
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "holding | operating | subsidiary | company"
+          },
+          "stake_bp": {
+            "type": "integer",
+            "title": "Stake Bp",
+            "description": "The group's stake held by its direct owner, basis points"
+          },
+          "treatment": {
+            "type": "string",
+            "title": "Treatment",
+            "description": "root | consolidated | equity | fair_value (31.3)"
+          },
+          "listed": {
+            "type": "boolean",
+            "title": "Listed"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "Revenue over the last 12 month ends"
+          },
+          "operating_margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operating Margin",
+            "description": "Operating result over revenue for the last 12 month ends; null without revenue"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "market_cap_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Cap Cents",
+            "description": "Listed companies only"
+          },
+          "value_low_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Low Cents",
+            "description": "Private: the value range (28.1)"
+          },
+          "value_high_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value High Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "parent_id",
+          "depth",
+          "role",
+          "stake_bp",
+          "treatment",
+          "listed",
+          "revenue_cents",
+          "operating_margin",
+          "cash_cents"
+        ],
+        "title": "GroupEntityOut"
+      },
+      "GroupOut": {
+        "properties": {
+          "formed": {
+            "type": "boolean",
+            "title": "Formed"
+          },
+          "holding_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holding Id"
+          },
+          "can_form": {
+            "type": "boolean",
+            "title": "Can Form"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "What still stands in the way of forming one (31.2)"
+          },
+          "form_energy": {
+            "type": "integer",
+            "title": "Form Energy"
+          },
+          "form_fee_cents": {
+            "type": "integer",
+            "title": "Form Fee Cents",
+            "description": "0.1% of the market cap at the last month end"
+          },
+          "office_monthly_cents": {
+            "type": "integer",
+            "title": "Office Monthly Cents"
+          },
+          "entities": {
+            "items": {
+              "$ref": "#/components/schemas/GroupEntityOut"
+            },
+            "type": "array",
+            "title": "Entities",
+            "description": "Owners before what they own"
+          }
+        },
+        "type": "object",
+        "required": [
+          "formed",
+          "holding_id",
+          "can_form",
+          "reasons",
+          "form_energy",
+          "form_fee_cents",
+          "office_monthly_cents",
+          "entities"
+        ],
+        "title": "GroupOut"
       },
       "GuardChoiceOut": {
         "properties": {

@@ -31,7 +31,7 @@ from tst.sim.geo.models import (
     RegionalMarket,
     RegionalSegment,
 )
-from tst.sim.group.models import GroupMember, Ownership
+from tst.sim.group.models import EQUITY_ENDS, GroupMember, Holding, Ownership
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hiring.models import Candidate, NextIds, Offer, PersonState, Search
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
@@ -277,6 +277,7 @@ class GameState:
     influence: tuple[Influence, ...] = ()
     # M16 (31.1): every holding of one company by another, open or ended, sorted by id
     ownerships: tuple[Ownership, ...] = ()
+    holdings: tuple[Holding, ...] = ()  # M16 (31.2): the player's holding company, if formed
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:
@@ -317,6 +318,10 @@ class GameState:
         return None
 
     def founder_of(self, company_id: int) -> Person | None:
+        for h in self.holdings:  # M16 (31.2): a holding company's founder is its Chair
+            if h.company_id == company_id:
+                return self.person(h.chair_id)
+        # (no holdings: the loop is empty, so games without one read staff as before)
         for e in self.staff(company_id):
             person = self.person(e.person_id)
             if person.is_founder:
@@ -633,8 +638,15 @@ class GameState:
 
     @property
     def player(self) -> CompanyState:
+        """The company the player runs (products, people, offices): with a holding company
+        formed (M16, 31.2), its operating company, not the holding."""
+        if not self.holdings:
+            for company in self.companies:
+                if company.is_player:
+                    return company
+        held = {h.company_id for h in self.holdings}
         for company in self.companies:
-            if company.is_player:
+            if company.is_player and company.id not in held:
                 return company
         raise LookupError("game state has no player company")
 
@@ -692,9 +704,11 @@ def group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:
         for o in ownership_history(state, company.id):
             owned_by.setdefault(o.owner_id, []).append(o)
     out: list[GroupMember] = []
-    frontier: list[tuple[int, int, int | None, int]] = [(root_id, _BEFORE_TIME, None, 0)]
+    frontier: list[tuple[int, int, int | None, int, bool]] = [
+        (root_id, _BEFORE_TIME, None, 0, False)
+    ]
     while frontier:
-        owner, w_start, w_end, depth = frontier.pop(0)
+        owner, w_start, w_end, depth, w_cc = frontier.pop(0)
         for o in sorted(owned_by.get(owner, ()), key=lambda x: (x.from_turn, x.company_id, x.id)):
             if o.company_id == root_id:
                 raise GroupDataError(f"ownership cycle through company {root_id}")
@@ -703,10 +717,13 @@ def group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:
             end = min(ends) if ends else None
             if end is not None and end < start:
                 continue
-            out.append(GroupMember(o.company_id, owner, start, end, o, depth + 1))
+            if end == start and o.end_reason in EQUITY_ENDS and o.to_turn == start:
+                continue  # passed on the turn it arrived (a transfer to the holding company)
+            cc = (o.common_control and start == o.from_turn) or (w_cc and start == w_start)
+            out.append(GroupMember(o.company_id, owner, start, end, o, depth + 1, cc))
             if depth + 1 > len(state.companies):
                 raise GroupDataError(f"ownership cycle below company {root_id}")
-            frontier.append((o.company_id, start, end, depth + 1))
+            frontier.append((o.company_id, start, end, depth + 1, cc))
     return tuple(sorted(out, key=lambda m: (m.depth, m.start, m.company_id)))
 
 
@@ -733,9 +750,25 @@ def group_companies(
 
 
 def player_companies(state: GameState) -> tuple[CompanyState, ...]:
-    """The companies the player controls (ADR-0020): the player's single company until M16,
-    when it returns the group. New code uses this wherever "the player" is meant."""
-    return (state.player,)
+    """The companies the player runs directly (ADR-0020): the player's company, and with a
+    holding company formed (M16, 31.2) the holding too. Subsidiaries are run by their own
+    CEOs under mandates (31.4). New code uses this wherever "the player" is meant."""
+    held = holding_of(state)
+    if held is None:
+        return (state.player,)
+    return (state.player, state.company(held.company_id))
+
+
+def holding_of(state: GameState) -> Holding | None:
+    """The player's holding company, if formed (31.2)."""
+    return state.holdings[-1] if state.holdings else None
+
+
+def listed_id(state: GameState) -> int:
+    """The player's listed entity: the holding company once formed (it took the listing and
+    the cap table, 31.2), else the player's company."""
+    held = holding_of(state)
+    return held.company_id if held is not None else state.player.id
 
 
 def company_cash(balances: LedgerBalances, company_id: int) -> Cents:
@@ -766,6 +799,10 @@ def with_ownership(state: GameState, ownership: Ownership) -> GameState:
     if ownership.id == 0:
         ownership = replace(ownership, id=max((o.id for o in state.ownerships), default=0) + 1)
     return replace(state, ownerships=_upsert(state.ownerships, ownership, lambda o: o.id))
+
+
+def with_holding(state: GameState, holding: Holding) -> GameState:
+    return replace(state, holdings=_upsert(state.holdings, holding, lambda h: h.company_id))
 
 
 def with_company(state: GameState, company: CompanyState) -> GameState:

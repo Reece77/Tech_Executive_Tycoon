@@ -2893,3 +2893,51 @@ def lobby_cmd(
             f"{format_money(r.monthly_cents)}/month  exposure {r.exposure}  "
             f"scandals {r.scandals}"
         )
+
+
+# --- The group (M16, formulas.md 31) ----------------------------------------------------------
+
+
+def _group_table(path: Path, data: LoadedData) -> None:
+    from tst.api.group_views import group_out
+
+    with repository.open_session(path) as session:
+        state = repository.load_state(session)
+        balances = repository.ledger_balances(session)
+    g = group_out(state, balances, data)
+    if not g.formed:
+        typer.echo(
+            "No holding company yet: "
+            + ("you can form one (tst form-holding)." if g.can_form else "; ".join(g.reasons))
+        )
+    for e in g.entities:
+        stake = "" if e.depth == 0 else f" {e.stake_bp / 100:.1f}% {e.treatment}"
+        margin = "—" if e.operating_margin is None else f"{e.operating_margin:.1%}"
+        if e.market_cap_cents is not None:
+            value = f"cap {format_money(e.market_cap_cents)}"
+        elif e.value_low_cents is not None and e.value_high_cents is not None:
+            value = f"value {format_money(e.value_low_cents)}-{format_money(e.value_high_cents)}"
+        else:
+            value = ""
+        typer.echo(
+            f"{'  ' * e.depth}{e.name} [{e.role}]{stake}: revenue {format_money(e.revenue_cents)}"
+            f" (12 months), margin {margin}, cash {format_money(e.cash_cents)} {value}".rstrip()
+        )
+
+
+@app.command("group")
+def group_cmd(save: SaveOpt) -> None:
+    """The group (31.10): the entity tree with stakes, treatments and each company's numbers."""
+    path, data, _ = _game(save)
+    _group_table(path, data)
+
+
+@app.command("form-holding")
+def form_holding_cmd(save: SaveOpt) -> None:
+    """Form the holding company (31.2): it takes the listing, the cap table and the board."""
+    from tst.sim.group.actions import FormHolding
+
+    path, data, state = _game(save)
+    state = _run(path, data, FormHolding(_founder(state))).new_state
+    typer.echo(f"Holding company formed; {_energy(state, data)}")
+    _group_table(path, data)

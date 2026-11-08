@@ -3,6 +3,9 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  holding_formed: # M16 (31.2)
+    title: "{name} is formed"
+    body: "The holding company now holds the listing, the cap table and the board, and owns {subsidiaries} subsidiaries. You chair it. Legal fees came to {fee_cents}."
   burnout_started: # M24 (32.1)
     title: "You are burning out"
     body: "Stress has reached {stress}. Your monthly energy is down by 30% until it falls below 40; answer the event to take a month off, delegate or push on."

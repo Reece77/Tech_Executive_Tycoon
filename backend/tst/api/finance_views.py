@@ -87,14 +87,14 @@ from tst.sim.finance.models import (
     TermSheet,
 )
 from tst.sim.finance.options import at_cliff, next_vesting, pool_left_bp
-from tst.sim.group.models import GroupMember
+from tst.sim.group.models import EQUITY_ENDS, GroupMember
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.ledger import CASH
 from tst.sim.mna.exit import sale_of
 from tst.sim.modes.scenarios import bonus_reached
 from tst.sim.money import Cents
 from tst.sim.snapshot import CompanySnapshot
-from tst.sim.state import GameState
+from tst.sim.state import GameState, listed_id
 
 OPTIONS_HOLDER = "Employee options"
 PRICE_DECIMALS = 5
@@ -157,6 +157,8 @@ def statements_out(
                     m.ownership.from_turn,
                     m.ownership.book_cents if m.ownership.id else None,
                     m.ownership.equity_cents if m.ownership.id else None,
+                    m.common_control,
+                    m.end is not None and m.ownership.end_reason in EQUITY_ENDS,
                 )
                 for m, sub in members
             ],
@@ -378,9 +380,13 @@ def grant_out(state: GameState, employment_id: int, name: str, data: LoadedData)
     return _grant_out(grant, {grant.person_id: name}, staff, fd, state, data.balance.finance)
 
 
-def captable_out(state: GameState, names: Mapping[int, str], data: LoadedData) -> CapTableOut:
-    """`names` gives the names of grant holders who may have left (not in the live state)."""
-    company = state.player.id
+def captable_out(
+    state: GameState, names: Mapping[int, str], data: LoadedData, company_id: int | None = None
+) -> CapTableOut:
+    """`names` gives the names of grant holders who may have left (not in the live state).
+    `company_id` (M16 switcher) defaults to the listed entity: the holding company's cap table
+    once formed."""
+    company = company_id if company_id is not None else listed_id(state)
     fd = fd_shares(state, company)
     founder = state.founder_of(company)
     founder_id = founder.id if founder is not None else None
@@ -706,10 +712,12 @@ def board_out(
     data: LoadedData,
     meetings: Sequence[InboxMessage] = (),
     warnings: Sequence[InboxMessage] = (),
+    company_id: int | None = None,
 ) -> BoardOut:
     """`meetings` and `warnings` are the board_meeting and board_warning inbox items, newest
-    first; the newest meeting is the last one shown."""
-    company = state.player.id
+    first; the newest meeting is the last one shown. `company_id` (M16) defaults to the
+    listed entity, whose board it is."""
+    company = company_id if company_id is not None else listed_id(state)
     bb = data.balance.board
     seats = state.board(company)
     avg = average_confidence(state, company)
@@ -973,8 +981,10 @@ def open_bridge(state: GameState) -> Safe | None:
     return None
 
 
-def summary_out(state: GameState, cash_cents: Cents, data: LoadedData) -> FinanceSummaryOut:
-    company = state.player
+def summary_out(
+    state: GameState, cash_cents: Cents, data: LoadedData, company_id: int | None = None
+) -> FinanceSummaryOut:
+    company = state.company(company_id) if company_id is not None else state.player
     burn = fs.projected_net_burn(state, company.id, data.balance, data.game_data)
     runway = fs.projected_runway(state, company.id, cash_cents, data.balance, data.game_data)
     bridge = open_bridge(state)
