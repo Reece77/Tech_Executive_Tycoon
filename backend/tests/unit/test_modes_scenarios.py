@@ -77,8 +77,9 @@ def _at_deadline(state: GameState, key: str, loaded: LoadedData) -> GameState:
 def _succeed(state: GameState, key: str, loaded: LoadedData) -> GameState:
     """A scripted success for each goal kind."""
     cid = state.player.id
-    if key == "ai_lab":
-        return with_era_arrival(state, EraArrival("transformers", state.turn, cid, 12))
+    if key == "ai_lab":  # $100M ARR (playtest 4: Transformers first is only a bonus)
+        mrr = 100_000_000 * 100 // 12 + 1
+        return with_company(state, replace(state.player, mrr_history=(mrr,)))
     if key in ("mobile_first", "chip_startup"):
         if key == "chip_startup":  # the player's accelerator takes most of the units
             from tst.sim.products.models import Product, ProductSegment
@@ -114,6 +115,36 @@ def test_each_goal_passes_and_fails(loaded: LoadedData, starts, key: str) -> Non
     assert won.mode is not None and won.mode.result == "success", key
     # before the deadline nothing ends unless a reach goal holds
     assert sc.judge(world, balances, b, d).mode.result is None  # type: ignore[union-attr]
+
+
+def test_the_ai_lab_wins_on_arr_and_transformers_is_a_bonus(  # type: ignore[no-untyped-def]
+    loaded: LoadedData, starts
+) -> None:
+    """Playtest 4 (M15r addendum d): the goal is $100M ARR by December 2020. Causing the
+    Transformers era first neither wins nor ends the game; it is a bonus the result screen
+    shows."""
+    world, balances = starts["ai_lab"]
+    b, d = loaded.balance, loaded.game_data
+    h = sc.scenario(d, "ai_lab")
+    assert (h.goal.kind, h.goal.arr_dollars, h.deadline) == ("arr", 100_000_000, (2020, 12))
+    assert h.goal.bonus_era == "transformers"
+    cid = world.player.id
+    first = with_era_arrival(world, EraArrival("transformers", world.turn, cid, 12))
+    assert sc.bonus_reached(h.goal, world) is False
+    assert sc.bonus_reached(h.goal, first) is True
+    assert sc.judge(first, balances, b, d).mode.result is None  # type: ignore[union-attr]
+    lost = sc.judge(_at_deadline(first, "ai_lab", loaded), balances, b, d)
+    assert lost.mode is not None and lost.mode.result == "failure"
+    won = sc.judge(_succeed(first, "ai_lab", loaded), balances, b, d)  # early, on ARR
+    assert won.mode is not None and won.mode.result == "success"
+    assert sc.bonus_reached(h.goal, won) is True
+    from tst.api.finance_views import _scenario_fields
+
+    fields = _scenario_fields(won, loaded)  # the result screen's fields
+    assert fields["scenario_goal"] == "Reach $100M ARR"
+    assert fields["scenario_bonus"] == "Cause the Transformers era first"
+    assert fields["scenario_bonus_reached"] is True
+    assert _scenario_fields(world, loaded)["scenario_bonus_reached"] is False
 
 
 def test_a_down_round_fails_the_turnaround(loaded: LoadedData, starts) -> None:  # type: ignore[no-untyped-def]

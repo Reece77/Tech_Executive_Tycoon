@@ -68,9 +68,15 @@ test('(c) January rankings arrive as news and on the Rankings screen', async ({ 
   await expect(page.getByTestId('game-date')).toHaveText('Dec 2010');
   await continueMonth(page);
   await page.goto(`/game/${save}/inbox`);
-  await expect(
-    page.getByTestId('inbox-item').filter({ hasText: 'The 2011 industry rankings' }),
-  ).toHaveCount(1);
+  const news = page.getByTestId('inbox-item').filter({ hasText: 'The 2011 industry rankings' });
+  await expect(news).toHaveCount(1);
+  // playtest 4 (M15r addendum b): the player's places, each list's top five, and a link
+  await news.click();
+  await expect(page.getByTestId('message-body')).toContainText('Your places: Top 50 by revenue');
+  await expect(page.getByTestId('message-body')).toContainText('Most innovative:');
+  await expect(page.getByTestId('message-body')).toContainText('5. ');
+  await page.getByTestId('view-rankings').click();
+  await expect(page.getByRole('heading', { name: /Rankings 2011/ })).toBeVisible();
   await page.goto(`/game/${save}/competitors`);
   await page.getByTestId('rankings-link').click();
   await expect(page.getByRole('heading', { name: /Rankings 2011/ })).toBeVisible();

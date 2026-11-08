@@ -196,6 +196,18 @@ export function GameOverScreen() {
               {g.scenario_label}: {g.scenario_result === 'success' ? 'success' : 'failure'}
             </span>
           )}
+          {g.scenario_bonus && (
+            // M15r addendum d: a bonus, shown here and never a win condition
+            <span
+              data-testid="scenario-bonus"
+              data-reached={g.scenario_bonus_reached ? 'yes' : 'no'}
+              className="tst-muted"
+              style={{ fontSize: 13 }}
+            >
+              Bonus: {g.scenario_bonus}.{' '}
+              {g.scenario_bonus_reached ? `${g.company_name} did it.` : 'Not achieved.'}
+            </span>
+          )}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <KpiTile

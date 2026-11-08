@@ -21555,6 +21555,29 @@
             "title": "Scenario Result",
             "description": "success | failure, once judged"
           },
+          "scenario_bonus": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Bonus",
+            "description": "The goal's bonus in words, never a win condition (M15r)"
+          },
+          "scenario_bonus_reached": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Bonus Reached"
+          },
           "exit_buyer": {
             "anyOf": [
               {

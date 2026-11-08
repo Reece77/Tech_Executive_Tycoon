@@ -76,6 +76,7 @@ from tst.sim.finance.fundraising import (
     series_problem,
 )
 from tst.sim.finance.insolvency import bridge_amount
+from tst.sim.modes.scenarios import bonus_reached
 from tst.sim.finance.models import (
     POOL_NAME,
     SAFE_HOLDERS,
@@ -838,7 +839,7 @@ def funding_summary(state: GameState) -> str | None:
     return f"after {words}"
 
 
-def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | None]:
+def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | bool | None]:
     """A historical scenario's goal and verdict for the result screen (M15b, 30.3)."""
     mode = state.mode
     if mode is None or mode.kind != "scenario" or mode.scenario is None:
@@ -851,6 +852,8 @@ def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | None
         "scenario_goal": h.goal.text,
         "scenario_deadline_label": format_turn(ym_to_turn(*h.deadline)),
         "scenario_result": mode.result,
+        "scenario_bonus": h.goal.bonus_text,
+        "scenario_bonus_reached": bonus_reached(h.goal, state),
     }
 
 

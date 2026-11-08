@@ -246,10 +246,8 @@ def reached(
     """Whether the goal holds now. `final`: the deadline's judgement, for the goals judged
     only then (solvency and profit)."""
     cid = state.player.id
-    if goal.kind == "era_or_arr":
-        arrival = state.era_arrival(goal.era) if goal.era else None
-        first = arrival is not None and arrival.company_id == cid
-        return first or _arr_cents(state, cid) >= (goal.arr_dollars or 0) * CENTS_A_DOLLAR
+    if goal.kind == "arr":
+        return _arr_cents(state, cid) >= (goal.arr_dollars or 0) * CENTS_A_DOLLAR
     if goal.kind == "customers":
         assert goal.category is not None
         return _customers(state, cid, goal.category, goal.segment) >= (goal.customers or 0)
@@ -271,6 +269,15 @@ def reached(
         if r.status == "closed"
     )
     return profit is not None and profit > 0 and not down
+
+
+def bonus_reached(goal: GoalSpec, state: GameState) -> bool | None:
+    """The goal's bonus (M15r addendum d), shown on the result screen and never judged:
+    the player caused `bonus_era` first. None when the goal has no bonus."""
+    if goal.bonus_era is None:
+        return None
+    arrival = state.era_arrival(goal.bonus_era)
+    return arrival is not None and arrival.company_id == state.player.id
 
 
 def judge(

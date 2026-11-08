@@ -123,7 +123,7 @@ class LoanSpec(_Frozen):
 
 
 type GoalKind = Literal[
-    "era_or_arr",  # cause `era` first, or reach `arr_dollars`
+    "arr",  # reach `arr_dollars` (M15r addendum d: the AI lab's goal, no longer era or ARR)
     "customers",  # `customers` in `category`'s `segment`
     "solvent_margin",  # cash at least 0 and a positive trailing operating margin at the end
     "unit_share",  # `share` of `category`'s customers
@@ -140,6 +140,10 @@ class GoalSpec(_Frozen):
     segment: str | None = None
     customers: int | None = None
     share: float | None = None
+    # M15r addendum d: a bonus shown on the result screen, never a win condition: cause
+    # `bonus_era` first, described by `bonus_text`
+    bonus_era: str | None = None
+    bonus_text: str | None = None
 
 
 class HistoricalScenario(_Frozen):

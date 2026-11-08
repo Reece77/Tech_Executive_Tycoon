@@ -6142,6 +6142,13 @@ export interface components {
              */
             scenario_result?: string | null;
             /**
+             * Scenario Bonus
+             * @description The goal's bonus in words, never a win condition (M15r)
+             */
+            scenario_bonus?: string | null;
+            /** Scenario Bonus Reached */
+            scenario_bonus_reached?: boolean | null;
+            /**
              * Exit Buyer
              * @description Exit (M14, 28.6): who bought it
              */
