@@ -36,6 +36,8 @@ nightly-ci:
 # The v2 30-year targets (M15a, formulas.md 30.7; CI: .github/workflows/weekly.yml, Sundays):
 # V1 over 30 seeds, V5's runs to December 2039, and V6's turn time on a 2039 stage-4 save.
 V6_SAVE_DIR ?= /tmp/tst-v6
+weekly-v1to4:
+	cd backend && uv run pytest -q -n auto -s -m weekly tests/balance/test_v2_balance.py::test_v1_to_v4_ten_years
 weekly-v1:
 	uv run --project backend python tools/v2_targets.py --seeds-30
 weekly-v5:

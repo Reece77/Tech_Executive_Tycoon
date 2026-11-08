@@ -1,6 +1,7 @@
 # The v2 30-year balance targets (M15a, docs/formulas.md 30.7): V1 over 30 seeds, V5's
 # steady_regions and research_heavy runs to December 2039, and V6's turn time on a 2039
-# stage-4 save built from a 30-year run. The nightly keeps the 10-year targets. Sundays, and on
+# stage-4 save built from a 30-year run, and (from 2026-11-08) V1-V4's 10-year run over 11
+# strategies, which pushed the nightly past two hours. The nightly keeps the milestone guards. Sundays, and on
 # demand from the Actions tab.
 name: weekly
 
@@ -20,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [weekly-v1, weekly-v5, weekly-v6]
+        part: [weekly-v1to4, weekly-v1, weekly-v5, weekly-v6]
     steps:
       - uses: actions/checkout@v4
 
