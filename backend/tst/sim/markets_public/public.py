@@ -192,6 +192,10 @@ def _listed_month(
                 )
             )
             logs.append(inbox_item(turn, cid, "dividend_paid", amount_cents=total))
+            # M24 (32.2): the founder's share reaches their personal book.
+            from tst.sim.founder.personal import dividend_share
+
+            state = dividend_share(state, cid, public.dividend_cents)
         public = replace(public, dividend_cents=0)
     start = ipo.quarter_start(turn)
     if turn == start:  # a new quarter: its guidance defaults to the consensus (25.4)

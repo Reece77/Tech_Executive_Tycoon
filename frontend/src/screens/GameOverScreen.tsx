@@ -1,5 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router';
 import { ExitChoicePanel } from '../components/ExitChoicePanel';
+import { LegacyPanel } from '../components/FounderPanels';
 import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading } from '../components/ScreenState';
 import { Sparkline } from '../components/Sparkline';
@@ -228,6 +229,7 @@ export function GameOverScreen() {
           />
         </div>
         {g.can_found_again && <ExitChoicePanel saveId={saveId} over={g} />}
+        <LegacyPanel legacy={g.legacy} />
         {g.game_state === 'founder_removed' && g.directors.length > 0 && (
           <section className="tst-panel" aria-label="The directors">
             <h2 className="tst-ptitle">The directors</h2>

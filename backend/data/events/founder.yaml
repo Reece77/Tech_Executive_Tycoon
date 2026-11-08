@@ -290,3 +290,66 @@ templates:
         label: "Do it yourself over a weekend"
         effects:
           - { type: energy_delta, target: founder, share: -0.5 }
+
+  # M24 (formulas.md 32.1, 32.3, 32.5): the founder's life. The engine queues these by id
+  # (trigger founder_life, founder.phase); the director never draws them. Their answers are
+  # founder_step effects the engine applies; the LLM may word them, never change the choices.
+  - id: founder_burnout
+    category: founder
+    trigger: founder_life
+    severities: [critical]
+    weight: 1.0
+    title: "You are running on empty"
+    body: >-
+      Months of long days at {company} have caught up with you. You are sleeping badly,
+      snapping in meetings and reading the same page three times. Your monthly energy is
+      down by a third until the stress eases.
+    choices:
+      - key: A
+        label: "Take this month off"
+        effects: [{ type: founder_step, target: founder, stat: rest }]
+      - key: B
+        label: "Delegate more to your executives"
+        effects: [{ type: founder_step, target: founder, stat: delegate }]
+      - key: C
+        label: "Push on"
+        effects: [{ type: founder_step, target: founder, stat: push_on }]
+
+  - id: founder_scandal
+    category: founder
+    trigger: founder_life
+    severities: [critical]
+    weight: 1.0
+    title: "A lobbying story breaks"
+    body: >-
+      A newspaper has the emails: what {company} spent to win friends among regulators, and
+      what it asked for in return. Customers are angry, your influence there is gone, and a
+      fine is already on its way. The press wants to hear from {founder}.
+    choices:
+      - key: A
+        label: "Apologize in public"
+        effects: [{ type: founder_step, target: founder, stat: apologize }]
+      - key: B
+        label: "Drop the lobbying firm"
+        effects: [{ type: founder_step, target: founder, stat: drop_lobbyists }]
+      - key: C
+        label: "Fight the story"
+        effects: [{ type: founder_step, target: founder, stat: fight }]
+
+  - id: founder_first_grants
+    category: founder
+    trigger: founder_life
+    severities: [minor]
+    weight: 1.0
+    title: "Your foundation's first grants"
+    body: >-
+      The first grants from your foundation have gone out, and the people they reached want
+      to thank {founder} in person. A local paper would like a photograph.
+    choices:
+      - key: A
+        label: "Go to the ceremony"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.3 }
+      - key: B
+        label: "Let the foundation's staff speak for it"
+        do_nothing: true

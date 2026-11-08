@@ -1042,6 +1042,13 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
             for row in logged
             if row.source == PLAYER_SOURCE
         ]
+        # M24: each turn's Decisions (a Holiday month lowers the founder's stress, 32.1).
+        turn_decisions = {
+            row.turn: Decisions(**row.payload)
+            for row in session.scalars(
+                select(DecisionLogRow).where(DecisionLogRow.kind == "turn_decisions")
+            )
+        }
         delegated: dict[int, list[tuple[int, Action]]] = {}
         for row in logged:
             if row.source == DELEGATE_SOURCE:
@@ -1073,7 +1080,9 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         for _, action in (a for a in actions if a[0] == turn):
             run_action(path, data, action)
         if turn < target_turn:
-            result = run_turn(path, data, events_from=source)  # events copied, never written
+            result = run_turn(  # events copied, never written
+                path, data, turn_decisions.get(turn), events_from=source
+            )
             if list(result.delegate_actions) != delegated.get(turn, []):
                 raise ReplayMismatchError(
                     f"turn {turn}: recomputed delegate actions differ from the logged ones"

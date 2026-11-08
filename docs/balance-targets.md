@@ -492,3 +492,23 @@ Earlier milestones on the final keys: v1's runner (`make balance`, CI) passes ev
 
 Tuned in M15a (before → after): `rnd.rate` 0.4 → 0.3 (V2); `debt.venture.covenant_burn_months` 3 → 2 (V7); `rivals.startup.start_feature_share` new, 0.3 (V5); `rivals.startup.small_staff` 3 and `small_months` 24 new (V5); `rank.brand` stays 0 (0.5 moved V1–V4 out of band even with the tie-break fixed; an M23 follow-up).
 
+## M24: the founder's life (§32.7)
+
+### M24 The founder's life (2026-11-07, lane C, merges before M16)
+
+`tools/m24_targets.py` (nightly `tests/balance/test_m24_balance.py`), 10 seeds:
+
+| Target | Band | Value |
+| --- | --- | --- |
+| T1 nothing moves for a founder who never strains | no burnout at use <= 0.6 (property test); guards pass | the scripted strategies spend more than 0.6 of a month's energy in 4.5% of months and never burn out (0 in 20 ten-year runs); golden snapshots unchanged |
+| T2 all energy every month | first burnout in months 3–6 | month 5 on every seed (`stress.load` 30) |
+| T2 Holiday twice a year, use <= 0.8 | at most 1 burnout in 10 years | none |
+| T3 blitzscale's top trait at year 10, leading the next by 5 or more | Reckless or Ruthless on >= 6 | 6 of 10 on the code merged with M15a (Reckless; seeds 2, 4, 8 and 9 have no clear top; 8 of 10 before M15a merged). First build: 0 of 10 |
+| T3 steady's top trait at year 10, leading the next by 5 or more | Beloved or Visionary on >= 6 | 8 of 10 (Visionary 25; seeds 3 and 10 have no clear top) |
+| T4 antitrust blocks at $500k a month for 5 years | fall 20–40% | 38% (influence 73–100 at year 5) |
+| T4 a scandal in 10 years | on 3–7 seeds | 5 of 10 |
+| T5 $10M a year of grants | hiring appeal <= 0.03; Beloved +5 to +10 | +0.030; +6.0 |
+
+T3 follows the product manager's ruling of 2026-11-07: three new Reckless sources (runway under 6 months while burning, a down round, headcount doubled in a year) and the 5-point lead in the measure. Tuned (M24's keys only): `persona.sources.down_round` 8 → 70 (blitzscale's down rounds close in months 87–99, and the drift leaves `20 + S − 2 × (119 − t)` at year 10; 6 seeds need S ≥ 59); `foundation.beloved_k` 2 → 3 (at 2, $10M a year raised Beloved by 4); `influence.risk_rate` 0.002 → 0.0005 (at 0.002 a scandal broke on 8 of 10 seeds; 0.0015 and 0.001: 8; 0.0008: 7; 0.0006: 6; 0.0005: 5).
+
+`stress.load` 40 → 30 (product manager, 2026-11-08): at 40, M15a's research_heavy burned out (stress 82 around month 61) and its 10-year guard failed (research_heavy 5 of 10 wins); at 30 it is back to `main`'s known miss. Values above are on the code merged with M15a, at `stress.load` 30.

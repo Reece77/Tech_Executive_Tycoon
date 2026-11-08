@@ -391,6 +391,8 @@ def morale_breakdown(
         shown.append(MoraleTermOut(key="support", label="Admin and support", value=terms.support))
     if terms.crowded:  # M9 (19.2): more people than seats in their office
         shown.append(MoraleTermOut(key="crowded", label="Crowded office", value=terms.crowded))
+    if terms.founder:  # M24 (32.3-32.4): the founder's persona and foundation
+        shown.append(MoraleTermOut(key="founder", label="The founder", value=terms.founder))
     holders = teammate_tag_holders(state, view, person_id)
     labels = {t.key: t.label for t in data.game_data.tags}
     for tag in ORG_TAGS:

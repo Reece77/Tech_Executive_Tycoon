@@ -34,5 +34,14 @@ accounts:
   - { code: 6500_research_development, name: Research and development, type: expense }
   - { code: 6700_depreciation, name: Depreciation, type: expense } # M12a: data centres (22.2)
   - { code: 6900_general_admin, name: General and administrative, type: expense }
+  - { code: 6950_lobbying, name: Lobbying, type: expense } # M24 (32.5): a company's monthly lobbying by region; scandal fines post to 6900
   - { code: 7000_interest, name: Interest expense, type: expense }
   - { code: 8000_income_tax, name: Income tax, type: expense }
+
+# The founder's own book (M24, formulas.md 32.2): a separate double-entry book in integer cents,
+# never mixed with a company's. Codes start with 9; no company entry may post to them.
+personal_accounts:
+  - { code: 9100_personal_cash, name: Personal cash, type: asset }
+  - { code: 9200_foundation_endowment, name: Foundation endowment, type: asset }
+  - { code: 9300_personal_spending, name: Personal spending and grants, type: expense }
+  - { code: 9400_personal_income, name: Personal income, type: revenue }

@@ -97,10 +97,12 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
     runway_warn = data.balance.morale.runway_warn_months
     month_total = sum(c.amount_cents for c in projected) + sum(c.amount_cents for c in month_paid)
     month_revenue = projected_revenue(state, player.id)
+    from tst.api.founder_views import stress_out
     from tst.api.modes_views import score_out
 
     return OverviewOut(
         score=score_out(state, player.id, balances, data),  # M15b (30.1)
+        stress=stress_out(state, data),  # M24 (32.1)
         deals_due=sum(
             1
             for d in state.deals

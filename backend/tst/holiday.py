@@ -23,6 +23,7 @@ from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance
+from tst.sim.decisions import Decisions
 from tst.sim.errors import CriticalEventOpenError, GameOverError, SimError
 from tst.sim.events.effects import blocking_events
 from tst.sim.finance.statements import projected_runway
@@ -166,7 +167,8 @@ def run_holiday(
     reason: StopReason | None = None
     end = start
     while reason is None:
-        result = repository.run_turn(path, data, adapter=adapter)
+        # M24 (32.1): a month on Holiday lowers the founder's stress.
+        result = repository.run_turn(path, data, Decisions(holiday=True), adapter=adapter)
         done += 1
         _, end = _vitals(path, data)
         if on_month is not None:

@@ -275,6 +275,11 @@ MNA_FORBIDDEN_NAMES = frozenset(
 )
 
 
+# M24 (32.8): never the scandal risk, a scandal's chance, or a pending second story (a
+# pitch's `risk` word is public, so test_api_founder checks the founder's schemas for it).
+FOUNDER_FORBIDDEN_NAMES = frozenset({"scandal_risk", "scandal_chance", "second_story", "risk_rate"})
+
+
 def forbidden(name: str) -> bool:
     """ADR-0007 exact-name rule (potential_phrase is allowed), plus the 11.13 names."""
     return (
@@ -284,6 +289,7 @@ def forbidden(name: str) -> bool:
         or name in RIVAL_FORBIDDEN_NAMES
         or name in EVENT_FORBIDDEN_NAMES
         or name in MNA_FORBIDDEN_NAMES
+        or name in FOUNDER_FORBIDDEN_NAMES
         or name.startswith(FORBIDDEN_PREFIXES)
     )
 
