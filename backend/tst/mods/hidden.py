@@ -1,10 +1,11 @@
 """What the Data editor withholds (M25 section 3; CLAUDE.md section 8, ADR-0007).
 
-The editor shows data files, not a game's state, but it keeps the API's hidden-value rule all
-the same: no response carries a field the API's hidden-name rule forbids anywhere (a rival's
-`cash_months`, a starting `share_bp`, a formula's `noise` or `cap`). Such fields are left out
-of the form, the values and the comments, and a change to one is refused; they keep their
-base values (or a hand-written mod file's). The names mirror tests/integration/test_api.py's
+The editor shows data files, never a game's state. By default it keeps the API's hidden-name
+rule all the same: fields the rule forbids (a rival's `cash_months`, a starting `share_bp`, a
+formula's `noise` or `cap`) are left out of the form, the values and the comments, and a
+change to one is refused. The player can turn on "Show spoiler fields" (PM ruling 2026-11-08;
+`spoilers` on the editor routes), which shows and edits them; every game route keeps the rule.
+The names mirror tests/integration/test_api.py's
 `forbidden()`, and tests/integration/test_m25_mods.py checks every name in the editable files
 against it, so the two cannot drift apart unnoticed."""
 

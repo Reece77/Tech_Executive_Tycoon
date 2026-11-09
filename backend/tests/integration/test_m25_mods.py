@@ -6,6 +6,7 @@ edited or deleted."""
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -199,12 +200,12 @@ def test_the_editor_withholds_every_name_the_api_forbids() -> None:
     assert {n for n in flagged if not withheld(n)} == set()
 
 
-def test_a_change_to_a_withheld_field_is_refused(api: ModClient) -> None:
+def test_a_spoiler_change_without_the_toggle_is_refused(api: ModClient) -> None:
     path = ["companies", "@name=Salesforce", "cash_months"]
     out = api.put(
         "/api/mods/rich", {"changes": [{"file": "incumbents.yaml", "path": path, "value": 1}]}, 400
     )
-    assert out["code"] == "invalid_mod" and "hidden" in out["message"]
+    assert out["code"] == "invalid_mod" and "spoiler field" in out["message"]
 
 
 def test_a_market_twice_as_big(api: ModClient) -> None:
@@ -231,3 +232,99 @@ def test_a_market_twice_as_big(api: ModClient) -> None:
     market = api.get("/api/saves/bigai/markets/ai_models")
     sizes = {s["segment"]: s["addressable"] for s in market["segments"]}
     assert sizes == {m["segment"]: m["addressable"] * 2 for m in ai["markets"]}
+
+
+# --- PM ruling 2026-11-08: "Show spoiler fields" ----------------------------------------------
+
+
+def _raw(api: ModClient, url: str) -> Any:
+    """An editor response without the hidden-key check (spoilers may name those keys)."""
+    res = api.client.get(url)
+    assert res.status_code == 200, (url, res.text)
+    return res.json()
+
+
+def test_spoiler_fields_show_and_edit_only_behind_the_toggle(api: ModClient) -> None:
+    from tests.integration.test_api import find_forbidden_keys
+
+    off = api.get("/api/mods/files/incumbents.yaml")  # the checking client: none by default
+    assert "cash_months" not in off["base"]["companies"][0]
+    on = _raw(api, "/api/mods/files/incumbents.yaml?spoilers=true")
+    assert on["base"]["companies"][0]["cash_months"] > 0
+    fields = {f["name"] for f in on["spec"]["fields"][0]["spec"]["item"]["fields"]}
+    assert "cash_months" in fields
+    assert find_forbidden_keys(on) != []  # they are there only because the toggle is on
+
+    path = ["companies", "@name=Salesforce", "cash_months"]
+    change = {"file": "incumbents.yaml", "path": path, "value": 6}
+    refused = api.put("/api/mods/rich", {"changes": [change]}, 400)
+    assert "Show spoiler fields" in refused["message"]
+    res = api.client.put("/api/mods/rich", json={"changes": [change], "spoilers": True})
+    assert res.status_code == 200 and res.json()["changes"] == [change]
+    assert api.get("/api/mods/rich")["changes"] == []  # hidden again with the toggle off
+    assert _raw(api, "/api/mods/rich?spoilers=true")["changes"] == [change]
+    merged = _raw(api, "/api/mods/files/incumbents.yaml?mod=rich&spoilers=true")
+    assert merged["value"]["companies"][0]["cash_months"] == 6
+    plain = api.get("/api/mods/files/incumbents.yaml?mod=rich")
+    assert "cash_months" not in plain["value"]["companies"][0]
+
+
+def _editor_responses(api: ModClient) -> str:
+    files = [f["file"] for f in _raw(api, "/api/mods/files")]
+    out: dict[str, Any] = {"files": files, "mods": _raw(api, "/api/mods?spoilers=true")}
+    for f in files:
+        for flag in ("false", "true"):
+            out[f"{f}:{flag}"] = _raw(api, f"/api/mods/files/{f}?spoilers={flag}")
+    return json.dumps(out, sort_keys=True)
+
+
+def test_editor_routes_return_no_save_state(api: ModClient) -> None:
+    """The editor reads data files and mod overlays only: its responses are the same with
+    no save at all and with a played save beside them, and never name a save."""
+    spec = api.get("/openapi.json")
+    editor = [p for p in spec["paths"] if p.startswith("/api/mods")]
+    assert editor and all("save_id" not in p for p in editor)
+    before = _editor_responses(api)
+    _new(api, "zxqsave", None)
+    api.post("/api/saves/zxqsave/advance")
+    after = _editor_responses(api)
+    assert after == before
+    assert "zxqsave" not in after and "zxqsave Co" not in after
+
+
+def test_game_routes_never_return_forbidden_keys(api: ModClient) -> None:
+    """Every game route on a save (GET, the save id its only path parameter) still keeps the
+    hidden-name rule; the toggle reaches no route under /api/saves."""
+    from tests.integration.test_api import find_forbidden_keys
+
+    _new(api, "rules", None)
+    for _ in range(2):
+        api.post("/api/saves/rules/advance")
+    spec = api.get("/openapi.json")
+    checked = 0
+    for path, ops in spec["paths"].items():
+        if "get" not in ops or not path.startswith("/api/saves/{save_id}"):
+            continue
+        if set(re.findall(r"\{(\w+)\}", path)) != {"save_id"}:
+            continue
+        for url in (path, path + "?spoilers=true"):
+            res = api.client.get(url.replace("{save_id}", "rules"))
+            if res.status_code == 200 and "json" in res.headers.get("content-type", ""):
+                assert find_forbidden_keys(res.json()) == [], url
+                checked += 1
+    assert checked > 40  # the screens' routes were all reached
+
+
+def test_saving_with_the_toggle_off_keeps_spoiler_changes(api: ModClient) -> None:
+    spoiler = {
+        "file": "incumbents.yaml",
+        "path": ["companies", "@name=Salesforce", "cash_months"],
+        "value": 6,
+    }
+    brand = {"file": "incumbents.yaml", "path": BRAND, "value": 40}
+    res = api.client.put("/api/mods/both", json={"changes": [spoiler], "spoilers": True})
+    assert res.status_code == 200
+    api.put("/api/mods/both", {"changes": [brand]})  # edited later with the toggle off
+    assert api.get("/api/mods/both")["changes"] == [brand]
+    kept = _raw(api, "/api/mods/both?spoilers=true")["changes"]
+    assert sorted(map(json.dumps, kept)) == sorted(map(json.dumps, [spoiler, brand]))

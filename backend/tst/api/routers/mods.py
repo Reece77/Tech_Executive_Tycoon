@@ -37,12 +37,12 @@ def _base(settings: Settings) -> dict[str, Any]:
     }
 
 
-def _out(mod: store.Mod, base: dict[str, Any]) -> ModOut:
+def _out(mod: store.Mod, base: dict[str, Any], spoilers: bool = False) -> ModOut:
     changes = [
-        ModChangeOut(file=f, path=p, value=strip(v))
+        ModChangeOut(file=f, path=p, value=v if spoilers else strip(v))
         for f, overlay in mod.files.items()
         for p, v in changes_of(base.get(f), overlay)
-        if not path_withheld(p)
+        if spoilers or not path_withheld(p)
     ]
     return ModOut(
         name=mod.name, description=mod.description, files=sorted(mod.files), changes=changes
@@ -50,9 +50,9 @@ def _out(mod: store.Mod, base: dict[str, Any]) -> ModOut:
 
 
 @router.get("", response_model=list[ModOut], operation_id="listMods")
-def list_mods(settings: SettingsDep) -> list[ModOut]:
+def list_mods(settings: SettingsDep, spoilers: bool = False) -> list[ModOut]:
     base = _base(settings)
-    return [_out(m, base) for m in store.list_mods(settings.resolved_save_dir())]
+    return [_out(m, base, spoilers) for m in store.list_mods(settings.resolved_save_dir())]
 
 
 @router.get("/files", response_model=list[EditorFileRefOut], operation_id="listDataFiles")
@@ -65,24 +65,30 @@ def list_files() -> list[EditorFileRefOut]:
 @router.get(
     "/files/{file}", response_model=EditorFileOut, responses=ERRORS, operation_id="getDataFile"
 )
-def get_file(file: str, settings: SettingsDep, mod: str | None = None) -> EditorFileOut:
-    """One file's form: its spec, base values, comments, and its values under `mod`."""
+def get_file(
+    file: str, settings: SettingsDep, mod: str | None = None, spoilers: bool = False
+) -> EditorFileOut:
+    """One file's form: its spec, base values, comments, and its values under `mod`.
+    `spoilers` ("Show spoiler fields", off by default) includes the fields the API's
+    hidden-name rule names; a data file holds no game's state either way."""
     if file not in schema.editable_files():
         raise UnknownDataFileError(f"{file!r} is not an editable data file")
-    f = schema.editor_file(settings.data_dir, file)
+    f = schema.editor_file(settings.data_dir, file, spoilers)
     value = f.base
     if mod:
         overlay = store.read_mod(settings.resolved_save_dir(), mod).files.get(file)
         if overlay is not None:
-            value = strip(merge(f.base, overlay))
+            raw = yaml.safe_load((settings.data_dir / file).read_text(encoding="utf-8"))
+            merged = merge(raw, overlay)
+            value = merged if spoilers else strip(merged)
     return EditorFileOut(
         file=f.file, label=f.label, spec=f.spec, base=f.base, value=value, comments=f.comments
     )
 
 
 @router.get("/{name}", response_model=ModOut, responses=ERRORS, operation_id="getMod")
-def get_mod(name: str, settings: SettingsDep) -> ModOut:
-    return _out(store.read_mod(settings.resolved_save_dir(), name), _base(settings))
+def get_mod(name: str, settings: SettingsDep, spoilers: bool = False) -> ModOut:
+    return _out(store.read_mod(settings.resolved_save_dir(), name), _base(settings), spoilers)
 
 
 @router.put("/{name}", response_model=ModOut, responses=ERRORS, operation_id="saveMod")
@@ -91,12 +97,25 @@ def save_mod(name: str, body: ModIn, settings: SettingsDep) -> ModOut:
     are; an invalid mod is refused with the loader's message and nothing is written."""
     store.check_name(name)
     base = _base(settings)
-    if bad := [c for c in body.changes if path_withheld(c.path)]:
+    if not body.spoilers and (bad := [c for c in body.changes if path_withheld(c.path)]):
         raise store.InvalidModError(
-            f"{'.'.join(bad[0].path)}: not editable here (a value the game keeps hidden)"
+            f"{'.'.join(bad[0].path)}: a spoiler field; turn on Show spoiler fields to edit it"
         )
+    changes = [(c.file, c.path, c.value) for c in body.changes]
+    if not body.spoilers:  # the toggle is off: keep this mod's spoiler changes as they were
+        try:
+            old = store.read_mod(settings.resolved_save_dir(), name)
+        except store.UnknownModError:
+            old = None
+        if old is not None:
+            changes += [
+                (f, p, v)
+                for f, overlay in old.files.items()
+                for p, v in changes_of(base.get(f), overlay)
+                if path_withheld(p)
+            ]
     try:
-        files = overlay_of([(c.file, c.path, c.value) for c in body.changes], base)
+        files = overlay_of(changes, base)
     except OverlayError as exc:
         raise store.InvalidModError(str(exc)) from exc
     mod = store.Mod(name, body.description.strip(), files)
@@ -105,7 +124,7 @@ def save_mod(name: str, body: ModIn, settings: SettingsDep) -> ModOut:
             f"a mod description has at most {store.DESCRIPTION_MAX} characters"
         )
     store.write_mod(settings.resolved_save_dir(), settings.data_dir, mod)
-    return _out(mod, base)
+    return _out(mod, base, body.spoilers)
 
 
 @router.delete(

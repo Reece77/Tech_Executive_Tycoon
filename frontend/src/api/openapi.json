@@ -17748,17 +17748,39 @@
         ],
         "summary": "List Mods",
         "operationId": "listMods",
+        "parameters": [
+          {
+            "name": "spoilers",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Spoilers"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/ModOut"
                   },
-                  "type": "array",
                   "title": "Response Listmods"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -17798,7 +17820,7 @@
           "mods"
         ],
         "summary": "Get File",
-        "description": "One file's form: its spec, base values, comments, and its values under `mod`.",
+        "description": "One file's form: its spec, base values, comments, and its values under `mod`.\n`spoilers` (\"Show spoiler fields\", off by default) includes the fields the API's\nhidden-name rule names; a data file holds no game's state either way.",
         "operationId": "getDataFile",
         "parameters": [
           {
@@ -17824,6 +17846,16 @@
                 }
               ],
               "title": "Mod"
+            }
+          },
+          {
+            "name": "spoilers",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Spoilers"
             }
           }
         ],
@@ -17896,6 +17928,16 @@
             "schema": {
               "type": "string",
               "title": "Name"
+            }
+          },
+          {
+            "name": "spoilers",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Spoilers"
             }
           }
         ],
@@ -31589,6 +31631,12 @@
             },
             "type": "array",
             "title": "Changes"
+          },
+          "spoilers": {
+            "type": "boolean",
+            "title": "Spoilers",
+            "description": "Show spoiler fields is on: changes may name them",
+            "default": false
           }
         },
         "type": "object",

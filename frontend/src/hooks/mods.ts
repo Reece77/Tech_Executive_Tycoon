@@ -8,10 +8,12 @@ export type Mod = Schemas['ModOut'];
 export type ModChange = Schemas['ModChangeIn'];
 export type EditorFile = Schemas['EditorFileOut'];
 
-export function useMods() {
+/** `spoilers`: "Show spoiler fields" is on (PM ruling 2026-11-08): changes to fields the
+ * game keeps hidden are listed too. The editor reads data files only, never a save. */
+export function useMods(spoilers = false) {
   return useQuery({
-    queryKey: ['mods'],
-    queryFn: async () => unwrap(await api.GET('/api/mods')),
+    queryKey: ['mods', 'list', spoilers],
+    queryFn: async () => unwrap(await api.GET('/api/mods', { params: { query: { spoilers } } })),
   });
 }
 
@@ -23,13 +25,13 @@ export function useDataFiles() {
   });
 }
 
-export function useDataFile(file: string | null, mod: string | null) {
+export function useDataFile(file: string | null, mod: string | null, spoilers = false) {
   return useQuery({
-    queryKey: ['mods', 'file', file, mod ?? ''],
+    queryKey: ['mods', 'file', file, mod ?? '', spoilers],
     queryFn: async () =>
       unwrap(
         await api.GET('/api/mods/files/{file}', {
-          params: { path: { file: file ?? '' }, query: mod ? { mod } : {} },
+          params: { path: { file: file ?? '' }, query: mod ? { mod, spoilers } : { spoilers } },
         }),
       ),
     enabled: file !== null,
@@ -39,11 +41,16 @@ export function useDataFile(file: string | null, mod: string | null) {
 export function useSaveMod() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (m: { name: string; description: string; changes: ModChange[] }) =>
+    mutationFn: async (m: {
+      name: string;
+      description: string;
+      changes: ModChange[];
+      spoilers: boolean;
+    }) =>
       unwrap(
         await api.PUT('/api/mods/{name}', {
           params: { path: { name: m.name } },
-          body: { description: m.description, changes: m.changes },
+          body: { description: m.description, changes: m.changes, spoilers: m.spoilers },
         }),
       ),
     onSuccess: () => void client.invalidateQueries({ queryKey: ['mods'] }),

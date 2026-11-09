@@ -44,3 +44,6 @@ class ModChangeIn(BaseModel):
 class ModIn(BaseModel):
     description: str = ""
     changes: list[ModChangeIn]
+    spoilers: bool = Field(
+        default=False, description="Show spoiler fields is on: changes may name them"
+    )

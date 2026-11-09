@@ -243,10 +243,14 @@ class EditorFile:
     comments: dict[str, str]
 
 
-def editor_file(data_dir: Path, file: str) -> EditorFile:
-    """One file for the editor, with every withheld field left out (tst.mods.hidden)."""
+def editor_file(data_dir: Path, file: str, spoilers: bool = False) -> EditorFile:
+    """One file for the editor. Fields the API's hidden-name rule names (tst.mods.hidden)
+    are left out unless the player turned on "Show spoiler fields" (`spoilers`; PM ruling
+    2026-11-08): the editor reads data files only, never a save."""
     text = (data_dir / file).read_text(encoding="utf-8")
     base = yaml.safe_load(text)
+    if spoilers:
+        return EditorFile(file, label(file), file_spec(file, base), base, comments(text))
     notes = {
         k: v
         for k, v in comments(text).items()
