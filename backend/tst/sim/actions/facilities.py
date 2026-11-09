@@ -97,6 +97,8 @@ def build_facility(
         raise FacilityRuleError(f"unknown facility kind {action.facility_kind!r}")
     if action.region not in data.region_keys:
         raise FacilityRuleError(f"unknown region {action.region!r}")
+    if action.facility_kind in balance.refining.kinds:  # M20: refineries have their own action
+        raise FacilityRuleError("order a refinery with build_refinery")
     kind = fb.kinds[action.facility_kind]
     allowed = kind.sizes or fb.sizes  # M12b: plants have their own sizes
     if action.capacity not in allowed:

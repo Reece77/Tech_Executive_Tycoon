@@ -20,6 +20,7 @@ from tst.sim.events.data import (
     MODIFIER_STATS,
     PRESS_STEPS,
     PUBLIC_STEPS,
+    REFINING_STEPS,
     VALUELESS,
     EventTemplate,
     Severity,
@@ -164,6 +165,7 @@ def validate_event(
                 "founder_step",
                 "group_step",
                 "exploration_step",
+                "refining_step",
                 "mining_step",
             ):  # engine steps
                 stat = item.get("stat")
@@ -173,6 +175,7 @@ def validate_event(
                     "founder_step": FOUNDER_STEPS,
                     "group_step": GROUP_STEPS,
                     "exploration_step": EXPLORATION_STEPS,
+                    "refining_step": REFINING_STEPS,
                     "mining_step": MINING_STEPS,
                 }[kind]
                 if stat not in steps:

@@ -125,6 +125,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return GROUP_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "exploration_step":  # M18 (34.3)
             return EXPLORATION_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "refining_step":  # M20 (36.4)
+            return REFINING_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "mining_step":  # M19 (35.4)
             return MINING_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
@@ -138,6 +140,11 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
 GROUP_STEP_TEXT: dict[str, str] = {  # M16 (31.6)
     "correct_price": "the transfer prices under complaint move to market",
     "defend_price": "the prices stand; so do the complaint's legal costs and discount",
+}
+REFINING_STEP_TEXT: dict[str, str] = {  # M20 (36.4): never a hidden chance
+    "stop": "stop the plant and investigate: two months without output, and the fine is halved",
+    "compensate": "compensate the people affected: $5M on top of the fine; persona Beloved +3",
+    "contest": "contest the findings: the fine, a chance of legal costs, and persona Ruthless +5",
 }
 MINING_STEP_TEXT: dict[str, str] = {  # M19 (35.4): never a hidden chance or overrun
     "investigate": "stop and investigate: three months without output and a smaller fine",

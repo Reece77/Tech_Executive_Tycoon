@@ -482,6 +482,28 @@ templates:
   project_sold:
     title: "Project sold: {block}"
     body: "{buyer} bought {block} for {price}."
+  # --- M20 (formulas.md 36): refineries ---
+  refinery_ordered:
+    title: "Plant ordered: {plant}"
+    body: "{units} in {region}. Estimated capex {capex_cents}, built over {months} months (ready {ready}). It needs {staff} process engineers."
+  refinery_input_short:
+    title: "Short of input: {plant}"
+    body: "{plant} could not buy all the {good} it needed this month: allocation is short. A contract signed before a shortage, or your group's own supply, keeps it running."
+  refinery_curbed:
+    title: "Power curb: {plant}"
+    body: "{cause}: {plant} runs at {run} of capacity until {until}."
+  refinery_incident:
+    title: "Incident at {plant}"
+    body: "There has been an incident at {plant}. Your brand and credibility have taken a hit; answer it next month."
+  refinery_incident_closed:
+    title: "Incident closed: {plant}"
+    body: "The incident at {plant} cost {cost} in fines and settlements."
+  refining_deal_signed:
+    title: "Refinery contract signed"
+    body: "A {months}-month contract to {side} {volume} of {good} a month at {price_cents} a unit."
+  refining_deal_ended:
+    title: "Refinery contract ended"
+    body: "Your contract to {side} {good} has ended after {taken} units."
 
   # --- M19 (formulas.md 35): mining operations ---
   subsidiary_founded:

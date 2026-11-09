@@ -347,6 +347,12 @@ def apply_choice(
             state, posted, logged = exploration_step(state, event, effect.stat, balance, data)
             entries += posted
             logs += logged
+        elif t == "refining_step" and effect.stat:  # M20 (36.4): a plant incident's answer
+            from tst.sim.refining.events import refining_step
+
+            state, posted, logged = refining_step(state, event, effect.stat, balance, data)
+            entries += posted
+            logs += logged
         elif t == "mining_step" and effect.stat:  # M19 (35.4): a mine event's answer
             from tst.sim.mining.risk import mining_step
 

@@ -141,6 +141,7 @@ def test_trigger_table_and_caps_are_data(loaded: LoadedData) -> None:
     unsized |= {"founder_step"}  # M24 (32): an engine step
     unsized |= {"group_step"}  # M16 (31.6): an engine step
     unsized |= {"exploration_step"}  # M18 (34.3): an engine step
+    unsized |= {"refining_step"}  # M20 (36.4): an engine step
     unsized |= {"mining_step"}  # M19 (35.4): an engine step
     assert set(caps) | unsized | loan == set(EFFECT_TYPES)
     assert SEVERITIES == ("minor", "major", "critical")

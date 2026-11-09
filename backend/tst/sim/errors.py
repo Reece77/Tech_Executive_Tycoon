@@ -319,6 +319,12 @@ class UnknownExplorationProjectError(NotFoundError):  # M18
     code = "unknown_exploration_project"
 
 
+class RefiningRuleError(SimError):
+    """A refinery build or contract the refining rules do not allow (M20, formulas.md 36)."""
+
+    code = "refining_rule"
+
+
 class MiningRuleError(SimError):
     """A subsidiary, transfer, mine build, sale or choice the mining rules do not allow (M19,
     formulas.md 35). The message never names a hidden overrun or a deposit's truth."""

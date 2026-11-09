@@ -406,6 +406,24 @@ def _operate(
                 )
                 left -= q
                 revenue += paid
+    if left > EPS and state.refineries and not banned:  # M20 (36.1): the group's refineries
+        from tst.sim.refining.mines import feed_from_mine
+
+        state, fed, fed_entries = feed_from_mine(
+            state,
+            company,
+            mine.commodity,
+            left,
+            unit_cost_cents,
+            mine.price_kind,
+            mine.margin,
+            group_ids(state),
+            name,
+            balance,
+            data,
+        )
+        entries += fed_entries
+        left -= fed
     for deal in sorted(state.mine_deals, key=lambda d: d.id):
         if deal.mine_id != mine.id or not deal.running(turn) or left <= EPS:
             continue

@@ -37,6 +37,11 @@ domains:
     baseline: { start: 25, per_year: { 2010: 1.5 } }
     research_skill: { hardware_design: 0.6, manufacturing: 0.2, design: 0.2 }
     budget_cents: 800000 # $8,000; device products come in M12b
+  - key: process # M20 (36.3): refining and, from M21, fab process nodes
+    label: Process
+    baseline: { start: 25, per_year: { 2010: 1.0 } } # 40 (refining.semi_min_level) by 2025 without research (M20 decision)
+    research_skill: { manufacturing: 0.6, data: 0.25, operations: 0.15 }
+    budget_cents: 800000 # $8,000 a researcher a month
 
 # Which domains count for a category, and how much (21.1): a company's lead for a category is
 # sum of weight x its lead in each domain. Weights sum to 1. A category not listed has no lead.

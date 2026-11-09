@@ -67,6 +67,7 @@ from tst.sim.press.config import (
     PromiseBalance,
     RecruitBalance,
 )
+from tst.sim.refining.config import RefiningBalance
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
@@ -1270,6 +1271,7 @@ class Balance(_Frozen):
     power: PowerBalance  # M17 (formulas.md 33.5)
     geology: GeologyBalance  # M18 (formulas.md 34.1)
     exploration: ExplorationBalance  # M18 (formulas.md 34.2-34.3)
+    refining: RefiningBalance  # M20 (formulas.md 36)
     mining: MiningBalance  # M19 (formulas.md 35)
 
     @model_validator(mode="after")

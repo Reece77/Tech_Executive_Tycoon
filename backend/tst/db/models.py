@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 44  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044
+SCHEMA_VERSION = 45  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045
 
 
 class Base(DeclarativeBase):
@@ -2093,4 +2093,38 @@ class RivalBidRow(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- M20 (formulas.md 36; migration 0045): refining and wafers -----------------------------
+
+
+class RefineryRow(Base):
+    """A refinery's own state beside its facility row (36; 0045): recipe, quoted capex, curbs,
+    incidents, its latest month and history. The true capex (with the hidden overrun) is the
+    facility row's `capex_cents`."""
+
+    __tablename__ = "refinery"
+
+    facility_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class RefiningDealRow(Base):
+    """A refinery contract (36.1; 0045): buy an input or sell an output at a fixed price."""
+
+    __tablename__ = "refining_deal"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class RefiningSupplyRow(Base):
+    """One of the latest month's own-group supply lots (36.1-36.2; 0045), in order `n`."""
+
+    __tablename__ = "refining_supply"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

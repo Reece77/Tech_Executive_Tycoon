@@ -94,6 +94,7 @@ from tst.sim.press.models import (
     Statement,
 )
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
+from tst.sim.refining.models import OwnSupply, Refinery, RefiningDeal
 from tst.sim.research.models import (
     EraArrival,
     EraWindow,
@@ -330,6 +331,11 @@ class GameState:
     desk_studies: tuple[DeskStudy, ...] = ()
     projects: tuple[Project, ...] = ()
     holes: tuple[Hole, ...] = ()
+    # M20 (36): refineries' own state by facility id, refinery contracts by id, and this
+    # month's own-group supply (replaced each phase 4).
+    refineries: tuple[Refinery, ...] = ()
+    refining_deals: tuple[RefiningDeal, ...] = ()
+    own_supply: tuple[OwnSupply, ...] = ()
     # M19 (35): mines by facility id (closed ones too, until reclaimed and after), the deals
     # they sign as sellers by id, and rivals' bids for the group's projects and mines by id
     mines: tuple[Mine, ...] = ()
@@ -1195,6 +1201,14 @@ def with_contract(state: GameState, contract: SupplyContract) -> GameState:
 
 def with_commodity_deal(state: GameState, deal: CommodityDeal) -> GameState:
     return replace(state, commodity_deals=_upsert(state.commodity_deals, deal, lambda d: d.id))
+
+
+def with_refinery(state: GameState, refinery: Refinery) -> GameState:
+    return replace(state, refineries=_upsert(state.refineries, refinery, lambda r: r.facility_id))
+
+
+def with_refining_deal(state: GameState, deal: RefiningDeal) -> GameState:
+    return replace(state, refining_deals=_upsert(state.refining_deals, deal, lambda d: d.id))
 
 
 def with_production_contract(state: GameState, contract: ProductionContract) -> GameState:

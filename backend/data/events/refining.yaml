@@ -1,0 +1,49 @@
+# Refining event templates (docs/formulas.md 36.4, M20): queued by the engine by template id
+# (trigger refining) when a rare-earth or polysilicon plant has an incident, with a monthly
+# chance from its staff's skill and coverage (M19's accident formula). Brand and credibility
+# fall at the incident; the answer is applied by the engine (refining_step): stopping halves
+# the fine and costs two months' output; compensating costs money and raises the founder's
+# Beloved persona; contesting risks legal costs and raises Ruthless (M24). Tone: grounded
+# realism (ADR-0011). The first choice is what happens when it is left unanswered at Continue.
+templates:
+  - id: refinery_fire
+    category: refining
+    trigger: refining
+    severities: [critical]
+    weight: 1.0
+    title: "Fire at {company}'s plant"
+    body: >-
+      A fire broke out in a reactor hall at one of {company}'s plants overnight. Nobody died,
+      but three workers are in hospital, the regulator's inspectors are on site, and the local
+      paper is asking whether the plant was cutting corners on maintenance.
+    choices:
+      - key: A
+        label: "Stop the plant and investigate fully"
+        effects: [{ type: refining_step, target: company, stat: stop }]
+      - key: B
+        label: "Compensate the workers and the town"
+        effects: [{ type: refining_step, target: company, stat: compensate }]
+      - key: C
+        label: "Contest the inspectors' findings"
+        effects: [{ type: refining_step, target: company, stat: contest }]
+
+  - id: chemical_release
+    category: refining
+    trigger: refining
+    severities: [critical]
+    weight: 1.0
+    title: "A chemical release at {company}'s plant"
+    body: >-
+      A valve failure at one of {company}'s plants released acid vapour over the neighbouring
+      fields. Residents were told to stay indoors for an afternoon, the regulator has opened an
+      inquiry, and an environmental group is collecting complaints.
+    choices:
+      - key: A
+        label: "Halt production until the inquiry reports"
+        effects: [{ type: refining_step, target: company, stat: stop }]
+      - key: B
+        label: "Pay residents and fund a clean-up"
+        effects: [{ type: refining_step, target: company, stat: compensate }]
+      - key: C
+        label: "Dispute the claims and keep running"
+        effects: [{ type: refining_step, target: company, stat: contest }]

@@ -874,6 +874,7 @@ ENGINE_STEPS = (
     "founder_step",
     "group_step",
     "exploration_step",
+    "refining_step",
     "mining_step",
 )
 

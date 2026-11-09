@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { DataTable } from '../../components/DataTable';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
+import { useRefineries } from '../../hooks/refining';
 import { Term } from '../../components/Term';
 import { useFormHolding, useGroup, useGroupAction, type GroupEntity } from '../../hooks/group';
 import { useMines } from '../../hooks/mining';
@@ -287,6 +288,7 @@ export function GroupTab({ saveId }: { saveId: string }) {
           </Alert>
         )}
       </Panel>
+      <ValueChain saveId={saveId} />
       <GroupMines saveId={saveId} />
       {g.discount && (
         <Panel title="Conglomerate discount" testId="group-discount">
@@ -433,6 +435,41 @@ export function GroupTab({ saveId }: { saveId: string }) {
         </Panel>
       )}
     </>
+  );
+}
+
+const STAGES = ['mine', 'refinery', 'wafer', 'chip', 'device'] as const;
+
+/** The group's value chain (M20, formulas.md 36): mine → refinery → wafer → chip → device. */
+function ValueChain({ saveId }: { saveId: string }) {
+  const refineries = useRefineries(saveId);
+  const chain = refineries.data?.chain ?? [];
+  if (chain.length === 0) return null;
+  return (
+    <Panel title="Value chain" testId="group-chain">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8 }}>
+        {STAGES.map((stage) => (
+          <div key={stage} data-testid={`chain-${stage}`}>
+            <div className="tst-muted" style={{ fontSize: 12, textTransform: 'capitalize' }}>
+              {stage}
+            </div>
+            {chain
+              .filter((l) => l.stage === stage)
+              .map((l) => (
+                <div key={l.name} style={{ fontSize: 13, padding: '2px 0' }} title={l.detail}>
+                  {l.name}
+                  <span className="tst-muted"> · {l.company}</span>
+                  {l.supplies.length > 0 && (
+                    <div className="tst-muted" style={{ fontSize: 11 }}>
+                      → {l.supplies.join(', ')}
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+        ))}
+      </div>
+    </Panel>
   );
 }
 
