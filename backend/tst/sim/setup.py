@@ -14,6 +14,7 @@ from tst.sim.errors import (
     UnknownDifficultyError,
     UnknownScenarioError,
 )
+from tst.sim.exploration.geology import with_geology
 from tst.sim.finance.setup import initial_cap_table
 from tst.sim.hiring.models import NextIds, PersonState
 from tst.sim.ledger import CASH, LedgerEntry
@@ -171,6 +172,7 @@ def new_game(
     )
     state = initial_cap_table(state, PLAYER_COMPANY_ID, person.id, scenario, rng, balance, data)
     state, rival_cash = setup_incumbents(state, rng, balance, data)  # M5 (formulas.md 15.1)
+    state = with_geology(state, rng, balance, data)  # M18 (34.1): blocks and hidden deposits
     entries: tuple[LedgerEntry, ...] = rival_cash
     if cash:
         entries = (

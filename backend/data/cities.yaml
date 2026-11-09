@@ -19,7 +19,7 @@ cities:
   - { key: seattle, label: Seattle, region: north_america, salary_multiplier_bp: 9500, rent_index: 0.80, talent_weight: 6, talent: { technical: 0.8 } }
   - { key: new_york, label: New York, region: north_america, salary_multiplier_bp: 10000, rent_index: 0.95, talent_weight: 8, talent: { business: 1.0 } }
   - { key: austin, label: Austin, region: north_america, salary_multiplier_bp: 8500, rent_index: 0.55, talent_weight: 4, talent: {} }
-  - { key: toronto, label: Toronto, region: north_america, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 4, talent: { technical: 0.3 } }
+  - { key: toronto, label: Toronto, region: north_america, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 4, talent: { technical: 0.3, geology: 1.5, mining_engineering: 1.0 } } # M18: a mining-finance hub (TSX) for geologists
   - { key: london, label: London, region: europe, salary_multiplier_bp: 8500, rent_index: 0.85, talent_weight: 7, talent: { business: 0.8 } }
   - { key: berlin, label: Berlin, region: europe, salary_multiplier_bp: 6500, rent_index: 0.45, talent_weight: 4, talent: { technical: 0.3 } }
   - { key: dublin, label: Dublin, region: europe, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 2, talent: { business: 0.3 } }
@@ -36,6 +36,12 @@ cities:
   - { key: lagos, label: Lagos, region: africa, salary_multiplier_bp: 3500, rent_index: 0.30, talent_weight: 2, talent: { business: 0.3 } }
   - { key: nairobi, label: Nairobi, region: africa, salary_multiplier_bp: 3500, rent_index: 0.20, talent_weight: 2, talent: { finance: 0.5 } }
   - { key: cape_town, label: Cape Town, region: africa, salary_multiplier_bp: 4500, rent_index: 0.30, talent_weight: 1, talent: { technical: 0.3 } }
+  # Mining cities (M18, 34.2): where geologists are hired. Talent weight 0, so "anywhere" and
+  # relocating candidates of every other role are drawn exactly as before (M18 decision); a
+  # search in the city still finds geologists, with the city's geology bonus.
+  - { key: perth, label: Perth, region: oceania, salary_multiplier_bp: 8500, rent_index: 0.60, talent_weight: 0, talent: { geology: 2.0, mining_engineering: 1.5 } }
+  - { key: santiago, label: Santiago, region: latin_america, salary_multiplier_bp: 4500, rent_index: 0.35, talent_weight: 0, talent: { geology: 2.0, mining_engineering: 1.5 } }
+  - { key: johannesburg, label: Johannesburg, region: africa, salary_multiplier_bp: 4500, rent_index: 0.30, talent_weight: 0, talent: { geology: 2.0, mining_engineering: 1.5 } }
 
 # A region's demand growth is the category's growth x this multiplier (19.5). Every
 # regions.yaml key is listed.

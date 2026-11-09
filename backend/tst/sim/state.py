@@ -12,6 +12,7 @@ from typing import Any, Final
 
 from tst.sim.errors import GroupDataError
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
+from tst.sim.exploration.models import DeskStudy, GeoBlock, Hole, Project, SupplierLicence
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
 from tst.sim.finance.macro import MacroMonth
 from tst.sim.finance.models import (
@@ -297,6 +298,14 @@ class GameState:
     group_listings: tuple[GroupListing, ...] = ()  # M16 (31.5): carve-outs and spin-offs
     personal_stakes: tuple[PersonalStake, ...] = ()  # M16 (31.5): the founder's own shares
     transfer_flows: tuple[TransferFlow, ...] = ()  # M16 (31.6): intra-group supply, by id
+    # M18 (34): every block's hidden truth, by (region order, index) (empty in saves made
+    # before M18 and in hand-built states: nothing to explore); suppliers' licences; desk
+    # studies, projects and drill holes by id ((project_id, n) for holes).
+    geo_blocks: tuple[GeoBlock, ...] = ()
+    supplier_licences: tuple[SupplierLicence, ...] = ()
+    desk_studies: tuple[DeskStudy, ...] = ()
+    projects: tuple[Project, ...] = ()
+    holes: tuple[Hole, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def company(self, company_id: int) -> CompanyState:

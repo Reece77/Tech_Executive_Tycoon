@@ -214,6 +214,18 @@ from tst.sim.group.actions import (
     VentureInvest,
     apply_group,
 )
+from tst.sim.exploration.pipeline import ACTION_TYPES as EXPLORATION_ACTION_TYPES
+from tst.sim.exploration.pipeline import (
+    ExplorationAction,
+    OrderDrilling,
+    RelinquishProject,
+    RenewLicence,
+    SellProject,
+    StartDeskStudy,
+    StartStage,
+    TakeLicence,
+    apply_exploration,
+)
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.mna.antitrust import AcceptRemedy
@@ -247,9 +259,11 @@ type Action = (
     | ReplaceLeaver
     | FounderAction  # M24
     | GroupAction  # M16
+    | ExplorationAction  # M18
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
+    **EXPLORATION_ACTION_TYPES,  # M18 (34.2)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -641,6 +655,16 @@ def apply_action(
             | SetTransferPrice()
         ):  # M16 (31)
             out = apply_group(state, action, rng, ledger_balances, balance, data)
+        case (
+            StartDeskStudy()
+            | TakeLicence()
+            | RenewLicence()
+            | StartStage()
+            | OrderDrilling()
+            | SellProject()
+            | RelinquishProject()
+        ):  # M18 (34.2)
+            out = apply_exploration(state, action, rng, ledger_balances, balance, data)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

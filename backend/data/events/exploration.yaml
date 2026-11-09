@@ -1,0 +1,49 @@
+# Exploration event templates (docs/formulas.md 34.3, M18): queued by the engine by template id
+# (trigger exploration) while a permit is pending, with a monthly chance from the block's hidden
+# community sensitivity (never shown). The answer is applied by the engine (exploration_step):
+# consult costs money and months; a benefit agreement costs more money and improves the odds
+# and calms later protests; pushing on costs nothing now, but carries legal risk, worsens the
+# odds and raises the founder's Ruthless persona (M24). Tone: grounded realism (ADR-0011). The
+# first choice is what happens when it is left unanswered at Continue.
+templates:
+  - id: community_blockade
+    category: exploration
+    trigger: exploration
+    severities: [critical]
+    weight: 1.0
+    title: "A community blockade at the exploration camp"
+    body: >-
+      People from the villages near {company}'s exploration block have closed the access road.
+      They say nobody asked them about water, jobs or the sacred sites the drill pads sit next
+      to, and the regulator has paused the permit file until it hears from them.
+    choices:
+      - key: A
+        label: "Sit down with the community and listen"
+        effects: [{ type: exploration_step, target: company, stat: consult }]
+      - key: B
+        label: "Offer a benefit agreement: jobs, royalties, a water plan"
+        effects: [{ type: exploration_step, target: company, stat: benefit }]
+      - key: C
+        label: "Push on: the licence is valid and the road is public"
+        effects: [{ type: exploration_step, target: company, stat: push_on }]
+
+  - id: permit_challenge
+    category: exploration
+    trigger: exploration
+    severities: [critical]
+    weight: 1.0
+    title: "Your mining permit is challenged"
+    body: >-
+      An environmental group and two local councils have asked the regulator to delay or revoke
+      {company}'s permit application. Their filing questions the tailings plan and the water
+      study, and a hearing date has been set.
+    choices:
+      - key: A
+        label: "Reopen consultation and answer every objection"
+        effects: [{ type: exploration_step, target: company, stat: consult }]
+      - key: B
+        label: "Negotiate a benefit agreement with the councils"
+        effects: [{ type: exploration_step, target: company, stat: benefit }]
+      - key: C
+        label: "Fight it at the hearing and keep the timetable"
+        effects: [{ type: exploration_step, target: company, stat: push_on }]

@@ -34,6 +34,7 @@ def test_the_library(loaded: LoadedData) -> None:
         "press": 10,  # M14b: press moments, queued by the engine (29.1)
         "executive": 5,  # M10c: executives ask and clash (24.3)
         "research": 4,  # M11: breakthroughs and dead ends (21.3)
+        "exploration": 2,  # M18: a protest and a permit challenge (34.3)
     }
     for trigger in TRIGGERS:
         assert any(t.trigger == trigger and "minor" in t.severities for t in templates), trigger

@@ -41,6 +41,7 @@ accounts:
   - { code: 6300_compute, name: Compute and hosting, type: expense }
   - { code: 6400_marketing, name: Marketing, type: expense }
   - { code: 6500_research_development, name: Research and development, type: expense }
+  - { code: 6600_exploration, name: Exploration, type: expense } # M18 (34.2): desk studies, licences, surveys, sampling, drilling, estimates, feasibility and permits, expensed as spent
   - { code: 6700_depreciation, name: Depreciation, type: expense } # M12a: data centres (22.2)
   - { code: 6900_general_admin, name: General and administrative, type: expense }
   - { code: 6950_lobbying, name: Lobbying, type: expense } # M24 (32.5): a company's monthly lobbying by region; scandal fines post to 6900

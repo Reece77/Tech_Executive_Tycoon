@@ -1376,3 +1376,99 @@ group: # 31: the holding company and its subsidiaries (M16, v3)
     synergy: 0.15 # less this x the share of group revenue that is intra-group
     min: 0.10 # the discount at least
     max: 0.25 # and at most
+geology: # 34.1: blocks and hidden deposits at game start (M18, v3 lane B); per-region data in geology.yaml
+  blocks_per_region: 60 # exploration blocks each region is divided into, 34.1
+  deposit_rate: 0.08 # a block holds a deposit of a commodity with chance prospectivity x this (one deposit at most); M18 tuning 0.16 -> 0.08 with grade_scale for 34.1's "roughly 1 in 25 surveyed blocks" and 34.6 targets 2-4
+  grade_scale: 0.7 # every commodity's median grade x this (one knob for how often a deposit pays; geology.yaml's medians are assumptions); M18 tuning 1.0 -> 0.7
+  size_lift: 2.0 # a deposit's tonnage and grade medians x (1 - size_lift/2 + size_lift x prospectivity): richer belts hold larger, richer deposits (assumption; M18 tuning 1.0 -> 2.0, the most allowed, for 34.6 target 4)
+  depth_m: [80, 600] # uniform depth to the top of the ore in metres; empty blocks draw one too, so drilling costs never betray emptiness
+  infra_km: [5, 300] # log-uniform distance to road, rail and power in km (raises capex), 34.1
+  difficulty_sd: 0.35 # log-sd of a block's hidden permitting difficulty around 1.0 (x the region's permit years)
+  sensitivity_sd: 0.15 # sd of a block's hidden community sensitivity around the region's mean, clamped to 0-1
+  cells: 66 # drill positions an ore body holds (a hole samples one not yet drilled): with this many, 20 holes give the 34.6 target 1 range of +/-15% and 40 holes +/-8% (finite-population sampling, M18 decision)
+  supplier_blocks: 2 # blocks per region and commodity that suppliers of the commodity licence at game start (the highest desk-study signals, never the truth), 34.4
+exploration: # 34.2-34.3: the pipeline, its costs and times (dossier 6, scaled to the game; all assumptions unless marked)
+  min_stage: 3 # company stage from which it may explore, 34.4
+  confidence: 0.9 # stated confidence of every estimate range (two-sided), 34.2
+  skill_base: 1.3 # ranges x (skill_base - skill_slope x team skill), 34.2
+  skill_slope: 0.05 # 34.2's 0.03, tuned to 0.05 for 34.6 target 2 (skill 15 vs 8: 0.03 gives ranges 20% narrower, below the target's 25-40%; 0.05 gives 39%)
+  skill_floor: 0.3 # the range factor never falls below this
+  geologist_role: geologist # roles.yaml key whose holders do the work
+  stages_per_geologist: 1 # desk studies and project stages one geologist can run at once (geologist-months, 34.2)
+  energy: 3 # founder energy to start a desk study, a licence or a stage
+  desk:
+    cost_cents: 20000000 # $200k a desk study (region and commodity), 34.2
+    months: 2
+    signal: 1.6 # latent desk-study score of a block holding the commodity; empty blocks score 0
+    noise_sd: 2.0 # sd of the latent score's noise, x the field and estimation range factors (M18 tuning 1.0 -> 2.0, target 2)
+    high_share: 0.1 # the top share of a region's blocks by latent score shown "high" (M18 tuning 0.2 -> 0.1, target 2)
+    medium_share: 0.3 # the next share shown "medium"; the rest "low"
+  licence:
+    years: 5 # an exploration licence's term, 34.2
+    renewals: 1 # renewable this many times, for the same fee
+  survey:
+    cost_cents: 100000000 # $1M x the region's cost_index ($0.75-1.15M; 34.2's $1-3M, tuned for 34.6 target 3)
+    months: 4 # 34.2's 6, tuned for target 3's 3-8 years
+    signal: 2.2 # latent anomaly reading of a deposit (sds at a factor of 1), x (tonnage / median)^size_weight
+    size_weight: 0.25
+    noise_sd: 1.5 # x the field and estimation range factors (M18 tuning 1.0 -> 1.5, target 2)
+    strong_at: 2.0 # reading at or above: a strong anomaly
+    weak_at: 1.0 # at or above: a weak one; below: none
+    commodity_misread: 0.1 # chance the anomaly's commodity is read as another of the region's (x the range factor)
+    bands: # the stated chance a deposit lies under each reading (shown, never the truth; checked by the M18 runner)
+      strong: [0.55, 0.90]
+      weak: [0.15, 0.50]
+      none: [0.0, 0.10]
+  sampling:
+    cost_cents: 100000000 # $1M (34.2's $2M, tuned for 34.6 target 3)
+    months: 3 # 34.2's 6, tuned for target 3's 3-8 years
+    range: 0.60 # half-width of the first grade range at a range factor of 1 (+/-60%), 34.2
+  drill:
+    hole_base_cents: 9000000 # $90k a hole at the surface ...
+    hole_per_m_cents: 35000 # ... plus $350 a metre of depth, x the region's cost_index: about $90-350k (34.2's $150-400k, tuned for target 3)
+    holes_per_month: 4 # holes a programme drills a month
+    max_programme: 40 # holes in one programme at most
+  estimate:
+    cost_cents: 100000000 # $1M a resource estimate, 34.2
+    months: 2 # 34.2's 3, tuned for target 3's 3-8 years
+    inferred: 8 # holes for an inferred resource, 34.2
+    indicated: 20
+    measured: 40
+    tonnage_sd: { inferred: 0.45, indicated: 0.22, measured: 0.11 } # log-sd of the tonnage estimate around the truth at a range factor of 1
+  feasibility:
+    levels: [scoping, pre_feasibility, definitive]
+    cost_cents: { scoping: 100000000, pre_feasibility: 400000000, definitive: 800000000 } # $1M, $4M, $8M (34.2's $2M, $8M, $20M, tuned for 34.6 target 3's $20-60M a permitted project)
+    months: { scoping: 4, pre_feasibility: 8, definitive: 12 } # 34.2's 6, 12, 18, tuned for target 3's 3-8 years
+    accuracy: { scoping: 0.30, pre_feasibility: 0.15, definitive: 0.08 } # log-sd of capex and operating cost estimates at a range factor of 1 (AACE classes 5, 4, 3 roughly)
+    recovery_sd: { scoping: 0.08, pre_feasibility: 0.05, definitive: 0.03 } # sd of the recovery estimate (fraction)
+    min_category: { scoping: inferred, pre_feasibility: indicated, definitive: measured }
+    life_years: 15 # a mine's life for the NPV
+    build_years: { hard_rock: 3, brine: 6, placer: 2 } # years from a decision to first output (dossier 6: hard-rock lithium 3-5, brine 6-10)
+    discount_rate: 0.08 # real discount rate of the NPV
+    royalty: 0.05 # share of revenue paid in royalties and taxes on output
+    infra_capex_per_km: 0.002 # capex x (1 + this x km to infrastructure)
+    depth_capex_per_m: 0.0008 # capex x (1 + this x depth in metres)
+    kind_capex: { hard_rock: 1.0, brine: 1.15, placer: 0.6 } # capex multiples by deposit type (brine ponds and DLE dearer; placers cheap)
+    kind_opex: { hard_rock: 1.0, brine: 0.7, placer: 0.8 } # brine's lower operating cost (dossier 6)
+    deck_years: 2 # years of output priced at the deck's current price; the rest at its long-run level
+  permitting:
+    requires: definitive # the feasibility level a permit application needs
+    benefit_odds: 0.5 # a benefit agreement cuts the refusal chance by this share
+    protest_rate: 0.012 # monthly chance of a protest x the block's hidden sensitivity / 0.5
+    consult_cents: 50000000 # $500k: consulting the community ...
+    consult_months: 3 # ... and the delay it adds
+    benefit_cents: 300000000 # $3M: a benefit agreement
+    push_legal: 0.25 # pushing on: chance of an injunction (a delay of push_delay_months and legal costs)
+    push_delay_months: 6
+    push_legal_cents: 100000000 # $1M of legal costs on an injunction
+    push_ruthless: 5 # persona Ruthless points for pushing on (34.3, M24's hook)
+    refusal_on_push: 0.1 # pushing on adds this to the refusal chance
+  minor:
+    accident_rate: 0.01 # monthly chance of a drilling accident while a programme runs
+    accident_fine_cents: 25000000 # $250k fine; the programme pauses a month
+    bonanza_ratio: 2.5 # a hole this many times the running estimate is a bonanza intercept (news)
+    dry_streak: 5 # this many holes in a row under half the running estimate is a dry streak (news)
+  sale:
+    share: { surveyed: 0.0, sampled: 0.02, drilled: 0.05, estimated: 0.08, scoping: 0.12, pre_feasibility: 0.2, definitive: 0.3, permitted: 0.45 } # a buyer pays this share of the project's indicative NPV midpoint at the deck, 34.2
+    anomaly_cents: 50000000 # $500k for a strong anomaly with no grade work yet
+    energy: 3

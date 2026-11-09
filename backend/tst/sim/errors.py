@@ -299,3 +299,14 @@ class GroupDataError(SimError):
 
 class UnknownCompanyError(NotFoundError):  # M16: the company switcher's company
     code = "unknown_company"
+
+
+class ExplorationRuleError(SimError):
+    """A desk study, licence, pipeline stage, permit or sale the exploration rules do not allow
+    (M18, formulas.md 34). The message never names a deposit's hidden truth (34.5)."""
+
+    code = "exploration_rule"
+
+
+class UnknownExplorationProjectError(NotFoundError):  # M18
+    code = "unknown_exploration_project"

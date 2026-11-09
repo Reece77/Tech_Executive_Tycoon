@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from tst.db.former import former_rows
 from tst.db.founder_io import load_founder, sync_founder
+from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.group_io import load_group, sync_group
 from tst.db.mappers import (
     candidate_from_row,
@@ -565,6 +566,7 @@ def load_state(session: Session) -> GameState:
     state = load_modes(session, state, has_table)  # M15b (0035)
     state = load_founder(session, state, has_table)  # M24 (0037)
     state = load_group(session, state, has_table)  # M16 (0039)
+    state = load_exploration(session, state, has_table)  # M18 (0041)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
     state = _load_public(session, state)
@@ -1934,6 +1936,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_modes(session, old, new, has_table)  # M15b (0035)
     sync_founder(session, old, new, has_table)  # M24 (0037)
     sync_group(session, old, new, has_table)  # M16 (0039)
+    sync_exploration(session, old, new, has_table)  # M18 (0041)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
     _sync_public(session, old, new)

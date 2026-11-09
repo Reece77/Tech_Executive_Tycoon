@@ -34,6 +34,7 @@ from tst.sim.founder.config import (
     PersonalBalance,
     StressBalance,
 )
+from tst.sim.exploration.config import ExplorationBalance, GeologyBalance, GeologyFile
 from tst.sim.group.config import GroupBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
@@ -1250,6 +1251,8 @@ class Balance(_Frozen):
     persona: PersonaBalance  # M24 (formulas.md 32.4)
     influence: InfluenceBalance  # M24 (formulas.md 32.5)
     group: GroupBalance  # M16 (formulas.md 31)
+    geology: GeologyBalance  # M18 (formulas.md 34.1)
+    exploration: ExplorationBalance  # M18 (formulas.md 34.2-34.3)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1935,6 +1938,7 @@ class GameData(_Frozen):
     eras: ErasFile = ErasFile()  # M11 (21.4)
     banks: tuple[Bank, ...] = ()  # M13 (25.2): lead underwriters
     voices: tuple[Voice, ...] = ()  # M13b (27.2): executives' report voices
+    geology: GeologyFile | None = None  # M18 (34.1): regions' geology; None = no exploration
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:
