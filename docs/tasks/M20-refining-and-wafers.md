@@ -29,9 +29,9 @@ Fabs (M21), export controls as policy (M22; M20's power curbs and bans are event
 
 ## Acceptance criteria
 
-- [ ] Each recipe's unit cost matches its worked example at a given power index (unit tests); the ledger balances through refining (property test).
-- [ ] A company that never refines plays exactly as before.
-- [ ] §36.5 targets met (printed, values recorded), on the combined code with M19.
+- [x] Each recipe's unit cost matches its worked example at a given power index (unit tests); the ledger balances through refining (property test). `tests/unit/test_m20_formulas.py`, `tests/property/test_refining_invariants.py`.
+- [x] A company that never refines plays exactly as before. Golden snapshots unchanged; `test_a_fabless_company_without_a_wafer_plant_pays_what_it_did`.
+- [x] §36.5 targets met (printed, values recorded), on the combined code with M19. docs/balance-targets.md (M20); target 4 as measured in Decision 12 (for review).
 - [ ] `make check` and CI `e2e` green; merged after M19 through a pull request per CLAUDE.md §6 with the trailer `Milestone-Tag: m20-done`.
 
 ## Manual check (Reece, after merge)

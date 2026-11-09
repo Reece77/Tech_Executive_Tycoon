@@ -585,3 +585,19 @@ Tuned (`geology.*`, `exploration.*`; before → after in the brief's Decisions 8
 | T6 nothing else moves | a company that never mines plays exactly as before | golden snapshots unchanged; identical with and without the mining phases (24 months, 2 seeds) | — |
 
 Tuned (`mining.*` only; before → after in the brief's Decision 21): `sustaining_share` 0.02 → 0.07, `overrun.definitive` [0, 0.3] → [0, 0.5], `overrun.pre_feasibility` [0, 0.45] → [0, 0.55], `nationalization.monthly_base` 0.0045 → 0.0035, `accident.skill_slope` 0.04 → 0.07.
+
+## M20: refining and wafers (§36.5)
+
+### M20 Refineries (2026-11-09, v3 lane B; on the combined code with M19's mines)
+
+`tools/m20_targets.py` (`tst/balance/m20.py`; nightly `tests/balance/test_m20_balance.py`). Plants are ordered through `build_refinery`, staffed by process engineers at skill 12 (topped up when they leave), finished at once and paid for; semiconductor grades have a process lead, as if researched. T1-T2 read seed 1 (history prices are the same on every seed); T3 seeds 1-3; T4 seeds 1-10.
+
+| Target | Band | Value |
+| --- | --- | --- |
+| T1 thin margins (North America, input at spot, 2015-2025, after the ramp) | each kind's median 2-15%, wider in shocks | smelter 8.0% (-30% to +65%), semiconductor poly 8.1%, solar poly 8.0%, wafers 14.0% (+7% to +17%), lithium 8.0%, cobalt 8.0%, rare earths 8.0%, gallium 8.0%, germanium 8.0% |
+| T2 power decides smelters | cheapest-power region 20-40% below Europe a tonne | South and Southeast Asia 25.8% below (mean 2015-2025) |
+| T3 control pays for chipmakers | own wafers 10-25% below market; 100% allocation in shortages | 14.8%, 15.4%, 12.8% below; 100% in 2021-2022 against a spot twin's 70% |
+| T4 by-products matter in bans | group's chip mix within 10%; spot buyer's at least +30% | 9 gallium export bans on 8 of 10 seeds; the mix's gallium cost (M20 decision, for review): group 0.0% to +0.0%, spot +62% to +156%. The whole mix: group -20% to +36%, spot -2% to +64% |
+| T5 nothing else moves | a company that never refines plays exactly as before | golden snapshots unchanged; a fabless company without a wafer plant pays exactly M12b's wafer price |
+
+Tuned (`refining.*` only; the brief's Decisions 2, 5 and 6): `overrun` [0, 0.4] → [0, 0.25], wafer plant capex $250 → $150 per wafer a year, lithium concentrate share 0.65 → 0.55, each recipe's `other_cents` from in-game runs (8% median, wafers 14%). M19's §35.6 targets re-run on the combined code: T1 10.1% median IRR, 32% below 5%; T2 $2.19/lb; T3 0.20/0.40/0.10%, 0.53x; T4 5 of 10 seeds; T5 0.11 median, 0.13 at most; T6 unchanged.
