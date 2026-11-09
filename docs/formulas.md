@@ -2842,3 +2842,49 @@ Heat-map bands, licences, every estimate as a range with its category, holes dri
 - **Permits.** The decision month is drawn at application: the region's years (uniform in `permit_years`) × the block's hidden difficulty; never shown (the API shows the region's typical years). Monthly while pending: a protest (a critical event, one a company a month) with chance `protest_rate × sensitivity / 0.5`, halved by a benefit agreement; the decision waits while one is open. Refusal chance: the region's `refusal` × difficulty, x (1 − `benefit_odds`) with an agreement, + `refusal_on_push` per push.
 - **Sale.** A supplier of the commodity (based in the region first; the copper majors where nobody supplies it) pays `sale.share[stage]` of the NPV at the deck at the **low end** of the revealed ranges (the latest study's low NPV, else the estimate's, holes' or sample's low grade with typical costs), so narrowing ranges raises the price (M18 decision).
 - **Measuring target 2** (M18 decision, for review): "per dollar" is per dollar of discovery spend (desk studies, licences, surveys, sampling, drilling and estimates; the dossier's "$111M per discovery" counts exploration spend), with the ratio per dollar of all spend printed beside it. Target 3 is read for a team at skill 12; target 4 counts deposits whose true NPV at the deck is above zero, a tie counting for no region.
+
+## 37. The founder's life, part 2: personal investing (M26, lane C)
+
+Reece (playtest 4, 2026-11-07): "you should be able to act as a venture capitalist and buy a new startup and not put all of your money into the company." Builds on M24's personal account (§32.2). Principle: **the founder's own money is a second game beside the company, with its own risks, and it never mixes with company books.**
+
+### 37.1 Personal accounts (additions)
+
+New personal accounts: `9110 angel investments`, `9120 public shares`, `9130 family office`, `9410 investment gains`, `9420 investment losses`, `9430 dividends received`. Every personal investment moves money only within the founder's book or between it and a company's book through a balanced intercompany entry (the company issues shares for cash).
+
+### 37.2 Angel and venture investing
+
+- **Invest in a rival startup's round** (§15.4; energy 3): when a startup raises, the founder may take part, for a stake of `cents / post-money value` (post-money = 18 months of costs ÷ `angel.round_dilution` 0.2, unless M16's corporate venture has set a price). The startup's cash rises by the cents invested.
+- **Back a new startup** (energy 8, `angel.min_cheque_cents` $250k): choose a category and a founder from the founder's **network** (people who left the player's companies, former colleagues in the Hall of Fame and revealed candidates); a new rival startup appears with that founder, the founder's cheque as its seed (for `angel.seed_stake` 20–40% by cheque size) and the usual §15.4 rules. Founders the player knows well (revealed skill ranges) give better odds, from their true skills.
+- **Information rights:** the founder sees the startup's key people and product as ranges (scouting rules), its cash band and its funding history.
+- **Outcomes:** if the startup is acquired (M14's rival purchases, or the player's own group, which is a related-party deal that M26 flags), the founder receives stake × price; at a listing, the stake becomes public shares; at failure, it is written off to 9420. Follow-on rounds dilute the stake unless the founder invests pro rata.
+- **Conflict of interest:** the player's company buying a startup the founder holds (or an angel-backed startup competing with the player's company) raises a governance event: disclose and recuse (no effect), or not (credibility −10 and a board confidence hit if found later; stream `personal`).
+
+### 37.3 Public shares
+
+- **Buy or sell shares** of any listed company (listed rivals, suppliers, the player's own company and its listed subsidiaries) at the month's share price (§25.3, §28.1 for rivals), with a 0.1% cost. Dividends credit 9430.
+- **Own-company trading:** only in open windows (not the month before an earnings report or a deal announcement); a sale above 1% of the company's shares in a month is a public filing (sentiment −0.02).
+- **Insider trading:** trading a company's shares within 3 months before a public event the founder knew of in advance (the player's own pending deal, hostile bid, earnings, or a rival's deal the player's company was party to) raises hidden **regulatory risk**; each such trade is investigated with probability `personal.sec_p` (25%) within 12 months (stream `personal`, id 53, key: the trade id). A finding: a fine of 3× the gain, the gain disgorged, credibility −20, persona Reckless +15, and a board vote on whether the founder stays as Chair or CEO. The API shows only that a trade was "in a sensitive window".
+
+### 37.4 The family office
+
+- **Form** once personal wealth (cash + investments at value) passes `family_office.min_cents` ($50M): a personal company, not part of the group, with an **investment manager** (a hired person; skill 1–20) and a **mandate**: conservative, balanced or aggressive.
+- **Returns** each month on its balance: the mandate's mix of a **market index** (the value-weighted return of all listed companies in the game, plus the base rate on cash) with `family_office.vol` by mandate, plus the manager's alpha `0.0005 × (skill − 10)` a month, plus noise (stream `personal`). Its fees: 1% a year.
+- **Moving money:** the founder moves cash in or out each month (energy 1).
+
+### 37.5 Wealth and legacy
+
+- **Net worth** (personal cash, angel stakes at last round price, public shares at market, the family office, the founder's stake in their own company at market or §28.1 value) shows on the founder's profile, with history.
+- **Legacy** (§32.6) adds `25 × log10(1 + net worth at the game's end / $1M)`, so a founder who built wealth outside one company is recognized.
+
+### 37.6 Balance targets (M26 acceptance, printed)
+
+1. **Angel investing is skewed:** over 10 seeds, a script that writes $250k into every new startup in its categories for 10 years has a median multiple below 1.0, a top-decile startup above 10×, and a portfolio multiple of 0.8–3.0.
+2. **Backing people you know pays:** startups backed with a founder whose skills are revealed survive 5 years at least 1.3× as often as those backed blind.
+3. **The family office behaves like a fund:** over 2010–2025 the balanced mandate's annual return is within ±4 points of the game's market index, and aggressive's volatility is at least 1.5× conservative's.
+4. **Insider trading gets caught:** a script trading on every pending deal is investigated at least once in 10 years on 6–10 of 10 seeds.
+5. **Nothing else moves:** a founder who never invests personally plays exactly as before.
+
+### 37.7 What the API may show
+
+Net worth and its parts, angel stakes with ranges, public holdings, the family office's balance, mandate, returns and manager's revealed skill range, filings, and "sensitive window" flags. Never the regulatory risk, an investigation's probability or timing, or startups' true values.
+

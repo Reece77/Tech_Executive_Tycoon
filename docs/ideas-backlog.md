@@ -60,4 +60,4 @@ Proposed after v3's chain (quartz mines to cloud software) is complete. Not sche
 ## From playtest 4 (2026-11-07)
 
 - **Data-centre costs by region:** through regional power prices in M17 (power as a market good), then v4's power expansion.
-- **The founder as an angel or venture investor** with personal money (M24's account): v5, the founder's life part 2; M16 covers corporate venture investing.
+- **The founder as an angel or venture investor** with personal money (M24's account): **M26** (scheduled 2026-11-09); M16 covers corporate venture investing.
