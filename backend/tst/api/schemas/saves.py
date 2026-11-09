@@ -73,6 +73,9 @@ class CreateSaveIn(BaseModel):
     historical: str | None = Field(
         default=None, description="A historical scenario's key (M15b, 30.3)"
     )
+    mod: str | None = Field(
+        default=None, description="A data-editor mod in saves/mods (M25); earns no achievements"
+    )
 
 
 class SaveOut(BaseModel):
@@ -91,6 +94,9 @@ class SaveOut(BaseModel):
     mode: str = Field(default="campaign", description="campaign | sandbox | scenario (M15b)")
     score: int | None = Field(
         default=None, description="The latest company score; none for Sandbox games (M15b)"
+    )
+    mod_name: str | None = Field(
+        default=None, description="The data-editor mod the game started with (M25)"
     )
 
 

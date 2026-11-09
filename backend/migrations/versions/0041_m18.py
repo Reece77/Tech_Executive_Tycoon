@@ -8,7 +8,7 @@ Existing saves: their geology is drawn now, exactly as a new game of the same se
 turn 0 (stream `geology`), so a save from before M18 can explore too.
 
 Revision ID: 0041_m18
-Revises: 0039_m16 (re-parented onto M17's 0040 when M17 merges)
+Revises: 0040_m25 (re-parented onto M17's migration when M17 merges)
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "0041_m18"
-down_revision: str | None = "0039_m16"
+down_revision: str | None = "0040_m25"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -99,4 +99,4 @@ def downgrade() -> None:
         "DELETE FROM account WHERE code = '6600_exploration' AND NOT EXISTS "
         "(SELECT 1 FROM ledger_line WHERE account_code = '6600_exploration')"
     )
-    op.execute("UPDATE save_meta SET schema_version = 39")
+    op.execute("UPDATE save_meta SET schema_version = 40")

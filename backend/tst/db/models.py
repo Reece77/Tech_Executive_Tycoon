@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 41  # M18 (0041; M17 takes 0040)
+SCHEMA_VERSION = 41  # M25: 0040; M18: 0041 (M17's re-parents at its merge)
 
 
 class Base(DeclarativeBase):
@@ -42,6 +42,11 @@ class SaveMetaRow(Base):
     current_turn: Mapped[int] = mapped_column(Integer, nullable=False)
     data_hashes: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False)
     schema_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    # M25 (section 3): the data-editor mod a game started with; all NULL without one. Deferred,
+    # as display_name is: older migrations read save_meta through the current models.
+    mod_name: Mapped[str | None] = mapped_column(String(64), nullable=True, deferred=True)
+    mod_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, deferred=True)
+    mod_overlay: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True, deferred=True)
     next_person_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_search_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     next_offer_id: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")

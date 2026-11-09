@@ -17092,6 +17092,690 @@
         }
       }
     },
+    "/api/saves/{save_id}/explain/{metric}": {
+      "get": {
+        "tags": [
+          "explain"
+        ],
+        "summary": "Get Explain",
+        "description": "A number's breakdown, its trend, what moved it and the template explanation.",
+        "operationId": "getExplain",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Metric"
+            }
+          },
+          {
+            "name": "entity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplainOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/explain/{metric}/ask": {
+      "post": {
+        "tags": [
+          "explain"
+        ],
+        "summary": "Ask Explain",
+        "description": "Ask the chief of staff why. Offline, over budget or after an error the answer is the\ntemplate explanation.",
+        "operationId": "askExplain",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Metric"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplainAskIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplainAnswerOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/profile/achievements": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Get Achievements",
+        "description": "Every achievement: earned (with the save and date), locked, or hidden as \"???\".",
+        "operationId": "getAchievements",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementsOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/achievements": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Get Save Achievements",
+        "description": "The profile's achievements as seen from one save: its new ones (for the toast), and\nwhether it can earn any (Sandbox and modded games cannot).",
+        "operationId": "getSaveAchievements",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/profile/achievements/seen": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Mark Seen",
+        "description": "The toasts for these achievements have been shown.",
+        "operationId": "markAchievementsSeen",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mods": {
+      "get": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "List Mods",
+        "operationId": "listMods",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModOut"
+                  },
+                  "type": "array",
+                  "title": "Response Listmods"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mods/files": {
+      "get": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "List Files",
+        "description": "The editable data files: rivals, entrants, categories, cities, scenarios and balance,\nthen any file the loader adds later.",
+        "operationId": "listDataFiles",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EditorFileRefOut"
+                  },
+                  "type": "array",
+                  "title": "Response Listdatafiles"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mods/files/{file}": {
+      "get": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "Get File",
+        "description": "One file's form: its spec, base values, comments, and its values under `mod`.",
+        "operationId": "getDataFile",
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File"
+            }
+          },
+          {
+            "name": "mod",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Mod"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorFileOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/mods/{name}": {
+      "get": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "Get Mod",
+        "operationId": "getMod",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "Save Mod",
+        "description": "Save a mod from its changes. The merged data is validated exactly as the base files\nare; an invalid mod is refused with the loader's message and nothing is written.",
+        "operationId": "saveMod",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "mods"
+        ],
+        "summary": "Delete Mod",
+        "description": "Delete a mod file. Saves started with it keep their own copy and play on unchanged.",
+        "operationId": "deleteMod",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -17427,6 +18111,138 @@
         },
         "type": "object",
         "title": "AcceptSheetIn"
+      },
+      "AchievementOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "\"???\" for a hidden achievement not yet earned"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "hidden": {
+            "type": "boolean",
+            "title": "Hidden"
+          },
+          "earned": {
+            "type": "boolean",
+            "title": "Earned"
+          },
+          "save": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Save",
+            "description": "The save it was earned in"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "date_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Label",
+            "description": "The game date it was earned"
+          },
+          "seen": {
+            "type": "boolean",
+            "title": "Seen",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "description",
+          "hidden",
+          "earned"
+        ],
+        "title": "AchievementOut"
+      },
+      "AchievementsOut": {
+        "properties": {
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "earned": {
+            "type": "integer",
+            "title": "Earned"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "achievements": {
+            "items": {
+              "$ref": "#/components/schemas/AchievementOut"
+            },
+            "type": "array",
+            "title": "Achievements"
+          },
+          "unseen": {
+            "items": {
+              "$ref": "#/components/schemas/AchievementOut"
+            },
+            "type": "array",
+            "title": "Unseen",
+            "description": "Earned and not yet shown as a toast"
+          },
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible",
+            "description": "Whether this save can earn any",
+            "default": true
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Why this save earns none"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile",
+          "earned",
+          "total",
+          "achievements",
+          "unseen"
+        ],
+        "title": "AchievementsOut"
       },
       "AcquisitionOut": {
         "properties": {
@@ -20916,6 +21732,18 @@
             ],
             "title": "Historical",
             "description": "A historical scenario's key (M15b, 30.3)"
+          },
+          "mod": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mod",
+            "description": "A data-editor mod in saves/mods (M25); earns no achievements"
           }
         },
         "type": "object",
@@ -21958,6 +22786,68 @@
         ],
         "title": "DriverOut"
       },
+      "EditorFileOut": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "spec": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Spec",
+            "description": "Form spec from the loader's Pydantic schema"
+          },
+          "base": {
+            "title": "Base",
+            "description": "The base file's values"
+          },
+          "value": {
+            "title": "Value",
+            "description": "The values with the chosen mod merged in"
+          },
+          "comments": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Comments",
+            "description": "Each field's YAML comment: unit and intent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "label",
+          "spec",
+          "base",
+          "value",
+          "comments"
+        ],
+        "title": "EditorFileOut"
+      },
+      "EditorFileRefOut": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "label"
+        ],
+        "title": "EditorFileRefOut"
+      },
       "EmploymentOut": {
         "properties": {
           "employment_id": {
@@ -22706,6 +23596,274 @@
         ],
         "title": "ExitChoiceOut",
         "description": "After the choice: the game's state and the company the player now runs."
+      },
+      "ExplainAnswerOut": {
+        "properties": {
+          "speaker": {
+            "type": "string",
+            "title": "Speaker"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "claude, mock, or template (offline or over budget)"
+          },
+          "cost_cents": {
+            "type": "number",
+            "title": "Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "speaker",
+          "question",
+          "answer",
+          "source",
+          "cost_cents"
+        ],
+        "title": "ExplainAnswerOut"
+      },
+      "ExplainAskIn": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "ExplainAskIn"
+      },
+      "ExplainDriverOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "effect": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effect",
+            "description": "Its share of the number's last change, in the number's unit"
+          },
+          "change": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change",
+            "description": "The driver's own move, in `unit`"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExplainUnit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "change",
+              "level"
+            ],
+            "title": "Kind",
+            "description": "level: a term of the number as it stands now",
+            "default": "change"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "title": "ExplainDriverOut"
+      },
+      "ExplainOut": {
+        "properties": {
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/ExplainUnit"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "company",
+              "product",
+              "person",
+              "account",
+              "market"
+            ],
+            "title": "Scope"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject",
+            "description": "What the number belongs to, by name"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BreakdownItemOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "The number's driver breakdown"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "trend": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPointOut"
+            },
+            "type": "array",
+            "title": "Trend",
+            "description": "The last advisor.explain.history_months"
+          },
+          "trend_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend Note"
+          },
+          "drivers": {
+            "items": {
+              "$ref": "#/components/schemas/ExplainDriverOut"
+            },
+            "type": "array",
+            "title": "Drivers",
+            "description": "What moved it last month, largest first"
+          },
+          "related": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Related",
+            "description": "Related events in the last months, as the inbox"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation",
+            "description": "The template explanation (offline, always shown)"
+          },
+          "speaker": {
+            "type": "string",
+            "title": "Speaker",
+            "description": "Who answers Ask why: the chief of staff, by name"
+          },
+          "max_question_chars": {
+            "type": "integer",
+            "title": "Max Question Chars"
+          },
+          "offline": {
+            "type": "boolean",
+            "title": "Offline",
+            "description": "True when Ask why can only give the template answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric",
+          "label",
+          "unit",
+          "scope",
+          "subject",
+          "items",
+          "trend",
+          "drivers",
+          "related",
+          "explanation",
+          "speaker",
+          "max_question_chars",
+          "offline"
+        ],
+        "title": "ExplainOut"
+      },
+      "ExplainUnit": {
+        "type": "string",
+        "enum": [
+          "cents",
+          "count",
+          "points",
+          "percent",
+          "months"
+        ]
       },
       "ExplorationActionOut": {
         "properties": {
@@ -25950,6 +27108,18 @@
               }
             ],
             "description": "The founder's legacy score with its parts (M24, 32.6)"
+          },
+          "mod_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mod Name",
+            "description": "A modded game's mod (M25): its records are a separate, modded list"
           }
         },
         "type": "object",
@@ -29529,6 +30699,112 @@
           "listed"
         ],
         "title": "MnaOut"
+      },
+      "ModChangeIn": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "path",
+          "value"
+        ],
+        "title": "ModChangeIn"
+      },
+      "ModChangeOut": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path",
+            "description": "Keys, and @field=value for a list item"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "path",
+          "value"
+        ],
+        "title": "ModChangeOut"
+      },
+      "ModIn": {
+        "properties": {
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ModChangeIn"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "changes"
+        ],
+        "title": "ModIn"
+      },
+      "ModOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ModChangeOut"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "files",
+          "changes"
+        ],
+        "title": "ModOut"
       },
       "MomentOut": {
         "properties": {
@@ -36667,6 +37943,18 @@
             ],
             "title": "Score",
             "description": "The latest company score; none for Sandbox games (M15b)"
+          },
+          "mod_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mod Name",
+            "description": "The data-editor mod the game started with (M25)"
           }
         },
         "type": "object",
@@ -37352,6 +38640,22 @@
           "shares"
         ],
         "title": "SecondaryIn"
+      },
+      "SeenIn": {
+        "properties": {
+          "keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keys"
+          }
+        },
+        "type": "object",
+        "required": [
+          "keys"
+        ],
+        "title": "SeenIn"
       },
       "SegmentIn": {
         "properties": {
@@ -39476,6 +40780,29 @@
           "price_kind"
         ],
         "title": "TransferPriceIn"
+      },
+      "TrendPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "value"
+        ],
+        "title": "TrendPointOut"
       },
       "UISettings": {
         "properties": {

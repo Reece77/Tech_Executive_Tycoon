@@ -64,6 +64,7 @@ def _save_out(save: saves_db.SaveFile) -> SaveOut:
         size_bytes=save.size_bytes,
         ironman=save.difficulty == saves_db.IRONMAN,
         busy=save.busy,
+        mod_name=save.mod_name,
         mode=save.mode,
         score=save.score,
     )
@@ -219,6 +220,10 @@ def list_saves(settings: SettingsDep) -> list[SaveOut]:
 def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> SaveOut:
     # The sim never generates seeds; the API does when the player leaves it blank.
     seed = body.seed if body.seed is not None else secrets.randbits(SEED_BITS)
+    if body.mod:  # M25: the base files with the mod merged in, validated like them
+        from tst.mods.store import read_mod, validate
+
+        data = validate(settings.data_dir, read_mod(settings.resolved_save_dir(), body.mod))
     path = repository.create_save(
         body.name,
         seed,
