@@ -627,6 +627,10 @@ def venture(
             ),
         )
     state = with_stake(state, new)
+    # M26 (37.2): the round's price, shared with the founder's own cheques (post-money)
+    from tst.sim.founder.angel import record_round
+
+    state, _ = record_round(state, cid, action.cents, pre + action.cents, "venture")
     # information rights: its key people as ranges, by the scouting rules (28.2's diligence)
     from tst.sim.rivals.ceo_knowledge import learn_of_ceo
 

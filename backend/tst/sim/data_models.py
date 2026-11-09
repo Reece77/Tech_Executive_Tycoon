@@ -38,6 +38,8 @@ from tst.sim.facilities.config import (
     SupplyBalance,
 )
 from tst.sim.founder.config import (
+    AngelBalance,
+    FamilyOfficeBalance,
     FoundationBalance,
     InfluenceBalance,
     PersonaBalance,
@@ -1259,6 +1261,8 @@ class Balance(_Frozen):
     foundation: FoundationBalance  # M24 (formulas.md 32.3)
     persona: PersonaBalance  # M24 (formulas.md 32.4)
     influence: InfluenceBalance  # M24 (formulas.md 32.5)
+    angel: AngelBalance  # M26 (formulas.md 37.2)
+    family_office: FamilyOfficeBalance  # M26 (formulas.md 37.4)
     group: GroupBalance  # M16 (formulas.md 31)
     commodity: CommodityBalance  # M17 (formulas.md 33.1-33.3)
     offtake: OfftakeBalance  # M17 (formulas.md 33.3)

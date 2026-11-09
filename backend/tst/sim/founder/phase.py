@@ -38,6 +38,10 @@ FOUNDER_STEPS: Final = (  # events.data's founder_step stats
     "apologize",
     "drop_lobbyists",
     "fight",
+    "disclose",  # M26 (37.2)
+    "conceal",
+    "accept_finding",  # M26 (37.3)
+    "deny_finding",
 )
 
 
@@ -286,4 +290,13 @@ def founder_step(
         state = with_life(state, life)
     elif step in ("apologize", "drop_lobbyists", "fight"):
         state, logs = influence.answer_scandal(state, event.company_id, event.turn, step, balance)
+    elif step in ("disclose", "conceal"):  # M26 (37.2): a conflict of interest
+        from tst.sim.founder.angel import answer_conflict
+
+        rng = RngFactory(state.save_meta.master_seed)  # keyed by the stake (stream personal)
+        state = answer_conflict(state, step, rng, balance)
+    elif step == "deny_finding":  # M26 (37.3)
+        state = adjust_credibility(
+            state, event.company_id, balance.personal.deny_cred, "denying a finding", balance
+        )
     return state, logs

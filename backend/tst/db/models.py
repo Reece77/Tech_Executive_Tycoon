@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 42  # M25: 0040; M17: 0041; M18: 0042
+SCHEMA_VERSION = 43  # M25: 0040; M17: 0041; M18: 0042; M26: 0043
 
 
 class Base(DeclarativeBase):
@@ -1826,6 +1826,76 @@ class InfluenceRow(Base):
 
     company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     region: Mapped[str] = mapped_column(String(40), primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- The founder's own investments (M26, formulas.md 37; 0043) ------------------------------
+
+
+class StartupRoundRow(Base):
+    """A rival startup's funding round, its price (post-money) and source (37.2)."""
+
+    __tablename__ = "startup_round"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class AngelStakeRow(Base):
+    """The founder's stake in one private startup (37.2). `data` holds a concealed
+    conflict's hidden discovery month too (never in the API)."""
+
+    __tablename__ = "angel_stake"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class PersonalTradeRow(Base):
+    """One trade of listed shares by the founder (37.3). `data` holds the hidden regulatory
+    risk and the investigation's draw and timing too (never in the API)."""
+
+    __tablename__ = "personal_trade"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class PublicHoldingRow(Base):
+    """Listed shares the founder holds and their book cost (37.3)."""
+
+    __tablename__ = "public_holding"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class FamilyOfficeRow(Base):
+    """The founder's family office: manager, mandate and monthly returns (37.4)."""
+
+    __tablename__ = "family_office"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class WealthPointRow(Base):
+    """The founder's net worth and its parts at a month end (37.5)."""
+
+    __tablename__ = "wealth_point"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class MarketIndexRow(Base):
+    """The market index at a month end, with every listed company's cap (37.4)."""
+
+    __tablename__ = "market_index"
+
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 

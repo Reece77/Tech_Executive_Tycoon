@@ -29,6 +29,7 @@ from tst.sim.finance.board import average_confidence, board_month, vacate_depart
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
+from tst.sim.founder.investing import investing_month
 from tst.sim.founder.phase import founder_month, next_budget
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.group.holding import holding_month
@@ -578,6 +579,12 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
         cash_cents=account_balance(ctx.balances, state.player.id, CASH),
     )
     ctx = ctx.post(*founder_entries).log(*founder_logs)
+    # M26 (37): startups' rounds, the founder's stakes, trades, dividends, the market index,
+    # the family office and net worth.
+    state, investing_entries, investing_logs = investing_month(
+        state, ctx.entries, ctx.rng, ctx.balances, ctx.balance, ctx.data
+    )
+    ctx = ctx.post(*investing_entries).log(*investing_logs)
     player = state.player.id
     state, requests = direct(
         state,

@@ -1256,6 +1256,29 @@ stress: # 32.1: stress 0-100 on the founder, public
 
 personal: # 32.2: the founder's own book (9xxx accounts), never mixed with a company's
   tax_rate: 0.35 # share of the founder's salary lost to income tax before it reaches the book
+  # M26 (37.3): public shares and insider trading
+  trade_energy: 1 # energy to buy or sell listed shares
+  trade_cost: 0.001 # share of a trade's value paid in costs (0.1%)
+  rival_shares: 1000000000 # notional shares outstanding of a listed rival (its market cap / this is its share price; M26 decision)
+  filing_share: 0.01 # an own-company sale above this share of the shares in a month is a public filing
+  filing_sentiment: -0.02 # a public filing's change to the share price's sentiment
+  insider_months: 3 # a trade this many months or fewer before news the founder knew of is an insider trade
+  sec_p: 0.25 # chance an insider trade is investigated (stream personal)
+  investigation_months: 12 # an investigation opens within this many months of the news
+  finding_months: 3 # months from an investigation opening to its finding
+  risk_per_trade: 1.0 # hidden regulatory risk points an insider trade adds (never shown)
+  fine_mult: 3 # a finding's fine: this x the trade's gain, with the gain disgorged
+  finding_cred: -20 # credibility points at a finding
+  finding_reckless: 15 # Reckless points at a finding
+  finding_board: -20 # board confidence points on every seat at a finding, before its vote
+  coi_cred: -10 # an undisclosed conflict of interest found later: credibility points
+  coi_board: -10 # and board confidence points on every seat
+  coi_found_p: 0.5 # chance an undisclosed conflict is found later (stream personal)
+  coi_found_months: 12 # it is found within this many months
+  deny_cred: -5 # credibility points more for denying a finding (M26 decision)
+  dividend_yield: 0.02 # a listed rival with a positive operating result over the last quarter pays this share of its market cap a year, quarterly, on the founder's shares (M26 decision: rivals' other holders are not modelled)
+  legacy_points: 25 # 37.5: legacy points per decade of net worth at the game's end
+  legacy_unit_dollars: 1000000 # dollars: net worth per unit in the legacy log term
 
 foundation: # 32.3
   min_cents: 100000000 # cents ($1M) of personal cash needed to create a foundation
@@ -1332,6 +1355,32 @@ influence: # 32.5: lobbying and influence over regulators by region
   apologize_cred: -5 # credibility points more for apologizing
   apologize_stress: 10 # stress points for apologizing
   fight_chance: 0.5 # chance that fighting it brings a second story (the hit again, no fine)
+
+angel: # 37.2: the founder's own angel and venture investing (M26)
+  energy: 3 # energy to join a startup's round
+  back_energy: 8 # energy to back a new startup
+  min_cheque_cents: 25000000 # cents ($250k): the smallest cheque backing a new startup
+  round_min_cents: 1000000 # cents ($10k): the smallest cheque into a round (M26 decision)
+  round_window_months: 1 # months after a round closes that the founder may still join it (M26 decision)
+  round_dilution: 0.2 # share of a startup a round sells: post-money = raised / this
+  seed_stake: [0.2, 0.4] # backing a new startup: the founder's stake, from the smallest cheque to seed_full_cents
+  seed_full_cents: 300000000 # cents ($3M, the top of 15.4's founding cash): a cheque this large takes the top of seed_stake
+  known_hw: 2.5 # attribute points: a person whose skills' mean revealed half-width is at most this counts as known
+  skill_runway: 0.0 # a backed founder's true mean skill above 10: share of extra founding cash per point (0: none; M26 tuning key)
+  team: [3, 8] # a backed startup's team besides its founder (15.4's 3 to 8)
+
+family_office: # 37.4: the founder's family office (M26)
+  min_cents: 5000000000 # cents ($50M) of personal wealth (cash + investments at value) to form one
+  energy: 5 # energy to form one (M26 decision)
+  move_energy: 1 # energy to move cash in or out in a month
+  fee: 0.01 # share of the balance a year in fees (taken monthly)
+  alpha: 0.0005 # return a month per point of the manager's skill above alpha_mid
+  alpha_mid: 10 # skill points; a manager at this skill adds nothing
+  index_months: 240 # months of the market index and the office's returns kept
+  mandates: # share in the market index (the rest earns the base rate) and the sd of a month's noise
+    conservative: { index: 0.3, vol: 0.005 }
+    balanced: { index: 0.6, vol: 0.01 }
+    aggressive: { index: 1.0, vol: 0.02 }
 
 group: # 31: the holding company and its subsidiaries (M16, v3)
   stage5_revenue_cents: 200000000000 # cents ($2B) of group revenue in the last 12 months that opens the holding company (with a listing), 31.2

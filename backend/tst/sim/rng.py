@@ -74,6 +74,10 @@ STREAM_IDS: Final = MappingProxyType(
         # (5, project, level), permits (6, project), protests (7, project), sales (8, project),
         # minor events (9, project) (M18, 34.2-34.3)
         "exploration": 49,
+        # key: (0, trade_id) an insider trade's investigation, (1, stake_id) a concealed
+        # conflict's discovery, (2,) the family office's monthly noise, (3,) its manager
+        # (M26, 37.2-37.4)
+        "personal": 53,
         "misc": 99,
     }
 )
