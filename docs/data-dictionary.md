@@ -1796,7 +1796,7 @@ A drill hole's assay (34.2): public once drilled; never changes.
 
 ## Refining and wafers (migration `0043_m20`, M20)
 
-A refinery is a `facility` row of a refinery kind (`silicon_smelter`, `poly_plant`, `poly_plant_semi`, `wafer_plant`, `li_converter`, `co_refinery`, `ree_separator`, `byproduct_recovery`; formulas.md 36.1); its `capex_cents` is the true capex with the hidden overrun, never sent to the API. Each record below keeps its dataclass fields in a JSON `data` column (`tst/db/refining_io.py`). Account `4400_materials_sales` (revenue): refined goods and wafers sold at spot or under contract; refineries' inputs, power and operations post to `5000_cogs`; supply between two group companies uses M16's `4300`/`5900`. RNG stream `refining` (51). Balance keys `refining.*` and `facility.kinds.<refinery kinds>`. Existing saves have no refineries. `save_meta.schema_version` is 43.
+A refinery is a `facility` row of a refinery kind (`silicon_smelter`, `poly_plant`, `poly_plant_semi`, `wafer_plant`, `li_converter`, `co_refinery`, `ree_separator`, `byproduct_recovery`; formulas.md 36.1); its `capex_cents` is the true capex with the hidden overrun, never sent to the API. Each record below keeps its dataclass fields in a JSON `data` column (`tst/db/refining_io.py`). Account `4410_materials_sales` (revenue): refined goods and wafers sold at spot or under contract; refineries' inputs, power and operations post to `5000_cogs`; supply between two group companies uses M16's `4300`/`5900`. RNG stream `refining` (51). Balance keys `refining.*` and `facility.kinds.<refinery kinds>`. Existing saves have no refineries. `save_meta.schema_version` is 43.
 
 ### refinery
 

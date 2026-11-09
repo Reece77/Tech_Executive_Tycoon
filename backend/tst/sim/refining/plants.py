@@ -16,7 +16,7 @@ plant's staff salaries (paid by payroll) for the Refineries screen and the trans
 **Output** goes, in order, to the group's later plants (above), to the group's products (a
 wafer plant's wafers to the group's chip products' wafer starts, product id order; commodities
 to the group's companies' use last month, company order), to the seller's sell contracts, then
-to spot (`4400_materials_sales`). Group supply is an `OwnSupply` lot: wafers lower the chip's
+to spot (`4410_materials_sales`). Group supply is an `OwnSupply` lot: wafers lower the chip's
 wafer cost (36.2: `chips.wafer_cents`) and keep 100% allocation on the starts they cover;
 commodities count as protected volume in the buyer's allocation (33.1). After production a lot
 is **taken** up to what the buyer used (commodities: after M17's deals took theirs); the rest

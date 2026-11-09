@@ -36,8 +36,8 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_queued, with_refinery
 
 TEMPLATES: Final = ("refinery_fire", "chemical_release")  # data/events/refining.yaml
-STEPS: Final = ("stop", "compensate", "contest")
-CURB_DRAWS: Final = 3  # tunable-exempt: start, share and length (module docstring)  # tst.sim.events.data REFINING_STEPS
+STEPS: Final = ("stop", "compensate", "contest")  # tst.sim.events.data REFINING_STEPS
+CURB_DRAWS: Final = 3  # tunable-exempt: start, share and length (module docstring)
 
 
 def _lerp(lo: float, hi: float, u: float) -> float:

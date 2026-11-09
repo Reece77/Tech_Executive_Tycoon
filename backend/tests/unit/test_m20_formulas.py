@@ -25,9 +25,7 @@ WORKED = {
 
 
 @pytest.mark.parametrize("recipe", sorted(WORKED))
-def test_each_recipe_unit_cost_matches_its_worked_example(
-    loaded: LoadedData, recipe: str
-) -> None:
+def test_each_recipe_unit_cost_matches_its_worked_example(loaded: LoadedData, recipe: str) -> None:
     b = loaded.balance
     rb = b.refining
     r = rb.recipes[recipe]

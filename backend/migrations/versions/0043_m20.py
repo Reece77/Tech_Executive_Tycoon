@@ -2,7 +2,7 @@
 state beside its facility row (keyed by the facility id: recipe, the quoted capex, curbs,
 incidents, its latest month and history), `refining_deal` refinery contracts, and
 `refining_supply` the month's own-group supply lots, each record's fields in a JSON `data`
-column (data-dictionary.md); account 4400. Existing saves have no refineries: nothing to fill.
+column (data-dictionary.md); account 4410. Existing saves have no refineries: nothing to fill.
 
 Revision ID: 0043_m20
 Revises: 0042_m18
@@ -20,7 +20,7 @@ down_revision: str | None = "0042_m18"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
-ACCOUNT = ("4400_materials_sales", "Materials sales", "revenue")
+ACCOUNT = ("4410_materials_sales", "Materials sales", "revenue")
 
 
 def upgrade() -> None:
@@ -59,7 +59,7 @@ def downgrade() -> None:
     for name in ("refining_supply", "refining_deal", "refinery"):
         op.drop_table(name)
     op.execute(
-        "DELETE FROM account WHERE code = '4400_materials_sales' AND NOT EXISTS "
-        "(SELECT 1 FROM ledger_line WHERE account_code = '4400_materials_sales')"
+        "DELETE FROM account WHERE code = '4410_materials_sales' AND NOT EXISTS "
+        "(SELECT 1 FROM ledger_line WHERE account_code = '4410_materials_sales')"
     )
     op.execute("UPDATE save_meta SET schema_version = 42")

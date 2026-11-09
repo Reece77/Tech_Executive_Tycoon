@@ -25,8 +25,8 @@ accounts:
   - { code: 4000_revenue_subscriptions, name: Subscription revenue, type: revenue }
   - { code: 4100_revenue_licenses, name: License revenue, type: revenue }
   - { code: 4200_revenue_services, name: Services revenue, type: revenue }
-  - { code: 4400_materials_sales, name: Materials sales, type: revenue } # M20 (36.1): refined materials and wafers sold at spot or under contract
   - { code: 4300_intercompany_sales, name: Intercompany sales, type: revenue } # M16 (31.6): a group company's supply to another at the transfer price; consolidation removes it
+  - { code: 4410_materials_sales, name: Materials sales, type: revenue } # M20 (36.1): refined materials and wafers sold at spot or under contract
   - { code: 4900_other_income, name: Other income, type: revenue } # M6: event cash gains
   - { code: 4910_share_of_associates, name: Share of associates' profit, type: revenue } # M16 (31.3): the group's share of associates' profit; below the operating result
   - { code: 4920_fair_value_gains, name: Fair-value gains and losses, type: revenue } # M16 (31.3): December marks of stakes under 20%; below the operating result
