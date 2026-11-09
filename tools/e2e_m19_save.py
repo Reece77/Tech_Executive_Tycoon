@@ -94,8 +94,13 @@ def building(save_dir: Path, name: str, data: LoadedData) -> Path:
         total = mine.hidden_total_cents
         run.state = with_mine(
             run.state,
-            replace(mine, ordered_turn=t - 24, ready_turn=t + 1, revised_cents=total,
-                    capex_paid_cents=total),
+            replace(
+                mine,
+                ordered_turn=t - 24,
+                ready_turn=t + 1,
+                revised_cents=total,
+                capex_paid_cents=total,
+            ),
         )
         run.posted.append(
             LedgerEntry.transfer(

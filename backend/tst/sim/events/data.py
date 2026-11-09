@@ -160,6 +160,9 @@ MINING_STEPS: Final = (  # M19 (35.4): accidents, takeovers, price crashes
     "care",
     "hedge",
     "keep",
+    "consult",
+    "benefit",
+    "push_on",
 )
 PUBLIC_STEPS: Final = (
     "file",  # 25.2 step 2: the S-1 goes in on time

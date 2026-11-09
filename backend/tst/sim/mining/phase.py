@@ -43,7 +43,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.mining import formulas as mf
 from tst.sim.mining import prices, risk
 from tst.sim.mining.actions import LINK, close_entries, closed, group_ids, mine_name
-from tst.sim.mining.draws import ACCIDENT, GRADE, mining_draws
+from tst.sim.mining.draws import ACCIDENT, GRADE, PROTEST, mining_draws
 from tst.sim.mining.models import HISTORY_MONTHS, Mine, MineMonth
 from tst.sim.money import format_money
 from tst.sim.rng import RngFactory
@@ -55,6 +55,7 @@ EPS: Final = 1e-9  # tunable-exempt: float tolerance on tonnages
 CELLS_TAG: Final = 1  # tunable-exempt: M18's geology key (r, b, 1), the ore body's positions
 ACCIDENT_TEMPLATES: Final = ("mine_tailings_failure", "mine_fatal_accident")
 CRASH_TEMPLATE: Final = "mine_price_crash"
+SENSITIVITY_MID: Final = 0.5  # tunable-exempt: M18's protest_rate is quoted at this sensitivity
 
 
 def active(state: GameState) -> bool:
@@ -548,10 +549,13 @@ def _operate(
                 else format_money(round(spot * CENTS)) + "/t",
             )
         )
-    # --- accidents (35.4) ---
+    # --- accidents and protests (35.4) ---
     if running and ore_mt > 0:
         state, mine, more, notes = _accident(state, mine, team, rng, balance, data, queued)
         entries += more
+        logs += notes
+    if mine.status == "producing":
+        state, mine, notes = _protest(state, mine, rng, balance, data, queued)
         logs += notes
     state = with_mine(state, mine)
     # --- depleted: the mine closes, reclamation follows (35.3) ---
@@ -644,6 +648,36 @@ def _accident(
         state = _queue(state, template)
         mine = replace(mine, accident_turn=state.turn + 1)
     return state, mine, entries, logs
+
+
+def _protest(
+    state: GameState,
+    mine: Mine,
+    rng: RngFactory,
+    balance: Balance,
+    data: GameData,
+    queued: set[str],
+) -> tuple[GameState, Mine, list[LogItem]]:
+    """35.4: a community protest at an operating mine with M18's monthly chance x the
+    deposit's hidden sensitivity / 0.5, halved by a benefit agreement; one a month."""
+    from tst.sim.exploration.geology import block_of
+    from tst.sim.mining.risk import PROTEST_TEMPLATE
+
+    pb = balance.exploration.permitting
+    u = float(mining_draws(rng, state.turn, mine.id, PROTEST).random())
+    if mine.protest_turn is not None or PROTEST_TEMPLATE in queued:
+        return state, mine, []
+    block = block_of(state, mine.region, mine.block)
+    sensitivity = block.true_sensitivity if block is not None else SENSITIVITY_MID
+    chance = pb.protest_rate * sensitivity / SENSITIVITY_MID
+    if mine.benefit:
+        chance *= 1 - pb.benefit_odds
+    if u >= chance:
+        return state, mine, []
+    queued.add(PROTEST_TEMPLATE)
+    state = _queue(state, PROTEST_TEMPLATE)
+    mine = replace(mine, protest_turn=state.turn + 1, protests=mine.protests + 1)
+    return state, mine, [_item(state, mine, "mine_protest_started", data)]
 
 
 def would_be_cost_usd_t(state: GameState, mine: Mine, balance: Balance, data: GameData) -> float:

@@ -81,6 +81,10 @@ class Mine:
     stopped_until: int | None = None  # stop and investigate: no output through this month
     accident_turn: int | None = None  # an accident event shown this month, until answered
     accidents: int = 0
+    # protests (35.4, M18's choices)
+    protest_turn: int | None = None  # a protest event shown this month, until answered
+    protests: int = 0
+    benefit: bool = False  # a benefit agreement with the community is signed
     # nationalization and export bans (35.4)
     state_share: float = 0.0  # a state partner's stake
     ban_until: int | None = None  # sales only inside the region through this month

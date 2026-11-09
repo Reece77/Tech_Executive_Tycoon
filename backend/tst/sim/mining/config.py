@@ -121,6 +121,14 @@ class NationalizationBalance(_Frozen):
     rival_cut: float = Field(ge=0, le=1)  # a rival's capacity in the region falls by this
 
 
+class ProtestBalance(_Frozen):
+    """35.4: an operating mine's protests, at M18's monthly rate x the deposit's hidden
+    sensitivity / 0.5 (halved by a benefit agreement), answered with M18's choices and costs."""
+
+    consult_months: int = Field(ge=0)  # consult: months of lost output
+    blockade_months: int = Field(ge=0)  # push on: a blockade's months, with M18's push_legal
+
+
 class CrashBalance(_Frozen):
     months_below: int = Field(ge=1)  # price under all-in cost this many months running
     care_fixed: float = Field(ge=0, le=1)  # care and maintenance: fixed cost x this
@@ -180,6 +188,7 @@ class MiningBalance(_Frozen):
     strategic: dict[str, float]  # commodity -> strategic weight 0-1
     accident: AccidentBalance
     nationalization: NationalizationBalance
+    protest: ProtestBalance
     crash: CrashBalance
     sale: SaleBalance
     rivals: RivalMinersBalance

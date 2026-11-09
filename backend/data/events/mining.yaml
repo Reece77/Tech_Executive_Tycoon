@@ -89,3 +89,24 @@ templates:
       - key: C
         label: "Keep running and wait for the price to recover"
         effects: [{ type: mining_step, target: company, stat: keep }]
+
+  - id: mine_protest
+    category: mining
+    trigger: mining
+    severities: [critical]
+    weight: 1.0
+    title: "A community protest at your mine"
+    body: >-
+      Families from the villages around one of {company}'s mines have blocked the haul road. They
+      want a say over the water the mine draws, more of the jobs, and a share of what it earns.
+      The regional governor has asked the company to respond this week.
+    choices:
+      - key: A
+        label: "Stop and consult the community"
+        effects: [{ type: mining_step, target: company, stat: consult }]
+      - key: B
+        label: "Offer a benefit agreement: jobs, a water plan, a share of royalties"
+        effects: [{ type: mining_step, target: company, stat: benefit }]
+      - key: C
+        label: "Push on: the permit is valid and the road is ours"
+        effects: [{ type: mining_step, target: company, stat: push_on }]

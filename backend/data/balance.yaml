@@ -1587,7 +1587,7 @@ mining: # 35: building and running mines (M19, v3 lane A). Dossier 6 where marke
     brand_hit: 5 # brand points off every product of the mine's group
     credibility_hit: 8 # credibility points off the group's listed company (M14b)
   nationalization: # 35.4: history to December 2025 (nationalization_history.yaml), then seeded on stream region_risk
-    monthly_base: 0.0045 # a (region, commodity) event a month = this x resource_nationalism x strategic weight (35.6 target 4)
+    monthly_base: 0.0035 # a (region, commodity) event a month = this x resource_nationalism x strategic weight (35.6 target 4)
     ban_share: 0.5 # of seeded events, export bans; the rest state takeovers
     ban_months: [6, 24]
     ban_price_share: 0.7 # during a ban the mine sells inside its own region at this share of spot
@@ -1598,6 +1598,9 @@ mining: # 35: building and running mines (M19, v3 lane A). Dossier 6 where marke
     award_win: 0.5 # ... and the award goes the company's way with this chance ...
     award_share: [0.6, 1.0] # ... paying this share of the mine's book value at seizure
     rival_cut: 0.2 # a takeover or ban cuts the rivals' capacity of the commodity in the region by this share for its length
+  protest: # 35.4: protests at an operating mine: exploration.permitting's monthly rate x the deposit's hidden sensitivity / 0.5 (halved by a benefit agreement); its consult and benefit costs, push-on risk and Ruthless points
+    consult_months: 1 # consult: a month of lost output while the talks run
+    blockade_months: 3 # push on: with exploration.permitting.push_legal's chance, a blockade stops output this long
   crash: # 35.4: the commodity's price below the mine's all-in cost this many months running
     months_below: 3
     care_fixed: 0.3 # care and maintenance: output 0, fixed cost x this

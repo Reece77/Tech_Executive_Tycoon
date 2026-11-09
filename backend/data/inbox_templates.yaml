@@ -517,3 +517,9 @@ templates:
   rival_bid_accepted:
     title: "Sold: {asset}"
     body: "The sale closed at {amount_cents}."
+  mine_protest_started:
+    title: "Protest: {mine}"
+    body: "The community around the mine is protesting. Decide how to answer."
+  mine_blockaded:
+    title: "Blockade: {mine}"
+    body: "Pushing on brought an injunction and a blockade: no output for {months} months."

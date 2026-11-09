@@ -63,7 +63,11 @@ STEPS: Final = (
     "care",
     "hedge",
     "keep",
+    "consult",
+    "benefit",
+    "push_on",
 )
+PROTEST_TEMPLATE: Final = "mine_protest"
 EXTRA_DRAWS: Final = 2  # tunable-exempt: after the commodities, the kind and months uniforms
 BID_MONTHS: Final = 3  # tunable-exempt: a rival's bid stays open this many months
 PROJECT_BID, MINE_BID = 0, 1  # tunable-exempt: the bid draws' third key
@@ -273,19 +277,20 @@ def reputation_hit(state: GameState, mine: Mine, balance: Balance) -> GameState:
 
 
 def _event_mines(state: GameState, event: GameEvent) -> list[Mine]:
+    """The mines an event is about: those whose open event of its kind was shown that month."""
     t = event.turn
     template = event.template_id or ""
     out = []
     for m in sorted(state.mines, key=lambda m: m.id):
-        if (
-            (template == TAKEOVER_TEMPLATE and m.takeover_turn == t)
-            or (
-                template.startswith("mine_")
-                and template not in (TAKEOVER_TEMPLATE, "mine_price_crash")
-                and m.accident_turn == t
-            )
-            or (template == "mine_price_crash" and m.crash_turn == t)
-        ):
+        if template == TAKEOVER_TEMPLATE:
+            hit = m.takeover_turn == t
+        elif template == "mine_price_crash":
+            hit = m.crash_turn == t
+        elif template == PROTEST_TEMPLATE:
+            hit = m.protest_turn == t
+        else:
+            hit = template.startswith("mine_") and m.accident_turn == t
+        if hit:
             out.append(m)
     return out
 
@@ -405,6 +410,29 @@ def mining_step(
                     logs.append(
                         _item(state, mine, "mine_sold_to_state", name, amount_cents=proceeds)
                     )
+        elif step in ("consult", "benefit", "push_on"):
+            pb = balance.exploration.permitting
+            mine = replace(mine, protest_turn=None)
+            if step == "consult":
+                pay("Community consultation", pb.consult_cents)
+                stop = mb.protest.consult_months
+                if stop:
+                    mine = replace(
+                        mine, stopped_until=max(turn + stop - 1, mine.stopped_until or 0)
+                    )
+            elif step == "benefit":
+                pay("Benefit agreement", pb.benefit_cents)
+                mine = replace(mine, benefit=True)
+            else:
+                state = _persona(
+                    state, "ruthless", pb.push_ruthless, "pushed on through a protest", balance
+                )
+                u = float(mining_draws(rng, turn, mine.id, CHOICE).random())
+                if u < pb.push_legal:
+                    stop = mb.protest.blockade_months
+                    mine = replace(mine, stopped_until=turn + stop - 1)
+                    pay("Legal costs: a blockade", pb.push_legal_cents)
+                    logs.append(_item(state, mine, "mine_blockaded", name, months=stop))
         elif step in ("care", "hedge", "keep"):
             mine = replace(mine, crash_turn=None, crash_answered=True)
             if step == "care" and mine.status == "producing":

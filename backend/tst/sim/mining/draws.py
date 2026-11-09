@@ -11,8 +11,8 @@ import numpy as np
 
 from tst.sim.rng import RngFactory
 
-BUILD, OVERRUN, GRADE, ACCIDENT, CHOICE, BID = range(6)  # tunable-exempt: mining key tags
-TAGS: Final = (BUILD, OVERRUN, GRADE, ACCIDENT, CHOICE, BID)
+BUILD, OVERRUN, GRADE, ACCIDENT, CHOICE, BID, PROTEST = range(7)  # tunable-exempt: key tags
+TAGS: Final = (BUILD, OVERRUN, GRADE, ACCIDENT, CHOICE, BID, PROTEST)
 
 
 def mining_draws(

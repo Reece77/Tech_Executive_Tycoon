@@ -149,6 +149,9 @@ MINING_STEP_TEXT: dict[str, str] = {  # M19 (35.4): never a hidden chance or ove
     "care": "care and maintenance: no output, a third of the fixed cost, a costly restart",
     "hedge": "hedge: an offtake on half the mine's capacity at today's price",
     "keep": "keep running and wait for the price",
+    "consult": "consult the community: $500k and a month of lost output",
+    "benefit": "sign a benefit agreement: $3M; fewer protests from now on",
+    "push_on": "push on: legal risk of a blockade, and persona Ruthless +5",
 }
 EXPLORATION_STEP_TEXT: dict[str, str] = {  # M18 (34.3): never a hidden chance
     "consult": "consult the community: $500k and three more months before the decision",
