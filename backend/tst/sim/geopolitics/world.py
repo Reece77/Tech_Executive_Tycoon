@@ -148,10 +148,10 @@ def owners(state: GameState, company: CompanyState, share: float = HALF) -> Iter
     seen: set[int] = {company.id}
     current = company.id
     while True:
-        holding = owner_at(state, current, state.turn)
+        holding = owner_at(state, current)  # the open holding (a transfer month has two)
         if holding is None or holding.owner_id in seen:
             return
-        if holding.stake_at(state.turn) < share * FULL_BP:
+        if holding.stake_at() < share * FULL_BP:
             return
         seen.add(holding.owner_id)
         owner = state.company(holding.owner_id)
