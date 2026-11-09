@@ -533,3 +533,21 @@ T3 follows the product manager's ruling of 2026-11-07: three new Reckless source
 Tuned (`group.*` only): `group.mandate.grow_payout` 0.5 and `grow_keep_months` 6 set the cash ratio (1.0 gave 1.2x, 0.4 gave 2.5–3.1x with the larger brands of a first fixture); `supply_cost`, `discount.synergy` and `discount.per_segment` were tried at 0.3 / 0.5 / 0.02 without moving T3's integrated half (1 of 10) and are left at 0.80 and §31.7's 0.15 and 0.03. A marketing multiplier per mandate had no effect (the brands' products carry no marketing budget) and was removed.
 
 **Reece's ruling (2026-11-08): merge with these misses recorded** as known misses for a later ruling. T3's integrated half and T4's revenue band are open (see the brief's follow-ups): the lost in-group saving is small next to what a spin-off gains, and T4's revenue gap comes from the grow/harvest brand styles the directive mapping fixes.
+
+## M18: prospecting and exploration (§34.6)
+
+### M18 Exploration (2026-11-09, v3 lane B; on the M17 stub deck until M17 merges)
+
+`tools/m18_targets.py` (`tst/balance/m18.py`), seeds 1–30. The scripted explorer is a stage-3 company with six geologists (geology and data at the team's skill) that desk-studies twelve (region, commodity) pairs, licenses the four best high-band blocks of each, surveys, samples anomalies, drills 20 holes where the sample's upper grade could pay, scopes, infills to 40 holes, goes to a definitive study when the scoping NPV midpoint is positive, applies for the permit and answers protests with a benefit agreement; seven years of search, played to year 14.
+
+| Target | Band | Value |
+| --- | --- | --- |
+| T1 estimates converge (skill-10 team, every deposit) | 20 holes ±15%, 40 holes ±8% (median) | ±14.2%, ±7.5% |
+| T2 geologists matter (skill 15 vs 8) | 1.5–2.5x feasible projects per dollar; ranges 25–40% narrower | 1.72x per dollar of discovery spend (1.52x per dollar of all spend); 39% narrower |
+| T3 a gamble (skill-12 team) | $20–60M per feasible, permitted project over 3–8 years; ≥ 40% of surveyed blocks end in nothing | $46M median; 7.2 years licence to permit; 83% end in nothing (1 in 6 surveyed blocks becomes feasible) |
+| T4 geography is real | the leading region on ≥ 7 of 10 seeds | copper Latin America 25/30, lithium Oceania 29/30, cobalt Africa 29/30, rare earths East Asia 28/30 |
+| T5 permits vary | North America ≥ 1.5x Latin America (median) | 64 vs 36 months (1.79x) |
+| T6 nothing else moves | a company that never explores plays exactly as before | golden snapshots unchanged; identical with and without geology (24 months, 2 seeds) |
+| Ranges hold their confidence | 90% | `tests/property/test_m18_estimates.py`, 30 seeds (grade after 8/20/40 holes, sample, tonnage) |
+
+Tuned (`geology.*`, `exploration.*`; before → after in the brief's Decisions 8–9). T2 is read per dollar of discovery spend (Decision 10, for review).
