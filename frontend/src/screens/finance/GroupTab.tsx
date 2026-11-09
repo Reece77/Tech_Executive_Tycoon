@@ -438,16 +438,23 @@ export function GroupTab({ saveId }: { saveId: string }) {
   );
 }
 
-const STAGES = ['mine', 'refinery', 'wafer', 'chip', 'device'] as const;
+const STAGES = ['mine', 'refinery', 'wafer', 'fab', 'chip', 'device'] as const;
 
-/** The group's value chain (M20, formulas.md 36): mine → refinery → wafer → chip → device. */
+/** The group's value chain (M20, formulas.md 36; M21's fabs): mine → refinery → wafer → fab →
+ * chip → device. */
 function ValueChain({ saveId }: { saveId: string }) {
   const refineries = useRefineries(saveId);
   const chain = refineries.data?.chain ?? [];
   if (chain.length === 0) return null;
   return (
     <Panel title="Value chain" testId="group-chain">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${STAGES.length}, minmax(0, 1fr))`,
+          gap: 8,
+        }}
+      >
         {STAGES.map((stage) => (
           <div key={stage} data-testid={`chain-${stage}`}>
             <div className="tst-muted" style={{ fontSize: 12, textTransform: 'capitalize' }}>

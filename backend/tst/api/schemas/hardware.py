@@ -186,6 +186,9 @@ class WaferContractIn(BaseModel):
     foundry: str
     wafers: int
     months: int
+    node: str | None = Field(
+        default=None, description="M21 (38.1): a process node (nodes.yaml key); none: M12b's wafer"
+    )
 
 
 class PlantIn(BaseModel):

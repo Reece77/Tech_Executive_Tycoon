@@ -483,6 +483,21 @@ templates:
     title: "Project sold: {block}"
     body: "{buyer} bought {block} for {price}."
   # --- M20 (formulas.md 36): refineries ---
+  fab_ordered:
+    title: "Fab ordered: {fab}"
+    body: "{units} at {node} in {region}. Estimated capex {capex_cents}, built over {months} months; {tools}. It needs {staff} fab engineers."
+  fab_live:
+    title: "Fab in production: {fab}"
+    body: "{fab} started its first {node} wafers. Yield starts at {yield_pct} and learns with months of production, your engineers' skill and your process research."
+  fab_waiting_tools:
+    title: "Fab waiting for EUV tools: {fab}"
+    body: "Construction of {fab} is finished, but its EUV tools from {supplier} arrive only by {tools}: it can't run until they are installed ({ready})."
+  fab_upgrade_ordered:
+    title: "Fab conversion ordered: {fab}"
+    body: "{fab} converts from {old} to {new} for an estimated {capex_cents}, offline for {months} months (ready {ready})."
+  fab_upgraded:
+    title: "Fab converted: {fab}"
+    body: "{fab} now runs {node}. Yield restarts at {yield_pct} and learns again."
   refinery_ordered:
     title: "Plant ordered: {plant}"
     body: "{units} in {region}. Estimated capex {capex_cents}, built over {months} months (ready {ready}). It needs {staff} process engineers."

@@ -20,8 +20,11 @@ class ChipTypeDef(_Frozen):
 
 
 class FoundryDef(_Frozen):
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
     label: str = Field(min_length=1)
     price_mult: float = Field(gt=0)
+    from_: str | None = Field(default=None, alias="from")  # M21: first month it takes contracts
 
 
 class WaferContractBalance(_Frozen):

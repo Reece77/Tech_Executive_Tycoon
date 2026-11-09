@@ -158,8 +158,8 @@ def _goods(state: GameState, data: LoadedData) -> list[RefiningGoodOut]:
 
 
 def _chain(state: GameState, data: LoadedData) -> list[ChainLinkOut]:
-    """The group's value chain (36: mine -> refinery -> wafer -> chip -> device): its plants
-    by output, the group's mines (M19) and the products that use them."""
+    """The group's value chain (36: mine -> refinery -> wafer -> fab -> chip -> device): its
+    plants by output, the group's mines (M19), its fabs (M21) and the products that use them."""
     b, d = data.balance, data.game_data
     group = group_of(state, state.player.id)
     links: list[ChainLinkOut] = []
@@ -175,7 +175,16 @@ def _chain(state: GameState, data: LoadedData) -> list[ChainLinkOut]:
     ]
     chip_products = [p for p in products if chips.is_chip(p, d)]
     device_products = [p for p in products if p.category in b.hardware.bom]
+    from tst.sim.fabs.plants import node_label  # M21: fabs between wafers and chips (38.2)
     from tst.sim.mining.actions import mine_name  # M19's mines head the chain (36, 35.3)
+
+    fabs = [
+        (fab, f)
+        for fab in state.fabs
+        if (f := state.facility(fab.facility_id)) is not None
+        and f.status != "closed"
+        and f.company_id in group
+    ]
 
     for mine in state.mines:
         if mine.company_id not in group or mine.status == "closed":
@@ -207,6 +216,7 @@ def _chain(state: GameState, data: LoadedData) -> list[ChainLinkOut]:
         ]
         if r.output_good == b.refining.wafer.good:
             feeds += [p.name for p in chip_products]
+            feeds += [lifecycle.facility_name(g, b, d) for _, g in fabs]
         else:
             mixes = b.commodity.mixes
             for p in chip_products:
@@ -225,6 +235,16 @@ def _chain(state: GameState, data: LoadedData) -> list[ChainLinkOut]:
                 name=lifecycle.facility_name(f, b, d),
                 detail=f"{r.label}: {f.capacity:,} {b.facility.kinds[r.kind].unit}",
                 supplies=feeds,
+            )
+        )
+    for fab, f in fabs:
+        links.append(
+            ChainLinkOut(
+                stage="fab",
+                company=state.company(f.company_id).name,
+                name=lifecycle.facility_name(f, b, d),
+                detail=f"{node_label(d, fab.node)}: {f.capacity:,} wafer starts a month",
+                supplies=[p.name for p in chip_products if p.company_id == f.company_id],
             )
         )
     for p in chip_products:

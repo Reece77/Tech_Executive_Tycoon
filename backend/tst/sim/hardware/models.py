@@ -35,6 +35,7 @@ class ProductionContract:
     used: float = 0.0
     charged_cents: int = 0  # last month's take-or-pay
     status: ProductionContractStatus = "active"
+    node: str | None = None  # M21 (38.1): a wafer contract at a named node (None: M12b's wafer)
 
     def running(self, turn: int) -> bool:
         return self.status == "active" and self.signed_turn <= turn <= self.end_turn

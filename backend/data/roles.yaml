@@ -217,6 +217,18 @@ roles:
     work_style_weights: { builder: 3, operator: 6, researcher: 1, seller: 0 }
     interest_weights: { ai: 0, hardware: 4, crypto: 0, climate: 3, security: 0, gaming: 0, mining: 4, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 0 }
     salary_band_mid_cents: { junior: 5800000, mid: 7800000, senior: 10000000, staff: 12200000, principal: 14400000, exec: 16800000 }
+  # --- M21 (formulas.md 38.2): fabs, appended ---
+  - key: fab_engineer
+    label: Fab engineer
+    product_function: none
+    summary: "Runs a wafer fab's process: lithography, etch, deposition and the yield ramp at a process node. Staffs fabs."
+    why_hire: "Hire one for every couple of thousand wafer starts a month of a fab: coverage sets how many starts it can run, and their manufacturing skill sets reliability and how fast yield learns (38.2)."
+    primary: [manufacturing, data]
+    secondary: [operations, procurement, security, leadership]
+    work_style: operator
+    work_style_weights: { builder: 3, operator: 6, researcher: 1, seller: 0 }
+    interest_weights: { ai: 1, hardware: 5, crypto: 0, climate: 1, security: 0, gaming: 0, mining: 1, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 0 }
+    salary_band_mid_cents: { junior: 7000000, mid: 9500000, senior: 12500000, staff: 15500000, principal: 18500000, exec: 21000000 }
   # --- M19 (formulas.md 35.2): mining operations, appended ---
   - key: mining_engineer
     label: Mining engineer

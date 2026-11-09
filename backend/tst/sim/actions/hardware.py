@@ -14,6 +14,7 @@ from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.chips import chips
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import FacilityRuleError, ProductRuleError
+from tst.sim.facilities.config import month_to_turn
 from tst.sim.facilities.models import Facility
 from tst.sim.hardware import cm_market
 from tst.sim.hardware import formulas as hf
@@ -50,6 +51,7 @@ class SignWaferContract:
     foundry: str  # chips.contract.foundries key
     wafers: int  # wafer starts a month
     months: int
+    node: str | None = None  # M21 (38.1): nodes.yaml key; None buys M12b's wafer for the type
     kind: Literal["sign_wafer_contract"] = "sign_wafer_contract"
 
 
@@ -149,8 +151,14 @@ def sign_wafer_contract(
     _months(action.months, w.months.lo, w.months.hi)
     if not 0 < action.wafers <= w.max_wafers:
         raise FacilityRuleError(f"a contract covers 1 to {w.max_wafers:,} wafers a month")
+    if action.node is not None:
+        chips.check_node_contract(state, action.foundry, action.node, balance, data)
+    elif (start := w.foundries[action.foundry].from_) is not None and state.turn < month_to_turn(
+        start
+    ):
+        raise FacilityRuleError(f"{w.foundries[action.foundry].label} takes contracts from {start}")
     state = spend_energy(state, action.actor_id, "sign_wafer_contract", balance, cost=w.energy)
-    price = chips.index_wafer_cents(state, chip_type, balance, data, action.foundry)
+    price = chips.index_wafer_cents(state, chip_type, balance, data, action.foundry, action.node)
     contract_id, ids = state.next_ids.take("production_contract")
     contract = ProductionContract(
         id=contract_id,
@@ -162,6 +170,7 @@ def sign_wafer_contract(
         price_millicents=to_millicents(price),
         signed_turn=state.turn,
         end_turn=state.turn + action.months - 1,
+        node=action.node,
     )
     state = with_production_contract(replace(state, next_ids=ids), contract)
     log = inbox_item(

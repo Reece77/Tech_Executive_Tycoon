@@ -27,6 +27,8 @@ from dataclasses import dataclass, field, replace
 from tst.sim.chips import chips
 from tst.sim.commodities import costs
 from tst.sim.data_models import Balance, GameData
+from tst.sim.fabs import plants as fab_plants
+from tst.sim.fabs import supply as fab_supply
 from tst.sim.facilities.lifecycle import facility_name, staffing
 from tst.sim.facilities.models import Facility
 from tst.sim.hardware import formulas as hf
@@ -89,8 +91,10 @@ def plant_yield_of(plant: Facility, balance: Balance) -> float:
 def has_source(state: GameState, product: Product, balance: Balance, data: GameData) -> bool:
     """A manufacturing source for launch (26.1): a running contract for the product, or a
     live plant (devices and servers); a running wafer contract (chips)."""
-    if chips.is_chip(product, data):
-        return bool(chips.wafer_contracts(state, product.id))
+    if chips.is_chip(product, data):  # M21 (38.2): or a live fab of the company
+        return bool(chips.wafer_contracts(state, product.id)) or fab_plants.has_live_fab(
+            state, product.company_id, balance
+        )
     if assembly_contracts(state, product.id):
         return True
     return bool(live_plants(state, product.company_id, balance))
@@ -121,6 +125,7 @@ class ProductionPlan:
     contracts_of: dict[int, list[int]] = field(default_factory=dict)  # product -> contract ids
     chips_left: dict[int, float] = field(default_factory=dict)  # chip product -> chips left
     chips_capacity: dict[int, float] = field(default_factory=dict)
+    fab_chips: dict[int, float] = field(default_factory=dict)  # M21: chips its own fabs can make
     usage: dict[int, _Usage] = field(default_factory=dict)
     capacity: dict[int, float] = field(default_factory=dict)  # product -> units at the start
     slots: dict[int, int] = field(default_factory=dict)  # product -> plant slots a unit
@@ -228,6 +233,8 @@ def _commodity_caps(
         if pid in plan.chips_left:
             plan.chips_left[pid] *= share
             plan.chips_capacity[pid] *= share
+            if pid in plan.fab_chips:
+                plan.fab_chips[pid] *= share
         else:
             plan.unit_cap[pid] = plan.available(pid) * share
 
@@ -256,6 +263,8 @@ def build_plan(state: GameState, balance: Balance, data: GameData) -> Production
                 cap = chips.chip_capacity(state, p, balance, data)
                 plan.chips_left[p.id] = cap
                 plan.chips_capacity[p.id] = cap
+                if state.fabs:  # M21 (38.2)
+                    plan.fab_chips[p.id] = fab_supply.fab_chips(state, p, balance, data)
                 if p.status == "live":
                     plan.own_chip_of.setdefault((company.id, category.chip_type), p.id)
                 continue
@@ -314,13 +323,15 @@ def settle(
     turn = state.turn
     entries: list[LedgerEntry] = []
     rows: list[ProductionMonth] = []
+    fab_used: dict[int, float] = {}  # M21: facility id -> starts run for own chips
     if plan is not None:
+        posted = _posted_units(state, plan, fab_used, balance, data)
         for pid in sorted(plan.capped):
             product = state.product(pid)
             assert product is not None
             use = plan.usage.get(pid, _Usage())
             if chips.is_chip(product, data):
-                unit = chips.unit_cost_cents(state, product, balance, data)
+                unit = posted[pid]
                 chip_cents = round(use.market * unit)
                 rows.append(
                     ProductionMonth(
@@ -348,9 +359,7 @@ def settle(
             own_id = plan.own_chip_of.get((product.company_id, chip_type))
             own_unit = 0.0
             if own_id is not None:
-                own = state.product(own_id)
-                assert own is not None
-                own_unit = chips.unit_cost_cents(state, own, balance, data)
+                own_unit = posted.get(own_id, 0.0)
             bought = units - use.own_chips
             chip = round(
                 use.own_chips * own_unit
@@ -395,7 +404,66 @@ def settle(
     entries += more
     state, more = _plants_month(state, plan, cm_sold, balance, data)
     entries += more
-    return replace(state, production=tuple(rows)), entries
+    state = replace(state, production=tuple(rows))
+    if state.fabs:  # M21 (38.2): own starts, foundry slots and the fabs' month
+        state, more = fab_plants.settle_fabs(state, fab_used, balance, data)
+        entries += more
+    return state, entries
+
+
+def _fab_made(plan: ProductionPlan, pid: int) -> float:
+    """Chips the product made from its own fabs (taken first, 38.2)."""
+    use = plan.usage.get(pid, _Usage())
+    return min(use.market + use.internal, plan.fab_chips.get(pid, 0.0))
+
+
+def _posted_units(
+    state: GameState,
+    plan: ProductionPlan,
+    fab_used: dict[int, float],
+    balance: Balance,
+    data: GameData,
+) -> dict[int, float]:
+    """Each chip product's cost a chip at sale (26.3): contract chips at their unit cost, own-fab
+    chips at packaging only (M21: the fab's month carries the wafer). Fills `fab_used` with the
+    starts each fab ran for them."""
+    out: dict[int, float] = {}
+    for pid in sorted(plan.chips_capacity):
+        product = state.product(pid)
+        assert product is not None
+        contract = chips.contract_unit_cents(state, product, balance, data)
+        own = _fab_made(plan, pid)
+        use = plan.usage.get(pid, _Usage())
+        made = use.market + use.internal
+        if own <= EPS or made <= EPS:
+            out[pid] = contract
+            continue
+        pack = balance.chips.packaging_cents
+        out[pid] = (own * pack + (made - own) * contract) / made
+        left = own
+        for s in fab_supply.product_shares(state, product, balance, data):
+            if left <= EPS or s.chips_per_start <= 0:
+                break
+            cap = (
+                s.starts * s.chips_per_start * _cap_share(plan, pid, state, product, balance, data)
+            )
+            got = min(left, cap)
+            fab_used[s.facility_id] = fab_used.get(s.facility_id, 0.0) + got / s.chips_per_start
+            left -= got
+    return out
+
+
+def _cap_share(
+    plan: ProductionPlan,
+    pid: int,
+    state: GameState,
+    product: Product,
+    balance: Balance,
+    data: GameData,
+) -> float:
+    """The commodity-shortage share applied to the product's fab chips (33.1)."""
+    full = fab_supply.fab_chips(state, product, balance, data)
+    return plan.fab_chips.get(pid, 0.0) / full if full > 0 else 0.0
 
 
 def _mean_yield(plan: ProductionPlan, company: int) -> float:
@@ -456,7 +524,11 @@ def _wafers_used(
     if cap <= 0:
         return 0.0
     use = plan.usage.get(contract.product_id, _Usage())
-    made_share = min(1.0, (use.market + use.internal) / cap)
+    own = _fab_made(plan, contract.product_id)  # M21: own fabs' chips first (38.2)
+    cap -= plan.fab_chips.get(contract.product_id, 0.0)
+    if cap <= EPS:
+        return 0.0
+    made_share = min(1.0, max(0.0, use.market + use.internal - own) / cap)
     return chips.wafers_delivered(state, contract, balance, data) * made_share
 
 

@@ -97,6 +97,13 @@ export function ProductsScreen() {
               Refineries
             </Link>
             <Link
+              to={`/game/${saveId}/products/fabs`}
+              style={{ fontSize: 13 }}
+              data-testid="fabs-link"
+            >
+              Fabs
+            </Link>
+            <Link
               to={`/game/${saveId}/products/mines`}
               style={{ fontSize: 13 }}
               data-testid="mines-link"

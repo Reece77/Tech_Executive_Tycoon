@@ -1387,6 +1387,7 @@ A contract-manufacturing contract (kind `assembly`, 26.2) or a wafer contract (k
 | `used` | FLOAT | no | Units (or wafers) used last month. |
 | `charged_cents` | BIGINT | no | Last month's take-or-pay on unused volume (to `6900_general_admin`). |
 | `status` | VARCHAR(16) | no | `active` or `ended`. |
+| `node` | VARCHAR(16) | yes | M21 (0046_m21, 38.1): a wafer contract at a named process node (a `nodes.yaml` key), priced at the node's market price; null for M12b's wafer of the chip type. |
 
 ### production_month
 
@@ -1877,6 +1878,20 @@ The latest month's own-group supply lots (36.1-36.2), replaced each month.
 | --- | --- | --- | --- |
 | `n` | INTEGER | no | Primary key: the lot's order. |
 | `data` | JSON | no | `turn`, `facility_id` (the plant), `seller_id`, `buyer_id`, `good`, `volume`, `unit_cents` (the transfer price), `market_cents`, `product_id` (a wafer lot's chip product; null for commodities), `taken` (what the buyer used after production; the rest sold at spot). |
+
+## Fabs and process nodes (migration `0046_m21`, M21)
+
+A fab is a `facility` row of kind `fab` (module `fabs`; formulas.md 38.2): `capacity` is wafer starts a month; `capex_cents` is the true capex with the hidden overrun, never sent to the API; `ready_turn` is the month shown as ready (a future node: its window's midpoint, never the drawn month). Its own state is in `fab`, the dataclass fields in a JSON `data` column (`tst/db/fab_io.py`). A wafer contract may name a node (`production_contract.node`). Account `4420_foundry_sales` (revenue): spare wafer starts sold as foundry slots; a fab's fixed running cost, materials and power post to `5000_cogs`, its depreciation to `6700` (each capex part from the month it went live, over `facility.kinds.fab.life_months`). Process nodes, future nodes' windows and rival foundries are data (`nodes.yaml`), their timeline a pure function of the seed (nothing stored). RNG stream `fab` (54); future nodes' months on `era_window` (31) at keys 1000 + j. Balance keys `fab.*` and `facility.kinds.fab`. Existing saves have no fabs and no node contracts. `save_meta.schema_version` is 46.
+
+### fab
+
+A fab's own state beside its facility row (38.2).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `facility_id` | INTEGER | no | Primary key: the fab's `facility.id`. |
+| `company_id` | INTEGER | no | The owner. |
+| `data` | JSON | no | `node` (a `nodes.yaml` key), `estimate_cents` (the quoted capex the player saw), `build_months` (construction), `duv` (7 nm by DUV), `tools` (EUV tools it needs) and `tools_turn` (their arrival), `live_turn` (when it may start, or started, production), `yield_`, `months_run` (months of production at its node), `parts` (`[{cents, live_turn}]`: capex that has gone live, each depreciating from its month), a conversion's `upgrade_node`, `upgrade_ready`, `upgrade_started`, `upgrade_cents` (with its hidden overrun) and `upgrade_paid_cents`, `month` (the latest month: `turn`, `available`, `own` and `sold` starts, `yield_`, `reliability`, `depreciation_cents`, `fixed_cents`, `materials_cents`, `power_cents`, `staff_cents`, `revenue_cents`, `slot_price_cents`, `market_cents`, `cost_per_start_cents`, `customers` as `[name, starts]`), `history` (`[turn, yield, use, cost a start, market price]` for the last `fab.history_months`). |
 
 ## M25: files beside the saves (not tables)
 

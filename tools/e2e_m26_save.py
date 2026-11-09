@@ -155,7 +155,9 @@ def insider(save_dir: Path, name: str, data: LoadedData) -> Path:
         )
         trade = state.personal_trades[-1]
         assert trade.sensitive_target_id == rid
-        deal = Deal(1, 1, rid, 10**12, 1.0, state.turn, status="abandoned", resolved_turn=state.turn)
+        deal = Deal(
+            1, 1, rid, 10**12, 1.0, state.turn, status="abandoned", resolved_turn=state.turn
+        )
         state = with_deal(state, deal)
         # the regulator's draw (stream personal) says: investigated, opening this month
         return with_trade(

@@ -3773,5 +3773,98 @@ def refineries_cmd(save: SaveOpt) -> None:
         typer.echo(f"  supply: {x.volume:,.1f} {x.good} {x.seller} -> {x.buyer} {x.product or ''}")
 
 
+# --- M21: fabs and process nodes (formulas.md 38) -------------------------------------------
+
+
+@app.command("nodes")
+def nodes_cmd(save: SaveOpt) -> None:
+    """The process-node timeline (38.1, 38.3): nodes, who runs them, future windows, foundries."""
+    from tst.api import fab_views
+
+    _, data, state = _game(save)
+    out = fab_views.nodes_out(state, data)
+    typer.echo(
+        f"{format_turn(out.turn)}: leading edge {out.leading_label}, median {out.median_label};"
+        f" foundry prices x{out.price_factor:.2f}, allocation x{out.allocation_factor:.2f}"
+    )
+    for n in out.nodes:
+        when = n.first_label or n.window_label or "-"
+        who = ", ".join(f"{r.name} {r.label}" for r in n.reached)
+        price = f", wafer {format_money(round(n.market_cents))}" if n.market_cents else ""
+        euv = " EUV" if n.euv else ""
+        typer.echo(f"  {n.label:<14} {when:<18}{euv}{price}; need level {n.need_level:.0f}; {who}")
+    for f in out.foundries:
+        typer.echo(
+            f"  {f.name}: {f.newest_label or '-'}, {f.capacity_k:,.0f}k starts a month"
+            f" ({f.open_share:.0%} open){' (stopped)' if f.stopped else ''}"
+        )
+
+
+@app.command("build-fab")
+def build_fab_cmd(
+    save: SaveOpt,
+    node: Annotated[str, typer.Option("--node", help="A nodes.yaml key, e.g. n28 or n5")],
+    capacity: Annotated[int, typer.Option("--capacity", help="Wafer starts a month")],
+    region: Annotated[str, typer.Option("--region", help="A region key")],
+    duv: Annotated[bool, typer.Option("--duv", help="7 nm by DUV (no EUV tools)")] = False,
+) -> None:
+    """Order a fab (38.2): capex quoted now (it may run over), energy 12."""
+    from tst.sim.fabs.actions import BuildFab
+
+    path, data, state = _game(save)
+    result = _run(path, data, BuildFab(_founder(state), node, region, capacity, duv))
+    fab = max(result.new_state.fabs, key=lambda x: x.facility_id)
+    f = result.new_state.facility(fab.facility_id)
+    assert f is not None
+    tools = f", {fab.tools} EUV tools" if fab.tools else ""
+    typer.echo(
+        f"Fab {f.id} ordered: {node} in {region}, {capacity:,} wafer starts a month, estimated "
+        f"{format_money(fab.estimate_cents)}{tools}, ready {format_turn(f.ready_turn)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("fabs")
+def fabs_cmd(save: SaveOpt) -> None:
+    """The company's fabs (38.2): node, use, yield, cost a start against the market."""
+    from tst.api import fab_views
+
+    _, data, state = _game(save)
+    out = fab_views.fabs_out(state, data)
+    typer.echo(f"Process level {out.process_level:.1f}")
+    if not out.fabs:
+        typer.echo("No fabs.")
+    for p in out.fabs:
+        line = f"{p.id} {p.name} {p.node_label} [{p.status}] {p.size:,} starts a month"
+        line += f", staff {p.staff}/{p.staff_needed}, yield {p.yield_:.0%}"
+        if p.status != "live":
+            line += f", ready {p.ready_label}, paid {format_money(p.capex_paid_cents)}"
+            line += f" of an estimated {format_money(p.estimate_cents)}"
+        typer.echo(line)
+        m = p.month
+        if m is not None and m.available > 0:
+            typer.echo(
+                f"  {format_turn(m.turn)}: use {m.utilization:.0%} (own {m.own:,.0f}, slots"
+                f" {m.sold:,.0f}), cost a start {format_money(round(m.cost_per_start_cents))} vs"
+                f" market {format_money(round(m.market_cents))}, slots"
+                f" {format_money(m.revenue_cents)}"
+            )
+
+
+@app.command("upgrade-fab")
+def upgrade_fab_cmd(
+    save: SaveOpt, fab: Annotated[int, typer.Option("--fab", help="The fab's facility id")]
+) -> None:
+    """Convert a fab to the next node (38.2): 60% of a new fab's capex, offline meanwhile."""
+    from tst.sim.fabs.actions import UpgradeFab
+
+    path, data, state = _game(save)
+    result = _run(path, data, UpgradeFab(_founder(state), fab))
+    got = next(x for x in result.new_state.fabs if x.facility_id == fab)
+    ready = format_turn(got.upgrade_ready) if got.upgrade_ready is not None else "-"
+    typer.echo(f"Fab {fab} converts to {got.upgrade_node}, ready {ready}")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
 if __name__ == "__main__":
     app()

@@ -88,3 +88,17 @@ goods:
     allocation:
       - { start: "2021-01", end: "2022-12", share: 0.70 }
       - { start: "2023-01", end: "2024-12", share: 0.60, advanced_only: true }
+
+  # EUV tools (M21, 38.2): ASML's scanners, the single supplier (nodes.yaml euv). The index
+  # prices a tool ($120M c.2020, dossier 3.4, V) against 2019-2020; tight while ASML's backlog
+  # ran in 2021-2023 (A). M22 may restrict who receives them.
+  - key: euv_tools
+    label: EUV tools
+    unit: index (January 2010 = 1.0)
+    points:
+      "2010-01": 1.0
+      "2020-06": 1.0 # $120M a tool (dossier 3.4, V)
+      "2022-06": 1.25 # NXE:3600D, about $150M (R)
+      "2025-12": 1.5 # NXE:3800E, about $180M (R)
+    allocation:
+      - { start: "2021-01", end: "2023-06", share: 0.70 } # A: the backlog after the 2021 shortage
