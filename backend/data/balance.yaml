@@ -1551,8 +1551,8 @@ mining: # 35: building and running mines (M19, v3 lane A). Dossier 6 where marke
   capex_scale: 0.7 # capex x (capacity / design) ** this: the six-tenths rule, softened
   overrun: # 35.2: a hidden overrun drawn once at the build order, uniform in this share over the estimate, by study level (dossier 6: 20-60% overruns are common, Lynas +60%)
     scoping: [0.0, 0.6]
-    pre_feasibility: [0.0, 0.45]
-    definitive: [0.0, 0.3]
+    pre_feasibility: [0.0, 0.55]
+    definitive: [0.0, 0.5]
   reveal_at: 0.5 # the cost to complete is revised (the overrun shown) once this share of construction has passed; until then capex is paid at the estimate's monthly rate
   underground_depth_m: 250 # a hard-rock deposit whose top is deeper than this is mined underground; shallower ones and placers open pit
   subtypes: # 35.2: construction (whole months, drawn), ramp (share of capacity in production years 1, 2, ...), accident base (35.4), cost split
@@ -1564,7 +1564,7 @@ mining: # 35: building and running mines (M19, v3 lane A). Dossier 6 where marke
   grade_noise: 0.08 # log-sd of a month's reconciled grade around the grade profile (revealed as mined)
   profile_share: 0.3 # the grade profile: the deposit's true grade x exp(this x the drill position's log deviation) as the pit moves through the ore body (M18's 66 positions)
   energy_share: 0.3 # share of the variable cost that is energy, x the region's power index (M17)
-  sustaining_share: 0.02 # sustaining capex a year, x the initial capex (counted in the all-in sustaining cost; posted with operating costs)
+  sustaining_share: 0.06 # sustaining capex a year, x the initial capex (counted in the all-in sustaining cost; posted with operating costs)
   reclamation_per_t_cents: { open_pit: 8000, underground: 5000, brine: 3000 } # 35.3: provisioned a t of product to 2610 from the first output ($80, $50, $30)
   reclamation_months: 24 # 35.3: paid over 2 years after closure
   strategic: { copper: 0.5, lithium_carbonate: 1.0, cobalt: 1.0, ndpr_oxide: 1.0, quartz_hp: 0.3, tin: 0.4, tantalum: 0.7 } # 35.4: a commodity's strategic weight for nationalization (battery and magnet metals highest)

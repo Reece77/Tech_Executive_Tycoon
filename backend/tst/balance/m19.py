@@ -23,6 +23,7 @@ from tst.sim.commodities import commodity
 from tst.sim.errors import SimError
 from tst.sim.events.models import GameEvent
 from tst.sim.exploration import pipeline as xp
+from tst.sim.exploration.models import Project
 from tst.sim.exploration.pipeline import TakeLicence
 from tst.sim.facilities import goods
 from tst.sim.hiring.models import PersonState
@@ -166,7 +167,7 @@ def free_deposit(
     raise LookupError(f"no free {commodity_key} deposit")
 
 
-def permitted_project(run: Miner, commodity_key: str, region: str | None = None) -> xp.Project:
+def permitted_project(run: Miner, commodity_key: str, region: str | None = None) -> Project:
     """A licence on a block holding the commodity, taken to a definitive study and a permit
     by M18's own functions (only the months between are skipped)."""
     b, d = run.loaded.balance, run.loaded.game_data
@@ -270,3 +271,106 @@ def mine_of(run: Miner, mine_id: int) -> Mine:
 
 def median(xs: list[float]) -> float:
     return statistics.median(xs) if xs else math.nan
+
+
+# --- 35.6 targets 1 and 2: mines' returns and copper costs --------------------------------------
+
+BUILD_YEARS: Final = 9  # mines are built in January of 2012-2020, by seed: some at price peaks
+FIRST_BUILD: Final = 24  # January 2012
+END_TURN: Final = 480  # December 2049 at most: a mine's whole life
+
+
+@dataclass(frozen=True, slots=True)
+class MineResult:
+    seed: int
+    commodity: str
+    mine_id: int
+    npv_mid_cents: int
+    irr: float | None
+    aisc_usd_lb: float | None  # copper: the life's median all-in sustaining cost a pound
+    grade_ratio: float  # true grade / the commodity's median grade
+    life_months: int
+
+
+def build_turn(seed: int) -> int:
+    return FIRST_BUILD + (seed % BUILD_YEARS) * 12
+
+
+def _mine_flows(run: Miner, mine: Mine, data_names: str) -> list[float]:
+    """Yearly cash flows of one mine (its entries carry its name): capex, margins,
+    royalties, fines, reclamation."""
+    years: dict[int, float] = {}
+    for e in run.posted:
+        if data_names not in e.memo:
+            continue
+        cash = sum(x.amount for x in e.lines if x.account == CASH)
+        y = (e.turn - mine.ordered_turn) // 12
+        years[y] = years.get(y, 0.0) + cash
+    if not years:
+        return []
+    return [years.get(y, 0.0) for y in range(max(years) + 1)]
+
+
+def mines_for(loaded: LoadedData, seed: int, commodity_key: str, n: int) -> list[MineResult]:
+    """Up to `n` mines on this seed's deposits of the commodity whose definitive study's NPV
+    midpoint is positive (what a sensible player builds), run to the end of their lives."""
+    from tst.sim.mining.actions import mine_name
+
+    run = miner(loaded, seed)
+    run.state = replace(run.state, turn=build_turn(seed))
+    built: list[tuple[Mine, int]] = []
+    tried = 0
+    while len(built) < n and tried < n * 10:
+        tried += 1
+        try:
+            p = permitted_project(run, commodity_key)
+        except LookupError:
+            break
+        if (p.npv_mid_cents or 0) <= 0:
+            continue  # kept (held): the next deposit is another block
+        if run.act(BuildMine(run.founder, p.id)) is None:
+            continue
+        mine = run.state.mines[-1]
+        from tst.sim.mining import formulas as mf
+
+        need = mf.staff_needed(mine.capacity_t, loaded.balance.mining.staff_per_kt)
+        uid = add_engineers(run, need, 12.0)
+        run.act(StaffMine(run.founder, mine.id, uid))
+        built.append((mine, p.npv_mid_cents or 0))
+    run_until(run, END_TURN, lambda r: all(not m.is_open for m in r.state.mines))
+    d = loaded.game_data
+    assert d.geology is not None
+    results: list[MineResult] = []
+    for mine, npv in built:
+        final = mine_of(run, mine.id)
+        flows = _mine_flows(run, final, f"{mine_name(final, d)}")
+        aisc = _life_aisc(run, final)
+        results.append(
+            MineResult(
+                seed,
+                commodity_key,
+                mine.id,
+                npv,
+                _irr(flows),
+                aisc,
+                final.hidden_grade / d.geology.commodity(commodity_key).grade_median,
+                (final.closed_turn or run.state.turn) - final.ready_turn,
+            )
+        )
+    return results
+
+
+def _irr(flows: list[float]) -> float | None:
+    from tst.sim.mining import formulas as mf
+
+    return mf.project_irr(flows)
+
+
+def _life_aisc(run: Miner, mine: Mine) -> float | None:
+    """The life's all-in sustaining cost a pound: cash costs and royalties over output."""
+    from tst.sim.mining import formulas as mf
+
+    tracked = [m for m in mine.history if m.output_t > 0]
+    if mine.commodity != "copper" or not tracked:
+        return None
+    return mf.usd_per_lb(statistics.median(m.cost_usd_t for m in tracked))

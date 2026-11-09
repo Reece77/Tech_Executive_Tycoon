@@ -110,7 +110,7 @@ def capacity_bounds(design_t: float, mb: MiningBalance) -> tuple[float, float]:
     return design_t * mb.capacity_range.lo, design_t * mb.capacity_range.hi
 
 
-IRR_LO = -0.99  # tunable-exempt: the bisection's lowest rate
+IRR_LO = -0.5  # tunable-exempt: the bisection's lowest rate (lower overflows 21-year flows)
 
 
 def project_irr(flows: list[float], lo: float = IRR_LO, hi: float = 1.0) -> float | None:
