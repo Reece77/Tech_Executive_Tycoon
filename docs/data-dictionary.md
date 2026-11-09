@@ -1739,6 +1739,60 @@ With minorities (a stake under 100%), a subsidiary's spare cash goes up as a **d
 
 Also new: company accounts `1820_investment_associates` (asset: 20–50% stakes, equity method), `1830_financial_investments` (asset: stakes under 20% at fair value, marked each December), `3500_non_controlling_interest` (equity: outside holders' share of consolidated subsidiaries, in consolidated statements), `4910_share_of_associates`, `4920_fair_value_gains` and `4930_gain_on_disposal` (revenue type, shown below the operating result as "other gains" and included in the net result), and `4990_nci_share_of_profit` (expense type, consolidated statements only: the outsiders' share of the net result, shown below it; the balance sheet's accumulated result is the owners'). A holding's end posts the owner's 1810 investment and the goodwill it booked out, any cash received in, and the difference to 4930 (a debit is a loss). `company_parent` stays the current direct owner; `group_ownership` is the history. RNG stream `group` (45). Balance keys `group.*` (balance.yaml).
 
+## Prospecting and exploration (migration `0041_m18`, M18)
+
+Each record keeps its dataclass fields in a JSON `data` column (`tst/db/exploration_io.py`). Upgraded saves get their geology at the migration, drawn exactly as a new game of the same seed draws it at turn 0 (stream `geology`). Account `6600_exploration` (expense): everything spent on exploration, expensed as spent; a project's sale posts to `4930_gain_on_disposal`. `save_meta.schema_version` is 41.
+
+### exploration_block
+
+Every block's hidden truth (formulas.md 34.1; ADR-0007). Read by the sim only; the API never reads it.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `region` | TEXT | no | Primary key with `idx`: a regions.yaml key. |
+| `idx` | INTEGER | no | The block's index in its region, 0 to `geology.blocks_per_region` - 1. |
+| `data` | JSON | no | `depth_m` (to the top of the ore; every block has one), `true_commodity` (a geology.yaml key, null: nothing), `true_kind` (hard_rock, brine, placer), `true_tonnage_mt`, `true_grade` (a fraction of ore), `true_recovery`, `true_infra_km`, `true_difficulty` (permitting, x the region's years), `true_sensitivity` (community, 0-1). |
+
+### exploration_supplier_licence
+
+A supplier's exploration licence (34.4): from game start, or from buying a project. Public.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `region` | TEXT | no | Primary key with `block`. |
+| `block` | INTEGER | no | The block's index. |
+| `data` | JSON | no | `supplier` (M17's suppliers.yaml key), `name`. |
+
+### exploration_desk_study
+
+A desk study of one commodity in one region (34.2).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER | no | The group company that ran it. |
+| `data` | JSON | no | `region`, `commodity`, `start_turn`, `done_turn` (the month it reports), `factor` (the team's reading factor: hidden, it would reveal skill; never sent to the API), `bands` (one of low, medium, high per block in index order once done; empty while it runs). |
+
+### exploration_project
+
+A licensed block and its pipeline (34.2-34.3). Revealed results, plus one hidden field.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER | no | The group company exploring. |
+| `data` | JSON | no | `region`, `block`, `licence_turn`, `expires_turn` (first month without the licence), `renewals`, `status` (active, permitted, refused, sold, relinquished, lapsed), `commodity`, `stage` (running now), `stage_start`, `stage_due`, `holes_left`, `paused_until` (an accident), `spent_cents`; survey `reading` (none, weak, strong) and `kind`; sampling `sample_center` and `sample_hw` (log grade, half-width at the stated confidence); estimate `category`, `est_holes`, `est_grade_center`/`_hw`, `est_tonnage_center`/`_hw` (log Mt), `est_turn`; the latest study's `level`, `capex_center`/`_hw` (log dollars), `opex_center`/`_hw` (log dollars a tonne of product), `recovery_center`/`_hw`, `npv_lo_cents`, `npv_mid_cents`, `npv_hi_cents`, `study_turn`; permitting `permit_start`, `hidden_due_turn` (the decision month, drawn from the block's hidden difficulty: never sent to the API), `benefit`, `pushes`, `protest_turn` (the month an open protest event is shown), `protests`, `permit_turn`; sale `sold_to`, `sale_cents`; `ended_turn`. |
+
+### exploration_hole
+
+A drill hole's assay (34.2): public once drilled; never changes.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `project_id` | INTEGER | no | Primary key with `n`. |
+| `n` | INTEGER | no | The hole's number within the project, from 1. |
+| `data` | JSON | no | `turn`, `assay` (a fraction of ore), `factor` (the team's range factor when drilled: hidden), `cost_cents`. |
+
 ## M25: files beside the saves (not tables)
 
 `saves/profiles/<profile>.json` (M25 section 2, `tst/profile/store.py`): the player profile's achievements across every save; the profile is `TST_PROFILE` (default `default`). Written atomically under a lock after each committed turn and player action; never read by the sim and never part of a save. Keys: `version` (1), `profile`, `earned` (`{achievement key: {save, company, turn, date_label, earned_at (UTC ISO), seen}}`; `seen` is false until its toast has shown), `watch` (`{save slug: {downturn_from}}`: the month a running downturn began, for "a downturn without layoffs"). Sandbox and modded games add nothing. Achievements are defined in `backend/data/achievements.yaml` (key, title, description, kind, threshold or param, hidden), validated at startup and not hashed into saves.

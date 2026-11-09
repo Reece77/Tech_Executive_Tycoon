@@ -50,6 +50,8 @@ A second problem is order dependence: if one generator is shared by everyone in 
 | `era_window` | 31 | `(era_index,)` (position in `eras.yaml`) | A future era's scheduled month, one uniform drawn at turn 0 (formulas.md §26.4); a pure function of the seed, so nothing is stored and appending an era moves no other era's month | M12b |
 | `ipo` | 33 | `(company_id,)` | An IPO's book demand at pricing, one standard normal (formulas.md §25.2 step 4). Hidden: the API shows only its word | M13 |
 | `market_sentiment` | 34 | `(company_id,)` | A listed company's month: one generator a month per listing, drawing in a fixed order: the sentiment shock's standard normal first, then the analysts' target noises (one standard normal each, in analyst order) at the listing and after each quarterly report (formulas.md §25.3) | M13 |
+| `geology` | 48 | `(region index, block index)`; `(r, b, 1)` the ore body's drill positions; `(r, b, 2)` the suppliers' view; `(r, b, 3)` the order holes visit the positions | Hidden deposits at turn 0 whatever the start (formulas.md §34.1): each block draws five uniforms (deposit, kind, recovery, depth, infrastructure) then four standard normals (tonnage, grade, difficulty, sensitivity) whether or not it holds a deposit, so adding a commodity or region moves no other block | M18 |
+| `exploration` | 49 | a leading tag: `(0, study)` desk study, `(1, project)` survey, `(2, project)` sampling, `(3, region index, block index, hole)` an empty block's hole, `(4, project)` estimate, `(5, project, level index)` study, `(6, project)` permit month and `(6, project, 1)` decision, `(7, project)` protest and `(7, project, 1)` an injunction, `(9, project)` drilling accident | Exploration's draws (formulas.md §34.2-§34.3), each keyed by what it belongs to | M18 |
 | `misc` | 99 | any | Tests only | — |
 
 5. Within one generator, draws happen in a documented, fixed order (for example, growth draws one noise value per skill in `skills.yaml` order).
@@ -114,5 +116,3 @@ Ids reserved before parallel lanes start, so two lanes never pick the same one (
 | `group` | 45 | the company id or stable rival key | Stake purchases' price impact, minority complaints, board reviews (formulas.md §31) | M16 |
 | `founder_life` | 46 | `(company_id,)` | Scandal draws (formulas.md §32.5); named `founder_life` because `founder` (7) is the founder build | M24 (lane C) |
 | `commodity` | 47 | the good's index (power: its region's index) | Commodity and power prices after 2025, shocks, supplier breaches (formulas.md §33) | M17 (lane A) |
-| `geology` | 48 | `(region index, block index)` | Hidden deposits at game start (formulas.md §34.1) | M18 (lane B) |
-| `exploration` | 49 | `(block index, hole)` or the project | Drilling assays, surveys, permits and exploration events (formulas.md §34.2–§34.3) | M18 (lane B) |
