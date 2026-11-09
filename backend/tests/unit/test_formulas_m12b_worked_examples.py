@@ -122,7 +122,13 @@ def test_goods_history(loaded: LoadedData) -> None:
     assert comp is not None
     keys = [g.key for g in comp.goods]
     assert keys[:2] == ["server", "gpu"]  # appended: M12a's stream keys do not move
-    assert keys[2:] == ["device_bom", "server_bom", "equipment", "foundry_wafer"]
+    assert keys[2:] == [
+        "device_bom",
+        "server_bom",
+        "equipment",
+        "foundry_wafer",
+        "euv_tools",
+    ]  # M21
     dev = comp.good("device_bom")
     rise = dev.index_at(ym_to_turn(2022, 4)) / dev.index_at(ym_to_turn(2021, 1))
     assert rise == pytest.approx(1.25, abs=0.01)
