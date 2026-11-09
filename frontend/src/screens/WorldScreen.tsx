@@ -114,6 +114,22 @@ export function WorldBody({ saveId, w }: { saveId: string; w: World }) {
         </Panel>
       )}
       <Panel title="Licences" testId="licences-panel">
+        {w.tool_licensable.length > 0 && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', fontSize: 13 }}>
+            Chipmaking tools for fabs:
+            {w.tool_licensable.map((c) => (
+              <Button
+                key={c}
+                size="compact-xs"
+                disabled={act.isPending}
+                onClick={() => run({ kind: 'tools', country: c })}
+                data-testid="request-tool-licence"
+              >
+                Request tool licence ({c})
+              </Button>
+            ))}
+          </div>
+        )}
         {w.licences.length === 0 ? (
           <p className="tst-muted" style={{ fontSize: 12 }}>
             No licence requested.

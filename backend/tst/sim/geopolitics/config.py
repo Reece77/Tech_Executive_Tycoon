@@ -350,6 +350,7 @@ class GeopoliticsBalance(_Frozen):
     licence: LicenceBalance
     variant: VariantBalance
     exit_rate: float = Field(gt=0, le=1)  # blocked customers who leave a month (M22 decision)
+    equipment_node: str = "n16"  # chip_equipment controls cover this node and below (M21 merge)
     buy: BuyBalance
     listing: ListingBalance
     lobby: LobbyBalance

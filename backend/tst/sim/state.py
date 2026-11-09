@@ -14,6 +14,7 @@ from tst.sim.commodities.models import CommodityDeal
 from tst.sim.errors import GroupDataError
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.exploration.models import DeskStudy, GeoBlock, Hole, Project, SupplierLicence
+from tst.sim.fabs.models import Fab
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
 from tst.sim.finance.macro import MacroMonth
 from tst.sim.finance.models import (
@@ -347,6 +348,8 @@ class GameState:
     refineries: tuple[Refinery, ...] = ()
     refining_deals: tuple[RefiningDeal, ...] = ()
     own_supply: tuple[OwnSupply, ...] = ()
+    # M21 (38.2): fabs' own state by facility id
+    fabs: tuple[Fab, ...] = ()
     # M19 (35): mines by facility id (closed ones too, until reclaimed and after), the deals
     # they sign as sellers by id, and rivals' bids for the group's projects and mines by id
     mines: tuple[Mine, ...] = ()
@@ -1245,6 +1248,10 @@ def with_refinery(state: GameState, refinery: Refinery) -> GameState:
 
 def with_refining_deal(state: GameState, deal: RefiningDeal) -> GameState:
     return replace(state, refining_deals=_upsert(state.refining_deals, deal, lambda d: d.id))
+
+
+def with_fab(state: GameState, fab: Fab) -> GameState:
+    return replace(state, fabs=_upsert(state.fabs, fab, lambda f: f.facility_id))
 
 
 def with_production_contract(state: GameState, contract: ProductionContract) -> GameState:

@@ -157,7 +157,7 @@ def sell_facility(
     """Immediate, energy 12: sell for half its book value (22.2)."""
     company = acting_company(state, action.actor_id)
     facility = own_facility(state, company, action.facility_id)
-    if not balance.facility.kinds[facility.kind].generic:
+    if balance.facility.kinds[facility.kind].module == "mining":  # M21: a fab sells here
         raise FacilityRuleError("close or sell a mine from the Mines screen")
     state = spend_energy(
         state, action.actor_id, "sell_facility", balance, cost=balance.facility.close_energy

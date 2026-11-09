@@ -18494,6 +18494,597 @@
         }
       }
     },
+    "/api/saves/{save_id}/fabs": {
+      "get": {
+        "tags": [
+          "fabs"
+        ],
+        "summary": "Get Fabs",
+        "description": "The player's fabs (node, capacity, use, yield curve, cost per good die against the\nmarket, foundry customers) and the node timeline (38).",
+        "operationId": "getFabs",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/nodes": {
+      "get": {
+        "tags": [
+          "fabs"
+        ],
+        "summary": "Get Nodes",
+        "description": "The process-node timeline: nodes in volume and who runs them, future nodes' windows,\nrival foundries and the foundry market (38.1, 38.3).",
+        "operationId": "getNodes",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NodesOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/fabs/quote": {
+      "get": {
+        "tags": [
+          "fabs"
+        ],
+        "summary": "Quote Fab",
+        "description": "What a fab would cost, when it could run and what a start would cost (38.2).",
+        "operationId": "quoteFab",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "node",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Node"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Region"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Size"
+            }
+          },
+          {
+            "name": "duv",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Duv"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabQuoteOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/fabs/build": {
+      "post": {
+        "tags": [
+          "fabs"
+        ],
+        "summary": "Build Fab",
+        "operationId": "buildFab",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildFabIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/fabs/{facility_id}/upgrade": {
+      "post": {
+        "tags": [
+          "fabs"
+        ],
+        "summary": "Upgrade Fab",
+        "operationId": "upgradeFab",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/fabs/{facility_id}/staff": {
+      "post": {
+        "tags": [
+          "fabs"
+        ],
+        "summary": "Staff Fab",
+        "operationId": "staffFab",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffFabIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/fabs/{facility_id}/sell": {
+      "post": {
+        "tags": [
+          "fabs"
+        ],
+        "summary": "Sell Fab",
+        "operationId": "sellFab",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/world": {
       "get": {
         "tags": [
@@ -18755,6 +19346,89 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/VariantIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorldActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/world/tool-licence": {
+      "post": {
+        "tags": [
+          "geopolitics"
+        ],
+        "summary": "Request Tool Licence",
+        "description": "A licence for chipmaking tools for the group's fabs in a country (39.3).",
+        "operationId": "requestToolLicence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolLicenceIn"
               }
             }
           }
@@ -22376,6 +23050,45 @@
         "title": "BreakdownOut",
         "description": "Why a number is what it is: its drivers and an optional note, built by the backend;\nthe front end only displays them (M7b; spec 13)."
       },
+      "BuildFabIn": {
+        "properties": {
+          "node": {
+            "type": "string",
+            "title": "Node"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "duv": {
+            "type": "boolean",
+            "title": "Duv",
+            "default": false
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          }
+        },
+        "type": "object",
+        "required": [
+          "node",
+          "region",
+          "size"
+        ],
+        "title": "BuildFabIn"
+      },
       "BuildIn": {
         "properties": {
           "kind": {
@@ -23369,7 +24082,7 @@
           "stage": {
             "type": "string",
             "title": "Stage",
-            "description": "mine | refinery | wafer | chip | device"
+            "description": "mine | refinery | wafer | fab | chip | device"
           },
           "company": {
             "type": "string",
@@ -28045,6 +28758,635 @@
         ],
         "title": "ExplorerOut"
       },
+      "FabCustomerOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "starts": {
+            "type": "number",
+            "title": "Starts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "starts"
+        ],
+        "title": "FabCustomerOut"
+      },
+      "FabHistoryOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "yield": {
+            "type": "number",
+            "title": "Yield"
+          },
+          "utilization": {
+            "type": "number",
+            "title": "Utilization"
+          },
+          "cost_per_start_cents": {
+            "type": "number",
+            "title": "Cost Per Start Cents"
+          },
+          "market_cents": {
+            "type": "number",
+            "title": "Market Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "yield",
+          "utilization",
+          "cost_per_start_cents",
+          "market_cents"
+        ],
+        "title": "FabHistoryOut"
+      },
+      "FabMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "available": {
+            "type": "number",
+            "title": "Available",
+            "description": "Wafer starts it could run (live capacity x coverage)"
+          },
+          "own": {
+            "type": "number",
+            "title": "Own",
+            "description": "Starts run for the company's own chips"
+          },
+          "sold": {
+            "type": "number",
+            "title": "Sold",
+            "description": "Starts sold as foundry slots"
+          },
+          "utilization": {
+            "type": "number",
+            "title": "Utilization"
+          },
+          "yield": {
+            "type": "number",
+            "title": "Yield"
+          },
+          "reliability": {
+            "type": "number",
+            "title": "Reliability"
+          },
+          "depreciation_cents": {
+            "type": "integer",
+            "title": "Depreciation Cents"
+          },
+          "fixed_cents": {
+            "type": "integer",
+            "title": "Fixed Cents"
+          },
+          "materials_cents": {
+            "type": "integer",
+            "title": "Materials Cents"
+          },
+          "power_cents": {
+            "type": "integer",
+            "title": "Power Cents"
+          },
+          "staff_cents": {
+            "type": "integer",
+            "title": "Staff Cents"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "slot_price_cents": {
+            "type": "number",
+            "title": "Slot Price Cents"
+          },
+          "market_cents": {
+            "type": "number",
+            "title": "Market Cents",
+            "description": "The node's market wafer price this month"
+          },
+          "cost_per_start_cents": {
+            "type": "number",
+            "title": "Cost Per Start Cents"
+          },
+          "die_cost_cents": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Die Cost Cents",
+            "description": "An own AI accelerator's cost per good die at this month's cost a start"
+          },
+          "die_market_cents": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Die Market Cents",
+            "description": "The same die on a foundry slot at the node's market price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "available",
+          "own",
+          "sold",
+          "utilization",
+          "yield",
+          "reliability",
+          "depreciation_cents",
+          "fixed_cents",
+          "materials_cents",
+          "power_cents",
+          "staff_cents",
+          "revenue_cents",
+          "slot_price_cents",
+          "market_cents",
+          "cost_per_start_cents",
+          "die_cost_cents",
+          "die_market_cents"
+        ],
+        "title": "FabMonthOut"
+      },
+      "FabOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "node": {
+            "type": "string",
+            "title": "Node"
+          },
+          "node_label": {
+            "type": "string",
+            "title": "Node Label"
+          },
+          "duv": {
+            "type": "boolean",
+            "title": "Duv"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "building | waiting_tools | converting | live | closed"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size",
+            "description": "Wafer starts a month"
+          },
+          "ready_turn": {
+            "type": "integer",
+            "title": "Ready Turn"
+          },
+          "ready_label": {
+            "type": "string",
+            "title": "Ready Label"
+          },
+          "estimate_cents": {
+            "type": "integer",
+            "title": "Estimate Cents"
+          },
+          "capex_paid_cents": {
+            "type": "integer",
+            "title": "Capex Paid Cents"
+          },
+          "book_value_cents": {
+            "type": "integer",
+            "title": "Book Value Cents"
+          },
+          "tools": {
+            "type": "integer",
+            "title": "Tools"
+          },
+          "tools_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools Label"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          },
+          "coverage": {
+            "type": "number",
+            "title": "Coverage"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          },
+          "yield": {
+            "type": "number",
+            "title": "Yield"
+          },
+          "months_run": {
+            "type": "integer",
+            "title": "Months Run"
+          },
+          "upgrade_node": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upgrade Node"
+          },
+          "upgrade_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upgrade Label"
+          },
+          "upgrade_ready_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upgrade Ready Label"
+          },
+          "next_node": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Node"
+          },
+          "upgrade_estimate_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upgrade Estimate Cents"
+          },
+          "upgrade_allowed": {
+            "type": "boolean",
+            "title": "Upgrade Allowed"
+          },
+          "upgrade_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upgrade Reason"
+          },
+          "month": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FabMonthOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "customers": {
+            "items": {
+              "$ref": "#/components/schemas/FabCustomerOut"
+            },
+            "type": "array",
+            "title": "Customers"
+          },
+          "chips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Chips",
+            "description": "The company's chip products its starts supply"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/FabHistoryOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "company",
+          "name",
+          "node",
+          "node_label",
+          "duv",
+          "region",
+          "region_label",
+          "status",
+          "size",
+          "ready_turn",
+          "ready_label",
+          "estimate_cents",
+          "capex_paid_cents",
+          "book_value_cents",
+          "tools",
+          "tools_label",
+          "staff",
+          "staff_needed",
+          "coverage",
+          "unit_id",
+          "yield",
+          "months_run",
+          "upgrade_node",
+          "upgrade_label",
+          "upgrade_ready_label",
+          "next_node",
+          "upgrade_estimate_cents",
+          "upgrade_allowed",
+          "upgrade_reason",
+          "month",
+          "customers",
+          "chips",
+          "history"
+        ],
+        "title": "FabOut"
+      },
+      "FabQuoteOut": {
+        "properties": {
+          "node": {
+            "type": "string",
+            "title": "Node"
+          },
+          "node_label": {
+            "type": "string",
+            "title": "Node Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size",
+            "description": "Wafer starts a month"
+          },
+          "duv": {
+            "type": "boolean",
+            "title": "Duv"
+          },
+          "euv": {
+            "type": "boolean",
+            "title": "Euv"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "monthly_capex_cents": {
+            "type": "integer",
+            "title": "Monthly Capex Cents"
+          },
+          "build_months": {
+            "type": "integer",
+            "title": "Build Months"
+          },
+          "tools": {
+            "type": "integer",
+            "title": "Tools"
+          },
+          "tools_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools Label"
+          },
+          "ready_label": {
+            "type": "string",
+            "title": "Ready Label"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          },
+          "need_level": {
+            "type": "number",
+            "title": "Need Level"
+          },
+          "level": {
+            "type": "number",
+            "title": "Level"
+          },
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "market_cents": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Cents"
+          },
+          "cost_per_start_cents": {
+            "type": "number",
+            "title": "Cost Per Start Cents",
+            "description": "A start's cost at full use: depreciation, fixed, materials and power"
+          }
+        },
+        "type": "object",
+        "required": [
+          "node",
+          "node_label",
+          "region",
+          "size",
+          "duv",
+          "euv",
+          "capex_cents",
+          "monthly_capex_cents",
+          "build_months",
+          "tools",
+          "tools_label",
+          "ready_label",
+          "staff_needed",
+          "need_level",
+          "level",
+          "allowed",
+          "reason",
+          "market_cents",
+          "cost_per_start_cents"
+        ],
+        "title": "FabQuoteOut"
+      },
+      "FabsActionOut": {
+        "properties": {
+          "fabs": {
+            "$ref": "#/components/schemas/FabsOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fabs",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "FabsActionOut"
+      },
+      "FabsOut": {
+        "properties": {
+          "fabs": {
+            "items": {
+              "$ref": "#/components/schemas/FabOut"
+            },
+            "type": "array",
+            "title": "Fabs"
+          },
+          "timeline": {
+            "$ref": "#/components/schemas/NodesOut"
+          },
+          "process_level": {
+            "type": "number",
+            "title": "Process Level"
+          },
+          "sizes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Sizes"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "build_energy": {
+            "type": "integer",
+            "title": "Build Energy"
+          },
+          "upgrade_energy": {
+            "type": "integer",
+            "title": "Upgrade Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fabs",
+          "timeline",
+          "process_level",
+          "sizes",
+          "regions",
+          "build_energy",
+          "upgrade_energy"
+        ],
+        "title": "FabsOut"
+      },
       "FacilityOut": {
         "properties": {
           "facility_id": {
@@ -29427,6 +30769,97 @@
           "value"
         ],
         "title": "FounderSkillOut"
+      },
+      "FoundryNodeOut": {
+        "properties": {
+          "foundry": {
+            "type": "string",
+            "title": "Foundry"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "foundry",
+          "name",
+          "turn",
+          "label"
+        ],
+        "title": "FoundryNodeOut"
+      },
+      "FoundryOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "newest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Newest"
+          },
+          "newest_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Newest Label"
+          },
+          "capacity_k": {
+            "type": "number",
+            "title": "Capacity K",
+            "description": "Thousand wafer starts a month"
+          },
+          "open_share": {
+            "type": "number",
+            "title": "Open Share"
+          },
+          "stopped": {
+            "type": "boolean",
+            "title": "Stopped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "region_label",
+          "newest",
+          "newest_label",
+          "capacity_k",
+          "open_share",
+          "stopped"
+        ],
+        "title": "FoundryOut"
       },
       "FundingTileOut": {
         "properties": {
@@ -36575,6 +38008,213 @@
           "hint"
         ],
         "title": "NextGuidanceOut"
+      },
+      "NodeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "generation": {
+            "type": "integer",
+            "title": "Generation"
+          },
+          "euv": {
+            "type": "boolean",
+            "title": "Euv"
+          },
+          "duv_route": {
+            "type": "boolean",
+            "title": "Duv Route"
+          },
+          "arrived": {
+            "type": "boolean",
+            "title": "Arrived"
+          },
+          "first_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Turn",
+            "description": "First volume anywhere; None for a future node"
+          },
+          "first_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Label"
+          },
+          "window_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Label",
+            "description": "A future node's public window"
+          },
+          "reached": {
+            "items": {
+              "$ref": "#/components/schemas/FoundryNodeOut"
+            },
+            "type": "array",
+            "title": "Reached",
+            "description": "Foundries in volume at it, by month"
+          },
+          "market_cents": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Cents",
+            "description": "Its market wafer price now, once in volume"
+          },
+          "capital_cents": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capital Cents",
+            "description": "Capital per wafer-per-year, once known"
+          },
+          "need_level": {
+            "type": "number",
+            "title": "Need Level"
+          },
+          "orderable": {
+            "type": "boolean",
+            "title": "Orderable"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "generation",
+          "euv",
+          "duv_route",
+          "arrived",
+          "first_turn",
+          "first_label",
+          "window_label",
+          "reached",
+          "market_cents",
+          "capital_cents",
+          "need_level",
+          "orderable",
+          "tag"
+        ],
+        "title": "NodeOut"
+      },
+      "NodesOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "leading": {
+            "type": "string",
+            "title": "Leading"
+          },
+          "leading_label": {
+            "type": "string",
+            "title": "Leading Label"
+          },
+          "median": {
+            "type": "string",
+            "title": "Median"
+          },
+          "median_label": {
+            "type": "string",
+            "title": "Median Label"
+          },
+          "price_factor": {
+            "type": "number",
+            "title": "Price Factor"
+          },
+          "allocation_factor": {
+            "type": "number",
+            "title": "Allocation Factor"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/NodeOut"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "foundries": {
+            "items": {
+              "$ref": "#/components/schemas/FoundryOut"
+            },
+            "type": "array",
+            "title": "Foundries"
+          },
+          "euv_supplier": {
+            "type": "string",
+            "title": "Euv Supplier"
+          },
+          "euv_tool_cents": {
+            "type": "number",
+            "title": "Euv Tool Cents"
+          },
+          "euv_short": {
+            "type": "boolean",
+            "title": "Euv Short"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "leading",
+          "leading_label",
+          "median",
+          "median_label",
+          "price_factor",
+          "allocation_factor",
+          "nodes",
+          "foundries",
+          "euv_supplier",
+          "euv_tool_cents",
+          "euv_short"
+        ],
+        "title": "NodesOut"
       },
       "NomineeChoiceOut": {
         "properties": {
@@ -46075,6 +47715,26 @@
         ],
         "title": "SpotOut"
       },
+      "StaffFabIn": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id"
+        ],
+        "title": "StaffFabIn"
+      },
       "StaffIn": {
         "properties": {
           "unit_id": {
@@ -47932,6 +49592,19 @@
         ],
         "title": "TimelineOut"
       },
+      "ToolLicenceIn": {
+        "properties": {
+          "country": {
+            "type": "string",
+            "title": "Country"
+          }
+        },
+        "type": "object",
+        "required": [
+          "country"
+        ],
+        "title": "ToolLicenceIn"
+      },
       "TradeIn": {
         "properties": {
           "company_id": {
@@ -48700,6 +50373,18 @@
           "months": {
             "type": "integer",
             "title": "Months"
+          },
+          "node": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Node",
+            "description": "M21 (38.1): a process node (nodes.yaml key); none: M12b's wafer"
           }
         },
         "type": "object",
@@ -48812,6 +50497,14 @@
             "type": "array",
             "title": "Tariffs",
             "description": "Tariff schedules in force this month"
+          },
+          "tool_licensable": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tool Licensable",
+            "description": "Countries where a tool licence for fabs can be asked"
           }
         },
         "type": "object",
@@ -48827,7 +50520,8 @@
           "products",
           "supply",
           "sites",
-          "tariffs"
+          "tariffs",
+          "tool_licensable"
         ],
         "title": "WorldOut"
       },

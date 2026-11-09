@@ -139,6 +139,9 @@ class WorldOut(BaseModel):
     supply: list[SupplyExposureOut]
     sites: list[SiteOut]
     tariffs: list[TariffOut] = Field(description="Tariff schedules in force this month")
+    tool_licensable: list[str] = Field(
+        description="Countries where a tool licence for fabs can be asked"
+    )
 
 
 class LicenceIn(BaseModel):
@@ -154,6 +157,10 @@ class GreyRouteIn(BaseModel):
 
 class VariantIn(BaseModel):
     product_id: int
+
+
+class ToolLicenceIn(BaseModel):
+    country: str
 
 
 class PartnerIn(BaseModel):

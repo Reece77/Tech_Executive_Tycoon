@@ -23,7 +23,8 @@ export type WorldAction =
   | { kind: 'licence'; productId: number; country: string }
   | { kind: 'grey'; productId: number; country: string; on: boolean }
   | { kind: 'variant'; productId: number }
-  | { kind: 'partner'; companyId: number | null };
+  | { kind: 'partner'; companyId: number | null }
+  | { kind: 'tools'; country: string };
 
 async function apply(saveId: string, a: WorldAction) {
   switch (a.kind) {
@@ -46,6 +47,13 @@ async function apply(saveId: string, a: WorldAction) {
         await api.POST('/api/saves/{save_id}/world/variant', {
           ...path(saveId),
           body: { product_id: a.productId },
+        }),
+      );
+    case 'tools':
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/world/tool-licence', {
+          ...path(saveId),
+          body: { country: a.country },
         }),
       );
     case 'partner':

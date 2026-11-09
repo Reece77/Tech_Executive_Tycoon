@@ -83,8 +83,9 @@ class FacilityKindDef(_Frozen):
     sizes: tuple[int, ...] | None = None
     outages: bool = True
     # M19 (ADR-0020 2): the module whose own rules run the kind. "generic" kinds take the shared
-    # capex, depreciation, operating cost and sale; a mine's are in tst.sim.mining.
-    module: Literal["generic", "mining"] = "generic"
+    # capex, depreciation, operating cost and sale; a mine's are in tst.sim.mining, a fab's
+    # in tst.sim.fabs (M21).
+    module: Literal["generic", "mining", "fabs"] = "generic"
 
     @property
     def generic(self) -> bool:

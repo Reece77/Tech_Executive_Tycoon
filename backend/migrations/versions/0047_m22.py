@@ -4,8 +4,8 @@ variants, entity listings, sites, blocked customers leaving, and event notices),
 `kind` names the collection and `data` the record's fields (data-dictionary.md); accounts 5100
 and 5110. Existing saves have none: nothing to fill (history is data, the same on every seed).
 
-Revision ID: 0046_m22
-Revises: 0045_m20
+Revision ID: 0047_m22
+Revises: 0046_m21
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0046_m22"
-down_revision: str | None = "0045_m20"
+revision: str = "0047_m22"
+down_revision: str | None = "0046_m21"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -44,7 +44,7 @@ def upgrade() -> None:
                 ),
                 {"c": code, "n": name, "t": kind},
             )
-    op.execute("UPDATE save_meta SET schema_version = 46")
+    op.execute("UPDATE save_meta SET schema_version = 47")
 
 
 def downgrade() -> None:
@@ -54,4 +54,4 @@ def downgrade() -> None:
             f"DELETE FROM account WHERE code = '{code}' AND NOT EXISTS "  # noqa: S608 - constants
             f"(SELECT 1 FROM ledger_line WHERE account_code = '{code}')"
         )
-    op.execute("UPDATE save_meta SET schema_version = 45")
+    op.execute("UPDATE save_meta SET schema_version = 46")

@@ -16,6 +16,7 @@ from tst.api.schemas.geopolitics import (
     GreyRouteIn,
     LicenceIn,
     PartnerIn,
+    ToolLicenceIn,
     VariantIn,
     WorldActionOut,
     WorldOut,
@@ -29,6 +30,7 @@ from tst.sim.geopolitics.actions import (
     SetGreyRoute,
     TakeLocalPartner,
 )
+from tst.sim.geopolitics.fabs import RequestToolLicence
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["geopolitics"])
 
@@ -85,6 +87,20 @@ def launch_variant(
 ) -> WorldActionOut:
     path = _path(settings, save_id)
     return _act(path, data, LaunchVariant(_founder_id(_state(path)), body.product_id))
+
+
+@router.post(
+    "/world/tool-licence",
+    response_model=WorldActionOut,
+    responses=ERRORS,
+    operation_id="requestToolLicence",
+)
+def request_tool_licence(
+    save_id: str, body: ToolLicenceIn, settings: SettingsDep, data: DataDep
+) -> WorldActionOut:
+    """A licence for chipmaking tools for the group's fabs in a country (39.3)."""
+    path = _path(settings, save_id)
+    return _act(path, data, RequestToolLicence(_founder_id(_state(path)), body.country))
 
 
 @router.post(

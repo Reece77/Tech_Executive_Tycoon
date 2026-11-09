@@ -13,6 +13,7 @@ from tst.api.routers import (
     events,
     explain,
     exploration,
+    fabs,
     facilities,
     finance,
     founder,
@@ -110,6 +111,7 @@ def create_app() -> FastAPI:
     app.include_router(commodities.router)  # M17
     app.include_router(exploration.router)  # M18
     app.include_router(refining.router)  # M20
+    app.include_router(fabs.router)  # M21
     app.include_router(geopolitics.router)  # M22
     app.include_router(mining.router)  # M19
     app.include_router(explain.router)  # M25

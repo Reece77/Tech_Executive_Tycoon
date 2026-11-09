@@ -8,7 +8,7 @@ names and the pace label; per-person numbers never leave the sim (11.13).
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from tst.sim.data_models import Balance, CategoryDef, GameData
 from tst.sim.events import modifiers as mf
@@ -209,5 +209,24 @@ def product_team(
         awareness_mult=(mods.awareness if mods else 1.0) * ev("awareness"),
         pricing_power=mods.pricing if mods else 1.0,
         seller_mult=ev("seller_capacity"),
-        tech=tech_factor(state, cid, product.category, balance, data),  # M11 (21.2)
+        tech=_with_node(  # M11 (21.2); M21 (38.4): a chip on a better node
+            tech_factor(state, cid, product.category, balance, data), state, product, balance, data
+        ),
     )
+
+
+def _with_node(
+    tech: TechFactor, state: GameState, product: Product, balance: Balance, data: GameData
+) -> TechFactor:
+    """+fab.node_quality cap points for each node generation a chip is ahead of its
+    category's median (38.4); unchanged for a chip without a node (M12b's wafers) and for
+    every other product."""
+    if data.nodes is None or data.category(product.category).chip_type is None:
+        return tech
+    from tst.sim.fabs import market as fm
+    from tst.sim.fabs import supply as fs
+
+    points = fm.node_points(state, fs.product_node(state, product, balance, data), balance, data)
+    if points <= 0:
+        return tech
+    return replace(tech, cap_points=tech.cap_points + points)

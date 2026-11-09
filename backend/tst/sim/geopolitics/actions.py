@@ -325,14 +325,15 @@ def decide(
             ),
         )
         product = state.product(x.product_id)
+        tools = x.product_id == 0  # a tool licence for fabs (fabs.py)
         logs.append(
             inbox_item(
                 turn,
                 x.company_id,
                 "licence_approved" if approved else "licence_denied",
-                link_kind=PRODUCT_LINK,
-                link_id=x.product_id,
-                product=product.name if product else "a product",
+                link_kind=WORLD_LINK if tools else PRODUCT_LINK,
+                link_id=x.company_id if tools else x.product_id,
+                product="chipmaking tools" if tools else (product.name if product else "a product"),
                 country=world.countries_of(data).country(x.country).label,
                 rule=active.rule.title,
                 until=format_turn(until),

@@ -1,4 +1,4 @@
-"""Loading and syncing M22's records (formulas.md 39; migration 0046). Every collection lives
+"""Loading and syncing M22's records (formulas.md 39; migration 0047). Every collection lives
 in `geo_record`, one row a record (`kind` = the GameState field), its fields in `data`
 (tst.db.mna_io's encoding); a changed collection is rewritten whole (they are small)."""
 
@@ -43,7 +43,7 @@ STRIDE: Final = 1_000_000  # tunable-exempt: row numbers kind_index x STRIDE + p
 def load_geopolitics(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every geopolitical record (0046); a save from before M22 has none."""
+    """Every geopolitical record (0047); a save from before M22 has none."""
     if not has_table(session, GeoRecordRow):
         return state
     found: dict[str, list[Any]] = {k: [] for k in COLLECTIONS}

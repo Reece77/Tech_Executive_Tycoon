@@ -336,6 +336,12 @@ class UnknownMineError(NotFoundError):  # M19
     code = "unknown_mine"
 
 
+class FabRuleError(SimError):
+    """A fab build or conversion the fab rules do not allow (M21, formulas.md 38)."""
+
+    code = "fab_rule"
+
+
 class GeopoliticsRuleError(SimError):
     """A licence request, variant or local partnership the export-control rules do not allow
     (M22, formulas.md 39)."""

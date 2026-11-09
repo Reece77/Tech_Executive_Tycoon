@@ -22,6 +22,7 @@ from tst.sim.events.effects import auto_resolve, blocking_events, energy_next_mo
 from tst.sim.events.models import EventRequest, TextRequest
 from tst.sim.events.modifiers import expire as expire_modifiers
 from tst.sim.exploration.phase import exploration_month
+from tst.sim.fabs.plants import fab_month
 from tst.sim.facilities.outages import outages_month
 from tst.sim.facilities.phase import production_month
 from tst.sim.finance import debt, fundraising, insolvency, macro
@@ -268,7 +269,12 @@ def production_and_capacity(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=state).post(*entries).log(*logs)
     # M19 (35.2, 35.4-35.5): mines' construction, resource nationalism, rivals' bids.
     state, entries, logs = mining.build_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
-    return replace(ctx, state=state).post(*entries).log(*logs)
+    ctx = replace(ctx, state=state).post(*entries).log(*logs)
+    # M21 (38.2): fabs' capex, completion, conversion and yield; their starts on offer.
+    if not ctx.state.fabs:
+        return ctx
+    state, fab_entries, fab_logs = fab_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    return replace(ctx, state=state).post(*fab_entries).log(*fab_logs)
 
 
 def sales_revenue_churn(ctx: TurnContext) -> TurnContext:

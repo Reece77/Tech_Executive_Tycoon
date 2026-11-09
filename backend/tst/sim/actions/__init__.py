@@ -227,6 +227,8 @@ from tst.sim.exploration.pipeline import (
     TakeLicence,
     apply_exploration,
 )
+from tst.sim.fabs.actions import ACTION_TYPES as FAB_ACTION_TYPES
+from tst.sim.fabs.actions import BuildFab, FabAction, UpgradeFab, apply_fab
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.geopolitics.actions import ACTION_TYPES as GEOPOLITICS_ACTION_TYPES
 from tst.sim.geopolitics.actions import (
@@ -237,6 +239,9 @@ from tst.sim.geopolitics.actions import (
     TakeLocalPartner,
     apply_geopolitics,
 )
+from tst.sim.geopolitics.fabs import RequestToolLicence, request_tool_licence
+from tst.sim.geopolitics.fabs import check_order as geo_check_order
+from tst.sim.geopolitics.fabs import fab_country as geo_fab_country
 from tst.sim.group.actions import (
     AnswerGroupPitch,
     BuyOutMinorities,
@@ -312,7 +317,9 @@ type Action = (
     | GroupAction  # M16
     | ExplorationAction  # M18
     | RefiningAction  # M20
+    | FabAction  # M21
     | GeopoliticsAction  # M22
+    | RequestToolLicence  # M22
     | MiningAction  # M19
 )
 
@@ -320,7 +327,9 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **INVESTING_ACTION_TYPES,  # M26 (37)
     **EXPLORATION_ACTION_TYPES,  # M18 (34.2)
     **REFINING_ACTION_TYPES,  # M20 (36.1)
+    **FAB_ACTION_TYPES,  # M21 (38.2)
     **GEOPOLITICS_ACTION_TYPES,  # M22 (39.3)
+    "request_tool_licence": RequestToolLicence,  # M22 (39.3, the M21 merge)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
@@ -434,6 +443,7 @@ __all__ = [
     "AppointExecutive",
     "AssignUnit",
     "BackStartup",
+    "BuildFab",
     "BuildFacility",
     "BuildRefinery",
     "BuyOutMinorities",
@@ -527,12 +537,36 @@ __all__ = [
     "TradeShares",
     "UnassignUnit",
     "UpdatePlan",
+    "UpgradeFab",
     "VentureInvest",
     "WithdrawOffer",
     "action_from_payload",
     "action_payload",
     "apply_action",
 ]
+
+
+def geo_fab_check(
+    state: GameState, action: BuildFab | UpgradeFab, balance: Balance, data: GameData
+) -> None:
+    """M22 (39.3): a fab order whose tools the export controls forbid is refused."""
+    if data.nodes is None or data.countries is None:
+        return
+    from tst.sim.actions.hiring import acting_company
+    from tst.sim.fabs.actions import upgrade_quote
+    from tst.sim.geopolitics.world import facility_country
+
+    company = acting_company(state, action.actor_id)
+    if isinstance(action, BuildFab):
+        country = geo_fab_country(state, action.region, action.city, data)
+        geo_check_order(state, company, country, action.node, action.duv, balance, data)
+        return
+    facility = state.facility(action.facility_id)
+    uq = upgrade_quote(state, company, action.facility_id, balance, data)
+    if facility is None or uq.new is None:
+        return
+    country = facility_country(state, facility, data)
+    geo_check_order(state, company, country, uq.new, False, balance, data)
 
 
 @dataclass(frozen=True, slots=True)
@@ -750,6 +784,11 @@ def apply_action(
             out = apply_exploration(state, action, rng, ledger_balances, balance, data)
         case BuildRefinery() | SignRefiningDeal():  # M20 (36.1)
             out = apply_refining(state, action, ledger_balances, balance, data)
+        case BuildFab() | UpgradeFab():  # M21 (38.2); M22 (39.3): export controls on tools
+            geo_fab_check(state, action, balance, data)
+            out = apply_fab(state, action, ledger_balances, balance, data)
+        case RequestToolLicence():  # M22 (39.3)
+            out = request_tool_licence(state, action, balance, data)
         case RequestLicence() | SetGreyRoute() | LaunchVariant() | TakeLocalPartner():  # M22
             out = apply_geopolitics(state, action, balance, data)
         case (

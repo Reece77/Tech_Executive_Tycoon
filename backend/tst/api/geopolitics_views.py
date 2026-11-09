@@ -88,6 +88,7 @@ def world_out(state: GameState, data: LoadedData) -> WorldOut:
             supply=[],
             sites=[],
             tariffs=[],
+            tool_licensable=[],
         )
     turn = state.turn
     countries = world.countries_of(d)
@@ -115,7 +116,7 @@ def world_out(state: GameState, data: LoadedData) -> WorldOut:
                 id=x.id,
                 company_id=x.company_id,
                 product_id=x.product_id,
-                product=product.name if product else "",
+                product=product.name if product else "Chipmaking tools",
                 rule_key=x.rule_key,
                 rule=active.rule.title if active else x.rule_key,
                 country=x.country,
@@ -267,4 +268,19 @@ def world_out(state: GameState, data: LoadedData) -> WorldOut:
         supply=supply_out,
         sites=sites,
         tariffs=tariff_out,
+        tool_licensable=_tool_countries(state, data),
     )
+
+
+def _tool_countries(state: GameState, data: LoadedData) -> list[str]:
+    """Destinations of biting licence-regime tool rules (M21 merge, fabs.py)."""
+    d = data.game_data
+    if d.nodes is None:
+        return []
+    from tst.sim.geopolitics import fabs
+
+    out: set[str] = set()
+    for a in gr.biting(state, d):
+        if a.rule.regime == "licence" and {fabs.EUV, fabs.EQUIPMENT} & set(a.rule.goods):
+            out |= world.destination_countries(d, a.rule, state.turn)
+    return sorted(out)

@@ -151,7 +151,7 @@ class OwnSupplyOut(BaseModel):
 
 
 class ChainLinkOut(BaseModel):
-    stage: str = Field(description="mine | refinery | wafer | chip | device")
+    stage: str = Field(description="mine | refinery | wafer | fab | chip | device")
     company: str
     name: str
     detail: str

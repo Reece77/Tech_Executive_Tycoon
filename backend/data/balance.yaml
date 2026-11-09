@@ -965,6 +965,21 @@ facility:
       staff_skill: mining_engineering
       outages: false
       module: mining # skipped by the generic capex, depreciation, operating cost and sale (tst.sim.mining owns them)
+    fab: # M21 (38.2): a fab on the shared facility record; its node, capex, yield and costs are in tst/sim/fabs (module fabs)
+      label: Fab
+      unit: wafer starts/month # 300 mm wafer starts a month
+      input_good: equipment # nominal: a fab's capex is its node's capital per wafer-per-year (fab.capex_scale), not an index
+      output_good: wafer_starts # a fab's output: wafer starts for the group's chips and foundry slots
+      capex_per_unit_cents: 1569400 # nominal: 5 nm's capital per wafer-per-year (nodes.yaml); a build uses its node's
+      build_months: 36 # nominal: fab.build_months by node age
+      opex_per_unit_cents: 0 # costs are the fab's own (38.2)
+      life_months: 60 # 5 years of straight-line depreciation (38.2)
+      staff_per: 2500 # wafer starts a month per fab engineer needed (A: the lead engineers; the rest of a fab's staff is in fab.fixed_share)
+      staff_roles: [fab_engineer]
+      staff_skill: manufacturing # sets reliability and, with process research, yield learning (38.2)
+      sizes: [10000, 25000, 50000, 100000] # wafer starts a month a build may choose (38.2: 10,000-100,000)
+      outages: false
+      module: fabs # skipped by the generic capex, depreciation, operating cost and sale (tst.sim.fabs owns them)
   sizes: [100, 500, 2000, 10000] # CU a build may choose (22.2)
   build_energy: 12 # founder energy to order a build (22.2)
   close_energy: 12 # founder energy to close or sell one (22.2)
@@ -1047,6 +1062,10 @@ chips:
     foundries:
       tsmc: { label: TSMC, price_mult: 1.0 }
       samsung: { label: Samsung Foundry, price_mult: 0.95 }
+      intel: { label: Intel Foundry, price_mult: 1.05, from: "2021-03" } # M21 (38.3): rival foundries back the contracts; Intel Foundry Services from March 2021 (R)
+      globalfoundries: { label: GlobalFoundries, price_mult: 0.9 } # M21 (38.3): mature and 14/12 nm (A: price)
+      umc: { label: UMC, price_mult: 0.85 } # M21 (38.3): mature nodes (A: price)
+      smic: { label: SMIC, price_mult: 0.8 } # M21 (38.3): mature nodes, 7 nm-class by DUV from 2022 (A: price)
     max_wafers: 100000 # the most wafer starts a month one contract may cover (M12b decision)
   gpu_capex: # own accelerators in own GPU data centres (26.3)
     floor: 0.4 # capex x (floor + share x own unit cost / market chip price)
@@ -1757,6 +1776,54 @@ refining: # 36: refineries, recipes and wafers for chips (M20, v3 lane B). A = a
     take_or_pay: 0.3 # a buy contract pays this share of the volume it did not take each month (as 22.4's share)
   wafer:
     good: silicon_wafer # the wafer plant's output: substrate inside each foundry wafer (36.2)
+fab: # 38: fabs and process nodes (M21, v3 lane A). Nodes and rival foundries are in nodes.yaml. A = an assumption (no public figure); cited figures are marked
+  capex_scale: 1.8 # capex = wafer starts x 12 x capital per wafer-per-year x this (38.2): the shell, utilities and ramp beyond CSET's tool capital (A; 38.5 target 2: a 5 nm 50k fab $15-25B with overrun)
+  overrun: [0.0, 0.25] # hidden capex overrun (fraction), drawn once at the order on stream `fab` (M19's rule, as refining.overrun) (A)
+  build_months: { leading: 36, mature: 24 } # construction (38.2): 3 years for a node under mature_age_months old at the order (or not yet in volume), 2 for an older one
+  mature_age_months: 36 # a node this many months past its first volume is mature (38.2: "a node 3+ years old")
+  preorder_months: 36 # a fab may be ordered this many months before its node's first volume (A: fabs are built for nodes in development); it goes live no earlier than the node's first volume
+  node_level: 10 # process lead points over the domain's baseline at the node's first volume a company needs to run it (38.1; a future node reads its window's midpoint)
+  build_energy: 12 # founder energy to order a fab (as facility.build_energy)
+  upgrade: # 38.2: converting a fab to the next node
+    capex_share: 0.6 # of a new fab's capex at the new node
+    months: 12 # offline while it converts (A)
+    energy: 12
+  yield: # 38.2: yield = start + (mature - start) x (1 - (1 - rate)^months run), rate = learn x skill / skill_ref x (1 + lead_bonus x min(lead_cap, process lead over the node's need))
+    start_leading: 0.35 # a new node's first wafers (38.2)
+    start_mature: 0.70 # a node mature_age_months or older at go-live (38.2); linear between
+    mature: 0.90 # where learning ends (38.2)
+    learn: 0.075 # a month at skill 12 with no extra lead (A; 38.5 target 4: 35% to 80%+ in 24 months)
+    skill_ref: 12 # the engineers' mean manufacturing skill learn is quoted at
+    lead_bonus: 0.02 # learning faster for each point of process lead over the node's need
+    lead_cap: 20 # points of lead that count
+    noise_sd: 0.005 # monthly yield noise (fraction), stream fab, key (1, facility_id)
+    bounds: [0.05, 0.95]
+  duv: { yield_mult: 0.85, cost_mult: 1.15 } # 7 nm's DUV route (38.1): yield and capex and running costs (dossier 4: N7 and SMIC N+2 by multipatterning)
+  fixed_share: 0.06 # fixed running cost a year as a share of capex: the staff beyond the lead engineers, maintenance, utilities, insurance (A; M21 tuning from 0.09 for 38.5 target 3: use decides)
+  materials: # a wafer start's materials (38.2): the substrate wafer and the gases and chemicals
+    substrate_good: silicon_wafer # refining.goods key (M20's 300 mm wafer, market price; the group's own at transfer price is a follow-up)
+    chemicals_share: 0.08 # gases and chemicals a start, as a share of the node's wafer price at index 1 of the mix below (A)
+    mix: { neon: 0.5, gallium: 0.25, germanium: 0.25 } # M17 commodities whose index moves them (38.2)
+  power_mwh: { base: 0.6, per_generation: 0.2 } # MWh a wafer start: base + per_generation x the node's generation (65 nm = 0): 5 nm about 2 MWh (A; TSMC's ~1.5 MWh a wafer on average)
+  slot: # 38.2: spare wafer starts sold as foundry slots
+    discount: 0.9 # x the node's market price (38.2)
+    take: 0.85 # share of spare starts rival designers buy in a normal month, x yield / mature yield x reliability (A); all of it in a shortage
+  price_decay: 0.145 # a node's wafer price is (1 - this) for each generation it is further behind the edge than at its price month (dearer when nearer) (A; M21 tuning from 0.12 for 38.5 target 3: two nodes behind under 5%)
+  median_lag_months: 36 # a chip category's median node is the newest whose first volume was this long ago (A; 38.4)
+  node_quality: 3 # quality cap points for each node generation ahead of the category's median node (38.4)
+  capacity: # 38.3: rival foundries' capacity sets the foundry market
+    growth: [0.03, 0.09] # a foundry's capacity growth a year after 2025, uniform on stream fab (A: 2016-2025's pace)
+    elasticity: 1.0 # price x (expected / actual capacity)^this; allocation x (actual / expected)^this (A)
+    bounds: [0.8, 1.25] # the factor stays inside these
+  future_wafer_mult: [1.2, 1.5] # a future node's wafer price, x the previous node's (dossier 4: +20-50% a step)
+  future_capital_mult: [1.08, 1.17] # a future node's capital per wafer-per-year, x the previous node's (dossier 4: +8-17%)
+  euv: # 38.2: EUV tools from one supplier (nodes.yaml euv)
+    wafers_per_tool: 2000 # wafer starts a month one EUV tool serves (A)
+    open_share: 0.25 # share of a year's EUV shipments a new customer can buy (A: the rest goes to rival foundries' orders)
+    lead_months: 12 # the shortest lead time (A)
+    shortage_lead_months: 24 # in a shortage (38.2: "a 2-year lead time in shortages")
+    install_months: 12 # tools must arrive this long before a fab can complete (A)
+  history_months: 36 # months of a fab's history the API shows
 mining: # 35: building and running mines (M19, v3 lane A). Dossier 6 where marked (V/D); every other number is an assumption, tuned only for 35.6
   found: # 35.1: founding a subsidiary from scratch
     energy: 5
@@ -1876,6 +1943,7 @@ geopolitics:
     energy: 5 # 39.3
     quality_penalty: 10 # 39.3: its quality cap is the parent's less this, in the restricted market
     keep: 0.7 # A (M22 decision): the share of a restricted destination's buyers who will take a cut-down chip; the rest wind down as if blocked (39.4 target 2)
+  equipment_node: n16 # 39.2: chip_equipment controls cover fabs at this nodes.yaml node and below (October 2022's 16/14 nm line; M21 merge)
   exit_rate: 0.25 # A: the share of a blocked destination's remaining customers who leave each month
   buy: # 39.3: buying controlled inputs from a restricting actor
     premium: { ban: 0.60, licence: 0.25, quota: 0.40 } # A: the price premium on the exposed volume (rerouted and grey supply); 39.4 target 3

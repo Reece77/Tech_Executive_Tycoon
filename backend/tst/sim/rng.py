@@ -88,7 +88,11 @@ STREAM_IDS: Final = MappingProxyType(
         # conflict's discovery, (2,) the family office's monthly noise, (3,) its manager
         # (M26, 37.2-37.4)
         "personal": 53,
-        # 54: fab (M21, lane A)
+        # key: (0, facility id) a fab's capex overrun, (1, facility id) its yield noise, and at
+        # turn 0 (2, j) future node j's price and capital draws, (3, foundry index, generation)
+        # a rival foundry's lag to a node after 2025, (4, foundry index, year) its capacity
+        # growth that year (M21, 38.1-38.3)
+        "fab": 54,
         # key (0,): the month's tension draws after 2025 (a normal, then escalation, détente
         # and rule uniforms); (1, licence id): a licence decision; (2, company id): an entity
         # listing (M22, 39.1-39.3)

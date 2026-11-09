@@ -74,6 +74,7 @@ const WORLD: World = {
   supply: [],
   sites: [],
   tariffs: [],
+  tool_licensable: [],
 };
 
 describe('World', () => {

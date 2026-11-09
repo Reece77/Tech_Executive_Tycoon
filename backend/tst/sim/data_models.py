@@ -31,6 +31,7 @@ from tst.sim.events.data import (
     EventTemplate,
 )
 from tst.sim.exploration.config import ExplorationBalance, GeologyBalance, GeologyFile
+from tst.sim.fabs.config import FabBalance, NodesFile
 from tst.sim.facilities.config import (
     ComponentsHistoryFile,
     ComputeBalance,
@@ -1280,6 +1281,7 @@ class Balance(_Frozen):
     refining: RefiningBalance  # M20 (formulas.md 36)
     geopolitics: GeopoliticsBalance  # M22 (formulas.md 39)
     mining: MiningBalance  # M19 (formulas.md 35)
+    fab: FabBalance  # M21 (formulas.md 38)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1976,6 +1978,7 @@ class GameData(_Frozen):
     suppliers: SuppliersFile | None = None  # M17 (33.4): offtake counterparties
     geology: GeologyFile | None = None  # M18 (34.1): regions' geology; None = no exploration
     nationalization: NationalizationHistory | None = None  # M19 (35.4): to December 2025
+    nodes: NodesFile | None = None  # M21 (38.1, 38.3): process nodes and rival foundries
     # M22 (39): countries and blocs, export controls and tariffs; None = no geopolitics
     countries: CountriesFile | None = None
     controls: ExportControlsFile | None = None
