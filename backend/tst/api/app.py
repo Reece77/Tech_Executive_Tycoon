@@ -19,6 +19,7 @@ from tst.api.routers import (
     founder,
     game,
     geo,
+    geopolitics,
     group,
     hardware,
     history,
@@ -111,6 +112,7 @@ def create_app() -> FastAPI:
     app.include_router(exploration.router)  # M18
     app.include_router(refining.router)  # M20
     app.include_router(fabs.router)  # M21
+    app.include_router(geopolitics.router)  # M22
     app.include_router(mining.router)  # M19
     app.include_router(explain.router)  # M25
     app.include_router(profile.router)  # M25

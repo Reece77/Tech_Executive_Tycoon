@@ -29,6 +29,16 @@ HOLIDAY = 12  # months per holiday once the product is live
 ENGINEERS = 3
 GO_TO_MARKET = ("account_executive", "marketer")
 OFFER_RATIO = 1.2  # offers at 1.2 x the ask, as the golden script
+# Sample inputs for GET routes with required query parameters (the quotes): each is opened too
+# (product manager, 2026-11-09). Sizes are each kind's smallest (balance.yaml facility.kinds).
+QUERY_SAMPLES: dict[str, dict[str, str | int]] = {
+    "/api/saves/{save_id}/refineries/quote": {
+        "recipe": "silicon_smelter",
+        "region": "north_america",
+        "size": 10_000,
+    },
+    "/api/saves/{save_id}/fabs/quote": {"node": "n28", "region": "north_america", "size": 10_000},
+}
 
 
 class Api:
@@ -105,8 +115,13 @@ def _route_urls(api: Api) -> list[str]:
         if "get" not in ops:
             continue
         params = ops["get"].get("parameters", [])
-        if any(p.get("in") == "query" and p.get("required") for p in params):
-            continue  # a quote (M20's refineries, M21's fabs) needs its inputs: tested on its own
+        required = sorted(p["name"] for p in params if p.get("in") == "query" and p.get("required"))
+        query = ""
+        if required:  # a quote needs its inputs: every such route has a sample (PM, 2026-11-09)
+            assert path in QUERY_SAMPLES, f"{path} needs a sample in QUERY_SAMPLES"
+            sample = QUERY_SAMPLES[path]
+            assert sorted(sample) == required, (path, required)
+            query = "?" + "&".join(f"{k}={v}" for k, v in sample.items())
         names = re.findall(r"\{(\w+)\}", path)
         values = {**ids, "person_id": former} if path.endswith("/former") else ids
         if any(values.get(n) is None for n in names):
@@ -114,7 +129,7 @@ def _route_urls(api: Api) -> list[str]:
         url = path
         for n in names:
             url = url.replace(f"{{{n}}}", str(values[n]))
-        urls.append(url)
+        urls.append(url + query)
     for period in ("month", "quarter", "year"):
         urls.append(f"{BASE}/finance/statements?period={period}")
     urls.append(f"{BASE}/history/timeline?search=a&limit=500")

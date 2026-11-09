@@ -631,3 +631,21 @@ Tuned (`fab.*` and `nodes.yaml` capital only; the brief's Decision 13): `fixed_s
 | T5 nothing else moves | a company that never refines plays exactly as before | golden snapshots unchanged; a fabless company without a wafer plant pays exactly M12b's wafer price |
 
 Tuned (`refining.*` only; the brief's Decisions 2, 5 and 6): `overrun` [0, 0.4] → [0, 0.25], wafer plant capex $250 → $150 per wafer a year, lithium concentrate share 0.65 → 0.55, each recipe's `other_cents` from in-game runs (8% median, wafers 14%). M19's §35.6 targets re-run on the combined code: T1 10.1% median IRR, 32% below 5%; T2 $2.19/lb; T3 0.20/0.40/0.10%, 0.53x; T4 5 of 10 seeds; T5 0.11 median, 0.13 at most; T6 unchanged.
+
+## M22: geopolitics and export controls (§39.4)
+
+### M22 World (2026-11-09, v3 lane B; recorded before M21's merge, re-run on the combined code)
+
+`tools/m22_targets.py` (`tst/balance/m22.py`; nightly `tests/balance/test_m22_balance.py`). The target-2 company sells a quality-80 AI accelerator to device makers in North America and East Asia (15 account executives in each, East Asia's remote from Shenzhen), with East Asia's customers sized so China (55% of its demand) is 30% of revenue, on a TSMC wafer contract; the loss is against the same seed with the October 2022 rules removed. Seeds 1-10.
+
+| Target | Band | Value |
+| --- | --- | --- |
+| T1 history holds | every dossier §5 rule on its date on every seed; tension history to 2025 | 41 rules x 10 seeds = 410/410 on their dates (suspended ones from their détente); tension history holds |
+| T2 controls bite | 15-30% of revenue lost Oct 2022-Sep 2023; 5-15% with a compliant variant | 23.2%-29.0%; with a variant 10.5%-10.8% |
+| T3 bans hit supply | gallium from China only 30-80% dearer in 2024-2025 than from a non-China source | 41% on every seed (China-only over a Dowa offtake; history prices are the same on every seed) |
+| T4 influence helps licences | approval at influence 80 at least 1.2x that at 0 | 26.1% and 31.6% over 2,000 drawn decisions (x1.21; the formula's x1.24) |
+| T5 tariffs cost | China-assembled devices sold in North America cost 8-20% more from 2019 | 2017-2018 0%, 2019 8.8%, 2020-2025 13.2% (the US's 88% of North America's demand x 10% then 15%) |
+| T6 after 2025 | an escalation and a détente in 2026-2039 on 7-10 of 10 seeds | 8 of 10 |
+| T7 nothing else moves | a software-only company plays exactly as before | yes: the same ledger, snapshots, events and products with and without M22's data (60 months from 2018; fast test 24 months) |
+
+Tuned (`geopolitics.*` only; the brief's Decisions): `escalation.base` and `detente.base` 0.008 → 0.013 (T6: 5 of 10 → 8 of 10); `variant.keep` 0.7 added (T2 with a variant: 3.2% → 10.8%); blocked customers wind down at `exit_rate` 0.25 a month (T2: 33.7% → 23.9% on seed 1).

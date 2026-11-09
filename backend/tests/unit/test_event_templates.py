@@ -38,6 +38,8 @@ def test_the_library(loaded: LoadedData) -> None:
         "exploration": 2,  # M18: a protest and a permit challenge (34.3)
         "refining": 2,  # M20: a plant fire and a chemical release (36.4)
         "mining": 5,  # M19: two accidents, a takeover, a price crash and a protest (35.4)
+        # M22: a rule announced, sales hit (two), supply hit, a détente, a listing (39)
+        "geopolitics": 6,
     }
     for trigger in TRIGGERS:
         assert any(t.trigger == trigger and "minor" in t.severities for t in templates), trigger

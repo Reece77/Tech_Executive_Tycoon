@@ -9,7 +9,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
@@ -53,6 +53,12 @@ from tst.sim.exploration.config import GeologyFile
 from tst.sim.fabs.config import NodesFile
 from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.founder.models import PERSONAL_ACCOUNTS, PERSONAL_PREFIX
+from tst.sim.geopolitics.config import (
+    BLOCS,
+    CountriesFile,
+    ExportControlsFile,
+    TariffsFile,
+)
 from tst.sim.ledger import ENGINE_ACCOUNTS
 from tst.sim.markets_public.config import BanksFile
 from tst.sim.mining.config import NationalizationHistory
@@ -92,6 +98,9 @@ SUPPLIERS_FILE = "suppliers.yaml"  # M17 (formulas.md 33.4)
 GEOLOGY_FILE = "geology.yaml"  # M18 (formulas.md 34.1)
 NATIONALIZATION_FILE = "nationalization_history.yaml"  # M19 (formulas.md 35.4)
 NODES_FILE = "nodes.yaml"  # M21 (formulas.md 38.1, 38.3)
+COUNTRIES_FILE = "countries.yaml"  # M22 (formulas.md 39.1)
+CONTROLS_FILE = "export_controls.yaml"  # M22 (39.2)
+TARIFFS_FILE = "tariffs.yaml"  # M22 (39.3)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -114,6 +123,9 @@ DATA_FILES = (
     INTERESTS_FILE,
     MACRO_HISTORY_FILE,
     NATIONALIZATION_FILE,
+    COUNTRIES_FILE,
+    CONTROLS_FILE,
+    TARIFFS_FILE,
     NAMES_FILE,
     NODES_FILE,
     PERSONALITY_FILE,
@@ -503,6 +515,74 @@ def geology_problems(balance: Balance, data: GameData) -> list[str]:
     return problems
 
 
+SPECIAL_DESTINATIONS: Final = ("all", "affiliates")  # export_controls.yaml `to` words (39.2)
+
+
+def geopolitics_problems(balance: Balance, data: GameData) -> list[str]:
+    """M22 (formulas.md 39): countries cover every region and city; rules and tariffs name
+    known actors, goods and destinations; controlled commodities exist."""
+    if data.countries is None or data.controls is None or data.tariffs is None:
+        return []
+    gb = balance.geopolitics
+    problems: list[str] = []
+    countries = data.countries
+    keys = {c.key for c in countries.countries}
+    regions = set(data.region_keys)
+    if bad := sorted({c.region for c in countries.countries} - regions):
+        problems.append(f"countries in unknown regions {bad}")
+    if missing := sorted(regions - {c.region for c in countries.countries}):
+        problems.append(f"regions without countries {missing}")
+    for city in data.cities:
+        if city.country is None:
+            problems.append(f"city {city.key}: no country")
+        elif city.country not in keys:
+            problems.append(f"city {city.key}: unknown country {city.country!r}")
+        elif countries.country(city.country).region != city.region:
+            problems.append(f"city {city.key}: {city.country} is not in {city.region}")
+    sites = set(balance.hardware.contract.manufacturers) | set(balance.chips.contract.foundries)
+    if data.suppliers is not None:
+        sites |= {s.key for s in data.suppliers.suppliers}
+    if bad := sorted(set(countries.sites) - sites):
+        problems.append(f"sites: unknown suppliers {bad}")
+    actors = keys | set(BLOCS)
+    destinations = actors | set(SPECIAL_DESTINATIONS)
+    commodities = {g.key for g in data.commodities.goods} if data.commodities else set()
+    for key, good in gb.goods.items():
+        if good.kind == "commodity" and good.commodity not in commodities:
+            problems.append(f"goods.{key}: commodity {good.commodity!r} is unknown")
+        if bad := sorted(set(good.chip_types) - set(balance.chips.types)):
+            problems.append(f"goods.{key}: unknown chip types {bad}")
+    for rule in (*data.controls.rules, *data.controls.seeded):
+        if rule.actor not in actors:
+            problems.append(f"rule {rule.key}: unknown actor {rule.actor!r}")
+        if bad := sorted(set(rule.goods) - set(gb.goods)):
+            problems.append(f"rule {rule.key}: unknown goods {bad}")
+        if bad := sorted(set(rule.countries) - destinations):
+            problems.append(f"rule {rule.key}: unknown destinations {bad}")
+    categories = {c.key for c in data.categories}
+    for tariff_good, cats in gb.tariff_goods.items():
+        if bad := sorted(set(cats) - categories):
+            problems.append(f"tariff_goods.{tariff_good}: unknown categories {bad}")
+    for t in data.tariffs.schedules:
+        if t.origin not in actors or t.market not in actors:
+            problems.append(f"tariff {t.key}: unknown origin or market")
+        if bad := sorted(set(t.goods) - set(gb.tariff_goods)):
+            problems.append(f"tariff {t.key}: unknown goods {bad}")
+    if bad := sorted(set(gb.local_partner.categories) - categories):
+        problems.append(f"local_partner: unknown categories {bad}")
+    if bad := sorted(set(gb.local_partner.countries) - keys):
+        problems.append(f"local_partner: unknown countries {bad}")
+    if bad := sorted(set(gb.actor_regions) - set(BLOCS)) + sorted(
+        set(gb.actor_regions.values()) - regions
+    ):
+        problems.append(f"actor_regions: unknown {bad}")
+    if data.commodities is not None:
+        for g in data.commodities.goods:
+            if countries.by_name(g.top_country) is None:
+                problems.append(f"commodity {g.key}: top_country {g.top_country!r} is unknown")
+    return problems
+
+
 def mining_problems(balance: Balance, data: GameData) -> list[str]:
     """M19 (35): mining's commodities, skills and roles exist, and every history event names
     a region and an explorable commodity."""
@@ -683,6 +763,9 @@ def load_all(
         NationalizationHistory, parsed[NATIONALIZATION_FILE], NATIONALIZATION_FILE
     )
     nodes = _validate(NodesFile, parsed[NODES_FILE], NODES_FILE)
+    countries = _validate(CountriesFile, parsed[COUNTRIES_FILE], COUNTRIES_FILE)
+    controls = _validate(ExportControlsFile, parsed[CONTROLS_FILE], CONTROLS_FILE)
+    tariffs = _validate(TariffsFile, parsed[TARIFFS_FILE], TARIFFS_FILE)
     game_data = _validate(
         GameData,
         {
@@ -728,6 +811,9 @@ def load_all(
             "geology": geology,
             "nationalization": nationalization,
             "nodes": nodes,
+            "countries": countries,
+            "controls": controls,
+            "tariffs": tariffs,
         },
         "seed data cross-check",
     )
@@ -743,6 +829,11 @@ def load_all(
         )
     if problems := fab_problems(balance, game_data):
         raise DataLoadError(f"{NODES_FILE}, {BALANCE_FILE} fab: " + "; ".join(problems))
+    if problems := geopolitics_problems(balance, game_data):
+        raise DataLoadError(
+            f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
+            + "; ".join(problems)
+        )
     if problems := research_problems(balance, game_data):
         raise DataLoadError(f"{TECH_FILE}, {ERAS_FILE}: " + "; ".join(problems))
 

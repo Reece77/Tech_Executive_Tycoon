@@ -24,6 +24,7 @@ from tst.sim.finance import macro
 from tst.sim.founder.effects import consumer_brand
 from tst.sim.geo.markets import ReachContext, reach_context
 from tst.sim.geo.models import RegionalSegment
+from tst.sim.geopolitics import sales as geo_sales
 from tst.sim.hardware import cm_market, production
 from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
 from tst.sim.log import LinkKind, LogItem, inbox_item
@@ -255,6 +256,7 @@ def run_markets(
             by_market.setdefault((product.category, seg.segment), []).append(seg)
     geo = reach_context(state, balance, data)
     home = geo.home if geo is not None else None
+    access = geo_sales.access_map(state, balance, data)  # M22 (39.3): export controls
     for cat in data.categories:
         for market_def in cat.markets:
             entries = by_market.get((cat.key, market_def.segment), [])
@@ -278,6 +280,7 @@ def run_markets(
                 market.addressable,
                 key,
                 plan,
+                access,
             )
             for s in done:
                 flows[(s.product_id, s.segment)] = done[s]
@@ -322,6 +325,7 @@ def run_markets(
                         rmarket.addressable,
                         key,
                         plan,
+                        access,
                     )
                     for rs, rflow in rdone.items():
                         if rflow.units:
@@ -377,14 +381,23 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     addressable: float,
     key: tuple[int, ...],
     plan: production.ProductionPlan | None = None,
+    access: Mapping[tuple[int, str], geo_sales.Access] | None = None,
 ) -> tuple[GameState, dict[S, Flow], list[LogItem]]:
     """One market segment's month (11.6-11.7): churn, in play, choice and new customers.
     `region` None or the home region: v1's market; another region: its prices, awareness
     and sellers (19.5). `key` is the `market` stream key. In a unit-sale market (M12b,
     26.1) the base churn is the replacement cycle, each new customer buys its units, and the
     player's products sell at most what `plan` lets them make; the rest goes to the next-best
-    product."""
+    product. M22 (39.3): `access` closes a product's blocked share of the region's new
+    customers (but for those still winding down) and sells its variant share at the
+    variant's lower quality: its choice share there is the one at that quality."""
     mb = balance.market
+    here = region if region is not None else (geo.home if geo is not None else None)
+    limits = {
+        s.product_id: access[(s.product_id, here)]
+        for s in entries
+        if access and here is not None and (s.product_id, here) in access
+    }
     turn = state.turn
     logs: list[LogItem] = []
     seg_key = entries[0].segment
@@ -443,6 +456,26 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     shares, _ = f.choice_shares(
         [appeals[s.product_id] or 0.0 for s in live], seg_def.outside_option, mb
     )
+    if any(a.variant > 0 for a in limits.values()):  # M22 (39.3): the variant's share
+        penalty = balance.geopolitics.variant.quality_penalty
+        lowered = dict(appeals)
+        for s in live:
+            a = limits.get(s.product_id)
+            if a is not None and a.variant > 0:
+                p = products[s.product_id]
+                low = replace(p, quality=max(0.0, p.quality - penalty))
+                lowered[s.product_id] = _times(
+                    price_appeal(low, seg_key, s.price_cents, data, turn, power(p), index),
+                    first_mover_appeal(state, data, balance, p.company_id, category_def.key),
+                )
+        low_shares, _ = f.choice_shares(
+            [lowered[s.product_id] or 0.0 for s in live], seg_def.outside_option, mb
+        )
+        shares = [
+            sh * (1 - v) + lo * v
+            for s, sh, lo in zip(live, shares, low_shares, strict=True)
+            for v in [limits[s.product_id].variant if s.product_id in limits else 0.0]
+        ]
     won = {s.product_id: 0.0 for s in entries}
     limited: set[int] = set()
     capacity_notes: dict[int, tuple[int, float, float, float]] = {}  # 23.4, M10b
@@ -480,6 +513,11 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
                 rate = balance.products.seller_rate.get(seg_key, 0.0)
                 per = seen / sellers if sellers else f.seller_capacity(rate, (1.0,))
                 capacity_notes[s.product_id] = (sellers, seen, wanted, per)
+    for pid, a in limits.items():  # M22 (39.3): the blocked share cannot buy, but for
+        # customers still winding down there (sales.exits)
+        row = next(x for x in entries if x.product_id == pid)
+        winding = geo_sales.winding(state, pid, here or "", seg_key, row.customers)
+        won[pid] *= max(0.0, 1 - max(0.0, a.blocked - winding))
     upc = category_def.market(seg_key).units_per_customer if category_def.sells_units else 0.0
     if plan is not None and category_def.sells_units:
         won = _cap_units(live, appeals, won, upc, plan)

@@ -1892,6 +1892,19 @@ A fab's own state beside its facility row (38.2).
 | `facility_id` | INTEGER | no | Primary key: the fab's `facility.id`. |
 | `company_id` | INTEGER | no | The owner. |
 | `data` | JSON | no | `node` (a `nodes.yaml` key), `estimate_cents` (the quoted capex the player saw), `build_months` (construction), `duv` (7 nm by DUV), `tools` (EUV tools it needs) and `tools_turn` (their arrival), `live_turn` (when it may start, or started, production), `yield_`, `months_run` (months of production at its node), `parts` (`[{cents, live_turn}]`: capex that has gone live, each depreciating from its month), a conversion's `upgrade_node`, `upgrade_ready`, `upgrade_started`, `upgrade_cents` (with its hidden overrun) and `upgrade_paid_cents`, `month` (the latest month: `turn`, `available`, `own` and `sold` starts, `yield_`, `reliability`, `depreciation_cents`, `fixed_cents`, `materials_cents`, `power_cents`, `staff_cents`, `revenue_cents`, `slot_price_cents`, `market_cents`, `cost_per_start_cents`, `customers` as `[name, starts]`), `history` (`[turn, yield, use, cost a start, market price]` for the last `fab.history_months`). |
+## Geopolitics and export controls (migration `0047_m22`, M22)
+
+Countries, blocs, export controls and tariffs are data (`countries.yaml`, `export_controls.yaml`, `tariffs.yaml`; formulas.md 39), the same on every seed; `cities.yaml` gains `country` on every city. What play adds lives in `geo_record`, one row a record (`tst/db/geopolitics_io.py`). Accounts `5100_tariffs` and `5110_local_partner_share` (expense, cost of revenue). RNG stream `geopolitics` (55). Balance keys `geopolitics.*`. Existing saves have no records; history applies to them from data. `save_meta.schema_version` is 47 (re-parented after M21's `0046_m21`). Never stored ahead of its month: a seeded tension month, an escalation's rule and a détente's suspension are added in phase 12 for the next month only.
+
+### geo_record
+
+Every geopolitical record, one row each, rewritten by collection when it changes.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `n` | INTEGER | no | Primary key: the collection's index x 1,000,000 + the record's position (keeps each collection's order). |
+| `kind` | VARCHAR | no | The collection: `tension` (`turn`, `value` 0-100, `shock` `none`/`escalation`/`detente`: seeded months after 2025), `seeded_rules` (`rule_key` an export_controls.yaml `seeded` key, `start_turn`, `end_turn`), `suspensions` (`rule_key`, `start_turn`, `end_turn`: a seeded détente's), `licences` (`id`, `company_id`, `product_id`, `rule_key`, `country`, `requested_turn`, `decide_turn`, `status` `pending`/`approved`/`denied`/`expired`/`grey`, `until_turn`), `variants` (`product_id`, `turn`: a compliant variant's launch), `entity_listings` (`company_id`, `actor` a country or bloc, `turn`, `reason`), `sites` (`kind` `company`/`facility`, `id`, `country`, `local_partner`), `exits` (`product_id`, `region`, `segment`, `remaining` customers in closed destinations still on the books, `share` the blocked share last month), `geo_notices` (`turn`, `company_id`, `template_id`, `rule_key`: what a geopolitical event's {rule} names). |
+| `data` | JSON | no | The record's fields, as listed under `kind`. |
 
 ## M25: files beside the saves (not tables)
 

@@ -3,6 +3,7 @@
 # before M9 (migration 0022), so append new cities and never reorder.
 #
 # - region: a regions.yaml key.
+# - country: a countries.yaml key in that region (M22, formulas.md 39.1).
 # - salary_multiplier_bp: replaces the region's multiplier for people working in the city
 #   (10000 = 1.0x, San Francisco).
 # - rent_index: office rent relative to San Francisco (1.0); flexible space costs
@@ -15,33 +16,33 @@
 #   candidate's city is drawn (19.3). Roughly the size of each hub's tech workforce
 #   (M9 decision; the spec names the weight but gives no values).
 cities:
-  - { key: san_francisco, label: San Francisco, region: north_america, salary_multiplier_bp: 10000, rent_index: 1.00, talent_weight: 10, talent: { technical: 1.0, business: 0.5 } }
-  - { key: seattle, label: Seattle, region: north_america, salary_multiplier_bp: 9500, rent_index: 0.80, talent_weight: 6, talent: { technical: 0.8 } }
-  - { key: new_york, label: New York, region: north_america, salary_multiplier_bp: 10000, rent_index: 0.95, talent_weight: 8, talent: { business: 1.0 } }
-  - { key: austin, label: Austin, region: north_america, salary_multiplier_bp: 8500, rent_index: 0.55, talent_weight: 4, talent: {} }
-  - { key: toronto, label: Toronto, region: north_america, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 4, talent: { technical: 0.3, geology: 1.5, mining_engineering: 1.0 } } # M18: a mining-finance hub (TSX) for geologists
-  - { key: london, label: London, region: europe, salary_multiplier_bp: 8500, rent_index: 0.85, talent_weight: 7, talent: { business: 0.8 } }
-  - { key: berlin, label: Berlin, region: europe, salary_multiplier_bp: 6500, rent_index: 0.45, talent_weight: 4, talent: { technical: 0.3 } }
-  - { key: dublin, label: Dublin, region: europe, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 2, talent: { business: 0.3 } }
-  - { key: tel_aviv, label: Tel Aviv, region: europe, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 3, talent: { technical: 0.8, security: 1.5 } }
-  - { key: bangalore, label: Bangalore, region: south_southeast_asia, salary_multiplier_bp: 3000, rent_index: 0.15, talent_weight: 9, talent: { technical: 0.3 } }
-  - { key: singapore, label: Singapore, region: south_southeast_asia, salary_multiplier_bp: 7500, rent_index: 0.75, talent_weight: 3, talent: { business: 0.3 } }
-  - { key: shenzhen, label: Shenzhen, region: east_asia, salary_multiplier_bp: 4000, rent_index: 0.30, talent_weight: 5, talent: { hardware_design: 1.5, manufacturing: 1.5 } }
-  - { key: tokyo, label: Tokyo, region: east_asia, salary_multiplier_bp: 7500, rent_index: 0.70, talent_weight: 5, talent: { hardware_design: 0.8 } }
-  - { key: sao_paulo, label: São Paulo, region: latin_america, salary_multiplier_bp: 4000, rent_index: 0.30, talent_weight: 3, talent: {} }
-  - { key: sydney, label: Sydney, region: oceania, salary_multiplier_bp: 8500, rent_index: 0.70, talent_weight: 2, talent: {} }
+  - { key: san_francisco, label: San Francisco, region: north_america, country: us, salary_multiplier_bp: 10000, rent_index: 1.00, talent_weight: 10, talent: { technical: 1.0, business: 0.5 } }
+  - { key: seattle, label: Seattle, region: north_america, country: us, salary_multiplier_bp: 9500, rent_index: 0.80, talent_weight: 6, talent: { technical: 0.8 } }
+  - { key: new_york, label: New York, region: north_america, country: us, salary_multiplier_bp: 10000, rent_index: 0.95, talent_weight: 8, talent: { business: 1.0 } }
+  - { key: austin, label: Austin, region: north_america, country: us, salary_multiplier_bp: 8500, rent_index: 0.55, talent_weight: 4, talent: {} }
+  - { key: toronto, label: Toronto, region: north_america, country: canada, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 4, talent: { technical: 0.3, geology: 1.5, mining_engineering: 1.0 } } # M18: a mining-finance hub (TSX) for geologists
+  - { key: london, label: London, region: europe, country: uk, salary_multiplier_bp: 8500, rent_index: 0.85, talent_weight: 7, talent: { business: 0.8 } }
+  - { key: berlin, label: Berlin, region: europe, country: germany, salary_multiplier_bp: 6500, rent_index: 0.45, talent_weight: 4, talent: { technical: 0.3 } }
+  - { key: dublin, label: Dublin, region: europe, country: ireland, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 2, talent: { business: 0.3 } }
+  - { key: tel_aviv, label: Tel Aviv, region: europe, country: israel, salary_multiplier_bp: 7500, rent_index: 0.55, talent_weight: 3, talent: { technical: 0.8, security: 1.5 } }
+  - { key: bangalore, label: Bangalore, region: south_southeast_asia, country: india, salary_multiplier_bp: 3000, rent_index: 0.15, talent_weight: 9, talent: { technical: 0.3 } }
+  - { key: singapore, label: Singapore, region: south_southeast_asia, country: singapore, salary_multiplier_bp: 7500, rent_index: 0.75, talent_weight: 3, talent: { business: 0.3 } }
+  - { key: shenzhen, label: Shenzhen, region: east_asia, country: china, salary_multiplier_bp: 4000, rent_index: 0.30, talent_weight: 5, talent: { hardware_design: 1.5, manufacturing: 1.5 } }
+  - { key: tokyo, label: Tokyo, region: east_asia, country: japan, salary_multiplier_bp: 7500, rent_index: 0.70, talent_weight: 5, talent: { hardware_design: 0.8 } }
+  - { key: sao_paulo, label: São Paulo, region: latin_america, country: brazil, salary_multiplier_bp: 4000, rent_index: 0.30, talent_weight: 3, talent: {} }
+  - { key: sydney, label: Sydney, region: oceania, country: australia, salary_multiplier_bp: 8500, rent_index: 0.70, talent_weight: 2, talent: {} }
   # Africa's hubs (playtest 4, M15r addendum c: "Why are there no offices to lease in Africa?").
   # Pay below the region's 0.55x as other emerging-market hubs sit below theirs (Bangalore,
   # Sao Paulo); Cape Town highest, Lagos's prime rent above Nairobi's; small talent pools.
-  - { key: lagos, label: Lagos, region: africa, salary_multiplier_bp: 3500, rent_index: 0.30, talent_weight: 2, talent: { business: 0.3 } }
-  - { key: nairobi, label: Nairobi, region: africa, salary_multiplier_bp: 3500, rent_index: 0.20, talent_weight: 2, talent: { finance: 0.5 } }
-  - { key: cape_town, label: Cape Town, region: africa, salary_multiplier_bp: 4500, rent_index: 0.30, talent_weight: 1, talent: { technical: 0.3 } }
+  - { key: lagos, label: Lagos, region: africa, country: nigeria, salary_multiplier_bp: 3500, rent_index: 0.30, talent_weight: 2, talent: { business: 0.3 } }
+  - { key: nairobi, label: Nairobi, region: africa, country: kenya, salary_multiplier_bp: 3500, rent_index: 0.20, talent_weight: 2, talent: { finance: 0.5 } }
+  - { key: cape_town, label: Cape Town, region: africa, country: south_africa, salary_multiplier_bp: 4500, rent_index: 0.30, talent_weight: 1, talent: { technical: 0.3 } }
   # Mining cities (M18, 34.2): where geologists are hired. Talent weight 0, so "anywhere" and
   # relocating candidates of every other role are drawn exactly as before (M18 decision); a
   # search in the city still finds geologists, with the city's geology bonus.
-  - { key: perth, label: Perth, region: oceania, salary_multiplier_bp: 8500, rent_index: 0.60, talent_weight: 0, talent: { geology: 2.0, mining_engineering: 1.5 } }
-  - { key: santiago, label: Santiago, region: latin_america, salary_multiplier_bp: 4500, rent_index: 0.35, talent_weight: 0, talent: { geology: 2.0, mining_engineering: 1.5 } }
-  - { key: johannesburg, label: Johannesburg, region: africa, salary_multiplier_bp: 4500, rent_index: 0.30, talent_weight: 0, talent: { geology: 2.0, mining_engineering: 1.5 } }
+  - { key: perth, label: Perth, region: oceania, country: australia, salary_multiplier_bp: 8500, rent_index: 0.60, talent_weight: 0, talent: { geology: 2.0, mining_engineering: 1.5 } }
+  - { key: santiago, label: Santiago, region: latin_america, country: chile, salary_multiplier_bp: 4500, rent_index: 0.35, talent_weight: 0, talent: { geology: 2.0, mining_engineering: 1.5 } }
+  - { key: johannesburg, label: Johannesburg, region: africa, country: south_africa, salary_multiplier_bp: 4500, rent_index: 0.30, talent_weight: 0, talent: { geology: 2.0, mining_engineering: 1.5 } }
 
 # A region's demand growth is the category's growth x this multiplier (19.5). Every
 # regions.yaml key is listed.

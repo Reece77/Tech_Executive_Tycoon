@@ -47,6 +47,12 @@ from tst.sim.founder.config import (
     PersonalBalance,
     StressBalance,
 )
+from tst.sim.geopolitics.config import (
+    CountriesFile,
+    ExportControlsFile,
+    GeopoliticsBalance,
+    TariffsFile,
+)
 from tst.sim.group.config import GroupBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
@@ -1273,6 +1279,7 @@ class Balance(_Frozen):
     geology: GeologyBalance  # M18 (formulas.md 34.1)
     exploration: ExplorationBalance  # M18 (formulas.md 34.2-34.3)
     refining: RefiningBalance  # M20 (formulas.md 36)
+    geopolitics: GeopoliticsBalance  # M22 (formulas.md 39)
     mining: MiningBalance  # M19 (formulas.md 35)
     fab: FabBalance  # M21 (formulas.md 38)
 
@@ -1398,6 +1405,7 @@ class CityDef(_Frozen):
     rent_index: float = Field(gt=0)
     talent_weight: float = Field(ge=0)
     talent: dict[str, float] = Field(default_factory=dict)  # skill group or skill -> points
+    country: str | None = None  # countries.yaml key (M22, 39.1)
 
 
 class CitiesFile(_Frozen):
@@ -1971,6 +1979,10 @@ class GameData(_Frozen):
     geology: GeologyFile | None = None  # M18 (34.1): regions' geology; None = no exploration
     nationalization: NationalizationHistory | None = None  # M19 (35.4): to December 2025
     nodes: NodesFile | None = None  # M21 (38.1, 38.3): process nodes and rival foundries
+    # M22 (39): countries and blocs, export controls and tariffs; None = no geopolitics
+    countries: CountriesFile | None = None
+    controls: ExportControlsFile | None = None
+    tariffs: TariffsFile | None = None
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:

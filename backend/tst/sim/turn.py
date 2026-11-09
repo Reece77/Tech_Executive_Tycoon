@@ -33,6 +33,7 @@ from tst.sim.finance.statements import cash_before_financing, profit_and_loss
 from tst.sim.founder.investing import investing_month
 from tst.sim.founder.phase import founder_month, next_budget
 from tst.sim.geo.cities import settle_home_cities
+from tst.sim.geopolitics import phase as geopolitics
 from tst.sim.group.holding import holding_month
 from tst.sim.group.ownership import disposals
 from tst.sim.group.stakes import stakes_month
@@ -278,9 +279,12 @@ def production_and_capacity(ctx: TurnContext) -> TurnContext:
 
 def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     """Appeal, churn, customers won, and revenue for every market segment (11.6-11.8)."""
+    # M22 (39.3): customers in destinations export controls closed leave first.
+    ctx = replace(ctx, state=geopolitics.before_markets(ctx.state, ctx.balance, ctx.data))
     out = products.run_markets(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
     ctx = ctx.post(*out.entries).log(*out.logs)
+    ctx = ctx.post(*geopolitics.after_markets(ctx.state, ctx.balance, ctx.data))  # tariffs
     ctx = ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
     # M19 (35.3-35.4): mines' output and sales, after the markets (the group's own use)
     state, entries, logs = mining.operate_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
@@ -602,6 +606,9 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
         state, ctx.entries, ctx.rng, ctx.balances, ctx.balance, ctx.data
     )
     ctx = ctx.post(*investing_entries).log(*investing_logs)
+    # M22 (39): licences, listings, next month's tension and the rules it announces.
+    state, geo_logs = geopolitics.month_end(state, ctx.rng, ctx.balance, ctx.data)
+    ctx = ctx.log(*geo_logs)
     player = state.player.id
     state, requests = direct(
         state,

@@ -100,6 +100,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "region_risk": 52,  # M19 (35.4)
         "personal": 53,  # M26 (37)
         "fab": 54,  # M21 (38)
+        "geopolitics": 55,  # M22 (39)
         "misc": 99,
     }
 

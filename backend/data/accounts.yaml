@@ -38,6 +38,8 @@ accounts:
   - { code: 4930_gain_on_disposal, name: Gain or loss on disposal, type: revenue } # M16 (31.1): a subsidiary leaving the group (failed, sold, spun off): what was received less the investment and its goodwill; below the operating result
   # Expenses
   - { code: 5000_cogs, name: Cost of goods sold, type: expense }
+  - { code: 5100_tariffs, name: Tariffs, type: expense } # M22 (39.3): tariffs on devices, servers and chips made in a taxed bloc and sold in the taxing one; cost of revenue
+  - { code: 5110_local_partner_share, name: Local partner's share, type: expense } # M22 (39.3): a local partner's share of the revenue from a partner market (cloud in China); cost of revenue
   - { code: 5900_intercompany_purchases, name: Intercompany purchases, type: expense } # M16 (31.6): what a group company pays another at the transfer price; consolidation removes it
   - { code: 6000_salaries, name: Salaries, type: expense }
   - { code: 6010_benefits, name: Benefits, type: expense }

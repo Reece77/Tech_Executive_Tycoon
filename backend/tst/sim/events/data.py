@@ -31,6 +31,7 @@ CATEGORIES: Final = (
     "exploration",  # M18: protests and permit challenges (34.3), queued by the engine
     "refining",  # M20: plant incidents (36.4), queued by the engine
     "mining",  # M19: mine accidents, takeovers and price crashes (35.4), queued by the engine
+    "geopolitics",  # M22: export rules, détentes and listings (39), queued by the engine
 )
 # Templates a company with no employees may draw (16.1: founder, market and finance).
 NO_STAFF_CATEGORIES: Final = ("market", "finance", "founder")
@@ -84,6 +85,8 @@ EXPLORATION_TRIGGER: Final = "exploration"
 REFINING_TRIGGER: Final = "refining"
 # M19 (35.4): mine accidents, takeovers and price crashes, queued by the engine by template id.
 MINING_TRIGGER: Final = "mining"
+# M22 (39): rule announcements, détentes and entity listings, queued by the engine.
+GEOPOLITICS_TRIGGER: Final = "geopolitics"
 SCHEDULED: Final = (
     "storyline",
     "follow_up",
@@ -95,6 +98,7 @@ SCHEDULED: Final = (
     EXPLORATION_TRIGGER,
     REFINING_TRIGGER,
     MINING_TRIGGER,
+    GEOPOLITICS_TRIGGER,
 )
 # M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
 # critical template whenever it holds and no critical event came in the last 6 months.
@@ -112,7 +116,8 @@ CRITICAL_TRIGGERS: Final = (
     EXPLORATION_TRIGGER,
     MINING_TRIGGER,
     REFINING_TRIGGER,
-)  # 16.2; 20.3; 23.3; 22.5; 25; 32; 31.6; 34.3; 35.4; 36.4
+    GEOPOLITICS_TRIGGER,
+)  # 16.2; 20.3; 23.3; 22.5; 25; 32; 31.6; 34.3; 35.4; 36.4; 39.3
 
 EFFECT_TYPES: Final = (
     "morale_delta",
@@ -152,6 +157,8 @@ EFFECT_TYPES: Final = (
     "refining_step",
     # M19 (35.4): a mine event's answer (MINING_STEPS), applied by the engine.
     "mining_step",
+    # M22 (39.3): an export-control event's answer (GEOPOLITICS_STEPS), applied by the engine.
+    "geopolitics_step",
 )
 PRESS_STEPS: Final = ("bold", "measured", "deflect")
 FOUNDER_STEPS: Final = (
@@ -169,6 +176,16 @@ FOUNDER_STEPS: Final = (
 GROUP_STEPS: Final = ("correct_price", "defend_price")
 EXPLORATION_STEPS: Final = ("consult", "benefit", "push_on")  # M18 (34.3)
 REFINING_STEPS: Final = ("stop", "compensate", "contest")  # M20 (36.4)
+GEOPOLITICS_STEPS: Final = (  # M22 (39.3): export rules, supply cuts and listings
+    "comply",
+    "licence",
+    "variant",
+    "grey",
+    "absorb",
+    "lobby",
+    "accept",
+    "appeal",
+)
 MINING_STEPS: Final = (  # M19 (35.4): accidents, takeovers, price crashes
     "investigate",
     "compensate",
@@ -220,6 +237,7 @@ VALUELESS: Final = (
     "exploration_step",
     "refining_step",
     "mining_step",
+    "geopolitics_step",
 )  # no size: happen or not
 NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
 
@@ -250,6 +268,7 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "exploration_step": ("company",),
     "refining_step": ("company",),
     "mining_step": ("company",),
+    "geopolitics_step": ("company",),
 }
 
 # M10b (23.2): what a modifier can change, and the target words each stat accepts. A company
@@ -319,6 +338,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     EXPLORATION_TRIGGER: frozenset(),  # M18: company and founder only
     REFINING_TRIGGER: frozenset(),  # M20: company and founder only
     MINING_TRIGGER: frozenset(),  # M19: company and founder only
+    GEOPOLITICS_TRIGGER: frozenset({"rule"}),  # M22: the rule (or détente) the event is about
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
 PLACEHOLDERS: Final = (
@@ -343,6 +363,7 @@ PLACEHOLDERS: Final = (
     "result",  # M14b: the quarter's result (beat, in line, miss)
     "promise",  # M14b: a broken promise, in words
     "persona",  # M24 (32.4): the founder's strongest public trait, in words
+    "rule",  # M22 (39.2): the export rule or détente an event is about
 )
 
 
@@ -392,6 +413,9 @@ class EffectSpec(_Frozen):
         elif self.type == "mining_step":
             if self.stat not in MINING_STEPS or self.months is not None:
                 raise ValueError(f"a mining_step needs a stat in {list(MINING_STEPS)}")
+        elif self.type == "geopolitics_step":
+            if self.stat not in GEOPOLITICS_STEPS or self.months is not None:
+                raise ValueError(f"a geopolitics_step needs a stat in {list(GEOPOLITICS_STEPS)}")
         elif self.stat is not None or self.months is not None:
             raise ValueError("only a modifier has a stat and months")
         if self.target not in EFFECT_TARGETS[self.type]:
@@ -556,6 +580,7 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
             EXPLORATION_TRIGGER,
             REFINING_TRIGGER,
             MINING_TRIGGER,
+            GEOPOLITICS_TRIGGER,
         ):
             missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
             if missing:

@@ -72,6 +72,10 @@ def event_names(
         from tst.sim.founder.persona import public_words
 
         names["persona"] = public_words(state, event.company_id, balance)
+    if event.category == "geopolitics":  # M22 (39): the rule the event is about
+        from tst.sim.geopolitics.events import rule_names
+
+        names |= rule_names(state, data, event)
     if event.category == "public" and balance is not None:  # M13 (25)
         names |= public_names(state, data, balance, event.company_id)
     return names
@@ -116,6 +120,7 @@ def template_draft(
                 "group_step",
                 "exploration_step",
                 "mining_step",
+                "geopolitics_step",
                 "refining_step",
             ):  # M16, M18, M19, M20 too
                 effect |= {"stat": spec.stat}

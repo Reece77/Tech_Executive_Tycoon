@@ -17498,7 +17498,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LicenceIn"
+                "$ref": "#/components/schemas/tst__api__schemas__exploration__LicenceIn"
               }
             }
           }
@@ -19038,6 +19038,490 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FabsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/world": {
+      "get": {
+        "tags": [
+          "geopolitics"
+        ],
+        "summary": "Get World",
+        "description": "Blocs, tension, the export rules announced so far, licences, variants, the entity list\nand the group's exposure (39). Nothing before it is announced.",
+        "operationId": "getWorld",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorldOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/world/licence": {
+      "post": {
+        "tags": [
+          "geopolitics"
+        ],
+        "summary": "Request Licence",
+        "operationId": "requestLicence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tst__api__schemas__geopolitics__LicenceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorldActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/world/grey": {
+      "post": {
+        "tags": [
+          "geopolitics"
+        ],
+        "summary": "Set Grey Route",
+        "operationId": "setGreyRoute",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GreyRouteIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorldActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/world/variant": {
+      "post": {
+        "tags": [
+          "geopolitics"
+        ],
+        "summary": "Launch Variant",
+        "operationId": "launchVariant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VariantIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorldActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/world/tool-licence": {
+      "post": {
+        "tags": [
+          "geopolitics"
+        ],
+        "summary": "Request Tool Licence",
+        "description": "A licence for chipmaking tools for the group's fabs in a country (39.3).",
+        "operationId": "requestToolLicence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolLicenceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorldActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/world/partner": {
+      "post": {
+        "tags": [
+          "geopolitics"
+        ],
+        "summary": "Take Local Partner",
+        "operationId": "takeLocalPartner",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartnerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorldActionOut"
                 }
               }
             }
@@ -25330,6 +25814,39 @@
         ],
         "title": "CounterPreviewOut"
       },
+      "CountryOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "bloc": {
+            "type": "string",
+            "title": "Bloc"
+          },
+          "demand_share": {
+            "type": "number",
+            "title": "Demand Share"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "region",
+          "bloc",
+          "demand_share"
+        ],
+        "title": "CountryOut"
+      },
       "CovenantOut": {
         "properties": {
           "description": {
@@ -31173,6 +31690,29 @@
         ],
         "title": "GrantOut"
       },
+      "GreyRouteIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "on": {
+            "type": "boolean",
+            "title": "On",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "country"
+        ],
+        "title": "GreyRouteIn"
+      },
       "GroupActionOut": {
         "properties": {
           "group": {
@@ -34378,35 +34918,80 @@
         "title": "LegacyOut",
         "description": "The legacy score with its parts (32.6), across every company the founder ran."
       },
-      "LicenceIn": {
+      "LicenceOut": {
         "properties": {
-          "region": {
-            "type": "string",
-            "title": "Region"
-          },
-          "block": {
+          "id": {
             "type": "integer",
-            "minimum": 0.0,
-            "title": "Block"
+            "title": "Id"
           },
           "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "rule_key": {
+            "type": "string",
+            "title": "Rule Key"
+          },
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "country_label": {
+            "type": "string",
+            "title": "Country Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "requested": {
+            "type": "string",
+            "title": "Requested"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "until": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Company Id"
+            "title": "Until"
           }
         },
         "type": "object",
         "required": [
-          "region",
-          "block"
+          "id",
+          "company_id",
+          "product_id",
+          "product",
+          "rule_key",
+          "rule",
+          "country",
+          "country_label",
+          "status",
+          "requested",
+          "decision",
+          "until"
         ],
-        "title": "LicenceIn"
+        "title": "LicenceOut"
       },
       "LicenseIn": {
         "properties": {
@@ -34529,6 +35114,39 @@
           "sensitive"
         ],
         "title": "ListedOut"
+      },
+      "ListingOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "actor_label": {
+            "type": "string",
+            "title": "Actor Label"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "actor_label",
+          "since",
+          "reason"
+        ],
+        "title": "ListingOut"
       },
       "LoanIn": {
         "properties": {
@@ -38929,6 +39547,23 @@
         "title": "OwnershipEventOut",
         "description": "One step of \"your ownership over time\" (M4b)."
       },
+      "PartnerIn": {
+        "properties": {
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          }
+        },
+        "type": "object",
+        "title": "PartnerIn"
+      },
       "PayPreviewOut": {
         "properties": {
           "allowed": {
@@ -40915,6 +41550,71 @@
           "division_id"
         ],
         "title": "ProductDivisionIn"
+      },
+      "ProductExposureOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionAccessOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "licensable": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Licensable",
+            "description": "Countries where a licence can be requested"
+          },
+          "restricted": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Restricted",
+            "description": "Countries where a biting rule restricts it"
+          },
+          "variant_possible": {
+            "type": "boolean",
+            "title": "Variant Possible"
+          },
+          "has_variant": {
+            "type": "boolean",
+            "title": "Has Variant"
+          },
+          "tariff_cents": {
+            "type": "integer",
+            "title": "Tariff Cents",
+            "description": "Last month's units at this month's tariff rates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product",
+          "company_id",
+          "regions",
+          "licensable",
+          "restricted",
+          "variant_possible",
+          "has_variant",
+          "tariff_cents"
+        ],
+        "title": "ProductExposureOut"
       },
       "ProductMonthOut": {
         "properties": {
@@ -43613,6 +44313,29 @@
         ],
         "title": "RefiningPowerOut"
       },
+      "RegionAccessOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "blocked": {
+            "type": "number",
+            "title": "Blocked"
+          },
+          "variant": {
+            "type": "number",
+            "title": "Variant"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "blocked",
+          "variant"
+        ],
+        "title": "RegionAccessOut"
+      },
       "RegionEventOut": {
         "properties": {
           "turn": {
@@ -45286,6 +46009,160 @@
         ],
         "title": "RoundsOut"
       },
+      "RuleOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "actor": {
+            "type": "string",
+            "title": "Actor"
+          },
+          "actor_label": {
+            "type": "string",
+            "title": "Actor Label"
+          },
+          "goods": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Goods"
+          },
+          "destinations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Destinations"
+          },
+          "regime": {
+            "type": "string",
+            "title": "Regime"
+          },
+          "approval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval",
+            "description": "A licence regime's base approval chance"
+          },
+          "quota": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quota"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "in_force, coming, ended or suspended"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "announced": {
+            "type": "string",
+            "title": "Announced"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "suspended_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suspended Until"
+          },
+          "effect": {
+            "type": "string",
+            "title": "Effect",
+            "description": "applies, news (shown only) or m19 (M19's mine rules)"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "seeded": {
+            "type": "boolean",
+            "title": "Seeded"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "actor",
+          "actor_label",
+          "goods",
+          "destinations",
+          "regime",
+          "approval",
+          "quota",
+          "threshold",
+          "status",
+          "month",
+          "announced",
+          "end",
+          "suspended_until",
+          "effect",
+          "tag",
+          "source",
+          "seeded"
+        ],
+        "title": "RuleOut"
+      },
       "SafeHintOut": {
         "properties": {
           "hint": {
@@ -46587,6 +47464,49 @@
         ],
         "title": "SharedServicesIn"
       },
+      "SiteOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "country_label": {
+            "type": "string",
+            "title": "Country Label"
+          },
+          "bloc": {
+            "type": "string",
+            "title": "Bloc"
+          },
+          "local_partner": {
+            "type": "boolean",
+            "title": "Local Partner"
+          },
+          "partner_needed": {
+            "type": "boolean",
+            "title": "Partner Needed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "country",
+          "country_label",
+          "bloc",
+          "local_partner",
+          "partner_needed"
+        ],
+        "title": "SiteOut"
+      },
       "SkillMetaOut": {
         "properties": {
           "key": {
@@ -47749,6 +48669,62 @@
         ],
         "title": "SupplierOut"
       },
+      "SupplyExposureOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "good_label": {
+            "type": "string",
+            "title": "Good Label"
+          },
+          "exposed": {
+            "type": "number",
+            "title": "Exposed"
+          },
+          "allocation": {
+            "type": "number",
+            "title": "Allocation"
+          },
+          "price_premium": {
+            "type": "number",
+            "title": "Price Premium",
+            "description": "Exposed share x the rule's premium over spot"
+          },
+          "rule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "good",
+          "good_label",
+          "exposed",
+          "allocation",
+          "price_premium",
+          "rule"
+        ],
+        "title": "SupplyExposureOut"
+      },
       "SupportPoolOut": {
         "properties": {
           "key": {
@@ -48218,6 +49194,53 @@
         ],
         "title": "TargetProductOut"
       },
+      "TariffOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "goods": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Goods"
+          },
+          "rate": {
+            "type": "number",
+            "title": "Rate",
+            "description": "This month's rate on the goods' cost"
+          },
+          "tag": {
+            "type": "string",
+            "title": "Tag"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "origin",
+          "market",
+          "goods",
+          "rate",
+          "tag"
+        ],
+        "title": "TariffOut"
+      },
       "TeamMoodOut": {
         "properties": {
           "unit_id": {
@@ -48381,6 +49404,35 @@
         "title": "TeamStrengthOut",
         "description": "The team's output against the two lines that matter (11.4; 23.4, M10b)."
       },
+      "TensionPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "shock": {
+            "type": "string",
+            "title": "Shock",
+            "description": "none, escalation or detente"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "value",
+          "shock"
+        ],
+        "title": "TensionPointOut"
+      },
       "TermSheetOut": {
         "properties": {
           "sheet_id": {
@@ -48539,6 +49591,19 @@
           "products"
         ],
         "title": "TimelineOut"
+      },
+      "ToolLicenceIn": {
+        "properties": {
+          "country": {
+            "type": "string",
+            "title": "Country"
+          }
+        },
+        "type": "object",
+        "required": [
+          "country"
+        ],
+        "title": "ToolLicenceIn"
       },
       "TradeIn": {
         "properties": {
@@ -49137,6 +50202,51 @@
         ],
         "title": "ValidationError"
       },
+      "VariantIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "VariantIn"
+      },
+      "VariantOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "launched": {
+            "type": "string",
+            "title": "Launched"
+          },
+          "voided_by": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Voided By",
+            "description": "Rules in force that do not accept it"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product",
+          "launched",
+          "voided_by"
+        ],
+        "title": "VariantOut"
+      },
       "VentureIn": {
         "properties": {
           "company_id": {
@@ -49286,6 +50396,165 @@
         ],
         "title": "WaferContractIn"
       },
+      "WorldActionOut": {
+        "properties": {
+          "world": {
+            "$ref": "#/components/schemas/WorldOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "world",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "WorldActionOut"
+      },
+      "WorldOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "tension": {
+            "type": "number",
+            "title": "Tension"
+          },
+          "tension_history": {
+            "items": {
+              "$ref": "#/components/schemas/TensionPointOut"
+            },
+            "type": "array",
+            "title": "Tension History"
+          },
+          "countries": {
+            "items": {
+              "$ref": "#/components/schemas/CountryOut"
+            },
+            "type": "array",
+            "title": "Countries"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RuleOut"
+            },
+            "type": "array",
+            "title": "Rules"
+          },
+          "licences": {
+            "items": {
+              "$ref": "#/components/schemas/LicenceOut"
+            },
+            "type": "array",
+            "title": "Licences"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/VariantOut"
+            },
+            "type": "array",
+            "title": "Variants"
+          },
+          "listings": {
+            "items": {
+              "$ref": "#/components/schemas/ListingOut"
+            },
+            "type": "array",
+            "title": "Listings"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductExposureOut"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "supply": {
+            "items": {
+              "$ref": "#/components/schemas/SupplyExposureOut"
+            },
+            "type": "array",
+            "title": "Supply"
+          },
+          "sites": {
+            "items": {
+              "$ref": "#/components/schemas/SiteOut"
+            },
+            "type": "array",
+            "title": "Sites"
+          },
+          "tariffs": {
+            "items": {
+              "$ref": "#/components/schemas/TariffOut"
+            },
+            "type": "array",
+            "title": "Tariffs",
+            "description": "Tariff schedules in force this month"
+          },
+          "tool_licensable": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tool Licensable",
+            "description": "Countries where a tool licence for fabs can be asked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "tension",
+          "tension_history",
+          "countries",
+          "rules",
+          "licences",
+          "variants",
+          "listings",
+          "products",
+          "supply",
+          "sites",
+          "tariffs",
+          "tool_licensable"
+        ],
+        "title": "WorldOut"
+      },
+      "tst__api__schemas__exploration__LicenceIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "block": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Block"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "block"
+        ],
+        "title": "LicenceIn"
+      },
       "tst__api__schemas__facilities__IndexPointOut": {
         "properties": {
           "turn": {
@@ -49383,6 +50652,24 @@
           "cause"
         ],
         "title": "CauseOut"
+      },
+      "tst__api__schemas__geopolitics__LicenceIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "country"
+        ],
+        "title": "LicenceIn"
       },
       "tst__api__schemas__hardware__OptionOut": {
         "properties": {

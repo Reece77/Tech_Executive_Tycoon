@@ -23,7 +23,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 46  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+SCHEMA_VERSION = 47  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+# M22: 0047
 
 
 class Base(DeclarativeBase):
@@ -2140,4 +2141,19 @@ class RefiningSupplyRow(Base):
     __tablename__ = "refining_supply"
 
     n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- M22 (formulas.md 39; migration 0046): geopolitics and export controls -----------------
+
+
+class GeoRecordRow(Base):
+    """One geopolitical record (39; 0046): `kind` names its GameState collection (tension,
+    seeded_rules, suspensions, licences, variants, listings, sites, exits, geo_notices) and
+    `data` its fields; rows keep each collection's order."""
+
+    __tablename__ = "geo_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

@@ -57,6 +57,8 @@ MINERAL_PROPERTIES: Final = "1520_mineral_properties"  # mines' capitalized cost
 ARO: Final = "2610_asset_retirement_obligation"  # mines' reclamation provision (M19, 35.3)
 COMMODITY_REVENUE: Final = "4400_revenue_commodities"  # mines' sales (M19, 35.3)
 DEPLETION: Final = "6750_depletion"  # units-of-production depletion (M19, 35.3)
+TARIFFS: Final = "5100_tariffs"  # tariffs on goods crossing blocs (M22, 39.3)
+LOCAL_PARTNER_SHARE: Final = "5110_local_partner_share"  # a local partner's share (M22, 39.3)
 ROYALTIES: Final = "6960_royalties"  # host governments' royalties, state shares (M19, 35.3)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
@@ -100,6 +102,8 @@ ENGINE_ACCOUNTS: Final = (
     COMMODITY_REVENUE,
     DEPLETION,
     ROYALTIES,
+    TARIFFS,
+    LOCAL_PARTNER_SHARE,
 )
 
 

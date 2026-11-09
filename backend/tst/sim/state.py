@@ -45,6 +45,17 @@ from tst.sim.geo.models import (
     RegionalMarket,
     RegionalSegment,
 )
+from tst.sim.geopolitics.models import (
+    EntityListing,
+    Exit,
+    Licence,
+    Notice,
+    SeededRule,
+    Site,
+    Suspension,
+    TensionMonth,
+    Variant,
+)
 from tst.sim.group.models import (
     EQUITY_ENDS,
     FULL_STAKE_BP,
@@ -344,6 +355,19 @@ class GameState:
     mines: tuple[Mine, ...] = ()
     mine_deals: tuple[MineDeal, ...] = ()
     rival_bids: tuple[RivalBid, ...] = ()
+    # M22 (39): seeded tension months after 2025 by turn; seeded rules and suspensions in the
+    # order they arrived; licences by id; compliant variants by product id; entity listings in
+    # listing order; sites by (kind, id); blocked customers leaving by (product, region,
+    # segment); notices behind geopolitical events, by (turn, company, template)
+    tension: tuple[TensionMonth, ...] = ()
+    seeded_rules: tuple[SeededRule, ...] = ()
+    suspensions: tuple[Suspension, ...] = ()
+    licences: tuple[Licence, ...] = ()
+    variants: tuple[Variant, ...] = ()
+    entity_listings: tuple[EntityListing, ...] = ()
+    sites: tuple[Site, ...] = ()
+    exits: tuple[Exit, ...] = ()
+    geo_notices: tuple[Notice, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def mine(self, mine_id: int) -> Mine | None:
@@ -1204,6 +1228,18 @@ def with_contract(state: GameState, contract: SupplyContract) -> GameState:
 
 def with_commodity_deal(state: GameState, deal: CommodityDeal) -> GameState:
     return replace(state, commodity_deals=_upsert(state.commodity_deals, deal, lambda d: d.id))
+
+
+def with_licence(state: GameState, licence: Licence) -> GameState:
+    return replace(state, licences=_upsert(state.licences, licence, lambda x: x.id))
+
+
+def with_variant(state: GameState, variant: Variant) -> GameState:
+    return replace(state, variants=_upsert(state.variants, variant, lambda x: x.product_id))
+
+
+def with_site(state: GameState, site: Site) -> GameState:
+    return replace(state, sites=_upsert(state.sites, site, lambda x: (x.kind, x.id)))
 
 
 def with_refinery(state: GameState, refinery: Refinery) -> GameState:

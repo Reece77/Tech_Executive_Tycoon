@@ -1,0 +1,42 @@
+# Tariff schedules (docs/formulas.md 39.3, M22; dossier 5: Section 301, Jul-Sep 2018 and May 2019).
+# The same on every seed. A schedule taxes goods made in `origin` (a country or bloc) and sold in
+# `market` (a country or bloc) at `rate` of the goods' cost from each step's month until the next
+# step (rate 0 ends it). Goods: devices, servers, chips (balance.yaml geopolitics.tariff_goods).
+# The tax is posted to 5100 tariffs (cost of revenue) by the selling company; transfer prices
+# carry it inside a group (M16). Rates are effective rates on the goods' cost, an assumption
+# across each good's tariff lines (USTR lists 1-4A, R):
+#   devices: list 3 (10%, Sep 2018) on accessories and parts, list 4A (15%, Sep 2019) on most
+#     consumer electronics; 2025's fentanyl and reciprocal duties lift the effective rate to 20%
+#     (Feb-Apr 2025, R); phones and laptops (list 4B) were never taxed, which the effective rate
+#     averages in.
+#   servers: list 3 (10% Sep 2018, 25% from 10 May 2019, V month, R day).
+#   chips: list 2 (25% from 23 Aug 2018, R day); China's retaliation on US chips at 25% (R).
+schedules:
+  - key: us_301_devices
+    title: "Section 301 tariffs on Chinese electronics"
+    origin: china
+    market: us
+    goods: [devices]
+    steps: [["2018-09", 0.10], ["2019-09", 0.15], ["2025-04", 0.20]]
+    tag: R
+  - key: us_301_servers
+    title: "Section 301 tariffs on Chinese servers"
+    origin: china
+    market: us
+    goods: [servers]
+    steps: [["2018-09", 0.10], ["2019-05", 0.25]]
+    tag: R
+  - key: us_301_chips
+    title: "Section 301 tariffs on Chinese semiconductors"
+    origin: china
+    market: us
+    goods: [chips]
+    steps: [["2018-08", 0.25], ["2025-04", 0.50]]
+    tag: R
+  - key: cn_retaliation_chips
+    title: "China's retaliatory tariffs on US semiconductors"
+    origin: us
+    market: china
+    goods: [chips]
+    steps: [["2018-08", 0.25]]
+    tag: R

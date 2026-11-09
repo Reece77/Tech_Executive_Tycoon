@@ -353,6 +353,12 @@ def apply_choice(
             state, posted, logged = refining_step(state, event, effect.stat, balance, data)
             entries += posted
             logs += logged
+        elif t == "geopolitics_step" and effect.stat:  # M22 (39.3): an export rule's answer
+            from tst.sim.geopolitics.events import geopolitics_step
+
+            state, posted, logged = geopolitics_step(state, event, effect.stat, balance, data)
+            entries += posted
+            logs += logged
         elif t == "mining_step" and effect.stat:  # M19 (35.4): a mine event's answer
             from tst.sim.mining.risk import mining_step
 

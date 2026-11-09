@@ -31,6 +31,7 @@ from tst.sim.fabs import plants as fab_plants
 from tst.sim.fabs import supply as fab_supply
 from tst.sim.facilities.lifecycle import facility_name, staffing
 from tst.sim.facilities.models import Facility
+from tst.sim.geopolitics import supply as geo_supply
 from tst.sim.hardware import formulas as hf
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hardware.supply import delivered_share
@@ -292,7 +293,11 @@ def build_plan(state: GameState, balance: Balance, data: GameData) -> Production
 def unit_bom_cents(state: GameState, product: Product, balance: Balance, data: GameData) -> float:
     """The BOM at this month's index with its commodities at spot (26.2, 33.2)."""
     bom = balance.hardware.bom[product.category]
-    return hf.bom_cents(bom.base_cents, costs.cost_index(state, bom.good, data, balance))
+    cents = hf.bom_cents(bom.base_cents, costs.cost_index(state, bom.good, data, balance))
+    # M22 (39.3): the premium on its commodities bought from a restricting actor
+    return cents + geo_supply.surcharge_cents(
+        state, product.company_id, bom.good, bom.base_cents, balance, data
+    )
 
 
 def plant_unit_cents(state: GameState, plant: Facility, balance: Balance) -> float:

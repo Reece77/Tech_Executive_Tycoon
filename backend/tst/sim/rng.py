@@ -93,6 +93,10 @@ STREAM_IDS: Final = MappingProxyType(
         # a rival foundry's lag to a node after 2025, (4, foundry index, year) its capacity
         # growth that year (M21, 38.1-38.3)
         "fab": 54,
+        # key (0,): the month's tension draws after 2025 (a normal, then escalation, détente
+        # and rule uniforms); (1, licence id): a licence decision; (2, company id): an entity
+        # listing (M22, 39.1-39.3)
+        "geopolitics": 55,
         "misc": 99,
     }
 )

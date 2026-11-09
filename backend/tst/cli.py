@@ -3863,6 +3863,75 @@ def upgrade_fab_cmd(
     got = next(x for x in result.new_state.fabs if x.facility_id == fab)
     ready = format_turn(got.upgrade_ready) if got.upgrade_ready is not None else "-"
     typer.echo(f"Fab {fab} converts to {got.upgrade_node}, ready {ready}")
+
+
+# --- M22 (formulas.md 39): geopolitics and export controls ------------------------------------
+
+
+@app.command("world")
+def world_cmd(save: SaveOpt) -> None:
+    """Blocs, tension, the export rules announced so far, licences and your exposure (39)."""
+    from tst.api import geopolitics_views
+
+    _, data, state = _game(save)
+    w = geopolitics_views.world_out(state, data)
+    typer.echo(f"{format_turn(w.turn)}: US-China tension {w.tension:.0f}/100")
+    for r in w.rules:
+        if r.status in ("in_force", "coming", "suspended"):
+            extra = f" until {r.suspended_until}" if r.suspended_until else ""
+            typer.echo(
+                f"  [{r.status}{extra}] {r.month} {r.title}: {r.actor_label}, {r.regime}"
+                f" ({', '.join(r.goods)} to {', '.join(r.destinations)}) {r.tag or ''}"
+            )
+    for t in w.tariffs:
+        typer.echo(f"  tariff: {t.title} {t.rate:.0%} ({', '.join(t.goods)})")
+    for x in w.licences:
+        typer.echo(f"  licence {x.id}: {x.product} to {x.country_label} [{x.status}] {x.rule}")
+    for p in w.products:
+        regions = ", ".join(
+            f"{a.region} {a.blocked:.0%} closed"
+            + (f", {a.variant:.0%} variant" if a.variant else "")
+            for a in p.regions
+        )
+        typer.echo(f"  {p.product}: {regions or 'open'}; tariffs {format_money(p.tariff_cents)}")
+    for sx in w.supply:
+        typer.echo(
+            f"  {sx.company} {sx.good_label}: {sx.exposed:.0%} exposed, allocation"
+            f" {sx.allocation:.0%}, premium {sx.price_premium:+.0%} ({sx.rule})"
+        )
+    for lx in w.listings:
+        typer.echo(f"  listed: {lx.company} on {lx.actor_label}'s entity list since {lx.since}")
+
+
+@app.command("licence-request")
+def licence_request_cmd(
+    save: SaveOpt,
+    product: Annotated[int, typer.Option("--product", help="A product id")],
+    country: Annotated[str, typer.Option("--country", help="A countries.yaml key")],
+) -> None:
+    """Request an export licence for a product's sales to a country (39.3), energy 3."""
+    from tst.sim.geopolitics.actions import RequestLicence
+
+    path, data, state = _game(save)
+    result = _run(path, data, RequestLicence(_founder(state), product, country))
+    for x in result.new_state.licences:
+        if x.product_id == product and x.country == country and x.status == "pending":
+            typer.echo(
+                f"Licence {x.id} requested ({x.rule_key}); decision {format_turn(x.decide_turn)}"
+            )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("compliant-variant")
+def compliant_variant_cmd(
+    save: SaveOpt, product: Annotated[int, typer.Option("--product", help="A chip product id")]
+) -> None:
+    """Launch a compliant variant of a chip under the export threshold (39.3), energy 5."""
+    from tst.sim.geopolitics.actions import LaunchVariant
+
+    path, data, state = _game(save)
+    result = _run(path, data, LaunchVariant(_founder(state), product))
+    typer.echo(f"Compliant variant of product {product} launched {format_turn(state.turn)}")
     typer.echo(f"  {_energy(result.new_state, data)}")
 
 
