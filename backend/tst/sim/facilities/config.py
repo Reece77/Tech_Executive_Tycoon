@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import itertools
 import re
-from typing import Final
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -82,6 +82,13 @@ class FacilityKindDef(_Frozen):
     variable_cents: int = Field(default=0, ge=0)
     sizes: tuple[int, ...] | None = None
     outages: bool = True
+    # M19 (ADR-0020 2): the module whose own rules run the kind. "generic" kinds take the shared
+    # capex, depreciation, operating cost and sale; a mine's are in tst.sim.mining.
+    module: Literal["generic", "mining"] = "generic"
+
+    @property
+    def generic(self) -> bool:
+        return self.module == "generic"
 
 
 class OutageBalance(_Frozen):

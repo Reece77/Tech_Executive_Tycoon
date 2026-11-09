@@ -54,7 +54,7 @@ After an exit or a secondary sale, back a startup with someone who used to work 
 12. **Net worth** is recorded at every month end (`wealth_point`); open angel stakes at the last round price (37.5), listed shares and M16's spin-off shares at market, the founder's own stake at market once listed, else their fully diluted share of 28.1's value. The legacy term uses the last month end's net worth.
 13. **Measuring 37.6 target 1:** an open stake at year 10 is valued at its startup's 28.1 value (true values; the script is a tool). At the last round price nearly every open stake read exactly 1.0x (most startups never raise again: a founding cheque is marked at cost forever), so the median and top decile were 1.00x whatever happened. The in-game net worth keeps the last round price.
 14. **Tuned (M26's keys only):** `angel.round_dilution` 0.2 -> 0.12 (target 1: at 0.2 the portfolio was 4.84x on seeds 1-4, above 0.8-3.0, top decile 18.5x); `family_office.mandates` conservative index 0.3 -> 0.4, balanced 0.6 / vol 0.01 -> 0.95 / 0.005, aggressive vol 0.02 -> 0.03 (target 3: the game's index returns about 32% a year with 38% volatility, so balanced at 0.6 trailed it by 13.6 points).
-15. **Migration** `0043_m26` follows M18's `0042_m18`; schema version 43. If M19 or M20 merges first, the later lane renumbers its migration (decision rule 8).
+15. **Migration** `0044_m26` follows M19's `0043_m19` (M19 merged first; renumbered at the merge, decision rule 8); schema version 44.
 
 ## 37.6 targets (10 seeds, `tools/m26_targets.py`, on the code with `round_dilution` 0.12 and the tuned mandates)
 

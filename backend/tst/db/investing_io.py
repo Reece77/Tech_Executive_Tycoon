@@ -1,4 +1,4 @@
-"""Loading and syncing M26's records (formulas.md 37; migration 0043): startups' rounds,
+"""Loading and syncing M26's records (formulas.md 37; migration 0044): startups' rounds,
 angel stakes, trades, public holdings, family offices, net-worth history and the market
 index, each kept as JSON. Hidden fields (a trade's regulatory risk and investigation draw, a
 concealed conflict's discovery) are stored with their record; the API never reads them."""

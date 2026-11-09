@@ -10,8 +10,8 @@ the company chart.
 Existing saves start with none of these: their rounds, index and net worth are recorded from
 the next month.
 
-Revision ID: 0043_m26
-Revises: 0042_m18
+Revision ID: 0044_m26
+Revises: 0043_m19
 """
 
 from __future__ import annotations
@@ -21,8 +21,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0043_m26"
-down_revision: str | None = "0042_m18"
+revision: str = "0044_m26"
+down_revision: str | None = "0043_m19"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -45,10 +45,10 @@ def upgrade() -> None:
             *(sa.Column(k, sa.Integer(), primary_key=True, autoincrement=False) for k in keys),
             sa.Column("data", sa.JSON(), nullable=False),
         )
-    op.execute("UPDATE save_meta SET schema_version = 43")
+    op.execute("UPDATE save_meta SET schema_version = 44")
 
 
 def downgrade() -> None:
-    op.execute("UPDATE save_meta SET schema_version = 42")
+    op.execute("UPDATE save_meta SET schema_version = 43")
     for name, _ in reversed(TABLES):
         op.drop_table(name)

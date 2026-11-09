@@ -16,8 +16,9 @@ type LinkKind = Literal[
     "rankings",
     "group",
     "exploration",
+    "mine",
 ]  # rival: M14 and M14b; rankings: the Rankings screen (M15r addendum b); group: M16;
-# exploration: the Exploration screen's project (M18)
+# exploration: the Exploration screen's project (M18); mine: the Mines screen's mine (M19)
 type ParamValue = str | int
 
 

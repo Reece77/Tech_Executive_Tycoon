@@ -42,8 +42,8 @@ def test_hashes_cover_every_file(loaded: LoadedData) -> None:
     assert (
         sorted(loaded.hashes) == sorted([*DATA_FILES, *events])
         and len(events)
-        == 18  # M10b: crisis; M10c: executive; M11: research; M14: deals; M14b: press; M16; M18;
-        # M26: personal.yaml
+        == 19  # M10b: crisis; M10c: executive; M11: research; M14: deals; M14b: press; M16; M18;
+        # M19: mining.yaml; M26: personal.yaml
     )  # M7a: founder.yaml; M10: lender.yaml; M12a: facility.yaml; M13: public.yaml
     # M14b: press.yaml
     for name, digest in loaded.hashes.items():
@@ -138,8 +138,9 @@ def test_people_seed_data_loads(loaded: LoadedData) -> None:
     assert len(data.interests) == 13
     assert len(data.regions) == 7
     assert (
-        len(data.roles) == 16
-    )  # M12b: hardware engineer, chip designer, manufacturing engineer; M18: geologist
+        len(data.roles) == 17
+    )  # M12b: hardware engineer, chip designer, manufacturing engineer; M18: geologist; M19
+    # mining engineer
     assert len(data.tags) == 9
     assert [b.key for b in data.backgrounds if b.selectable] == [
         "engineer",

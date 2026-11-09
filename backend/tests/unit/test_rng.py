@@ -95,6 +95,8 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "commodity": 47,  # M17 (33.1, 33.3, 33.5)
         "geology": 48,  # M18 (34.1)
         "exploration": 49,  # M18 (34.2-34.3)
+        "mining": 50,  # M19 (35.2-35.4)
+        "region_risk": 52,  # M19 (35.4)
         "personal": 53,  # M26 (37)
         "misc": 99,
     }

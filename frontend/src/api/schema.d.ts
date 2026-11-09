@@ -3971,6 +3971,219 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/mines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Mines
+         * @description The group's mines (construction, output, grade, cost against price, reserves as ranges,
+         *     staff, events, closure), permitted projects to build on, assets to move, rivals' bids,
+         *     resource-nationalism events and rival miners (35).
+         */
+        get: operations["getMines"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/subsidiaries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Found Subsidiary
+         * @description 35.1: a new, wholly owned subsidiary with a cash injection from the group.
+         */
+        post: operations["foundSubsidiary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/transfer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Transfer Asset
+         * @description 35.1: move a project or a facility to another group company at book value.
+         */
+        post: operations["transferAsset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/build": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Build Mine
+         * @description 35.2: build a mine on a permitted project.
+         */
+        post: operations["buildMine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/{mine_id}/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Mine Sales
+         * @description 35.3: spot, or a group company at a transfer price.
+         */
+        post: operations["setMineSales"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/{mine_id}/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Staff Mine */
+        post: operations["staffMine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/{mine_id}/safety": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Mine Safety */
+        post: operations["setMineSafety"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/{mine_id}/deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Mine Sale
+         * @description 35.3: a fixed-price contract or an offtake, the mine as seller.
+         */
+        post: operations["signMineSale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/{mine_id}/care": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Care Maintenance
+         * @description 35.4: care and maintenance, or a restart.
+         */
+        post: operations["careMaintenance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/{mine_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close Mine */
+        post: operations["closeMine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mines/bids/{bid_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Rival Bid
+         * @description 35.5: accept or decline a rival's bid.
+         */
+        post: operations["answerRivalBid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/explain/{metric}": {
         parameters: {
             query?: never;
@@ -4833,6 +5046,11 @@ export interface components {
              */
             reputation: string;
         };
+        /** BidAnswerIn */
+        BidAnswerIn: {
+            /** Accept */
+            accept: boolean;
+        };
         /** BidIn */
         BidIn: {
             /** Company Id */
@@ -5019,6 +5237,13 @@ export interface components {
             /** Contract Id */
             contract_id?: number | null;
         };
+        /** BuildMineIn */
+        BuildMineIn: {
+            /** Project Id */
+            project_id: number;
+            /** Capacity T */
+            capacity_t?: number | null;
+        };
         /** BuildPreviewOut */
         BuildPreviewOut: {
             /**
@@ -5182,6 +5407,14 @@ export interface components {
             secondary_fee_pct: number;
             /** Secondary Energy */
             secondary_energy: number;
+        };
+        /** CareIn */
+        CareIn: {
+            /**
+             * Restart
+             * @default false
+             */
+            restart?: boolean;
         };
         /** CashFlowOut */
         CashFlowOut: {
@@ -7757,6 +7990,15 @@ export interface components {
              */
             keep_cents?: number;
         };
+        /** FoundSubsidiaryIn */
+        FoundSubsidiaryIn: {
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Cents */
+            cents: number;
+        };
         /** FoundationFormOut */
         FoundationFormOut: {
             /** Can Create */
@@ -10123,6 +10365,352 @@ export interface components {
             title: string;
             /** Detail */
             detail: string;
+        };
+        /** MineDealOut */
+        MineDealOut: {
+            /** Id */
+            id: number;
+            /** Kind */
+            kind: string;
+            /** Buyer */
+            buyer: string;
+            /** Signed Label */
+            signed_label: string;
+            /** End Label */
+            end_label: string;
+            /** Volume T Year */
+            volume_t_year: number;
+            /** Floor Usd T */
+            floor_usd_t: number;
+            /** Ceiling Usd T */
+            ceiling_usd_t: number;
+            /** Delivered T */
+            delivered_t: number;
+            /** Running */
+            running: boolean;
+        };
+        /** MineMonthOut */
+        MineMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /** Output T */
+            output_t: number;
+            /**
+             * Grade
+             * @description The month's reconciled grade (public once mined)
+             */
+            grade: number;
+            /** Price Usd T */
+            price_usd_t: number;
+            /**
+             * Cost Usd T
+             * @description Cash cost a t: operations, royalties and sustaining
+             */
+            cost_usd_t: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Margin Cents */
+            margin_cents: number;
+        };
+        /** MineOut */
+        MineOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Company Id */
+            company_id: number;
+            /** Company Name */
+            company_name: string;
+            /** Project Id */
+            project_id: number;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Commodity */
+            commodity: string;
+            /** Commodity Label */
+            commodity_label: string;
+            /** Subtype */
+            subtype: string;
+            /** Subtype Label */
+            subtype_label: string;
+            /** Status */
+            status: string;
+            /**
+             * Level
+             * @description The feasibility study it was built on
+             */
+            level: string;
+            /**
+             * Capacity T
+             * @description Product a year at the design grade
+             */
+            capacity_t: number;
+            /** Ordered Label */
+            ordered_label: string;
+            /** Ready Label */
+            ready_label: string;
+            /** Construction Months */
+            construction_months: number;
+            /** Construction Done */
+            construction_done: number;
+            /**
+             * Estimate Cents
+             * @description The study's capex for this capacity
+             */
+            estimate_cents: number;
+            /**
+             * Overrun Low
+             * @description The study level's overrun range: public
+             */
+            overrun_low: number;
+            /** Overrun High */
+            overrun_high: number;
+            /**
+             * Revised Cents
+             * @description The whole capex once the cost to complete is revised; None before
+             */
+            revised_cents: number | null;
+            /** Capex Paid Cents */
+            capex_paid_cents: number;
+            /** Book Cents */
+            book_cents: number;
+            /** Reclamation Owed Cents */
+            reclamation_owed_cents: number;
+            /** Reclamation Provisioned Cents */
+            reclamation_provisioned_cents: number;
+            /** Product T */
+            product_t: number;
+            /**
+             * Reserves Low T
+             * @description The resource estimate's range of product left (est. ore less ore mined, at the design grade and recovery); never the truth
+             */
+            reserves_low_t: number | null;
+            /** Reserves High T */
+            reserves_high_t: number | null;
+            /** Last Output T */
+            last_output_t: number | null;
+            /** Last Grade */
+            last_grade: number | null;
+            /** Design Grade */
+            design_grade: number;
+            /** Price Usd T */
+            price_usd_t: number;
+            /**
+             * Price Usd Lb
+             * @description Copper's price a pound
+             */
+            price_usd_lb: number | null;
+            /**
+             * Cost Usd T
+             * @description Last producing month's all-in cost a t
+             */
+            cost_usd_t: number | null;
+            /** Cost Usd Lb */
+            cost_usd_lb: number | null;
+            /**
+             * Expected Cost Usd T
+             * @description The all-in sustaining cost a t at capacity and the design grade
+             */
+            expected_cost_usd_t: number;
+            /** Staff */
+            staff: number;
+            /** Staff Needed */
+            staff_needed: number;
+            /** Coverage */
+            coverage: number;
+            /** Unit Id */
+            unit_id: number | null;
+            /** Safety */
+            safety: string;
+            /** Buyer Id */
+            buyer_id: number | null;
+            /** Buyer Name */
+            buyer_name: string | null;
+            /** Price Kind */
+            price_kind: string;
+            /** Margin */
+            margin: number | null;
+            /** State Share */
+            state_share: number;
+            /** Ban Until Label */
+            ban_until_label: string | null;
+            /** Below Cost Months */
+            below_cost_months: number;
+            /** Accidents */
+            accidents: number;
+            /**
+             * Open Event
+             * @description accident | takeover | crash awaiting an answer
+             */
+            open_event: string | null;
+            /** Arbitration Label */
+            arbitration_label: string | null;
+            /** Closed Label */
+            closed_label: string | null;
+            /** Close Reason */
+            close_reason: string | null;
+            /** History */
+            history: components["schemas"]["MineMonthOut"][];
+            /** Deals */
+            deals: components["schemas"]["MineDealOut"][];
+        };
+        /** MineQuoteOut */
+        MineQuoteOut: {
+            /** Project Id */
+            project_id: number;
+            /** Label */
+            label: string;
+            /** Company Id */
+            company_id: number;
+            /** Company Name */
+            company_name: string;
+            /** Commodity */
+            commodity: string;
+            /** Commodity Label */
+            commodity_label: string;
+            /** Region */
+            region: string;
+            /** Subtype */
+            subtype: string;
+            /** Subtype Label */
+            subtype_label: string;
+            /** Level */
+            level: string;
+            /** Design T */
+            design_t: number;
+            /** Capacity Low T */
+            capacity_low_t: number;
+            /** Capacity High T */
+            capacity_high_t: number;
+            /**
+             * Estimate Cents
+             * @description At the design capacity
+             */
+            estimate_cents: number;
+            /** Capex Scale */
+            capex_scale: number;
+            /** Construction Low */
+            construction_low: number;
+            /** Construction High */
+            construction_high: number;
+            /** Overrun Low */
+            overrun_low: number;
+            /** Overrun High */
+            overrun_high: number;
+            /** Staff Needed */
+            staff_needed: number;
+            /** Npv Low Cents */
+            npv_low_cents: number | null;
+            /** Npv Mid Cents */
+            npv_mid_cents: number | null;
+            /** Npv High Cents */
+            npv_high_cents: number | null;
+            /** Allowed */
+            allowed: boolean;
+            /** Reason */
+            reason: string;
+        };
+        /** MineSafetyIn */
+        MineSafetyIn: {
+            /** Safety */
+            safety: string;
+        };
+        /** MineSaleDealIn */
+        MineSaleDealIn: {
+            /** Deal Kind */
+            deal_kind: string;
+            /** Volume T Year */
+            volume_t_year: number;
+            /** Months */
+            months?: number | null;
+            /** Years */
+            years?: number | null;
+        };
+        /** MineSalesIn */
+        MineSalesIn: {
+            /** Buyer Id */
+            buyer_id?: number | null;
+            /**
+             * Price Kind
+             * @default market
+             */
+            price_kind?: string;
+            /** Margin */
+            margin?: number | null;
+        };
+        /** MineStaffIn */
+        MineStaffIn: {
+            /** Unit Id */
+            unit_id: number | null;
+        };
+        /** MinesActionOut */
+        MinesActionOut: {
+            mines: components["schemas"]["MinesOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** MinesOut */
+        MinesOut: {
+            /** Turn Label */
+            turn_label: string;
+            /** Group Stage */
+            group_stage: number;
+            /** Found Min Stage */
+            found_min_stage: number;
+            /** Found Min Cents */
+            found_min_cents: number;
+            /** Found Energy */
+            found_energy: number;
+            /** Build Energy */
+            build_energy: number;
+            /** Companies */
+            companies: components["schemas"]["MiningCompanyOut"][];
+            /** Mines */
+            mines: components["schemas"]["MineOut"][];
+            /** Quotes */
+            quotes: components["schemas"]["MineQuoteOut"][];
+            /** Assets */
+            assets: components["schemas"]["TransferAssetOut"][];
+            /** Units */
+            units: components["schemas"]["UnitOptionOut"][];
+            /** Bids */
+            bids: components["schemas"]["RivalBidOut"][];
+            /** Events */
+            events: components["schemas"]["RegionEventOut"][];
+            /** Regions */
+            regions: components["schemas"]["RegionRiskOut"][];
+            /** Rivals */
+            rivals: components["schemas"]["RivalMinerOut"][];
+            /** Transfer Kinds */
+            transfer_kinds: string[];
+            /** Safety Levels */
+            safety_levels: string[];
+            /** Contract Months */
+            contract_months: number[];
+            /** Offtake Years */
+            offtake_years: number[];
+        };
+        /** MiningCompanyOut */
+        MiningCompanyOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @description operating | holding | subsidiary
+             */
+            role: string;
+            /** Region */
+            region: string | null;
+            /** Cash Cents */
+            cash_cents: number;
         };
         /** MnaActionOut */
         MnaActionOut: {
@@ -12672,6 +13260,38 @@ export interface components {
              */
             years: number[];
         };
+        /** RegionEventOut */
+        RegionEventOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Commodity */
+            commodity: string | null;
+            /** Kind */
+            kind: string;
+            /** Months */
+            months: number;
+            /** Title */
+            title: string;
+            /** Seeded */
+            seeded: boolean;
+        };
+        /** RegionRiskOut */
+        RegionRiskOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Royalty Rate */
+            royalty_rate: number;
+            /** Resource Nationalism */
+            resource_nationalism: number;
+        };
         /** RegionSegmentOut */
         RegionSegmentOut: {
             /** Segment */
@@ -12858,6 +13478,23 @@ export interface components {
             /** License Energy */
             license_energy: number;
         };
+        /** RivalBidOut */
+        RivalBidOut: {
+            /** Id */
+            id: number;
+            /** Bidder */
+            bidder: string;
+            /** Asset */
+            asset: string;
+            /** Project Id */
+            project_id: number | null;
+            /** Mine Id */
+            mine_id: number | null;
+            /** Cents */
+            cents: number;
+            /** Expires Label */
+            expires_label: string;
+        };
         /** RivalLeadOut */
         RivalLeadOut: {
             /** Company Id */
@@ -12922,6 +13559,27 @@ export interface components {
             /** Statements */
             statements: components["schemas"]["StatementOut"][];
             feud: components["schemas"]["FeudOut"];
+        };
+        /** RivalMinerOut */
+        RivalMinerOut: {
+            /** Supplier */
+            supplier: string;
+            /** Name */
+            name: string;
+            /** Commodity */
+            commodity: string;
+            /** Commodity Label */
+            commodity_label: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Start Share */
+            start_share: number;
+            /** Capacity Share */
+            capacity_share: number;
+            /** Output Share */
+            output_share: number;
         };
         /** RivalMoveOut */
         RivalMoveOut: {
@@ -14762,6 +15420,33 @@ export interface components {
             /** Effects */
             effects: string;
         };
+        /** TransferAssetOut */
+        TransferAssetOut: {
+            /**
+             * Kind
+             * @description project | facility
+             */
+            kind: string;
+            /** Id */
+            id: number;
+            /** Label */
+            label: string;
+            /** Company Id */
+            company_id: number;
+            /** Company Name */
+            company_name: string;
+            /** Book Cents */
+            book_cents: number;
+        };
+        /** TransferIn */
+        TransferIn: {
+            /** To Company Id */
+            to_company_id: number;
+            /** Project Id */
+            project_id?: number | null;
+            /** Facility Id */
+            facility_id?: number | null;
+        };
         /** TransferPriceIn */
         TransferPriceIn: {
             /** Seller Id */
@@ -14819,6 +15504,22 @@ export interface components {
              * @description Null: the parent unit's office, up to the HQ
              */
             office_id: number | null;
+        };
+        /** UnitOptionOut */
+        UnitOptionOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Company Name */
+            company_name: string;
+            /** Mining Engineers */
+            mining_engineers: number;
+            /**
+             * Staffs
+             * @description The facility it staffs, if any
+             */
+            staffs: number | null;
         };
         /** UnitOut */
         UnitOut: {
@@ -28020,6 +28721,687 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExplorationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMines: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    foundSubsidiary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FoundSubsidiaryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    transferAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuildMineIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setMineSales: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                mine_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MineSalesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    staffMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                mine_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MineStaffIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setMineSafety: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                mine_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MineSafetyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signMineSale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                mine_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MineSaleDealIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    careMaintenance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                mine_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CareIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    closeMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                mine_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    answerRivalBid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                bid_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BidAnswerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinesActionOut"];
                 };
             };
             /** @description Bad Request */

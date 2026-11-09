@@ -49,6 +49,7 @@ from tst.sim.founder.config import (
 from tst.sim.group.config import GroupBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
+from tst.sim.mining.config import MiningBalance, NationalizationHistory
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
 from tst.sim.modes.config import (
     HistoricalScenario,
@@ -1269,6 +1270,7 @@ class Balance(_Frozen):
     power: PowerBalance  # M17 (formulas.md 33.5)
     geology: GeologyBalance  # M18 (formulas.md 34.1)
     exploration: ExplorationBalance  # M18 (formulas.md 34.2-34.3)
+    mining: MiningBalance  # M19 (formulas.md 35)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1372,6 +1374,10 @@ class Region(_Frozen):
     key: str = Field(pattern=_KEY)
     label: str = Field(min_length=1)
     salary_multiplier_bp: int = Field(gt=0)
+    # M19 (35.3, 35.4): the host government's royalty on a mine's revenue, and its resource
+    # nationalism (0-1: how likely it takes or bans exports of strategic minerals)
+    royalty_rate: float = Field(default=0.0, ge=0, le=1)
+    resource_nationalism: float = Field(default=0.0, ge=0, le=1)
 
 
 class RegionsFile(_Frozen):
@@ -1959,6 +1965,7 @@ class GameData(_Frozen):
     power_history: PowerHistoryFile | None = None  # M17 (33.5): power by region
     suppliers: SuppliersFile | None = None  # M17 (33.4): offtake counterparties
     geology: GeologyFile | None = None  # M18 (34.1): regions' geology; None = no exploration
+    nationalization: NationalizationHistory | None = None  # M19 (35.4): to December 2025
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:

@@ -52,9 +52,18 @@ function Body({ saveId, x }: { saveId: string; x: Exploration }) {
   const running = x.desk_studies.filter((s) => !s.done && s.region === region);
   return (
     <>
-      <Link to={`/game/${saveId}/products`} style={{ fontSize: 13, textDecoration: 'none' }}>
-        ← Products
-      </Link>
+      <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
+        <Link to={`/game/${saveId}/products`} style={{ textDecoration: 'none' }}>
+          ← Products
+        </Link>
+        <Link
+          to={`/game/${saveId}/products/mines`}
+          style={{ textDecoration: 'none' }}
+          data-testid="mines-link"
+        >
+          Mines
+        </Link>
+      </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>Exploration</h1>
         <span className="tst-muted" style={{ fontSize: 13 }} data-testid="explorer-line">
