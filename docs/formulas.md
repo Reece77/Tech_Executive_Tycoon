@@ -3023,3 +3023,68 @@ New personal accounts: `9110 angel investments`, `9120 public shares`, `9130 fam
 
 Net worth and its parts, angel stakes with ranges, public holdings, the family office's balance, mandate, returns and manager's revealed skill range, filings, and "sensitive window" flags. Never the regulatory risk, an investigation's probability or timing, or startups' true values.
 
+## 38. Fabs and process nodes (M21, v3 lane A)
+
+Reece's decision (2026-11-06): **named process nodes on their historical timeline**, then seeded. Data: dossier §4. Builds on M12b's fabless chips (§26), M20's wafers and `process` research domain (§36.3), and the facility model. Principle: **a leading-edge fab is the biggest bet in the game: it pays only at the edge and at high use.**
+
+### 38.1 Nodes
+
+`nodes.yaml` lists 65, 40, 28, 20, 16/14, 10, 7, 5, 3 and 2 nm, each with: the first-volume month per historical foundry (TSMC, Samsung, Intel; dossier §4), whether EUV is required (5 nm and below; 7 nm has a DUV route at 0.85× yield and 1.15× cost), the capital per wafer-per-year (CSET: 16 nm $11,220, 10 nm $13,169, 7 nm $14,267; extrapolated +10% a node beyond, marked as assumptions), the market wafer price (history: 16 nm $3,984, 10 nm $5,992, 7 nm $9,346, 5 nm $16,988, 3 nm about $20,000, 2 nm about $30,000; earlier nodes from the dossier's mature-node prices), and the `process` research level a company needs to run it (`fab.node_level`). After 2025, future nodes (A16, A14, then seeded "sub-1nm" steps) arrive in **seeded windows** like §26.4's eras (stream `era_window`, appended indices), each with wafer price +20–50% and capital per wafer-per-year +8–17% (dossier §4's reading).
+
+### 38.2 Building and running a fab
+
+- **Fab** is a facility kind with a node and a capacity in wafer starts a month (10,000–100,000). **Capex** = capacity × 12 × capital per wafer-per-year × `fab.capex_scale`, with M19's hidden overrun; construction 2 years (mature nodes) to 3 (leading edge).
+- **EUV tools** are a market good (`euv_tools`, one supplier, ASML), allocated with a 2-year lead time in shortages; a 5 nm-and-below fab can't complete without its tools. M22 can restrict them.
+- **Yield learning:** a fab's yield on its node starts at `fab.yield_start` (0.35 at the leading edge, 0.7 for a node 3+ years old) and rises toward `fab.yield_mature` (0.9) with months of production, the company's `process` level over the node's requirement, and its fab engineers' skill (new role `fab_engineer`, existing skills).
+- **Costs:** depreciation (5 years), staff, power (the region's index; fabs are heavy users), materials (wafers from M20's market or the group at transfer price, gases, chemicals tied to M17's neon, gallium and germanium).
+- **Use:** the group's own chips first (§26: own-fab chips cost the fab's cost per good die instead of the foundry price), then **foundry sales**: spare wafer starts sell as slots in the foundry market at the node's market price × `fab.slot_discount` (0.9) to rival fabless designers, weighted by the fab's yield and reliability.
+- **Node upgrades:** a fab can be converted to the next node at 60% of a new fab's capex if the company has the research level.
+
+### 38.3 Rival foundries
+
+TSMC, Samsung Foundry, Intel, GlobalFoundries, UMC and SMIC become operating rivals with fabs by region and node, following history to 2025 (nodes per dossier §4; GlobalFoundries stopping at 14/12 nm in August 2018; SMIC on 7 nm-class by DUV from 2022) and after it advancing by their own `process` research. Their capacity sets the foundry market's price and allocation (M12b's slots), so a shortage (2021) and a leading-edge monopoly (TSMC) emerge rather than being scripted.
+
+### 38.4 Chips on better nodes
+
+A chip product's quality cap and power efficiency rise with its node: `+fab.node_quality` (3) quality cap points for each node generation ahead of the category's median node, so being at the edge (own fab or a TSMC slot) is visible in AI accelerators and phone SoCs.
+
+### 38.5 Balance targets (M21 acceptance, printed)
+
+1. **History holds:** every historical foundry reaches each node on its dossier date on every seed through 2025.
+2. **The edge is expensive:** a 5 nm fab of 50,000 wafers a month costs $15–25B with overrun; a 28 nm fab of the same size under $6B.
+3. **Use decides:** a leading-edge fab returns a project IRR above 12% at 80%+ use while at the edge, and below 5% at 50% use or two nodes behind.
+4. **Yield learns:** a new leading-edge fab's yield rises from 35–50% to 80%+ within 24 months with skill-12 engineers.
+5. **Own fabs pay a chip company:** a fabless AI-accelerator company that builds its own leading-edge fab cuts its chip cost by 10–30% at high use, and its chips gain the node's quality.
+6. **Nothing else moves:** a company that never builds a fab plays exactly as before (rival foundries' capacity reproduces M12b's foundry prices through 2025 within 10%).
+
+## 39. Geopolitics and export controls (M22, v3 lane B)
+
+Reece's decision (2026-11-02): **regional blocs with export controls**. Data: dossier §5. Builds on M17's allocation, M19's region risk fields, M16's regional entities, M24's influence (§32.5 hook `influence.of`). Principle: **the world's politics decide who may sell what to whom; history to 2025, then seeded.**
+
+### 39.1 Countries and blocs
+
+- `countries.yaml`: every country the game uses (cities gain a `country` field), each with a region, a **bloc** (`us_aligned`, `china`, `non_aligned`) and history of membership changes. Facilities, cities and subsidiaries sit in a country.
+- **Tension** between the US-aligned and China blocs, 0–100: history to 2025 (rising from 2018), then seeded AR(1) with escalation and détente shocks (stream `geopolitics`, id 55, key: the month's event index).
+
+### 39.2 Rules
+
+`export_controls.yaml` encodes the dossier §5 events with effective dates: **who** (the imposing bloc or country), **what** (goods: advanced AI chips above a performance threshold, chip equipment such as EUV and advanced DUV, fab services at 16/14 nm and below for listed destinations, HBM; from China: gallium, germanium, graphite, antimony, rare earths and their technology; resource nationalism from M19), **to whom** (a bloc, countries or listed entities), and the **regime**: ban, licence (approval probability), or quota. After 2025, new rules arrive with tension (an escalation adds a rule from a seeded list; a détente suspends one for 12 months, as November 2025's did).
+
+### 39.3 Effects
+
+- **Selling controlled goods** to a restricted destination: blocked (ban), or a licence request (approval probability × (1 + 0.3 × influence/100) from M24's lobbying), or capped (quota). A company can launch a **compliant variant** (energy 5): a lower-performance version under the threshold (as NVIDIA's A800 and H20), with a quality cap −10.
+- **Buying controlled inputs** from a restricting bloc: allocation 0 (ban) or the quota's share; M17's prices take the shock (the 2023 gallium licensing, the December 2024 ban to the US).
+- **Entity list:** a company that sells to a listed entity without a licence, or is ≥50% owned by one, risks listing (stream `geopolitics`): then no controlled inputs from the listing bloc. The player can be listed.
+- **Tariffs:** a tariff schedule by year (Section 301: 2018–2019 tranches on China-origin goods into the US at 10–25%) applies to devices, servers and chips made in the taxed bloc and sold in the taxing one, posted to `5100 tariffs` (cost of revenue). Transfer prices carry them (M16).
+- **Regional entities:** some rules apply by ownership, so a subsidiary in a country (M16 §31, M19's Found a subsidiary) can be the compliant seller; a few markets require a local partner (cloud in China: 50% local) for entry.
+
+### 39.4 Balance targets (M22 acceptance, printed)
+
+1. **History holds:** every dossier §5 rule takes effect on its date on every seed; tension follows history to 2025.
+2. **Controls bite:** an AI-accelerator seller with 30% of revenue in China loses 15–30% of total revenue in the 12 months after October 2022 unless it launches a compliant variant (then 5–15%).
+3. **Bans hit supply:** a chip company sourcing gallium only from China pays 30–80% more for it in 2024–2025 than one with a non-China source or its own recovery line (M20).
+4. **Influence helps licences:** at influence 80 a licence is approved at least 1.2× as often as at 0.
+5. **Tariffs cost:** China-assembled devices sold in North America cost 8–20% more from 2019.
+6. **After 2025:** at least one escalation and one détente in 2026–2039 on 7–10 of 10 seeds.
+7. **Nothing else moves for a domestic software company:** a software-only company in North America and Europe plays exactly as before.
+
