@@ -320,7 +320,7 @@ def test_a_group_mine_feeds_the_refinery_in_place_of_spot() -> None:
     ref = refinery_of(nxt, fid)
     assert ref is not None and ref.mine_protected == pytest.approx(conc) and ref.mine_fed == 0
     # a mine elsewhere in nobody's group feeds nothing
-    other, taken, _ = feed_from_mine(
+    _, taken, _ = feed_from_mine(
         state,
         99,
         "lithium_carbonate",

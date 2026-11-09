@@ -1794,23 +1794,6 @@ A drill hole's assay (34.2): public once drilled; never changes.
 | `n` | INTEGER | no | The hole's number within the project, from 1. |
 | `data` | JSON | no | `turn`, `assay` (a fraction of ore), `factor` (the team's range factor when drilled: hidden), `cost_cents`. |
 
-## Refining and wafers (migration `0044_m20`, M20)
-
-A refinery is a `facility` row of a refinery kind (`silicon_smelter`, `poly_plant`, `poly_plant_semi`, `wafer_plant`, `li_converter`, `co_refinery`, `ree_separator`, `byproduct_recovery`; formulas.md 36.1); its `capex_cents` is the true capex with the hidden overrun, never sent to the API. Each record below keeps its dataclass fields in a JSON `data` column (`tst/db/refining_io.py`). Account `4410_materials_sales` (revenue): refined goods and wafers sold at spot or under contract; refineries' inputs, power and operations post to `5000_cogs`; supply between two group companies uses M16's `4300`/`5900`. RNG stream `refining` (51). Balance keys `refining.*` and `facility.kinds.<refinery kinds>`. Existing saves have no refineries. `save_meta.schema_version` is 44 (re-parented after M19's `0043_m19`).
-
-### refinery
-
-A refinery's own state beside its facility row (36.1-36.4).
-
-| Column | Type | Null | Meaning |
-| --- | --- | --- | --- |
-| `facility_id` | INTEGER | no | Primary key: the plant's `facility.id`. |
-| `company_id` | INTEGER | no | The owner. |
-| `data` | JSON | no | `recipe` (a `refining.recipes` key), `estimate_cents` (the quoted capex the player saw), `host_id` (a by-product line's host plant), `curb_until` and `curb_run` (a power curb's last month and the share of capacity run), `stop_until` (an incident's stop and investigate: the last month at zero output), `incident_turn` (an open incident event's month), `incidents`, `last_depreciated_cents` (the facility's accumulated depreciation at the last month, for the month's charge), `month` (the latest month: `turn`, `output`, `capacity`, `yield_`, inputs from `input_group`/`input_contract`/`input_spot` and `input_short`, `input_cents`, `power_cents`, `power_index`, `other_cents`, `fixed_cents`, `depreciation_cents`, `staff_cents`, output `to_group`/`to_contract`/`to_spot`, `revenue_cents`, `market_cents` and `unit_cost_cents` a unit), `history` (`[turn, output, unit cost, market price]` for the last `refining.history_months`). |
-
-### refining_deal
-
-A refinery contract (36.1): buy an input or sell an output at the signing month's price.
 ## Mining operations (migration `0043_m19`, M19)
 
 Each record keeps its dataclass fields in a JSON `data` column (`tst/db/mining_io.py`). A mine is also a `facility` row of kind `mine` (balance.yaml `facility.kinds.mine`, module `mining`): owner, region, capacity (t a year, rounded), status, the staffing unit and the study's capex estimate; the generic capex, depreciation, operating cost and sale skip it. A founded subsidiary is a `company` row (`is_player` false, no personality, `rival_key` (6, n)) with its parent in `company_parent` and its holding in `ownership`. New accounts: `1520_mineral_properties` (asset: a mine's capex as paid and its project's capitalized exploration spend, less depletion, write-offs and stakes sold), `2610_asset_retirement_obligation` (liability: reclamation provisioned a tonne from first output, paid after closure; 2600 is SAFEs'), `4400_revenue_commodities` (revenue: a mine's spot, contract and offtake sales), `6750_depletion` (expense: units-of-production depletion and closure write-offs), `6960_royalties` (expense: royalties and a state partner's share of the cash margin). `save_meta.schema_version` is 43.
@@ -1832,17 +1815,6 @@ A sale a mine signs as seller (35.3).
 | Column | Type | Null | Meaning |
 | --- | --- | --- | --- |
 | `id` | INTEGER | no | Primary key. |
-| `company_id` | INTEGER | no | The company. |
-| `data` | JSON | no | `side` (`buy`, `sell`), `good`, `signed_turn`, `end_turn` (the last month covered), `monthly_volume` (volume units a month), `price_cents` (cents a unit), `taken` (so far), `last_taken` (last month), `charged_cents` (a buy contract's take-or-pay so far), `status` (`active`, `ended`). |
-
-### refining_supply
-
-The latest month's own-group supply lots (36.1-36.2), replaced each month.
-
-| Column | Type | Null | Meaning |
-| --- | --- | --- | --- |
-| `n` | INTEGER | no | Primary key: the lot's order. |
-| `data` | JSON | no | `turn`, `facility_id` (the plant), `seller_id`, `buyer_id`, `good`, `volume`, `unit_cents` (the transfer price), `market_cents`, `product_id` (a wafer lot's chip product; null for commodities), `taken` (what the buyer used after production; the rest sold at spot). |
 | `mine_id` | INTEGER | no | The mine. |
 | `data` | JSON | no | `kind` (contract: a fixed price; offtake: a collar around the price at signing), `buyer`, `signed_turn`, `end_turn` (last month covered), `volume_t_year`, `signing_usd_t`, `floor_usd_t`, `ceiling_usd_t`, `delivered_t`, `last_usd_t`. |
 
@@ -1855,6 +1827,39 @@ A rival miner's bid for a group project or mine (35.5), open three months.
 | `id` | INTEGER | no | Primary key. |
 | `company_id` | INTEGER | no | The group company holding the asset. |
 | `data` | JSON | no | `supplier` (suppliers.yaml key), `project_id` or `mine_id`, `cents`, `turn`, `expires_turn`, `status` (open, accepted, declined, lapsed). |
+
+## Refining and wafers (migration `0044_m20`, M20)
+
+A refinery is a `facility` row of a refinery kind (`silicon_smelter`, `poly_plant`, `poly_plant_semi`, `wafer_plant`, `li_converter`, `co_refinery`, `ree_separator`, `byproduct_recovery`; formulas.md 36.1); its `capex_cents` is the true capex with the hidden overrun, never sent to the API. Each record below keeps its dataclass fields in a JSON `data` column (`tst/db/refining_io.py`). Account `4410_materials_sales` (revenue): refined goods and wafers sold at spot or under contract; refineries' inputs, power and operations post to `5000_cogs`; supply between two group companies uses M16's `4300`/`5900`. RNG stream `refining` (51). Balance keys `refining.*` and `facility.kinds.<refinery kinds>`. Existing saves have no refineries. `save_meta.schema_version` is 44 (re-parented after M19's `0043_m19`). Own-group mines (M19) feed refineries: `mine_fed` and `mine_protected` on a refinery.
+
+### refinery
+
+A refinery's own state beside its facility row (36.1-36.4).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `facility_id` | INTEGER | no | Primary key: the plant's `facility.id`. |
+| `company_id` | INTEGER | no | The owner. |
+| `data` | JSON | no | `recipe` (a `refining.recipes` key), `estimate_cents` (the quoted capex the player saw), `host_id` (a by-product line's host plant), `curb_until` and `curb_run` (a power curb's last month and the share of capacity run), `stop_until` (an incident's stop and investigate: the last month at zero output), `incident_turn` (an open incident event's month), `incidents`, `last_depreciated_cents` (the facility's accumulated depreciation at the last month, for the month's charge), `mine_fed` (input units the group's mines supplied this month, in place of spot), `mine_protected` (last month's: input that keeps 100% allocation this month), `month` (the latest month: `turn`, `output`, `capacity`, `yield_`, inputs from `input_group`/`input_contract`/`input_spot` and `input_short`, `input_cents`, `power_cents`, `power_index`, `other_cents`, `fixed_cents`, `depreciation_cents`, `staff_cents`, output `to_group`/`to_contract`/`to_spot`, `revenue_cents`, `market_cents` and `unit_cost_cents` a unit), `history` (`[turn, output, unit cost, market price]` for the last `refining.history_months`). |
+
+### refining_deal
+
+A refinery contract (36.1): buy an input or sell an output at the signing month's price.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER | no | The company. |
+| `data` | JSON | no | `side` (`buy`, `sell`), `good`, `signed_turn`, `end_turn` (the last month covered), `monthly_volume` (volume units a month), `price_cents` (cents a unit), `taken` (so far), `last_taken` (last month), `charged_cents` (a buy contract's take-or-pay so far), `status` (`active`, `ended`). |
+
+### refining_supply
+
+The latest month's own-group supply lots (36.1-36.2), replaced each month.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `n` | INTEGER | no | Primary key: the lot's order. |
+| `data` | JSON | no | `turn`, `facility_id` (the plant), `seller_id`, `buyer_id`, `good`, `volume`, `unit_cents` (the transfer price), `market_cents`, `product_id` (a wafer lot's chip product; null for commodities), `taken` (what the buyer used after production; the rest sold at spot). |
 
 ## M25: files beside the saves (not tables)
 
