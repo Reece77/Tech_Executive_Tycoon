@@ -124,7 +124,6 @@ def world_out(state: GameState, data: LoadedData) -> WorldOut:
                 requested=format_turn(x.requested_turn),
                 decision=format_turn(x.decide_turn),
                 until=format_turn(x.until_turn) if x.until_turn is not None else None,
-                chance=ga.approval_chance(state, x, b, d) if x.status == "pending" else None,
             )
         )
     biting = gr.biting(state, d)
@@ -210,7 +209,7 @@ def world_out(state: GameState, data: LoadedData) -> WorldOut:
                     good_label=good.label,
                     exposed=ex.share,
                     allocation=ex.allocation_factor,
-                    premium=ex.share * ex.premium,
+                    price_premium=ex.share * ex.premium,
                     rule=active.rule.title if active else None,
                 )
             )

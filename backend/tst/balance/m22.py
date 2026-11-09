@@ -118,13 +118,22 @@ def world_history(d: GameData) -> tuple[tuple[str, float], ...]:
 
 
 def accelerator_company(seed: int, data: LoadedData, start: int) -> tuple[Game, int]:
-    """An AI-accelerator seller from `start`: North America and East Asia hyperscalers, East
-    Asia's customers sized so China (55% of East Asia's demand) is 30% of revenue."""
-    m12b._loaded = lambda: data  # type: ignore[assignment]  # the helpers read this data
+    """An AI-accelerator seller from `start` (`accelerator_state` on a new game)."""
     g = start_game(data, seed, "funded_spinout")
     g.balances[(PLAYER, "1000_cash")] = g.balances.get((PLAYER, "1000_cash"), 0) + m12b.RICH
-    g.state = replace(g.state, turn=start)
-    state = m12b.hire(g.state, "hardware_engineer", m12b.STAFF, seed)
+    g.state, pid = accelerator_state(replace(g.state, turn=start), data, seed)
+    return g, pid
+
+
+def accelerator_state(state: GameState, data: LoadedData, seed: int) -> tuple[GameState, int]:
+    """The player's company as an AI-accelerator seller at the state's month: hardware
+    engineers, sellers in North America and (remote, from Shenzhen) East Asia, a quality-80
+    accelerator selling to device makers in both, East Asia's customers sized so China (55% of
+    East Asia's demand) is 30% of revenue, and a TSMC wafer contract for three times the
+    month's replacement demand."""
+    m12b._loaded = lambda: data  # type: ignore[assignment]  # the helpers read this data
+    start = state.turn
+    state = m12b.hire(state, "hardware_engineer", m12b.STAFF, seed)
     before = {p.id for p in state.people}
     state = m12b.hire(state, "account_executive", 2 * SELLERS, seed + 1000)
     sellers = sorted(p.id for p in state.people if p.id not in before)
@@ -150,13 +159,11 @@ def accelerator_company(seed: int, data: LoadedData, start: int) -> tuple[Game, 
     need = (NA_CUSTOMERS + east) * seg.units_per_customer / REPLACEMENT * 3
     wafers = round(need / (t.per_wafer * data.balance.chips.chip_yield.base))
     state = m12b.contract(state, pid, "wafer", wafers, wafer, start - 1, 36)
-    p = state.product(pid)
-    assert p is not None
-    g.state = replace(
+    state = replace(
         state,
         products=tuple(replace(x, quality=80.0) if x.id == pid else x for x in state.products),
     )
-    return g, pid
+    return state, pid
 
 
 def _revenue_12(g: Game) -> int:

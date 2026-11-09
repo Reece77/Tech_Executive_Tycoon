@@ -4080,6 +4080,95 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/world": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get World
+         * @description Blocs, tension, the export rules announced so far, licences, variants, the entity list
+         *     and the group's exposure (39). Nothing before it is announced.
+         */
+        get: operations["getWorld"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/world/licence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request Licence */
+        post: operations["requestLicence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/world/grey": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Grey Route */
+        post: operations["setGreyRoute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/world/variant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Launch Variant */
+        post: operations["launchVariant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/world/partner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Take Local Partner */
+        post: operations["takeLocalPartner"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/mines": {
         parameters: {
             query?: never;
@@ -6561,6 +6650,19 @@ export interface components {
             /** Band After */
             band_after: string;
         };
+        /** CountryOut */
+        CountryOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Region */
+            region: string;
+            /** Bloc */
+            bloc: string;
+            /** Demand Share */
+            demand_share: number;
+        };
         /** CovenantOut */
         CovenantOut: {
             /** Description */
@@ -8647,6 +8749,18 @@ export interface components {
              */
             next_vest_is_cliff?: boolean;
         };
+        /** GreyRouteIn */
+        GreyRouteIn: {
+            /** Product Id */
+            product_id: number;
+            /** Country */
+            country: string;
+            /**
+             * On
+             * @default true
+             */
+            on?: boolean;
+        };
         /** GroupActionOut */
         GroupActionOut: {
             group: components["schemas"]["GroupOut"];
@@ -9909,14 +10023,32 @@ export interface components {
              */
             net_worth_cents?: number;
         };
-        /** LicenceIn */
-        LicenceIn: {
-            /** Region */
-            region: string;
-            /** Block */
-            block: number;
+        /** LicenceOut */
+        LicenceOut: {
+            /** Id */
+            id: number;
             /** Company Id */
-            company_id?: number | null;
+            company_id: number;
+            /** Product Id */
+            product_id: number;
+            /** Product */
+            product: string;
+            /** Rule Key */
+            rule_key: string;
+            /** Rule */
+            rule: string;
+            /** Country */
+            country: string;
+            /** Country Label */
+            country_label: string;
+            /** Status */
+            status: string;
+            /** Requested */
+            requested: string;
+            /** Decision */
+            decision: string;
+            /** Until */
+            until: string | null;
         };
         /** LicenseIn */
         LicenseIn: {
@@ -9974,6 +10106,19 @@ export interface components {
              * @description A trade now would be in a sensitive window
              */
             sensitive: boolean;
+        };
+        /** ListingOut */
+        ListingOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Actor Label */
+            actor_label: string;
+            /** Since */
+            since: string;
+            /** Reason */
+            reason: string;
         };
         /** LoanIn */
         LoanIn: {
@@ -11763,6 +11908,11 @@ export interface components {
              */
             pending?: boolean;
         };
+        /** PartnerIn */
+        PartnerIn: {
+            /** Company Id */
+            company_id?: number | null;
+        };
         /**
          * PayPreviewOut
          * @description A raise or promotion before it happens, from known values only.
@@ -12637,6 +12787,36 @@ export interface components {
              * @description Null makes the product corporate
              */
             division_id: number | null;
+        };
+        /** ProductExposureOut */
+        ProductExposureOut: {
+            /** Product Id */
+            product_id: number;
+            /** Product */
+            product: string;
+            /** Company Id */
+            company_id: number;
+            /** Regions */
+            regions: components["schemas"]["RegionAccessOut"][];
+            /**
+             * Licensable
+             * @description Countries where a licence can be requested
+             */
+            licensable: string[];
+            /**
+             * Restricted
+             * @description Countries where a biting rule restricts it
+             */
+            restricted: string[];
+            /** Variant Possible */
+            variant_possible: boolean;
+            /** Has Variant */
+            has_variant: boolean;
+            /**
+             * Tariff Cents
+             * @description Last month's units at this month's tariff rates
+             */
+            tariff_cents: number;
         };
         /** ProductMonthOut */
         ProductMonthOut: {
@@ -13794,6 +13974,15 @@ export interface components {
             /** Index */
             index: number;
         };
+        /** RegionAccessOut */
+        RegionAccessOut: {
+            /** Region */
+            region: string;
+            /** Blocked */
+            blocked: number;
+            /** Variant */
+            variant: number;
+        };
         /** RegionEventOut */
         RegionEventOut: {
             /** Turn */
@@ -14467,6 +14656,56 @@ export interface components {
             rounds: components["schemas"]["RoundOut"][];
             next: components["schemas"]["SeriesGuideOut"];
         };
+        /** RuleOut */
+        RuleOut: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /** Actor */
+            actor: string;
+            /** Actor Label */
+            actor_label: string;
+            /** Goods */
+            goods: string[];
+            /** Destinations */
+            destinations: string[];
+            /** Regime */
+            regime: string;
+            /**
+             * Approval
+             * @description A licence regime's base approval chance
+             */
+            approval: number | null;
+            /** Quota */
+            quota: number | null;
+            /** Threshold */
+            threshold: number | null;
+            /**
+             * Status
+             * @description in_force, coming, ended or suspended
+             */
+            status: string;
+            /** Month */
+            month: string;
+            /** Announced */
+            announced: string;
+            /** End */
+            end: string | null;
+            /** Suspended Until */
+            suspended_until: string | null;
+            /**
+             * Effect
+             * @description applies, news (shown only) or m19 (M19's mine rules)
+             */
+            effect: string;
+            /** Tag */
+            tag: string | null;
+            /** Source */
+            source: string;
+            /** Seeded */
+            seeded: boolean;
+        };
         /**
          * SafeHintOut
          * @description The SAFE dialog's band (14.9); never the probability.
@@ -15014,6 +15253,23 @@ export interface components {
              */
             services: string;
         };
+        /** SiteOut */
+        SiteOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Country */
+            country: string;
+            /** Country Label */
+            country_label: string;
+            /** Bloc */
+            bloc: string;
+            /** Local Partner */
+            local_partner: boolean;
+            /** Partner Needed */
+            partner_needed: boolean;
+        };
         /** SkillMetaOut */
         SkillMetaOut: {
             /** Key */
@@ -15507,6 +15763,28 @@ export interface components {
              */
             revenue_note: string | null;
         };
+        /** SupplyExposureOut */
+        SupplyExposureOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Good */
+            good: string;
+            /** Good Label */
+            good_label: string;
+            /** Exposed */
+            exposed: number;
+            /** Allocation */
+            allocation: number;
+            /**
+             * Price Premium
+             * @description Exposed share x the rule's premium over spot
+             */
+            price_premium: number;
+            /** Rule */
+            rule: string | null;
+        };
         /** SupportPoolOut */
         SupportPoolOut: {
             /**
@@ -15723,6 +16001,26 @@ export interface components {
             /** Feature High */
             feature_high?: number | null;
         };
+        /** TariffOut */
+        TariffOut: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /** Origin */
+            origin: string;
+            /** Market */
+            market: string;
+            /** Goods */
+            goods: string[];
+            /**
+             * Rate
+             * @description This month's rate on the goods' cost
+             */
+            rate: number;
+            /** Tag */
+            tag: string;
+        };
         /** TeamMoodOut */
         TeamMoodOut: {
             /** Unit Id */
@@ -15808,6 +16106,20 @@ export interface components {
              * @description The line the product screen shows
              */
             text: string;
+        };
+        /** TensionPointOut */
+        TensionPointOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /** Value */
+            value: number;
+            /**
+             * Shock
+             * @description none, escalation or detente
+             */
+            shock: string;
         };
         /** TermSheetOut */
         TermSheetOut: {
@@ -16121,6 +16433,25 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** VariantIn */
+        VariantIn: {
+            /** Product Id */
+            product_id: number;
+        };
+        /** VariantOut */
+        VariantOut: {
+            /** Product Id */
+            product_id: number;
+            /** Product */
+            product: string;
+            /** Launched */
+            launched: string;
+            /**
+             * Voided By
+             * @description Rules in force that do not accept it
+             */
+            voided_by: string[];
+        };
         /** VentureIn */
         VentureIn: {
             /** Company Id */
@@ -16166,6 +16497,52 @@ export interface components {
             /** Months */
             months: number;
         };
+        /** WorldActionOut */
+        WorldActionOut: {
+            world: components["schemas"]["WorldOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** WorldOut */
+        WorldOut: {
+            /** Turn */
+            turn: number;
+            /** Tension */
+            tension: number;
+            /** Tension History */
+            tension_history: components["schemas"]["TensionPointOut"][];
+            /** Countries */
+            countries: components["schemas"]["CountryOut"][];
+            /** Rules */
+            rules: components["schemas"]["RuleOut"][];
+            /** Licences */
+            licences: components["schemas"]["LicenceOut"][];
+            /** Variants */
+            variants: components["schemas"]["VariantOut"][];
+            /** Listings */
+            listings: components["schemas"]["ListingOut"][];
+            /** Products */
+            products: components["schemas"]["ProductExposureOut"][];
+            /** Supply */
+            supply: components["schemas"]["SupplyExposureOut"][];
+            /** Sites */
+            sites: components["schemas"]["SiteOut"][];
+            /**
+             * Tariffs
+             * @description Tariff schedules in force this month
+             */
+            tariffs: components["schemas"]["TariffOut"][];
+        };
+        /** LicenceIn */
+        tst__api__schemas__exploration__LicenceIn: {
+            /** Region */
+            region: string;
+            /** Block */
+            block: number;
+            /** Company Id */
+            company_id?: number | null;
+        };
         /** IndexPointOut */
         tst__api__schemas__facilities__IndexPointOut: {
             /** Turn */
@@ -16206,6 +16583,13 @@ export interface components {
             change: number;
             /** Cause */
             cause: string;
+        };
+        /** LicenceIn */
+        tst__api__schemas__geopolitics__LicenceIn: {
+            /** Product Id */
+            product_id: number;
+            /** Country */
+            country: string;
         };
         /** OptionOut */
         tst__api__schemas__hardware__OptionOut: {
@@ -28946,7 +29330,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LicenceIn"];
+                "application/json": components["schemas"]["tst__api__schemas__exploration__LicenceIn"];
             };
         };
         responses: {
@@ -29626,6 +30010,312 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RefineriesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getWorld: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorldOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    requestLicence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["tst__api__schemas__geopolitics__LicenceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorldActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setGreyRoute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GreyRouteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorldActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    launchVariant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VariantIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorldActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    takeLocalPartner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartnerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorldActionOut"];
                 };
             };
             /** @description Bad Request */

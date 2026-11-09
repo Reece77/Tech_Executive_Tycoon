@@ -90,6 +90,13 @@ export function ProductsScreen() {
               Exploration
             </Link>
             <Link
+              to={`/game/${saveId}/competitors/world`}
+              style={{ fontSize: 13 }}
+              data-testid="world-link"
+            >
+              World
+            </Link>
+            <Link
               to={`/game/${saveId}/products/refineries`}
               style={{ fontSize: 13 }}
               data-testid="refineries-link"

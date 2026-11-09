@@ -3805,7 +3805,7 @@ def world_cmd(save: SaveOpt) -> None:
     for sx in w.supply:
         typer.echo(
             f"  {sx.company} {sx.good_label}: {sx.exposed:.0%} exposed, allocation"
-            f" {sx.allocation:.0%}, premium {sx.premium:+.0%} ({sx.rule})"
+            f" {sx.allocation:.0%}, premium {sx.price_premium:+.0%} ({sx.rule})"
         )
     for lx in w.listings:
         typer.echo(f"  listed: {lx.company} on {lx.actor_label}'s entity list since {lx.since}")

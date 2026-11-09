@@ -60,7 +60,6 @@ class LicenceOut(BaseModel):
     requested: str
     decision: str
     until: str | None
-    chance: float | None = Field(description="Approval chance with your influence (pending)")
 
 
 class VariantOut(BaseModel):
@@ -103,7 +102,7 @@ class SupplyExposureOut(BaseModel):
     good_label: str
     exposed: float
     allocation: float
-    premium: float
+    price_premium: float = Field(description="Exposed share x the rule's premium over spot")
     rule: str | None
 
 
