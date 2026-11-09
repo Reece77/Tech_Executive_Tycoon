@@ -29,10 +29,10 @@ Refining (M20), fabs (M21), export controls as policy (M22; M19's export bans ar
 
 ## Acceptance criteria
 
-- [ ] The ledger balances through construction, operations, transfers and closure; reserves and book values never go negative (property tests).
-- [ ] No hidden deposit truth or overrun reaches the API or a prompt before it is revealed.
-- [ ] A company that never mines plays exactly as before.
-- [ ] §35.6 targets met (printed, values recorded).
+- [x] The ledger balances through construction, operations, transfers and closure; reserves and book values never go negative (property tests). *`tests/property/test_m19_invariants.py` (Hypothesis: seeds, commodities, transfer, care, close, capacity), unit tests in `tests/unit/test_m19_mining.py`.*
+- [x] No hidden deposit truth or overrun reaches the API or a prompt before it is revealed. *Differential and prompt tests in `tests/integration/test_api_mining.py`; the forbidden-key rule on every response.*
+- [x] A company that never mines plays exactly as before. *Golden snapshots unchanged; T6 (with and without the mining phases).*
+- [x] §35.6 targets met (printed, values recorded). *`tools/m19_targets.py`, seeds 1-10 and 11-40, in docs/balance-targets.md.*
 - [ ] `make check` and CI `e2e` green; merged first in the pair through a pull request per CLAUDE.md §6 with the trailer `Milestone-Tag: m19-done`.
 
 ## Manual check (Reece, after merge)
