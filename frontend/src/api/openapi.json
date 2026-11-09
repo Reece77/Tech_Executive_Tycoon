@@ -19414,9 +19414,9 @@
             "type": "integer",
             "title": "Cost Cents"
           },
-          "value_cents": {
+          "worth_cents": {
             "type": "integer",
-            "title": "Value Cents",
+            "title": "Worth Cents",
             "description": "Stake x the last round's post-money"
           },
           "proceeds_cents": {
@@ -19488,7 +19488,7 @@
           "status",
           "stake_pct",
           "cost_cents",
-          "value_cents",
+          "worth_cents",
           "proceeds_cents",
           "backed",
           "founder_known",
@@ -29702,9 +29702,9 @@
             ],
             "title": "Price Cents"
           },
-          "value_cents": {
+          "worth_cents": {
             "type": "integer",
-            "title": "Value Cents"
+            "title": "Worth Cents"
           },
           "cost_cents": {
             "type": "integer",
@@ -29722,7 +29722,7 @@
           "company",
           "shares",
           "price_cents",
-          "value_cents",
+          "worth_cents",
           "cost_cents",
           "own"
         ],

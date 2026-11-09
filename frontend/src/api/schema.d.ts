@@ -4543,10 +4543,10 @@ export interface components {
             /** Cost Cents */
             cost_cents: number;
             /**
-             * Value Cents
+             * Worth Cents
              * @description Stake x the last round's post-money
              */
-            value_cents: number;
+            worth_cents: number;
             /** Proceeds Cents */
             proceeds_cents: number;
             /** Backed */
@@ -8855,8 +8855,8 @@ export interface components {
             shares: number;
             /** Price Cents */
             price_cents: number | null;
-            /** Value Cents */
-            value_cents: number;
+            /** Worth Cents */
+            worth_cents: number;
             /** Cost Cents */
             cost_cents: number;
             /**
