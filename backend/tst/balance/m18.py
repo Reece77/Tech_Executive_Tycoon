@@ -344,7 +344,8 @@ def convergence(loaded: LoadedData, seeds: range, skill: float = 10.0) -> dict[i
 
 
 def _hole(state: GameState, project: Project, n: int, f: float, loaded: LoadedData) -> float:
-    from tst.sim.exploration.geology import GEOLOGY_TURN, cell_deviations
+    from tst.sim.exploration.draws import GEOLOGY_TURN
+    from tst.sim.exploration.geology import cell_deviations
 
     b, d = loaded.balance, loaded.game_data
     assert d.geology is not None and project.commodity is not None

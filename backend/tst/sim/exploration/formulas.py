@@ -84,7 +84,7 @@ def npv_usd(
     `deck_years` at the current price and the rest at the long-run level, less operating cost
     and royalty, discounted at `discount_rate`."""
     r, life = fb.discount_rate, fb.life_years
-    product = tonnage_mt * 1e6 * grade * recovery / life  # tonnes of product a year
+    product = tonnage_mt * 1e6 * grade * recovery / life  # tunable-exempt: Mt to t; a year
     build = max(build_years, 1)
     capex_pv = capex_usd / build * annuity(r, build)
     start = (1 + r) ** -build
@@ -112,7 +112,7 @@ def capex_usd(
 ) -> float:
     """Capex (34.2, dossier 6): capital intensity x annual capacity of product, x the deposit
     type's multiple, x (1 + per km to infrastructure) x (1 + per metre of depth)."""
-    product = tonnage_mt * 1e6 * grade * recovery / fb.life_years
+    product = tonnage_mt * 1e6 * grade * recovery / fb.life_years  # tunable-exempt: Mt to t
     return (
         product
         * intensity

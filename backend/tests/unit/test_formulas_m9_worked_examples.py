@@ -81,7 +81,7 @@ def test_cities_table(loaded: LoadedData) -> None:
     """19.1's table as loaded: 15 cities, then Africa's three (M15r addendum c), multipliers,
     rent and talent bonuses."""
     data = loaded.game_data
-    assert len(data.cities) == 18
+    assert len(data.cities) == 21  # M18: Perth, Santiago, Johannesburg appended
     sf, tel_aviv, shenzhen = (
         data.city("san_francisco"),
         data.city("tel_aviv"),

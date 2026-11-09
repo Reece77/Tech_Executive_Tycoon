@@ -52,7 +52,7 @@ class GeoBlock:
     true_recovery: float = 0.0
     true_infra_km: float = 0.0
     true_difficulty: float = 1.0  # permitting difficulty, x the region's permit years
-    true_sensitivity: float = 0.5  # community sensitivity, 0-1
+    true_sensitivity: float = 0.5  # tunable-exempt: a default; every block draws its own
 
 
 @dataclass(frozen=True, slots=True)

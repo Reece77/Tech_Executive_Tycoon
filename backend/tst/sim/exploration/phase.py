@@ -13,6 +13,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import GameEvent, QueuedEvent
 from tst.sim.exploration import pipeline as xp
 from tst.sim.exploration.config import LEVELS
+from tst.sim.exploration.draws import exploration_draws
 from tst.sim.exploration.formulas import half_width_pct
 from tst.sim.exploration.geology import block_of
 from tst.sim.exploration.models import Hole, Project
@@ -194,7 +195,7 @@ def _drill(
         mean = math.exp(est[0])
         if all(h.assay < mean / 2 for h in recent) and any(h in new for h in recent[-1:]):
             logs.append(_item(turn, project, "dry_streak", block=label, holes=streak))
-    gen = rng.stream(turn, "exploration", xp.MINOR, project.id)
+    gen = exploration_draws(rng, turn, xp.MINOR, project.id)
     if left > 0 and float(gen.random()) < eb.minor.accident_rate:
         fine = eb.minor.accident_fine_cents
         entries.append(
@@ -238,14 +239,14 @@ def _permit_month(
     assert block is not None and project.hidden_due_turn is not None
     if project.protest_turn is not None:
         return state, project, entries, logs  # waiting for the answer
-    gen = rng.stream(turn, "exploration", xp.PROTEST, project.id)
+    gen = exploration_draws(rng, turn, xp.PROTEST, project.id)
     u_protest, u_kind = (float(x) for x in gen.random(2))
     chance = pb.protest_rate * block.true_sensitivity / SENSITIVITY_MID
     if project.benefit:
         chance *= 1 - pb.benefit_odds
     if project.company_id not in protesting and u_protest < chance:
         protesting.add(project.company_id)
-        template = xp.EVENT_TEMPLATES[0 if u_kind < 0.5 else 1]
+        template = xp.EVENT_TEMPLATES[int(u_kind * len(xp.EVENT_TEMPLATES))]
         qid, ids = state.next_ids.take("queued")
         state = with_queued(
             replace(state, next_ids=ids),
@@ -262,11 +263,11 @@ def _permit_month(
         return state, project, entries, logs
     due = project.hidden_due_turn
     if due is not None and turn >= due:
-        u = float(rng.stream(turn, "exploration", xp.PERMIT, project.id, 1).random())
+        u = float(exploration_draws(rng, turn, xp.PERMIT, project.id, 1).random())
         refusal = data.geology.regions[project.region].refusal * block.true_difficulty
         if project.benefit:
             refusal *= 1 - pb.benefit_odds
-        refusal = min(0.95, refusal + pb.refusal_on_push * project.pushes)
+        refusal = min(pb.max_refusal, refusal + pb.refusal_on_push * project.pushes)
         granted = u >= refusal
         project = replace(
             project,
@@ -325,7 +326,7 @@ def exploration_step(
             )
             state = with_life(state, life)
         rng = RngFactory(state.save_meta.master_seed)  # the save's own streams (ADR-0002)
-        u = float(rng.stream(turn, "exploration", xp.PROTEST, project.id, 1).random())
+        u = float(exploration_draws(rng, turn, xp.PROTEST, project.id, 1).random())
         if u < pb.push_legal:
             cost = pb.push_legal_cents
             due += pb.push_delay_months

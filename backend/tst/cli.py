@@ -3248,6 +3248,8 @@ def sell_project_cmd(save: SaveOpt, project: ProjectOpt) -> None:
     result = _run(path, data, SellProject(_founder(state), project))
     sold = next(p for p in result.new_state.projects if p.id == project)
     typer.echo(f"Sold to {sold.sold_to} for {format_money(sold.sale_cents)}")
+
+
 # --- M25: Explain, achievements and mods ---------------------------------------------------
 
 

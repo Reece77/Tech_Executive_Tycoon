@@ -1377,6 +1377,7 @@ group: # 31: the holding company and its subsidiaries (M16, v3)
     min: 0.10 # the discount at least
     max: 0.25 # and at most
 geology: # 34.1: blocks and hidden deposits at game start (M18, v3 lane B); per-region data in geology.yaml
+  max_grade: 0.9 # a deposit's true grade at most (a fraction of ore)
   blocks_per_region: 60 # exploration blocks each region is divided into, 34.1
   deposit_rate: 0.08 # a block holds a deposit of a commodity with chance prospectivity x this (one deposit at most); M18 tuning 0.16 -> 0.08 with grade_scale for 34.1's "roughly 1 in 25 surveyed blocks" and 34.6 targets 2-4
   grade_scale: 0.7 # every commodity's median grade x this (one knob for how often a deposit pays; geology.yaml's medians are assumptions); M18 tuning 1.0 -> 0.7
@@ -1442,6 +1443,7 @@ exploration: # 34.2-34.3: the pipeline, its costs and times (dossier 6, scaled t
     accuracy: { scoping: 0.30, pre_feasibility: 0.15, definitive: 0.08 } # log-sd of capex and operating cost estimates at a range factor of 1 (AACE classes 5, 4, 3 roughly)
     recovery_sd: { scoping: 0.08, pre_feasibility: 0.05, definitive: 0.03 } # sd of the recovery estimate (fraction)
     min_category: { scoping: inferred, pre_feasibility: indicated, definitive: measured }
+    recovery_bounds: [0.05, 0.99] # a recovery estimate's centre and ends stay inside these
     life_years: 15 # a mine's life for the NPV
     build_years: { hard_rock: 3, brine: 6, placer: 2 } # years from a decision to first output (dossier 6: hard-rock lithium 3-5, brine 6-10)
     discount_rate: 0.08 # real discount rate of the NPV
@@ -1452,6 +1454,7 @@ exploration: # 34.2-34.3: the pipeline, its costs and times (dossier 6, scaled t
     kind_opex: { hard_rock: 1.0, brine: 0.7, placer: 0.8 } # brine's lower operating cost (dossier 6)
     deck_years: 2 # years of output priced at the deck's current price; the rest at its long-run level
   permitting:
+    max_refusal: 0.95 # a permit's refusal chance at most, however hard the block and however often the company pushed on
     requires: definitive # the feasibility level a permit application needs
     benefit_odds: 0.5 # a benefit agreement cuts the refusal chance by this share
     protest_rate: 0.012 # monthly chance of a protest x the block's hidden sensitivity / 0.5

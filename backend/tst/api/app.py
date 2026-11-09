@@ -10,8 +10,8 @@ from sqlalchemy.exc import OperationalError
 from tst.api.routers import (
     coo,
     events,
-    exploration,
     explain,
+    exploration,
     facilities,
     finance,
     founder,

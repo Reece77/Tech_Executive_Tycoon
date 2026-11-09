@@ -23,7 +23,8 @@ from tst.sim.errors import (
 )
 from tst.sim.exploration import formulas as xf
 from tst.sim.exploration.config import CATEGORIES, LEVELS, GeoCommodity
-from tst.sim.exploration.geology import GEOLOGY_TURN, block_of, cell_deviations
+from tst.sim.exploration.draws import exploration_draws, geology_draws
+from tst.sim.exploration.geology import block_of, cell_deviations
 from tst.sim.exploration.m17 import buyers_of, deck, usd_per_tonne
 from tst.sim.exploration.models import (
     GEOLOGY_STAGES,
@@ -47,11 +48,12 @@ from tst.sim.state import (
 
 LINK: Final = "exploration"
 MONTHS_A_YEAR: Final = 12  # tunable-exempt: calendar
-PERM_TAG: Final = 3  # geology key (region, block, 3): the order holes visit the ore body
+PERM_TAG: Final = 3  # tunable-exempt: geology key (region, block, 3), the holes' order
 MIN_PERMIT_MONTHS: Final = 6  # tunable-exempt: a permit decision never comes sooner
 TRACE_TONNAGE: Final = 0.05  # tunable-exempt: a background envelope, x the commodity's median
 EVENT_TEMPLATES: Final = ("community_blockade", "permit_challenge")
-DESK, SURVEY, SAMPLE, HOLE, ESTIMATE, STUDY, PERMIT, PROTEST, SALE, MINOR = range(10)
+TAGS: Final = 10  # tunable-exempt: the exploration stream's key tags (ADR-0013)
+DESK, SURVEY, SAMPLE, HOLE, ESTIMATE, STUDY, PERMIT, PROTEST, SALE, MINOR = range(TAGS)
 
 type StageName = Literal[
     "survey", "sampling", "estimate", "scoping", "pre_feasibility", "definitive", "permitting"
@@ -770,7 +772,7 @@ def desk_bands(
     blocks = sorted(
         (b for b in state.geo_blocks if b.region == study.region), key=lambda b: b.index
     )
-    z = rng.stream(study.done_turn, "exploration", DESK, study.id).standard_normal(len(blocks))
+    z = exploration_draws(rng, study.done_turn, DESK, study.id).standard_normal(len(blocks))
     scores = [
         (db.signal if b.true_commodity == study.commodity else 0.0)
         + db.noise_sd * study.factor * float(z[i])
@@ -794,9 +796,9 @@ def survey_result(
     block = block_of(state, project.region, project.block)
     assert block is not None
     field = reading_factor(state, project.company_id, balance)
-    gen = rng.stream(state.turn, "exploration", SURVEY, project.id)
+    gen = exploration_draws(rng, state.turn, SURVEY, project.id)
     z = float(gen.standard_normal())
-    u_mis, u_c, u_kind = (float(x) for x in gen.random(3))
+    u_mis, u_c, u_kind = (float(x) for x in gen.random(3))  # tunable-exempt: draws
     value = sb.noise_sd * field * z
     if block.true_commodity is not None:
         c = data.geology.commodity(block.true_commodity)
@@ -840,7 +842,7 @@ def sample_result(
     field, _ = factors(state, project.company_id, balance)
     hw = math.asinh(eb.sampling.range) * field
     sd = hw / xf.z_of(eb.confidence)
-    z = float(rng.stream(state.turn, "exploration", SAMPLE, project.id).standard_normal())
+    z = float(exploration_draws(rng, state.turn, SAMPLE, project.id).standard_normal())
     center = math.log(_grade_truth(block, hit, c)) + sd * z
     kind = project.kind or (
         block.true_kind if hit else next(iter(data.geology.kinds_of(project.region, c.key)))
@@ -867,12 +869,10 @@ def drill_hole(
     cells = balance.geology.cells
     if hit:
         devs = cell_deviations(rng, r, project.block, cells)
-        perm = rng.stream(GEOLOGY_TURN, "geology", r, project.block, PERM_TAG).permutation(cells)
+        perm = geology_draws(rng, r, project.block, PERM_TAG).permutation(cells)
         dev = devs[int(perm[(n - 1) % cells])]
     else:
-        dev = float(
-            rng.stream(state.turn, "exploration", HOLE, r, project.block, n).standard_normal()
-        )
+        dev = float(exploration_draws(rng, state.turn, HOLE, r, project.block, n).standard_normal())
     assay = math.exp(math.log(_grade_truth(block, hit, c)) + field * c.hole_sd * dev)
     return Hole(
         project_id=project.id,
@@ -922,7 +922,7 @@ def estimate_result(
         return project
     _, est = factors(state, project.company_id, balance)
     sd = eb.estimate.tonnage_sd[category] * est
-    z = float(rng.stream(state.turn, "exploration", ESTIMATE, project.id).standard_normal())
+    z = float(exploration_draws(rng, state.turn, ESTIMATE, project.id).standard_normal())
     return replace(
         project,
         category=category,
@@ -954,8 +954,8 @@ def study_result(
     kind = project.kind or next(iter(data.geology.kinds_of(project.region, c.key)))
     _, est = factors(state, project.company_id, balance)
     z90 = xf.z_of(eb.confidence)
-    gen = rng.stream(state.turn, "exploration", STUDY, project.id, LEVELS.index(level))
-    z_cap, z_op, z_rec = (float(x) for x in gen.standard_normal(3))
+    gen = exploration_draws(rng, state.turn, STUDY, project.id, LEVELS.index(level))
+    z_cap, z_op, z_rec = (float(x) for x in gen.standard_normal(3))  # tunable-exempt: draws
     a, r_sd = fb.accuracy[level] * est, fb.recovery_sd[level] * est
     rec_true = block.true_recovery if hit else sum(c.recovery) / 2
     tonnage, grade = _tonnage_truth(block, hit, c), _grade_truth(block, hit, c)
@@ -963,7 +963,8 @@ def study_result(
     ref = c.grade_median * sum(c.recovery) / 2
     true_opex = c.opex_per_t_usd * fb.kind_opex[kind] * ref / (grade * rec_true)
     capex_c, opex_c = math.log(true_capex) + a * z_cap, math.log(true_opex) + a * z_op
-    rec_c = min(0.99, max(0.05, rec_true + r_sd * z_rec))
+    lo, hi = fb.recovery_bounds
+    rec_c = min(hi, max(lo, rec_true + r_sd * z_rec))
     rec_hw = z90 * r_sd
     assert project.est_grade_center is not None and project.est_grade_hw is not None
     assert project.est_tonnage_center is not None and project.est_tonnage_hw is not None
@@ -974,7 +975,7 @@ def study_result(
     def npv(sign: int) -> int:
         t = math.exp(t_c + sign * t_hw)
         g = math.exp(g_c + sign * g_hw)
-        rec = min(0.99, max(0.05, rec_c + sign * rec_hw))
+        rec = min(hi, max(lo, rec_c + sign * rec_hw))
         capex = math.exp(capex_c - sign * cap_hw) * t / math.exp(t_c)  # capex scales with ore
         opex_t = math.exp(opex_c - sign * op_hw) * (math.exp(g_c) * rec_c) / (g * rec)
         return round(_npv_with(state, c, t, g, rec, capex, opex_t, kind, balance, data) * 100)
@@ -1075,7 +1076,7 @@ def _apply_permit(
     lo, hi = data.geology.regions[project.region].permit_years
     block = block_of(state, project.region, project.block)
     assert block is not None
-    u = float(rng.stream(state.turn, "exploration", PERMIT, project.id).random())
+    u = float(exploration_draws(rng, state.turn, PERMIT, project.id).random())
     years = (lo + (hi - lo) * u) * block.true_difficulty
     months = max(MIN_PERMIT_MONTHS, round(years * MONTHS_A_YEAR))
     return replace(project, permit_start=state.turn, hidden_due_turn=state.turn + months - 1)

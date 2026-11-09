@@ -33,13 +33,13 @@ class PriceDeck:
 # unit M17 uses, with dollars a volume unit. High-purity quartz has no series: M17's USGS
 # midpoint ($8,250/t, dossier 1.2).
 _MEDIANS: Final[dict[str, tuple[str, str, float, float]]] = {
-    "copper": ("¢/lb", "t", 296.0, 22.046),
-    "tin": ("$/t", "t", 20145.0, 1.0),
-    "tantalum": ("$/kg Ta2O5", "kg", 180.0, 1.0),
-    "cobalt": ("$/lb", "t", 17.2, 2204.6),
-    "lithium_carbonate": ("$/t", "t", 11800.0, 1.0),
-    "ndpr_oxide": ("$/kg", "kg", 50.0, 1.0),
-    "quartz_hp": ("$/t", "t", 8250.0, 1.0),
+    "copper": ("¢/lb", "t", 296.0, 22.046),  # tunable-exempt: dossier data
+    "tin": ("$/t", "t", 20145.0, 1.0),  # tunable-exempt: dossier data
+    "tantalum": ("$/kg Ta2O5", "kg", 180.0, 1.0),  # tunable-exempt: dossier data
+    "cobalt": ("$/lb", "t", 17.2, 2204.6),  # tunable-exempt: dossier data
+    "lithium_carbonate": ("$/t", "t", 11800.0, 1.0),  # tunable-exempt: dossier data
+    "ndpr_oxide": ("$/kg", "kg", 50.0, 1.0),  # tunable-exempt: dossier data
+    "quartz_hp": ("$/t", "t", 8250.0, 1.0),  # tunable-exempt: dossier data
 }
 
 
@@ -52,7 +52,7 @@ def deck(state: GameState, key: str, data: GameData, balance: Balance) -> PriceD
 def usd_per_tonne(d: PriceDeck, which: str = "long_run") -> float:
     """Dollars a tonne of product from a deck (kilogram goods x 1,000)."""
     per = d.long_run_usd if which == "long_run" else d.current_usd
-    return per * (1000.0 if d.volume_unit == "kg" else 1.0)
+    return per * (1000.0 if d.volume_unit == "kg" else 1.0)  # tunable-exempt: kg a tonne
 
 
 @dataclass(frozen=True, slots=True)

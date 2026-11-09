@@ -14,12 +14,12 @@ import numpy as np
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.exploration.config import GeologyFile
+from tst.sim.exploration.draws import geology_draws
 from tst.sim.exploration.m17 import buyers_of
 from tst.sim.exploration.models import GeoBlock, SupplierLicence
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
-GEOLOGY_TURN = 0  # tunable-exempt: deposits are drawn as at January 2010 whatever the start
 CELLS_TAG = 1  # key (region, block, 1): the ore body's drill positions
 SIGNAL_TAG = 2  # key (region, block, 2): the suppliers' view of a block (34.4)
 
@@ -42,8 +42,9 @@ def draw_block(
     distance to infrastructure, permitting difficulty and community sensitivity."""
     gb = balance.geology
     ground = geo.regions[region]
-    u_dep, u_kind, u_rec, u_depth, u_infra = (float(x) for x in gen.random(5))
-    z_t, z_g, z_diff, z_sens = (float(x) for x in gen.standard_normal(4))
+    draws = gen.random(5)  # tunable-exempt: five uniforms a block
+    u_dep, u_kind, u_rec, u_depth, u_infra = (float(x) for x in draws)
+    z_t, z_g, z_diff, z_sens = (float(x) for x in gen.standard_normal(4))  # tunable-exempt: draws
     lo, hi = gb.depth_m
     depth = lo + (hi - lo) * u_depth
     ilo, ihi = gb.infra_km
@@ -71,7 +72,8 @@ def draw_block(
                 true_kind=_pick(geo.kinds_of(region, c.key), u_kind),
                 true_tonnage_mt=c.tonnage_median_mt * lift * math.exp(c.tonnage_sd * z_t),
                 true_grade=min(
-                    0.9, c.grade_median * gb.grade_scale * lift * math.exp(c.grade_sd * z_g)
+                    gb.max_grade,
+                    c.grade_median * gb.grade_scale * lift * math.exp(c.grade_sd * z_g),
                 ),
                 true_recovery=rlo + (rhi - rlo) * u_rec,
             )
@@ -85,7 +87,7 @@ def generate_blocks(rng: RngFactory, balance: Balance, data: GameData) -> tuple[
     out = []
     for r, region in enumerate(data.region_keys):
         for b in range(balance.geology.blocks_per_region):
-            gen = rng.stream(GEOLOGY_TURN, "geology", r, b)
+            gen = geology_draws(rng, r, b)
             out.append(draw_block(gen, region, b, geo, balance))
     return tuple(sorted(out, key=lambda b: (b.region, b.index)))  # the database's order
 
@@ -97,7 +99,7 @@ def cell_deviations(
     position's log grade from the deposit's, re-centred and re-scaled so their mean is exactly
     0 and their sd exactly 1. The deposit's true grade is then the geometric mean of its
     positions, which the running mean of distinct holes converges to."""
-    z = rng.stream(GEOLOGY_TURN, "geology", region_index, block, CELLS_TAG).standard_normal(cells)
+    z = geology_draws(rng, region_index, block, CELLS_TAG).standard_normal(cells)
     z = z - z.mean()
     sd = float(z.std())
     return tuple(float(x) / sd for x in z) if sd > 0 else tuple(0.0 for _ in z)
@@ -118,7 +120,7 @@ def supplier_licences(
     for r, region in enumerate(data.region_keys):
         mine = [b for b in blocks if b.region == region]
         noise = {
-            b.index: rng.stream(GEOLOGY_TURN, "geology", r, b.index, SIGNAL_TAG).standard_normal(
+            b.index: geology_draws(rng, r, b.index, SIGNAL_TAG).standard_normal(
                 len(geo.commodities)
             )
             for b in mine

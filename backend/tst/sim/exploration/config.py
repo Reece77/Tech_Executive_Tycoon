@@ -124,6 +124,7 @@ class GeologyFile(_Frozen):
 
 
 class GeologyBalance(_Frozen):
+    max_grade: float = Field(gt=0, le=1)
     blocks_per_region: int = Field(ge=1)
     deposit_rate: float = Field(ge=0, le=1)
     grade_scale: float = Field(gt=0)
@@ -132,7 +133,7 @@ class GeologyBalance(_Frozen):
     infra_km: tuple[float, float]
     difficulty_sd: float = Field(ge=0)
     sensitivity_sd: float = Field(ge=0)
-    cells: int = Field(ge=41)  # more than the measured category's holes
+    cells: int = Field(ge=41)  # tunable-exempt: more than the measured category's 40 holes
     supplier_blocks: int = Field(ge=0)
 
     @model_validator(mode="after")
@@ -220,6 +221,7 @@ class EstimateBalance(_Frozen):
 
 
 class FeasibilityBalance(_Frozen):
+    recovery_bounds: tuple[float, float]
     levels: tuple[str, ...]
     cost_cents: dict[str, int]
     months: dict[str, int]
@@ -252,6 +254,7 @@ class FeasibilityBalance(_Frozen):
 
 
 class PermittingBalance(_Frozen):
+    max_refusal: float = Field(gt=0, le=1)
     requires: Level
     benefit_odds: float = Field(ge=0, le=1)
     protest_rate: float = Field(ge=0, le=1)
@@ -279,7 +282,7 @@ class SaleBalance(_Frozen):
 
 
 class ExplorationBalance(_Frozen):
-    min_stage: int = Field(ge=0, le=5)
+    min_stage: int = Field(ge=0, le=5)  # tunable-exempt: spec section 3's stages 0-5
     confidence: float = Field(gt=0, lt=1)
     skill_base: float = Field(gt=0)
     skill_slope: float = Field(ge=0)
