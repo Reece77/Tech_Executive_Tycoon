@@ -867,12 +867,16 @@ def event_from_row(row: EventRow) -> GameEvent:
     return GameEvent(**values)
 
 
+# Engine steps: the stat names the answer the engine applies (events.data's *_STEPS).
+ENGINE_STEPS = ("public_step", "press_step", "founder_step", "group_step", "exploration_step")
+
+
 def _effect_json(e: Effect) -> dict[str, Any]:
     """An effect in event.choices; a modifier adds its stat and months (M10b, 23.2)."""
     out: dict[str, Any] = {"type": e.type, "target": e.target, "value": e.value}
     if e.type == "modifier":
         out |= {"stat": e.stat, "months": e.months}
-    elif e.type in ("public_step", "press_step"):  # M13 (25), M14b (29.1)
+    elif e.type in ENGINE_STEPS:  # M13, M14b; M24, M16 and M18 lost theirs before M18
         out |= {"stat": e.stat}
     return out
 

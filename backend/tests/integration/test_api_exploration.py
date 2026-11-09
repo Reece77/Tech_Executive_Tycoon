@@ -215,3 +215,18 @@ def test_no_deposit_truth_in_a_prompt(saves: Path, loaded: LoadedData) -> None:
     joined = "\n".join(texts)
     for value in ("0.0123", "98.76", "0.8765", "0.7654", "1.2345", "345.6"):
         assert value not in joined
+
+
+def test_engine_steps_keep_their_answer_in_the_save(saves: Path, loaded: LoadedData) -> None:
+    """A stored event's engine-step effects keep their stat (the answer the engine applies):
+    before M18 only public and press steps did, so founder, group and exploration answers
+    loaded with an empty stat and did nothing."""
+    path = _tools().protest(saves, "stat", loaded)
+    with open_session(path) as session:
+        state = load_state(session)
+    event = next(e for e in state.events if e.template_id == "community_blockade")
+    assert [eff.stat for c in event.choices for eff in c.effects] == [
+        "consult",
+        "benefit",
+        "push_on",
+    ]
