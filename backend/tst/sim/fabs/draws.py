@@ -24,5 +24,8 @@ def fab_draws(rng: RngFactory, turn: int, tag: int, *keys: int) -> np.random.Gen
 
 
 def node_window_draw(rng: RngFactory, j: int) -> float:
-    """Future node j's one uniform: stream era_window at turn 0 (38.1, as 26.4)."""
-    return float(rng.stream(0, "era_window", FUTURE_NODE_KEY + j).random())
+    """Future node j's one uniform: stream era_window at turn 0 (38.1, as 26.4), drawn by the
+    eras' own call site at key FUTURE_NODE_KEY + j."""
+    from tst.sim.research.levels import _window_draw
+
+    return _window_draw(rng, FUTURE_NODE_KEY + j)

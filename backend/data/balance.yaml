@@ -1799,7 +1799,7 @@ fab: # 38: fabs and process nodes (M21, v3 lane A). Nodes and rival foundries ar
     noise_sd: 0.005 # monthly yield noise (fraction), stream fab, key (1, facility_id)
     bounds: [0.05, 0.95]
   duv: { yield_mult: 0.85, cost_mult: 1.15 } # 7 nm's DUV route (38.1): yield and capex and running costs (dossier 4: N7 and SMIC N+2 by multipatterning)
-  fixed_share: 0.07 # fixed running cost a year as a share of capex: the staff beyond the lead engineers, maintenance, utilities, insurance (A; 38.5 target 3: use decides)
+  fixed_share: 0.06 # fixed running cost a year as a share of capex: the staff beyond the lead engineers, maintenance, utilities, insurance (A; M21 tuning from 0.09 for 38.5 target 3: use decides)
   materials: # a wafer start's materials (38.2): the substrate wafer and the gases and chemicals
     substrate_good: silicon_wafer # refining.goods key (M20's 300 mm wafer, market price; the group's own at transfer price is a follow-up)
     chemicals_share: 0.08 # gases and chemicals a start, as a share of the node's wafer price at index 1 of the mix below (A)
@@ -1808,7 +1808,7 @@ fab: # 38: fabs and process nodes (M21, v3 lane A). Nodes and rival foundries ar
   slot: # 38.2: spare wafer starts sold as foundry slots
     discount: 0.9 # x the node's market price (38.2)
     take: 0.85 # share of spare starts rival designers buy in a normal month, x yield / mature yield x reliability (A); all of it in a shortage
-  price_decay: 0.12 # a node's wafer price is (1 - this) for each generation it is further behind the edge than at its price month (dearer when nearer) (A; 38.5 target 3)
+  price_decay: 0.145 # a node's wafer price is (1 - this) for each generation it is further behind the edge than at its price month (dearer when nearer) (A; M21 tuning from 0.12 for 38.5 target 3: two nodes behind under 5%)
   median_lag_months: 36 # a chip category's median node is the newest whose first volume was this long ago (A; 38.4)
   node_quality: 3 # quality cap points for each node generation ahead of the category's median node (38.4)
   capacity: # 38.3: rival foundries' capacity sets the foundry market

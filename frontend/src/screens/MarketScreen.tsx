@@ -15,8 +15,10 @@ import type { components } from '../api/schema';
 import { EraTimeline } from '../components/EraTimeline';
 import { MacroStrip } from '../components/MacroStrip';
 import { MarketTable } from '../components/MarketTable';
+import { NodeTimeline } from '../components/NodeTimeline';
 import { LoadError, Loading } from '../components/ScreenState';
 import { useCategories, useEras, useMarket } from '../hooks/api';
+import { useNodes } from '../hooks/fabs';
 import { useTableViews } from '../hooks/useTableViews';
 import { CommoditiesTab } from './CommoditiesTab';
 import { formatMoneyShort } from '../lib/format';
@@ -25,6 +27,7 @@ import { formatCount, segmentSummary } from '../lib/products';
 type Market = components['schemas']['MarketOut'];
 
 const COMMODITIES = 'commodities'; // the Commodities tab's slot in the category route (M17)
+const NODES = 'nodes'; // the process-node timeline's slot (M21, 38.1)
 
 /** The category's size a year and its customers by month, with era arrivals marked (27.3,
  * 27.4). Display only: every number comes from the API. */
@@ -116,7 +119,8 @@ export function MarketScreen() {
   const { saveId = '', category = '' } = useParams();
   const navigate = useNavigate();
   const categories = useCategories(saveId);
-  const commodities = category === COMMODITIES; // M17: the Commodities tab (33)
+  const nodes = category === NODES; // M21: the node timeline (38.1)
+  const commodities = category === COMMODITIES || nodes; // M17: the Commodities tab (33)
   const key = commodities ? '' : category || categories.data?.[0]?.key || '';
   const [region, setRegion] = useState<string | null>(null); // null: the home region (M9)
   const market = useMarket(saveId, key, region);
@@ -148,11 +152,19 @@ export function MarketScreen() {
           ))}
           <button
             type="button"
-            aria-pressed={commodities}
             onClick={() => navigate(`/game/${saveId}/products/markets/${COMMODITIES}`)}
+            aria-pressed={category === COMMODITIES}
             data-testid="category-commodities"
           >
             Commodities
+          </button>
+          <button
+            type="button"
+            aria-pressed={nodes}
+            onClick={() => navigate(`/game/${saveId}/products/markets/${NODES}`)}
+            data-testid="category-nodes"
+          >
+            Process nodes
           </button>
           {!commodities && <MarketEras saveId={saveId} />}
         </div>
@@ -184,7 +196,8 @@ export function MarketScreen() {
         )}
       </div>
       <MacroStrip saveId={saveId} />
-      {commodities && <CommoditiesTab saveId={saveId} />}
+      {commodities && !nodes && <CommoditiesTab saveId={saveId} />}
+      {nodes && <MarketNodes saveId={saveId} />}
       {!commodities && market.error && (
         <LoadError title="Could not load the market" error={market.error} />
       )}
@@ -219,6 +232,19 @@ export function MarketScreen() {
         scores.
       </p>
     </>
+  );
+}
+
+/** The process-node timeline on Market (M21, formulas.md 38.1, 38.3). */
+function MarketNodes({ saveId }: { saveId: string }) {
+  const nodes = useNodes(saveId);
+  if (nodes.isPending) return <Loading />;
+  if (nodes.error) return <LoadError title="Could not load the nodes" error={nodes.error} />;
+  return (
+    <section aria-label="Process nodes" data-testid="market-nodes">
+      <h2 style={{ margin: '8px 0', fontSize: 17, fontWeight: 600 }}>Process nodes</h2>
+      <NodeTimeline nodes={nodes.data} />
+    </section>
   );
 }
 

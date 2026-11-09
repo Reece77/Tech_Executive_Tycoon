@@ -4080,6 +4080,136 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/fabs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Fabs
+         * @description The player's fabs (node, capacity, use, yield curve, cost per good die against the
+         *     market, foundry customers) and the node timeline (38).
+         */
+        get: operations["getFabs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/nodes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Nodes
+         * @description The process-node timeline: nodes in volume and who runs them, future nodes' windows,
+         *     rival foundries and the foundry market (38.1, 38.3).
+         */
+        get: operations["getNodes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/fabs/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Quote Fab
+         * @description What a fab would cost, when it could run and what a start would cost (38.2).
+         */
+        get: operations["quoteFab"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/fabs/build": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Fab */
+        post: operations["buildFab"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/fabs/{facility_id}/upgrade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upgrade Fab */
+        post: operations["upgradeFab"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/fabs/{facility_id}/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Staff Fab */
+        post: operations["staffFab"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/fabs/{facility_id}/sell": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sell Fab */
+        post: operations["sellFab"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/mines": {
         parameters: {
             query?: never;
@@ -5335,6 +5465,22 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** BuildFabIn */
+        BuildFabIn: {
+            /** Node */
+            node: string;
+            /** Region */
+            region: string;
+            /** Size */
+            size: number;
+            /**
+             * Duv
+             * @default false
+             */
+            duv?: boolean;
+            /** City */
+            city?: string | null;
+        };
         /** BuildIn */
         BuildIn: {
             /** Kind */
@@ -5778,7 +5924,7 @@ export interface components {
         ChainLinkOut: {
             /**
              * Stage
-             * @description mine | refinery | wafer | chip | device
+             * @description mine | refinery | wafer | fab | chip | device
              */
             stage: string;
             /** Company */
@@ -7740,6 +7886,236 @@ export interface components {
              */
             gate: string[];
         };
+        /** FabCustomerOut */
+        FabCustomerOut: {
+            /** Name */
+            name: string;
+            /** Starts */
+            starts: number;
+        };
+        /** FabHistoryOut */
+        FabHistoryOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /** Yield */
+            yield: number;
+            /** Utilization */
+            utilization: number;
+            /** Cost Per Start Cents */
+            cost_per_start_cents: number;
+            /** Market Cents */
+            market_cents: number;
+        };
+        /** FabMonthOut */
+        FabMonthOut: {
+            /** Turn */
+            turn: number;
+            /**
+             * Available
+             * @description Wafer starts it could run (live capacity x coverage)
+             */
+            available: number;
+            /**
+             * Own
+             * @description Starts run for the company's own chips
+             */
+            own: number;
+            /**
+             * Sold
+             * @description Starts sold as foundry slots
+             */
+            sold: number;
+            /** Utilization */
+            utilization: number;
+            /** Yield */
+            yield: number;
+            /** Reliability */
+            reliability: number;
+            /** Depreciation Cents */
+            depreciation_cents: number;
+            /** Fixed Cents */
+            fixed_cents: number;
+            /** Materials Cents */
+            materials_cents: number;
+            /** Power Cents */
+            power_cents: number;
+            /** Staff Cents */
+            staff_cents: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Slot Price Cents */
+            slot_price_cents: number;
+            /**
+             * Market Cents
+             * @description The node's market wafer price this month
+             */
+            market_cents: number;
+            /** Cost Per Start Cents */
+            cost_per_start_cents: number;
+            /**
+             * Die Cost Cents
+             * @description An own AI accelerator's cost per good die at this month's cost a start
+             */
+            die_cost_cents: number | null;
+            /**
+             * Die Market Cents
+             * @description The same die on a foundry slot at the node's market price
+             */
+            die_market_cents: number | null;
+        };
+        /** FabOut */
+        FabOut: {
+            /** Id */
+            id: number;
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Name */
+            name: string;
+            /** Node */
+            node: string;
+            /** Node Label */
+            node_label: string;
+            /** Duv */
+            duv: boolean;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /**
+             * Status
+             * @description building | waiting_tools | converting | live | closed
+             */
+            status: string;
+            /**
+             * Size
+             * @description Wafer starts a month
+             */
+            size: number;
+            /** Ready Turn */
+            ready_turn: number;
+            /** Ready Label */
+            ready_label: string;
+            /** Estimate Cents */
+            estimate_cents: number;
+            /** Capex Paid Cents */
+            capex_paid_cents: number;
+            /** Book Value Cents */
+            book_value_cents: number;
+            /** Tools */
+            tools: number;
+            /** Tools Label */
+            tools_label: string | null;
+            /** Staff */
+            staff: number;
+            /** Staff Needed */
+            staff_needed: number;
+            /** Coverage */
+            coverage: number;
+            /** Unit Id */
+            unit_id: number | null;
+            /** Yield */
+            yield: number;
+            /** Months Run */
+            months_run: number;
+            /** Upgrade Node */
+            upgrade_node: string | null;
+            /** Upgrade Label */
+            upgrade_label: string | null;
+            /** Upgrade Ready Label */
+            upgrade_ready_label: string | null;
+            /** Next Node */
+            next_node: string | null;
+            /** Upgrade Estimate Cents */
+            upgrade_estimate_cents: number | null;
+            /** Upgrade Allowed */
+            upgrade_allowed: boolean;
+            /** Upgrade Reason */
+            upgrade_reason: string | null;
+            month: components["schemas"]["FabMonthOut"] | null;
+            /** Customers */
+            customers: components["schemas"]["FabCustomerOut"][];
+            /**
+             * Chips
+             * @description The company's chip products its starts supply
+             */
+            chips: string[];
+            /** History */
+            history: components["schemas"]["FabHistoryOut"][];
+        };
+        /** FabQuoteOut */
+        FabQuoteOut: {
+            /** Node */
+            node: string;
+            /** Node Label */
+            node_label: string;
+            /** Region */
+            region: string;
+            /**
+             * Size
+             * @description Wafer starts a month
+             */
+            size: number;
+            /** Duv */
+            duv: boolean;
+            /** Euv */
+            euv: boolean;
+            /** Capex Cents */
+            capex_cents: number;
+            /** Monthly Capex Cents */
+            monthly_capex_cents: number;
+            /** Build Months */
+            build_months: number;
+            /** Tools */
+            tools: number;
+            /** Tools Label */
+            tools_label: string | null;
+            /** Ready Label */
+            ready_label: string;
+            /** Staff Needed */
+            staff_needed: number;
+            /** Need Level */
+            need_level: number;
+            /** Level */
+            level: number;
+            /** Allowed */
+            allowed: boolean;
+            /** Reason */
+            reason: string | null;
+            /** Market Cents */
+            market_cents: number | null;
+            /**
+             * Cost Per Start Cents
+             * @description A start's cost at full use: depreciation, fixed, materials and power
+             */
+            cost_per_start_cents: number;
+        };
+        /** FabsActionOut */
+        FabsActionOut: {
+            fabs: components["schemas"]["FabsOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** FabsOut */
+        FabsOut: {
+            /** Fabs */
+            fabs: components["schemas"]["FabOut"][];
+            timeline: components["schemas"]["NodesOut"];
+            /** Process Level */
+            process_level: number;
+            /** Sizes */
+            sizes: number[];
+            /** Regions */
+            regions: string[];
+            /** Build Energy */
+            build_energy: number;
+            /** Upgrade Energy */
+            upgrade_energy: number;
+        };
         /** FacilityOut */
         FacilityOut: {
             /** Facility Id */
@@ -8297,6 +8673,39 @@ export interface components {
             group: string;
             /** Value */
             value: number;
+        };
+        /** FoundryNodeOut */
+        FoundryNodeOut: {
+            /** Foundry */
+            foundry: string;
+            /** Name */
+            name: string;
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+        };
+        /** FoundryOut */
+        FoundryOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Region Label */
+            region_label: string;
+            /** Newest */
+            newest: string | null;
+            /** Newest Label */
+            newest_label: string | null;
+            /**
+             * Capacity K
+             * @description Thousand wafer starts a month
+             */
+            capacity_k: number;
+            /** Open Share */
+            open_share: number;
+            /** Stopped */
+            stopped: boolean;
         };
         /**
          * FundingTileOut
@@ -11164,6 +11573,81 @@ export interface components {
             energy: number;
             /** Hint */
             hint: string;
+        };
+        /** NodeOut */
+        NodeOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Generation */
+            generation: number;
+            /** Euv */
+            euv: boolean;
+            /** Duv Route */
+            duv_route: boolean;
+            /** Arrived */
+            arrived: boolean;
+            /**
+             * First Turn
+             * @description First volume anywhere; None for a future node
+             */
+            first_turn: number | null;
+            /** First Label */
+            first_label: string | null;
+            /**
+             * Window Label
+             * @description A future node's public window
+             */
+            window_label: string | null;
+            /**
+             * Reached
+             * @description Foundries in volume at it, by month
+             */
+            reached: components["schemas"]["FoundryNodeOut"][];
+            /**
+             * Market Cents
+             * @description Its market wafer price now, once in volume
+             */
+            market_cents: number | null;
+            /**
+             * Capital Cents
+             * @description Capital per wafer-per-year, once known
+             */
+            capital_cents: number | null;
+            /** Need Level */
+            need_level: number;
+            /** Orderable */
+            orderable: boolean;
+            /** Tag */
+            tag: string | null;
+        };
+        /** NodesOut */
+        NodesOut: {
+            /** Turn */
+            turn: number;
+            /** Leading */
+            leading: string;
+            /** Leading Label */
+            leading_label: string;
+            /** Median */
+            median: string;
+            /** Median Label */
+            median_label: string;
+            /** Price Factor */
+            price_factor: number;
+            /** Allocation Factor */
+            allocation_factor: number;
+            /** Nodes */
+            nodes: components["schemas"]["NodeOut"][];
+            /** Foundries */
+            foundries: components["schemas"]["FoundryOut"][];
+            /** Euv Supplier */
+            euv_supplier: string;
+            /** Euv Tool Cents */
+            euv_tool_cents: number;
+            /** Euv Short */
+            euv_short: boolean;
         };
         /**
          * NomineeChoiceOut
@@ -15114,6 +15598,11 @@ export interface components {
              */
             index: number;
         };
+        /** StaffFabIn */
+        StaffFabIn: {
+            /** Unit Id */
+            unit_id: number | null;
+        };
         /** StaffIn */
         StaffIn: {
             /** Unit Id */
@@ -16165,6 +16654,11 @@ export interface components {
             wafers: number;
             /** Months */
             months: number;
+            /**
+             * Node
+             * @description M21 (38.1): a process node (nodes.yaml key); none: M12b's wafer
+             */
+            node?: string | null;
         };
         /** IndexPointOut */
         tst__api__schemas__facilities__IndexPointOut: {
@@ -29626,6 +30120,428 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RefineriesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getFabs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getNodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NodesOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    quoteFab: {
+        parameters: {
+            query: {
+                node: string;
+                region: string;
+                size: number;
+                duv?: boolean;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabQuoteOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildFab: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuildFabIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    upgradeFab: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    staffFab: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffFabIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sellFab: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabsActionOut"];
                 };
             };
             /** @description Bad Request */

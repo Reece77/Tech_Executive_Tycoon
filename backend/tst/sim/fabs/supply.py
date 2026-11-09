@@ -20,6 +20,8 @@ from tst.sim.fabs.models import Fab
 from tst.sim.products.models import SELLING, Product
 from tst.sim.state import GameState
 
+COST = 3  # tunable-exempt: the cost a start's place in a fab's history row
+
 
 @dataclass(frozen=True, slots=True)
 class FabShare:
@@ -83,7 +85,7 @@ def allocation(
         per = {p.id: _per_start(state, p, fab, balance, data) for p in products}
         wish = {p.id: _wish(state, p.id) / per[p.id] if per[p.id] > 0 else 0.0 for p in products}
         total = sum(wish.values())
-        prev = fab.history[-1][3] if fab.history else 0.0
+        prev = fab.history[-1][COST] if fab.history else 0.0
         for p in products:
             share = wish[p.id] / total if total > 0 else 1 / len(products)
             out[p.id].append(

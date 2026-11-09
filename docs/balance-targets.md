@@ -599,6 +599,23 @@ Tuned (`mining.*` only; before → after in the brief's Decision 21): `sustainin
 
 Tuned: `angel.round_dilution` 0.2 -> 0.12; `family_office.mandates` (conservative 0.3 -> 0.4, balanced 0.6/0.01 -> 0.95/0.005, aggressive vol 0.02 -> 0.03). Target 1's top decile is its mean (M26 brief, decision 16).
 
+## M21: fabs and process nodes (§38.5)
+
+### M21 Fabs (2026-11-09, v3 lane A)
+
+`tools/m21_targets.py` (`tst/balance/m21.py`; nightly `tests/balance/test_m21_balance.py`). Fabs are ordered through `build_fab`, staffed by fab engineers at skill 12 (topped up when they leave) and, where a run measures a running fab, finished at once and paid for; a process lead as if researched (T4: exactly the node's need). T1 and T6 read seeds 1-10; T3-T5 seeds 1-3; T2 the quote.
+
+| Target | Band | Value |
+| --- | --- | --- |
+| T1 history holds | every foundry on each node's dossier date, every seed | 0 misses on 10 seeds |
+| T2 the edge is expensive | 5 nm, 50,000 starts: $15-25B with overrun; 28 nm under $6B | $16.9-21.2B; $4.75-5.94B (January 2021, 0-25% overrun) |
+| T3 use decides | IRR > 12% at 80%+ use at the edge; < 5% at 50% use or two nodes behind | 12.5%, 12.7%, 13.8% at 80%; -0.0%, 0.3%, 1.7% at 50%; 2.5%, 2.7%, 4.1% two nodes behind |
+| T4 yield learns | 35-50% to 80%+ within 24 months at skill 12 | 35% to 80% in 24, 21, 23 months |
+| T5 own fabs pay a chip company | 10-30% lower chip cost at high use, with the node's quality | AI accelerator $322/$320/$321 against $420 on a TSMC 5 nm contract (23.3-23.7% cheaper) at 84-86% use; +1.6-1.8 cap points |
+| T6 nothing else moves | M12b's foundry prices through 2025 within 10% | 0.00% (the factor is exactly 1); golden snapshots unchanged |
+
+Tuned (`fab.*` and `nodes.yaml` capital only; the brief's Decision 13): `fixed_share` 0.09 → 0.06, `price_decay` 0.12 → 0.145, `yield.learn` 0.07 → 0.075, 28 nm capital $4,500 → $4,400.
+
 ## M20: refining and wafers (§36.5)
 
 ### M20 Refineries (2026-11-09, v3 lane B; on the combined code with M19's mines)

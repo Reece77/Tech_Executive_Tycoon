@@ -453,3 +453,137 @@ def price_ratio(seed: int, years: Sequence[int] = range(2010, 2026)) -> list[flo
         plain = b.chips.types["ai_accelerator"].wafer_cents * index
         out.append(with_factor / plain)
     return out
+
+
+# --- The run and its report ------------------------------------------------------------------
+
+EDGE = ("n5", (2020, 4))  # a leading-edge fab live at its node's first volume
+MATURE_28 = ("n28", 2021)
+EDGE_CAPEX = ("n5", 2021)
+IRR_MONTHS = 120  # 10 years of production
+HIGH_USE, LOW_USE, BEHIND = 0.8, 0.5, 2
+
+
+@dataclass(frozen=True)
+class IrrRun:
+    seed: int
+    edge: float | None  # IRR at 80% use at the edge
+    low_use: float | None  # at 50% use
+    behind: float | None  # at 80% use, two nodes behind
+
+
+@dataclass(frozen=True)
+class Results:
+    seeds: tuple[int, ...]
+    history: dict[int, list[str]]  # seed -> misses
+    capex_edge: Capex
+    capex_mature: Capex
+    irr: list[IrrRun]
+    yields: list[tuple[int, float, int | None]]  # (seed, first yield, months to 80%)
+    chips: list[ChipRun]
+    ratios: dict[int, list[float]]  # seed -> M12b price ratios through 2025
+
+
+def _irr_seed(seed: int) -> IrrRun:
+    r = fab_run(seed, EDGE[0], EDGE[1], IRR_MONTHS)
+    return IrrRun(
+        seed,
+        project_irr(r, HIGH_USE),
+        project_irr(r, LOW_USE),
+        project_irr(r, HIGH_USE, behind=BEHIND),
+    )
+
+
+def _yield_seed(seed: int) -> tuple[int, float, int | None]:
+    first, months = yield_months(seed)
+    return seed, first, months
+
+
+def run(seeds: tuple[int, ...], jobs: int = 1) -> Results:
+    from concurrent.futures import ProcessPoolExecutor
+
+    with ProcessPoolExecutor(max_workers=max(1, jobs)) as pool:
+        irr_jobs = [pool.submit(_irr_seed, s) for s in seeds[:3]]
+        yield_jobs = [pool.submit(_yield_seed, s) for s in seeds[:3]]
+        chip_jobs = [pool.submit(chip_run, s) for s in seeds[:3]]
+        return Results(
+            seeds=seeds,
+            history={s: history_misses(s) for s in seeds},
+            capex_edge=capex_range(*EDGE_CAPEX),
+            capex_mature=capex_range(*MATURE_28),
+            irr=[j.result() for j in irr_jobs],
+            yields=[j.result() for j in yield_jobs],
+            chips=[j.result() for j in chip_jobs],
+            ratios={s: price_ratio(s) for s in seeds},
+        )
+
+
+B = 100 * 10**9  # cents in a billion dollars
+
+
+def checks(r: Results) -> dict[int, bool]:
+    def ok_irr(x: IrrRun) -> bool:
+        low = x.low_use if x.low_use is not None else -1.0
+        behind = x.behind if x.behind is not None else -1.0
+        return x.edge is not None and x.edge > 0.12 and low < 0.05 and behind < 0.05
+
+    return {
+        1: all(not m for m in r.history.values()),
+        2: r.capex_edge.lo >= 15 * B and r.capex_edge.hi <= 25 * B and r.capex_mature.hi < 6 * B,
+        3: all(ok_irr(x) for x in r.irr),
+        4: all(0.35 <= f <= 0.50 and m is not None and m <= 24 for _, f, m in r.yields),
+        5: all(0.10 <= c.cut <= 0.30 and c.use >= 0.8 and c.points > 0 for c in r.chips),
+        6: all(abs(x - 1) <= 0.10 for xs in r.ratios.values() for x in xs),
+    }
+
+
+def _pct(x: float | None) -> str:
+    return "never pays back" if x is None else f"{x:.1%}"
+
+
+def report(r: Results) -> str:
+    ok = checks(r)
+    mark = {k: "met" if v else "MISSED" for k, v in ok.items()}
+    out = ["formulas.md 38.5 targets (M21)", ""]
+    misses = sum(len(m) for m in r.history.values())
+    out.append(
+        f"1. History holds: every (foundry, node) date of nodes.yaml on {len(r.history)} seeds, "
+        f"{misses} misses  {mark[1]}"
+    )
+    out.append(
+        f"2. The edge is expensive: a 5 nm fab of 50,000 starts (2021) "
+        f"${r.capex_edge.lo / B:.1f}-{r.capex_edge.hi / B:.1f}B with overrun ($15-25B); 28 nm "
+        f"${r.capex_mature.lo / B:.2f}-{r.capex_mature.hi / B:.2f}B (under $6B)  {mark[2]}"
+    )
+    out.append(
+        "3. Use decides: a 5 nm fab live April 2020, 10 years of slots, project IRR at 80% use "
+        "(> 12%), at 50% use and two nodes behind (< 5%)  " + mark[3]
+    )
+    for x in r.irr:
+        out.append(
+            f"   seed {x.seed}: {_pct(x.edge)} at 80%, {_pct(x.low_use)} at 50%, "
+            f"{_pct(x.behind)} two nodes behind"
+        )
+    out.append(
+        "4. Yield learns: a new 5 nm fab (April 2020) at skill-12 engineers and exactly the "
+        "node's research: first yield 35-50%, 80% within 24 months  " + mark[4]
+    )
+    for s, f, m in r.yields:
+        out.append(f"   seed {s}: first {f:.0%}, 80% after {m} months")
+    out.append(
+        "5. Own fabs pay a chip company: an AI accelerator on its own 5 nm fab (10,000 starts, "
+        "2021, after the ramp) against its TSMC 5 nm contract: 10-30% cheaper at 80%+ use, "
+        "with node quality points  " + mark[5]
+    )
+    for c in r.chips:
+        out.append(
+            f"   seed {c.seed}: ${c.fab_cost / 100:,.0f} against ${c.slot_cost / 100:,.0f} "
+            f"({c.cut:.1%} cheaper) at {c.use:.0%} use; +{c.points:.1f} quality cap points"
+        )
+    worst = max(abs(x - 1) for xs in r.ratios.values() for x in xs)
+    out.append(
+        f"6. Nothing else moves: M12b's wafer prices with the rival foundries' capacity "
+        f"through 2025, the largest gap {worst:.2%} (within 10%); golden snapshots unchanged; "
+        f"tests/unit/test_m21_fabs.py::test_a_fabless_chip_company_pays_what_it_did  {mark[6]}"
+    )
+    return "\n".join(out)

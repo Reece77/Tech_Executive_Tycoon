@@ -67,7 +67,7 @@ def _status(state: GameState, fab: Fab, f: Facility) -> str:
     if fab.upgrading(turn):
         return "converting"
     if f.status == "building":
-        if turn >= f.ordered_turn + fab.build_months:
+        if turn >= f.ordered_turn + fab.build_months and fab.tools > 0 and turn < fab.live_turn:
             return "waiting_tools"
         return "building"
     return "live" if is_live(fab, f, turn) else "building"
