@@ -39,8 +39,24 @@ Run an AI-chip business through October 2022 with China customers: launch a comp
 
 ## Decisions made
 
-_(Agent fills in.)_
+1. **Countries split a region's demand** (the spec has regions, not national markets): each country has a `demand_share` of its region (an assumption from 2010s GDP and ICT spend; China is 55% of East Asia, the US 88% of North America). A restricted destination's customers are that share of the region's.
+2. **`china` is both a country and a bloc**; in a rule it means the country (China's own controls, and the US's on China). Bloc-wide rules use `us_aligned` and `non_aligned`.
+3. **Who is controlled: the player's group** (M16, subsidiaries included), not rivals. Rivals' products are abstract and their lobbying is out of scope; controlling them would move a software company's world (target 7). Follow-up below.
+4. **Blocked customers wind down**: customers in a newly closed destination leave the books at `geopolitics.exit_rate` 0.25 a month and, until they do, still buy replacements (orders already placed). Target 2: 33.7% → 23.9% on seed 1 (band 15-30%).
+5. **A compliant variant** is a mode of the chip product, not a second product (wafer capacity is per product): from its launch it sells where a rule restricts the chip, to `geopolitics.variant.keep` 0.7 of that destination's buyers (new key, an assumption: some buyers will not take a cut-down chip), at quality - 10 there (its choice share is computed at that quality). The rest wind down as blocked. October 2023's update and April 2025's H20 rule `voids_variants`, so a variant launched before them must be relaunched. Target 2 with a variant: 3.2% → 10.8%.
+6. **Buying exposure** is the actor's share of world supply (commodities.yaml `top_share` when its `top_country` is in the actor's jurisdiction) on spot volume, and offtakes with suppliers sitting there (countries.yaml `sites`); offtakes elsewhere and the group's own refined supply (M20) are safe. The premium is a share of spot on the exposed volume: ban 60%, licence 25%, quota 40% (assumptions for rerouted and grey supply); allowed volume 0 for a ban, the quota's share, 80% under a licence regime. Target 3: 41%.
+7. **Licence chances are not sent to the API**: the World screen shows each rule's base approval (public data) and says influence helps; a pending licence's chance with influence stays in the engine, as M24's chances do.
+8. **Events reach only a touched group**: a critical event when a rule would close a selling product or cut an input in use, a major one when the group has hardware, chips, non-data-centre facilities, mines or refineries, nothing otherwise (target 7). Answers: comply, licence, variant, grey route; absorb or lobby (a one-off $200k for 5 influence points in the actor's region); accept or appeal a listing ($500k, 15% chance off).
+9. **Rules M19 already applies** (Indonesia's ore bans, Mexico's, Zimbabwe's, Namibia's, Chile's and Bolivia's lithium, DRC's 2025 cobalt ban) are in `export_controls.yaml` with `via: m19`: shown, never applied twice. Goods the game does not trade (nickel ore, bauxite, graphite, antimony, minor metals, technology) are `news`.
+10. **The entity list** binds by grey sales (4% a month) and by ownership of at least half by a listed company (at once while an affiliates rule bites, else 5% a month). Named entities (Huawei, ZTE, SMIC, Fujian Jinhua) are destinations for the record; none is a company in the game.
+11. **Tariffs** use effective rates on cost (Section 301 lists averaged; phones and laptops were never taxed): devices 10% (Sep 2018), 15% (Sep 2019), 20% (Apr 2025); servers 10%, then 25% (May 2019); chips 25% (Aug 2018), 50% (Apr 2025). Target 5: 13.2% from late 2019.
+12. **Tension tuning**: `escalation.base` and `detente.base` 0.008 → 0.013 (target 6: 5 → 8 of 10 seeds).
+13. **Engineering**: one `geo_record` table holds every M22 collection (kind + JSON data); stream `geopolitics` key families (0,) tension, (1, licence) decisions, (2, company) listing, (3, company) an appeal.
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- Rivals under export controls (NVIDIA's China sales, Huawei as a rival), and rivals' lobbying.
+- Facility licences (EUV tools for a fab in China) and fab-service controls wire to M21's `euv_tools` and foundry at the merge; until then those goods' rules show and do not bite.
+- A country choice for new facilities and subsidiaries (today: the city's, or the region's default country); a site override exists in the data model.
+- Transfer prices carrying tariffs between group companies (the seller books them today).
+- Corporate tax by country and transfer-pricing audits (out of scope, later).
